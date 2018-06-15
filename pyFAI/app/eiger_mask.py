@@ -5,7 +5,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "20/02/2018"
 __satus__ = "development"
 
 
@@ -53,14 +53,12 @@ logger = logging.getLogger("eiger-mask")
 import fabio
 
 import pyFAI
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+from pyFAI.third_party.argparse import ArgumentParser
 
 try:
     import h5py
 except ImportError:
+    logger.debug("h5py is not available", exc_info=True)
     h5py = None
 
 
@@ -107,6 +105,7 @@ def main():
         fabio.tifimage.tifimage(data=mask).write(outfile)
     else:
         fabio.edfimage.edfimage(header={"data_file": infile}, data=mask).write(outfile)
+
 
 if __name__ == "__main__":
     main()

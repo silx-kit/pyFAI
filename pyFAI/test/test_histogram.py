@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,26 +28,24 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for histogramming implementations"
+"""Test suite for histogramming implementations"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "04/04/2018"
 
 import unittest
 import time
 import numpy
 import logging
 from numpy import cos
-from .utilstest import Rwp, getLogger
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 from ..ext.histogram import histogram, histogram2d
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from ..third_party import six
+from ..utils import mathutil
 
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab
@@ -56,59 +54,60 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 class TestHistogram1d(unittest.TestCase):
     """basic test"""
-
-    def setUp(self):
-        unittest.TestCase.setUp(self)
+    @classmethod
+    def setUpClass(cls):
+        super(TestHistogram1d, cls).setUpClass()
 
         # CSR logger should stop complaining about desactivated
-        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.ERROR)
 
         shape = (512, 512)
         npt = 500
-        self.size = shape[0] * shape[1]
+        cls.size = shape[0] * shape[1]
         maxI = 1000
-        self.epsilon = 1.0e-4
-        self.epsilon_csr = 0.33
+        cls.epsilon = 1.0e-4
+        cls.epsilon_csr = 0.33
         y, x = numpy.ogrid[:shape[0], :shape[1]]
         tth = numpy.sqrt(x * x + y * y)  # .astype("float32")
-        mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
+        mod = 0.5 + 0.5 * numpy.cos(tth / 12) + 0.25 * numpy.cos(tth / 6) + 0.1 * numpy.cos(tth / 4)
         # data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
         data = (numpy.ones(shape) * maxI * mod).astype("uint16")
-        self.data_sum = data.sum(dtype="float64")
+        cls.data_sum = data.sum(dtype="float64")
         t0 = time.time()
-        drange = (tth.min(), tth.max() * EPS32)
-        self.unweight_numpy, _bin_edges = numpy.histogram(tth, npt, range=drange)
+        drange = (tth.min(), tth.max() * EPS32)  # works as tth>0
+        cls.unweight_numpy, _bin_edges = numpy.histogram(tth, npt, range=drange)
         t1 = time.time()
-        self.weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float64"), range=drange)
+        cls.weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float64"), range=drange)
         t2 = time.time()
         logger.info("Timing for Numpy   raw    histogram: %.3f", t1 - t0)
         logger.info("Timing for Numpy weighted histogram: %.3f", t2 - t1)
-        self.bins_numpy = 0.5 * (bin_edges[1:] + bin_edges[:-1])
-        self.I_numpy = self.weight_numpy / numpy.maximum(1.0, self.unweight_numpy)
+        cls.bins_numpy = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+        cls.I_numpy = cls.weight_numpy / numpy.maximum(1.0, cls.unweight_numpy)
         t3 = time.time()
-        self.bins_cython, self.I_cython, self.weight_cython, self.unweight_cython = histogram(tth, data, npt, pixelSize_in_Pos=0)
+        cls.bins_cython, cls.I_cython, cls.weight_cython, cls.unweight_cython = histogram(tth, data, npt, pixelSize_in_Pos=0)
         t4 = time.time()
         logger.info("Timing for Cython  both   histogram: %.3f", t4 - t3)
         t3 = time.time()
         integrator = HistoBBox1d(tth, delta_pos0=None, pos1=None, delta_pos1=None,
-                                 bins=npt, pos0Range=drange, allow_pos0_neg=False,
+                                 bins=npt, allow_pos0_neg=False,
                                  unit="undefined",)
         t2 = time.time()
-        self.bins_csr, self.I_csr, self.weight_csr, self.unweight_csr = integrator.integrate(data)
+        cls.bins_csr, cls.I_csr, cls.weight_csr, cls.unweight_csr = integrator.integrate(data)
         t4 = time.time()
         logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
         # Under Linux, windows or MacOSX, up to 1 bin error has been reported...
-        self.err_max_cnt = 0
-        self.err_max_cnt_csr = 8
+        cls.err_max_cnt = 0
+        cls.err_max_cnt_csr = 8
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.unweight_numpy = self.bins_numpy = None
-        self.I_numpy = self.weight_numpy = self.bins_csr = None
-        self.data_sum = self.size = self.err_max_cnt = None
-        self.bins_csr = self.I_csr = self.weight_csr = self.unweight_csr = None
-        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+    @classmethod
+    def tearDownClass(cls):
+        super(TestHistogram1d, cls).tearDownClass()
+        cls.unweight_numpy = cls.bins_numpy = None
+        cls.I_numpy = cls.weight_numpy = cls.bins_csr = None
+        cls.data_sum = cls.size = cls.err_max_cnt = None
+        cls.bins_csr = cls.I_csr = cls.weight_csr = cls.unweight_csr = None
+        csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.WARNING)
 
     def test_count_numpy(self):
@@ -171,11 +170,11 @@ class TestHistogram1d(unittest.TestCase):
         logger.info("Bin-center position for csr/numpy, max delta=%s", max_delta)
         self.assertTrue(max_delta < self.epsilon, "Bin-center position for csr/numpy, max delta=%s" % max_delta)
 
-        rwp1 = Rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
+        rwp1 = mathutil.rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
         logger.info("Rwp Cython/Numpy = %.3f", rwp1)
         self.assertTrue(rwp1 < self.epsilon, "Rwp Cython/Numpy = %.3f" % rwp1)
 
-        rwp2 = Rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
+        rwp2 = mathutil.rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
         logger.info("Rwp CSR/Numpy = %.3f", rwp2)
         self.assertTrue(rwp2 < 3, "Rwp Cython/Numpy = %.3f" % rwp2)
 
@@ -218,7 +217,7 @@ class TestHistogram2d(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         # CSR logger should stop complaining about desactivated
-        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.ERROR)
 
         shape = (512, 512)
@@ -271,7 +270,7 @@ class TestHistogram2d(unittest.TestCase):
         self.unweight_numpy = self.weight_numpy = None
         self.maxI = None
 
-        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.WARNING)
 
     def test_count_numpy(self):

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "05/02/2018"
 
 
 import unittest
@@ -44,8 +44,10 @@ import fabio
 import gc
 import numpy
 import platform
-from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
-logger = getLogger(__file__)
+import logging
+import shutil
+
+logger = logging.getLogger(__name__)
 try:
     import pyopencl
 except ImportError as error:
@@ -58,7 +60,10 @@ if ocl is not None:
     import pyopencl.array
 from .. import load
 from ..opencl.utils import read_cl_file
+from . import utilstest
 from .utilstest import UtilsTest
+from ..utils import mathutil
+from pyFAI.utils.decorators import depreclog
 
 
 class TestMask(unittest.TestCase):
@@ -86,11 +91,12 @@ class TestMask(unittest.TestCase):
                          {"img": UtilsTest.getimage("Pilatus6M.cbf"),
                           "poni": UtilsTest.getimage("Pilatus6M.poni"),
                           "spline": None},
-            ]
+                         ]
         for ds in self.datasets:
             if ds["spline"] is not None:
-                data = open(ds["poni"], "r").read()
-#                spline = os.path.basename(ds["spline"])
+                with open(ds["poni"], "r") as ponifile:
+                    data = ponifile.read()
+                # spline = os.path.basename(ds["spline"])
                 with open(ds["poni"]) as f:
                     data = []
                     for line in f:
@@ -103,7 +109,7 @@ class TestMask(unittest.TestCase):
                     f.write(os.linesep.join(data))
 
     def tearDown(self):
-        recursive_delete(self.tmp_dir)
+        shutil.rmtree(self.tmp_dir)
         self.tmp_dir = self.N = self.datasets = None
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
@@ -120,9 +126,11 @@ class TestMask(unittest.TestCase):
             for ds in self.datasets:
                 ai = load(ds["poni"])
                 data = fabio.open(ds["img"]).data
-                res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
+                with utilstest.TestLogging(logger=depreclog, warning=1):
+                    # Filter deprecated warning
+                    res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
                 ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
-                r = Rwp(ref, res)
+                r = mathutil.rwp(ref, res)
                 logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                 self.assertTrue(r < 6, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
                 ai.reset()
@@ -150,8 +158,10 @@ class TestMask(unittest.TestCase):
                     logger.warning("Memory error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
                     break
                 else:
-                    ref = ai.xrpd(data, self.N)
-                    r = Rwp(ref, res)
+                    with utilstest.TestLogging(logger=depreclog, warning=1):
+                        # Filter deprecated warning
+                        ref = ai.xrpd(data, self.N)
+                    r = mathutil.rwp(ref, res)
                     logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL LUT processing of %s" % (r, ds))
                 ai.reset()
@@ -179,7 +189,7 @@ class TestMask(unittest.TestCase):
                     logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
                     break
                 else:
-                    r = Rwp(ref, res)
+                    r = mathutil.rwp(ref, res)
                     logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
                 ai.reset()

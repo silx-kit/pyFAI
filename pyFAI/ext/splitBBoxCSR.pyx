@@ -3,7 +3,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,19 +32,19 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/06/2017"
+__date__ = "12/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
 import os
 import sys
 import logging
-logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
+logger = logging.getLogger(__name__)
 from cython.parallel import prange
 import numpy
-cimport numpy
 include "regrid_common.pxi"
 from ..utils import crc32
+from ..utils.decorators import deprecated
 
 
 class HistoBBox1d(object):
@@ -108,41 +108,42 @@ class HistoBBox1d(object):
         self.data = self.nnz = self.indices = self.indptr = None
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
-        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
-        if delta_pos0 is not None:
-            self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
+        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
+        if delta_pos0 is None:
+            self.calc_boundaries_nosplit(pos0Range)
+        else:
+            self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
             self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
             self.calc_boundaries(pos0Range)
-        else:
-            self.calc_boundaries_nosplit(pos0Range)
 
         if pos1Range is not None and len(pos1Range) > 1:
             assert pos1.size == self.size, "pos1 size"
             assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
-            self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=numpy.float32)
-            self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=numpy.float32)
+            self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
+            self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
             self.pos1_min = min(pos1Range)
             pos1_maxin = max(pos1Range)
-            self.pos1_max = pos1_maxin * EPS32
+            self.pos1_max = calc_upper_bound(<double> pos1_maxin)
         else:
             self.check_pos1 = False
             self.cpos1_min = None
             self.pos1_max = None
 
-        self.delta = (self.pos0_max - self.pos0_min) / bins
+        self.delta = (self.pos0_max - self.pos0_min) / (<position_t> bins)
         if delta_pos0 is not None:
             self.calc_lut()
         else:
             self.calc_lut_nosplit()
-        self.outPos = numpy.linspace(self.pos0_min + 0.5 * self.delta,
-                                     self.pos0_maxin - 0.5 * self.delta,
-                                     self.bins)
+
+        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
+                                          self.pos0_max - 0.5 * self.delta,
+                                          self.bins)
         self.lut_checksum = crc32(self.data)
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
-        self.lut_nbytes = sum([i.nbytes for i in self.lut])
+        self.lut_nbytes = sum([i.nbytes for i in self.lut])      
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -155,10 +156,11 @@ class HistoBBox1d(object):
         cdef:
             int size = self.cpos0.size
             bint check_mask = self.check_mask
-            numpy.int8_t[:] cmask
-            float[:] cpos0, dpos0, cpos0_sup, cpos0_inf,
-            float upper, lower, pos0_max, pos0_min, c, d
+            char[::1] cmask
+            double[::1] cpos0, dpos0, cpos0_sup, cpos0_inf,
+            double upper, lower, pos0_max, pos0_min, c, d
             bint allow_pos0_neg = self.allow_pos0_neg
+            int idx
 
         cpos0_sup = self.cpos0_sup
         cpos0_inf = self.cpos0_inf
@@ -193,7 +195,7 @@ class HistoBBox1d(object):
             self.pos0_maxin = pos0_max
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
-        self.pos0_max = self.pos0_maxin * EPS32
+        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -206,10 +208,11 @@ class HistoBBox1d(object):
         cdef:
             int size = self.cpos0.size
             bint check_mask = self.check_mask
-            numpy.int8_t[:] cmask
-            float[:] cpos0
-            float upper, lower, pos0_max, pos0_min, c, d
+            char[::1] cmask
+            position_t[::1] cpos0
+            position_t upper, lower, pos0_max, pos0_min, c, d
             bint allow_pos0_neg = self.allow_pos0_neg
+            int idx
 
         if pos0Range is not None and len(pos0Range) > 1:
             self.pos0_min = min(pos0Range)
@@ -239,7 +242,7 @@ class HistoBBox1d(object):
 
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
-        self.pos0_max = self.pos0_maxin * EPS32
+        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -249,15 +252,16 @@ class HistoBBox1d(object):
         calculate the max number of elements in the LUT and populate it
         '''
         cdef:
-            float delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
+            position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, 
+            position_t min0, max0, fbin0_min, fbin0_max
             numpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0_min, bin0_max, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indices
-            numpy.ndarray[numpy.float32_t, ndim = 1] data
-            float[:] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
-            numpy.int8_t[:] cmask
+            numpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            numpy.int32_t[::1] indptr, indices
+            float[::1] data
+            position_t[::1] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
+            char[::1] cmask
+            acc_t inv_area, delta_left, delta_right
 
         size = self.size
         if self.check_mask:
@@ -300,18 +304,19 @@ class HistoBBox1d(object):
 
                 if bin0_min == bin0_max:
                     #  All pixel is within a single bin
-                    outMax[bin0_min] += 1
+                    outmax[bin0_min] += 1
 
                 else:  # We have pixel splitting.
                     for i in range(bin0_min, bin0_max + 1):
-                        outMax[i] += 1
+                        outmax[i] += 1
 
-        indptr[1:] = outMax.cumsum(dtype=numpy.int32)
-        self.indptr = indptr
+        indptr = numpy.concatenate(([numpy.int32(0)], 
+                                    numpy.asarray(outmax).cumsum(dtype=numpy.int32)))
+        self.indptr = numpy.asarray(indptr)
         self.nnz = nnz = indptr[bins]
 
-        # just recycle the outMax array
-        outMax[:] = 0
+        # just recycle the outmax array
+        outmax[:] = 0
 
         lut_nbytes = nnz * (sizeof(numpy.int32_t) + sizeof(numpy.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
@@ -352,35 +357,35 @@ class HistoBBox1d(object):
 
                 if bin0_min == bin0_max:
                     # All pixel is within a single bin
-                    k = outMax[bin0_min]
+                    k = outmax[bin0_min]
                     indices[indptr[bin0_min] + k] = idx
                     data[indptr[bin0_min] + k] = onef
-                    outMax[bin0_min] += 1  # k+1
+                    outmax[bin0_min] += 1  # k+1
                 else:  # we have pixel splitting.
-                    deltaA = 1.0 / (fbin0_max - fbin0_min)
+                    inv_area = 1.0 / (fbin0_max - fbin0_min)
 
-                    deltaL = (bin0_min + 1) - fbin0_min
-                    deltaR = fbin0_max - (bin0_max)
+                    delta_left = <position_t> (bin0_min + 1) - fbin0_min
+                    delta_right = fbin0_max - <position_t> (bin0_max)
 
-                    k = outMax[bin0_min]
+                    k = outmax[bin0_min]
                     indices[indptr[bin0_min] + k] = idx
-                    data[indptr[bin0_min] + k] = (deltaA * deltaL)
-                    outMax[bin0_min] += 1
+                    data[indptr[bin0_min] + k] = (inv_area * delta_left)
+                    outmax[bin0_min] += 1
 
-                    k = outMax[bin0_max]
+                    k = outmax[bin0_max]
                     indices[indptr[bin0_max] + k] = idx
-                    data[indptr[bin0_max] + k] = (deltaA * deltaR)
-                    outMax[bin0_max] += 1
+                    data[indptr[bin0_max] + k] = (inv_area * delta_right)
+                    outmax[bin0_max] += 1
 
                     if bin0_min + 1 < bin0_max:
                         for i in range(bin0_min + 1, bin0_max):
-                            k = outMax[i]
+                            k = outmax[i]
                             indices[indptr[i] + k] = idx
-                            data[indptr[i] + k] = (deltaA)
-                            outMax[i] += 1
+                            data[indptr[i] + k] = (inv_area)
+                            outmax[i] += 1
 
-        self.data = data
-        self.indices = indices
+        self.data = numpy.asarray(data)
+        self.indices = numpy.asarray(indices)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -390,15 +395,14 @@ class HistoBBox1d(object):
         calculate the max number of elements in the LUT and populate it
         '''
         cdef:
-            float delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, deltaL, deltaR, deltaA, pos0
+            position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
             numpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indices
-            numpy.ndarray[numpy.float32_t, ndim = 1] data
-            float[:] cpos0 = self.cpos0, cpos1_min, cpos1_max,
-            numpy.int8_t[:] cmask
+            numpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            numpy.int32_t[::1] indptr, indices
+            float[::1] data
+            position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
+            char[::1] cmask
 
         size = self.size
         if self.check_mask:
@@ -430,14 +434,14 @@ class HistoBBox1d(object):
                 bin0 = < int > fbin0
 
                 if (bin0 >= 0) and (bin0 < bins):
-                    outMax[bin0] += 1
+                    outmax[bin0] += 1
 
-        indptr[1:] = outMax.cumsum(dtype=numpy.int32)
-        self.indptr = indptr
+        indptr = numpy.concatenate((numpy.zeros(1, dtype=numpy.int32), numpy.asarray(outmax).cumsum(dtype=numpy.int32)))
+        self.indptr = numpy.asarray(indptr)
         self.nnz = nnz = indptr[bins]
 
-        # just recycle the outMax array
-        outMax[:] = 0
+        # just recycle the outmax array
+        outmax[:] = 0
 
         lut_nbytes = nnz * (sizeof(numpy.int32_t) + sizeof(numpy.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
@@ -468,13 +472,13 @@ class HistoBBox1d(object):
 
                 if (bin0 < 0) or (bin0 >= bins):
                     continue
-                k = outMax[bin0]
+                k = outmax[bin0]
                 indices[indptr[bin0] + k] = idx
                 data[indptr[bin0] + k] = onef
-                outMax[bin0] += 1  # k+1
+                outmax[bin0] += 1  # k+1
 
-        self.data = data
-        self.indices = indices
+        self.data = numpy.asarray(data)
+        self.indices = numpy.asarray(indices)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -511,47 +515,48 @@ class HistoBBox1d(object):
         """
         cdef:
             numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
-            double sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
-            float data = 0, coef = 0, cdummy = 0, cddummy = 0
+            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10
+            data_t data = 0.0, coef = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-            float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            numpy.int32_t[:] indices = self.indices, indptr = self.indptr
+            acc_t[::1] sum_data = numpy.zeros(self.bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.zeros(self.bins, dtype=acc_d)
+            data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
+            float[::1] ccoef = self.data, 
+            data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+            numpy.int32_t[::1] indices = self.indices, indptr = self.indptr
         assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True
-            cdummy = <float> float(dummy)
+            cdummy = <data_t> float(dummy)
 
             if delta_dummy is None:
-                cddummy = <float> 0.0
+                cddummy = <data_t> 0.0
             else:
-                cddummy = <float> float(delta_dummy)
+                cddummy = <data_t> float(delta_dummy)
         else:
-            cdummy = self.empty
+            cdummy = <data_t> self.empty
 
         if flat is not None:
             do_flat = True
             assert flat.size == size, "flat-field array size"
-            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
+            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=data_d)
         if dark is not None:
             do_dark = True
             assert dark.size == size, "dark current array size"
-            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
+            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=data_d)
         if solidAngle is not None:
             do_solidAngle = True
             assert solidAngle.size == size, "Solid angle array size"
-            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
+            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=data_d)
         if polarization is not None:
             do_polarization = True
             assert polarization.size == size, "polarization array size"
-            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=data_d)
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
-            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-            cdata = numpy.zeros(size, dtype=numpy.float32)
+            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+            cdata = numpy.zeros(size, dtype=data_d)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -582,8 +587,8 @@ class HistoBBox1d(object):
                     cdata[i] += data
         else:
             if do_dummy:
-                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-                cdata = numpy.zeros(size, dtype=numpy.float32)
+                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+                cdata = numpy.zeros(size, dtype=data_d)
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
@@ -591,11 +596,11 @@ class HistoBBox1d(object):
                     else:
                         cdata[i] += cdummy
             else:
-                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
 
         for i in prange(bins, nogil=True, schedule="guided"):
-            sum_data = 0.0
-            sum_count = 0.0
+            acc_data = 0.0
+            acc_count = 0.0
             for j in range(indptr[i], indptr[i + 1]):
                 idx = indices[j]
                 coef = ccoef[j]
@@ -604,15 +609,22 @@ class HistoBBox1d(object):
                 data = cdata[idx]
                 if do_dummy and data == cdummy:
                     continue
-                sum_data = sum_data + coef * data
-                sum_count = sum_count + coef
-            outData[i] += sum_data
-            outCount[i] += sum_count
-            if sum_count > epsilon:
-                outMerge[i] += sum_data / sum_count / normalization_factor
+                acc_data = acc_data +coef * data
+                acc_count = acc_count + coef
+            sum_data[i] += acc_data
+            sum_count[i] += acc_count
+            if acc_count > epsilon:
+                merged[i] += acc_data / acc_count / normalization_factor
             else:
-                outMerge[i] += cdummy
-        return self.outPos, outMerge, outData, outCount
+                merged[i] += cdummy
+        return (self.bin_centers, numpy.asarray(merged), 
+                numpy.asarray(sum_data), numpy.asarray(sum_count))
+
+    @property
+    @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
+    def outPos(self):
+        return self.bin_centers
+
 
 ################################################################################
 # Bidimensionnal regrouping
@@ -648,13 +660,18 @@ class HistoBBox2d(object):
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
         """
-        cdef int i, size, bin0, bin1
+        cdef: 
+            int i, size, bin0, bin1
         self.size = pos0.size
         assert pos1.size == self.size, "pos1 size"
 
+        # Declare a few variables
+        self.pos0_min = self.pos0_maxin = self.pos0_max = self.delta0 = None
+        self.pos1_min = self.pos1_maxin = self.pos1_max = self.delta1 = None
+
         if "size" not in dir(delta_pos0) or delta_pos0.size != self.size or\
-           "size" not in dir(delta_pos1) or delta_pos1.size != self.size:
-            logger.warning("Pixel splitting desactivated !")
+                "size" not in dir(delta_pos1) or delta_pos1.size != self.size:
+            logger.warning("Pixel splitting deactivated !")
             delta_pos0 = None
             delta_pos1 = None
 
@@ -663,7 +680,7 @@ class HistoBBox2d(object):
         self.empty = 0.0
         try:
             bins0, bins1 = tuple(bins)
-        except:
+        except TypeError:
             bins0 = bins1 = bins
         if bins0 <= 0:
             bins0 = 1
@@ -687,13 +704,13 @@ class HistoBBox2d(object):
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
 
-        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
-        self.cpos1 = numpy.ascontiguousarray((pos1).ravel(), dtype=numpy.float32)
+        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
+        self.cpos1 = numpy.ascontiguousarray((pos1).ravel(), dtype=position_d)
         if delta_pos0 is not None:
-            self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
+            self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
             self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
-            self.dpos1 = numpy.ascontiguousarray((delta_pos1).ravel(), dtype=numpy.float32)
+            self.dpos1 = numpy.ascontiguousarray((delta_pos1).ravel(), dtype=position_d)
             self.cpos1_sup = numpy.empty_like(self.cpos1)  # self.cpos1 + self.dpos1
             self.cpos1_inf = numpy.empty_like(self.cpos1)  # self.cpos1 - self.dpos1
             self.calc_boundaries(pos0Range, pos1Range)
@@ -708,8 +725,12 @@ class HistoBBox2d(object):
         else:
             self.calc_lut_nosplit()
 
-        self.outPos0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, self.pos0_maxin - 0.5 * self.delta0, bins0)
-        self.outPos1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, self.pos1_maxin - 0.5 * self.delta1, bins1)
+        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
+                                           self.pos0_max - 0.5 * self.delta0, 
+                                           bins0)
+        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
+                                           self.pos1_max - 0.5 * self.delta1, 
+                                           bins1)
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_checksum = crc32(self.data)
@@ -726,11 +747,11 @@ class HistoBBox2d(object):
         cdef:
             int size = self.cpos0.size
             bint check_mask = self.check_mask
-            numpy.int8_t[:] cmask
-            float[:] cpos0, dpos0, cpos0_sup, cpos0_inf
-            float[:] cpos1, dpos1, cpos1_sup, cpos1_inf
-            float upper0, lower0, pos0_max, pos0_min, c0, d0
-            float upper1, lower1, pos1_max, pos1_min, c1, d1
+            char[::1] cmask
+            position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
+            position_t[::1] cpos1, dpos1, cpos1_sup, cpos1_inf
+            position_t upper0, lower0, pos0_max, pos0_min, c0, d0
+            position_t upper1, lower1, pos1_max, pos1_min, c1, d1
             bint allow_pos0_neg = self.allow_pos0_neg
             bint chiDiscAtPi = self.chiDiscAtPi
 
@@ -794,10 +815,10 @@ class HistoBBox2d(object):
 
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
-        self.pos0_max = self.pos0_maxin * EPS32
+        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
         self.cpos0_sup = cpos0_sup
         self.cpos0_inf = cpos0_inf
-        self.pos1_max = self.pos1_maxin * EPS32
+        self.pos1_max = calc_upper_bound(<position_t> self.pos1_maxin)
         self.cpos1_sup = cpos1_sup
         self.cpos1_inf = cpos1_inf
 
@@ -813,11 +834,11 @@ class HistoBBox2d(object):
         cdef:
             int size = self.cpos0.size
             bint check_mask = self.check_mask
-            numpy.int8_t[:] cmask
-            float[:] cpos0
-            float[:] cpos1
-            float upper0, lower0, pos0_max, pos0_min, c0, d0
-            float upper1, lower1, pos1_max, pos1_min, c1, d1
+            char[::1] cmask
+            double[::1] cpos0
+            double[::1] cpos1
+            double upper0, lower0, pos0_max, pos0_min, c0, d0
+            double upper1, lower1, pos1_max, pos1_min, c1, d1
             bint allow_pos0_neg = self.allow_pos0_neg
             bint chiDiscAtPi = self.chiDiscAtPi
 
@@ -865,8 +886,8 @@ class HistoBBox2d(object):
 
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
-        self.pos0_max = self.pos0_maxin * EPS32
-        self.pos1_max = self.pos1_maxin * EPS32
+        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
+        self.pos1_max = calc_upper_bound(<position_t> self.pos1_maxin)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -874,21 +895,22 @@ class HistoBBox2d(object):
     def calc_lut(self):
         'calculate the max number of elements in the LUT and populate it'
         cdef:
-            float delta0 = self.delta0, pos0_min = self.pos0_min, min0, max0, fbin0_min, fbin0_max
-            float delta1 = self.delta1, pos1_min = self.pos1_min, min1, max1, fbin1_min, fbin1_max
+            position_t delta0 = self.delta0, pos0_min = self.pos0_min, min0, max0, fbin0_min, fbin0_max
+            position_t delta1 = self.delta1, pos1_min = self.pos1_min, min1, max1, fbin1_min, fbin1_max
             int bin0_min, bin0_max, bins0 = self.bins[0]
             int bin1_min, bin1_max, bins1 = self.bins[1]
-            numpy.int32_t k, idx, lut_size, i, j, size = self.size, nnz
+            int k, idx, lut_size, i, j, size = self.size, nnz
             bint check_mask
-            float[:] cpos0_sup = self.cpos0_sup
-            float[:] cpos0_inf = self.cpos0_inf
-            float[:] cpos1_inf = self.cpos1_inf
-            float[:] cpos1_sup = self.cpos1_sup
-            numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indices
-            numpy.ndarray[numpy.float32_t, ndim = 1] data
-            numpy.int8_t[:] cmask
+            position_t[::1] cpos0_sup = self.cpos0_sup
+            position_t[::1] cpos0_inf = self.cpos0_inf
+            position_t[::1] cpos1_inf = self.cpos1_inf
+            position_t[::1] cpos1_sup = self.cpos1_sup
+            numpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            numpy.int32_t[::1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
+            numpy.int32_t[::1] indices
+            data_t[::1] data
+            mask_t[::1] cmask
+            acc_t inv_area, delta_left, delta_right, delta_down, delta_up
 
         if self.check_mask:
             cmask = self.cmask
@@ -926,14 +948,15 @@ class HistoBBox2d(object):
 
                 for i in range(bin0_min, bin0_max + 1):
                     for j in range(bin1_min, bin1_max + 1):
-                        outMax[i, j] += 1
+                        outmax[i, j] += 1
 
-        indptr[1:] = outMax.ravel().cumsum()
+        indptr = numpy.concatenate(([numpy.int32(0)],
+                                    numpy.asarray(outmax).ravel().cumsum(dtype=numpy.int32)))
         self.nnz = nnz = indptr[bins0 * bins1]
-        self.indptr = indptr
-        # Just recycle the outMax array
-        outMax[:, :] = 0
-        lut_nbytes = nnz * (sizeof(numpy.float32_t) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
+        self.indptr = numpy.asarray(indptr)
+        # Just recycle the outmax array
+        outmax[:, :] = 0
+        lut_nbytes = nnz * (sizeof(float) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
 
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
@@ -981,115 +1004,115 @@ class HistoBBox2d(object):
                 if bin0_min == bin0_max:
                     if bin1_min == bin1_max:
                         # All pixel is within a single bin
-                        k = outMax[bin0_min, bin1_min]
+                        k = outmax[bin0_min, bin1_min]
                         indices[indptr[bin0_min * bins1 + bin1_min] + k] = idx
                         data[indptr[bin0_min * bins1 + bin1_min] + k] = onef
-                        outMax[bin0_min, bin1_min] = k + 1
+                        outmax[bin0_min, bin1_min] = k + 1
 
                     else:
                         # spread on more than 2 bins
-                        deltaD = (<float> (bin1_min + 1)) - fbin1_min
-                        deltaU = fbin1_max - bin1_max
-                        deltaA = 1.0 / (fbin1_max - fbin1_min)
+                        delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
+                        delta_up = fbin1_max - bin1_max
+                        inv_area = 1.0 / (fbin1_max - fbin1_min)
 
-                        k = outMax[bin0_min, bin1_min]
+                        k = outmax[bin0_min, bin1_min]
                         indices[indptr[bin0_min * bins1 + bin1_min] + k] = idx
-                        data[indptr[bin0_min * bins1 + bin1_min] + k] = deltaA * deltaD
-                        outMax[bin0_min, bin1_min] = k + 1
+                        data[indptr[bin0_min * bins1 + bin1_min] + k] = inv_area * delta_down
+                        outmax[bin0_min, bin1_min] = k + 1
 
-                        k = outMax[bin0_min, bin1_max]
+                        k = outmax[bin0_min, bin1_max]
                         indices[indptr[bin0_min * bins1 + bin1_max] + k] = idx
-                        data[indptr[bin0_min * bins1 + bin1_max] + k] = deltaA * deltaU
-                        outMax[bin0_min, bin1_max] = k + 1
+                        data[indptr[bin0_min * bins1 + bin1_max] + k] = inv_area * delta_up
+                        outmax[bin0_min, bin1_max] = k + 1
 
                         for j in range(bin1_min + 1, bin1_max):
-                            k = outMax[bin0_min, j]
+                            k = outmax[bin0_min, j]
                             indices[indptr[bin0_min * bins1 + j] + k] = idx
-                            data[indptr[bin0_min * bins1 + j] + k] = deltaA
-                            outMax[bin0_min, j] = k + 1
+                            data[indptr[bin0_min * bins1 + j] + k] = inv_area
+                            outmax[bin0_min, j] = k + 1
 
                 else:  # spread on more than 2 bins in dim 0
                     if bin1_min == bin1_max:
                         # All pixel fall on 1 bins in dim 1
-                        deltaA = 1.0 / (fbin0_max - fbin0_min)
-                        deltaL = (<float> (bin0_min + 1)) - fbin0_min
+                        inv_area = 1.0 / (fbin0_max - fbin0_min)
+                        delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
 
-                        k = outMax[bin0_min, bin1_min]
+                        k = outmax[bin0_min, bin1_min]
                         indices[indptr[bin0_min * bins1 + bin1_min] + k] = idx
-                        data[indptr[bin0_min * bins1 + bin1_min] + k] = deltaA * deltaL
-                        outMax[bin0_min, bin1_min] = k+1
+                        data[indptr[bin0_min * bins1 + bin1_min] + k] = inv_area * delta_left
+                        outmax[bin0_min, bin1_min] = k + 1
 
-                        deltaR = fbin0_max - (<float> bin0_max)
+                        delta_right = fbin0_max - (<acc_t> bin0_max)
 
-                        k = outMax[bin0_max, bin1_min]
+                        k = outmax[bin0_max, bin1_min]
                         indices[indptr[bin0_max * bins1 + bin1_min] + k] = idx
-                        data[indptr[bin0_max * bins1 + bin1_min] + k] = deltaA * deltaR
-                        outMax[bin0_max, bin1_min] = k + 1
+                        data[indptr[bin0_max * bins1 + bin1_min] + k] = inv_area * delta_right
+                        outmax[bin0_max, bin1_min] = k + 1
 
                         for i in range(bin0_min + 1, bin0_max):
-                            k = outMax[i, bin1_min]
+                            k = outmax[i, bin1_min]
                             indices[indptr[i * bins1 + bin1_min] + k] = idx
-                            data[indptr[i * bins1 + bin1_min] + k] = deltaA
-                            outMax[i, bin1_min] = k + 1
+                            data[indptr[i * bins1 + bin1_min] + k] = inv_area
+                            outmax[i, bin1_min] = k + 1
 
                     else:
                         # spread on n pix in dim0 and m pixel in dim1:
-                        deltaL = (< float > (bin0_min + 1)) - fbin0_min
-                        deltaR = fbin0_max - (< float > bin0_max)
-                        deltaD = (< float > (bin1_min + 1)) - fbin1_min
-                        deltaU = fbin1_max - (< float > bin1_max)
-                        deltaA = 1.0 / ((fbin0_max - fbin0_min) * (fbin1_max - fbin1_min))
+                        delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
+                        delta_right = fbin0_max - (<acc_t> bin0_max)
+                        delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
+                        delta_up = fbin1_max - (<acc_t> bin1_max)
+                        inv_area = 1.0 / ((fbin0_max - fbin0_min) * (fbin1_max - fbin1_min))
 
-                        k = outMax[bin0_min, bin1_min]
+                        k = outmax[bin0_min, bin1_min]
                         indices[indptr[bin0_min * bins1 + bin1_min] + k] = idx
-                        data[indptr[bin0_min * bins1 + bin1_min] + k] = deltaA * deltaL * deltaD
-                        outMax[bin0_min, bin1_min] = k + 1
+                        data[indptr[bin0_min * bins1 + bin1_min] + k] = inv_area * delta_left * delta_down
+                        outmax[bin0_min, bin1_min] = k + 1
 
-                        k = outMax[bin0_min, bin1_max]
+                        k = outmax[bin0_min, bin1_max]
                         indices[indptr[bin0_min * bins1 + bin1_max] + k] = idx
-                        data[indptr[bin0_min * bins1 + bin1_max] + k] = deltaA * deltaL * deltaU
-                        outMax[bin0_min, bin1_max] = k + 1
+                        data[indptr[bin0_min * bins1 + bin1_max] + k] = inv_area * delta_left * delta_up
+                        outmax[bin0_min, bin1_max] = k + 1
 
-                        k = outMax[bin0_max, bin1_min]
+                        k = outmax[bin0_max, bin1_min]
                         indices[indptr[bin0_max * bins1 + bin1_min] + k] = idx
-                        data[indptr[bin0_max * bins1 + bin1_min] + k] = deltaA * deltaR * deltaD
-                        outMax[bin0_max, bin1_min] = k + 1
+                        data[indptr[bin0_max * bins1 + bin1_min] + k] = inv_area * delta_right * delta_down
+                        outmax[bin0_max, bin1_min] = k + 1
 
-                        k = outMax[bin0_max, bin1_max]
+                        k = outmax[bin0_max, bin1_max]
                         indices[indptr[bin0_max * bins1 + bin1_max] + k] = idx
-                        data[indptr[bin0_max * bins1 + bin1_max] + k] = deltaA * deltaR * deltaU
-                        outMax[bin0_max, bin1_max] = k + 1
+                        data[indptr[bin0_max * bins1 + bin1_max] + k] = inv_area * delta_right * delta_up
+                        outmax[bin0_max, bin1_max] = k + 1
 
                         for i in range(bin0_min + 1, bin0_max):
-                            k = outMax[i, bin1_min]
+                            k = outmax[i, bin1_min]
                             indices[indptr[i * bins1 + bin1_min] + k] = idx
-                            data[indptr[i * bins1 + bin1_min] + k] = deltaA * deltaD
-                            outMax[i, bin1_min] = k + 1
+                            data[indptr[i * bins1 + bin1_min] + k] = inv_area * delta_down
+                            outmax[i, bin1_min] = k + 1
 
                             for j in range(bin1_min + 1, bin1_max):
-                                k = outMax[i, j]
+                                k = outmax[i, j]
                                 indices[indptr[i * bins1 + j] + k] = idx
-                                data[indptr[i * bins1 + j] + k] = deltaA
-                                outMax[i, j] = k + 1
+                                data[indptr[i * bins1 + j] + k] = inv_area
+                                outmax[i, j] = k + 1
 
-                            k = outMax[i, bin1_max]
+                            k = outmax[i, bin1_max]
                             indices[indptr[i * bins1 + bin1_max] + k] = idx
-                            data[indptr[i * bins1 + bin1_max] + k] = deltaA * deltaU
-                            outMax[i, bin1_max] = k + 1
+                            data[indptr[i * bins1 + bin1_max] + k] = inv_area * delta_up
+                            outmax[i, bin1_max] = k + 1
 
                         for j in range(bin1_min + 1, bin1_max):
-                            k = outMax[bin0_min, j]
+                            k = outmax[bin0_min, j]
                             indices[indptr[bin0_min * bins1 + j] + k] = idx
-                            data[indptr[bin0_min * bins1 + j] + k] = deltaA * deltaL
-                            outMax[bin0_min, j] = k + 1
+                            data[indptr[bin0_min * bins1 + j] + k] = inv_area * delta_left
+                            outmax[bin0_min, j] = k + 1
 
-                            k = outMax[bin0_max, j]
+                            k = outmax[bin0_max, j]
                             indices[indptr[bin0_max * bins1 + j] + k] = idx
-                            data[indptr[bin0_max * bins1 + j] + k] = deltaA * deltaR
-                            outMax[bin0_max, j] = k + 1
+                            data[indptr[bin0_max * bins1 + j] + k] = inv_area * delta_right
+                            outmax[bin0_max, j] = k + 1
 
-        self.data = data
-        self.indices = indices
+        self.data = numpy.asarray(data)
+        self.indices = numpy.asarray(indices)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -1108,13 +1131,12 @@ class HistoBBox2d(object):
             int bin1, bins1 = self.bins[1]
             numpy.int32_t k, idx, lut_size, i, j, size = self.size, nnz
             bint check_mask
-            float[:] cpos0 = self.cpos0
-            float[:] cpos1 = self.cpos1
-            numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indices
-            numpy.ndarray[numpy.float32_t, ndim = 1] data
-            numpy.int8_t[:] cmask
+            double[::1] cpos0 = self.cpos0
+            double[::1] cpos1 = self.cpos1
+            numpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            numpy.int32_t[::1] indptr, indices
+            float[::1] data
+            char[::1] cmask
 
         if self.check_mask:
             cmask = self.cmask
@@ -1136,14 +1158,15 @@ class HistoBBox2d(object):
                 if (bin0 < 0) or (bin0 >= bins0) or (bin1 < 0) or (bin1 >= bins1):
                     continue
 
-                outMax[bin0, bin1] += 1
+                outmax[bin0, bin1] += 1
 
-        indptr[1:] = outMax.ravel().cumsum()
+        indptr = numpy.concatenate(([numpy.int32(0)], 
+                                    numpy.asarray(outmax).ravel().cumsum(dtype=numpy.int32)))
         self.nnz = nnz = indptr[bins0 * bins1]
-        self.indptr = indptr
-        # Just recycle the outMax array
-        outMax[:, :] = 0
-        lut_nbytes = nnz * (sizeof(numpy.float32_t) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
+        self.indptr = numpy.asarray(indptr)
+        # Just recycle the outmax array
+        outmax[:, :] = 0
+        lut_nbytes = nnz * (sizeof(float) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -1173,13 +1196,13 @@ class HistoBBox2d(object):
                     continue
 
                 # No pixel splitting: All pixel is within a single bin
-                k = outMax[bin0, bin1]
+                k = outmax[bin0, bin1]
                 indices[indptr[bin0 * bins1 + bin1] + k] = idx
                 data[indptr[bin0 * bins1 + bin1] + k] = onef
-                outMax[bin0, bin1] += 1
+                outmax[bin0, bin1] += 1
 
-        self.data = data
-        self.indices = indices
+        self.data = numpy.asarray(data)
+        self.indices = numpy.asarray(indices)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -1209,35 +1232,33 @@ class HistoBBox2d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
-        :return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
+        :return:  I(2d), bin_centers0(1d), bin_centers1(1d), weighted histogram(2d), unweighted histogram (2d)
         :rtype: 5-tuple of ndarrays
 
         """
         cdef:
             int i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, size = self.size
-            double sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
-            float data = 0, coef = 0, cdummy = 0, cddummy = 0
+            double acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10
+            data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float32_t, ndim = 2] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-            numpy.ndarray[numpy.float64_t, ndim = 1] outData_1d = outData.ravel()
-            numpy.ndarray[numpy.float64_t, ndim = 1] outCount_1d = outCount.ravel()
-            numpy.ndarray[numpy.float32_t, ndim = 1] outMerge_1d = outMerge.ravel()
-            float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            numpy.int32_t[:] indices = self.indices, indptr = self.indptr
+            acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
+            data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
+            float[::1] ccoef = self.data, 
+            data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+            numpy.int32_t[::1] indices = self.indices, indptr = self.indptr
 
         assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True
-            cdummy = < float > float(dummy)
+            cdummy = <data_t> float(dummy)
             if delta_dummy is None:
-                cddummy = < float > 0.0
+                cddummy = <data_t> 0.0
             else:
-                cddummy = < float > float(delta_dummy)
+                cddummy = <data_t> float(delta_dummy)
         else:
-            cdummy = < float > float(self.empty)
+            cdummy = <data_t> float(self.empty)
 
         if flat is not None:
             do_flat = True
@@ -1257,8 +1278,8 @@ class HistoBBox2d(object):
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
-            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-            cdata = numpy.zeros(size, dtype=numpy.float32)
+            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+            cdata = numpy.zeros(size, dtype=data_d)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -1290,8 +1311,8 @@ class HistoBBox2d(object):
                     cdata[i] += data
         else:
             if do_dummy:
-                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-                cdata = numpy.zeros(size, dtype=numpy.float32)
+                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+                cdata = numpy.zeros(size, dtype=data_d)
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
@@ -1299,11 +1320,11 @@ class HistoBBox2d(object):
                     else:
                         cdata[i] += cdummy
             else:
-                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
 
         for i in prange(bins, nogil=True, schedule="guided"):
-            sum_data = 0.0
-            sum_count = 0.0
+            acc_data = 0.0
+            acc_count = 0.0
             for j in range(indptr[i], indptr[i + 1]):
                 idx = indices[j]
                 coef = ccoef[j]
@@ -1311,12 +1332,26 @@ class HistoBBox2d(object):
                 if do_dummy and (data == cdummy):
                     continue
 
-                sum_data = sum_data + coef * data
-                sum_count = sum_count + coef
-            outData_1d[i] += sum_data
-            outCount_1d[i] += sum_count
-            if sum_count > epsilon:
-                outMerge_1d[i] += sum_data / sum_count / normalization_factor
+                acc_data = acc_data + coef * data
+                acc_count = acc_count + coef
+            sum_data[i] += acc_data
+            sum_count[i] += acc_count
+            if acc_count > epsilon:
+                merged[i] += acc_data / acc_count / normalization_factor
             else:
-                outMerge_1d[i] += cdummy
-        return outMerge.T, self.outPos0, self.outPos1, outData.T, outCount.T
+                merged[i] += cdummy
+        return (numpy.asarray(merged).reshape(self.bins).T, 
+                self.bin_centers0, 
+                self.bin_centers1, 
+                numpy.asarray(sum_data).reshape(self.bins).T, 
+                numpy.asarray(sum_count).reshape(self.bins).T)
+
+    @property
+    @deprecated(replacement="bin_centers0", since_version="0.16", only_once=True)
+    def outPos0(self):
+        return self.bin_centers0
+
+    @property
+    @deprecated(replacement="bin_centers1", since_version="0.16", only_once=True)
+    def outPos1(self):
+        return self.bin_centers1

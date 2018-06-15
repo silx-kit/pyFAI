@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,9 +28,11 @@
 
 from __future__ import absolute_import, print_function, with_statement, division
 
-__doc__ = """Demonstrator for diffraction mapping """
+"""Demonstrator for diffraction mapping"""
+
 __date__ = "23/11/2015"
 __license__ = "MIT"
+
 import sys
 import logging
 logger = logging.getLogger("demo_diffmap")

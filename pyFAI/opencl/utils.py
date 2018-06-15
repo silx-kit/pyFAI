@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer", "Pierre Paleo"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2017"
+__date__ = "09/01/2018"
 __status__ = "beta"
 
 import os
@@ -86,6 +86,7 @@ def read_cl_file(filename):
         # Dummy preprocessor which removes the #include
         lines = [i for i in f.readlines() if not i.startswith("#include ")]
     return "".join(lines)
+
 
 get_opencl_code = read_cl_file
 

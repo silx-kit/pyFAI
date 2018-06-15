@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -37,8 +37,8 @@ pylab.ion()
 import numpy
 from math import sqrt
 import fabio
-from utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+logger = logging.getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
 ai = pyFAI.AzimuthalIntegrator(detector="Pilatus1M")

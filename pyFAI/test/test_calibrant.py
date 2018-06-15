@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,18 +34,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2017"
+__date__ = "15/03/2018"
 
 import unittest
 import logging
 import sys
 import copy
-from .utilstest import getLogger, UtilsTest
-logger = getLogger(__file__)
-from ..utils import six
-from ..calibrant import Calibrant, CALIBRANT_FACTORY, Cell
+import numpy
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
+from ..third_party import six
+from ..calibrant import Calibrant, get_calibrant, Cell, CALIBRANT_FACTORY
 from ..detectors import ALL_DETECTORS
-from .. import AzimuthalIntegrator
+from ..azimuthalIntegrator import AzimuthalIntegrator
 
 
 class TestCalibrant(unittest.TestCase):
@@ -54,15 +55,15 @@ class TestCalibrant(unittest.TestCase):
     """
     def test_factory(self):
         # by default we provide 11 calibrants
-        l = len(CALIBRANT_FACTORY)
-        self.assertTrue(l > 10, "at least 11 calibrants are available, got %s" % l)
+        count = len(CALIBRANT_FACTORY)
+        self.assertTrue(count > 10, "at least 11 calibrants are available, got %s" % count)
 
         self.assertTrue("LaB6" in CALIBRANT_FACTORY, "LaB6 is a calibrant")
 
         # ensure each calibrant instance is unique
-        cal1 = CALIBRANT_FACTORY("LaB6")
+        cal1 = get_calibrant("LaB6")
         cal1.wavelength = 1e-10
-        cal2 = CALIBRANT_FACTORY("LaB6")
+        cal2 = get_calibrant("LaB6")
         self.assertTrue(cal2.wavelength is None, "calibrant is delivered without wavelength")
 
         # check that it is possible to instantiate all calibrant
@@ -70,7 +71,7 @@ class TestCalibrant(unittest.TestCase):
             self.assertTrue(isinstance(v, Calibrant))
 
     def test_2th(self):
-        lab6 = CALIBRANT_FACTORY("LaB6")
+        lab6 = get_calibrant("LaB6")
         lab6.wavelength = 1.54e-10
         tth = lab6.get_2th()
         self.assertTrue(len(tth) == 25, "We expect 25 rings for LaB6")
@@ -80,14 +81,14 @@ class TestCalibrant(unittest.TestCase):
         lab6.setWavelength_change2th(2e-10)
         tth = lab6.get_2th()
         self.assertTrue(len(tth) == 15, "Only 15 remaining out of 25 rings for LaB6 (some additional got lost)")
+        self.assertEqual(lab6.get_2th_index(1.0, 0.04), 3, "right index picked")
 
     def test_fake(self):
         """test for fake image generation"""
         with_plot = (logger.getEffectiveLevel() <= logging.DEBUG)
         if with_plot:
-            import matplotlib
-            import matplotlib.pyplot as plt
-            fig = plt.figure()
+            from matplotlib import pyplot
+            fig = pyplot.figure()
             ax = fig.add_subplot(1, 1, 1)
 
         detectors = set(ALL_DETECTORS.values())
@@ -100,7 +101,7 @@ class TestCalibrant(unittest.TestCase):
             if max(det.MAX_SHAPE) > 2000:
                 continue
             ai = AzimuthalIntegrator(dist=0.01, poni1=0, poni2=0, detector=det)
-            calibrant = CALIBRANT_FACTORY("LaB6")
+            calibrant = get_calibrant("LaB6")
             calibrant.set_wavelength(1e-10)
             img = calibrant.fake_calibration_image(ai)
 
@@ -116,38 +117,48 @@ class TestCalibrant(unittest.TestCase):
             self.assertTrue(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
             sys.stderr.write(".")
 
+    def test_get_peaks(self):
+        calibrant = get_calibrant("LaB6")
+        calibrant.wavelength = 1e-10
+        ref = calibrant.get_2th()
+
+        delta = abs(calibrant.get_peaks() - numpy.rad2deg(ref))
+        self.assertLess(delta.max(), 1e-10, "results are the same")
+
+        self.assertEqual(len(calibrant.get_peaks("q_A^-1")), len(ref), "length is OK")
+
     def test_factory_create_calibrant(self):
-        c1 = CALIBRANT_FACTORY("LaB6")
-        c2 = CALIBRANT_FACTORY("LaB6")
+        c1 = get_calibrant("LaB6")
+        c2 = get_calibrant("LaB6")
         self.assertIsNot(c1, c2)
         self.assertEquals(c1, c2)
 
     def test_same(self):
-        c1 = CALIBRANT_FACTORY("LaB6")
-        c2 = CALIBRANT_FACTORY("LaB6")
+        c1 = get_calibrant("LaB6")
+        c2 = get_calibrant("LaB6")
         self.assertEquals(c1, c2)
 
     def test_same2(self):
-        c1 = CALIBRANT_FACTORY("LaB6")
-        c2 = CALIBRANT_FACTORY("LaB6")
+        c1 = get_calibrant("LaB6")
+        c2 = get_calibrant("LaB6")
         c1.set_wavelength(1e-10)
         c2.set_wavelength(1e-10)
         self.assertEquals(c1, c2)
 
     def test_not_same_dspace(self):
         # this 2 calibrant must only be used there to test the lazy-loading
-        c1 = CALIBRANT_FACTORY("LaB6_SRM660a")
-        c2 = CALIBRANT_FACTORY("LaB6_SRM660b")
+        c1 = get_calibrant("LaB6_SRM660a")
+        c2 = get_calibrant("LaB6_SRM660b")
         self.assertNotEquals(c1, c2)
 
     def test_not_same_wavelength(self):
-        c1 = CALIBRANT_FACTORY("LaB6")
+        c1 = get_calibrant("LaB6")
         c1.set_wavelength(1e-10)
-        c2 = CALIBRANT_FACTORY("LaB6")
+        c2 = get_calibrant("LaB6")
         self.assertNotEquals(c1, c2)
 
     def test_copy(self):
-        c1 = CALIBRANT_FACTORY("AgBh")
+        c1 = get_calibrant("AgBh")
         c2 = copy.copy(c1)
         self.assertIsNot(c1, c2)
         self.assertEquals(c1, c2)
@@ -155,11 +166,11 @@ class TestCalibrant(unittest.TestCase):
         self.assertNotEquals(c1, c2)
 
     def test_hash(self):
-        c1 = CALIBRANT_FACTORY("AgBh")
-        c2 = CALIBRANT_FACTORY("AgBh")
-        c3 = CALIBRANT_FACTORY("AgBh")
+        c1 = get_calibrant("AgBh")
+        c2 = get_calibrant("AgBh")
+        c3 = get_calibrant("AgBh")
         c3.set_wavelength(1e-10)
-        c4 = CALIBRANT_FACTORY("LaB6")
+        c4 = get_calibrant("LaB6")
         store = {}
         store[c1] = True
         self.assertTrue(c1 in store)

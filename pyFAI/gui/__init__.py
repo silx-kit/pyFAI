@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2016 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,8 @@
 # THE SOFTWARE.
 #
 # ###########################################################################*/
-"""Set of Qt widgets"""
+"""Module containing dependency with Qt or matplotlib GUI"""
 
-__authors__ = ["T. Vincent"]
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "23/05/2016"
+__date__ = "06/03/2018"

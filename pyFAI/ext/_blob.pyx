@@ -3,7 +3,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:   Aurore Deschildre <auroredeschildre@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -30,7 +30,7 @@ Some Cythonized function for blob detection function
 """
 __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/05/2017"
+__date__ = "10/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -92,31 +92,31 @@ def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):
                         continue
                     if n_5:
                         if x > 1:
-                            m = m and (c > dogs[s, y, x - 2]) and (c > dogs[s, y - 1, x - 2]) and (c > dogs[s, y + 1, x - 2])\
-                                  and (c > dogs[s - 1, y, x - 2]) and (c > dogs[s - 1, y - 1, x - 2]) and (c > dogs[s - 1, y + 1, x - 2])\
-                                  and (c > dogs[s + 1, y, x - 2]) and (c > dogs[s + 1, y - 1, x - 2]) and (c > dogs[s + 1, y + 1, x - 2])
+                            m = (m and (c > dogs[s, y, x - 2]) and (c > dogs[s, y - 1, x - 2]) and (c > dogs[s, y + 1, x - 2]) and
+                                 (c > dogs[s - 1, y, x - 2]) and (c > dogs[s - 1, y - 1, x - 2]) and (c > dogs[s - 1, y + 1, x - 2]) and
+                                 (c > dogs[s + 1, y, x - 2]) and (c > dogs[s + 1, y - 1, x - 2]) and (c > dogs[s + 1, y + 1, x - 2]))
                             if y > 1:
                                 m = m and (c > dogs[s, y - 2, x - 2])and (c > dogs[s - 1, y - 2, x - 2]) and (c > dogs[s, y - 2, x - 2])
                             if y < ny - 2:
                                 m = m and (c > dogs[s, y + 2, x - 2])and (c > dogs[s - 1, y + 2, x - 2]) and (c > dogs[s, y + 2, x - 2])
                         if x < (nx - 2):
-                            m = m and (c > dogs[s, y, x + 2]) and (c > dogs[s, y - 1, x + 2]) and (c > dogs[s, y + 1, x + 2])\
-                                  and (c > dogs[s - 1, y, x + 2]) and (c > dogs[s - 1, y - 1, x + 2]) and (c > dogs[s - 1, y + 1, x + 2])\
-                                  and (c > dogs[s + 1, y, x + 2]) and (c > dogs[s + 1, y - 1, x + 2]) and (c > dogs[s + 1, y + 1, x + 2])
+                            m = (m and (c > dogs[s, y, x + 2]) and (c > dogs[s, y - 1, x + 2]) and (c > dogs[s, y + 1, x + 2]) and
+                                 (c > dogs[s - 1, y, x + 2]) and (c > dogs[s - 1, y - 1, x + 2]) and (c > dogs[s - 1, y + 1, x + 2]) and
+                                 (c > dogs[s + 1, y, x + 2]) and (c > dogs[s + 1, y - 1, x + 2]) and (c > dogs[s + 1, y + 1, x + 2]))
                             if y > 1:
                                 m = m and (c > dogs[s, y - 2, x + 2])and (c > dogs[s - 1, y - 2, x + 2]) and (c > dogs[s, y - 2, x + 2])
                             if y < ny - 2:
                                 m = m and (c > dogs[s, y + 2, x + 2])and (c > dogs[s - 1, y + 2, x + 2]) and (c > dogs[s, y + 2, x + 2])
 
                         if y > 1:
-                            m = m and (c > dogs[s, y - 2, x]) and (c > dogs[s, y - 2, x - 1]) and (c > dogs[s, y - 2, x + 1])\
-                                  and (c > dogs[s - 1, y - 2, x]) and (c > dogs[s - 1, y - 2, x - 1]) and (c > dogs[s - 1, y - 2, x + 1])\
-                                  and (c > dogs[s + 1, y - 2, x]) and (c > dogs[s + 1, y - 2, x - 1]) and (c > dogs[s + 1, y + 2, x + 1])
+                            m = (m and (c > dogs[s, y - 2, x]) and (c > dogs[s, y - 2, x - 1]) and (c > dogs[s, y - 2, x + 1]) and
+                                 (c > dogs[s - 1, y - 2, x]) and (c > dogs[s - 1, y - 2, x - 1]) and (c > dogs[s - 1, y - 2, x + 1]) and
+                                 (c > dogs[s + 1, y - 2, x]) and (c > dogs[s + 1, y - 2, x - 1]) and (c > dogs[s + 1, y + 2, x + 1]))
 
                         if y < (ny - 2):
-                            m = m and (c > dogs[s, y + 2, x]) and (c > dogs[s, y + 2, x - 1]) and (c > dogs[s, y + 2, x + 1])\
-                                  and (c > dogs[s - 1, y + 2, x]) and (c > dogs[s - 1, y + 2, x - 1]) and (c > dogs[s - 1, y + 2, x + 1])\
-                                  and (c > dogs[s + 1, y + 2, x]) and (c > dogs[s + 1, y + 2, x - 1]) and (c > dogs[s + 1, y + 2, x + 1])
+                            m = (m and (c > dogs[s, y + 2, x]) and (c > dogs[s, y + 2, x - 1]) and (c > dogs[s, y + 2, x + 1]) and
+                                 (c > dogs[s - 1, y + 2, x]) and (c > dogs[s - 1, y + 2, x - 1]) and (c > dogs[s - 1, y + 2, x + 1]) and
+                                 (c > dogs[s + 1, y + 2, x]) and (c > dogs[s + 1, y + 2, x - 1]) and (c > dogs[s + 1, y + 2, x + 1]))
 
                 is_max[s, y, x] = m
     return numpy.asarray(is_max)

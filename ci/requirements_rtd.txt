@@ -1,5 +1,9 @@
 numpy
+h5py
 fabio
 sphinx
+scipy
+cython
 sphinxcontrib-programoutput
 silx
+nbsphinx

@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,11 +30,11 @@ __date__ = "23/06/2016"
 __status__ = "development"
 
 import unittest
-from pyFAI.test.utilstest import UtilsTest, getLogger
+from pyFAI.test.utilstest import UtilsTest
 import logging, threading
 import types, os, sys
 import numpy
-logger = logging.getLogger("pyFAI.distortion")
+logger = logging.getLogger(__file__)
 logging.basicConfig(level=logging.INFO)
 from math import ceil, floor
 pyFAI = sys.modules["pyFAI"]

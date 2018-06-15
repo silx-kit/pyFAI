@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2013-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,32 +30,28 @@ from __future__ import absolute_import, print_function, with_statement, division
 """
 check_calib
 
-This is a very simple tool that checks a calibratation at the sub-pixel level
+This is a very simple tool that checks a calibratation at the sub-pixel level.
 
-Deprecated
-
+This software is deprecated, you should use `pyFAI-calib`.
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2017"
+__date__ = "06/03/2018"
 __satus__ = "production"
 
 import logging
 import warnings
 import sys
 
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 
 logger = logging.getLogger("check_calib")
 
 with warnings.catch_warnings():
-    from pyFAI.calibration import CheckCalib
+    from pyFAI.gui.cli_calibration import CheckCalib
     warnings.simplefilter("ignore")
     import pylab
 
@@ -70,6 +66,7 @@ def main():
         six.moves.input("enter to quit")
     else:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

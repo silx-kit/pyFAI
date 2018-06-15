@@ -4,7 +4,7 @@
 #             https://github.com/silx-kit
 #
 #
-#    Copyright (C) 2014-2017 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -29,14 +29,14 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "11/09/2017"
+__date__ = "09/04/2018"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from .common import ocl, pyopencl, kernel_workgroup_size
+from .common import pyopencl, kernel_workgroup_size
 from ..utils import calc_checksum
 
 if pyopencl:
@@ -47,7 +47,7 @@ else:
 from .processing import EventDescription, OpenclProcessing, BufferDescription
 
 
-logger = logging.getLogger("pyFAI.opencl.azim_csr")
+logger = logging.getLogger(__name__)
 
 
 class OCL_CSR_Integrator(OpenclProcessing):
@@ -57,8 +57,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     It also performs the preprocessing using the preproc kernel
     """
     BLOCK_SIZE = 32
-    buffers = [
-               BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+    buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
@@ -69,7 +68,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
-              ]
+               ]
     kernel_files = ["kahan.cl", "preprocess.cl", "memset.cl", "ocl_azim_CSR.cl"]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
@@ -134,9 +133,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.buffers += [BufferDescription("data", self.data_size, numpy.float32, mf.READ_ONLY),
                          BufferDescription("indices", self.data_size, numpy.int32, mf.READ_ONLY),
                          BufferDescription("indptr", (self.bins + 1), numpy.int32, mf.READ_ONLY),
-                         BufferDescription("outData", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("outCount", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("outMerge", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("sum_data", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
                          ]
         try:
             self.set_profiling(profile)
@@ -227,12 +226,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("indptr", self.cl_mem["indptr"]),
                                                             ("do_dummy", numpy.int8(0)),
                                                             ("dummy", numpy.float32(0)),
-                                                            ("outData", self.cl_mem["outData"]),
-                                                            ("outCount", self.cl_mem["outCount"]),
-                                                            ("outMerge", self.cl_mem["outMerge"])))
+                                                            ("sum_data", self.cl_mem["sum_data"]),
+                                                            ("sum_count", self.cl_mem["sum_count"]),
+                                                            ("merged", self.cl_mem["merged"])))
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
 
-        self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("outData", "outCount", "outMerge")))
+        self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
         self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
@@ -249,14 +248,29 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
         events = []
-        if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
-            copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-            events.append(EventDescription("copy %s" % dest, copy_image))
+        if isinstance(data, pyopencl.array.Array):
+            if (data.dtype == dest_type):
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
+                events.append(EventDescription("copy D->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                events += [EventDescription("copy raw D->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
         else:
-            copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
-            kernel = self.kernels.get_kernel(self.mapping[data.dtype.type])
-            cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
-            events += [EventDescription("copy raw %s" % dest, copy_image), EventDescription("cast to float", cast_to_float)]
+            # Assume it is a numpy array
+            if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
+                events.append(EventDescription("copy H->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                events += [EventDescription("copy raw H->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
         if self.profile:
             self.events += events
         if checksum is not None:
@@ -266,7 +280,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                   dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
-                  preprocess_only=False, safe=True, normalization_factor=1.0):
+                  preprocess_only=False, safe=True, normalization_factor=1.0,
+                  out_merged=None, out_sum_data=None, out_sum_count=None):
         """
         Before performing azimuthal integration, the preprocessing is:
 
@@ -287,6 +302,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param out_merged: destination array or pyopencl array for averaged data
+        :param out_sum_data: destination array or pyopencl array for sum of all data
+        :param out_sum_count: destination array or pyopencl array for sum of the number of pixels
         :return: averaged data, weighted histogram, unweighted histogram
         """
         events = []
@@ -390,16 +408,29 @@ class OCL_CSR_Integrator(OpenclProcessing):
             else:
                 integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw2.values())
                 events.append(EventDescription("integrate", integrate))
-            outMerge = numpy.empty(self.bins, dtype=numpy.float32)
-            outData = numpy.empty(self.bins, dtype=numpy.float32)
-            outCount = numpy.empty(self.bins, dtype=numpy.float32)
-            ev = pyopencl.enqueue_copy(self.queue, outMerge, self.cl_mem["outMerge"])
-            events.append(EventDescription("copy D->H outMerge", ev))
-            ev = pyopencl.enqueue_copy(self.queue, outData, self.cl_mem["outData"])
-            events.append(EventDescription("copy D->H outData", ev))
-            ev = pyopencl.enqueue_copy(self.queue, outCount, self.cl_mem["outCount"])
-            events.append(EventDescription("copy D->H outCount", ev))
+            if out_merged is None:
+                merged = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                merged = out_merged.data
+            if out_sum_count is None:
+                sum_count = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                sum_count = out_sum_count.data
+            if out_sum_data is None:
+                sum_data = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                sum_data = out_sum_data.data
+
+            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
+            events.append(EventDescription("copy D->H merged", ev))
+            ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
+            events.append(EventDescription("copy D->H sum_data", ev))
+            ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
+            events.append(EventDescription("copy D->H sum_count", ev))
             ev.wait()
         if self.profile:
             self.events += events
-        return outMerge, outData, outCount
+        return merged, sum_data, sum_count
+
+    # Name of the default "process" method
+    __call__ = integrate

@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "06/03/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -51,19 +51,16 @@ import logging
 import numpy
 import array
 
-from .utils import StringTypes, six
+from pyFAI.third_party import six
 from .calibrant import Calibrant, get_calibrant, names as calibrant_names
-logger = logging.getLogger("pyFAI.control_points")
 
-################################################################################
-# ControlPoints
-################################################################################
+logger = logging.getLogger(__name__)
 
 
 class ControlPoints(object):
     """
     This class contains a set of control points with (optionally) their
-    ring number hence d-spacing and diffraction  2Theta angle ...
+    ring number hence d-spacing and diffraction  2Theta angle...
     """
     def __init__(self, filename=None, calibrant=None, wavelength=None):
         self._sem = threading.Semaphore()
@@ -77,7 +74,7 @@ class ControlPoints(object):
         if (not have_spacing) and (calibrant is not None):
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
-            elif type(calibrant) in StringTypes:
+            elif type(calibrant) in six.string_types:
                 if calibrant in calibrant_names():
                     self.calibrant = get_calibrant(calibrant)
                 elif os.path.isfile(calibrant):
@@ -341,6 +338,7 @@ class ControlPoints(object):
         for gpt in self._groups.values():
             lstout += [[pt[0], pt[1], gpt.ring] for pt in gpt.points]
         return lstout
+
     getList = getListRing
 
     def getWeightedList(self, image):
@@ -373,8 +371,9 @@ class ControlPoints(object):
                     defaultRing = ring
                 elif lastRing is not None:
                     defaultRing = lastRing + 1
-                res = six.moves.input("Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " \
-                                      % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing)).strip()
+                msg = "Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# "
+                res = six.moves.input(msg % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing))
+                res = res.strip()
                 if res == "":
                     res = defaultRing
                 try:
@@ -413,6 +412,7 @@ class ControlPoints(object):
 
     def get_wavelength(self):
         return self.calibrant._wavelength
+
     wavelength = property(get_wavelength, set_wavelength)
 
     def get_dSpacing(self):
@@ -425,6 +425,7 @@ class ControlPoints(object):
         if not self.calibrant:
             self.calibrant = Calibrant()
         self.calibrant.dSpacing = lst
+
     dSpacing = property(get_dSpacing, set_dSpacing)
 
     def get_labels(self):
@@ -528,6 +529,7 @@ class PointGroup(object):
             traceback.print_stack()
             self._ring = int(value)
         self._ring = value
+
     ring = property(get_ring, set_ring)
 
     @property

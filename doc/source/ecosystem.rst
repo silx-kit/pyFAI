@@ -28,7 +28,7 @@ It has been described in `doi:10.1016/j.sab.2006.12.002 <http://www.sciencedirec
 Silx
 ....
 
-`The silx toolkit <https://github.com/silx-kit/silx>`_  is currently onging development.
+`The silx toolkit <http://www.silx.org>`_  is currently ongoing development.
 Future releases of pyFAI will use its input/output and graphical visualization capabilities
 
 .. _ecosystem:

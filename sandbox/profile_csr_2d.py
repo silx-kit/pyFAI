@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:      Giannis Ashiotis
 #
@@ -36,16 +36,14 @@ import sys, numpy, time
 from pyFAI.test import utilstest
 import fabio, pyopencl
 from pylab import *
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 # from pyFAI import splitBBox
 # from pyFAI import splitBBoxLUT
 # from pyFAI import splitBBoxCSR
-# logger = utilstest.getLogger("profile")
+# import logging
+# logger = logging.getLogger("profile")
 ponifile = utilstest.UtilsTest.getimage("Pilatus1M.poni")
 datafile = utilstest.UtilsTest.getimage("Pilatus1M.edf")
 ai = pyFAI.load(ponifile)

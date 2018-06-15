@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2016 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,10 +25,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-__doc__ = """Common cdef constants and functions for preprocessing"""
+"""Common cdef constants and functions for preprocessing"""
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "02/02/2017"
+__date__ = "03/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -38,6 +39,24 @@ cimport numpy
 import numpy
 from cython cimport floating
 from libc.math cimport fabs, M_PI
+
+# How position are stored
+ctypedef double position_t
+position_d = numpy.float64
+
+# How weights or data are stored 
+ctypedef float data_t
+data_d = numpy.float32
+
+# how data are accumulated 
+ctypedef double acc_t
+acc_d = numpy.float64
+
+# type of the mask:
+ctypedef char mask_t
+mask_d = numpy.int8
+
+
 cdef:
     float pi = <float> M_PI
     float piover2 = <float> (pi * 0.5)
@@ -57,3 +76,17 @@ cdef inline floating  get_bin_number(floating x0, floating pos0_min, floating de
     :return: bin number as floating point.
     """
     return (x0 - pos0_min) / delta
+
+
+@cython.cdivision(True)
+cdef inline floating calc_upper_bound(floating maximum_value) nogil:
+    """Calculate the upper_bound for an histogram, 
+    given the maximum value of all the data.
+    
+    :param maximum_value: maximum value over all elements
+    :return: the smallest 32 bit float greater than the maximum
+    """
+    if maximum_value > 0:
+        return maximum_value * EPS32
+    else:
+        return maximum_value / EPS32

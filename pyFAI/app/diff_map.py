@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #             Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "05/03/2018"
 __satus__ = "Production"
 
 import logging
@@ -59,14 +59,15 @@ def main():
         dt.process()
         dt.show_stats()
     else:
-        from pyFAI.gui import qt
-        from pyFAI.diffmap_widget import DiffMapWidget
+        from silx.gui import qt
+        from pyFAI.gui.diffmap_widget import DiffMapWidget
         app = qt.QApplication([])
         window = DiffMapWidget()
         window.set_config(config)
-#         window.restore()
+        # window.restore()
         window.show()
         sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     main()

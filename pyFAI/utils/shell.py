@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/08/2017"
+__date__ = "18/12/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -68,22 +68,23 @@ class ProgressBar:
         self.bar_width = bar_width
         self.last_size = 0
 
-        # sys.stdout.encoding can't be used in unittest context with some
-        # configurations of TestRunner. It does not exists in Python2 StringIO
-        # and is None in Python3 StringIO
         encoding = None
         if hasattr(sys.stdout, "encoding"):
+            # sys.stdout.encoding can't be used in unittest context with some
+            # configurations of TestRunner. It does not exists in Python2
+            # StringIO and is None in Python3 StringIO.
             encoding = sys.stdout.encoding
         if encoding is None:
-            import locale
-            _lang, encoding = locale.getdefaultlocale()
-        try:
-            self.progress_char = u'\u25A0'
-            _byte = codecs.encode(self.progress_char, encoding)
-        except (ValueError, TypeError, LookupError):
-            # In case the char is not supported by the encoding,
-            # or if the encoding does not exists
+            # We uses the safer aproch: a valid ASCII character.
             self.progress_char = '#'
+        else:
+            try:
+                self.progress_char = u'\u25A0'
+                _byte = codecs.encode(self.progress_char, encoding)
+            except (ValueError, TypeError, LookupError):
+                # In case the char is not supported by the encoding,
+                # or if the encoding does not exists
+                self.progress_char = '#'
 
     def clear(self):
         """

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Aurore Deschildre
 #                            Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -32,30 +32,32 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "15/03/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
-logger = logging.getLogger("pyFAI.blob_detection")
+logger = logging.getLogger(__name__)
 import numpy
 try:
-    from ._convolution import gaussian_filter
+    from .ext._convolution import gaussian_filter
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     from scipy.ndimage.filters import gaussian_filter
 try:
     from .ext import _blob
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     _blob = None
 
 try:
     from .ext import morphology
+    pyFAI_morphology = True
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     from scipy.ndimage import morphology
     pyFAI_morphology = False
-else:
-    pyFAI_morphology = True
 
 from .ext.bilinear import Bilinear
 
@@ -588,11 +590,15 @@ class BlobDetection(object):
                     val[0], val[1] = val[1], val[0]
                     vect = vect[-1::-1, :]
 
-                pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
-                                       arrowprops=dict(facecolor='red', shrink=0.05),)
+                pylab.annotate("",
+                               xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]),
+                               xytext=(x, y),
+                               arrowprops=dict(facecolor='red', shrink=0.05))
 
-                pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
-                                       arrowprops=dict(facecolor='red', shrink=0.05),)
+                pylab.annotate("",
+                               xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]),
+                               xytext=(x, y),
+                               arrowprops=dict(facecolor='red', shrink=0.05))
                 pylab.plot(x, y, 'og')
                 vals.append(val)
                 vects.append(vect)

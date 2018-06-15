@@ -3,7 +3,7 @@
  *            Reduction Kernels
  *
  *
- *   Copyright (C) 2014 European Synchrotron Radiation Facility
+ *   Copyright (C) 2014-2018 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: Giannis Ashiotis <giannis.ashiotis@gmail.com>

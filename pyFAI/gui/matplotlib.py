@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2016 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,35 +33,45 @@ from __future__ import absolute_import
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "26/10/2016"
+__date__ = "20/02/2018"
 
 
 import sys
 import logging
 
-
 _logger = logging.getLogger(__name__)
 
-if 'matplotlib' in sys.modules:
-    _logger.warning(
-        'matplotlib already loaded, setting its backend may not work')
+_check_matplotlib = 'matplotlib' in sys.modules
 
-
-from . import qt
+from silx.gui import qt
 
 import matplotlib
 
+
+def _configure(backend, backend_qt4=None, check=False):
+    if check:
+        valid = matplotlib.rcParams['backend'] == backend
+        if backend_qt4 is not None:
+            valid = valid and matplotlib.rcParams['backend.qt4'] == backend_qt4
+
+        if not valid:
+            _logger.warning('matplotlib already loaded, setting its backend may not work')
+        return
+    matplotlib.rcParams['backend'] = backend
+    if backend_qt4 is not None:
+        matplotlib.rcParams['backend.qt4'] = backend_qt4
+
+
 if qt.BINDING == 'PySide':
-    matplotlib.rcParams['backend'] = 'Qt4Agg'
-    matplotlib.rcParams['backend.qt4'] = 'PySide'
+    _configure('Qt4Agg', 'PySide', check=_check_matplotlib)
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # noqa
 
 elif qt.BINDING == 'PyQt4':
-    matplotlib.rcParams['backend'] = 'Qt4Agg'
+    _configure('Qt4Agg', check=_check_matplotlib)
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # noqa
 
 elif qt.BINDING == 'PyQt5':
-    matplotlib.rcParams['backend'] = 'Qt5Agg'
+    _configure('Qt5Agg', check=_check_matplotlib)
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg  # noqa
 
 from matplotlib import pyplot  # noqa

@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,17 +26,19 @@
 
 from __future__ import absolute_import, print_function, division
 
-__doc__ = """Test module for utils.string module"""
+"""Test module for utils.string module"""
+
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import unittest
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from ..utils import stringutil
 
 
@@ -72,6 +74,7 @@ def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestUtilsString))
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

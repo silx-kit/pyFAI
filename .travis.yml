@@ -21,10 +21,12 @@ addons:
       - libatlas-base-dev
       - libqtcore4
 #For OpenCL:
-      - libboost-python1.54.0
-      - libboost-python1.54-dev
+      - python-cffi
+      - python3-cffi
+      - ocl-icd-libopencl1
       - opencl-headers
       - python-pyopencl
+      - python3-pyopencl
 # command to install dependencies
 
 before_install:
@@ -34,11 +36,10 @@ before_install:
 install:
   - "python ci/info_platform.py"
   - "pip install --upgrade pip"
-  - "pip install cython --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse"
-  - "pip install --upgrade numpy --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse"
-    #remove after h5py 2.6
-  - "pip install --upgrade h5py --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse --no-index"  
-  - "pip install --upgrade --trusted-host www.edna-site.org -r ci/requirements_travis.txt"
+  - "pip install cython"
+  - "pip install --upgrade numpy"
+  - "pip install --upgrade h5py"  
+  - "pip install --upgrade -r ci/requirements_travis.txt"
   - "python ci/info_platform.py"
   - "python setup.py build"
   - "python setup.py bdist_wheel"
@@ -47,4 +48,4 @@ install:
 # command to run tests
 script:
   - "python setup.py test"
-  - "python ./run_tests.py -m"
+  - "python ./run_tests.py -m --installed"

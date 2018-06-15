@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/06/2017"
+__date__ = "16/04/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -56,15 +56,78 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .utils import StringTypes
 from .multi_geometry import MultiGeometry
 from .ext.marchingsquares import isocontour
-logger = logging.getLogger("pyFAI.goniometer")
+from .units import CONST_hc, CONST_q
+
+logger = logging.getLogger(__name__)
 
 try:
     import numexpr
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     numexpr = None
 
 # Parameter set used in PyFAI:
 PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])
+
+
+
+class BaseTransformation(object):
+    """This class, once instanciated, behaves like a function (via the __call__
+    method). It is responsible for taking any input geometry and translate it
+    into a set of parameters compatible with pyFAI, i.e. a tuple with:
+    (dist, poni1, poni2, rot1, rot2, rot3)
+    
+    This class relies on a user provided function which does the work.
+    """
+    def __init__(self, funct, param_names, pos_names=None):
+        """Constructor of the class
+        
+        :param funct: function which takes as parameter the param_names and the pos_name 
+        :param param_names: list of names of the parameters used in the model
+        :param pos_names: list of motor names for gonio with >1 degree of freedom
+        """
+        self.callable = funct
+        self.variables = {}
+        self.param_names = tuple(param_names)
+        if pos_names is not None:
+            self.pos_names = tuple(pos_names)
+        else:
+            self.pos_names = ("pos",)
+        for key in self.param_names + self.pos_names:
+            if key in self.variables:
+                raise RuntimeError("The keyword %s is already defined, please chose another variable name")
+            self.variables[key] = numpy.NaN
+        self.codes = []
+
+    def __call__(self, param, pos):
+        """This makes the class instance behave like a function,
+        actually a function that translates the n-parameter of the detector
+        positioning on the goniometer and the m-parameters.
+        :param param: parameter of the fit
+        :param pos: position of the goniometer (representation from the
+            goniometer)
+        :return: 6-tuple with (dist, poni1, poni2, rot1, rot2, rot3) as needed
+            for pyFAI.
+        """
+        variables = self.variables.copy()
+        for name, value in zip(self.param_names, param):
+            variables[name] = value
+        if len(self.pos_names) == 1:
+            variables[self.pos_names[0]] = pos
+        else:
+            for name, value in zip(self.pos_names, pos):
+                variables[name] = value
+
+        res = self.callable(**variables)
+        return PoniParam(*res)
+
+    def __repr__(self):
+        return "BaseTransformation with param: %s and pos: %s" % (self.param_names, self.pos_names)
+
+    def to_dict(self):
+        """Export the instance representation for serialization as a dictionary
+        """
+        raise RuntimeError("BaseTransformation is not serializable")
 
 
 class GeometryTransformation(object):
@@ -72,7 +135,6 @@ class GeometryTransformation(object):
     method). It is responsible for taking any input geometry and translate it
     into a set of parameters compatible with pyFAI, i.e. a tuple with:
     (dist, poni1, poni2, rot1, rot2, rot3)
-
     This function uses numexpr for formula evaluation.
     """
     def __init__(self, dist_expr, poni1_expr, poni2_expr,
@@ -80,7 +142,7 @@ class GeometryTransformation(object):
                  param_names, pos_names=None, constants=None,
                  content=None):
         """Constructor of the class
-
+        
         :param dist_expr: formula (as string) providing with the dist
         :param poni1_expr: formula (as string) providing with the poni1
         :param poni2_expr: formula (as string) providing with the poni2
@@ -91,11 +153,11 @@ class GeometryTransformation(object):
         :param pos_names: list of motor names for gonio with >1 degree of freedom
         :param constants: a dictionary with some constants the user may want to use
         :param content: Should be None or the name of the class (may be used
-            in the future to dispatch to multiple derivative classes)
+                        in the future to dispatch to multiple derivative classes)
         """
         if content is not None:
             # Ensures we use the constructor of the right class
-            assert content in (self.__class__.__name__, "GeometryTranlation")
+            assert content in (self.__class__.__name__, "GeometryTransformation")
         if numexpr is None:
             raise RuntimeError("Geometry translation requires the *numexpr* package")
         self.dist_expr = dist_expr
@@ -126,7 +188,6 @@ class GeometryTransformation(object):
         """This makes the class instance behave like a function,
         actually a function that translates the n-parameter of the detector
         positioning on the goniometer and the m-parameters.
-
         :param param: parameter of the fit
         :param pos: position of the goniometer (representation from the
             goniometer)
@@ -181,6 +242,123 @@ class GeometryTransformation(object):
         res["constants"] = constants
         return res
 
+
+class ExtendedTransformation(object):
+    """This class behaves like GeometryTransformation and extends transformation
+    to the wavelength parameter.
+
+    This function uses numexpr for formula evaluation.
+    """
+    def __init__(self, dist_expr=None, poni1_expr=None, poni2_expr=None,
+                 rot1_expr=None, rot2_expr=None, rot3_expr=None, wavelength_expr=None,
+                 param_names=None, pos_names=None, constants=None,
+                 content=None):
+        """Constructor of the class
+
+        :param dist_expr: formula (as string) providing with the dist
+        :param poni1_expr: formula (as string) providing with the poni1
+        :param poni2_expr: formula (as string) providing with the poni2
+        :param rot1_expr: formula (as string) providing with the rot1
+        :param rot2_expr: formula (as string) providing with the rot2
+        :param rot3_expr: formula (as string) providing with the rot3
+        :param wavelength_expr: formula (as a string) to calculate wavelength used in angstrom
+        :param param_names: list of names of the parameters used in the model
+        :param pos_names: list of motor names for gonio with >1 degree of freedom
+        :param constants: a dictionary with some constants the user may want to use
+        :param content: Should be None or the name of the class (may be used
+            in the future to dispatch to multiple derivative classes)
+        """
+        if content is not None:
+            # Ensures we use the constructor of the right class
+            assert content in (self.__class__.__name__, "ExtendedTransformation")
+        if numexpr is None:
+            raise RuntimeError("This Transformation requires the *numexpr* package")
+        self.expressions = OrderedDict()
+
+        if dist_expr is not None:
+            self.expressions["dist"] = dist_expr
+        if poni1_expr is not None:
+            self.expressions["poni1"] = poni1_expr
+        if poni2_expr is not None:
+            self.expressions["poni2"] = poni2_expr
+        if rot1_expr is not None:
+            self.expressions["rot1"] = rot1_expr
+        if rot2_expr is not None:
+            self.expressions["rot2"] = rot2_expr
+        if rot3_expr is not None:
+            self.expressions["rot3"] = rot3_expr
+        if wavelength_expr is not None:
+            self.expressions["wavelength"] = wavelength_expr
+        self.ParamNT = namedtuple("ParamNT", list(self.expressions.keys()))
+        self.variables = {"pi": numpy.pi,
+                          "hc": CONST_hc,
+                          "q": CONST_q}
+        if constants is not None:
+            self.variables.update(constants)
+        self.param_names = tuple(param_names) if param_names is not None else tuple()
+        if pos_names is not None:
+            self.pos_names = tuple(pos_names)
+        else:
+            self.pos_names = ("pos",)
+        for key in self.param_names + self.pos_names:
+            if key in self.variables:
+                raise RuntimeError("The keyword %s is already defined, please chose another variable name")
+            self.variables[key] = numpy.NaN
+
+        self.codes = OrderedDict(((name, numexpr.NumExpr(expr)) for name, expr in self.expressions.items()))
+
+    def __call__(self, param, pos):
+        """This makes the class instance behave like a function,
+        actually a function that translates the n-parameter of the detector
+        positioning on the goniometer and the m-parameters.
+
+        :param param: parameter of the fit
+        :param pos: position of the goniometer (representation from the
+            goniometer)
+        :return: 6-tuple with (dist, poni1, poni2, rot1, rot2, rot3) as needed
+            for pyFAI.
+        """
+        res = {}
+        variables = self.variables.copy()
+        for name, value in zip(self.param_names, param):
+            variables[name] = value
+        if len(self.pos_names) == 1:
+            variables[self.pos_names[0]] = pos
+        else:
+            for name, value in zip(self.pos_names, pos):
+                variables[name] = value
+        for name, code in self.codes.items():
+            signa = [variables.get(name, numpy.NaN) for name in code.input_names]
+            res[name] = (float(code(*signa)))
+            # could ne done in a single liner but harder to understand !
+        return self.ParamNT(**res)
+
+    def __repr__(self):
+        res = ["%s with param: %s and pos: %s" % (self.__class__.__name__, self.param_names, self.pos_names), ]
+        for name, expr in self.expressions.items():
+            res.append("    %s= %s" % (name, expr))
+        return os.linesep.join(res)
+
+    def to_dict(self):
+        """Export the instance representation for serialization as a dictionary
+        """
+        res = OrderedDict([("content", self.__class__.__name__),
+                           ("param_names", self.param_names),
+                           ("pos_names", self.pos_names),
+                           ])
+        for name, expr in self.expressions.items():
+            res[name + "_expr"] = expr
+        constants = OrderedDict()
+        for key, val in self.variables.items():
+            if key in self.param_names:
+                continue
+            if self.pos_names and key in self.pos_names:
+                continue
+            constants[key] = val
+        res["constants"] = constants
+        return res
+
+
 GeometryTranslation = GeometryTransformation
 
 
@@ -189,7 +367,7 @@ class Goniometer(object):
     it may include translation in addition to rotations
     """
 
-    file_version = "Goniometer calibration v1.0"
+    file_version = "Goniometer calibration v1.1"
 
     def __init__(self, param, trans_function, detector="Detector",
                  wavelength=None, param_names=None, pos_names=None):
@@ -234,9 +412,11 @@ class Goniometer(object):
         :return: A freshly build AzimuthalIntegrator
         """
         res = self.trans_function(self.param, position)
-        ai = AzimuthalIntegrator(detector=self.detector, wavelength=self.wavelength)
-        ai.dist, ai.poni1, ai.poni2, ai.rot1, ai.rot2, ai.rot3 = res
-        return ai
+        params = {"detector": self.detector,
+                  "wavelength": self.wavelength}
+        for name, value in zip(res._fields, res):
+            params[name] = value
+        return AzimuthalIntegrator(**params)
 
     def get_mg(self, positions):
         """Creates a MultiGeometry integrator from a list of goniometer
@@ -284,6 +464,12 @@ class Goniometer(object):
 
     @classmethod
     def sload(cls, filename):
+        """Class method for instanciating a Goniometer object from a JSON file
+
+        :param filename: name of the JSON file
+        :return: Goniometer object
+        """
+
         with open(filename) as f:
             dico = json.load(f)
         assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
@@ -292,10 +478,20 @@ class Goniometer(object):
         tansfun = dico.get("trans_function", {})
         if "content" in tansfun:
             content = tansfun.pop("content")
-            assert content in ("GeometryTranslation", "GeometryTransformation")
             # May be adapted for other classes of GeometryTransformation functions
-        funct = GeometryTransformation(**tansfun)
-        gonio = cls(dico.get("param", []), funct, detector, dico.get("wavelength"))
+            if content in ("GeometryTranslation", "GeometryTransformation"):
+                funct = GeometryTransformation(**tansfun)
+            elif content == "ExtendedTranformation":
+                funct = ExtendedTransformation(**tansfun)
+            else:
+                raise RuntimeError("content= %s, not in in (GeometryTranslation, GeometryTransformation, ExtendedTranformation)")
+        else:  # assume GeometryTransformation
+            funct = GeometryTransformation(**tansfun)
+
+        gonio = cls(param=dico.get("param", []),
+                    trans_function=funct,
+                    detector=detector,
+                    wavelength=dico.get("wavelength"))
         return gonio
 
 
@@ -430,8 +626,9 @@ class SingleGeometry(object):
 
         :return: Azimuthal Integrator instance
         """
-        return AzimuthalIntegrator(detector=self.detector,
-                                   **self.geometry_refinement.getPyFAI())
+        geo = self.geometry_refinement.getPyFAI()
+        geo["detector"] = self.detector
+        return AzimuthalIntegrator(**geo)
 
 
 class GoniometerRefinement(Goniometer):
@@ -449,7 +646,7 @@ class GoniometerRefinement(Goniometer):
                             goniometer position
         :param trans_function: function taking the parameters of the
                             goniometer and the gonopmeter position and return the
-                            6 parameters [dist, poni1, poni2, rot1, rot2, rot3]
+                            6/7 parameters [dist, poni1, poni2, rot1, rot2, rot3, wavelength]
         :param detector: detector mounted on the moving arm
         :param wavelength: the wavelength used for the experiment
         :param param_names: list of names to "label" the param vector.
@@ -470,6 +667,7 @@ class GoniometerRefinement(Goniometer):
             else:
                 self.bounds = list(bounds)
         self.pos_function = pos_function
+        self.fit_wavelength = "wavelength" in self.trans_function.codes
 
     def new_geometry(self, label, image=None, metadata=None, control_points=None,
                      calibrant=None, geometry=None):
@@ -496,9 +694,10 @@ class GoniometerRefinement(Goniometer):
         return sg
 
     def __repr__(self):
-        return "%s with %i geometries labeled: %s" % \
-                (self.__class__.__name__, len(self.single_geometries),
-                 ", ".join(self.single_geometries.keys()) + ".")
+        name = self.__class__.__name__
+        count = len(self.single_geometries)
+        geometry_list = ", ".join(self.single_geometries.keys())
+        return "%s with %i geometries labeled: %s." % (name, count, geometry_list)
 
     def residu2(self, param):
         "Actually performs the calulation of the average of the error squared"
@@ -506,9 +705,12 @@ class GoniometerRefinement(Goniometer):
         npt = 0
         for single in self.single_geometries.values():
             motor_pos = single.get_position()
-            single_param = self.trans_function(param, motor_pos)
-            if single.geometry_refinement is not None and len(single.geometry_refinement.data) > 1:
-                sumsquare += single.geometry_refinement.chi2(single_param)
+            single_param = self.trans_function(param, motor_pos)._asdict()
+            pyFAI_param = [single_param.get(name, 0.0)
+                           for name in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]]
+            pyFAI_param.append(single_param.get("wavelength", self.wavelength) * 1e10)
+            if (single.geometry_refinement is not None) and (len(single.geometry_refinement.data) >= 1):
+                sumsquare += single.geometry_refinement.chi2_wavelength(pyFAI_param)
                 npt += single.geometry_refinement.data.shape[0]
         return sumsquare / max(npt, 1)
 
@@ -528,11 +730,17 @@ class GoniometerRefinement(Goniometer):
         :param method: name of the minimizer
         :param options: options for the minimizer
         """
+        if method.lower() in ["simplex", "nelder-mead"]:
+            method = "Nelder-Mead"
+            bounds = None
+        else:
+            bounds = self.bounds
         former_error = self.chi2()
         print("Cost function before refinement: %s" % former_error)
         param = numpy.asarray(self.param, dtype=numpy.float64)
+        print(param)
         res = minimize(self.residu2, param, method=method,
-                       bounds=self.bounds, tol=1e-12,
+                       bounds=bounds, tol=1e-12,
                        options=options)
         print(res)
         newparam = res.x
@@ -542,6 +750,8 @@ class GoniometerRefinement(Goniometer):
 
         # print("Constrained Least square %s --> %s" % (former_error, new_error))
         if new_error < former_error:
+            # print(param, newparam)
+
             i = abs(param - newparam).argmax()
             if "_fields" in dir(self.nt_param):
                 name = self.nt_param._fields[i]
@@ -549,6 +759,15 @@ class GoniometerRefinement(Goniometer):
             else:
                 print("maxdelta on: %i %s --> %s" % (i, self.param[i], newparam[i]))
             self.param = newparam
+            # update wavelength after successful optimization: not easy
+            # if self.fit_wavelength:
+            #     self.wavelength = self.
+        elif self.fit_wavelength:
+            print("Restore wavelength and former parameters")
+            former_wavelength = self.wavelength
+            for sg in self.single_geometries.values():
+                sg.calibrant.setWavelength_change2th(former_wavelength)
+            print(self.nt_param(*self.param))
         return self.param
 
     def set_bounds(self, name, mini=None, maxi=None):
@@ -563,3 +782,38 @@ class GoniometerRefinement(Goniometer):
         else:
             idx = int(name)
         self.bounds[idx] = (mini, maxi)
+
+    @classmethod
+    def sload(cls, filename, pos_function=None):
+        """Class method for instanciating a Goniometer object from a JSON file
+
+        :param filename: name of the JSON file
+        :param pos_function: a function taking metadata and extracting the
+                    goniometer position
+        :return: Goniometer object
+        """
+
+        with open(filename) as f:
+            dico = json.load(f)
+        assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
+        assert "trans_function" in dico, "No translation function defined in JSON file"
+        detector = Detector.from_dict(dico)
+        tansfun = dico.get("trans_function", {})
+        if "content" in tansfun:
+            content = tansfun.pop("content")
+            # May be adapted for other classes of GeometryTransformation functions
+            if content in ("GeometryTranslation", "GeometryTransformation"):
+                funct = GeometryTransformation(**tansfun)
+            elif content == "ExtendedTranformation":
+                funct = ExtendedTransformation(**tansfun)
+            else:
+                raise RuntimeError("content= %s, not in in (GeometryTranslation, GeometryTransformation, ExtendedTranformation)")
+        else:  # assume GeometryTransformation
+            funct = GeometryTransformation(**tansfun)
+
+        gonio = cls(param=dico.get("param", []),
+                    trans_function=funct,
+                    pos_function=pos_function,
+                    detector=detector,
+                    wavelength=dico.get("wavelength"))
+        return gonio

@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,23 +33,22 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "11/09/2017"
+__date__ = "10/01/2018"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from .common import pyopencl, mf, ocl
+from .common import pyopencl, mf
 from .processing import OpenclProcessing, BufferDescription, EventDescription
 
-logger = logging.getLogger("pyFAI.opencl.preproc")
+logger = logging.getLogger(__name__)
 
 
 class OCL_Preproc(OpenclProcessing):
     """OpenCL class for pre-processing ... mainly for demonstration"""
-    buffers = [
-               BufferDescription("output", 3, numpy.float32, mf.WRITE_ONLY),
+    buffers = [BufferDescription("output", 3, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
@@ -60,7 +59,7 @@ class OCL_Preproc(OpenclProcessing):
                BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
-            ]
+               ]
     kernel_files = ["preprocess.cl"]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
@@ -323,7 +322,7 @@ class OCL_Preproc(OpenclProcessing):
 
     def send_buffer(self, data, dest):
         """Send a numpy array to the device
-        
+
         :param data: numpy array with data
         :param dest: name of the buffer as registered in the class
         """
@@ -472,16 +471,16 @@ def preproc(raw,
     Empty pixels are always zero in "split_result" mode
 
     Split result:
-    
+
     * When set to False, i.e the default, the pixel-wise operation is:
       I = (raw - dark)/(flat \* solidangle \* polarization \* absorption)
       Invalid pixels are set to the dummy or empty value.
 
     * When split_ressult is set to True, each result result is a float2
       or a float3 (with an additional value for the variance) as such:
-      
+
       I = [(raw - dark), (variance), (flat \* solidangle \* polarization \* absorption)]
-      
+
       Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
 
     * If poissonian is set to True, the variance is evaluated as (raw + dark)

@@ -4,7 +4,7 @@
 #    Project: S I L X project
 #             https://github.com/silx-kit/silx
 #
-#    Copyright (C) 2012-2017 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,24 +34,25 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/09/2017"
+__date__ = "23/05/2018"
 __status__ = "stable"
 __all__ = ["ocl", "pyopencl", "mf", "release_cl_buffers", "allocate_cl_buffers",
            "measure_workgroup_size", "kernel_workgroup_size"]
 
 import os
 import logging
-import gc
-
 import numpy
 
 
-logger = logging.getLogger("pyFAI.opencl.common")
+logger = logging.getLogger(__name__)
 
-from .utils import get_opencl_code, concatenate_cl_kernel
+from .utils import get_opencl_code
+import pyFAI
 
-if os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
-    logger.warning("Use of OpenCL has been disables from environment variable: SILX_OPENCL=0")
+if not pyFAI.use_opencl:
+    pyopencl = None
+elif os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
+    logger.warning("Use of OpenCL has been disables from environment variable: PYFAI_OPENCL=0")
     pyopencl = None
 else:
     try:
@@ -59,13 +60,16 @@ else:
     except ImportError:
         logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
         pyopencl = None
-        class mf(object):
-            WRITE_ONLY = 1
-            READ_ONLY = 1
-            READ_WRITE = 1
     else:
         import pyopencl.array as array
         mf = pyopencl.mem_flags
+
+if pyopencl is None:
+    # create a dummy object
+    class mf(object):
+        WRITE_ONLY = 1
+        READ_ONLY = 1
+        READ_WRITE = 1
 
 FLOP_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
                  "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
@@ -249,10 +253,12 @@ def _measure_workgroup_size(device_or_context, fast=False):
             wg = 1 << i
             try:
                 evt = program.addition(queue, (shape,), (wg,),
-                       d_data.data, d_data_1.data, d_res.data, numpy.int32(shape))
+                                       d_data.data, d_data_1.data, d_res.data,
+                                       numpy.int32(shape))
+
                 evt.wait()
             except Exception as error:
-                logger.info("%s on device %s for WG=%s/%s" , error, device.name, wg, shape)
+                logger.info("%s on device %s for WG=%s/%s", error, device.name, wg, shape)
                 program = queue = d_res = d_data_1 = d_data = None
                 break
             else:
@@ -325,8 +331,8 @@ class OpenCL(object):
     def __repr__(self):
         out = ["OpenCL devices:"]
         for platformid, platform in enumerate(self.platforms):
-            deviceids = ["(%s,%s) %s" % (platformid, deviceid, dev.name) \
-                for deviceid, dev in enumerate(platform.devices)]
+            deviceids = ["(%s,%s) %s" % (platformid, deviceid, dev.name)
+                         for deviceid, dev in enumerate(platform.devices)]
             out.append("[%s] %s: " % (platformid, platform.name) + ", ".join(deviceids))
         return os.linesep.join(out)
 
@@ -399,9 +405,11 @@ class OpenCL(object):
         :param devicetype: string in ["cpu","gpu", "all", "acc"]
         :param useFp64: boolean specifying if double precision will be used
         :param platformid: integer
-        :param devid: integer
+        :param deviceid: integer
+        :param cached: put in cache
         :return: OpenCL context on the selected device
         """
+        ctx = None
         if (platformid is not None) and (deviceid is not None):
             platformid = int(platformid)
             deviceid = int(deviceid)
@@ -417,10 +425,16 @@ class OpenCL(object):
             if (platformid, deviceid) in self.context_cache:
                 ctx = self.context_cache[(platformid, deviceid)]
             else:
-                ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
-                if cached:
-                    self.context_cache[(platformid, deviceid)] = ctx
-        else:
+                try:
+                    ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
+                except pyopencl.LogicError:
+                    logger.warning("Unable to create context on device %s with driver %s",
+                                   self.platforms[platformid].devices[deviceid],
+                                   self.platforms[platformid])
+                else:
+                    if cached:  # store in cache
+                        self.context_cache[(platformid, deviceid)] = ctx
+        if ctx is None:
             logger.warning("Last chance to get an OpenCL device ... probably not the one requested")
             ctx = pyopencl.create_some_context(interactive=False)
         return ctx
@@ -437,6 +451,7 @@ class OpenCL(object):
         device_id = oplat.get_devices().index(odevice)
         platform_id = pyopencl.get_platforms().index(oplat)
         return self.platforms[platform_id].devices[device_id]
+
 
 if pyopencl:
     ocl = OpenCL()

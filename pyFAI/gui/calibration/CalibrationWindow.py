@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2016 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "03/03/2017"
 
-from pyFAI.gui import qt
+from silx.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.model.CalibrationModel import CalibrationModel
 

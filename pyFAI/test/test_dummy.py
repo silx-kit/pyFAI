@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,27 +26,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Dummy test to run first to check for relative imports
+"""
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "Dummy test to run first to check for relative imports"
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "15/03/2018"
 
 
 import unittest
 import sys
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
-pyFAI = sys.modules["pyFAI"]
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 
 
 class TestDummy(unittest.TestCase):
     def test_dummy(self):
         print(__name__)
-        print(pyFAI)
+        if "pyFAI" not in sys.modules:
+            pyFAI = __import__("pyFAI")
+        else:
+            pyFAI = sys.modules["pyFAI"]
+        logger.info("here is pyFAI %s", pyFAI)
 
 
 def suite():

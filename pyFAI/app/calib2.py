@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2017"
+__date__ = "06/03/2018"
 __status__ = "production"
 
 import logging
@@ -46,24 +46,25 @@ logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI-calib2")
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 
-import silx.gui
-from pyFAI.gui import qt
+from silx.gui import qt
+# Make sure matplotlib is loaded first by silx
+import silx.gui.plot.matplotlib
+
 from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
 
+import pyFAI.resources
 import pyFAI.calibrant
-import pyFAI.calibration
+# TODO: This should be removed
+import pyFAI.gui.cli_calibration
 import fabio
 
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from .third_party.argparse import ArgumentParser
+from pyFAI.third_party.argparse import ArgumentParser
 
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
 except ImportError:
-    logging.debug("No socket opened for debugging. Please install rfoo")
+    logger.debug("No socket opened for debugging. Please install rfoo")
 
 
 def configure_parser_arguments(parser):
@@ -274,7 +275,7 @@ def setup(model):
         settings.polarizationFactor(options.polarization_factor)
 
     if options.detector_name:
-        detector = pyFAI.calibration.get_detector(options.detector_name, args)
+        detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name, args)
         settings.detectorModel().setDetector(detector)
 
     if options.spline:
@@ -393,17 +394,18 @@ def logUncaughtExceptions(exceptionClass, exception, stack):
             # There is no backtrace
             message = '{0}: {1}'.format(exceptionClass.__name__, exception)
         logger_uncaught.error(message)
-    except Exception as _e:
-        # Make sure there is no problem at all in this funbction
+    except Exception:
+        # Make sure there is no problem at all in this function
         try:
             logger_uncaught.error(exception)
-        except:
+        except Exception:
             print("Error:" + str(exception))
 
 
 def main():
     sys.excepthook = logUncaughtExceptions
     app = qt.QApplication([])
+    pyFAI.resources.silx_integration()
     widget = CalibrationWindow()
     setup(widget.model())
     widget.setVisible(True)

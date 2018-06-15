@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2016-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #             V. Aramdo Solé <sole@esrf.fr>
@@ -31,15 +31,16 @@
 """
 pyFAI-drawmask
 
-Use silx or PyMca module to define a mask
+Use silx library to provide a widget to custom a mask
 """
 
 __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2017"
+__date__ = "10/01/2018"
 __satus__ = "Production"
+
 import os
 import numpy
 import logging
@@ -49,43 +50,13 @@ import fabio
 
 _logger = logging.getLogger("drawmask")
 
-BACKEND = None
-try:
-    import silx
-    if silx.version_info < (0, 2):
-        raise ImportError("Silx version 0.2 or higher expected")
-    import silx.gui.plot
-    from silx.gui import qt
-    BACKEND = "SILX"
-except ImportError:
-    _logger.error("Error while importing silx", exc_info=True)
-
-if BACKEND is None:
-    try:
-        import PyMca.MaskImageWidget as PyMcaMaskImageWidget
-        from pyFAI.gui import qt
-        BACKEND = "PYMCA"
-    except ImportError:
-        _logger.error("Error while importing PyMca", exc_info=True)
-
-if BACKEND is None:
-    try:
-        import PyMca5.PyMca.MaskImageWidget as PyMcaMaskImageWidget
-        from pyFAI.gui import qt
-        BACKEND = "PYMCA"
-    except ImportError:
-        _logger.error("Error while importing PyMca", exc_info=True)
-    BACKEND = "PYMCA"
-
-if BACKEND is None:
-    raise Exception("No supported backend found")
-
+import silx
+if silx.version_info < (0, 2):
+    raise ImportError("Silx version 0.2 or higher expected")
+import silx.gui.plot
+from silx.gui import qt
 import pyFAI.utils
-
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+from pyFAI.third_party.argparse import ArgumentParser
 
 
 class AbstractMaskImageWidget(qt.QMainWindow):
@@ -122,93 +93,60 @@ class AbstractMaskImageWidget(qt.QMainWindow):
         self.close()
 
 
-if BACKEND == "SILX":
+class MaskImageWidget(AbstractMaskImageWidget):
+    """
+    Window application which allow to create a mask manually.
+    It is based on Silx library widgets.
+    """
+    def __init__(self):
+        AbstractMaskImageWidget.__init__(self)
 
-    class MaskImageWidget(AbstractMaskImageWidget):
-        """
-        Window application which allow to create a mask manually.
-        It is based on Silx library widgets.
-        """
-        def __init__(self):
-            AbstractMaskImageWidget.__init__(self)
+        self.__plot2D = silx.gui.plot.Plot2D()
+        self.__plot2D.setKeepDataAspectRatio(True)
+        if hasattr(self.__plot2D, "getMaskAction"):
+            # silx 0.5 and later
+            maskAction = self.__plot2D.getMaskAction()
+        else:
+            # silx 0.4 and previous
+            maskAction = self.__plot2D.maskAction
+        maskAction.setVisible(False)
+        self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(plot=self.__plot2D)
+        try:
+            colormap = {
+                'name': "inferno",
+                'normalization': 'log',
+                'autoscale': True,
+                'vmax': None,
+                'vmin': None,
+            }
+            self.__plot2D.setDefaultColormap(colormap)
+        except Exception:
+            _logger.error("Impossible to change the default colormap. Source code not compatible.", exc_info=True)
+        self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
+        self.__maskPanel.setMultipleMasks("single")
 
-            self.__plot2D = silx.gui.plot.Plot2D()
-            self.__plot2D.setKeepDataAspectRatio(True)
-            if hasattr(self.__plot2D, "getMaskAction"):
-                # silx 0.5 and later
-                maskAction = self.__plot2D.getMaskAction()
-            else:
-                # silx 0.4 and previous
-                maskAction = self.__plot2D.maskAction
-            maskAction.setVisible(False)
-            self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(plot=self.__plot2D)
-            try:
-                colormap = {
-                    'name': "inferno",
-                    'normalization': 'log',
-                    'autoscale': True,
-                    'vmax': None,
-                    'vmin': None,
-                }
-                self.__plot2D.setDefaultColormap(colormap)
-            except:
-                _logger.error("Impossible to change the default colormap. Source code not compatible.", exc_info=True)
-            self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
-            self.__maskPanel.setMultipleMasks("single")
+        panelLayout = qt.QVBoxLayout()
+        panelLayout.addWidget(self.__maskPanel)
+        panelLayout.setStretch(0, 1)
+        panelLayout.addWidget(self._saveAndClose)
 
-            panelLayout = qt.QVBoxLayout()
-            panelLayout.addWidget(self.__maskPanel)
-            panelLayout.setStretch(0, 1)
-            panelLayout.addWidget(self._saveAndClose)
+        widget = qt.QWidget()
+        layout = qt.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
 
-            widget = qt.QWidget()
-            layout = qt.QVBoxLayout()
-            layout.setContentsMargins(0, 0, 0, 0)
+        layout = qt.QHBoxLayout()
+        layout.addWidget(self.__plot2D)
+        layout.setStretch(0, 1)
+        layout.addLayout(panelLayout)
+        widget.setLayout(layout)
 
-            layout = qt.QHBoxLayout()
-            layout.addWidget(self.__plot2D)
-            layout.setStretch(0, 1)
-            layout.addLayout(panelLayout)
-            widget.setLayout(layout)
+        self.setCentralWidget(widget)
 
-            self.setCentralWidget(widget)
+    def setImageData(self, image):
+        self.__plot2D.addImage(image)
 
-        def setImageData(self, image):
-            self.__plot2D.addImage(image)
-
-        def getSelectionMask(self):
-            return self.__maskPanel.getSelectionMask()
-
-elif BACKEND == "PYMCA":
-
-    class MaskImageWidget(AbstractMaskImageWidget):
-        """
-        Window application which allow to create a mask manually.
-        It is based on PyMCA library widgets.
-        """
-        def __init__(self):
-            AbstractMaskImageWidget.__init__(self)
-
-            self.__maskWidget = PyMcaMaskImageWidget.MaskImageWidget()
-
-            widget = qt.QWidget()
-            layout = qt.QVBoxLayout()
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(self.__maskWidget)
-            layout.setStretch(0, 1)
-            layout.addWidget(self._saveAndClose)
-            widget.setLayout(layout)
-
-            self.setCentralWidget(widget)
-
-        def setImageData(self, image):
-            self.__maskWidget.setImageData(image)
-
-        def getSelectionMask(self):
-            return self.__maskWidget.getSelectionMask()
-
-else:
-    raise Exception("Unsupported backend %s" % BACKEND)
+    def getSelectionMask(self):
+        return self.__maskPanel.getSelectionMask()
 
 
 def postProcessId21(processFile, mask):
@@ -262,6 +200,7 @@ def main():
 
     mask = window.getSelectionMask()
     postProcessId21(processFile, mask)
+
 
 if __name__ == "__main__":
     main()

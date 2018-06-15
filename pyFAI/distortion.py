@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright 2013-2016 (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "22/05/2018"
 __status__ = "development"
 
 import logging
 import threading
 import os
 import numpy
-logger = logging.getLogger("pyFAI.distortion")
+logger = logging.getLogger(__name__)
 from math import ceil, floor
 from . import detectors
 from .opencl import ocl
@@ -46,14 +46,13 @@ if ocl:
     from .opencl import azim_csr as ocl_azim_csr
 else:
     ocl_azim_lut = ocl_azim_csr = None
-try:
-    from .third_party import six
-except ImportError:
-    import six
+from .third_party import six
+
 try:
     from .ext import _distortion
     from .ext import sparse_utils
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     logger.warning("Import _distortion cython implementation failed ... pure python version is terribly slow !!!")
     _distortion = None
 
@@ -64,7 +63,7 @@ except IOError:
     linalg = None
 else:
     import scipy
-    v = tuple(int(i) for i in scipy.version.short_version.split("."))
+    v = tuple(int(i) for i in scipy.version.short_version.split(".") if i.isdigit())
     if v < (0, 11):
         logger.warning("Scipy is too old ... uncorrection will be handled the old way")
         linalg = None
@@ -280,7 +279,7 @@ class Distortion(object):
                     mask = self.mask
                     if _distortion:
                         if use_common:
-                            self.lut = _distortion.calc_openmp(self.pos, self._shape_out, max_pixel_size=(self.delta1, self.delta2), format=self.method)
+                            self.lut = _distortion.calc_sparse(self.pos, self._shape_out, max_pixel_size=(self.delta1, self.delta2), format=self.method)
                         else:
                             if self.method == "lut":
                                 self.lut = _distortion.calc_LUT(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
@@ -292,8 +291,8 @@ class Distortion(object):
                         lut[:, :, :].coef = 0.0
                         outMax = numpy.zeros(self._shape_out, dtype=numpy.uint32)
                         idx = 0
-                        buffer = numpy.empty((self.delta1, self.delta2))
-                        quad = Quad(buffer)
+                        buffer_ = numpy.empty((self.delta1, self.delta2))
+                        quad = Quad(buffer_)
                         for i in range(self._shape_out[0]):
                             for j in range(self._shape_out[1]):
                                 if (mask is not None) and mask[i, j]:
@@ -340,12 +339,37 @@ class Distortion(object):
         :param delta_dummy: precision of the dummy value
         :return: corrected 2D image
         """
-        if image.shape != self.shape_in:
-            logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ...", image.shape, self.shape_in)
-            new_img = numpy.zeros(self.shape_in, dtype=image.dtype)
-            common_shape = [min(i, j) for i, j in zip(image.shape, self.shape_in)]
-            new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
-            image = new_img
+        if image.ndim == 2:
+            if _distortion:
+                image = _distortion.resize_image_2D(image, self.shape_in)
+            else:
+                logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ...", image.shape, self.shape_in)
+                new_img = numpy.zeros(self.shape_in, dtype=image.dtype)
+                common_shape = [min(i, j) for i, j in zip(image.shape, self.shape_in)]
+                new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
+                image = new_img
+        else:  # assume 2d+nchanel
+            if _distortion:
+                image = _distortion.resize_image_3D(image, self.shape_in)
+            else:
+                assert image.ndim == 3, "image is 3D"
+                shape_in0, shape_in1 = self.shape_in
+                shape_img0, shape_img1, nchan = image.shape
+                if not ((shape_img0 == shape_in0) and (shape_img1 == shape_in1)):
+                    new_image = numpy.zeros((shape_in0, shape_in1, nchan), dtype=numpy.float32)
+                    if shape_img0 < shape_in0:
+                        if shape_img1 < shape_in1:
+                            new_image[:shape_img0, :shape_img1, :] = image
+                        else:
+                            new_image[:shape_img0, :, :] = image[:, :shape_in1, :]
+                    else:
+                        if shape_img1 < shape_in1:
+                            new_image[:, :shape_img1, :] = image[:shape_in0, :, :]
+                        else:
+                            new_image[:, :, :] = image[:shape_in0, :shape_in1, :]
+                    logger.warning("Patching image of shape %ix%i on expected size of %ix%i",
+                                   shape_img1, shape_img0, shape_in1, shape_in0)
+                image = new_image
         if self.device:
             if self.integrator is None:
                 self.calc_init()
@@ -353,25 +377,29 @@ class Distortion(object):
         else:
             if self.lut is None:
                 self.calc_LUT()
-            if self.method == "lut":
-                if _distortion is not None:
-                    out = _distortion.correct_LUT(image, self.shape_in, self._shape_out, self.lut,
-                                                  dummy=dummy, delta_dummy=delta_dummy)
-                else:
+            if _distortion is not None:
+                out = _distortion.correct(image, self.shape_in, self._shape_out, self.lut,
+                                          dummy=dummy, delta_dummy=delta_dummy)
+            else:
+                if self.method == "lut":
                     big = image.ravel().take(self.lut.idx) * self.lut.coef
                     out = big.sum(axis=-1)
-            elif self.method == "csr":
-                if _distortion is not None:
-                    out = _distortion.correct_CSR(image, self.shape_in, self._shape_out, self.lut,
-                                                  dummy=dummy, delta_dummy=delta_dummy)
-                else:
+                elif self.method == "csr":
                     big = self.lut[0] * image.ravel().take(self.lut[1])
                     indptr = self.lut[2]
                     out = numpy.zeros(indptr.size - 1)
                     for i in range(indptr.size - 1):
                         out[i] = big[indptr[i]:indptr[i + 1]].sum()
         try:
-            out.shape = self._shape_out
+            if image.ndim == 2:
+                out.shape = self._shape_out
+            else:
+                for ds in out:
+                    if ds.ndim == 2:
+                        ds.shape = self._shape_out
+                    else:
+                        ds.shape = self._shape_out + ds.shape[2:]
+
         except ValueError as _err:
             logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
             raise
@@ -401,7 +429,7 @@ class Distortion(object):
         else:  # This is deprecated and does not work with resise=True
             if self.method == "lut":
                 if _distortion is not None:
-                    out, mask = _distortion.uncorrect_LUT(image, self.shape_in, self.lut)
+                    out, _mask = _distortion.uncorrect_LUT(image, self.shape_in, self.lut)
                 else:
                     out = numpy.zeros(self.shape_in, dtype=numpy.float32)
                     lout = out.ravel()
@@ -415,7 +443,7 @@ class Distortion(object):
                         lout[self.lut[idx].idx] += val * self.lut[idx].coef
             elif self.method == "csr":
                 if _distortion is not None:
-                    out, mask = _distortion.uncorrect_CSR(image, self.shape_in, self.lut)
+                    out, _mask = _distortion.uncorrect_CSR(image, self.shape_in, self.lut)
             else:
                 raise NotImplementedError()
         return out
@@ -630,7 +658,7 @@ class Quad(object):
                             if dA > AA:
                                 dA = AA
                                 AA = -1
-                            self.box[i , h] += sign * dA
+                            self.box[i, h] += sign * dA
                             AA -= dA
                             h += 1
                 # Section Pn->B
@@ -709,99 +737,8 @@ class Quad(object):
                         dA = abs(dP)
                         while AA > 0:
                             if dA > AA:
-                                dA = AA; AA = -1
+                                dA = AA
+                                AA = -1
                             self.box[int(floor(stop)), h] += sign * dA
                             AA -= dA
                             h += 1
-
-
-def test():
-    buffer = numpy.empty((20, 20), dtype=numpy.float32)
-    Q = Quad(buffer)
-    Q.reinit(7.5, 6.5, 2.5, 5.5, 3.5, 1.5, 8.5, 1.5)
-    Q.init_slope()
-#    print(Q.calc_area_AB(Q.A0, Q.B0)
-#    print(Q.calc_area_BC(Q.B0, Q.C0)
-#    print(Q.calc_area_CD(Q.C0, Q.D0)
-#    print(Q.calc_area_DA(Q.D0, Q.A0)
-    print(Q.calc_area())
-    Q.populate_box()
-    print(Q)
-#    print(Q.get_box().sum()
-    print(buffer.sum())
-    print("#" * 50)
-
-    Q.reinit(8.5, 1.5, 3.5, 1.5, 2.5, 5.5, 7.5, 6.5)
-    Q.init_slope()
-#    print(Q.calc_area_AB(Q.A0, Q.B0)
-#    print(Q.calc_area_BC(Q.B0, Q.C0)
-#    print(Q.calc_area_CD(Q.C0, Q.D0)
-#    print(Q.calc_area_DA(Q.D0, Q.A0)
-    print(Q.calc_area())
-    Q.populate_box()
-    print(Q)
-#    print(Q.get_box().sum()
-    print(buffer.sum())
-
-    Q.reinit(0.9, 0.9, 0.8, 6.9, 4.3, 3.9, 4.3, 0.9)
-#    Q = Quad((-0.3, 1.9), (-0.4, 2.9), (1.3, 2.9), (1.3, 1.9))
-    Q.init_slope()
-    print("calc_area_vectorial", Q.calc_area())
-#    print(Q.A0, Q.A1, Q.B0, Q.B1, Q.C0, Q.C1, Q.D0, Q.D1
-#    print("Slope", Q.pAB, Q.pBC, Q.pCD, Q.pDA
-#    print(Q.calc_area_AB(Q.A0, Q.B0), Q.calc_area_BC(Q.B0, Q.C0), Q.calc_area_CD(Q.C0, Q.D0), Q.calc_area_DA(Q.D0, Q.A0)
-    print(Q.calc_area())
-    Q.populate_box()
-    print(buffer.T)
-#    print(Q.get_box().sum()
-    print(Q.calc_area())
-
-    print("#" * 50)
-
-    import fabio
-#    workin on 256x256
-#    x, y = numpy.ogrid[:256, :256]
-#    grid = numpy.logical_or(x % 10 == 0, y % 10 == 0) + numpy.ones((256, 256), numpy.float32)
-#    det = detectors.FReLoN("frelon_8_8.spline")
-
-#    # working with halfccd spline
-    x, y = numpy.ogrid[:1024, :2048]
-    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0) + numpy.ones((1024, 2048), numpy.float32)
-    det = detectors.FReLoN("halfccd.spline")
-    # working with halfccd spline
-#    x, y = numpy.ogrid[:2048, :2048]
-#    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0).astype(numpy.float32) + numpy.ones((2048, 2048), numpy.float32)
-#    det = detectors.FReLoN("frelon.spline")
-
-    print(det, det.max_shape)
-    dis = Distortion(det)
-    print(dis)
-    lut = dis.self.calc_size()
-    print(dis.lut_size)
-    print(lut.mean())
-
-    dis.calc_LUT()
-    out = dis.correct(grid)
-    fabio.edfimage.edfimage(data=out.astype("float32")).write("test_correct.edf")
-
-    print("*" * 50)
-
-#    x, y = numpy.ogrid[:2048, :2048]
-#    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
-#    det = detectors.FReLoN("frelon.spline")
-#    print(det, det.max_shape
-#    dis = Distortion(det)
-#    print(dis
-#    lut = dis.self.calc_size()
-#    print(dis.lut_size
-#    print("LUT mean & max", lut.mean(), lut.max()
-#    dis.calc_LUT()
-#    out = dis.correct(grid)
-#    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
-    from .gui.matplotlib import pylab
-    pylab.imshow(out)  # , interpolation="nearest")
-    pylab.show()
-
-if __name__ == "__main__":
-    det = dis = lut = None
-    test()

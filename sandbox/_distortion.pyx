@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -46,10 +46,7 @@ logger = logging.getLogger("pyFAI._distortion")
 from ..detectors import detector_factory
 from ..utils import expand2d
 from ..decorators import timeit
-try:
-    from ..third_party import six
-except ImportError:
-    import six
+from ..third_party import six
 import fabio
 
 cdef struct lut_point:

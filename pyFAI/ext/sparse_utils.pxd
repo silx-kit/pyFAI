@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,12 +34,12 @@ cdef class Vector:
         int[:] idx
         readonly int size, allocated
     #  Methods available at the C-level:
-    cdef inline void _append(self, int idx, float coef) 
+    cdef inline void _append(self, int idx, float coef)
 
 
 cdef class ArrayBuilder:
     cdef:
-        readonly int size 
+        readonly int size
         Vector[:] lines
-    #  Methods available at the C-level:    
-    cdef inline void _append(self, int line, int col, float value) 
+    # Methods available at the C-level:
+    cdef inline void _append(self, int line, int col, float value)

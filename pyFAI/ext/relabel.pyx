@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -27,11 +27,13 @@
 #  THE SOFTWARE.
 
 """A module to relabel regions"""
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/05/2017"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
 import cython
 import numpy
 cimport numpy
@@ -61,10 +63,10 @@ def countThem(numpy.ndarray label not None,
         float[::1] cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
         float[::1] cblured = numpy.ascontiguousarray(blured.ravel(), dtype=numpy.float32)
         size_t maxLabel = label.max()
-        numpy.ndarray[numpy.uint_t, ndim = 1] count = numpy.zeros(maxLabel + 1, dtype=numpy.uint)
-        numpy.ndarray[numpy.float32_t, ndim = 1] maxData = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
-        numpy.ndarray[numpy.float32_t, ndim = 1] maxBlured = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
-        numpy.ndarray[numpy.float32_t, ndim = 1] maxDelta = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
+        numpy.ndarray[numpy.uint_t, ndim=1] count = numpy.zeros(maxLabel + 1, dtype=numpy.uint)
+        numpy.ndarray[numpy.float32_t, ndim=1] maxData = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim=1] maxBlured = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim=1] maxDelta = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
         int s, i, idx
         float d, b
     s = label.size

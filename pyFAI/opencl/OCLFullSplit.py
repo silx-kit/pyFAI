@@ -4,7 +4,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "15/06/2017"
+__date__ = "15/03/2018"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -38,15 +38,15 @@ import os
 import logging
 import threading
 import numpy
-from .opencl import ocl, pyopencl
-from .ext.splitBBoxLUT import HistoBBox1d
+from .common import ocl, pyopencl
+from ..ext.splitBBoxLUT import HistoBBox1d
 from . import utils
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
 from ..utils import crc32
-logger = logging.getLogger("pyFAI.OCLFullSplit")
+logger = logging.getLogger(__name__)
 
 
 class OCLFullSplit1d(object):

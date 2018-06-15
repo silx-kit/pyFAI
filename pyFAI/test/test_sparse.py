@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,13 +34,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
 import numpy
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__name__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from .. import load
 from ..ext import splitBBox
 from ..ext import sparse_utils
@@ -155,10 +156,10 @@ class TestContainer(unittest.TestCase):
         self.assertEqual(err, 0, "idx OK")
         err = abs((s / 10.0) - c).max()
         self.assertLessEqual(err, 1e-6, "value OK: %s" % err)
-        l = cont.as_LUT()
+        lut = cont.as_LUT()
         s = numpy.arange(nelem).reshape((ncol, nlines)).T
-        self.assertEqual(abs(l["idx"] - s).max(), 0, "LUT idx OK")
-        self.assertLessEqual(abs(l["coef"] - s / 10.0).max(), 1e-6, "LUT coef OK")
+        self.assertEqual(abs(lut["idx"] - s).max(), 0, "LUT idx OK")
+        self.assertLessEqual(abs(lut["coef"] - s / 10.0).max(), 1e-6, "LUT coef OK")
 
 
 def suite():

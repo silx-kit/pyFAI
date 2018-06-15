@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -39,12 +39,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2017"
+__date__ = "26/04/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
-from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
+from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt, pi
 import numpy
 import os
 import threading
@@ -53,24 +53,22 @@ from collections import namedtuple, OrderedDict
 
 from . import detectors
 from . import units
-from .decorators import deprecated
+from .utils.decorators import deprecated
 from .utils import crc32
 from . import utils
-try:
-    from .third_party import six
-except ImportError:
-    import six
 
-logger = logging.getLogger("pyFAI.geometry")
+logger = logging.getLogger(__name__)
 
 try:
     from .ext import _geometry
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     _geometry = None
 
 try:
     from .ext import bilinear
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     bilinear = None
 
 PolarizationArray = namedtuple("PolarizationArray", ["array", "checksum"])
@@ -145,17 +143,12 @@ class Geometry(object):
                       self._rot1, self._rot2, self._rot3]
         self.chiDiscAtPi = True  # chi discontinuity (radians), pi by default
         self._cached_array = {}  # dict for caching all arrays
-        self._dssa = None
-        self._dssa_crc = None  # checksum associated with _dssa
         self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
         self._sem = threading.Semaphore()
-        self._cosa = None  # cosine of the incidance angle
         self._transmission_normal = None
-        self._transmission_corr = None
-        self._transmission_crc = None
 
         if detector:
             if isinstance(detector, utils.StringTypes):
@@ -228,8 +221,8 @@ class Geometry(object):
         """Calculate the position of a set of points in space in the sample's centers referential.
 
         This is usually used for calculating the pixel position in space.
-        
-        Nota: dim3 is the same as dim0  
+
+        Nota: dim3 is the same as dim0
 
         :param d0: altitude on the point compared to the detector (i.e. z), may be None
         :param d1: position on the detector along the slow dimension (i.e. y)
@@ -279,7 +272,7 @@ class Geometry(object):
             else:
                 p3 = (L + p3).ravel()
                 assert size == p3.size
-            coord_det = numpy.vstack((p1, p2, -p3))
+            coord_det = numpy.vstack((p1, p2, p3))
             coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)
             t1, t2, t3 = coord_sample
             t1.shape = shape
@@ -303,8 +296,8 @@ class Geometry(object):
 
         if (path == "cython") and (_geometry is not None):
             if param is None:
-                dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
-                                self._poni2, self._rot1, self._rot2, self._rot3
+                dist, poni1, poni2 = self._dist, self._poni1, self._poni2
+                rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
             else:
                 dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
             p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2)
@@ -343,8 +336,8 @@ class Geometry(object):
 
         if (_geometry is not None) and (path == "cython"):
             if param is None:
-                dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
-                                self._poni2, self._rot1, self._rot2, self._rot3
+                dist, poni1, poni2 = self._dist, self._poni1, self._poni2
+                rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
             else:
                 dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
 
@@ -379,8 +372,8 @@ class Geometry(object):
 
         if (_geometry is not None) and (path == "cython"):
             if param is None:
-                dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
-                                self._poni2, self._rot1, self._rot2, self._rot3
+                dist, poni1, poni2 = self._dist, self._poni1, self._poni2
+                rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
             else:
                 dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
 
@@ -508,9 +501,9 @@ class Geometry(object):
     def chi(self, d1, d2, path="cython"):
         """
         Calculate the chi (azimuthal angle) for the centre of a pixel
-        at coordinate d1, d2. 
+        at coordinate d1, d2.
         Conversion to lab coordinate system is performed in calc_pos_zyx.
-        
+
         :param d1: pixel coordinate along the 1st dimention (C convention)
         :type d1: float or array of them
         :param d2: pixel coordinate along the 2nd dimention (C convention)
@@ -618,8 +611,8 @@ class Geometry(object):
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
         :param use_cython: set to False to use the slower Python path (for tests)
-        :param scale: set to False for returning the internal representation 
-                        (S.I. often) which is faster 
+        :param scale: set to False for returning the internal representation
+                      (S.I. often) which is faster
         :return: 3d array with shape=(\*shape,4,2) the two elements are:
             - dim3[0]: radial angle 2th, q, r...
             - dim3[1]: azimuthal angle chi
@@ -644,7 +637,7 @@ class Geometry(object):
             with self._sem:
                 if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
                     corners = None
-                    if use_cython:
+                    if (_geometry is not None) and use_cython:
                         if self.detector.IS_CONTIGUOUS:
                             d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
                             d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
@@ -658,9 +651,12 @@ class Geometry(object):
                             res = _geometry.calc_rad_azim(self.dist, self.poni1, self.poni2,
                                                           self.rot1, self.rot2, self.rot3,
                                                           p1, p2, p3,
-                                                          space, self._wavelength)
+                                                          space, self._wavelength,
+                                                          chi_discontinuity_at_pi=self.chiDiscAtPi)
                         except KeyError:
                             logger.warning("No fast path for space: %s", space)
+                        except AttributeError as err:
+                            logger.warning("AttributeError: The binary extension _geomety may be missing: %s", err)
                         else:
                             if self.detector.IS_CONTIGUOUS:
                                 if bilinear:
@@ -685,6 +681,9 @@ class Geometry(object):
                         y = pos[..., 1]
                         z = pos[..., 0]
                         chi = numpy.arctan2(y, x)
+                        if not self.chiDiscAtPi:
+                            twoPi = 2.0 * numpy.pi
+                            chi = (chi + twoPi) % twoPi
                         corners = numpy.zeros((shape[0], shape[1], 4, 2),
                                               dtype=numpy.float32)
                         if chi.shape[:2] == shape:
@@ -712,7 +711,7 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are:
+        :return: 3d array with shape=(\*shape,4,2) the two elements are:
            * dim3[0]: radial angle 2th
            * dim3[1]: azimuthal angle chi
         """
@@ -726,7 +725,7 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are (scattering vector q, azimuthal angle chi)
+        :return: 3d array with shape=(\*shape,4,2) the two elements are (scattering vector q, azimuthal angle chi)
         """
         return self.corner_array(shape, unit=units.Q, use_cython=False, scale=False)
 
@@ -738,7 +737,7 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
+        :return: 3d array with shape=(\*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
         """
         return self.corner_array(shape, unit=units.R, use_cython=False, scale=False)
 
@@ -750,7 +749,7 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are (reciprocal spacing squared, azimuthal angle chi)
+        :return: 3d array with shape=(\*shape,4,2) the two elements are (reciprocal spacing squared, azimuthal angle chi)
         """
         return self.corner_array(shape, unit=units.RecD2_NM, scale=False)
 
@@ -762,8 +761,8 @@ class Geometry(object):
         :param shape: expected shape
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
-        :param scale: set to False for returning the internal representation 
-                (S.I. often) which is faster 
+        :param scale: set to False for returning the internal representation
+                (S.I. often) which is faster
         :return: 3d array with shape=(\*shape,4,2) the two elements are:
             - dim3[0]: radial angle 2th, q, r...
             - dim3[1]: azimuthal angle chi
@@ -804,8 +803,8 @@ class Geometry(object):
         :param shape: expected shape
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
-        :param scale: set to False for returning the internal representation 
-                (S.I. often) which is faster 
+        :param scale: set to False for returning the internal representation
+                (S.I. often) which is faster
         :return: 3d array with shape=(\*shape,4,2) the two elements are:
 
             - dim3[0]: radial angle 2th, q, r...
@@ -944,8 +943,8 @@ class Geometry(object):
         :type typ: str
         :param unit: can be Q, TTH, R for now
         :type unit: pyFAI.units.Enum
-        :param scale: set to False for returning the internal representation 
-                (S.I. often) which is faster 
+        :param scale: set to False for returning the internal representation
+                (S.I. often) which is faster
         :return: R, Q or 2Theta array depending on unit
         :rtype: ndarray
         """
@@ -975,7 +974,7 @@ class Geometry(object):
                 out = self.delta_array(shape, unit, scale=scale)
         return out
 
-    def cosIncidance(self, d1, d2, path="cython"):
+    def cos_incidence(self, d1, d2, path="cython"):
         """
         Calculate the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
@@ -1060,10 +1059,10 @@ class Geometry(object):
             dY = sY[1:, :] - sY[:-1, :]
             ds = (dX + 1.0) * (dY + 1.0)
 
-        if self._cosa is None:
-            self._cosa = self.cosIncidance(d1, d2)
-        dsa = ds * self._cosa ** self._dssa_order
-
+        cosa = self._cached_array.get("cos_incidence")
+        if cosa is None:
+            cosa = self._cached_array["cos_incidence"] = self.cos_incidence(d1, d2)
+        dsa = ds * cosa ** self._dssa_order
         return dsa
 
     def solidAngleArray(self, shape=None, order=3, absolute=False):
@@ -1079,18 +1078,23 @@ class Geometry(object):
         SA = pix1*pix2/dist^2 * cos(incidence)^3
 
         """
-        if self._dssa is None:
-            if order is True:
-                self._dssa_order = 3.0
-            else:
-                self._dssa_order = float(order)
-            self._dssa = numpy.fromfunction(self.diffSolidAngle,
-                                            shape, dtype=numpy.float32)
-            self._dssa_crc = crc32(self._dssa)
-        if absolute:
-            return self._dssa * self.pixel1 * self.pixel2 / self._dist / self._dist
+        if order is True:
+            self._dssa_order = 3.0
         else:
-            return self._dssa
+            self._dssa_order = float(order)
+
+        key = "solid_angle#%s" % (self._dssa_order)
+        key_crc = "solid_angle#%s_crc" % (self._dssa_order)
+        dssa = self._cached_array.get(key)
+        if dssa is None:
+            dssa = numpy.fromfunction(self.diffSolidAngle,
+                                      shape, dtype=numpy.float32)
+            self._cached_array[key_crc] = crc32(dssa)
+            self._cached_array[key] = dssa
+        if absolute:
+            return dssa * self.pixel1 * self.pixel2 / self._dist / self._dist
+        else:
+            return dssa
 
     def save(self, filename):
         """
@@ -1434,6 +1438,47 @@ class Geometry(object):
             raise RuntimeError("Only 6 or 7-uplet are possible")
         self.reset()
 
+    def set_rot_from_quaternion(self, w, x, y, z):
+        """Quaternions are convieniant ways to represent 3D rotation
+        This method allows to define rot1(left-handed), rot2(left-handed) and
+        rot3 (right handed) as definied in the documentation from a quaternion,
+        expressed in the right handed (x1, x2, x3) basis set.
+
+        Uses the transformations-library from C. Gohlke
+
+        :param w: Real part of the quaternion (correspond to cos alpha/2)
+        :param x: Imaginary part of the quaternion, correspond to u1*sin(alpha/2)
+        :param y: Imaginary part of the quaternion, correspond to u2*sin(alpha/2)
+        :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/21)
+        """
+        from .third_party.transformations import euler_from_quaternion
+
+        euler = euler_from_quaternion((w, x, y, z), axes='sxyz')
+        self._rot1 = -euler[0]
+        self._rot2 = -euler[1]
+        self._rot3 = euler[2]
+
+    def quaternion(self, param=None):
+        """Calculate the quaternion associated to the current rotations
+        from rot1, rot2, rot3.
+
+        Uses the transformations-library from C. Gohlke
+
+        :param param: use this set of parameters instead of the default one.
+        :return: numpy array with 4 elements [w, x, y, z]
+        """
+        from .third_party.transformations import quaternion_from_euler
+        if param is None:
+            rot1 = self.rot1
+            rot2 = self.rot2
+            rot3 = self.rot3
+        else:
+            rot1 = param[3]
+            rot2 = param[4]
+            rot3 = param[5]
+
+        return quaternion_from_euler(-rot1, -rot2, rot3, axes="sxyz")
+
     def make_headers(self, type_="list"):
         """Create a configuration for the
 
@@ -1503,11 +1548,7 @@ class Geometry(object):
             lastOversampling = float(self._oversampling)
 
         self._oversampling = iOversampling
-        self._cached_arrays["2th_center"] = None
-        self._cached_arrays["q_center"] = None
-        self._dssa = None
-        self._cached_array["chi_center"] = None
-
+        self.reset()
         self.pixel1 /= self._oversampling / lastOversampling
         self.pixel2 /= self._oversampling / lastOversampling
 
@@ -1526,24 +1567,24 @@ class Geometry(object):
         Calculate the polarization correction accoding to the
         polarization factor:
 
-        * If the polarization factor is None, 
+        * If the polarization factor is None,
             the correction is not applied (returns 1)
-        * If the polarization factor is 0 (circular polarization), 
+        * If the polarization factor is 0 (circular polarization),
             the correction correspond to (1+(cos2θ)^2)/2
-        * If the polarization factor is 1 (linear horizontal polarization), 
+        * If the polarization factor is 1 (linear horizontal polarization),
             there is no correction in the vertical plane  and a node at 2th=90, chi=0
-        * If the polarization factor is -1 (linear vertical polarization), 
+        * If the polarization factor is -1 (linear vertical polarization),
             there is no correction in the horizontal plane and a node at 2th=90, chi=90
         * If the polarization is elliptical, the polarization factor varies between -1 and +1.
 
-        The axis_offset parameter allows correction for the misalignement of 
+        The axis_offset parameter allows correction for the misalignement of
         the polarization plane (or ellipse main axis) and the the detector's X axis.
 
-        :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization) 
+        :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization)
                     and 1 (where division by 0 could occure at 2th=90, chi=0)
-        :param axis_offset: Angle between the polarization main axis and 
+        :param axis_offset: Angle between the polarization main axis and
                             detector's X direction (in radians !!!)
-        :return: 2D array with polarization correction array 
+        :return: 2D array with polarization correction array
                         (intensity/polarisation)
 
         """
@@ -1606,10 +1647,10 @@ class Geometry(object):
             return
 
         with self._sem:
-            if (t0 == self._transmission_normal) \
-                and (shape is None or
-                     (shape == self._transmission_corr.shape)):
-                return self._transmission_corr
+            if (t0 == self._transmission_normal):
+                transmission_corr = self._cached_array.get("transmission_corr")
+                if ((shape is None) or (transmission_corr is not None and shape == transmission_corr.shape)):
+                    return transmission_corr
 
             if shape is None:
                 raise RuntimeError(("You should provide a shape if the"
@@ -1617,11 +1658,17 @@ class Geometry(object):
 
         with self._sem:
             self._transmission_normal = t0
-            if self._cosa is None:
-                self._cosa = numpy.fromfunction(self.cosIncidance, shape, dtype=numpy.float32)
-            self._transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / self._cosa)) / (1 - t0)
-            self._transmission_crc = crc32(self._transmission_corr)
-        return self._transmission_corr
+            cosa = self._cached_array.get("cos_incidence")
+            if cosa is None:
+                cosa = numpy.fromfunction(self.cos_incidence,
+                                          shape,
+                                          dtype=numpy.float32)
+                self._cached_array["cos_incidence"] = cosa
+            transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / cosa)) / (1 - t0)
+            self._cached_array["transmission_crc"] = crc32(transmission_corr)
+            self._cached_array["transmission_corr"] = transmission_corr
+
+        return transmission_corr
 
     def reset(self):
         """
@@ -1630,11 +1677,7 @@ class Geometry(object):
         """
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
-        self._dssa = None
         self._transmission_normal = None
-        self._transmission_corr = None
-        self._transmission_crc = None
-        self._cosa = None
         self._cached_array = {}
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
@@ -1646,7 +1689,7 @@ class Geometry(object):
         """
         Computes a 2D image from a 1D integrated profile
 
-        :param tth: 1D array with radial unit, this array needs to be ordered 
+        :param tth: 1D array with radial unit, this array needs to be ordered
         :param I: scattering intensity, corresponding intensity
         :param shape: shape of the image (if not defined by the detector)
         :param dim1_unit: unit for the "tth" array
@@ -1660,7 +1703,7 @@ class Geometry(object):
 
         """
         dim1_unit = units.to_unit(dim1_unit)
-        tth = tth.copy() / dim1_unit.scale
+        tth = tth / dim1_unit.scale
 
         if shape is None:
             shape = self.detector.max_shape
@@ -1688,19 +1731,85 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
+    def calcfrom2d(self, I, tth, chi, shape=None, mask=None,
+                   dim1_unit=units.TTH, dim2_unit=units.CHI_DEG,
+                   correctSolidAngle=True, dummy=0.0,
+                   polarization_factor=None, polarization_axis_offset=0,
+                   dark=None, flat=None,
+                   ):
+        """
+        Computes a 2D image from a cake / 2D integrated image
+
+        :param I: scattering intensity, as an image n_tth, n_chi
+        :param tth: 1D array with radial unit, this array needs to be ordered
+        :param chi: 1D array with azimuthal unit, this array needs to be ordered
+        :param shape: shape of the image (if not defined by the detector)
+        :param dim1_unit: unit for the "tth" array
+        :param dim2_unit: unit for the "chi" array
+        :param correctSolidAngle:
+        :param dummy: value for masked pixels
+        :param polarization_factor: set to true to use previously used value
+        :param polarization_axis_offset: axis_offset to be send to the polarization method
+        :param dark: dark current correction
+        :param flat: flatfield corrction
+        :return: 2D image reconstructed
+
+        """
+        dim1_unit = units.to_unit(dim1_unit)
+        dim2_unit = units.to_unit(dim2_unit)
+        tth = numpy.ascontiguousarray(tth, numpy.float64) / dim1_unit.scale
+        chi = numpy.ascontiguousarray(chi, numpy.float64) / dim2_unit.scale
+        if shape is None:
+            shape = self.detector.max_shape
+        try:
+            ttha = self.__getattribute__(dim1_unit.center)(shape)
+
+        except:
+            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
+                               str(dim1_unit) + " not (yet?) Implemented")
+        chia = self.chia
+
+        built_mask = numpy.ones(shape, dtype=numpy.int8)
+        empty_data = numpy.zeros(shape, dtype=numpy.float32)
+
+        from .ext.inpainting import polar_interpolate
+
+        calcimage = polar_interpolate(empty_data,
+                                      mask=built_mask,
+                                      radial=ttha,
+                                      azimuthal=chia,
+                                      polar=I,
+                                      rad_pos=tth,
+                                      azim_pos=chi)
+        if correctSolidAngle:
+            calcimage *= self.solidAngleArray(shape)
+        if polarization_factor is not None:
+            calcimage *= self.polarization(shape, polarization_factor,
+                                           axis_offset=polarization_axis_offset,
+                                           with_checksum=False)
+        if flat is not None:
+            assert flat.shape == tuple(shape)
+            calcimage *= flat
+        if dark is not None:
+            assert dark.shape == tuple(shape)
+            calcimage += dark
+        if mask is not None:
+            assert mask.shape == tuple(shape)
+            calcimage[numpy.where(mask)] = dummy
+        return calcimage
+
     def __copy__(self):
         """:return: a shallow copy of itself.
         """
         new = self.__class__(detector=self.detector)
         # transfer numerical values:
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
+                     "chiDiscAtPi", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_crc', '_transmission_normal',
+                     '_transmission_normal',
                      ]
-        array = ["_dssa",
-                 '_cosa', '_transmission_normal', '_transmission_corr']
-        for key in numerical + array:
+        # array = []
+        for key in numerical:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
@@ -1712,12 +1821,10 @@ class Geometry(object):
         :param memo: dict with modified objects
         :return: a deep copy of itself."""
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
+                     "chiDiscAtPi", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_crc', '_transmission_normal',
+                     '_transmission_normal',
                      ]
-        array = ["_dssa",
-                 '_cosa', '_transmission_normal', '_transmission_corr']
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -1729,12 +1836,6 @@ class Geometry(object):
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
-        for key in array:
-            value = self.__getattribute__(key)
-            if value is not None:
-                new.__setattr__(key, 1 * value)
-            else:
-                new.__setattr__(key, None)
         new_param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
         memo[id(self.param)] = new_param
@@ -1756,7 +1857,7 @@ class Geometry(object):
         this system (JK = Jerome Kieffer) as follows:
         JK1 = PB2 (Y)
         JK2 = PB1 (X)
-        JK3 = -PB3 (-Z)
+        JK3 = PB3 (Z)
         ...slight differences will result from the order
         FIXME: make backwards and forwards converter helper function
 
@@ -1782,21 +1883,23 @@ class Geometry(object):
         sin_rot2 = sin(param[4])
         sin_rot3 = sin(param[5])
 
-        # Rotation about axis 1
+        # Rotation about axis 1: Note this rotation is left-handed
         rot1 = numpy.array([[1.0, 0.0, 0.0],
-                            [0.0, cos_rot1, -sin_rot1],
-                            [0.0, sin_rot1, cos_rot1]])
+                            [0.0, cos_rot1, sin_rot1],
+                            [0.0, -sin_rot1, cos_rot1]])
         # Rotation about axis 2. Note this rotation is left-handed
-        rot2 = numpy.array([[cos_rot2, 0.0, sin_rot2],
+        rot2 = numpy.array([[cos_rot2, 0.0, -sin_rot2],
                             [0.0, 1.0, 0.0],
-                            [-sin_rot2, 0.0, cos_rot2]])
-        # Rotation about axis 3
+                            [sin_rot2, 0.0, cos_rot2]])
+        # Rotation about axis 3: Note this rotation is right-handed
         rot3 = numpy.array([[cos_rot3, -sin_rot3, 0.0],
                             [sin_rot3, cos_rot3, 0.0],
-                            [0.0, 0.0, -1.0]])
-        rotation_matrix = numpy.dot(numpy.dot(rot3, rot2), rot1)  # 3x3 matrix
+                            [0.0, 0.0, 1.0]])
+        rotation_matrix = numpy.dot(numpy.dot(rot3, rot2),
+                                    rot1)  # 3x3 matrix
 
         return rotation_matrix
+
 
 # ############################################
 # Accessors and public properties of the class
@@ -1953,13 +2056,16 @@ class Geometry(object):
     chia = property(get_chia, set_chia, del_chia, "chi array in cache")
 
     def get_dssa(self):
-        return self._dssa
+        key = "solid_angle#%s" % (self._dssa_order)
+        return self._cached_array.get(key)
 
     def set_dssa(self, _):
         logger.error("You are not allowed to modify solid angle array")
 
     def del_dssa(self):
-        self._dssa = None
+        self._cached_array["solid_angle#%s" % (self._dssa_order)] = None
+        self._cached_array["solid_angle#%s_crc" % (self._dssa_order)] = None
+
     dssa = property(get_dssa, set_dssa, del_dssa, "solid angle array in cache")
 
     def get_qa(self):
@@ -2042,6 +2148,29 @@ class Geometry(object):
         return self.detector.get_mask()
 
     mask = property(get_mask, set_mask)
+
+    # Property to provide _dssa and _dssa_crc and so one to maintain the API
+    @property
+    def _dssa(self):
+        key = "solid_angle#%s" % (self._dssa_order)
+        return self._cached_array.get(key)
+
+    @property
+    def _dssa_crc(self):
+        key = "solid_angle#%s_crc" % (self._dssa_order)
+        return self._cached_array.get(key)
+
+    @property
+    def _cosa(self):
+        return self._cached_array.get("cos_incidence")
+
+    @property
+    def _transmission_crc(self):
+        return self._cached_array.get("transmission_crc")
+
+    @property
+    def _transmission_corr(self):
+        return self._cached_array.get("transmission_corr")
 
     def __getnewargs_ex__(self):
         return (self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3, self.pixel1, self.pixel2,

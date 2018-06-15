@@ -4,7 +4,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,11 +26,10 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""Selector for OpenMP enabled or not histogram functions"""
 
-
-__doc__ = """Selector for OpenMP enabled or not histogram functions"""
 __author__ = "Jerome Kieffer"
-__date__ = "31/05/2016"
+__date__ = "09/01/2018"
 __license__ = "MIT"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"

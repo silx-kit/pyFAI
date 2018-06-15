@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #             Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
@@ -38,12 +38,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "05/03/2018"
 __satus__ = "Production"
 
 import logging
 import os
-import sys
 import glob
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -51,16 +50,10 @@ logger = logging.getLogger("diff_tomo")
 from pyFAI import version as PyFAI_VERSION
 from pyFAI import date as PyFAI_DATE
 from pyFAI.diffmap import DiffMap
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+from pyFAI.third_party.argparse import ArgumentParser
 
-
-if sys.version_info[0] < 3:
-    from urlparse import urlparse
-else:
-    from urllib.parse import urlparse
+from pyFAI.third_party import six
+urlparse = six.moves.urllib.parse.urlparse
 
 
 class DiffTomo(DiffMap):
@@ -82,7 +75,7 @@ class DiffTomo(DiffMap):
         self.slow_motor_name = "rotation"
         self.fast_motor_name = "translation"
 
-    def parse(self, *args, **kwargs):
+    def parse(self, with_config=False):
         """
         parse options from command line
         """
@@ -185,16 +178,16 @@ user interface.
         if options.mask:
             mask = urlparse(options.mask).path
             if os.path.isfile(mask):
-                logger.info("Reading Mask file from: %s" % mask)
+                logger.info("Reading Mask file from: %s", mask)
                 self.mask = os.path.abspath(mask)
             else:
-                logger.warning("No such mask file %s" % mask)
+                logger.warning("No such mask file %s", mask)
         if options.poni:
             if os.path.isfile(options.poni):
-                logger.info("Reading PONI file from: %s" % options.poni)
+                logger.info("Reading PONI file from: %s", options.poni)
                 self.poni = options.poni
             else:
-                logger.warning("No such poni file %s" % options.poni)
+                logger.warning("No such poni file %s", options.poni)
 
         if options.nTrans is not None:
             self.npt_fast = int(options.nTrans)
@@ -217,6 +210,7 @@ def main():
     dt.makeHDF5()
     dt.process()
     dt.show_stats()
+
 
 if __name__ == "__main__":
     main()

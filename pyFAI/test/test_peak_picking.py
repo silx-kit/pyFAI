@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,21 +28,24 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for peak picking class"
+"""Test suite for non-gui peak picking class"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "06/03/2018"
 
 
 import unittest
 import os
 import numpy
 import sys
-from .utilstest import UtilsTest, getLogger, recursive_delete
-logger = getLogger(__file__)
-from ..peak_picker import PeakPicker
+import logging
+import shutil
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
+from ..gui.peak_picker import PeakPicker
 from ..calibrant import Calibrant
 from ..geometryRefinement import GeometryRefinement
 
@@ -87,14 +90,15 @@ class TestPeakPicking(unittest.TestCase):
 
     def tearDown(self):
         """Remove temporary files"""
-        recursive_delete(self.tmp_dir)
+        shutil.rmtree(self.tmp_dir)
         self.calibFile = self.ctrlPt = self.tth = self.wavelength = self.ds = None
         self.calibrant = self.maxiter = self.tmp_dir = self.logfile = self.nptfile = None
 
     def test_peakPicking(self):
         """first test peak-picking then checks the geometry found is OK"""
         for i in self.ctrlPt:
-            pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=open(self.logfile, "a"))
+            with open(self.logfile, "a") as log:
+                pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=log)
             logger.info("point %s at ring #%i (tth=%.1f deg) generated %i points", self.ctrlPt[i], i, self.tth[i], len(pts))
             if len(pts) > 0:
                 self.pp.points.append(pts, ring=i)

@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "15/06/2017"
+__date__ = "15/03/2018"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,7 +37,7 @@ import logging
 import threading
 import numpy
 
-from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
+from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .utils import concatenate_cl_kernel
 from ..utils import crc32
 if pyopencl:
@@ -45,7 +45,7 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 
-logger = logging.getLogger("pyFAI.ocl_azim_csr")
+logger = logging.getLogger(__name__)
 
 
 class OCL_CSR_Integrator(object):

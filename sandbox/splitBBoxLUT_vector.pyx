@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -22,12 +22,13 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__doc__ = """
+"""
 Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done on the pixel's bounding box like fit2D,
 reverse implementation based on a sparse matrix multiplication
 """
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __date__ = "02/02/2017"

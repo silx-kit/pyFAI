@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -27,19 +27,20 @@
 # THE SOFTWARE.
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """Test suite for all pyFAI modules."""
+"""Test suite for all pyFAI modules."""
+
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "15/03/2018"
 
 import sys
 import unittest
-from .utilstest import UtilsTest, getLogger
+import logging
+logger = logging.getLogger(__name__)
 
-logger = getLogger("test_all")
-
+from .utilstest import UtilsTest
 
 from . import test_average
 from . import test_dummy
@@ -73,19 +74,23 @@ from . import test_watershed
 from . import test_multi_geometry
 from . import test_ocl_sort
 from . import test_worker
-from . import test_integrate_widget
 from . import test_utils_shell
 from . import test_utils_stringutil
+from . import test_utils_mathutil
 from . import test_preproc
 from . import test_bayes
 from . import test_scripts
+from . import test_spline
 from . import test_goniometer
 from . import test_integrate_app
+from . import test_pyfai_api
 from ..opencl import test as test_opencl
+from ..gui import test as test_gui
 
 
 def suite():
     testsuite = unittest.TestSuite()
+    testsuite.addTest(test_gui.suite())
     testsuite.addTest(test_average.suite())
     testsuite.addTest(test_dummy.suite())
     testsuite.addTest(test_histogram.suite())
@@ -119,14 +124,16 @@ def suite():
     testsuite.addTest(test_multi_geometry.suite())
     testsuite.addTest(test_ocl_sort.suite())
     testsuite.addTest(test_worker.suite())
-    testsuite.addTest(test_integrate_widget.suite())
     testsuite.addTest(test_utils_shell.suite())
     testsuite.addTest(test_utils_stringutil.suite())
+    testsuite.addTest(test_utils_mathutil.suite())
     testsuite.addTest(test_preproc.suite())
     testsuite.addTest(test_bayes.suite())
     testsuite.addTest(test_scripts.suite())
+    testsuite.addTest(test_spline.suite())
     testsuite.addTest(test_goniometer.suite())
     testsuite.addTest(test_opencl.suite())
+    testsuite.addTest(test_pyfai_api.suite())
     return testsuite
 
 

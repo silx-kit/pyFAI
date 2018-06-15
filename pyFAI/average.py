@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright 2003-2016 (C) European Synchrotron Radiation Facility, Grenoble,
+#    Copyright (C) 2003-2018 European Synchrotron Radiation Facility, Grenoble,
 #             France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "05/03/2018"
 __status__ = "production"
 
 import logging
@@ -47,11 +47,7 @@ from scipy.interpolate import interp1d
 from scipy.optimize.optimize import fmin
 from scipy.optimize.optimize import fminbound
 
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
-
+from .third_party import six
 from .utils import stringutil
 
 from ._version import calc_hexversion
@@ -59,7 +55,7 @@ if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4,
     # Short cut fabio.factory do not exists on older versions
     fabio.factory = fabio.fabioimage.FabioImage.factory
 
-logger = logging.getLogger("pyFAI.average")
+logger = logging.getLogger(__name__)
 
 
 class ImageReductionFilter(object):
@@ -498,7 +494,7 @@ def _get_monitor_value_from_edf(image, monitor_key):
 
         try:
             index = mnemonic_values.index(mnemonic)
-        except ValueError as _e:
+        except ValueError:
             logger.debug("Exception", exc_info=1)
             raise MonitorNotFound("Monitor mnemonic '%s' not found in the header key '%s'" % (mnemonic, mnemonic_values_key))
 
@@ -797,10 +793,21 @@ class Average(object):
         """
         self._fabio_images = []
         self._nb_frames = 0
+        if len(image_list) > 100:
+            # if too many files are opened, it may crash. The har limit is 1024
+            copy_data = True
+        else:
+            copy_data = False
         for image_index, image in enumerate(image_list):
             if isinstance(image, six.string_types):
                 logger.info("Reading %s", image)
                 fabio_image = fabio.open(image)
+                if copy_data and fabio_image.nframes == 1:
+                    # copy the data so that we can close the file right now.
+                    fimg = fabio_image.convert(fabio_image.__class__)
+                    fimg.filename = image
+                    fabio_image.close()
+                    fabio_image = fimg
             elif isinstance(image, fabio.fabioimage.fabioimage):
                 fabio_image = image
             else:

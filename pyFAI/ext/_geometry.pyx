@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "02/02/2017"
+__date__ = "05/04/2018"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -38,6 +38,8 @@ cimport numpy
 import numpy
 from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
+
+cdef double twopi = 2.0 * M_PI
 
 # We declare a second cython.floating so that it behaves like an actual template
 ctypedef fused float_or_double:
@@ -53,9 +55,9 @@ cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double 
     :param sinRot1,sinRot2,sinRot3: sine of the angles
     :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
-    return p1 * cosRot2 * cosRot3 + \
-           p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
-           p3 * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+    return (p1 * cosRot2 * cosRot3 +
+            p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) -
+            p3 * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3))
 
 
 cdef inline double f_t2(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
@@ -67,9 +69,9 @@ cdef inline double f_t2(double p1, double p2, double p3, double sinRot1, double 
     :param sinRot1,sinRot2,sinRot3: sine of the angles
     :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
-    return p1 * cosRot2 * sinRot3 + \
-           p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
-           p3 * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+    return (p1 * cosRot2 * sinRot3 +
+            p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) -
+            p3 * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3))
 
 
 cdef inline double f_t3(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
@@ -146,10 +148,10 @@ cdef inline double f_r(double p1, double p2, double L, double sinRot1, double co
     cdef:
         double t1 = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
         double t2 = f_t2(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-        #double t3 = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+        # double t3 = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     return sqrt(t1 * t1 + t2 * t2)
-    #Changed 10/03/2016 ... the radius is in the pixel position.
-    #return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
+    # Changed 10/03/2016 ... the radius is in the pixel position.
+    # return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
 
 
 @cython.cdivision(True)
@@ -233,14 +235,14 @@ def calc_pos_zyx(double L, double poni1, double poni2,
     r3 = numpy.asarray(t3)
 
     if pos1.ndim == 3:
-        return r3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
-               r1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
-               r2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2])
+        return (r3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),
+                r1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),
+                r2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]))
 
     if pos1.ndim == 2:
-        return r3.reshape(pos1.shape[0], pos1.shape[1]),\
-               r1.reshape(pos1.shape[0], pos1.shape[1]),\
-               r2.reshape(pos1.shape[0], pos1.shape[1])
+        return (r3.reshape(pos1.shape[0], pos1.shape[1]),
+                r1.reshape(pos1.shape[0], pos1.shape[1]),
+                r2.reshape(pos1.shape[0], pos1.shape[1]))
     else:
         return r3, r1, r2
 
@@ -302,7 +304,8 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
 def calc_chi(double L, double rot1, double rot2, double rot3,
              numpy.ndarray pos1 not None,
              numpy.ndarray pos2 not None,
-             numpy.ndarray pos3=None):
+             numpy.ndarray pos3=None,
+             bint chi_discontinuity_at_pi=True):
     """Calculate the chi array (azimuthal angles) using OpenMP
 
     X1 = p1*cos(rot2)*cos(rot3) + p2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) -  L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))
@@ -318,6 +321,7 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
     :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
     :param pos2: numpy array with distances in meter along dim2 from PONI (X)
     :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
+    :param chi_discontinuity_at_pi: set to False to obtain chi in the range [0, 2pi[ instead of [-pi, pi[
     :return: ndarray of double with same shape and size as pos1
     """
     cdef:
@@ -327,6 +331,7 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
         double cosRot2 = cos(rot2)
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
+        double chi
     cdef ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
     cdef:
@@ -341,9 +346,12 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
     else:
         assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
-        for i in prange(size, nogil=True, schedule="static"):
-            out[i] = f_chi(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-
+        for i in prange(size, nogil=True, schedule="static"): 
+            chi = f_chi(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            if chi_discontinuity_at_pi:
+                out[i] = chi
+            else:
+                out[i] = (chi + twopi) % twopi
     if pos1.ndim == 2:
         return numpy.asarray(out).reshape(pos1.shape[0], pos1.shape[1])
     else:
@@ -510,7 +518,9 @@ def calc_rad_azim(double L,
                   numpy.ndarray pos2 not None,
                   numpy.ndarray pos3=None,
                   space="2th",
-                  wavelength=None):
+                  wavelength=None, 
+                  bint chi_discontinuity_at_pi=True
+                  ):
     """Calculate the radial & azimutal position for each pixel from pos1, pos2, pos3.
 
     :param L: distance sample - PONI
@@ -523,6 +533,7 @@ def calc_rad_azim(double L,
     :param pos2: numpy array with distances in meter along dim2 from PONI (X)
     :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
     :param space: can be "2th", "q" or "r" for radial units. Azimuthal units are radians
+    :param chi_discontinuity_at_pi: set to False to obtain chi in the range [0, 2pi[ instead of [-pi, pi[
     :return: ndarray of double with same shape and size as pos1 + (2,),
     :raise: KeyError when space is bad !
             ValueError when wavelength is missing
@@ -542,7 +553,7 @@ def calc_rad_azim(double L,
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
         float[:, ::1] out = numpy.empty((size, 2), dtype=numpy.float32)
-        double t1, t2, t3, fwavelength
+        double t1, t2, t3, fwavelength, chi
 
     if space == "2th":
         cspace = 1
@@ -568,7 +579,11 @@ def calc_rad_azim(double L,
                 out[i, 0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
             elif cspace == 3:
                 out[i, 0] = sqrt(t1 * t1 + t2 * t2)
-            out[i, 1] = atan2(t1, t2)
+            chi = atan2(t1, t2)
+            if chi_discontinuity_at_pi:
+                out[i, 1] = chi
+            else:
+                out[i, 1] = (chi + twopi) % twopi
     else:
         assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
@@ -582,7 +597,11 @@ def calc_rad_azim(double L,
                 out[i, 0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
             elif cspace == 3:
                 out[i, 0] = sqrt(t1 * t1 + t2 * t2)
-            out[i, 1] = atan2(t1, t2)
+            chi = atan2(t1, t2)
+            if chi_discontinuity_at_pi:
+                out[i, 1] = chi
+            else:
+                out[i, 1] = (chi + twopi) % twopi
 
     nout = numpy.asarray(out)
     if pos1.ndim == 3:
@@ -607,11 +626,11 @@ def calc_delta_chi(cython.floating[:, ::1] centers,
     """
     cdef:
         int width, height, row, col, corn, nbcorn
-        double co, ce, delta0, delta1, delta2, delta, twopi = 2*M_PI
+        double co, ce, delta0, delta1, delta2, delta
         double[:, ::1] res
 
     height = centers.shape[0]
-    width =  centers.shape[1]
+    width = centers.shape[1]
     assert corners.shape[0] == height, "height match"
     assert corners.shape[1] == width, "width match"
     nbcorn = corners.shape[2]
@@ -625,7 +644,7 @@ def calc_delta_chi(cython.floating[:, ::1] centers,
                 for corn in range(nbcorn):
                     co = corners[row, col, corn, 1]
                     delta1 = (co - ce + twopi) % twopi
-                    delta2 = (ce - co + twopi ) % twopi
+                    delta2 = (ce - co + twopi) % twopi
                     delta0 = min(delta1, delta2)
                     if delta0 > delta:
                         delta = delta0

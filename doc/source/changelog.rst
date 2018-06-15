@@ -1,12 +1,25 @@
 :Author: Jérôme Kieffer
-:Date: 01/09/2017
+:Date: 01/02/2018
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
 
-0.14.2: Not yet released
-------------------------
+0.15.0: 01/02/2018
+------------------
+* 150 commits since last revision
+* New tutorials on image inpainting, sensor thickness correction, ... 
+* Improve scripts
+* Improve the new calibration GUI (pyFAI-calib2)
+* Use scipy physical constants instead of hard-coded values
+* Improved detector serialization and binning assessement
+* Update documentation (images, better rendering of notebook & tutorials)
+* Converge project with silx and fabio
+* Remove generated rst- and C-files from repository
+* This is the last version supporting python2.7
+
+0.14.2: 14/09/2017
+------------------
 * Fix seg-fault with manylinux1 wheels, in fastcrc module (thanks Thomas)
 * Fix Qt4-Qt5 compatibility (thanks Vadim)
 * Easier to understand geometry transformation (thanks Jon)
@@ -15,6 +28,9 @@ ChangeLog of Versions
 * New detector: Mythen & CirPad (thanks Fred)
 * Clean up debug code which avoid to use pyFAI-calib2
 * pyFAI-calib2 now expect fabio >= 0.5
+* Fix issue with metadata saving in 1d
+* Fix performance regression with pyopencl >2015.2 (Thanks Andreas)
+* pyFAI saxs and waxs scripts guess now the binning of the detector (thanks Fred).
 
 0.14.1: 25/07/2017
 ------------------

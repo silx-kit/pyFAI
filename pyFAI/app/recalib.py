@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -39,23 +39,20 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "06/03/2018"
 __satus__ = "development"
 
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI.recalib")
-from pyFAI.calibration import Recalibration
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.gui.cli_calibration import Recalibration
+from pyFAI.third_party import six
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
 except ImportError:
-    logging.debug("No socket opened for debugging -> install rfoo")
+    logger.debug("No socket opened for debugging -> install rfoo")
 
 
 def main():
@@ -67,6 +64,7 @@ def main():
     c.postProcess()
     if c.interactive:
         six.moves.input("Press enter to quit")
+
 
 if __name__ == "__main__":
     main()

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,34 +28,31 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for masked arrays"
+"""Test suite for masked arrays"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
 import numpy
 import logging
 import time
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 from .. import spline
 from ..ext import _bispev
-try:
-    import six
-except ImportError:
-    from pyFAI.third_party import six
+from pyFAI.third_party import six
 
 try:
     from scipy.interpolate import fitpack
-except:
+except ImportError:
     fitpack = None
 
 
@@ -76,24 +73,23 @@ class TestBispev(unittest.TestCase):
         x_1d_array = numpy.arange(self.spline.xmin, self.spline.xmax + 1)
         y_1d_array = numpy.arange(self.spline.ymin, self.spline.ymax + 1)
         t0 = time.time()
-        dx_ref = fitpack.bisplev(
-                x_1d_array, y_1d_array, [self.spline.xSplineKnotsX,
-                                         self.spline.xSplineKnotsY,
-                                         self.spline.xSplineCoeff,
-                                         self.spline.splineOrder,
-                                         self.spline.splineOrder],
-                dx=0, dy=0)
+        dx_ref = fitpack.bisplev(x_1d_array, y_1d_array,
+                                 [self.spline.xSplineKnotsX,
+                                  self.spline.xSplineKnotsY,
+                                  self.spline.xSplineCoeff,
+                                  self.spline.splineOrder,
+                                  self.spline.splineOrder],
+                                 dx=0, dy=0)
         t1 = time.time()
         logger.debug(self.spline.xSplineKnotsX.dtype)
         logger.debug(self.spline.xSplineKnotsY.dtype)
         logger.debug(self.spline.xSplineCoeff.dtype)
-        dx_loc = _bispev.bisplev(
-                x_1d_array, y_1d_array, [self.spline.xSplineKnotsX,
-                                         self.spline.xSplineKnotsY,
-                                         self.spline.xSplineCoeff,
-                                         self.spline.splineOrder,
-                                         self.spline.splineOrder],
-                )
+        dx_loc = _bispev.bisplev(x_1d_array, y_1d_array,
+                                 [self.spline.xSplineKnotsX,
+                                  self.spline.xSplineKnotsY,
+                                  self.spline.xSplineCoeff,
+                                  self.spline.splineOrder,
+                                  self.spline.splineOrder])
         t2 = time.time()
         logger.debug("Scipy timings: %.3fs\t cython timings: %.3fs", t1 - t0, t2 - t1)
         logger.debug("%s, %s", dx_ref.shape, dx_loc.shape)

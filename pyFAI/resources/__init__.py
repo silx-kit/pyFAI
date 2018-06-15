@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2016 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -53,11 +53,14 @@ of this modules to ensure access across different distribution schemes:
 
 __authors__ = ["V.A. Sole", "Thomas Vincent"]
 __license__ = "MIT"
-__date__ = "01/07/2016"
+__date__ = "20/02/2018"
 
 
 import os
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 # pkg_resources is useful when this package is stored in a zip
 # When pkg_resources is not available, the resources dir defaults to the
@@ -65,6 +68,7 @@ import sys
 try:
     import pkg_resources
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     pkg_resources = None
 
 
@@ -113,3 +117,18 @@ def resource_filename(resource):
                             *resource.split('/'))
     else:  # Preferred way to get resources as it supports zipfile package
         return pkg_resources.resource_filename(__name__, resource)
+
+
+_integrated = False
+
+
+def silx_integration():
+    """Provide pyFAI resources accessible throug silx using a prefix."""
+    global _integrated
+    if _integrated:
+        return
+    import silx.resources
+    silx.resources.register_resource_directory("pyfai",
+                                               __name__,
+                                               _RESOURCES_DIR)
+    _integrated = True

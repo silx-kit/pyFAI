@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2016 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,14 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "29/05/2017"
+__date__ = "14/03/2018"
 
 import logging
 import numpy
 import pyFAI.utils
 from pyFAI.geometryRefinement import GeometryRefinement
-from pyFAI.peak_picker import PeakPicker
-from pyFAI.ext.marchingsquares import isocontour
+from ..peak_picker import PeakPicker
+from ...ext.marchingsquares import isocontour
 
 _logger = logging.getLogger(__name__)
 
@@ -156,16 +156,13 @@ class RingExtractor(object):
         tth_max += tth
         tth_min += tth
 
-        if geoRef:
-            ttha = geoRef.get_ttha()
-            chia = geoRef.get_chia()
-            if (ttha is None) or (ttha.shape != peakPicker.data.shape):
-                ttha = geoRef.twoThetaArray(peakPicker.data.shape)
-            if (chia is None) or (chia.shape != peakPicker.data.shape):
-                chia = geoRef.chiArray(peakPicker.data.shape)
-        else:
-            ttha = ai.twoThetaArray(peakPicker.data.shape)
-            chia = ai.chiArray(peakPicker.data.shape)
+        ttha = geoRef.get_ttha()
+        chia = geoRef.get_chia()
+        if (ttha is None) or (ttha.shape != peakPicker.data.shape):
+            ttha = geoRef.twoThetaArray(peakPicker.data.shape)
+        if (chia is None) or (chia.shape != peakPicker.data.shape):
+            chia = geoRef.chiArray(peakPicker.data.shape)
+
         rings = 0
         peakPicker.sync_init()
         if maxRings is None:

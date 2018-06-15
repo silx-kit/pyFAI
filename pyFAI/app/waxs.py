@@ -5,7 +5,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #             Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 
 import os
@@ -53,10 +53,7 @@ logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger("PyFAI")
 
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+from pyFAI.third_party.argparse import ArgumentParser
 
 
 def main():
@@ -154,6 +151,10 @@ def main():
                 method = "full_csr"
             else:
                 method = "splitpixel"
+        if to_process:
+            first = to_process[0]
+            fabimg = fabio.open(first)
+            integrator.detector.guess_binning(fabimg.data)
         print(integrator)
         print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
         for afile in to_process:
@@ -192,11 +193,12 @@ def main():
                                        polarization_factor=options.polarization_factor,
                                        metadata=fabimg.header
                                        )
-                print("%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs." %
-                      (outfile, t1 - t0, t2 - t1, time.time() - t2))
+                msg = "%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs."
+                print(msg % (outfile, t1 - t0, t2 - t1, time.time() - t2))
             else:
-                print("%s,\t reading: %.3fs\t 1D integration: %.3fs." %
-                      (outfile, t1 - t0, t2 - t1))
+                msg = "%s,\t reading: %.3fs\t 1D integration: %.3fs."
+                print(msg % (outfile, t1 - t0, t2 - t1))
+
 
 if __name__ == "__main__":
     main()

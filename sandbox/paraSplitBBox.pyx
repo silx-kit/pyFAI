@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #

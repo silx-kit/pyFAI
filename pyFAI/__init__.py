@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "18/07/2017"
+__date__ = "29/03/2018"
 
 import sys
 import logging
@@ -43,20 +43,59 @@ import os
 project = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
 try:
     from ._version import __date__ as date
-    from ._version import version, version_info, hexversion, strictversion, calc_hexversion
+    from ._version import version, version_info, hexversion, strictversion
+    from ._version import citation, calc_hexversion
 except ImportError:
     raise RuntimeError("Do NOT use %s from its sources: build it and use the built version" % project)
 
 if sys.version_info < (2, 6):
-    logger = logging.getLogger("pyFAI.__init__")
+    logger = logging.getLogger(__name__)
     logger.error("pyFAI required a python version >= 2.6")
     raise RuntimeError("pyFAI required a python version >= 2.6, now we are running: %s" % sys.version)
 
-from .detectors import Detector
-from .azimuthalIntegrator import AzimuthalIntegrator
-from .decorators import depreclog
-load = AzimuthalIntegrator.sload
-detector_factory = Detector.factory
+from .utils import decorators
+
+
+use_opencl = True
+"""Global configuration which allow to disable OpenCL programatically.
+It must be set before requesting any OpenCL modules.
+
+.. code-block:: python
+
+    import pyFAI
+    pyFAI.use_opencl = False
+"""
+
+
+@decorators.deprecated(replacement="pyFAI.azimuthalIntegrator.AzimuthalIntegrator", since_version="0.16")
+def AzimuthalIntegrator(*args, **kwargs):
+    from .azimuthalIntegrator import AzimuthalIntegrator
+    return AzimuthalIntegrator(*args, **kwargs)
+
+
+def load(filename):
+    """
+    Load an azimuthal integrator from a filename description.
+
+    :param str filename: name of the file to load
+    :return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
+    """
+    from .azimuthalIntegrator import AzimuthalIntegrator
+    return AzimuthalIntegrator.sload(filename)
+
+
+def detector_factory(name, config=None):
+    """
+    Create a new detector.
+
+    :param str name: name of a detector
+    :param dict config: configuration of the detector supporting dict or JSON
+        representation.
+    :return: an instance of the right detector, set-up if possible
+    :rtype: pyFAI.detectors.Detector
+    """
+    from .detectors import Detector
+    return Detector.factory(name, config)
 
 
 def tests(deprecation=False):
@@ -65,12 +104,12 @@ def tests(deprecation=False):
     :param deprecation: enable/disables deprecation warning in the tests
     """
     if deprecation:
-        depreclog.setLevel(logging.DEBUG)
+        decorators.depreclog.setLevel(logging.DEBUG)
     else:
-        depreclog.setLevel(logging.ERROR)
+        decorators.depreclog.setLevel(logging.ERROR)
     from . import test
     res = test.run_tests()
-    depreclog.setLevel(logging.DEBUG)
+    decorators.depreclog.setLevel(logging.DEBUG)
     return res
 
 

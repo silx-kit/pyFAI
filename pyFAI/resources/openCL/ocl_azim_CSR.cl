@@ -3,7 +3,7 @@
  *            Kernel with full pixel-split using a CSR sparse matrix
  *
  *
- *   Copyright (C) 2012-2017 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2018 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)

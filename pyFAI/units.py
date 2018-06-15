@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author: Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
 #
@@ -41,27 +41,25 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/09/2017"
+__date__ = "12/04/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
-logger = logging.getLogger("pyFAI.units")
+logger = logging.getLogger(__name__)
 import numpy
 from numpy import pi
+import scipy.constants
 
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
+from .third_party import six
 
 ################################################################################
 # A few physical constants
 ################################################################################
 
-hc = CONST_hc = 12.398419292004204
+hc = CONST_hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
 """Product of h the Planck constant, and c the speed of light in vacuum
-in Angstrom.KeV"""
+in Angstrom.KeV. It is approximativly equal to 12.398419292004204."""
 
 CONST_q = 1.602176565e-19
 """One electron-volt is equal to 1.602176565⋅10-19 joules"""
@@ -212,7 +210,7 @@ register_radial_unit("d*2_nm^-2",
 register_radial_unit("log10(q.m)_None",
                      scale=1.0,
                      label=r"log10($q$.m)",
-                     equation=lambda x, y, z, wavelength: numpy.log10(eq_q(x, y, z, wavelength) * 1e9))
+                     equation=lambda x, y, z, wavelength: numpy.log10(1e9 * eq_q(x, y, z, wavelength)))
 
 register_radial_unit("log(q.nm)_None",
                      scale=1.0,
@@ -227,7 +225,7 @@ register_radial_unit("log(1+q.nm)_None",
 register_radial_unit("log(1+q.A)_None",
                      scale=1.0,
                      label=r"log(1+$q$.A)",
-                     equation=lambda x, y, z, wavelength: numpy.log1p(eq_q(x, y, z, wavelength) * 10.0))
+                     equation=lambda x, y, z, wavelength: numpy.log1p(0.1 * eq_q(x, y, z, wavelength)))
 
 register_radial_unit("arcsinh(q.nm)_None",
                      scale=1.0,
@@ -237,7 +235,7 @@ register_radial_unit("arcsinh(q.nm)_None",
 register_radial_unit("arcsinh(q.A)_None",
                      scale=1.0,
                      label=r"arcsinh($q$.A)",
-                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength) * 10.0))
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(0.1 * eq_q(x, y, z, wavelength)))
 
 
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
@@ -269,6 +267,7 @@ def to_unit(obj, type_=None):
         logger.error("Unable to recognize this type unit '%s' of type %s. "
                      "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_])))
     return rad_unit
+
 
 # To ensure the compatibility with former code:
 Q = Q_NM = RADIAL_UNITS["q_nm^-1"]

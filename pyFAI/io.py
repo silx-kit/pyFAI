@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/08/2017"
+__date__ = "05/02/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -69,7 +69,7 @@ from . import units
 from . import version
 
 
-logger = logging.getLogger("pyFAI.io")
+logger = logging.getLogger(__name__)
 try:
     import h5py
 except ImportError as error:
@@ -203,7 +203,8 @@ class Writer(object):
 
         if type(json_config) in StringTypes:
             if os.path.isfile(json_config):
-                config = json.load(open(json_config, "r"))
+                with open(json_config, "r") as f:
+                    config = json.load(f)
             else:
                 config = json.loads(json_config)
         else:
@@ -234,7 +235,7 @@ class HDF5Writer(Writer):
         if fast_scan_width is not None:
             try:
                 self.fast_scan_width = int(fast_scan_width)
-            except:
+            except ValueError:
                 pass
         self.hdf5 = None
         self.group = None
@@ -497,10 +498,9 @@ class DefaultAiWriter(Writer):
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
         :type dim1_unit: pyFAI.units.Unit
-        :param has_dark: save the darks filenames (default: no)
-        :type has_dark: bool
-        :param has_flat: save the flat filenames (default: no)
-        :type has_flat: bool
+        :param has_mask: a mask was used
+        :param has_dark: a dark-current was applied
+        :param has_flat: flat-field was applied
         :param polarization_factor: the polarization factor
         :type polarization_factor: float, None
         :param normalization_factor: the monitor value
@@ -528,7 +528,7 @@ class DefaultAiWriter(Writer):
             f.write("\n")
 
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit="2th_deg",
-               has_dark=False, has_flat=False,
+               has_mask=None, has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None,
                metadata=None):
         """This method save the result of a 2D integration.
@@ -545,10 +545,9 @@ class DefaultAiWriter(Writer):
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
         :type dim1_unit: pyFAI.units.Unit
-        :param has_dark: save the darks filenames (default: no)
-        :type has_dark: bool
-        :param has_flat: save the flat filenames (default: no)
-        :type has_flat: bool
+        :param has_mask: a mask was used
+        :param has_dark: a dark-current was applied
+        :param has_flat: flat-field was applied
         :param polarization_factor: the polarization factor
         :type polarization_factor: float, None
         :param normalization_factor: the monitor value
@@ -573,6 +572,9 @@ class DefaultAiWriter(Writer):
         header["chi_min"] = str(dim2.min())
         header["chi_max"] = str(dim2.max())
 
+        header["has_mask_applied"] = str(has_mask)
+        header["has_dark_correction"] = str(has_dark)
+        header["has_flat_correction"] = str(has_flat)
         header["polarization_factor"] = str(polarization_factor)
         header["normalization_factor"] = str(normalization_factor)
 
@@ -607,29 +609,31 @@ class DefaultAiWriter(Writer):
         self._already_written = True
 
         if fully_qualified_name(data) == 'pyFAI.containers.Integrate1dResult':
-            self.save1D(self._filename,
-                        data.radial,
-                        data.intensity,
-                        data.sigma,
-                        data.unit,
-                        data.has_dark_correction,
-                        data.has_flat_correction,
-                        data.polarization_factor,
-                        data.normalization_factor,
-                        data.metadata)
+            self.save1D(filename=self._filename,
+                        dim1=data.radial,
+                        I=data.intensity,
+                        error=data.sigma,
+                        dim1_unit=data.unit,
+                        has_mask=data.has_mask_applied,
+                        has_dark=data.has_dark_correction,
+                        has_flat=data.has_flat_correction,
+                        polarization_factor=data.polarization_factor,
+                        normalization_factor=data.normalization_factor,
+                        metadata=data.metadata)
 
         elif fully_qualified_name(data) == 'pyFAI.containers.Integrate2dResult':
-            self.save2D(self._filename,
-                        data.intensity,
-                        data.radial,
-                        data.azimuthal,
-                        data.sigma,
-                        data.unit,
-                        data.has_dark_correction,
-                        data.has_flat_correction,
-                        data.polarization_factor,
-                        data.normalization_factor,
-                        data.metadata)
+            self.save2D(filename=self._filename,
+                        I=data.intensity,
+                        dim1=data.radial,
+                        dim2=data.azimuthal,
+                        error=data.sigma,
+                        dim1_unit=data.unit,
+                        has_mask=data.has_mask_applied,
+                        has_dark=data.has_dark_correction,
+                        has_flat=data.has_flat_correction,
+                        polarization_factor=data.polarization_factor,
+                        normalization_factor=data.normalization_factor,
+                        metadata=data.metadata)
         else:
             raise Exception("Unsupported data type: %s" % type(data))
 

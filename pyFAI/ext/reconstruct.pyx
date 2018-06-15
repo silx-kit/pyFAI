@@ -3,7 +3,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2016 European Synchrotron Radiation Facility,  France
+#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility,  France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,11 +25,11 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""Cython module to reconstruct the masked values of an image"""
 
-__doc__ = """Cython module to reconstruct the masked values of an image"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "01/12/2016"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -137,7 +137,7 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
         numpy.int8_t[:, ::1] cmask = mask.astype(numpy.int8)
     assert d0 == mask.shape[0], "mask.shape[0]"
     assert d1 == mask.shape[1], "mask.shape[1]"
-    cdef numpy.ndarray[numpy.float32_t, ndim = 2]out = numpy.zeros_like(data)
+    cdef numpy.ndarray[numpy.float32_t, ndim=2] out = numpy.zeros_like(data)
     out += data
     out[mask.astype(bool)] = 0
 
@@ -147,4 +147,3 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
             if cmask[p0, p1]:
                 out[p0, p1] += processPoint(cdata, cmask, p0, p1, d0, d1)
     return out
-

@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -27,7 +27,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """small program to transform a metrology CSV file into a detector specification file"""
+"""Small program to transform a metrology CSV file into a detector
+specification file"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
@@ -40,7 +42,7 @@ import numpy
 import pyFAI
 import h5py
 import logging
-import six
+from pyFAI.third_party import six
 logger = logging.getLogger("xpad")
 from pyFAI import bilinear
 

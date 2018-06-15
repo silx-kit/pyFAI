@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2016 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,17 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/06/2017"
+__date__ = "14/03/2018"
 
 import logging
 import numpy
 import pyFAI.utils
-from pyFAI.geometryRefinement import GeometryRefinement
-from pyFAI.peak_picker import PeakPicker
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
+from ...geometryRefinement import GeometryRefinement
+from ..peak_picker import PeakPicker
 
 _logger = logging.getLogger(__name__)
 

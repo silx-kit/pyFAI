@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,15 +28,16 @@
 
 from __future__ import division, with_statement, print_function
 
-__doc__ = "Benchmark for HDF5 writing"
-__author__ ="Jérôme Kieffer"
-__date__ = "2014-09-24"
+"""Benchmark for HDF5 writing"""
+
+__author__ = "Jérôme Kieffer"
+__date__ = "24/09/2014"
 
 import os
 import time
-from argparse import ArgumentParser
 import tempfile
 import numpy
+from pyFAI.third_party.argparse import ArgumentParser
 from pyFAI import io
 import logging
 logger = logging.getLogger("Bench_hdf5")

@@ -3,7 +3,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:   Zubair Nawaz <zubair.nawaz@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -32,7 +32,7 @@ Created on Nov 4, 2013
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/05/2017"
+__date__ = "10/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -158,7 +158,7 @@ cdef void init_w(float[:] t, int k, float[:] x, numpy.int32_t[:] lx, float[:, :]
     :param w:
     """
     cdef:
-        int i, l, l1, n, m
+        int i, l1, l2, n, m
         float arg, tb, te
         float[:] h, hh
 
@@ -170,20 +170,20 @@ cdef void init_w(float[:] t, int k, float[:] x, numpy.int32_t[:] lx, float[:, :]
         hh = view.array(shape=(5,), itemsize=sizeof(float), format="f")
 
     te = t[n - k - 1]
-    l = k + 1
-    l1 = l + 1
+    l1 = k + 1
+    l2 = l1 + 1
     for i in range(m):
         arg = x[i]
         if arg < tb:
             arg = tb
         if arg > te:
             arg = te
-        while not (arg < t[l] or l == (n - k - 1)):
-            l = l1
-            l1 = l + 1
-        fpbspl(t, n, k, arg, l, h, hh)
+        while not (arg < t[l1] or l1 == (n - k - 1)):
+            l1 = l2
+            l2 = l1 + 1
+        fpbspl(t, n, k, arg, l1, h, hh)
 
-        lx[i] = l - k - 1
+        lx[i] = l1 - k - 1
         for j in range(k + 1):
             w[i, j] = h[j]
 
@@ -226,8 +226,8 @@ cdef cy_bispev(float[:] tx,
         int i, j, m, i1, l2, j1
         int size_z = mx * my
 
-    # initializing z and h
-        numpy.ndarray[numpy.float32_t, ndim = 1] z = numpy.zeros(size_z, numpy.float32)
+        # initializing z and h
+        numpy.ndarray[numpy.float32_t, ndim=1] z = numpy.zeros(size_z, numpy.float32)
         float arg, sp, err, tmp, a
 
     with nogil:

@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 import os
 import tempfile
@@ -41,8 +41,8 @@ import shutil
 import unittest
 import numpy
 import time
-from .utilstest import getLogger  # UtilsTest, Rwp, getLogger
-logger = getLogger(__file__)
+import logging
+logger = logging.getLogger(__name__)
 from ..detectors import detector_factory, ALL_DETECTORS
 from .. import io
 

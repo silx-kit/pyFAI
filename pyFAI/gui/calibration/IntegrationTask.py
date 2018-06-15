@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2016 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/06/2017"
+__date__ = "03/10/2017"
 
 import logging
 import numpy
 from collections import OrderedDict
 from .model.DataModel import DataModel
-from pyFAI.gui import qt
+from silx.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
@@ -306,7 +306,7 @@ class IntegrationTask(AbstractCalibrationTask):
         for i, angle in enumerate(ringAngles):
             legend = "ring_%i" % (i + 1)
             color = colors[i % len(colors)]
-            htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+            htmlColor = "#%02X%02X%02X60" % (color.red(), color.green(), color.blue())
             self.__plot1d.addXMarker(x=angle, color=htmlColor, legend=legend)
             self.__plot2d.addXMarker(x=angle, color=htmlColor, legend=legend)
             self.__ringLegends.append(legend)
@@ -397,12 +397,11 @@ class IntegrationTask(AbstractCalibrationTask):
         pyfaiGeometry.rot1 = geometry.rotation1().value()
         pyfaiGeometry.rot2 = geometry.rotation2().value()
         pyfaiGeometry.rot3 = geometry.rotation3().value()
+        pyfaiGeometry.wavelength = geometry.wavelength().value() * 1e-10
 
         experimentSettingsModel = self.model().experimentSettingsModel()
         detector = experimentSettingsModel.detector()
         pyfaiGeometry.detector = detector
-        wavelength = experimentSettingsModel.wavelength().value() * 1e-10
-        pyfaiGeometry.wavelength = wavelength
 
         pyfaiGeometry.save(filename)
 

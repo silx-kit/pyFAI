@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,16 +26,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import division, print_function, absolute_import
+
 """Jupyter helper functions
 """
-
-from __future__ import division, print_function
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/05/2017"
+__date__ = "15/03/2018"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
@@ -73,7 +73,8 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
     if cp is not None:
         for lbl in cp.get_labels():
             pt = numpy.array(cp.get(lbl=lbl).points)
-            ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
+            if len(pt) > 0:
+                ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
         if ai is not None and cp.calibrant is not None:
             tth = cp.calibrant.get_2th()
             ttha = ai.twoThetaArray()
@@ -84,7 +85,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
 
 def plot1d(result, calibrant=None, label=None, ax=None):
     """Display the powder diffraction pattern in the jupyter notebook
-    
+
     :param result: instance of Integrate1dResult
     :param calibrant: Calibrant instance to overlay diffraction lines
     :param label: (str) name of the curve
@@ -95,7 +96,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
         _fig, ax = subplots()
 
     unit = result.unit
-    if result.sigma:
+    if result.sigma is not None:
         ax.errorbar(result.radial, result.intensity, result.sigma, label=label)
     else:
         ax.plot(result.radial, result.intensity, label=label)
@@ -103,17 +104,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
     if label:
         ax.legend()
     if calibrant:
-        from pyFAI import units
-        x_values = None
-        twotheta = numpy.array([i for i in calibrant.get_2th() if i])  # in radian
-        if unit == units.TTH_DEG:
-            x_values = numpy.rad2deg(twotheta)
-        elif unit == units.TTH_RAD:
-            x_values = twotheta
-        elif unit == units.Q_A:
-            x_values = (4.e-10 * numpy.pi / calibrant.wavelength) * numpy.sin(.5 * twotheta)
-        elif unit == units.Q_NM:
-            x_values = (4.e-9 * numpy.pi / calibrant.wavelength) * numpy.sin(.5 * twotheta)
+        x_values = calibrant.get_peaks(unit)
         if x_values is not None:
             for x in x_values:
                 line = lines.Line2D([x, x], ax.axis()[2:4],
@@ -129,7 +120,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
 
 def plot2d(result, calibrant=None, label=None, ax=None):
     """Display the caked image in the jupyter notebook
-    
+
     :param result: instance of Integrate2dResult
     :param calibrant: Calibrant instance to overlay diffraction lines
     :param label: (str) name of the curve

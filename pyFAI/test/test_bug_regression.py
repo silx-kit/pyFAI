@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -38,20 +38,49 @@ from __future__ import absolute_import, division, print_function
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/09/2017"
+__copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "05/04/2018"
 
 import sys
 import os
 import unittest
 import numpy
 import subprocess
-from .utilstest import getLogger, UtilsTest  # , Rwp, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 import fabio
 from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from .. import detectors
+from .. import units
+from ..utils import six
+from math import pi
+
+try:
+    import importlib.util
+    if "module_from_spec" not in dir(importlib.util):
+        raise ImportError
+except ImportError:
+    import importlib
+
+    def load_source(module_name, file_path):
+        """Plugin loader which does not pollute sys.module,
+        
+        Not as powerful as the v3.5+ 
+        """
+        return importlib.import_module(module_name, module_name.split(".")[0])
+
+else:
+
+    def load_source(module_name, file_path):
+        """Plugin loader which does not pollute sys.module,
+        
+        Python Version >=3.5"""
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
 
 
 class TestBug170(unittest.TestCase):
@@ -115,11 +144,10 @@ class TestBug211(unittest.TestCase):
             e.write(fn)
             self.image_files.append(fn)
         self.res = res / 3.0
-        self.exe, self.env = UtilsTest.script_path("pyFAI-average")
         # It is not anymore a script, but a module
-        if not os.path.exists(self.exe):
-            import pyFAI.app.average
-            self.exe = pyFAI.app.average.__file__
+        import pyFAI.app.average
+        self.exe = pyFAI.app.average.__file__
+        self.env = UtilsTest.get_test_env()
 
     def tearDown(self):
         for fn in self.image_files:
@@ -156,11 +184,12 @@ class TestBug211(unittest.TestCase):
                         "pyFAI-average with quantiles gives good results")
 
 
-class TestBug232(unittest.TestCase):
-    """
-    Check the copy and deepcopy methods of Azimuthal integrator
-    """
-    def test(self):
+class TestBugRegression(unittest.TestCase):
+    "just a bunch of simple tests"
+    def test_bug_232(self):
+        """
+        Check the copy and deepcopy methods of Azimuthal integrator
+        """
         det = detectors.ImXPadS10()
         ai = AzimuthalIntegrator(dist=1, detector=det)
         data = numpy.random.random(det.shape)
@@ -175,12 +204,10 @@ class TestBug232(unittest.TestCase):
         self.assertNotEqual(id(ai.ra), id(ai3.ra), "deepcopy arrays are different after copy")
         self.assertNotEqual(id(ai.detector), id(ai3.detector), "deepcopy arrays are different after copy")
 
-
-class TestBug174(unittest.TestCase):
-    """
-    wavelength change not taken into account (memoization error)
-    """
-    def test(self):
+    def test_bug_174(self):
+        """
+        wavelength change not taken into account (memoization error)
+        """
         ai = load(UtilsTest.getimage("Pilatus1M.poni"))
         data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
         wl1 = 1e-10
@@ -195,14 +222,103 @@ class TestBug174(unittest.TestCase):
         # print(dq)
         self.assertAlmostEqual(dq, 3.79, 2, "Q-scale difference should be around 3.8, got %s" % dq)
 
+    def test_bug_758(self):
+        """check the stored "h*c" constant is almost 12.4"""
+        hc = 12.398419292004204  # Old reference value
+        self.assertAlmostEqual(hc, units.hc, 6, "hc is correct, got %s" % units.hc)
+
+    def test_bug_808(self):
+        """Try to import every single module in the package
+        """
+        import pyFAI
+#         print(pyFAI.__file__)
+#         print(pyFAI.__name__)
+        pyFAI_root = os.path.split(pyFAI.__file__)[0]
+
+        for root, dirs, files in os.walk(pyFAI_root, topdown=True):
+            for adir in dirs:
+
+                subpackage_path = os.path.join(root, adir, "__init__.py")
+                subpackage = "pyFAI" + subpackage_path[len(pyFAI_root):-12].replace(os.sep, ".")
+                if os.path.isdir(subpackage_path):
+                    logger.info("Loading subpackage: %s from %s", subpackage, subpackage_path)
+                    sys.modules[subpackage] = load_source(subpackage, subpackage_path)
+            for name in files:
+                if name.endswith(".py"):
+                    path = os.path.join(root, name)
+                    fqn = "pyFAI" + path[len(pyFAI_root):-3].replace(os.sep, ".")
+                    logger.info("Importing %s from %s", fqn, path)
+                    try:
+                        load_source(fqn, path)
+                    except Exception as err:
+                        if ((isinstance(err, ImportError) and
+                                "No Qt wrapper found" in err.__str__() or
+                                "pyopencl is not installed" in err.__str__() or
+                                "PySide" in err.__str__()) or
+                            (isinstance(err, SystemError) and
+                                "Parent module" in err.__str__())):
+
+                            logger.info("Expected failure importing %s from %s with error: %s",
+                                        fqn, path, err)
+                        else:
+                            logger.error("Failed importing %s from %s with error: %s%s: %s",
+                                         fqn, path, os.linesep,
+                                         err.__class__.__name__, err)
+                            raise err
+
+    def test_bug_816(self):
+        "Ensure the chi-disontinuity is properly set"
+        detector = detectors.detector_factory("Pilatus 300k")
+        positions = detector.get_pixel_corners()
+        # y_min = positions[..., 1].min()
+        y_max = positions[..., 1].max()
+        # x_min = positions[..., 0].min()
+        x_max = positions[..., 2].max()
+
+        expected = {  # poni -> azimuthal range in both convention
+                    (0, 0): [(0, pi / 2), (0, pi / 2)],
+                    (y_max / 2, x_max / 2): [(-pi, pi), (0, 2 * pi)],
+                    (y_max, 0): [(-pi / 2, 0), (3 * pi / 2, 2 * pi)],
+                    (0, x_max): [(pi / 2, pi), (pi / 2, pi)],
+                    (y_max, x_max): [(-pi, -pi / 2), (pi, 3 * pi / 2)],
+                   }
+
+        for poni, chi_range in expected.items():
+            logger.debug("%s, %s", poni, chi_range)
+            ai = AzimuthalIntegrator(0.1, *poni, detector=detector)
+            chi_pi_center = ai.chiArray()
+            logger.debug("disc @pi center: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_center.min(), chi_pi_center.max())
+            chi_pi_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1, :, 1]
+            logger.debug("disc @pi corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_corner.min(), chi_pi_corner.max())
+
+            self.assertAlmostEquals(chi_pi_center.min(), chi_range[0][0], msg="chi_pi_center.min", delta=0.1)
+            self.assertAlmostEquals(chi_pi_corner.min(), chi_range[0][0], msg="chi_pi_corner.min", delta=0.1)
+            self.assertAlmostEquals(chi_pi_center.max(), chi_range[0][1], msg="chi_pi_center.max", delta=0.1)
+            self.assertAlmostEquals(chi_pi_corner.max(), chi_range[0][1], msg="chi_pi_corner.max", delta=0.1)
+
+            ai.reset()
+            ai.setChiDiscAtZero()
+
+            logger.debug("Updated range %s %s %s %s", chi_range[0], chi_range[1], ai.chiDiscAtPi, list(ai._cached_array.keys()))
+            chi_0_center = ai.chiArray()
+            logger.debug("disc @0 center: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range[1], chi_0_center.min(), chi_0_center.max())
+            chi_0_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1, :, 1]  # Discard pixel from border...
+            logger.debug("disc @0 corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range[1], chi_0_corner.min(), chi_0_corner.max())
+
+            dmin = lambda v: v - chi_range[1][0]
+            dmax = lambda v: v - chi_range[1][1]
+            self.assertAlmostEquals(dmin(chi_0_center.min()), 0, msg="chi_0_center.min", delta=0.1)
+            self.assertAlmostEquals(dmin(chi_0_corner.min()), 0, msg="chi_0_corner.min", delta=0.1)
+            self.assertAlmostEquals(dmax(chi_0_center.max()), 0, msg="chi_0_center.max", delta=0.1)
+            self.assertAlmostEquals(dmax(chi_0_corner.max()), 0, msg="chi_0_corner.max", delta=0.1)
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestBug170))
     testsuite.addTest(loader(TestBug211))
-    testsuite.addTest(loader(TestBug232))
-    testsuite.addTest(loader(TestBug174))
+    testsuite.addTest(loader(TestBugRegression))
     return testsuite
 
 

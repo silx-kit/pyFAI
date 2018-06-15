@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/06/2017"
+__date__ = "20/02/2018"
 __status__ = "development"
 
 import os
@@ -50,6 +50,9 @@ from .calibrant import Calibrant, CALIBRANT_FACTORY
 from .utils.ellipse import fit_ellipse
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 from scipy.optimize import fmin, leastsq, fmin_slsqp
+
+logger = logging.getLogger(__name__)
+
 try:
     from scipy.optimize import basinhopping as anneal
 except ImportError:
@@ -57,13 +60,12 @@ except ImportError:
 try:
     from scipy.optimize import curve_fit
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     curve_fit = None
 
 if os.name != "nt":
     WindowsError = RuntimeError
 
-logger = logging.getLogger("pyFAI.geometryRefinement")
-# logger.setLevel(logging.DEBUG)
 ROCA = "/opt/saxs/roca"
 
 ####################
@@ -253,10 +255,17 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         if wavelength is None:
             wavelength = self.wavelength
+        if wavelength <= 0:
+            return [numpy.finfo("float32").max] * len(rings)
         rings = numpy.ascontiguousarray(rings, dtype=numpy.int32)
+
         if wavelength != self.calibrant.wavelength:
             self.calibrant.setWavelength_change2th(wavelength)
-        return numpy.array(self.calibrant.get_2th(), dtype=numpy.float64)[rings]
+        ary = self.calibrant.get_2th()
+        if len(ary) < rings.max():
+            # complete turn ~ 2pi ~ 7: help the optimizer to find the right way
+            ary += [10.0 * (rings.max() - len(ary))] * (1 + rings.max() - len(ary))
+        return numpy.array(ary, dtype=numpy.float64)[rings]
 
     def residu1(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)

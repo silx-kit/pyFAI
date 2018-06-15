@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,7 +26,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""This modules contains a function to fit without refinement an ellipse 
+"""This modules contains a function to fit without refinement an ellipse
 on a set of points ....
 """
 
@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/02/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -46,11 +46,11 @@ Ellipse = namedtuple("Ellipse", ["center_1", "center_2", "angle", "half_long_axi
 
 
 def fit_ellipse(pty, ptx):
-    """Fit an
-     
-    inspired from 
+    """Fit an ellipse
+
+    inspired from
     http://nicky.vanforeest.com/misc/fitEllipse/fitEllipse.html
-    
+
     :param pty: point coordinates in the slow dimension (y)
     :param ptx: point coordinates in the fast dimension (x)
     """

@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2015-2016 European Synchrotron Radiation Facility
+# Copyright (C) 2015-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/05/2017"
+__date__ = "19/02/2018"
 
 import os
 from numpy.distutils.misc_util import Configuration
@@ -35,6 +35,7 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('pyFAI', parent_package, top_path)
     config.add_subpackage('app')
     config.add_subpackage('benchmark')
+    config.add_subpackage('detectors')
     config.add_subpackage('ext')
     config.add_subpackage('gui')
     config.add_subpackage('opencl')

@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/05/2016
+:Date: 12/04/2018
 :Keywords: Tutorials
 :Target: Advanced users tutorials using jupyter notebooks
 
@@ -22,8 +22,11 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Geometry/geometry
    Distortion/Distortion
    Calibrant/Calibrant
+   LogScale/Guinier
    multi-geometry
    MakeCalibrant/make_calibrant
    CCD_Calibration/CCD_calibration
    Goniometer/index
    Inpainting/Inpainting
+   ThickDetector/index
+   Soleil/index

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2016 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "04/05/2018"
 __status__ = "development"
 
 import threading
@@ -93,7 +93,7 @@ import os.path
 import logging
 import json
 
-logger = logging.getLogger("pyFAI.worker")
+logger = logging.getLogger(__name__)
 
 import numpy
 import fabio
@@ -103,10 +103,13 @@ from .distortion import Distortion
 from . import units
 try:
     from .ext.preproc import preproc
+    USE_CYTHON = True
 except ImportError as err:
     logger.warning("Unable to import preproc: %s", err)
     preproc = None
-# from .io import h5py, HDF5Writer
+    USE_CYTHON = False
+else:
+    USE_CYTHON = True
 
 
 def make_ai(config):
@@ -172,8 +175,8 @@ class Worker(object):
                  unit="r_mm", dummy=None, delta_dummy=None,
                  azimuthalIntgrator=None):
         """
-        :param azimuthalIntegrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance
-        :param azimuthalIntgrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance (deprecated)
+        :param AzimuthalIntegrator azimuthalIntegrator: An AzimuthalIntegrator instance
+        :param AzimuthalIntegrator azimuthalIntgrator: An AzimuthalIntegrator instance (deprecated)
         :param shapeIn: image size in input
         :param shapeOut: Integrated size: can be (1,2000) for 1D integration
         :param unit: can be "2th_deg, r_mm or q_nm^-1 ...
@@ -195,7 +198,8 @@ class Worker(object):
 #            self.config = config
 #        elif type(config) in types.StringTypes:
 #            if os.path.isfile(config):
-#                self.config = json.load(open(config, "r"))
+#                with open(config, "r") as f:
+#                    self.config = json.load(f)
 #                self.config_file(config)
 #            else:
 #                self.config = json.loads(config)
@@ -338,17 +342,19 @@ class Worker(object):
                 result = numpy.vstack(integrated_result).T
 
         except Exception as err:
-            err2 = ["error in integration",
+            err2 = ["error in integration do_2d: %s" % self.do_2D(),
+                    str(err.__class__.__name__),
                     str(err),
                     "data.shape: %s" % (data.shape,),
                     "data.size: %s" % data.size,
                     "ai:",
                     str(self.ai),
-                    "csr:",
+                    "method:",
+                    kwarg.get("method")
                     # str(self.ai._csr_integrator),
                     # "csr size: %s" % self.ai._lut_integrator.size
                     ]
-            logger.error("; ".join(err2))
+            logger.error("\n".join(err2))
             raise err
 
         if writer is not None:
@@ -383,7 +389,8 @@ class Worker(object):
     def setJsonConfig(self, jsonconfig):
         print("start config ...")
         if os.path.isfile(jsonconfig):
-            config = json.load(open(jsonconfig, "r"))
+            with open(jsonconfig, "r") as f:
+                config = json.load(f)
         else:
             config = json.loads(jsonconfig)
         if "poni" in config:
@@ -563,13 +570,16 @@ class Worker(object):
             self._normalization_factor = value
     normalization_factor = property(get_normalization_factor, set_normalization_factor)
 
+    __call__ = process
+
 
 class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
     def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
-                 mask=None, dummy=None, delta_dummy=None, device=None):
+                 mask=None, dummy=None, delta_dummy=None, device=None,
+                 empty=None, dtype="float32"):
         """Constructor of the worker
 
         :param dark: array
@@ -577,6 +587,8 @@ class PixelwiseWorker(object):
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
+        :param empty: value given for empty pixels by default
+        :param dtype: unit (and precision) in which to perform calculation: float32 or float64
         """
         self.ctx = None
         if dark is not None:
@@ -605,18 +617,21 @@ class PixelwiseWorker(object):
 
         self.dummy = dummy
         self.delta_dummy = delta_dummy
-        if device is not None:
-            logger.warning("GPU is not yet implemented")
+        self.empty = float(empty) if empty else 0.0
+        self.dtype = numpy.dtype(dtype).type
 
-    def process(self, data, normalization_factor=None):
+    def process(self, data, variance=None, normalization_factor=None):
         """
         Process the data and apply a normalization factor
         :param data: input data
+        :param variance: the variance associated to the data
         :param normalization: normalization factor
-        :return: processed data
+        :return: processed data, optionally with the assiciated error if variance is provided
         """
-        if preproc is not None:
-            proc_data = preproc(data,
+        propagate_error = (variance is not None)
+        if (preproc is not None) and USE_CYTHON:
+            temp_data = preproc(data,
+                                variance=variance,
                                 dark=self.dark,
                                 flat=self.flat,
                                 solidangle=self.solidangle,
@@ -626,7 +641,17 @@ class PixelwiseWorker(object):
                                 dummy=self.dummy,
                                 delta_dummy=self.delta_dummy,
                                 normalization_factor=normalization_factor,
-                                empty=None)
+                                empty=self.empty,
+                                poissonian=0,
+                                dtype=self.dtype)
+            if propagate_error:
+                proc_data = temp_data[..., 0]
+                proc_variance = temp_data[..., 1]
+                proc_norm = temp_data[..., 2]
+                proc_data /= proc_norm
+                proc_error = numpy.sqrt(proc_variance) / proc_norm
+            else:
+                proc_data = temp_data
         else:
             if self.dummy is not None:
                 if self.delta_dummy is None:
@@ -650,8 +675,28 @@ class PixelwiseWorker(object):
             if normalization_factor is not None:
                 proc_data /= normalization_factor
             if do_mask:
-                proc_data[self.mask] = self.dummy or 0
-        return proc_data
+                proc_data[self.mask] = self.dummy or self.empty
+
+            if variance is not None:
+                proc_error = numpy.sqrt(variance)
+
+                if self.flat is not None:
+                    proc_error /= self.flat
+                if self.solidangle is not None:
+                    proc_error /= self.solidangle
+                if self.polarization is not None:
+                    proc_error /= self.polarization
+                if normalization_factor is not None:
+                    proc_error /= normalization_factor
+                if do_mask:
+                    proc_error[self.mask] = self.dummy or self.empty
+
+        if propagate_error:
+            return proc_data, proc_error
+        else:
+            return proc_data
+
+    __call__ = process
 
 
 class DistortionWorker(object):
@@ -705,12 +750,16 @@ class DistortionWorker(object):
             self.distortion = Distortion(detector, method="LUT", device=device,
                                          mask=self.mask, empty=self.dummy or 0)
 
-    def process(self, data, normalization_factor=1.0):
+    def process(self, data, variance=None,
+                normalization_factor=1.0):
         """
         Process the data and apply a normalization factor
         :param data: input data
+        :param variance: the variance associated to the data
         :param normalization: normalization factor
         :return: processed data
+        
+        TODO: manage variance in distortion correction
         """
         if preproc is not None:
             proc_data = preproc(data,
@@ -753,3 +802,5 @@ class DistortionWorker(object):
             return self.distortion.correct(proc_data, self.dummy, self.delta_dummy)
         else:
             return data
+
+    __call__ = process
