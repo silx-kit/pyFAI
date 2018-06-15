@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/05/2018"
+__date__ = "15/06/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2218,6 +2218,7 @@ class AzimuthalIntegrator(Geometry):
                 mask_crc = None
         else:
             has_mask = "provided"
+            mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
 
         shape = data.shape
@@ -2876,6 +2877,7 @@ class AzimuthalIntegrator(Geometry):
                 mask_crc = None
         else:
             has_mask = "provided"
+            mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
 
         shape = data.shape
