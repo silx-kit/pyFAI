@@ -848,14 +848,20 @@ class Detector(with_metaclass(DetectorMeta, object)):
         '_splineCache')
 
     def __getnewargs_ex__(self):
-        return self._pixel1, self._pixel2, self._splineFile, self.max_shape
+        return (self.pixel1, self.pixel2, self.splineFile, self.max_shape), {}
 
     def __getstate__(self):
-        return tuple(getattr(self, var) for var in self.__statevars)
+        state_blacklist = ('_sem', 'engines')
+        state = self.__dict__.copy()
+        for key in state_blacklist:
+            if key in state: del state[key]
+        return state
 
     def __setstate__(self, state):
-        for statevar, varkey in zip(state, self.__statevars):
-            setattr(self, varkey, statevar)
+        for statekey, statevalue in state.items():
+            setattr(self, statekey, statevalue)
+        self.engines = {}
+        self._sem = threading.Semaphore()
 
 
 class NexusDetector(Detector):

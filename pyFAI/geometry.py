@@ -2042,3 +2042,21 @@ class Geometry(object):
         return self.detector.get_mask()
 
     mask = property(get_mask, set_mask)
+
+    def __getnewargs_ex__(self):
+        return (self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3, self.pixel1, self.pixel2,
+                self.splineFile, self.detector, self.wavelength), {}
+
+    def __getstate__(self):
+        state_blacklist = ('_sem', 'engines', '_lock')
+        state = self.__dict__.copy()
+        for key in state_blacklist:
+            if key in state: del state[key]
+        return state
+
+    def __setstate__(self, state):
+        for statekey, statevalue in state.items():
+            setattr(self, statekey, statevalue)
+        self.engines = {}
+        self._sem = threading.Semaphore()
+        self._lock = threading.Semaphore()

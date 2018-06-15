@@ -571,6 +571,21 @@ class Calibrant(object):
                             dim1_unit='2th_rad', correctSolidAngle=True)
         return res
 
+    def __getnewargs_ex__(self):
+        return (self._filename, self._dSpacing, self._wavelength), {}
+
+    def __getstate__(self):
+        state_blacklist = ('_sem',)
+        state = self.__dict__.copy()
+        for key in state_blacklist:
+            if key in state: del state[key]
+        return state
+
+    def __setstate__(self, state):
+        for statekey, statevalue in state.items():
+            setattr(self, statekey, statevalue)
+        self._sem = threading.Semaphore()
+
 
 class CalibrantFactory(object):
     """Behaves like a dict but is actually a factory:
