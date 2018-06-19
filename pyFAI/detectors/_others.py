@@ -144,6 +144,30 @@ class Perkin(Detector):
             (self.name, self._pixel1, self._pixel2)
 
 
+class Perkin4K(Detector):
+    """
+    Perkin detector
+
+    """
+    aliases = ["Perkin4K detector", "Perkin Elmer 4K"]
+    force_pixel = True
+    MAX_SHAPE = (4096, 4096)
+    DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 100e-6
+
+    def __init__(self, pixel1=100e-6, pixel2=100e-6):
+        super(Perkin4K, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
+            self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
+            self.shape = tuple(s // b for s, b in zip(self.max_shape, self._binning))
+        else:
+            self.shape = (4096, 4096)
+            self._binning = (1, 1)
+
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._pixel1, self._pixel2)
+
+
 class Aarhus(Detector):
     """
     Cylindrical detector made of a bent imaging-plate.
