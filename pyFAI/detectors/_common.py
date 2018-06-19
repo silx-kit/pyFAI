@@ -647,7 +647,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         if not self.force_pixel:
             if shape != self.max_shape:
                 logger.warning("guess_binning is not implemented for %s detectors!\
-                 and image size %s! is wrong, expected %s!" % (self.name, shape, self.shape))
+                 and image size %s is wrong, expected %s!" % (self.name, shape, self.shape))
         elif self.max_shape:
             bin1 = self.max_shape[0] // shape[0]
             bin2 = self.max_shape[1] // shape[1]
