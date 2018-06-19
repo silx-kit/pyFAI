@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "19/06/2018"
 __status__ = "stable"
 
 
@@ -635,9 +635,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
         :return: True if the data fit the detector
         :rtype: bool
         """
-        if "shape" in dir(data):
+        if hasattr(data, "shape"):
             shape = data.shape
-        elif "__len__" in dir(data):
+        elif hasattr(data, "__len__"):
             shape = tuple(data[:2])
         else:
             logger.warning("No shape available to guess the binning: %s", data)
