@@ -3535,7 +3535,7 @@ class AzimuthalIntegrator(Geometry):
         if dummy is None:
             dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
-
+        unit = units.to_unit(unit)
         if "ocl" in method and npt_azim and (npt_azim - 1):
             old = npt_azim
             npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
@@ -3672,7 +3672,7 @@ class AzimuthalIntegrator(Geometry):
         if dummy is None:
             dummy = numpy.NaN
             delta_dummy = None
-
+        unit = units.to_unit(unit)
         if "__len__" in dir(thres) and len(thres) > 0:
             sigma_lo = thres[0]
             sigma_hi = thres[-1]
