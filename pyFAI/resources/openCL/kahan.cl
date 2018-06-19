@@ -37,7 +37,7 @@ static inline float2 comp_prod(float a, float b)
 // calculate a + b with error compensation
 static inline float2 compensated_sum(float2 a, float2 b)
 {
-    float sum, err = a.s1 + b.s1;
+    float err = a.s1 + b.s1;
     float first = a.s0;
     float second = b.s0;
     if (fabs(second) > fabs(first))
@@ -48,7 +48,7 @@ static inline float2 compensated_sum(float2 a, float2 b)
     }
     float cor = second + err;
     float target = first + cor;
-    err = cor - (target - sum);
+    err = cor - (target - first);
     return (float2)(target, err);
 }
 
