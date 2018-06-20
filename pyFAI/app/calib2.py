@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2018"
+__date__ = "19/06/2018"
 __status__ = "production"
 
 import logging
@@ -79,6 +79,11 @@ def configure_parser_arguments(parser):
     parser.add_argument("-v", "--verbose",
                         action="store_true", dest="debug", default=False,
                         help="switch to debug/verbose mode")
+    parser.add_argument('--debug',
+                        dest="debug",
+                        action="store_true",
+                        default=False,
+                        help='Set logging system in debug mode')
 
     # Settings
     parser.add_argument("-c", "--calibrant", dest="spacing", metavar="FILE",
@@ -251,6 +256,9 @@ def setup(model):
     # Analyse aruments and options
     options = parser.parse_args()
     args = options.args
+
+    if options.debug:
+        logging.root.setLevel(logging.DEBUG)
 
     # Settings
     settings = model.experimentSettingsModel()
