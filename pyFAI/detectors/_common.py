@@ -851,6 +851,23 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
+    def __getnewargs_ex__(self):
+        return (self.pixel1, self.pixel2, self.splineFile, self.max_shape), {}
+
+    def __getstate__(self):
+        state_blacklist = ('_sem', 'engines')
+        state = self.__dict__.copy()
+        for key in state_blacklist:
+            if key in state: del state[key]
+        return state
+
+    def __setstate__(self, state):
+        for statekey, statevalue in state.items():
+            setattr(self, statekey, statevalue)
+        self.engines = {}
+        self._sem = threading.Semaphore()
+
+
 
 class NexusDetector(Detector):
     """
