@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/06/2018"
+__date__ = "27/06/2018"
 __status__ = "stable"
 
 
@@ -855,21 +855,29 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
     def __getnewargs_ex__(self):
+        "Helper function for pickling detectors"
         return (self.pixel1, self.pixel2, self.splineFile, self.max_shape), {}
 
     def __getstate__(self):
-        state_blacklist = ('_sem', 'engines')
+        """Helper function for pickling detectors
+        
+        :return: the state of the object
+        """
+        state_blacklist = ('_sem',)
         state = self.__dict__.copy()
         for key in state_blacklist:
-            if key in state: del state[key]
+            if key in state:
+                del state[key]
         return state
 
     def __setstate__(self, state):
+        """Helper function for unpickling detectors
+        
+        :param state: the state of the object
+        """
         for statekey, statevalue in state.items():
             setattr(self, statekey, statevalue)
-        self.engines = {}
         self._sem = threading.Semaphore()
-
 
 
 class NexusDetector(Detector):
