@@ -2216,6 +2216,7 @@ class AzimuthalIntegrator(Geometry):
                 mask_crc = None
         else:
             has_mask = "provided"
+            mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
 
         shape = data.shape
@@ -2874,6 +2875,7 @@ class AzimuthalIntegrator(Geometry):
                 mask_crc = None
         else:
             has_mask = "provided"
+            mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
 
         shape = data.shape
