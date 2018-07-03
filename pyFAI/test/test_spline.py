@@ -80,8 +80,8 @@ class TestSpline(utilstest.ParametricTestCase):
         logger.debug("xmin %s, xmax %s, ymin %s, ymax",
                      spline.xmin, spline.xmax, spline.ymin, spline.ymax)
         spline.spline2array()
-        logger.debug("delta_x=", spline.xDispArray.shape)
-        logger.debug("delta_y=", spline.yDispArray.shape)
+        logger.debug("delta_x: %s", spline.xDispArray.shape)
+        logger.debug("delta_y: %s", spline.yDispArray.shape)
         new_spline = spline.flipud(False).fliplr(False).fliplrud(False)
         new_spline.array2spline(smoothing=0.1)
         self.assertLess(abs(new_spline.xDispArray - spline.xDispArray).max(), 1e-6, "X data are OK")
