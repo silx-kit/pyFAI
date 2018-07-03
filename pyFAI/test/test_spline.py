@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/06/2018"
+__date__ = "03/07/2018"
 
 
 import unittest
@@ -42,7 +42,6 @@ import logging
 logger = logging.getLogger(__name__)
 import pyFAI.spline
 from . import utilstest
-import itertools
 
 
 class TestSpline(utilstest.ParametricTestCase):
@@ -60,15 +59,6 @@ class TestSpline(utilstest.ParametricTestCase):
 
         test_cases = [
             (default_center, default_distance, default_tilt, default_rotation_tilt),
-#             ((1000, 1000), default_distance, default_tilt, default_rotation_tilt),
-#             (default_center, 1, default_tilt, default_rotation_tilt),
-#             (default_center, 10, default_tilt, default_rotation_tilt),
-#             (default_center, 1000, default_tilt, default_rotation_tilt),
-#             (default_center, default_distance, 1, default_rotation_tilt),
-#             (default_center, default_distance, 10, default_rotation_tilt),
-#             (default_center, default_distance, default_tilt, 10),
-#             (default_center, default_distance, default_tilt, 90),
-#             (default_center, default_distance, default_tilt, 180),
         ]
 
         for center, distance, tilt, rotation_tilt in test_cases:
@@ -87,10 +77,11 @@ class TestSpline(utilstest.ParametricTestCase):
         "Test the half_ccd back and forth"
         spline_file = utilstest.UtilsTest.getimage("halfccd.spline")
         spline = pyFAI.spline.Spline(spline_file)
-        print(spline.xmin, spline.xmax, spline.ymin, spline.ymax)
+        logger.debug("xmin %s, xmax %s, ymin %s, ymax",
+                     spline.xmin, spline.xmax, spline.ymin, spline.ymax)
         spline.spline2array()
-        print("delta_x=", spline.xDispArray.shape)
-        print("delta_y=", spline.yDispArray.shape)
+        logger.debug("delta_x=", spline.xDispArray.shape)
+        logger.debug("delta_y=", spline.yDispArray.shape)
         new_spline = spline.flipud(False).fliplr(False).fliplrud(False)
         new_spline.array2spline(smoothing=0.1)
         self.assertLess(abs(new_spline.xDispArray - spline.xDispArray).max(), 1e-6, "X data are OK")
