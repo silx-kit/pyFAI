@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/06/2018"
+__date__ = "03/07/2018"
 __status__ = "stable"
 
 
@@ -629,8 +629,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 dset.attrs["interpretation"] = "vertex"
 
     def guess_binning(self, data):
-        """
-        Guess the binning/mode depending on the image shape
+        """Guess the binning/mode depending on the image shape
+
+        If the binning changes, this enforces the reset of the mask.
+
         :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
         :return: True if the data fit the detector
         :rtype: bool
@@ -643,6 +645,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
             logger.warning("No shape available to guess the binning: %s", data)
             self._binning = 1, 1
             return False
+
+        if shape == self.shape:
+            return True
 
         if not self.force_pixel:
             if shape != self.max_shape:
@@ -860,7 +865,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def __getstate__(self):
         """Helper function for pickling detectors
-        
+
         :return: the state of the object
         """
         state_blacklist = ('_sem',)
@@ -872,7 +877,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def __setstate__(self, state):
         """Helper function for unpickling detectors
-        
+
         :param state: the state of the object
         """
         for statekey, statevalue in state.items():

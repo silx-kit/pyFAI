@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "03/07/2018"
 __status__ = "production"
 
 import os
@@ -118,6 +118,11 @@ def main():
 
     if options.ponifile and to_process:
         integrator = pyFAI.load(options.ponifile)
+
+        if to_process:
+            first = to_process[0]
+            fabimg = fabio.open(first)
+            integrator.detector.guess_binning(fabimg.data)
         if options.wavelength:
             integrator.wavelength = options.wavelength * 1e-10
         elif options.energy:
@@ -128,11 +133,6 @@ def main():
             integrator.darkcurrent = fabio.open(options.dark).data
         if options.flat and os.path.exists(options.flat):  # set Flat field
             integrator.flatfield = fabio.open(options.flat).data
-        if to_process:
-            first = to_process[0]
-            fabimg = fabio.open(first)
-            integrator.detector.guess_binning(fabimg.data)
-
         if options.method:
             method = options.method
         else:
