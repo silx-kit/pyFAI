@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "20/02/2018"
+__date__ = "03/07/2018"
 __license__ = "MIT"
 
 import distutils.util
@@ -76,7 +76,10 @@ def createBasicHandler():
 
 # Use an handler compatible with unittests, else use_buffer is not working
 logging.root.addHandler(createBasicHandler())
+# Capture all default warnings
 logging.captureWarnings(True)
+import warnings
+warnings.simplefilter('default')
 
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
