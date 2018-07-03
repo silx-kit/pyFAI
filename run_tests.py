@@ -76,6 +76,7 @@ def createBasicHandler():
 
 # Use an handler compatible with unittests, else use_buffer is not working
 logging.root.addHandler(createBasicHandler())
+
 # Capture all default warnings
 logging.captureWarnings(True)
 import warnings
