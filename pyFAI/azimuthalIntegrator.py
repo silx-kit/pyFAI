@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/06/2018"
+__date__ = "27/06/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -223,8 +223,6 @@ class AzimuthalIntegrator(Geometry):
 
         self._lock = threading.Semaphore()
         self.engines = {}  # key: name of the engine,
-
-        self._ocl_sorter = None
 
         self._empty = 0.0
 
@@ -2218,6 +2216,7 @@ class AzimuthalIntegrator(Geometry):
                 mask_crc = None
         else:
             has_mask = "provided"
+            mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
 
         shape = data.shape
@@ -2876,6 +2875,7 @@ class AzimuthalIntegrator(Geometry):
                 mask_crc = None
         else:
             has_mask = "provided"
+            mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
 
         shape = data.shape
@@ -3959,3 +3959,34 @@ class AzimuthalIntegrator(Geometry):
                     except Exception as exeption:
                         logger.error(exeption)
     empty = property(get_empty, set_empty)
+
+    def __getnewargs_ex__(self):
+        "Helper function for pickling ai"
+        return (self.dist, self.poni1, self.poni2,
+                self.rot1, self.rot2, self.rot3,
+                self.pixel1, self.pixel2,
+                self.splineFile, self.detector, self.wavelength), {}
+
+    def __getstate__(self):
+        """Helper function for pickling ai
+        
+        :return: the state of the object
+        """
+
+        state_blacklist = ('_lock', "engines")
+        state = Geometry.__getstate__(self)
+        for key in state_blacklist:
+            if key in state:
+                del state[key]
+        return state
+
+    def __setstate__(self, state):
+        """Helper function for unpickling ai
+        
+        :param state: the state of the object
+        """
+        for statekey, statevalue in state.items():
+            setattr(self, statekey, statevalue)
+        self._sem = threading.Semaphore()
+        self._lock = threading.Semaphore()
+        self.engines = {}
