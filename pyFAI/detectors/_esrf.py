@@ -36,14 +36,15 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2018"
+__date__ = "09/07/2018"
 __status__ = "production"
 
 
 import numpy
+import logging
+from collections import OrderedDict
 from ._common import Detector
 from pyFAI.utils import mathutil
-import logging
 logger = logging.getLogger(__name__)
 
 try:
@@ -94,6 +95,13 @@ class FReLoN(Detector):
         mask = numpy.logical_or(below_min, above_max).astype(numpy.int8)
         return mask
 
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        return {"splineFile": self._splineFile}
+
 
 class Maxipix(Detector):
     """
@@ -136,6 +144,19 @@ class Maxipix(Detector):
                        self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2)))
+        if self.max_shape is not None:
+            dico["max_shape"] = self.max_shape
+        if self.module_size is not None:
+            dico["module_size"] = self.module_size
+        return dico
 
 
 class Maxipix2x2(Maxipix):

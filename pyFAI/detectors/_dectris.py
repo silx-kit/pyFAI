@@ -36,14 +36,17 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "09/07/2018"
 __status__ = "production"
 
 
-import os.path
+import os
 import numpy
+import logging
+from collections import OrderedDict
 from ._common import Detector
-from pyFAI.utils import mathutil
+from ..utils import expand2d
+logger = logging.getLogger(__name__)
 
 try:
     import fabio
@@ -113,8 +116,8 @@ class Eiger(Detector):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                d1 = mathutil.expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = mathutil.expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+                d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
+                d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
 
         if self.offset1 is None or self.offset2 is None:
             delta1 = delta2 = 0.
@@ -156,6 +159,19 @@ class Eiger(Detector):
         p1 = (self._pixel1 * (delta1 + d1))
         p2 = (self._pixel2 * (delta2 + d2))
         return p1, p2, None
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2)))
+        if self.max_shape is not None:
+            dico["max_shape"] = self.max_shape
+        if self.module_size is not None:
+            dico["module_size"] = self.module_size
+        return dico
 
 
 class Eiger500k(Eiger):
@@ -206,6 +222,14 @@ class Mythen(Detector):
 
     def __init__(self, pixel1=8e-3, pixel2=50e-6):
         super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2)
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        return OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2)))
 
 
 class Pilatus(Detector):
@@ -316,8 +340,8 @@ class Pilatus(Detector):
         the same shape.
         """
         if self.shape and ((d1 is None) or (d2 is None)):
-            d1 = mathutil.expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-            d2 = mathutil.expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+            d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
+            d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
 
         if (self.offset1 is None) or (self.offset2 is None):
             delta1 = delta2 = 0.
@@ -359,6 +383,19 @@ class Pilatus(Detector):
         p1 = (self._pixel1 * (delta1 + d1))
         p2 = (self._pixel2 * (delta2 + d2))
         return p1, p2, None
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2)))
+        if self.max_shape is not None:
+            dico["max_shape"] = self.max_shape
+        if self.module_size is not None:
+            dico["module_size"] = self.module_size
+        return dico
 
 
 class Pilatus100k(Pilatus):

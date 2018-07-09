@@ -37,11 +37,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2018"
+__date__ = "09/07/2018"
 __status__ = "production"
 
 
 import numpy
+from collections import OrderedDict
 from ._common import Detector
 
 import logging
@@ -130,6 +131,14 @@ class Rayonix(Detector):
         self._mask = False
         self._mask_crc = None
         return result
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        return OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2)))
 
 
 class Rayonix133(Rayonix):

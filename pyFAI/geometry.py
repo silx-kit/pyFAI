@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/06/2018"
+__date__ = "09/07/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -49,6 +49,7 @@ import numpy
 import os
 import threading
 import time
+import json
 from collections import namedtuple, OrderedDict
 
 from . import detectors
@@ -1108,15 +1109,10 @@ class Geometry(object):
                 f.write(("# Nota: C-Order, 1 refers to the Y axis,"
                          " 2 to the X axis \n"))
                 f.write("# Calibration done at %s\n" % time.ctime())
+                f.write("PoniFile version: 1.1\n")
                 detector = self.detector
-                if isinstance(detector, detectors.NexusDetector) and detector._filename:
-                    f.write("Detector: %s\n" % os.path.abspath(detector._filename))
-                elif detector.name != "Detector":
-                    f.write("Detector: %s\n" % detector.__class__.__name__)
-                f.write("PixelSize1: %s\n" % detector.pixel1)
-                f.write("PixelSize2: %s\n" % detector.pixel2)
-                if detector.splineFile:
-                    f.write("SplineFile: %s\n" % detector.splineFile)
+                f.write("Detector: %s\n" % detector.name)
+                f.write("Detector config: %s\n" % json.dumps(detector.get_config()))
 
                 f.write("Distance: %s\n" % self._dist)
                 f.write("Poni1: %s\n" % self._poni1)
@@ -1151,32 +1147,38 @@ class Geometry(object):
         :param filename: name of the file to load
         :type filename: string
         """
-        data = {}
+        data = OrderedDict()
         with open(filename) as opened_file:
             for line in opened_file:
                 if line.startswith("#") or (":" not in line):
                     continue
                 words = line.split(":", 1)
 
-                key = words[0].strip().lower()
+                key = words[0].strip().lower().replace(" ", "_")
                 try:
                     value = words[1].strip()
                 except Exception as error:  # IGNORE:W0703:
                     logger.error("Error %s with line: %s", error, line)
                 data[key] = value
+        version = float(data.get("PoniFile version", 1.0))
+
         if "detector" in data:
-            self.detector = detectors.detector_factory(data["detector"])
+            self.detector = detectors.detector_factory(data["detector"],
+                                                       data.get("detector_config)"))
         else:
             self.detector = detectors.Detector()
-        if self.detector.force_pixel and ("pixelsize1" in data) and ("pixelsize2" in data):
-            pixel1 = float(data["pixelsize1"])
-            pixel2 = float(data["pixelsize2"])
-            self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
-        else:
-            if "pixelsize1" in data:
-                self.detector.pixel1 = float(data["pixelsize1"])
-            if "pixelsize2" in data:
-                self.detector.pixel2 = float(data["pixelsize2"])
+        if version < 1.1:
+            # Handle former version of PONI-file
+            if self.detector.force_pixel and ("pixelsize1" in data) and ("pixelsize2" in data):
+                pixel1 = float(data["pixelsize1"])
+                pixel2 = float(data["pixelsize2"])
+                self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
+            else:
+                if "pixelsize1" in data:
+                    self.detector.pixel1 = float(data["pixelsize1"])
+                if "pixelsize2" in data:
+                    self.detector.pixel2 = float(data["pixelsize2"])
+
         if "distance" in data:
             self._dist = float(data["distance"])
         if "poni1" in data:

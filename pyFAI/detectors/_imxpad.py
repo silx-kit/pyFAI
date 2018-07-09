@@ -36,11 +36,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "09/07/2018"
 __status__ = "production"
 
 import functools
 import numpy
+from collections import OrderedDict
 from ._common import Detector
 from pyFAI.utils import mathutil
 
@@ -217,6 +218,19 @@ class ImXPadS10(Detector):
             p1 = numpy.interp(d1, numpy.arange(self.max_shape[0] + 1), edges1, edges1[0], edges1[-1])
             p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2)))
+        if self.max_shape is not None:
+            dico["max_shape"] = self.max_shape
+        if self.module_size is not None:
+            dico["module_size"] = self.module_size
+        return dico
 
 
 class ImXPadS70(ImXPadS10):

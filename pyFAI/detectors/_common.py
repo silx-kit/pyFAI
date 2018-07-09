@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2018"
+__date__ = "09/07/2018"
 __status__ = "stable"
 
 
@@ -45,6 +45,7 @@ import os
 import posixpath
 import threading
 from collections import OrderedDict
+import json
 
 from .. import io
 from .. import spline
@@ -125,9 +126,22 @@ class Detector(with_metaclass(DetectorMeta, object)):
         names = [name, name.replace(" ", "_")]
         for name in names:
             if name in cls.registry:
-                mydet = cls.registry[name]()
+                mydet = None
                 if config is not None:
-                    mydet.set_config(config)
+                    if not isinstance(config, dict):
+                        try:
+                            config = json.loads(config)
+                        except Exception as err:  # IGNORE:W0703:
+                            logger.error("Unable to parse config %s with JSON: %s, %s",
+                                         config, err)
+                            raise err
+                    try:
+                        mydet = cls.registry[name](**config)
+                    except Exception as err:  # IGNORE:W0703:
+                            logger.error("Unable to configure detector %s with config: %s",
+                                         name, config)
+                if mydet is None:
+                    mydet = cls.registry[name]()
                 return mydet
         else:
             msg = ("Detector %s is unknown !, "
@@ -245,15 +259,42 @@ class Detector(with_metaclass(DetectorMeta, object)):
         - "binning": integer or 2-tuple of integers. If only one integer is
             provided,
         - "offset": coordinate (in pixels) of the start of the detector
+        
+        :param config: string or JSON-serialized dict
+        :retuen: self 
         """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
         if not self.force_pixel:
             if "pixel1" in config:
-                self.set_pixel1(config["pixel1"])
+                self.set_pixel1(config.get("pixel1"))
             if "pixel2" in config:
-                self.set_pixel2(config["pixel2"])
+                self.set_pixel2(config.get("pixel2"))
             if "splineFile" in config:
-                self.set_splineFile(config["splineFile"])
-        # TODO: complete
+                self.set_splineFile(config.get("splineFile"))
+            if "max_shape" in config:
+                self.max_shape = config.get("max_shape")
+        return self
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        Derivative classes should implement this method 
+        if they change the constructor ! 
+        
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2),
+                            ('max_shape', self.max_shape)))
+        if self._splineFile:
+            dico["splineFile"] = self._splineFile
+        return dico
 
     def get_splineFile(self):
         return self._splineFile
@@ -368,9 +409,11 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         dico = OrderedDict((("detector", self.name),
                             ("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+                            ("pixel2", self._pixel2),
+                            ('max_shape', self.max_shape)))
         if self._splineFile:
             dico["splineFile"] = self._splineFile
+
         return dico
 
     def getFit2D(self):
@@ -969,6 +1012,34 @@ class NexusDetector(Detector):
         obj = cls()
         cls.load(filename)
         return obj
+
+    def set_config(self, config):
+        """set the config of the detector
+        
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+        filename = config.get("filename")
+        if os.path.exists(filename):
+            self.load(filename)
+        else:
+            logger.error("Unable to configure Nexus detector, config: %s",
+                         config)
+        return self
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        return {"filename": self._filename}
 
     def getPyFAI(self):
         """
