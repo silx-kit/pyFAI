@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2018"
+__date__ = "10/07/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1109,7 +1109,7 @@ class Geometry(object):
                 f.write(("# Nota: C-Order, 1 refers to the Y axis,"
                          " 2 to the X axis \n"))
                 f.write("# Calibration done at %s\n" % time.ctime())
-                f.write("PoniFile version: 1.1\n")
+                f.write("poni_version: 2\n")
                 detector = self.detector
                 f.write("Detector: %s\n" % detector.name)
                 f.write("Detector config: %s\n" % json.dumps(detector.get_config()))
@@ -1154,20 +1154,20 @@ class Geometry(object):
                     continue
                 words = line.split(":", 1)
 
-                key = words[0].strip().lower().replace(" ", "_")
+                key = words[0].strip().lower()
                 try:
                     value = words[1].strip()
                 except Exception as error:  # IGNORE:W0703:
                     logger.error("Error %s with line: %s", error, line)
                 data[key] = value
-        version = float(data.get("PoniFile version", 1.0))
+        version = int(data.get("poni_version", 1))
 
         if "detector" in data:
             self.detector = detectors.detector_factory(data["detector"],
                                                        data.get("detector_config)"))
         else:
             self.detector = detectors.Detector()
-        if version < 1.1:
+        if version == 1:
             # Handle former version of PONI-file
             if self.detector.force_pixel and ("pixelsize1" in data) and ("pixelsize2" in data):
                 pixel1 = float(data["pixelsize1"])
