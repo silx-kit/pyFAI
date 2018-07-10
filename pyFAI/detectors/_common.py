@@ -252,7 +252,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
             res &= getattr(self, what) == getattr(other, what)
         return res
 
-
     def set_config(self, config):
         """
         Sets the configuration of the detector.        
@@ -273,10 +272,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
                              config, err)
                 raise err
         if not self.force_pixel:
-            if "pixel1" in config:
-                self.set_pixel1(config.get("pixel1"))
-            if "pixel2" in config:
-                self.set_pixel2(config.get("pixel2"))
+            pixel1 = config.get("pixel1")
+            pixel2 = config.get("pixel2")
+            if pixel1:
+                self.set_pixel1(pixel1)
+            if pixel2:
+                self.set_pixel2(pixel2)
             if "splineFile" in config:
                 self.set_splineFile(config.get("splineFile"))
             if "max_shape" in config:

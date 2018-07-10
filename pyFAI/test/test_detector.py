@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "10/07/2018"
 
 import os
 import tempfile
@@ -53,9 +53,21 @@ class TestDetector(unittest.TestCase):
         """
         this method try to instantiate all the detectors
         """
-        for k, v in ALL_DETECTORS.items():
-            logger.debug(k)
-            v()
+        for name, klass in ALL_DETECTORS.items():
+            det = klass()
+            config = det.get_config()
+            first = detector_factory(name, config)
+            res = first == det
+            logger.debug("Detector name: %s config %s, same as factory %s",
+                         name, config, res)
+
+            self.assertEqual(res, True, name)
+            second = detector_factory(name)
+            second.set_config(config)
+            res = first == det
+            logger.debug("Detector name: %s config %s, same as factory %s",
+                         name, config, res)
+            self.assertEqual(res, True, name)
 
     def test_detector_imxpad_s140(self):
         """
