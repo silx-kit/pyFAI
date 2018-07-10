@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/08/2017"
+__date__ = "10/07/2018"
 
 from numpy.distutils.misc_util import Configuration
 import platform
@@ -99,6 +99,13 @@ def configuration(parent_package='', top_path=None):
 
     for ext_config in ext_modules:
         config.add_extension(**ext_config)
+
+    config.add_extension('sparse_builder',
+                         sources=['sparse_builder.pyx'],
+                         include_dirs=[numpy.get_include()],
+                         language='c++',
+                         extra_link_args=['-fopenmp'],
+                         extra_compile_args=['-fopenmp'])
 
     return config
 
