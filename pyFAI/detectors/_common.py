@@ -242,6 +242,17 @@ class Detector(with_metaclass(DetectorMeta, object)):
             new.set_splineFile(self._splineFile)
         return new
 
+    def __eq__(self, other):
+        """Equality checker for detector, used in tests
+        
+        Checks for pixel1, pixel2, binning, shape, max_shape,  
+        """
+        res = True
+        for what in ["pixel1", "pixel2", "binning", "shape", "max_shape"]:
+            res &= getattr(self, what) == getattr(other, what)
+        return res
+
+
     def set_config(self, config):
         """
         Sets the configuration of the detector.        
