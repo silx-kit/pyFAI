@@ -149,7 +149,7 @@ class Basler(Detector):
         
         :return: dict with param for serialization
         """
-        return {"pixel", self._pixel1}
+        return {"pixel": self._pixel1}
 
     def set_config(self, config):
         """Sets the configuration of the detector.        

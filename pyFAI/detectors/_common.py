@@ -133,13 +133,13 @@ class Detector(with_metaclass(DetectorMeta, object)):
                             config = json.loads(config)
                         except Exception as err:  # IGNORE:W0703:
                             logger.error("Unable to parse config %s with JSON: %s, %s",
-                                         config, err)
+                                         name, config, err)
                             raise err
                     try:
                         mydet = cls.registry[name](**config)
                     except Exception as err:  # IGNORE:W0703:
-                            logger.error("Unable to configure detector %s with config: %s",
-                                         name, config)
+                            logger.error("Unable to configure detector %s with config: %s\n %s",
+                                         name, config, err)
                 if mydet is None:
                     mydet = cls.registry[name]()
                 return mydet
