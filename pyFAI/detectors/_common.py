@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2018"
+__date__ = "10/07/2018"
 __status__ = "stable"
 
 
@@ -244,22 +244,13 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_config(self, config):
         """
-        Sets the configuration of the detector. This implies:
-
-        - Orientation: integers
-        - Binning
-        - ROI
-
+        Sets the configuration of the detector.        
+        
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
-        keys in that dictionary are :
-
-        - "orientation": integers from 0 to 7
-        - "binning": integer or 2-tuple of integers. If only one integer is
-            provided,
-        - "offset": coordinate (in pixels) of the start of the detector
-        
+        keys in that dictionary are:  pixel1, pixel2, splineFile, max_shape
+       
         :param config: string or JSON-serialized dict
         :retuen: self 
         """
@@ -1015,6 +1006,8 @@ class NexusDetector(Detector):
 
     def set_config(self, config):
         """set the config of the detector
+        
+        For Nexus detector, the only valid key is "filename"
         
         :param config: dict or JSON serialized dict
         :return: detector instance

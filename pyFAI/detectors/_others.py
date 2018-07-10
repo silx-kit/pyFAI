@@ -36,13 +36,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2018"
+__date__ = "10/07/2018"
 __status__ = "production"
 
 
 import numpy
 import logging
 logger = logging.getLogger(__name__)
+import json
 from collections import OrderedDict
 from ._common import Detector
 from pyFAI.utils import mathutil
@@ -102,6 +103,7 @@ class Titan(Detector):
         return OrderedDict((("pixel1", self._pixel1),
                             ("pixel2", self._pixel2)))
 
+
 class Dexela2923(Detector):
     """
     Dexela CMOS family detector
@@ -148,6 +150,30 @@ class Basler(Detector):
         :return: dict with param for serialization
         """
         return {"pixel", self._pixel1}
+
+    def set_config(self, config):
+        """Sets the configuration of the detector.        
+        
+        The configuration is either a python dictionary or a JSON string or a
+        file containing this JSON configuration
+
+        keys in that dictionary are:  pixel
+       
+        :param config: string or JSON-serialized dict
+        :retuen: self 
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+        pixel = config.get("pixel")
+        if pixel:
+            self.set_pixel1(pixel)
+            self.set_pixel2(pixel)
+        return self
 
 
 class Perkin(Detector):
@@ -219,6 +245,36 @@ class Aarhus(Detector):
         return OrderedDict((("pixel1", self._pixel1),
                             ("pixel2", self._pixel2),
                             ("radius", self.radius)))
+
+    def set_config(self, config):
+        """Sets the configuration of the detector.        
+        
+        The configuration is either a python dictionary or a JSON string or a
+        file containing this JSON configuration
+
+        keys in that dictionary are:  pixel1, pixel2, radius
+       
+        :param config: string or JSON-serialized dict
+        :retuen: self 
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+        pixel1 = config.get("pixel1")
+        if pixel1:
+            self.set_pixel1(pixel1)
+        pixel2 = config.get("pixel2")
+        if pixel2:
+            self.set_pixel1(pixel2)
+        radius = config.get("radius")
+        if radius:
+            self.radius = radius
+            self._pixel_corners = None
+        return self
 
     def get_pixel_corners(self, use_cython=True):
         """
