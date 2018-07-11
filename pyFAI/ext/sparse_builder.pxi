@@ -21,6 +21,7 @@ cdef struct pixel_t:
     cnumpy.int32_t index
     cnumpy.float32_t coef
 
+
 cdef cppclass PixelElementaryBlock:
     cnumpy.int32_t *_indexes
     cnumpy.float32_t *_coefs
@@ -47,6 +48,7 @@ cdef cppclass PixelElementaryBlock:
 
     bool is_full() nogil:
         return this._size == this._max_size
+
 
 cdef cppclass PixelBlock:
     clist[PixelElementaryBlock*] _blocks
