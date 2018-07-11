@@ -22,21 +22,81 @@ cdef struct pixel_t:
     cnumpy.float32_t coef
 
 
+cdef cppclass Heap:
+    clist[cnumpy.int32_t *] _indexes
+    clist[cnumpy.float32_t *] _coefs
+    int _index_pos
+    int _coef_pos
+    int _block_size
+
+    Heap(int block_size) nogil:
+        this._block_size = block_size
+        this._index_pos = 0
+        this._coef_pos = 0
+
+    __dealloc__() nogil:
+        cdef:
+            clist[cnumpy.int32_t *].iterator it_indexes
+            clist[cnumpy.float32_t *].iterator it_coefs
+            cnumpy.int32_t *indexes
+            cnumpy.float32_t *coefs
+
+        it_indexes = this._indexes.begin()
+        while it_indexes != this._indexes.end():
+            indexes = dereference(it_indexes)
+            libc.stdlib.free(indexes)
+            preincrement(it_indexes)
+
+        it_coefs = this._coefs.begin()
+        while it_coefs != this._coefs.end():
+            coefs = dereference(it_coefs)
+            libc.stdlib.free(coefs)
+            preincrement(it_coefs)
+
+    cnumpy.int32_t * alloc_indexes(int size) nogil:
+        cdef:
+            cnumpy.int32_t *data
+        if this._indexes.size() == 0 or this._index_pos + size > this._block_size:
+            data = <cnumpy.int32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.int32_t))
+            this._indexes.push_back(data)
+            this._index_pos = 0
+        data = this._indexes.back()
+        return data + this._index_pos
+
+    cnumpy.float32_t * alloc_coefs(int size) nogil:
+        cdef:
+            cnumpy.float32_t *data
+        if this._coefs.size() == 0 or this._coef_pos + size > this._block_size:
+            data = <cnumpy.float32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.float32_t))
+            this._coefs.push_back(data)
+            this._coef_pos = 0
+        data = this._coefs.back()
+        return data + this._coef_pos
+
+
 cdef cppclass PixelElementaryBlock:
     cnumpy.int32_t *_indexes
     cnumpy.float32_t *_coefs
     int _size
     int _max_size
+    bool _allocated
 
-    PixelElementaryBlock(int size) nogil:
-        this._indexes = <cnumpy.int32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.int32_t))
-        this._coefs = <cnumpy.float32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.float32_t))
+    PixelElementaryBlock(int size, Heap *heap) nogil:
+        if heap == NULL:
+            this._indexes = <cnumpy.int32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.int32_t))
+            this._coefs = <cnumpy.float32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.float32_t))
+            this._allocated = True
+        else:
+            this._indexes = heap.alloc_indexes(size)
+            this._coefs = heap.alloc_coefs(size)
+            this._allocated = False
         this._size = 0
         this._max_size = size
 
     __dealloc__() nogil:
-        libc.stdlib.free(this._indexes)
-        libc.stdlib.free(this._coefs)
+        if this._allocated:
+            libc.stdlib.free(this._indexes)
+            libc.stdlib.free(this._coefs)
 
     void push(pixel_t &pixel) nogil:
         this._indexes[this._size] = pixel.index
@@ -49,13 +109,18 @@ cdef cppclass PixelElementaryBlock:
     bool is_full() nogil:
         return this._size == this._max_size
 
+    bool has_space(int size) nogil:
+        return this._size + size <= this._max_size
+
 
 cdef cppclass PixelBlock:
     clist[PixelElementaryBlock*] _blocks
     int _block_size
+    Heap *_heap
 
-    PixelBlock(int block_size) nogil:
+    PixelBlock(int block_size, Heap *heap) nogil:
         this._block_size = block_size
+        this._heap = heap
 
     __dealloc__() nogil:
         cdef:
@@ -73,7 +138,7 @@ cdef cppclass PixelBlock:
         cdef:
             PixelElementaryBlock *block
         if _blocks.size() == 0 or this._blocks.back().is_full():
-            block = new PixelElementaryBlock(size=this._block_size)
+            block = new PixelElementaryBlock(this._block_size, this._heap)
             this._blocks.push_back(block)
         block = this._blocks.back()
         block.push(pixel)
@@ -147,9 +212,9 @@ cdef cppclass PixelBin:
     clist[pixel_t] _pixels
     PixelBlock *_pixels_in_block
 
-    PixelBin(int block_size) nogil:
+    PixelBin(int block_size, Heap *heap) nogil:
         if block_size > 0:
-            this._pixels_in_block = new PixelBlock(block_size)
+            this._pixels_in_block = new PixelBlock(block_size, heap)
         else:
             this._pixels_in_block = NULL
 
@@ -236,16 +301,25 @@ cdef class SparseBuilder(object):
     cdef PixelBin **_bins
     cdef int _nbin
     cdef int _block_size
+    cdef Heap *_heap
 
-    def __init__(self, nbin, block_size=512):
+    def __init__(self, nbin, block_size=512, heap_size=0):
         self._block_size = block_size
         self._nbin = nbin
         self._bins = <PixelBin **>libc.stdlib.malloc(self._nbin * sizeof(PixelBin *))
         libc.string.memset(self._bins, 0, self._nbin * sizeof(PixelBin *))
+        if heap_size != 0:
+            if heap_size < block_size:
+                raise ValueError("Heap size is supposed to be bigger than block size")
+            self._heap = new Heap(heap_size)
+        else:
+            self._heap = NULL
 
     def __dealloc__(self):
         cdef:
             PixelBin *pixel_bin
+            clist[PixelElementaryBlock*].iterator it_points
+            PixelElementaryBlock* heap
             int i
         for i in range(self._nbin):
             pixel_bin = self._bins[i]
@@ -253,11 +327,14 @@ cdef class SparseBuilder(object):
                 del pixel_bin
         libc.stdlib.free(self._bins)
 
+        if self._heap != NULL:
+            del self._heap
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
     cdef PixelBin *_create_bin(self) nogil:
-        return new PixelBin(self._block_size)
+        return new PixelBin(self._block_size, self._heap)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
