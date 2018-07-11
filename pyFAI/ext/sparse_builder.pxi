@@ -117,10 +117,12 @@ cdef cppclass PixelBlock:
     clist[PixelElementaryBlock*] _blocks
     int _block_size
     Heap *_heap
+    PixelElementaryBlock* _current_block
 
     PixelBlock(int block_size, Heap *heap) nogil:
         this._block_size = block_size
         this._heap = heap
+        this._current_block = NULL
 
     __dealloc__() nogil:
         cdef:
@@ -137,10 +139,11 @@ cdef cppclass PixelBlock:
     void push(pixel_t &pixel) nogil:
         cdef:
             PixelElementaryBlock *block
-        if _blocks.size() == 0 or this._blocks.back().is_full():
+        if this._current_block == NULL or this._current_block.is_full():
             block = new PixelElementaryBlock(this._block_size, this._heap)
             this._blocks.push_back(block)
-        block = this._blocks.back()
+            this._current_block = block
+        block = this._current_block
         block.push(pixel)
 
     int size() nogil:
