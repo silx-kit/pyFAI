@@ -86,6 +86,18 @@ cdef cppclass PixelBlock:
             preincrement(it)
         return size
 
+    void copy_indexes_to(cnumpy.int32_t *dest) nogil:
+        cdef:
+            clist[PixelElementaryBlock*].iterator it
+            PixelElementaryBlock* block
+        it = this._blocks.begin()
+        while it != this._blocks.end():
+            block = dereference(it)
+            if block.size() != 0:
+                libc.string.memcpy(dest, block._indexes, block.size() * sizeof(cnumpy.int32_t))
+                dest += block.size()
+            preincrement(it)
+
     cnumpy.int32_t[:] index_array():
         cdef:
             clist[PixelElementaryBlock*].iterator it
@@ -97,17 +109,21 @@ cdef cppclass PixelBlock:
 
         size = this.size()
         data = numpy.empty(size, dtype=numpy.int32)
+        data_dest = &data[0]
+        this.copy_indexes_to(data_dest)
+        return data
 
-        begin = 0
+    void copy_coefs_to(cnumpy.float32_t *dest) nogil:
+        cdef:
+            clist[PixelElementaryBlock*].iterator it
+            PixelElementaryBlock* block
         it = this._blocks.begin()
         while it != this._blocks.end():
             block = dereference(it)
             if block.size() != 0:
-                data_dest = &data[begin]
-                libc.string.memcpy(data_dest, block._indexes, block.size() * sizeof(cnumpy.int32_t))
-                begin += block.size()
+                libc.string.memcpy(dest, block._coefs, block.size() * sizeof(cnumpy.float32_t))
+                dest += block.size()
             preincrement(it)
-        return data
 
     cnumpy.float32_t[:] coef_array():
         cdef:
@@ -120,16 +136,8 @@ cdef cppclass PixelBlock:
 
         size = this.size()
         data = numpy.empty(size, dtype=numpy.float32)
-
-        begin = 0
-        it = this._blocks.begin()
-        while it != this._blocks.end():
-            block = dereference(it)
-            if block.size() != 0:
-                data_dest = &data[begin]
-                libc.string.memcpy(data_dest, block._indexes, block.size() * sizeof(cnumpy.float32_t))
-                begin += block.size()
-            preincrement(it)
+        data_dest = &data[0]
+        this.copy_coefs_to(data_dest)
         return data
 
 
@@ -162,6 +170,19 @@ cdef cppclass PixelBin:
         else:
             return this._pixels.size()
 
+    void copy_indexes_to(cnumpy.int32_t *dest) nogil:
+        cdef:
+            clist[pixel_t].iterator it_points
+
+        if this._pixels_in_block != NULL:
+            this._pixels_in_block.copy_indexes_to(dest)
+
+        it_points = this._pixels.begin()
+        while it_points != this._pixels.end():
+            dest[0] = dereference(it_points).index
+            preincrement(it_points)
+            dest += 1
+
     cnumpy.int32_t[:] index_array():
         cdef:
             int i = 0
@@ -177,6 +198,19 @@ cdef cppclass PixelBin:
             preincrement(it_points)
             i += 1
         return data
+
+    void copy_coefs_to(cnumpy.float32_t *dest) nogil:
+        cdef:
+            clist[pixel_t].iterator it_points
+
+        if this._pixels_in_block != NULL:
+            this._pixels_in_block.copy_coefs_to(dest)
+
+        it_points = this._pixels.begin()
+        while it_points != this._pixels.end():
+            dest[0] = dereference(it_points).coef
+            preincrement(it_points)
+            dest += 1
 
     cnumpy.float32_t[:] coef_array():
         cdef:
@@ -307,16 +341,15 @@ cdef class SparseBuilder(object):
     def to_csr(self):
         cdef:
             cnumpy.int32_t[:] indexes
-            cnumpy.int32_t[:] indexes2
             cnumpy.float32_t[:] coefs
-            cnumpy.float32_t[:] coefs2
             cnumpy.int32_t[:] nbins
             PixelBin *pixel_bin
             int size
-            int i
             int begin, end
             int bin_id
             int bin_size
+            cnumpy.int32_t *indexes_ptr
+            cnumpy.float32_t *coefs_ptr
 
         # indexes of the first and the last+1 elements of each bins
         size = 0
@@ -333,6 +366,8 @@ cdef class SparseBuilder(object):
 
         indexes = numpy.empty(size, dtype=numpy.int32)
         coefs = numpy.empty(size, dtype=numpy.float32)
+        indexes_ptr = &indexes[0]
+        coefs_ptr = &coefs[0]
 
         for bin_id in range(self._nbin):
             pixel_bin = self._bins[bin_id]
@@ -340,7 +375,9 @@ cdef class SparseBuilder(object):
                 continue
             begin = nbins[bin_id]
             end = nbins[bin_id + 1]
-            indexes[begin:end] = pixel_bin.index_array()
-            coefs[begin:end] = pixel_bin.coef_array()
+            pixel_bin.copy_indexes_to(indexes_ptr)
+            pixel_bin.copy_coefs_to(coefs_ptr)
+            indexes_ptr += end - begin
+            coefs_ptr += end - begin
 
-        return numpy.array(coefs), numpy.array(indexes), numpy.array(nbins)
+        return numpy.asarray(coefs), numpy.asarray(indexes), numpy.asarray(nbins)
