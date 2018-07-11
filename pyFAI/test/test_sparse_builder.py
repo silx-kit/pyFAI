@@ -33,7 +33,7 @@ from __future__ import absolute_import, division, print_function
 __author__ = "Valentin Valls"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "11/07/2018"
 
 
 import unittest
@@ -82,6 +82,15 @@ class TestSparseBuilder(unittest.TestCase):
         self.assertTrue(numpy.allclose(builder.get_bin_indexes(0), numpy.array([0, 1, 2])))
         self.assertTrue(numpy.allclose(builder.get_bin_indexes(1), numpy.array([1])))
         self.assertTrue(numpy.allclose(builder.get_bin_indexes(2), numpy.array([])))
+
+    def test_block_overflow(self):
+        builder = sparse_builder.SparseBuilder(10, block_size=16)
+        for i in range(50):
+            builder.insert(0, i, i * 0.1)
+        self.assertEqual(builder.get_bin_size(0), 50)
+        x = numpy.array(range(50))
+        self.assertTrue(numpy.allclose(builder.get_bin_indexes(0), x))
+        self.assertTrue(numpy.allclose(builder.get_bin_coefs(2), x * 0.1))
 
     def test_csr(self):
         builder = sparse_builder.SparseBuilder(10, block_size=512)
