@@ -22,20 +22,24 @@ cdef struct pixel_t:
     cnumpy.float32_t coef
 
 cdef cppclass PixelElementaryBlock:
-    vector[cnumpy.int32_t] _indexes
-    vector[cnumpy.float32_t] _coefs
+    cnumpy.int32_t *_indexes
+    cnumpy.float32_t *_coefs
     int _size
     int _max_size
 
     PixelElementaryBlock(int size) nogil:
-        this._indexes.reserve(size)
-        this._coefs.reserve(size)
+        this._indexes = <cnumpy.int32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.int32_t))
+        this._coefs = <cnumpy.float32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.float32_t))
         this._size = 0
         this._max_size = size
 
+    __dealloc__() nogil:
+        libc.stdlib.free(this._indexes)
+        libc.stdlib.free(this._coefs)
+
     void push(pixel_t &pixel) nogil:
-        this._indexes.push_back(pixel.index)
-        this._coefs.push_back(pixel.coef)
+        this._indexes[this._size] = pixel.index
+        this._coefs[this._size] = pixel.coef
         this._size += 1
 
     int size() nogil:
@@ -89,7 +93,7 @@ cdef cppclass PixelBlock:
             int size
             int begin
             cnumpy.int32_t[:] data
-            cnumpy.int32_t[:] data2
+            cnumpy.int32_t *data_dest
 
         size = this.size()
         data = numpy.empty(size, dtype=numpy.int32)
@@ -99,8 +103,8 @@ cdef cppclass PixelBlock:
         while it != this._blocks.end():
             block = dereference(it)
             if block.size() != 0:
-                data2 = numpy.array(block._indexes, dtype=numpy.int32)
-                data[begin:begin + block.size()] = data2
+                data_dest = &data[begin]
+                libc.string.memcpy(data_dest, block._indexes, block.size() * sizeof(cnumpy.int32_t))
                 begin += block.size()
             preincrement(it)
         return data
@@ -112,7 +116,7 @@ cdef cppclass PixelBlock:
             int size
             int begin
             cnumpy.float32_t[:] data
-            cnumpy.float32_t[:] data2
+            cnumpy.float32_t *data_dest
 
         size = this.size()
         data = numpy.empty(size, dtype=numpy.float32)
@@ -122,8 +126,8 @@ cdef cppclass PixelBlock:
         while it != this._blocks.end():
             block = dereference(it)
             if block.size() != 0:
-                data2 = numpy.array(block._coefs, dtype=numpy.float32)
-                data[begin:begin + block.size()] = data2
+                data_dest = &data[begin]
+                libc.string.memcpy(data_dest, block._indexes, block.size() * sizeof(cnumpy.float32_t))
                 begin += block.size()
             preincrement(it)
         return data
