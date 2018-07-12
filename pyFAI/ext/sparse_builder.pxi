@@ -30,6 +30,7 @@ cdef struct chained_pixel_t:
 cdef struct compact_bin_t:
     int size
     chained_pixel_t *front_ptr
+    chained_pixel_t *back_ptr
 
 
 cdef cppclass Heap:
@@ -424,8 +425,11 @@ cdef class SparseBuilder(object):
         if self._use_heap_linked_list:
             chained_pixel = self._heap.alloc_pixel()
             chained_pixel.data = pixel
-            chained_pixel.next = self._compact_bins[bin_id].front_ptr
-            self._compact_bins[bin_id].front_ptr = chained_pixel
+            if self._compact_bins[bin_id].front_ptr == NULL:
+                self._compact_bins[bin_id].front_ptr = chained_pixel
+            else:
+                self._compact_bins[bin_id].back_ptr.next = chained_pixel
+            self._compact_bins[bin_id].back_ptr = chained_pixel
             self._compact_bins[bin_id].size += 1
         else:
             pixel_bin = self._bins[bin_id]
@@ -513,6 +517,9 @@ cdef class SparseBuilder(object):
             while chained_pixel != NULL:
                 dest[0] = chained_pixel.data.index
                 dest += 1
+                if chained_pixel == compact_bin.back_ptr:
+                    # The next ptr of the last element is not initialized
+                    break
                 chained_pixel = chained_pixel.next
         else:
             pixel_bin = self._bins[bin_id]
@@ -530,6 +537,9 @@ cdef class SparseBuilder(object):
             while chained_pixel != NULL:
                 dest[0] = chained_pixel.data.coef
                 dest += 1
+                if chained_pixel == compact_bin.back_ptr:
+                    # The next ptr of the last element is not initialized
+                    break
                 chained_pixel = chained_pixel.next
         else:
             pixel_bin = self._bins[bin_id]
