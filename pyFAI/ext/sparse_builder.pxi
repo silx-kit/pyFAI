@@ -22,11 +22,23 @@ cdef struct pixel_t:
     cnumpy.float32_t coef
 
 
+cdef struct chained_pixel_t:
+    pixel_t data
+    chained_pixel_t *next
+
+
+cdef struct compact_bin_t:
+    int size
+    chained_pixel_t *front_ptr
+
+
 cdef cppclass Heap:
     clist[cnumpy.int32_t *] _indexes
     clist[cnumpy.float32_t *] _coefs
+    clist[chained_pixel_t *] _pixels
     int _index_pos
     int _coef_pos
+    int _pixel_pos
     int _block_size
 
     Heap(int block_size) nogil:
@@ -38,8 +50,10 @@ cdef cppclass Heap:
         cdef:
             clist[cnumpy.int32_t *].iterator it_indexes
             clist[cnumpy.float32_t *].iterator it_coefs
+            clist[chained_pixel_t *].iterator it_pixels
             cnumpy.int32_t *indexes
             cnumpy.float32_t *coefs
+            chained_pixel_t *pixels
 
         it_indexes = this._indexes.begin()
         while it_indexes != this._indexes.end():
@@ -52,6 +66,12 @@ cdef cppclass Heap:
             coefs = dereference(it_coefs)
             libc.stdlib.free(coefs)
             preincrement(it_coefs)
+
+        it_pixels = this._pixels.begin()
+        while it_pixels != this._pixels.end():
+            pixels = dereference(it_pixels)
+            libc.stdlib.free(pixels)
+            preincrement(it_pixels)
 
     cnumpy.int32_t * alloc_indexes(int size) nogil:
         cdef:
@@ -76,6 +96,19 @@ cdef cppclass Heap:
             this._coef_pos += size
         data = this._coefs.back()
         return data + this._coef_pos
+
+    chained_pixel_t* alloc_pixel() nogil:
+        cdef:
+            chained_pixel_t *data
+            int foo
+        if this._pixels.size() == 0 or this._pixel_pos + 1 >= this._block_size:
+            data = <chained_pixel_t *>libc.stdlib.malloc(this._block_size * sizeof(chained_pixel_t))
+            this._pixels.push_back(data)
+            this._pixel_pos = 0
+        else:
+            this._pixel_pos += 1
+        data = this._pixels.back()
+        return data + this._pixel_pos
 
 
 cdef cppclass PixelElementaryBlock:
@@ -306,15 +339,17 @@ cdef cppclass PixelBin:
 cdef class SparseBuilder(object):
 
     cdef PixelBin **_bins
+    cdef compact_bin_t *_compact_bins
     cdef int _nbin
     cdef int _block_size
     cdef Heap *_heap
+    cdef bool _use_linked_list
+    cdef bool _use_blocks
+    cdef bool _use_heap_linked_list
 
     def __init__(self, nbin, block_size=512, heap_size=0):
         self._block_size = block_size
         self._nbin = nbin
-        self._bins = <PixelBin **>libc.stdlib.malloc(self._nbin * sizeof(PixelBin *))
-        libc.string.memset(self._bins, 0, self._nbin * sizeof(PixelBin *))
         if heap_size != 0:
             if heap_size < block_size:
                 raise ValueError("Heap size is supposed to be bigger than block size")
@@ -322,17 +357,39 @@ cdef class SparseBuilder(object):
         else:
             self._heap = NULL
 
+        self._use_linked_list = False
+        self._use_blocks = False
+        self._use_heap_linked_list = False
+        if block_size > 1:
+            self._use_blocks = True
+        else:
+            if heap_size == 0:
+                self._use_linked_list = True
+            else:
+                self._use_heap_linked_list = True
+
+        if self._use_blocks:
+            self._bins = <PixelBin **>libc.stdlib.malloc(self._nbin * sizeof(PixelBin *))
+            libc.string.memset(self._bins, 0, self._nbin * sizeof(PixelBin *))
+        elif self._use_heap_linked_list:
+            self._compact_bins = <compact_bin_t *>libc.stdlib.malloc(self._nbin * sizeof(compact_bin_t))
+            libc.string.memset(self._compact_bins, 0, self._nbin * sizeof(compact_bin_t))
+
     def __dealloc__(self):
         cdef:
             PixelBin *pixel_bin
             clist[PixelElementaryBlock*].iterator it_points
             PixelElementaryBlock* heap
             int i
-        for i in range(self._nbin):
-            pixel_bin = self._bins[i]
-            if pixel_bin != NULL:
-                del pixel_bin
-        libc.stdlib.free(self._bins)
+
+        if self._use_blocks:
+            for i in range(self._nbin):
+                pixel_bin = self._bins[i]
+                if pixel_bin != NULL:
+                    del pixel_bin
+            libc.stdlib.free(self._bins)
+        elif self._use_heap_linked_list:
+            libc.stdlib.free(self._compact_bins)
 
         if self._heap != NULL:
             del self._heap
@@ -350,16 +407,24 @@ cdef class SparseBuilder(object):
         cdef:
             pixel_t pixel
             PixelBin *pixel_bin
+            chained_pixel_t* chained_pixel
         if bin_id < 0 or bin_id >= self._nbin:
             return
         pixel.index = index
         pixel.coef = coef
 
-        pixel_bin = self._bins[bin_id]
-        if pixel_bin == NULL:
-            pixel_bin = self._create_bin()
-            self._bins[bin_id] = pixel_bin
-        self._bins[bin_id].push(pixel)
+        if self._use_heap_linked_list:
+            chained_pixel = self._heap.alloc_pixel()
+            chained_pixel.data = pixel
+            chained_pixel.next = self._compact_bins[bin_id].front_ptr
+            self._compact_bins[bin_id].front_ptr = chained_pixel
+            self._compact_bins[bin_id].size += 1
+        else:
+            pixel_bin = self._bins[bin_id]
+            if pixel_bin == NULL:
+                pixel_bin = self._create_bin()
+                self._bins[bin_id] = pixel_bin
+            self._bins[bin_id].push(pixel)
 
     def insert(self, bin_id, index, coef):
         if bin_id < 0 or bin_id >= self._nbin:
@@ -395,15 +460,23 @@ cdef class SparseBuilder(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    def get_bin_size(self, bin_id):
+    cdef int cget_bin_size(self, bin_id):
         cdef:
             PixelBin *pixel_bin
-        if bin_id < 0 or bin_id >= self._nbin:
-            raise ValueError("bin_id out of range")
+        if self._use_heap_linked_list:
+            return self._compact_bins[bin_id].size
         pixel_bin = self._bins[bin_id]
         if pixel_bin == NULL:
             return 0
         return pixel_bin.size()
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.cdivision(True)
+    def get_bin_size(self, bin_id):
+        if bin_id < 0 or bin_id >= self._nbin:
+            raise ValueError("bin_id out of range")
+        return self.cget_bin_size(bin_id)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -421,6 +494,40 @@ cdef class SparseBuilder(object):
                 size += pixel_bin.size()
         return size
 
+    cdef void copy_bin_indexes_to(self, int bin_id, cnumpy.int32_t *dest) nogil:
+        cdef:
+            PixelBin *pixel_bin
+            compact_bin_t *compact_bin
+            chained_pixel_t *chained_pixel
+        if self._use_heap_linked_list:
+            compact_bin = &self._compact_bins[bin_id]
+            chained_pixel = compact_bin.front_ptr
+            while chained_pixel != NULL:
+                dest[0] = chained_pixel.data.index
+                dest += 1
+                chained_pixel = chained_pixel.next
+        else:
+            pixel_bin = self._bins[bin_id]
+            if pixel_bin != NULL:
+                pixel_bin.copy_indexes_to(dest)
+
+    cdef void copy_bin_coefs_to(self, int bin_id, cnumpy.float32_t *dest) nogil:
+        cdef:
+            PixelBin *pixel_bin
+            compact_bin_t *compact_bin
+            chained_pixel_t *chained_pixel
+        if self._use_heap_linked_list:
+            compact_bin = &self._compact_bins[bin_id]
+            chained_pixel = compact_bin.front_ptr
+            while chained_pixel != NULL:
+                dest[0] = chained_pixel.data.coef
+                dest += 1
+                chained_pixel = chained_pixel.next
+        else:
+            pixel_bin = self._bins[bin_id]
+            if pixel_bin != NULL:
+                pixel_bin.copy_coefs_to(dest)
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
@@ -428,25 +535,20 @@ cdef class SparseBuilder(object):
         cdef:
             cnumpy.int32_t[:] indexes
             cnumpy.float32_t[:] coefs
+            cnumpy.float32_t *coefs_ptr
             cnumpy.int32_t[:] nbins
-            PixelBin *pixel_bin
+            cnumpy.int32_t *indexes_ptr
             int size
             int begin, end
             int bin_id
             int bin_size
-            cnumpy.int32_t *indexes_ptr
-            cnumpy.float32_t *coefs_ptr
 
         # indexes of the first and the last+1 elements of each bins
         size = 0
         nbins = numpy.empty(self._nbin + 1, dtype=numpy.int32)
         nbins[0] = size
         for bin_id in range(self._nbin):
-            pixel_bin = self._bins[bin_id]
-            if pixel_bin != NULL:
-                bin_size = pixel_bin.size()
-            else:
-                bin_size = 0
+            bin_size = self.cget_bin_size(bin_id)
             size += bin_size
             nbins[bin_id + 1] = size
 
@@ -456,13 +558,12 @@ cdef class SparseBuilder(object):
         coefs_ptr = &coefs[0]
 
         for bin_id in range(self._nbin):
-            pixel_bin = self._bins[bin_id]
-            if pixel_bin == NULL or pixel_bin.size() == 0:
-                continue
             begin = nbins[bin_id]
             end = nbins[bin_id + 1]
-            pixel_bin.copy_indexes_to(indexes_ptr)
-            pixel_bin.copy_coefs_to(coefs_ptr)
+            if begin == end:
+                continue
+            self.copy_bin_indexes_to(bin_id, indexes_ptr)
+            self.copy_bin_coefs_to(bin_id, coefs_ptr)
             indexes_ptr += end - begin
             coefs_ptr += end - begin
 
