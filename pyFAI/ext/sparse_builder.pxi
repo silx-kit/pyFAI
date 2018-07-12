@@ -36,6 +36,11 @@ cdef cppclass Heap:
     clist[cnumpy.int32_t *] _indexes
     clist[cnumpy.float32_t *] _coefs
     clist[chained_pixel_t *] _pixels
+
+    cnumpy.int32_t *_current_index_block
+    cnumpy.float32_t *_current_coef_block
+    chained_pixel_t *_current_pixel_block
+
     int _index_pos
     int _coef_pos
     int _pixel_pos
@@ -45,6 +50,9 @@ cdef cppclass Heap:
         this._block_size = block_size
         this._index_pos = 0
         this._coef_pos = 0
+        this._current_index_block = NULL
+        this._current_coef_block = NULL
+        this._current_pixel_block = NULL
 
     __dealloc__() nogil:
         cdef:
@@ -76,39 +84,39 @@ cdef cppclass Heap:
     cnumpy.int32_t * alloc_indexes(int size) nogil:
         cdef:
             cnumpy.int32_t *data
-        if this._indexes.size() == 0 or this._index_pos + size >= this._block_size:
+        if this._current_index_block == NULL or this._index_pos + size >= this._block_size:
             data = <cnumpy.int32_t *>libc.stdlib.malloc(this._block_size * sizeof(cnumpy.int32_t))
+            this._current_index_block = data
             this._indexes.push_back(data)
             this._index_pos = 0
         else:
             this._index_pos += size
-        data = this._indexes.back()
-        return data + this._index_pos
+        return this._current_index_block + this._index_pos
 
     cnumpy.float32_t * alloc_coefs(int size) nogil:
         cdef:
             cnumpy.float32_t *data
-        if this._coefs.size() == 0 or this._coef_pos + size >= this._block_size:
+        if this._current_coef_block == NULL or this._coef_pos + size >= this._block_size:
             data = <cnumpy.float32_t *>libc.stdlib.malloc(this._block_size * sizeof(cnumpy.float32_t))
+            this._current_coef_block = data
             this._coefs.push_back(data)
             this._coef_pos = 0
         else:
             this._coef_pos += size
-        data = this._coefs.back()
-        return data + this._coef_pos
+        return this._current_coef_block + this._coef_pos
 
     chained_pixel_t* alloc_pixel() nogil:
         cdef:
             chained_pixel_t *data
             int foo
-        if this._pixels.size() == 0 or this._pixel_pos + 1 >= this._block_size:
+        if this._current_pixel_block == NULL or this._pixel_pos + 1 >= this._block_size:
             data = <chained_pixel_t *>libc.stdlib.malloc(this._block_size * sizeof(chained_pixel_t))
+            this._current_pixel_block = data
             this._pixels.push_back(data)
             this._pixel_pos = 0
         else:
             this._pixel_pos += 1
-        data = this._pixels.back()
-        return data + this._pixel_pos
+        return this._current_pixel_block + this._pixel_pos
 
 
 cdef cppclass PixelElementaryBlock:
