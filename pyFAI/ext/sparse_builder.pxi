@@ -56,20 +56,24 @@ cdef cppclass Heap:
     cnumpy.int32_t * alloc_indexes(int size) nogil:
         cdef:
             cnumpy.int32_t *data
-        if this._indexes.size() == 0 or this._index_pos + size > this._block_size:
-            data = <cnumpy.int32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.int32_t))
+        if this._indexes.size() == 0 or this._index_pos + size >= this._block_size:
+            data = <cnumpy.int32_t *>libc.stdlib.malloc(this._block_size * sizeof(cnumpy.int32_t))
             this._indexes.push_back(data)
             this._index_pos = 0
+        else:
+            this._index_pos += size
         data = this._indexes.back()
         return data + this._index_pos
 
     cnumpy.float32_t * alloc_coefs(int size) nogil:
         cdef:
             cnumpy.float32_t *data
-        if this._coefs.size() == 0 or this._coef_pos + size > this._block_size:
-            data = <cnumpy.float32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.float32_t))
+        if this._coefs.size() == 0 or this._coef_pos + size >= this._block_size:
+            data = <cnumpy.float32_t *>libc.stdlib.malloc(this._block_size * sizeof(cnumpy.float32_t))
             this._coefs.push_back(data)
             this._coef_pos = 0
+        else:
+            this._coef_pos += size
         data = this._coefs.back()
         return data + this._coef_pos
 
