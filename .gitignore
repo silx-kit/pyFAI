@@ -42,3 +42,4 @@
 
 #discard generated C-files
 /pyFAI/ext/*.c
+/pyFAI/ext/*.cpp
