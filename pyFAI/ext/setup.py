@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/07/2018"
+__date__ = "11/07/2018"
 
 from numpy.distutils.misc_util import Configuration
 import platform
@@ -79,7 +79,6 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('splitPixelFullCSR', can_use_openmp=True),
         create_extension_config('relabel'),
         create_extension_config("bilinear", can_use_openmp=True),
-        create_extension_config('_distortion', can_use_openmp=True),
         # create_extension_config('_distortionCSR', can_use_openmp=True),
         create_extension_config('_bispev', can_use_openmp=True),
         create_extension_config('_convolution', can_use_openmp=True),
@@ -99,6 +98,13 @@ def configuration(parent_package='', top_path=None):
 
     for ext_config in ext_modules:
         config.add_extension(**ext_config)
+
+    config.add_extension('_distortion',
+                         sources=['_distortion.pyx'],
+                         include_dirs=[numpy.get_include()],
+                         language='c++',
+                         extra_link_args=['-fopenmp'],
+                         extra_compile_args=['-fopenmp'])
 
     config.add_extension('sparse_builder',
                          sources=['sparse_builder.pyx'],
