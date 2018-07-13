@@ -29,36 +29,48 @@ cdef struct compact_bin_t:
     chained_pixel_t *back_ptr
 
 
+cdef struct packed_data_t:
+    int bin_id
+    pixel_t data
+
+
 cdef cppclass Heap:
     clist[cnumpy.int32_t *] _indexes
     clist[cnumpy.float32_t *] _coefs
     clist[chained_pixel_t *] _pixels
+    clist[packed_data_t *] _packed_data
 
     cnumpy.int32_t *_current_index_block
     cnumpy.float32_t *_current_coef_block
     chained_pixel_t *_current_pixel_block
+    packed_data_t *_current_packed_block
 
     int _index_pos
     int _coef_pos
     int _pixel_pos
+    int _packed_pos
     int _block_size
 
     Heap(int block_size) nogil:
         this._block_size = block_size
         this._index_pos = 0
         this._coef_pos = 0
+        this._packed_pos = 0
         this._current_index_block = NULL
         this._current_coef_block = NULL
         this._current_pixel_block = NULL
+        this._current_packed_block = NULL
 
     __dealloc__() nogil:
         cdef:
             clist[cnumpy.int32_t *].iterator it_indexes
             clist[cnumpy.float32_t *].iterator it_coefs
             clist[chained_pixel_t *].iterator it_pixels
+            clist[packed_data_t *].iterator it_packed
             cnumpy.int32_t *indexes
             cnumpy.float32_t *coefs
             chained_pixel_t *pixels
+            packed_data_t *packed
 
         it_indexes = this._indexes.begin()
         while it_indexes != this._indexes.end():
@@ -77,6 +89,12 @@ cdef cppclass Heap:
             pixels = dereference(it_pixels)
             libc.stdlib.free(pixels)
             preincrement(it_pixels)
+
+        it_packed = this._packed_data.begin()
+        while it_packed != this._packed_data.end():
+            packed = dereference(it_packed)
+            libc.stdlib.free(packed)
+            preincrement(it_packed)
 
     cnumpy.int32_t * alloc_indexes(int size) nogil:
         cdef:
@@ -114,6 +132,19 @@ cdef cppclass Heap:
         else:
             this._pixel_pos += 1
         return this._current_pixel_block + this._pixel_pos
+
+    packed_data_t* alloc_packed_data() nogil:
+        cdef:
+            packed_data_t *data
+            int foo
+        if this._current_packed_block == NULL or this._packed_pos + 1 >= this._block_size:
+            data = <packed_data_t *>libc.stdlib.malloc(this._block_size * sizeof(packed_data_t))
+            this._current_packed_block = data
+            this._packed_data.push_back(data)
+            this._packed_pos = 0
+        else:
+            this._packed_pos += 1
+        return this._current_packed_block + this._packed_pos
 
 
 cdef cppclass PixelElementaryBlock:
@@ -348,11 +379,13 @@ cdef class SparseBuilder(object):
     cdef int _nbin
     cdef int _block_size
     cdef Heap *_heap
+    cdef int *_sizes
     cdef bool _use_linked_list
     cdef bool _use_blocks
     cdef bool _use_heap_linked_list
+    cdef bool _use_packed_list
 
-    def __init__(self, nbin, block_size=512, heap_size=0):
+    def __init__(self, nbin, block_size=512, heap_size=0, packed=False):
         self._block_size = block_size
         self._nbin = nbin
         if heap_size != 0:
@@ -365,7 +398,11 @@ cdef class SparseBuilder(object):
         self._use_linked_list = False
         self._use_blocks = False
         self._use_heap_linked_list = False
-        if block_size > 1:
+        self._use_packed_list = False
+
+        if packed:
+            self._use_packed_list = True
+        elif block_size > 1:
             self._use_blocks = True
         else:
             if heap_size == 0:
@@ -379,6 +416,9 @@ cdef class SparseBuilder(object):
         elif self._use_heap_linked_list:
             self._compact_bins = <compact_bin_t *>libc.stdlib.malloc(self._nbin * sizeof(compact_bin_t))
             libc.string.memset(self._compact_bins, 0, self._nbin * sizeof(compact_bin_t))
+        elif self._use_packed_list:
+            self._sizes = <int *>libc.stdlib.malloc(self._nbin * sizeof(int))
+            libc.string.memset(self._sizes, 0, self._nbin * sizeof(int))
 
     def __dealloc__(self):
         cdef:
@@ -395,6 +435,8 @@ cdef class SparseBuilder(object):
             libc.stdlib.free(self._bins)
         elif self._use_heap_linked_list:
             libc.stdlib.free(self._compact_bins)
+        elif self._use_packed_list:
+            libc.stdlib.free(self._sizes)
 
         if self._heap != NULL:
             del self._heap
@@ -413,6 +455,7 @@ cdef class SparseBuilder(object):
             pixel_t pixel
             PixelBin *pixel_bin
             chained_pixel_t* chained_pixel
+            packed_data_t* packed_data
         if bin_id < 0 or bin_id >= self._nbin:
             return
         pixel.index = index
@@ -427,6 +470,11 @@ cdef class SparseBuilder(object):
                 self._compact_bins[bin_id].back_ptr.next = chained_pixel
             self._compact_bins[bin_id].back_ptr = chained_pixel
             self._compact_bins[bin_id].size += 1
+        elif self._use_packed_list:
+            packed_data = self._heap.alloc_packed_data()
+            packed_data.bin_id = bin_id
+            packed_data.data = pixel
+            self._sizes[bin_id] += 1
         else:
             pixel_bin = self._bins[bin_id]
             if pixel_bin == NULL:
@@ -473,6 +521,8 @@ cdef class SparseBuilder(object):
             PixelBin *pixel_bin
         if self._use_heap_linked_list:
             return self._compact_bins[bin_id].size
+        elif self._use_packed_list:
+            return self._sizes[bin_id]
         pixel_bin = self._bins[bin_id]
         if pixel_bin == NULL:
             return 0
@@ -517,6 +567,9 @@ cdef class SparseBuilder(object):
                     # The next ptr of the last element is not initialized
                     break
                 chained_pixel = chained_pixel.next
+        elif self._use_packed_list:
+            # unsupported
+            return
         else:
             pixel_bin = self._bins[bin_id]
             if pixel_bin != NULL:
@@ -537,10 +590,68 @@ cdef class SparseBuilder(object):
                     # The next ptr of the last element is not initialized
                     break
                 chained_pixel = chained_pixel.next
+        elif self._use_packed_list:
+            # unsupported
+            return
         else:
             pixel_bin = self._bins[bin_id]
             if pixel_bin != NULL:
                 pixel_bin.copy_coefs_to(dest)
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.cdivision(True)
+    def _to_csr_from_packed(self):
+        cdef:
+            cnumpy.int32_t[:] nbins
+            cnumpy.int32_t[:] current_bin_pos
+            cnumpy.int32_t[:] indexes
+            cnumpy.int32_t *indexes_ptr
+            cnumpy.float32_t[:] coefs
+            cnumpy.float32_t *coefs_ptr
+            int size
+            int begin, end
+            int bin_id
+            int bin_size
+            int pos
+            packed_data_t *packed_block
+            packed_data_t *packed_data
+
+        # indexes of the first and the last+1 elements of each bins
+        size = 0
+        nbins = numpy.empty(self._nbin + 1, dtype=numpy.int32)
+        current_bin_pos = numpy.empty(self._nbin + 1, dtype=numpy.int32)
+        nbins[0] = size
+        current_bin_pos[0] = size
+        for bin_id in range(self._nbin):
+            bin_size = self._sizes[bin_id]
+            size += bin_size
+            nbins[bin_id + 1] = size
+            current_bin_pos[bin_id + 1] = size
+
+        indexes = numpy.empty(size, dtype=numpy.int32)
+        coefs = numpy.empty(size, dtype=numpy.float32)
+        indexes_ptr = &indexes[0]
+        coefs_ptr = &coefs[0]
+
+        it_packed = self._heap._packed_data.begin()
+        while it_packed != self._heap._packed_data.end():
+            packed_block = dereference(it_packed)
+
+            for i in range(self._heap._block_size):
+                if self._heap._current_packed_block == packed_block:
+                    if i >= self._heap._packed_pos:
+                        break
+                packed_data = &packed_block[i]
+                bin_id = packed_data.bin_id
+                pos = current_bin_pos[bin_id]
+                indexes_ptr[pos] = packed_data.data.index
+                coefs_ptr[pos] = packed_data.data.coef
+                current_bin_pos[bin_id] += 1
+
+            preincrement(it_packed)
+
+        return numpy.asarray(coefs), numpy.asarray(indexes), numpy.asarray(nbins)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -556,6 +667,9 @@ cdef class SparseBuilder(object):
             int begin, end
             int bin_id
             int bin_size
+
+        if self._use_packed_list:
+            return self._to_csr_from_packed()
 
         # indexes of the first and the last+1 elements of each bins
         size = 0
