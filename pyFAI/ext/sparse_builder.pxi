@@ -550,7 +550,7 @@ cdef class SparseBuilder(object):
         if self._use_packed_list:
             raise NotImplementedError("Not implemented for this mode (not efficient)")
 
-        size = self.get_bin_size(bin_id)
+        size = self.cget_bin_size(bin_id)
         coefs = numpy.empty(size, dtype=numpy.float32)
         coefs_ptr = &coefs[0]
         self._copy_bin_coefs_to(bin_id, coefs_ptr)
@@ -576,7 +576,7 @@ cdef class SparseBuilder(object):
         if self._use_packed_list:
             raise NotImplementedError("Not implemented for this mode (not efficient)")
 
-        size = self.get_bin_size(bin_id)
+        size = self.cget_bin_size(bin_id)
         indexes = numpy.empty(size, dtype=numpy.int32)
         indexes_ptr = &indexes[0]
         self._copy_bin_indexes_to(bin_id, indexes_ptr)
@@ -585,7 +585,7 @@ cdef class SparseBuilder(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    cdef int cget_bin_size(self, bin_id):
+    cdef int cget_bin_size(self, int bin_id) nogil:
         """Returns the size of a specific bin.
 
         :param int bin_id: Index of the bin
@@ -626,6 +626,7 @@ cdef class SparseBuilder(object):
         cdef:
             PixelBin *pixel_bin
             int bin_id
+            cnumpy.int32_t[:] sizes
 
         sizes = numpy.empty(self._nbin, dtype=numpy.int32)
 
