@@ -8,13 +8,9 @@ from libc.math cimport fabs
 cimport libc.stdlib
 cimport libc.string
 
-from cython.parallel import prange
 from cython.operator cimport dereference
 from cython.operator cimport preincrement
 cimport cython
-from cython cimport floating
-
-cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 
 cdef struct pixel_t:

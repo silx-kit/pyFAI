@@ -16,6 +16,7 @@ from cython cimport floating
 
 include "sparse_builder.pxi"
 
+cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 @cython.cdivision(True)
 cdef inline floating calc_upper_bound(floating maximum_value) nogil:
