@@ -274,21 +274,6 @@ cdef cppclass PixelBlock:
                 dest += block.size()
             preincrement(it)
 
-    cnumpy.int32_t[:] index_array():
-        cdef:
-            clist[PixelElementaryBlock*].iterator it
-            PixelElementaryBlock* block
-            int size
-            int begin
-            cnumpy.int32_t[:] data
-            cnumpy.int32_t *data_dest
-
-        size = this.size()
-        data = numpy.empty(size, dtype=numpy.int32)
-        data_dest = &data[0]
-        this.copy_indexes_to(data_dest)
-        return data
-
     void copy_coefs_to(cnumpy.float32_t *dest) nogil:
         cdef:
             clist[PixelElementaryBlock*].iterator it
@@ -300,21 +285,6 @@ cdef cppclass PixelBlock:
                 libc.string.memcpy(dest, block._coefs, block.size() * sizeof(cnumpy.float32_t))
                 dest += block.size()
             preincrement(it)
-
-    cnumpy.float32_t[:] coef_array():
-        cdef:
-            clist[PixelElementaryBlock*].iterator it
-            PixelElementaryBlock* block
-            int size
-            int begin
-            cnumpy.float32_t[:] data
-            cnumpy.float32_t *data_dest
-
-        size = this.size()
-        data = numpy.empty(size, dtype=numpy.float32)
-        data_dest = &data[0]
-        this.copy_coefs_to(data_dest)
-        return data
 
 
 cdef cppclass PixelBin:
@@ -359,22 +329,6 @@ cdef cppclass PixelBin:
             preincrement(it_points)
             dest += 1
 
-    cnumpy.int32_t[:] index_array():
-        cdef:
-            int i = 0
-            clist[pixel_t].iterator it_points
-
-        if this._pixels_in_block != NULL:
-            return this._pixels_in_block.index_array()
-
-        data = numpy.empty(this.size(), dtype=numpy.int32)
-        it_points = this._pixels.begin()
-        while it_points != this._pixels.end():
-            data[i] = dereference(it_points).index
-            preincrement(it_points)
-            i += 1
-        return data
-
     void copy_coefs_to(cnumpy.float32_t *dest) nogil:
         cdef:
             clist[pixel_t].iterator it_points
@@ -387,22 +341,6 @@ cdef cppclass PixelBin:
             dest[0] = dereference(it_points).coef
             preincrement(it_points)
             dest += 1
-
-    cnumpy.float32_t[:] coef_array():
-        cdef:
-            int i = 0
-            clist[pixel_t].iterator it_points
-
-        if this._pixels_in_block != NULL:
-            return this._pixels_in_block.coef_array()
-
-        data = numpy.empty(this.size(), dtype=numpy.float32)
-        it_points = this._pixels.begin()
-        while it_points != this._pixels.end():
-            data[i] = dereference(it_points).coef
-            preincrement(it_points)
-            i += 1
-        return data
 
 
 cdef class SparseBuilder(object):
