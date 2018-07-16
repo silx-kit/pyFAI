@@ -372,6 +372,16 @@ cdef cppclass PixelBin:
             dest += 1
 
 
+cdef struct sparse_builder_internal_t:
+    PixelBin **_bins
+    compact_bin_t *_compact_bins
+    Heap *_heap
+
+
+cdef inline sparse_builder_internal_t *get_internal_data(sparse_builder_private_t* data) nogil:
+    return <sparse_builder_internal_t*> data
+
+
 cdef class SparseBuilder(object):
     """
     This class provade an API to build a sparse matrix from bin data
@@ -402,18 +412,6 @@ cdef class SparseBuilder(object):
         It reduce the overhead of memory allocation. If set to `None` or `0`,
         this management is disabled.
     """
-
-    cdef PixelBin **_bins
-    cdef compact_bin_t *_compact_bins
-    cdef int _nbin
-    cdef int _block_size
-    cdef Heap *_heap
-    cdef int *_sizes
-    cdef bool _use_linked_list
-    cdef bool _use_blocks
-    cdef bool _use_heap_linked_list
-    cdef bool _use_packed_list
-    cdef object _mode
 
     def __init__(self, nbin, mode="block", block_size=512, heap_size=0):
 
@@ -449,16 +447,16 @@ cdef class SparseBuilder(object):
         self._block_size = block_size
         self._nbin = nbin
         if heap_size not in [None, 0]:
-            self._heap = new Heap(heap_size)
+            get_internal_data(&self._data)._heap = new Heap(heap_size)
         else:
-            self._heap = NULL
+            get_internal_data(&self._data)._heap = NULL
 
         if self._use_blocks or self._use_linked_list:
-            self._bins = <PixelBin **>libc.stdlib.malloc(self._nbin * sizeof(PixelBin *))
-            libc.string.memset(self._bins, 0, self._nbin * sizeof(PixelBin *))
+            get_internal_data(&self._data)._bins = <PixelBin **>libc.stdlib.malloc(self._nbin * sizeof(PixelBin *))
+            libc.string.memset(get_internal_data(&self._data)._bins, 0, self._nbin * sizeof(PixelBin *))
         elif self._use_heap_linked_list:
-            self._compact_bins = <compact_bin_t *>libc.stdlib.malloc(self._nbin * sizeof(compact_bin_t))
-            libc.string.memset(self._compact_bins, 0, self._nbin * sizeof(compact_bin_t))
+            get_internal_data(&self._data)._compact_bins = <compact_bin_t *>libc.stdlib.malloc(self._nbin * sizeof(compact_bin_t))
+            libc.string.memset(get_internal_data(&self._data)._compact_bins, 0, self._nbin * sizeof(compact_bin_t))
         elif self._use_packed_list:
             self._sizes = <int *>libc.stdlib.malloc(self._nbin * sizeof(int))
             libc.string.memset(self._sizes, 0, self._nbin * sizeof(int))
@@ -475,17 +473,17 @@ cdef class SparseBuilder(object):
 
         if self._use_blocks:
             for i in range(self._nbin):
-                pixel_bin = self._bins[i]
+                pixel_bin = get_internal_data(&self._data)._bins[i]
                 if pixel_bin != NULL:
                     del pixel_bin
-            libc.stdlib.free(self._bins)
+            libc.stdlib.free(get_internal_data(&self._data)._bins)
         elif self._use_heap_linked_list:
-            libc.stdlib.free(self._compact_bins)
+            libc.stdlib.free(get_internal_data(&self._data)._compact_bins)
         elif self._use_packed_list:
             libc.stdlib.free(self._sizes)
 
-        if self._heap != NULL:
-            del self._heap
+        if get_internal_data(&self._data)._heap != NULL:
+            del get_internal_data(&self._data)._heap
 
     def mode(self):
         """Returns the storage mode used by the builder.
@@ -497,12 +495,12 @@ cdef class SparseBuilder(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    cdef PixelBin *_create_bin(self) nogil:
+    cdef void *_create_bin(self) nogil:
         """Create a bin object used to statore data for some formats.
 
         :rtype: PixelBin
         """
-        return new PixelBin(self._block_size, self._heap)
+        return new PixelBin(self._block_size, get_internal_data(&self._data)._heap)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -528,25 +526,25 @@ cdef class SparseBuilder(object):
         pixel.coef = coef
 
         if self._use_heap_linked_list:
-            chained_pixel = self._heap.alloc_pixel()
+            chained_pixel = get_internal_data(&self._data)._heap.alloc_pixel()
             chained_pixel.data = pixel
-            if self._compact_bins[bin_id].front_ptr == NULL:
-                self._compact_bins[bin_id].front_ptr = chained_pixel
+            if get_internal_data(&self._data)._compact_bins[bin_id].front_ptr == NULL:
+                get_internal_data(&self._data)._compact_bins[bin_id].front_ptr = chained_pixel
             else:
-                self._compact_bins[bin_id].back_ptr.next = chained_pixel
-            self._compact_bins[bin_id].back_ptr = chained_pixel
-            self._compact_bins[bin_id].size += 1
+                get_internal_data(&self._data)._compact_bins[bin_id].back_ptr.next = chained_pixel
+            get_internal_data(&self._data)._compact_bins[bin_id].back_ptr = chained_pixel
+            get_internal_data(&self._data)._compact_bins[bin_id].size += 1
         elif self._use_packed_list:
-            packed_data = self._heap.alloc_packed_data()
+            packed_data = get_internal_data(&self._data)._heap.alloc_packed_data()
             packed_data.bin_id = bin_id
             packed_data.data = pixel
             self._sizes[bin_id] += 1
         else:
-            pixel_bin = self._bins[bin_id]
+            pixel_bin = get_internal_data(&self._data)._bins[bin_id]
             if pixel_bin == NULL:
-                pixel_bin = self._create_bin()
-                self._bins[bin_id] = pixel_bin
-            self._bins[bin_id].push(pixel)
+                pixel_bin = <PixelBin*> self._create_bin()
+                get_internal_data(&self._data)._bins[bin_id] = pixel_bin
+            get_internal_data(&self._data)._bins[bin_id].push(pixel)
 
     def insert(self, bin_id, index, coef):
         """Insert an indice and a value in a specific bin.
@@ -623,10 +621,10 @@ cdef class SparseBuilder(object):
         cdef:
             PixelBin *pixel_bin
         if self._use_heap_linked_list:
-            return self._compact_bins[bin_id].size
+            return get_internal_data(&self._data)._compact_bins[bin_id].size
         elif self._use_packed_list:
             return self._sizes[bin_id]
-        pixel_bin = self._bins[bin_id]
+        pixel_bin = get_internal_data(&self._data)._bins[bin_id]
         if pixel_bin == NULL:
             return 0
         return pixel_bin.size()
@@ -661,14 +659,14 @@ cdef class SparseBuilder(object):
 
         if self._use_heap_linked_list:
             for bin_id in range(self._nbin):
-                sizes[bin_id] = self._compact_bins[bin_id].size
+                sizes[bin_id] = get_internal_data(&self._data)._compact_bins[bin_id].size
         elif self._use_packed_list:
             # FIXME: Can be done with a memcopy
             for bin_id in range(self._nbin):
                 sizes[bin_id] = self._sizes[bin_id]
         else:
             for bin_id in range(self._nbin):
-                pixel_bin = self._bins[bin_id]
+                pixel_bin = get_internal_data(&self._data)._bins[bin_id]
                 if pixel_bin != NULL:
                     sizes[bin_id] = pixel_bin.size()
                 else:
@@ -692,13 +690,13 @@ cdef class SparseBuilder(object):
 
         if self._use_heap_linked_list:
             for bin_id in range(self._nbin):
-                size += self._compact_bins[bin_id].size
+                size += get_internal_data(&self._data)._compact_bins[bin_id].size
         elif self._use_packed_list:
             for bin_id in range(self._nbin):
                 size += self._sizes[bin_id]
         else:
             for bin_id in range(self._nbin):
-                pixel_bin = self._bins[bin_id]
+                pixel_bin = get_internal_data(&self._data)._bins[bin_id]
                 if pixel_bin != NULL:
                     size += pixel_bin.size()
         return size
@@ -709,7 +707,7 @@ cdef class SparseBuilder(object):
             compact_bin_t *compact_bin
             chained_pixel_t *chained_pixel
         if self._use_heap_linked_list:
-            compact_bin = &self._compact_bins[bin_id]
+            compact_bin = &get_internal_data(&self._data)._compact_bins[bin_id]
             chained_pixel = compact_bin.front_ptr
             while chained_pixel != NULL:
                 dest[0] = chained_pixel.data.index
@@ -722,7 +720,7 @@ cdef class SparseBuilder(object):
             # unsupported
             return
         else:
-            pixel_bin = self._bins[bin_id]
+            pixel_bin = get_internal_data(&self._data)._bins[bin_id]
             if pixel_bin != NULL:
                 pixel_bin.copy_indexes_to(dest)
 
@@ -732,7 +730,7 @@ cdef class SparseBuilder(object):
             compact_bin_t *compact_bin
             chained_pixel_t *chained_pixel
         if self._use_heap_linked_list:
-            compact_bin = &self._compact_bins[bin_id]
+            compact_bin = &get_internal_data(&self._data)._compact_bins[bin_id]
             chained_pixel = compact_bin.front_ptr
             while chained_pixel != NULL:
                 dest[0] = chained_pixel.data.coef
@@ -745,7 +743,7 @@ cdef class SparseBuilder(object):
             # unsupported
             return
         else:
-            pixel_bin = self._bins[bin_id]
+            pixel_bin = get_internal_data(&self._data)._bins[bin_id]
             if pixel_bin != NULL:
                 pixel_bin.copy_coefs_to(dest)
 
@@ -755,7 +753,7 @@ cdef class SparseBuilder(object):
             compact_bin_t *compact_bin
             chained_pixel_t *chained_pixel
         if self._use_heap_linked_list:
-            compact_bin = &self._compact_bins[bin_id]
+            compact_bin = &get_internal_data(&self._data)._compact_bins[bin_id]
             chained_pixel = compact_bin.front_ptr
             while chained_pixel != NULL:
                 dest[0] = chained_pixel.data
@@ -768,7 +766,7 @@ cdef class SparseBuilder(object):
             # unsupported
             return
         else:
-            pixel_bin = self._bins[bin_id]
+            pixel_bin = get_internal_data(&self._data)._bins[bin_id]
             if pixel_bin != NULL:
                 pixel_bin.copy_data_to(dest)
 
@@ -808,13 +806,13 @@ cdef class SparseBuilder(object):
         indexes_ptr = &indexes[0]
         coefs_ptr = &coefs[0]
 
-        it_packed = self._heap._packed_data.begin()
-        while it_packed != self._heap._packed_data.end():
+        it_packed = get_internal_data(&self._data)._heap._packed_data.begin()
+        while it_packed != get_internal_data(&self._data)._heap._packed_data.end():
             packed_block = dereference(it_packed)
 
-            for i in range(self._heap._block_size):
-                if self._heap._current_packed_block == packed_block:
-                    if i >= self._heap._packed_pos:
+            for i in range(get_internal_data(&self._data)._heap._block_size):
+                if get_internal_data(&self._data)._heap._current_packed_block == packed_block:
+                    if i >= get_internal_data(&self._data)._heap._packed_pos:
                         break
                 packed_data = &packed_block[i]
                 bin_id = packed_data.bin_id
@@ -918,13 +916,13 @@ cdef class SparseBuilder(object):
 
         # Feed the array
         current_bin_pos = numpy.zeros(self._nbin, dtype=numpy.int32)
-        it_packed = self._heap._packed_data.begin()
-        while it_packed != self._heap._packed_data.end():
+        it_packed = get_internal_data(&self._data)._heap._packed_data.begin()
+        while it_packed != get_internal_data(&self._data)._heap._packed_data.end():
             packed_block = dereference(it_packed)
 
-            for i in range(self._heap._block_size):
-                if self._heap._current_packed_block == packed_block:
-                    if i >= self._heap._packed_pos:
+            for i in range(get_internal_data(&self._data)._heap._block_size):
+                if get_internal_data(&self._data)._heap._current_packed_block == packed_block:
+                    if i >= get_internal_data(&self._data)._heap._packed_pos:
                         break
                 packed_data = &packed_block[i]
                 bin_id = packed_data.bin_id

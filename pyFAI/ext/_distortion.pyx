@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "12/07/2018"
+__date__ = "16/07/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -52,11 +52,9 @@ from ..utils import expand2d
 from ..third_party import six
 import fabio
 
+from sparse_builder cimport SparseBuilder
 from sparse_utils cimport ArrayBuilder, lut_point
 from sparse_utils import ArrayBuilder, dtype_lut
-# cdef struct lut_point:
-#     int idx
-#     float coef
 
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
@@ -840,9 +838,6 @@ def calc_sparse(cnp.float32_t[:, :, :, ::1] pos not None,
     else:
         raise RuntimeError("Unimplemented sparse matrix format: %s", format)
     return res
-
-
-include "sparse_builder.pxi"
 
 
 @cython.boundscheck(False)
