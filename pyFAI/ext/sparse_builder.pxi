@@ -288,6 +288,20 @@ cdef cppclass PixelBlock:
                 dest += block.size()
             preincrement(it)
 
+    void copy_data_to(pixel_t *dest) nogil:
+        cdef:
+            clist[PixelElementaryBlock*].iterator it
+            PixelElementaryBlock* block
+            int i
+        it = this._blocks.begin()
+        while it != this._blocks.end():
+            block = dereference(it)
+            for i in range(block.size()):
+                dest.index = block._indexes[i]
+                dest.coef = block._coefs[i]
+                dest += 1
+            preincrement(it)
+
 
 cdef cppclass PixelBin:
     clist[pixel_t] _pixels
@@ -341,6 +355,19 @@ cdef cppclass PixelBin:
         it_points = this._pixels.begin()
         while it_points != this._pixels.end():
             dest[0] = dereference(it_points).coef
+            preincrement(it_points)
+            dest += 1
+
+    void copy_data_to(pixel_t *dest) nogil:
+        cdef:
+            clist[pixel_t].iterator it_points
+
+        if this._pixels_in_block != NULL:
+            this._pixels_in_block.copy_data_to(dest)
+
+        it_points = this._pixels.begin()
+        while it_points != this._pixels.end():
+            dest[0] = dereference(it_points)
             preincrement(it_points)
             dest += 1
 
@@ -722,6 +749,29 @@ cdef class SparseBuilder(object):
             if pixel_bin != NULL:
                 pixel_bin.copy_coefs_to(dest)
 
+    cdef void _copy_bin_data_to(self, int bin_id, pixel_t *dest) nogil:
+        cdef:
+            PixelBin *pixel_bin
+            compact_bin_t *compact_bin
+            chained_pixel_t *chained_pixel
+        if self._use_heap_linked_list:
+            compact_bin = &self._compact_bins[bin_id]
+            chained_pixel = compact_bin.front_ptr
+            while chained_pixel != NULL:
+                dest[0] = chained_pixel.data
+                dest += 1
+                if chained_pixel == compact_bin.back_ptr:
+                    # The next ptr of the last element is not initialized
+                    break
+                chained_pixel = chained_pixel.next
+        elif self._use_packed_list:
+            # unsupported
+            return
+        else:
+            pixel_bin = self._bins[bin_id]
+            if pixel_bin != NULL:
+                pixel_bin.copy_data_to(dest)
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
@@ -906,6 +956,7 @@ cdef class SparseBuilder(object):
         """
         cdef:
             pixel_t[:, :] lut
+            pixel_t *data_ptr
             int bin_id
             int i
             int max_size
@@ -930,14 +981,7 @@ cdef class SparseBuilder(object):
 
         # Feed the array
         for bin_id in range(self._nbin):
-            size = self.cget_bin_size(bin_id)
-            indexes = numpy.empty(size, dtype=numpy.int32)
-            coefs = numpy.empty(size, dtype=numpy.float32)
-            indexes_ptr = &indexes[0]
-            coefs_ptr = &coefs[0]
-            self._copy_bin_indexes_to(bin_id, indexes_ptr)
-            self._copy_bin_coefs_to(bin_id, coefs_ptr)
-            for i in range(size):
-                lut[bin_id, i] = pixel_t(indexes[i], coefs[i])
+            data_ptr = &lut[bin_id, 0]
+            self._copy_bin_data_to(bin_id, data_ptr)
 
         return numpy.asarray(lut, dtype=dtype_lut)
