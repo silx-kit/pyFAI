@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/06/2018"
+__date__ = "03/07/2018"
 __status__ = "stable"
 
 
@@ -629,8 +629,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 dset.attrs["interpretation"] = "vertex"
 
     def guess_binning(self, data):
-        """
-        Guess the binning/mode depending on the image shape
+        """Guess the binning/mode depending on the image shape
+
+        If the binning changes, this enforces the reset of the mask.
+
         :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
         :return: True if the data fit the detector
         :rtype: bool
@@ -643,6 +645,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
             logger.warning("No shape available to guess the binning: %s", data)
             self._binning = 1, 1
             return False
+
+        if shape == self.shape:
+            return True
 
         if not self.force_pixel:
             if shape != self.max_shape:
@@ -853,6 +858,31 @@ class Detector(with_metaclass(DetectorMeta, object)):
         else:
             self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
+
+    def __getnewargs_ex__(self):
+        "Helper function for pickling detectors"
+        return (self.pixel1, self.pixel2, self.splineFile, self.max_shape), {}
+
+    def __getstate__(self):
+        """Helper function for pickling detectors
+
+        :return: the state of the object
+        """
+        state_blacklist = ('_sem',)
+        state = self.__dict__.copy()
+        for key in state_blacklist:
+            if key in state:
+                del state[key]
+        return state
+
+    def __setstate__(self, state):
+        """Helper function for unpickling detectors
+
+        :param state: the state of the object
+        """
+        for statekey, statevalue in state.items():
+            setattr(self, statekey, statevalue)
+        self._sem = threading.Semaphore()
 
 
 class NexusDetector(Detector):

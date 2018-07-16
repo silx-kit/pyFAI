@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2018"
+__date__ = "27/06/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -2171,3 +2171,32 @@ class Geometry(object):
     @property
     def _transmission_corr(self):
         return self._cached_array.get("transmission_corr")
+
+    def __getnewargs_ex__(self):
+        "Helper function for pickling geometry"
+        return (self.dist, self.poni1, self.poni2,
+                self.rot1, self.rot2, self.rot3,
+                self.pixel1, self.pixel2,
+                self.splineFile, self.detector, self.wavelength), {}
+
+    def __getstate__(self):
+        """Helper function for pickling geometry
+        
+        :return: the state of the object
+        """
+
+        state_blacklist = ('_sem',)
+        state = self.__dict__.copy()
+        for key in state_blacklist:
+            if key in state:
+                del state[key]
+        return state
+
+    def __setstate__(self, state):
+        """Helper function for unpickling geometry
+        
+        :param state: the state of the object
+        """
+        for statekey, statevalue in state.items():
+            setattr(self, statekey, statevalue)
+        self._sem = threading.Semaphore()

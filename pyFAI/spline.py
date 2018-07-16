@@ -36,12 +36,11 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "06/06/2018"
+__date__ = "03/07/2018"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
 import time
-import sys
 import numpy
 import logging
 import scipy.optimize
@@ -460,24 +459,31 @@ class Spline(object):
             logger.info("X-Displ evaluation= %.3f sec, Y-Displ evaluation=  %.3f sec.",
                         intermediateTime - startTime, time.time() - intermediateTime)
 
-        logger.info(len(xRectBivariateSpline.get_coeffs()),
-                    "x-coefs", xRectBivariateSpline.get_coeffs())
-        logger.info(len(yRectBivariateSpline.get_coeffs()),
-                    "y-coefs", yRectBivariateSpline.get_coeffs())
-        logger.info(len(xRectBivariateSpline.get_knots()[0]),
-                    len(xRectBivariateSpline.get_knots()[1]),
-                    "x-knots", xRectBivariateSpline.get_knots())
-        logger.info(len(yRectBivariateSpline.get_knots()[0]),
-                    len(yRectBivariateSpline.get_knots()[1]),
-                    "y-knots", yRectBivariateSpline.get_knots())
-        logger.info("Residual x=%s, y=%s", xRectBivariateSpline.get_residual(),
-                    yRectBivariateSpline.get_residual())
-        self.xSplineKnotsX = xRectBivariateSpline.get_knots()[0]
-        self.xSplineKnotsY = xRectBivariateSpline.get_knots()[1]
+        xknots = xRectBivariateSpline.get_knots()
+        self.xSplineKnotsX = xknots[0]
+        self.xSplineKnotsY = xknots[1]
         self.xSplineCoeff = xRectBivariateSpline.get_coeffs()
-        self.ySplineKnotsX = yRectBivariateSpline.get_knots()[0]
-        self.ySplineKnotsY = yRectBivariateSpline.get_knots()[1]
+        yknots = yRectBivariateSpline.get_knots()
+        self.ySplineKnotsX = yknots[0]
+        self.ySplineKnotsY = yknots[1]
         self.ySplineCoeff = yRectBivariateSpline.get_coeffs()
+
+        logger.debug("x-coefs len=%i %s",
+                     len(self.xSplineCoeff),
+                     self.xSplineCoeff)
+        logger.debug("y-coefs len=%i %s",
+                     len(self.ySplineCoeff),
+                     yknots)
+        logger.debug("x-knots x:%i y:%i",
+                     len(self.xSplineKnotsX),
+                     len(self.xSplineKnotsY))
+        logger.debug("y-knots x:%i y:%i",
+                     len(self.ySplineKnotsX),
+                     len(self.ySplineKnotsY))
+
+        logger.debug("Residual x=%s, y=%s",
+                     xRectBivariateSpline.get_residual(),
+                     yRectBivariateSpline.get_residual())
 
     def writeEDF(self, basename):
         """

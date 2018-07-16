@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "03/07/2018"
 __status__ = "production"
 
 import os
@@ -133,16 +133,6 @@ def main():
 
     if options.ponifile and to_process:
         integrator = pyFAI.load(options.ponifile)
-        if options.wavelength:
-            integrator.wavelength = options.wavelength * 1e-10
-        elif options.energy:
-            integrator.wavelength = hc / options.energy * 1e-10
-        if options.mask and os.path.exists(options.mask):  # override with the command line mask
-            integrator.maskfile = options.mask
-        if options.dark and os.path.exists(options.dark):  # set dark current
-            integrator.darkcurrent = fabio.open(options.dark).data
-        if options.flat and os.path.exists(options.flat):  # set Flat field
-            integrator.flatfield = fabio.open(options.flat).data
 
         if options.method:
             method = options.method
@@ -155,6 +145,18 @@ def main():
             first = to_process[0]
             fabimg = fabio.open(first)
             integrator.detector.guess_binning(fabimg.data)
+
+        if options.wavelength:
+            integrator.wavelength = options.wavelength * 1e-10
+        elif options.energy:
+            integrator.wavelength = hc / options.energy * 1e-10
+        if options.mask and os.path.exists(options.mask):  # override with the command line mask
+            integrator.maskfile = options.mask
+        if options.dark and os.path.exists(options.dark):  # set dark current
+            integrator.darkcurrent = fabio.open(options.dark).data
+        if options.flat and os.path.exists(options.flat):  # set Flat field
+            integrator.flatfield = fabio.open(options.flat).data
+
         print(integrator)
         print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
         for afile in to_process:
