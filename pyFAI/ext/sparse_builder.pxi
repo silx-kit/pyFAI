@@ -28,7 +28,7 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "13/07/2018"
+__date__ = "16/07/2018"
 __copyright__ = "2018, ESRF"
 
 import numpy
@@ -45,8 +45,10 @@ from cython.operator cimport dereference
 from cython.operator cimport preincrement
 cimport cython
 
+from .sparse_utils import dtype_lut
 
-cdef struct pixel_t:
+
+cdef packed struct pixel_t:
     cnumpy.int32_t index
     cnumpy.float32_t coef
 
@@ -62,7 +64,7 @@ cdef struct compact_bin_t:
     chained_pixel_t *back_ptr
 
 
-cdef struct packed_data_t:
+cdef packed struct packed_data_t:
     int bin_id
     pixel_t data
 
