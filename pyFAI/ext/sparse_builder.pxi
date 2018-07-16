@@ -834,3 +834,110 @@ cdef class SparseBuilder(object):
             coefs_ptr += end - begin
 
         return numpy.asarray(coefs), numpy.asarray(indexes), numpy.asarray(nbins)
+
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.cdivision(True)
+    def _to_lut_from_packed(self):
+        cdef:
+            cnumpy.int32_t[:] current_bin_pos
+            cnumpy.int32_t[:] indexes
+            cnumpy.int32_t *indexes_ptr
+            cnumpy.float32_t[:] coefs
+            cnumpy.float32_t *coefs_ptr
+            pixel_t[:, :] lut
+            int size
+            int max_size
+            int begin, end
+            int bin_id
+            int bin_size
+            int pos
+            packed_data_t *packed_block
+            packed_data_t *packed_data
+
+        # Reach the biggest bin size
+        max_size = 0
+        for bin_id in range(self._nbin):
+            size = self.cget_bin_size(bin_id)
+            if size > max_size:
+                max_size = size
+
+        # Alloc a very big array
+        lut = numpy.zeros((self._nbin, max_size), dtype=dtype_lut)
+
+        # Feed the array
+        current_bin_pos = numpy.zeros(self._nbin, dtype=numpy.int32)
+        it_packed = self._heap._packed_data.begin()
+        while it_packed != self._heap._packed_data.end():
+            packed_block = dereference(it_packed)
+
+            for i in range(self._heap._block_size):
+                if self._heap._current_packed_block == packed_block:
+                    if i >= self._heap._packed_pos:
+                        break
+                packed_data = &packed_block[i]
+                bin_id = packed_data.bin_id
+                pos = current_bin_pos[bin_id]
+                lut[bin_id, pos] = packed_data.data
+                current_bin_pos[bin_id] += 1
+
+            preincrement(it_packed)
+
+        return numpy.asarray(lut, dtype=dtype_lut)
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.cdivision(True)
+    def to_lut(self):
+        """
+        Returns a LUT representation from the stored data.
+
+        - The first array contains all floating values. Sorted by bin number.
+        - The second array contains all indices. Sorted by bin number.
+        - Lookup table from the bin index to the first index in the 2 first
+            arrays. `array[10 + 0]` contains the index of the first element of the
+            bin 10. `array[10 + 1]` - 1 is the last elements. This array always
+            starts with `0` and contains one more element than the number of
+            bins.
+
+        :rtype: numpy.ndarray
+        :returns: A 2D array  tuple containing values, indices and bin indexes
+        """
+        cdef:
+            pixel_t[:, :] lut
+            int bin_id
+            int i
+            int max_size
+            int size
+            cnumpy.int32_t[:] indexes
+            cnumpy.float32_t[:] coefs
+            cnumpy.float32_t *coefs_ptr
+            cnumpy.int32_t *indexes_ptr
+
+        if self._use_packed_list:
+            return self._to_lut_from_packed()
+
+        # Reach the biggest bin size
+        max_size = 0
+        for bin_id in range(self._nbin):
+            size = self.cget_bin_size(bin_id)
+            if size > max_size:
+                max_size = size
+
+        # Alloc a very big array
+        lut = numpy.zeros((self._nbin, max_size), dtype=dtype_lut)
+
+        # Feed the array
+        for bin_id in range(self._nbin):
+            size = self.cget_bin_size(bin_id)
+            indexes = numpy.empty(size, dtype=numpy.int32)
+            coefs = numpy.empty(size, dtype=numpy.float32)
+            indexes_ptr = &indexes[0]
+            coefs_ptr = &coefs[0]
+            self._copy_bin_indexes_to(bin_id, indexes_ptr)
+            self._copy_bin_coefs_to(bin_id, coefs_ptr)
+            for i in range(size):
+                lut[bin_id, i] = pixel_t(indexes[i], coefs[i])
+
+        return numpy.asarray(lut, dtype=dtype_lut)
