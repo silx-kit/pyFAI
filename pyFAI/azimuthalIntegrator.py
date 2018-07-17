@@ -291,8 +291,6 @@ class AzimuthalIntegrator(Geometry):
             mask = self.mask
         if mask is None:
             mask = numpy.zeros(shape, dtype=bool)
-        elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
-            mask = (mask < 0)
         else:
             mask = mask.astype(bool)
         if self.USE_LEGACY_MASK_NORMALIZATION:
