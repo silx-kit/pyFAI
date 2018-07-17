@@ -393,25 +393,25 @@ class TestSaxs(unittest.TestCase):
 
     def test_positive_mask(self):
         ai = AzimuthalIntegrator()
-        data = numpy.array([[0, 1, 2, 3]])
-        mask = numpy.array([[0, 1, 1, 1]])
-        result = ai.create_mask(data, mask, mode="numpy")
-        self.assertEqual(list(result[0]), [False, True, True, True])
+        data = numpy.array([[0, 1, 2, 3, 4]])
+        mask = numpy.array([[0, 0, 0, 1, 2]])
+        result = ai.create_mask(data, mask)
+        self.assertEqual(list(result[0]), [False, False, False, True, True])
 
     def test_negative_mask(self):
         ai = AzimuthalIntegrator()
-        data = numpy.array([[0, 1, 2, 3]])
-        mask = numpy.array([[0, -1, -1, -2]])
-        result = ai.create_mask(data, mask, mode="numpy")
-        self.assertEqual(list(result[0]), [False, True, True, True])
+        data = numpy.array([[0, 1, 2, 3, 4]])
+        mask = numpy.array([[0, 0, 0, -2, -1]])
+        result = ai.create_mask(data, mask)
+        self.assertEqual(list(result[0]), [False, False, False, True, True])
 
     def test_bool_mask(self):
         ai = AzimuthalIntegrator()
         ai.USE_LEGACY_MASK_NORMALIZATION = True
-        data = numpy.array([[0, 1, 2, 3]])
-        mask = numpy.array([[False, True, True, True]])
-        result = ai.create_mask(data, mask, mode="numpy")
-        self.assertEqual(list(result[0]), [False, True, True, True])
+        data = numpy.array([[0, 1, 2, 3, 4]])
+        mask = numpy.array([[False, False, False, True, True]])
+        result = ai.create_mask(data, mask)
+        self.assertEqual(list(result[0]), [False, False, False, True, True])
 
     def test_legacy_mask(self):
         ai = AzimuthalIntegrator()
