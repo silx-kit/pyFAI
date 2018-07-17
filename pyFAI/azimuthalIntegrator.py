@@ -49,7 +49,7 @@ from numpy import rad2deg
 from .geometry import Geometry
 from . import units
 from .utils import EPS32, deg2rad, crc32
-from .utils.decorators import deprecated
+from .utils.decorators import deprecated, deprecated_warning
 from .containers import Integrate1dResult, Integrate2dResult
 from .io import DefaultAiWriter
 error = None
@@ -297,8 +297,10 @@ class AzimuthalIntegrator(Geometry):
             mask = mask.astype(bool)
         if self.USE_LEGACY_MASK_NORMALIZATION:
             if mask.sum(dtype=int) > mask.size // 2:
-                logger.warning("Mask likely to be inverted as more"
-                               " than half pixel are masked !!!")
+                reason = "The provided mask is not complient with other engines. "\
+                    "The feature which automatically invert it will be removed soon. "\
+                    "For more information see https://github.com/silx-kit/pyFAI/pull/868"
+                deprecated_warning(__name__, name="provided mask content", reason=reason)
                 numpy.logical_not(mask, mask)
         if (mask.shape != shape):
             try:
