@@ -413,6 +413,30 @@ class TestSaxs(unittest.TestCase):
         result = ai.create_mask(data, mask, mode="numpy")
         self.assertEqual(list(result[0]), [False, True, True, True])
 
+    def test_legacy_mask(self):
+        ai = AzimuthalIntegrator()
+        ai.USE_LEGACY_MASK_NORMALIZATION = True
+        data = numpy.array([[0, 1, 2, 3]])
+        mask = numpy.array([[0, 1, 1, 1]])
+        result = ai.create_mask(data, mask, mode="numpy")
+        self.assertEqual(list(result[0]), [False, True, True, True])
+        data = numpy.array([[0, 1, 2, 3]])
+        mask = numpy.array([[1, 0, 0, 0]])
+        result = ai.create_mask(data, mask, mode="numpy")
+        self.assertEqual(list(result[0]), [False, True, True, True])
+
+    def test_no_legacy_mask(self):
+        ai = AzimuthalIntegrator()
+        ai.USE_LEGACY_MASK_NORMALIZATION = False
+        data = numpy.array([[0, 1, 2, 3]])
+        mask = numpy.array([[0, 1, 1, 1]])
+        result = ai.create_mask(data, mask, mode="numpy")
+        self.assertEqual(list(result[0]), [True, False, False, False])
+        data = numpy.array([[0, 1, 2, 3]])
+        mask = numpy.array([[1, 0, 0, 0]])
+        result = ai.create_mask(data, mask, mode="numpy")
+        self.assertEqual(list(result[0]), [False, True, True, True])
+
     def test_normalization_factor(self):
 
         ai = AzimuthalIntegrator(detector="Pilatus100k")
