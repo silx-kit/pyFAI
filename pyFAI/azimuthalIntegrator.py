@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/06/2018"
+__date__ = "17/07/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -173,6 +173,18 @@ class AzimuthalIntegrator(Geometry):
     """
     DEFAULT_METHOD = "splitbbox"
 
+    USE_LEGACY_MASK_NORMALIZATION = True
+    """If true, the Python engine integrator will normalize the mask to use the
+    most frequent value of the mask as the non-masking value.
+
+    This behaviour is not consistant with other engines and is now deprecated.
+    This flag will be turned off in the comming releases.
+
+    Turning off this flag force the user to provide a mask with 0 as non-masking
+    value. And any non-zero as masking value (negative or positive value). A
+    boolean mask is also accepted (`True` is the masking value).
+    """
+
     def __init__(self, dist=1, poni1=0, poni2=0,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None,
@@ -283,10 +295,11 @@ class AzimuthalIntegrator(Geometry):
             mask = (mask < 0)
         else:
             mask = mask.astype(bool)
-        if mask.sum(dtype=int) > mask.size // 2:
-            logger.warning("Mask likely to be inverted as more"
-                           " than half pixel are masked !!!")
-            numpy.logical_not(mask, mask)
+        if self.USE_LEGACY_MASK_NORMALIZATION:
+            if mask.sum(dtype=int) > mask.size // 2:
+                logger.warning("Mask likely to be inverted as more"
+                               " than half pixel are masked !!!")
+                numpy.logical_not(mask, mask)
         if (mask.shape != shape):
             try:
                 mask = mask[:shape[0], :shape[1]]
