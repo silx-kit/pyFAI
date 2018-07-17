@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "17/07/2018"
 
 import unittest
 import os
@@ -389,7 +389,29 @@ class TestSaxs(unittest.TestCase):
         data = fabio.open(self.edfPilatus).data
         mask = fabio.open(self.maskFile).data
         self.assertTrue(abs(ai.create_mask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0, "test without dummy")
-#         self.assertTrue(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
+        # self.assertTrue(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
+
+    def test_positive_mask(self):
+        ai = AzimuthalIntegrator()
+        data = numpy.array([[0, 1, 2, 3]])
+        mask = numpy.array([[0, 1, 1, 1]])
+        result = ai.create_mask(data, mask, mode="numpy")
+        self.assertEqual(list(result[0]), [False, True, True, True])
+
+    def test_negative_mask(self):
+        ai = AzimuthalIntegrator()
+        data = numpy.array([[0, 1, 2, 3]])
+        mask = numpy.array([[0, -1, -1, -2]])
+        result = ai.create_mask(data, mask, mode="numpy")
+        self.assertEqual(list(result[0]), [False, True, True, True])
+
+    def test_bool_mask(self):
+        ai = AzimuthalIntegrator()
+        ai.USE_LEGACY_MASK_NORMALIZATION = True
+        data = numpy.array([[0, 1, 2, 3]])
+        mask = numpy.array([[False, True, True, True]])
+        result = ai.create_mask(data, mask, mode="numpy")
+        self.assertEqual(list(result[0]), [False, True, True, True])
 
     def test_normalization_factor(self):
 
