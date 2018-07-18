@@ -1112,7 +1112,7 @@ class Geometry(object):
                 f.write("poni_version: 2\n")
                 detector = self.detector
                 f.write("Detector: %s\n" % detector.name)
-                f.write("Detector config: %s\n" % json.dumps(detector.get_config()))
+                f.write("Detector_config: %s\n" % json.dumps(detector.get_config()))
 
                 f.write("Distance: %s\n" % self._dist)
                 f.write("Poni1: %s\n" % self._poni1)
@@ -1164,7 +1164,7 @@ class Geometry(object):
 
         if "detector" in data:
             self.detector = detectors.detector_factory(data["detector"],
-                                                       data.get("detector_config)"))
+                                                       data.get("detector_config"))
         else:
             self.detector = detectors.Detector()
         if version == 1:
