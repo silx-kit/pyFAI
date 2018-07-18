@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "18/07/2018"
 
 import os
 import tempfile
@@ -68,6 +68,13 @@ class TestDetector(unittest.TestCase):
             logger.debug("Detector name: %s config %s, same as factory %s",
                          name, config, res)
             self.assertEqual(res, True, name)
+
+    def test_reading_non_default_args(self):
+        config = {"pixel1": 1, "pixel2": 2}
+        detector = detector_factory("adsc_q315", config)
+        self.assertEqual(detector.get_config(), config)
+        self.assertEqual(detector.pixel1, config["pixel1"])
+        self.assertEqual(detector.pixel2, config["pixel2"])
 
     def test_detector_imxpad_s140(self):
         """
