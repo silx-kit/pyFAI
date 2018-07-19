@@ -470,7 +470,7 @@ class TestGeometry(utilstest.ParametricTestCase):
         config = {"pixel1": 1, "pixel2": 2}
         detector = detector_factory("adsc_q315", config)
         geom = geometry.Geometry(detector=detector)
-        ponifile = os.path.join(UtilsTest.tempdir, "%s.poni" % self.id)
+        ponifile = os.path.join(UtilsTest.tempdir, "%s.poni" % self.id())
         geom.save(ponifile)
         geom = geometry.Geometry()
         geom.load(ponifile)
