@@ -201,9 +201,9 @@ class RingExtractor(object):
                 dist_min = len(seeds) / 2.0 / keep
                 # why 3.0, why not ?
 
-                _logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "
-                            "searching for %i pts out of %i with I>%.1f, dmin=%.1f" %
-                            (i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min))
+                msg = "Extracting datapoint for ring %s (2theta = %.2f deg); "\
+                    "searching for %i pts out of %i with I>%.1f, dmin=%.1f"
+                _logger.info(msg, i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min)
                 _res = peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
 
         # self.peakPicker.points.save(self.basename + ".npt")
