@@ -175,7 +175,8 @@ class _RingPlot(silx.gui.plot.PlotWidget):
                     resetzoom=False,
                     color=numpyColor,
                     linewidth=3,
-                    linestyle=":")
+                    linestyle=":",
+                    copy=False)
                 self.__ringLegends.append(legend)
 
 
