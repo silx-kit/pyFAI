@@ -92,7 +92,7 @@ Depends: ${misc:Depends},
          python-imaging,
          python-matplotlib,
          python-scipy,
-         python-silx
+         python-silx (>=0.8)
 Recommends: python-h5py,
             python-pyopencl,
             python-qt4 | python-pyside
@@ -166,7 +166,7 @@ Depends: ${misc:Depends},
          python3-pil,
          python3-matplotlib,
          python3-scipy,
-         python3-silx
+         python3-silx (>=0.8)
 Recommends: python3-pyopencl,
             python3-pyqt4 | python3-pyside
 Suggests: python3-h5py
