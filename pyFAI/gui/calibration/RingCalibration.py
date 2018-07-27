@@ -27,10 +27,11 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/03/2018"
+__date__ = "27/07/2018"
 
 import logging
 import numpy
+from silx.image import marchingsquares
 import pyFAI.utils
 from ...geometryRefinement import GeometryRefinement
 from ..peak_picker import PeakPicker
@@ -178,17 +179,11 @@ class RingCalibration(object):
         else:
             return []
 
-        # FIXME use documentaed function
-        import matplotlib._cntr
-        x, y = numpy.mgrid[:tth.shape[0], :tth.shape[1]]
-        contour = matplotlib._cntr.Cntr(x, y, tth)
-
+        ms = marchingsquares.MarchingSquaresMergeImpl(tth, self.__mask, use_minmax_cache=True)
         rings = []
         for angle in angles:
-            res = contour.trace(angle)
-            nseg = len(res) // 2
-            segments, _codes = res[:nseg], res[nseg:]
-            rings.append(segments)
+            polygons = ms.find_contours(angle)
+            rings.append(polygons)
 
         return rings
 
