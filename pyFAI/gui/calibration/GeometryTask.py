@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2018"
+__date__ = "27/07/2018"
 
 import logging
 import numpy
@@ -155,7 +155,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         colormap = self.getDefaultColormap()
         return utils.getFreeColorRange(colormap)
 
-    def setRings(self, rings, mask):
+    def setRings(self, rings):
         for legend in self.__ringLegends:
             self.removeCurve(legend)
         self.__ringLegends = []
@@ -165,19 +165,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             color = colors[ringId % len(colors)]
             numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
 
-            deltas = [(0.0, 0.0), (0.99, 0.0), (0.0, 0.99), (0.99, 0.99)]
-
-            def filter_coord_over_mask(coord):
-                for dx, dy in deltas:
-                    if mask[int(coord[0] + dx), int(coord[1] + dy)] != 0:
-                        return float("nan"), float("nan")
-                return coord
-
             for lineId, line in enumerate(polyline):
-                if mask is not None:
-                    line = map(filter_coord_over_mask, line)
-                    line = list(line)
-                    line = numpy.array(line)
                 y, x = line[:, 0], line[:, 1]
                 legend = "ring-%i-%i" % (ringId, lineId)
                 self.addCurve(
@@ -422,9 +410,8 @@ class GeometryTask(AbstractCalibrationTask):
     def __updateDisplay(self):
         calibration = self.__getCalibration()
 
-        mask = self.model().experimentSettingsModel().mask().value()
         rings = calibration.getRings()
-        self.__plot.setRings(rings, mask)
+        self.__plot.setRings(rings)
 
         center = calibration.getBeamCenter()
         if center is None:
