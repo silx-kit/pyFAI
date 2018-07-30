@@ -664,7 +664,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         hbox.setContentsMargins(0, 0, 0, 0)
 
         info = PositionInfo(plot=plot, converters=converters)
-        info.autoSnapToActiveCurve = True
+        info.setSnappingMode(True)
         statusBar = qt.QStatusBar(plot)
         statusBar.setSizeGripEnabled(False)
         statusBar.addWidget(info)
