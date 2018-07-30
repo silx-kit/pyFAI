@@ -454,7 +454,7 @@ class GeometryTask(AbstractCalibrationTask):
         image = self.__plot.getImage("image")
         if image is None:
             return value
-        data = image.getData()
+        data = image.getData(copy=False)
         ox, oy = image.getOrigin()
         sx, sy = image.getScale()
         row, col = (y - oy) / sy, (x - ox) / sx
