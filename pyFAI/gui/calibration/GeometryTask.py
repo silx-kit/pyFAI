@@ -140,10 +140,58 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__markerColors = {}
         self.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
         self.getYAxis().sigLimitsChanged.connect(self.__axesChanged)
+        self.sigPlotSignal.connect(self.__plotSignalReceived)
         self.__axisOfCurrentView = None
         self.__tth = None
         self.__rings = []
         self.__ringItems = {}
+        self.__angleUnderMouse = None
+        self.__displayedAngles = []
+
+    def __plotSignalReceived(self, event):
+        """Called when old style signals at emmited from the plot."""
+        if event["event"] == "mouseMoved":
+            x, y = event["x"], event["y"]
+            self.__mouseMoved(x, y)
+
+    def __getClosestAngle(self, angle):
+        """
+        Returns the closest ring index and ring angle
+        """
+        # TODO: Could be done in log(n) using bisect search
+        result = None
+        iresult = None
+        minDistance = float("inf")
+        for ringId, data in enumerate(self.__rings):
+            ringAngle, _polygons = data
+            distance = abs(angle - ringAngle)
+            if distance < minDistance:
+                minDistance = distance
+                result = ringAngle
+                iresult = ringId
+        return iresult, result
+
+    def __mouseMoved(self, x, y):
+        """Called when mouse move over the plot."""
+        pos = int(x), int(y)
+        x, y = self.__clampOnImage(pos)
+        angle = self.__tth[y, x]
+        ringId, angle = self.__getClosestAngle(angle)
+
+        if angle == self.__angleUnderMouse:
+            return
+
+        if self.__angleUnderMouse not in self.__displayedAngles:
+            items = self.__ringItems.get(self.__angleUnderMouse, [])
+            for item in items:
+                item.setVisible(False)
+
+        self.__angleUnderMouse = angle
+
+        if angle is not None:
+            items = self.__getItemsFromAngle(ringId, angle)
+            for item in items:
+                item.setVisible(True)
 
     def markerColorList(self):
         colormap = self.getDefaultColormap()
@@ -160,6 +208,19 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         colormap = self.getDefaultColormap()
         return utils.getFreeColorRange(colormap)
 
+    def __clampOnImage(self, pos):
+        x, y = pos
+        x, y = int(x), int(y)
+        if x < 0:
+            x = 0
+        elif x >= self.__tth.shape[1]:
+            x = self.__tth.shape[1] - 1
+        if y < 0:
+            y = 0
+        elif y >= self.__tth.shape[0]:
+            y = self.__tth.shape[0] - 1
+        return x, y
+
     def __getTwoTheraRange(self):
         if self.__tth is None:
             return None, None
@@ -168,26 +229,10 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         ymin, ymax = self.getYAxis().getLimits()
         ymin, ymax = int(ymin) - 1, int(ymax) + 1
 
-        def clampX(value):
-            if value < 0:
-                return 0
-            if value > self.__tth.shape[1]:
-                return self.__tth.shape[1]
-            return value
+        xmin, ymin = self.__clampOnImage((xmin, ymin))
+        xmax, ymax = self.__clampOnImage((xmax, ymax))
 
-        def clampY(value):
-            if value < 0:
-                return 0
-            if value > self.__tth.shape[0]:
-                return self.__tth.shape[0]
-            return value
-
-        xmin = clampX(xmin)
-        xmax = clampX(xmax)
-        ymin = clampY(ymin)
-        ymax = clampY(ymax)
-
-        view = self.__tth[ymin:ymax, xmin:xmax]
+        view = self.__tth[ymin:ymax + 1, xmin:xmax + 1]
         vmin, vmax = view.min(), view.max()
         return vmin, vmax
 
@@ -226,39 +271,47 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         else:
             step = int(len(angles) / 50)
 
+        self.__displayedAngles = set([])
+
         for items in self.__ringItems.values():
             for item in items:
                 item.setVisible(False)
 
-        colors = self.markerColorList()
         for angleId in range(0, len(angles), step):
-            ringId, angle = angles[angleId]
-            polyline = self.__rings[ringId][1]
-            color = colors[ringId % len(colors)]
-            numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+            ringId, ringAngle = angles[angleId]
+            self.__displayedAngles.add(ringAngle)
+            items = self.__getItemsFromAngle(ringId, ringAngle)
+            for item in items:
+                item.setVisible(True)
 
-            items = self.__ringItems.get(angle, None)
-            if items is None:
-                items = []
-                for lineId, line in enumerate(polyline):
-                    y, x = line[:, 0], line[:, 1]
-                    legend = "ring-%i-%i" % (ringId, lineId)
-                    self.addCurve(
-                        x=x,
-                        y=y,
-                        selectable=False,
-                        legend=legend,
-                        resetzoom=False,
-                        color=numpyColor,
-                        linewidth=3,
-                        linestyle=":",
-                        copy=False)
-                    item = self.getCurve(legend)
-                    items.append(item)
-                self.__ringItems[angle] = items
-            else:
-                for item in items:
-                    item.setVisible(True)
+    def __getItemsFromAngle(self, ringId, ringAngle):
+        items = self.__ringItems.get(ringAngle, None)
+        if items is not None:
+            return items
+
+        colors = self.markerColorList()
+
+        polyline = self.__rings[ringId][1]
+        color = colors[ringId % len(colors)]
+        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+        items = []
+        for lineId, line in enumerate(polyline):
+            y, x = line[:, 0], line[:, 1]
+            legend = "ring-%i-%i" % (ringId, lineId)
+            self.addCurve(
+                x=x,
+                y=y,
+                selectable=False,
+                legend=legend,
+                resetzoom=False,
+                color=numpyColor,
+                linewidth=3,
+                linestyle=":",
+                copy=False)
+            item = self.getCurve(legend)
+            items.append(item)
+        self.__ringItems[ringAngle] = items
+        return items
 
     def setRings(self, rings, tth=None):
         self.__tth = tth
