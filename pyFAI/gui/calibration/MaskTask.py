@@ -77,15 +77,7 @@ class MaskTask(AbstractCalibrationTask):
         plot.addToolBar(toolBar)
         statusBar = self.__createPlotStatusBar(plot)
         plot.setStatusBar(statusBar)
-
-        # FIXME Fix using silx 0.5
-        if "BackendMatplotlib" in plot._backend.__class__.__name__:
-            # hide axes and viewbox rect
-            plot._backend.ax.set_axis_off()
-            plot._backend.ax2.set_axis_off()
-            # remove external margins
-            plot._backend.ax.set_position([0, 0, 1, 1])
-            plot._backend.ax2.set_position([0, 0, 1, 1])
+        plot.setAxesDisplayed(False)
 
         colormap = {
             'name': "inferno",

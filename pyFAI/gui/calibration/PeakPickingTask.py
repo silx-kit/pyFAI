@@ -280,15 +280,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
     def __init__(self, parent):
         super(_PeakPickingPlot, self).__init__(parent=parent)
         self.setKeepDataAspectRatio(True)
-
-        # FIXME Fix using silx 0.5
-        if "BackendMatplotlib" in self._backend.__class__.__name__:
-            # hide axes and viewbox rect
-            self._backend.ax.set_axis_off()
-            self._backend.ax2.set_axis_off()
-            # remove external margins
-            self._backend.ax.set_position([0, 0, 1, 1])
-            self._backend.ax2.set_position([0, 0, 1, 1])
+        self.setAxesDisplayed(False)
 
         colormap = {
             'name': "inferno",
