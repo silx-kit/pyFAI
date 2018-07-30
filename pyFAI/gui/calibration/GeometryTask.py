@@ -171,6 +171,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
                 self.addCurve(
                     x=x,
                     y=y,
+                    selectable=False,
                     legend=legend,
                     resetzoom=False,
                     color=numpyColor,

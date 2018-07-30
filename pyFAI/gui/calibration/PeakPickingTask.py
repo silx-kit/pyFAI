@@ -349,6 +349,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.addCurve(x=x, y=y,
                       legend="coord" + name,
                       linestyle=' ',
+                      selectable=False,
                       symbol='o',
                       color=numpyColor,
                       resetzoom=False)
