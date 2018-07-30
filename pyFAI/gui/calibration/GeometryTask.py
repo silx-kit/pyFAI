@@ -39,7 +39,7 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
 
 import silx.gui.plot
-from silx.gui.plot.PlotTools import PositionInfo
+from silx.gui.plot.tools import PositionInfo
 from . import utils
 from . import validators
 

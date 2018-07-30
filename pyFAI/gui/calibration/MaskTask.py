@@ -35,7 +35,7 @@ import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 
 import silx.gui.plot
-from silx.gui.plot.PlotTools import PositionInfo
+from silx.gui.plot.tools import PositionInfo
 
 _logger = logging.getLogger(__name__)
 

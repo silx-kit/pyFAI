@@ -44,7 +44,7 @@ import pyFAI.control_points
 
 import silx.gui.plot
 import os
-from silx.gui.plot.PlotTools import PositionInfo
+from silx.gui.plot.tools import PositionInfo
 from . import utils
 
 _logger = logging.getLogger(__name__)
