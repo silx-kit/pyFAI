@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/07/2018"
+__date__ = "30/07/2018"
 
 import logging
 import numpy
@@ -284,7 +284,7 @@ class GeometryTask(AbstractCalibrationTask):
         hbox.setContentsMargins(0, 0, 0, 0)
 
         info = PositionInfo(plot=plot, converters=converters)
-        info.autoSnapToActiveCurve = True
+        info.setSnappingMode(True)
         statusBar = qt.QStatusBar(plot)
         statusBar.setSizeGripEnabled(False)
         statusBar.addWidget(info)
