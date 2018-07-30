@@ -161,7 +161,8 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__ringLegends = []
 
         colors = self.markerColorList()
-        for ringId, polyline in enumerate(rings):
+        for ringId, data in enumerate(rings):
+            _angle, polyline = data
             color = colors[ringId % len(colors)]
             numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
 
