@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2018"
+__date__ = "30/07/2018"
 
 import logging
 import numpy
@@ -862,7 +862,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         image = self.__plot.getImage("image")
         if image is None:
             return value
-        data = image.getData()
+        data = image.getData(copy=False)
         ox, oy = image.getOrigin()
         sx, sy = image.getScale()
         row, col = (y - oy) / sy, (x - ox) / sx
