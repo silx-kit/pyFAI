@@ -31,6 +31,8 @@ __date__ = "31/07/2018"
 
 import logging
 import numpy
+import weakref
+import functools
 from collections import OrderedDict
 
 from silx.gui import qt
@@ -225,6 +227,14 @@ class IntegrationTask(AbstractCalibrationTask):
         plot2d = silx.gui.plot.PlotWidget(parent)
         plot2d.setGraphXLabel("Radial")
         plot2d.setGraphYLabel("Azimuthal")
+
+        def syncMode(plot1d, plot2d, _event):
+            modeDict = plot2d.getInteractiveMode()
+            mode = modeDict["mode"]
+            plot1d.setInteractiveMode(mode)
+        callback = functools.partial(syncMode, weakref.proxy(plot1d), weakref.proxy(plot2d))
+        plot2d.sigInteractiveModeChanged.connect(callback)
+
         from silx.gui.plot import tools
         toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot2d)
         plot2d.addToolBar(toolBar)
