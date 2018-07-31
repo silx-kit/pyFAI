@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/07/2018"
+__date__ = "31/07/2018"
 
 import logging
 import numpy
@@ -174,6 +174,8 @@ class _RingPlot(silx.gui.plot.PlotWidget):
     def __mouseMoved(self, x, y):
         """Called when mouse move over the plot."""
         pos = int(x), int(y)
+        if self.__tth is None:
+            return
         x, y = self.__clampOnImage(pos)
         angle = self.__tth[y, x]
         ringId, angle = self.__getClosestAngle(angle)
