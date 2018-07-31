@@ -34,12 +34,13 @@ import numpy
 
 from silx.gui import qt
 from silx.gui import icons
+import silx.gui.plot
+from silx.gui.plot.tools import PositionInfo
+from silx.gui.colors import Colormap
+
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
-
-import silx.gui.plot
-from silx.gui.plot.tools import PositionInfo
 from . import utils
 from . import validators
 
@@ -375,40 +376,22 @@ class GeometryTask(AbstractCalibrationTask):
     def __createPlot(self):
         plot = _RingPlot(parent=self._imageHolder)
         plot.setKeepDataAspectRatio(True)
-        toolBar = self.__createPlotToolBar(plot)
-        plot.addToolBar(toolBar)
+        self.__createPlotToolBar(plot)
         statusBar = self.__createPlotStatusBar(plot)
         plot.setStatusBar(statusBar)
         plot.setAxesDisplayed(False)
 
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
         plot.setDefaultColormap(colormap)
 
         return plot
 
     def __createPlotToolBar(self, plot):
-        toolBar = qt.QToolBar("Plot tools", plot)
-
-        from silx.gui.plot.actions import control
-        from silx.gui.plot.actions import io
-        from silx.gui.plot.actions import histogram
-
-        toolBar.addAction(control.ResetZoomAction(plot, toolBar))
-        toolBar.addAction(control.ZoomInAction(plot, toolBar))
-        toolBar.addAction(control.ZoomOutAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(control.ColormapAction(plot, toolBar))
-        toolBar.addAction(histogram.PixelIntensitiesHistoAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(io.CopyAction(plot, toolBar))
-        toolBar.addAction(io.SaveAction(plot, toolBar))
-        toolBar.addAction(io.PrintAction(plot, toolBar))
-
-        return toolBar
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
 
     def __createPlotStatusBar(self, plot):
 

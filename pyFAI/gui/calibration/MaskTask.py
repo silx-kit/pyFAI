@@ -27,15 +27,16 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/07/2018"
+__date__ = "31/07/2018"
 
 import logging
 from silx.gui import qt
-import pyFAI.utils
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
-
+from silx.gui.colors import Colormap
 import silx.gui.plot
 from silx.gui.plot.tools import PositionInfo
+
+import pyFAI.utils
+from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 
 _logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ class MaskTask(AbstractCalibrationTask):
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-mask.ui"), self)
         self.initNextStep()
 
-        self.__plot = self.__createPlot()
+        self.__plot = self.__createPlot(self._imageHolder)
         self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(parent=self._toolHolder, plot=self.__plot)
         self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
         self.__maskPanel.setMultipleMasks("single")
@@ -70,43 +71,26 @@ class MaskTask(AbstractCalibrationTask):
         self.__plotMaskChanged = False
         self.__modelMaskChanged = False
 
-    def __createPlot(self):
-        plot = silx.gui.plot.PlotWidget(parent=self._imageHolder)
+    def __createPlot(self, parent):
+        plot = silx.gui.plot.PlotWidget(parent=parent)
         plot.setKeepDataAspectRatio(True)
-        toolBar = self.__createPlotToolBar(plot)
-        plot.addToolBar(toolBar)
-        statusBar = self.__createPlotStatusBar(plot)
-        plot.setStatusBar(statusBar)
+        plot.setDataMargins(0.1, 0.1, 0.1, 0.1)
+        plot.setGraphXLabel("Y")
+        plot.setGraphYLabel("X")
         plot.setAxesDisplayed(False)
 
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+
+        statusBar = self.__createPlotStatusBar(plot)
+        plot.setStatusBar(statusBar)
+
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
         plot.setDefaultColormap(colormap)
-
         return plot
-
-    def __createPlotToolBar(self, plot):
-        toolBar = qt.QToolBar("Plot tools", plot)
-
-        from silx.gui.plot.actions import control
-        from silx.gui.plot.actions import io
-        from silx.gui.plot.actions import histogram
-
-        toolBar.addAction(control.ResetZoomAction(plot, toolBar))
-        toolBar.addAction(control.ZoomInAction(plot, toolBar))
-        toolBar.addAction(control.ZoomOutAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(control.ColormapAction(plot, toolBar))
-        toolBar.addAction(histogram.PixelIntensitiesHistoAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(io.CopyAction(plot, toolBar))
-        toolBar.addAction(io.SaveAction(plot, toolBar))
-        toolBar.addAction(io.PrintAction(plot, toolBar))
-
-        return toolBar
 
     def __createPlotStatusBar(self, plot):
 
