@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/01/2018"
+__date__ = "31/07/2018"
 
 import os
 import fabio
@@ -57,23 +57,23 @@ class ExperimentTask(AbstractCalibrationTask):
         self._darkLoader.clicked.connect(self.loadDark)
         self._splineLoader.clicked.connect(self.loadSpline)
 
-        self.__plot2D = silx.gui.plot.Plot2D(parent=self._imageHolder)
-        self.__plot2D.setKeepDataAspectRatio(True)
-        self.__plot2D.getMaskAction().setVisible(False)
-        self.__plot2D.getProfileToolbar().setVisible(False)
-        self.__plot2D.setDataMargins(0.1, 0.1, 0.1, 0.1)
-        self.__plot2D.setGraphXLabel("Y")
-        self.__plot2D.setGraphYLabel("X")
+        self.__plot = silx.gui.plot.Plot2D(parent=self._imageHolder)
+        self.__plot.setKeepDataAspectRatio(True)
+        self.__plot.getMaskAction().setVisible(False)
+        self.__plot.getProfileToolbar().setVisible(False)
+        self.__plot.setDataMargins(0.1, 0.1, 0.1, 0.1)
+        self.__plot.setGraphXLabel("Y")
+        self.__plot.setGraphYLabel("X")
 
         colormap = {
             'name': "inferno",
             'normalization': 'log',
             'autoscale': True,
         }
-        self.__plot2D.setDefaultColormap(colormap)
+        self.__plot.setDefaultColormap(colormap)
 
         layout = qt.QVBoxLayout(self._imageHolder)
-        layout.addWidget(self.__plot2D)
+        layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
 
@@ -128,10 +128,10 @@ class ExperimentTask(AbstractCalibrationTask):
 
         if detector is None:
             self._detectorSize.setText("")
-            self.__plot2D.removeMarker("xmin")
-            self.__plot2D.removeMarker("xmax")
-            self.__plot2D.removeMarker("ymin")
-            self.__plot2D.removeMarker("ymax")
+            self.__plot.removeMarker("xmin")
+            self.__plot.removeMarker("xmax")
+            self.__plot.removeMarker("ymin")
+            self.__plot.removeMarker("ymax")
         else:
             try:
                 binning = detector.get_binning()
@@ -144,13 +144,13 @@ class ExperimentTask(AbstractCalibrationTask):
                 binning = binning[0], 1
 
             shape = detector.max_shape[1] // binning[1], detector.max_shape[0] // binning[0]
-            self.__plot2D.addXMarker(x=0, legend="xmin", color="grey")
-            self.__plot2D.addXMarker(x=shape[0], legend="xmax", color="grey")
-            self.__plot2D.addYMarker(y=0, legend="ymin", color="grey")
-            self.__plot2D.addYMarker(y=shape[1], legend="ymax", color="grey")
+            self.__plot.addXMarker(x=0, legend="xmin", color="grey")
+            self.__plot.addXMarker(x=shape[0], legend="xmax", color="grey")
+            self.__plot.addYMarker(y=0, legend="ymin", color="grey")
+            self.__plot.addYMarker(y=shape[1], legend="ymax", color="grey")
             dummy = numpy.array([[[0xF0, 0xF0, 0xF0]]], dtype=numpy.uint8)
-            self.__plot2D.addImage(data=dummy, scale=shape, legend="dummy", z=-10, replace=False)
-            self.__plot2D.resetZoom()
+            self.__plot.addImage(data=dummy, scale=shape, legend="dummy", z=-10, replace=False)
+            self.__plot.resetZoom()
 
     def __updateDetector(self):
         image = self.model().experimentSettingsModel().image().value()
@@ -204,8 +204,8 @@ class ExperimentTask(AbstractCalibrationTask):
             self._imageSize.setText(text)
 
         image = self.model().experimentSettingsModel().image().value()
-        self.__plot2D.addImage(image, legend="image", z=-1, replace=False)
-        self.__plot2D.resetZoom()
+        self.__plot.addImage(image, legend="image", z=-1, replace=False)
+        self.__plot.resetZoom()
         self.__updateDetector()
 
     def createImageDialog(self, title, forMask=False):
