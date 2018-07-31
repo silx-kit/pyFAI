@@ -36,6 +36,7 @@ import logging
 from contextlib import contextmanager
 from collections import OrderedDict
 import silx.gui.plot
+from silx.gui.colors import Colormap
 from silx.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
@@ -57,25 +58,28 @@ class ExperimentTask(AbstractCalibrationTask):
         self._darkLoader.clicked.connect(self.loadDark)
         self._splineLoader.clicked.connect(self.loadSpline)
 
-        self.__plot = silx.gui.plot.Plot2D(parent=self._imageHolder)
-        self.__plot.setKeepDataAspectRatio(True)
-        self.__plot.getMaskAction().setVisible(False)
-        self.__plot.getProfileToolbar().setVisible(False)
-        self.__plot.setDataMargins(0.1, 0.1, 0.1, 0.1)
-        self.__plot.setGraphXLabel("Y")
-        self.__plot.setGraphYLabel("X")
-
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
-        self.__plot.setDefaultColormap(colormap)
-
+        self.__plot = self.__createPlot(parent=self._imageHolder)
         layout = qt.QVBoxLayout(self._imageHolder)
         layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
+
+    def __createPlot(self, parent):
+        plot = silx.gui.plot.PlotWidget(parent=parent)
+        plot.setKeepDataAspectRatio(True)
+        plot.setDataMargins(0.1, 0.1, 0.1, 0.1)
+        plot.setGraphXLabel("Y")
+        plot.setGraphYLabel("X")
+
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
+        plot.setDefaultColormap(colormap)
+        return plot
 
     def _updateModel(self, model):
         settings = model.experimentSettingsModel()

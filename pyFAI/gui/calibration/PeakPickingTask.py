@@ -27,24 +27,26 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/07/2018"
+__date__ = "31/07/2018"
 
 import logging
 import numpy
 import functools
+import os
+from collections import OrderedDict
+
 from silx.gui import qt
 from silx.gui import icons
+import silx.gui.plot
+from silx.gui.plot.tools import PositionInfo
+from silx.gui.colors import Colormap
+
 import pyFAI.utils
 import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.PeakModel import PeakModel
 from pyFAI.gui.calibration.RingExtractor import RingExtractor
-from collections import OrderedDict
 import pyFAI.control_points
-
-import silx.gui.plot
-import os
-from silx.gui.plot.tools import PositionInfo
 from . import utils
 
 _logger = logging.getLogger(__name__)
@@ -282,11 +284,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.setKeepDataAspectRatio(True)
         self.setAxesDisplayed(False)
 
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
         self.setDefaultColormap(colormap)
 
         self.__peakSelectionModel = None
@@ -460,8 +458,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         layout = qt.QVBoxLayout(self._imageHolder)
         self.__plot = _PeakPickingPlot(parent=self._imageHolder)
-        toolBar = self.__createPlotToolBar(self.__plot)
-        self.__plot.addToolBar(toolBar)
+        self.__createPlotToolBar(self.__plot)
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
 
@@ -620,31 +617,16 @@ class PeakPickingTask(AbstractCalibrationTask):
         return options
 
     def __createPlotToolBar(self, plot):
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+
         toolBar = qt.QToolBar("Plot tools", plot)
-
-        from silx.gui.plot.actions import control
-        from silx.gui.plot.actions import io
-        from silx.gui.plot.actions import histogram
-
-        toolBar.addAction(control.ResetZoomAction(plot, toolBar))
-        toolBar.addAction(control.ZoomInAction(plot, toolBar))
-        toolBar.addAction(control.ZoomOutAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(control.ColormapAction(plot, toolBar))
-        toolBar.addAction(histogram.PixelIntensitiesHistoAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(io.CopyAction(plot, toolBar))
-        toolBar.addAction(io.SaveAction(plot, toolBar))
-        toolBar.addAction(io.PrintAction(plot, toolBar))
-
-        stretch = qt.QWidget(self)
-        stretch.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Fixed)
-        toolBar.addWidget(stretch)
-
         self.__options = self.__createOptionsWidget()
         toolBar.addWidget(self.__options)
-
-        return toolBar
+        plot.addToolBar(toolBar)
 
     def __createPlotStatusBar(self, plot):
 

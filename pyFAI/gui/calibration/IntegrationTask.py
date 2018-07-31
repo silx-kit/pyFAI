@@ -27,19 +27,21 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/10/2017"
+__date__ = "31/07/2018"
 
 import logging
 import numpy
 from collections import OrderedDict
-from .model.DataModel import DataModel
+
 from silx.gui import qt
+from silx.gui.colors import Colormap
+import silx.gui.plot
+
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-
-import silx.gui.plot
 from . import utils
+from .model.DataModel import DataModel
 
 _logger = logging.getLogger(__name__)
 
@@ -197,21 +199,8 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.__integrationUpToDate = True
         self.__ringLegends = []
-        self.__plot1d = silx.gui.plot.Plot1D(self)
-        self.__plot1d.setGraphXLabel("Radial")
-        self.__plot1d.setGraphYLabel("Intensity")
-        self.__plot1d.setGraphGrid(True)
-        self.__plot2d = silx.gui.plot.Plot2D(self)
-        self.__plot2d.setGraphXLabel("Radial")
-        self.__plot2d.setGraphYLabel("Azimuthal")
 
-        self.__defaultColorMap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
-        self.__plot2d.setDefaultColormap(self.__defaultColorMap)
-
+        self.__plot1d, self.__plot2d = self.__createPlots(self)
         layout = qt.QVBoxLayout(self._imageHolder)
         layout.setContentsMargins(1, 1, 1, 1)
         layout.addWidget(self.__plot2d)
@@ -227,6 +216,36 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self._savePoniButton.clicked.connect(self.__saveAsPoni)
         self._saveJsonButton.clicked.connect(self.__saveAsJson)
+
+    def __createPlots(self, parent):
+        plot1d = silx.gui.plot.PlotWidget(parent)
+        plot1d.setGraphXLabel("Radial")
+        plot1d.setGraphYLabel("Intensity")
+        plot1d.setGraphGrid(False)
+        plot2d = silx.gui.plot.PlotWidget(parent)
+        plot2d.setGraphXLabel("Radial")
+        plot2d.setGraphYLabel("Azimuthal")
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot2d)
+        plot2d.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot2d)
+        plot2d.addToolBar(toolBar)
+
+        ownToolBar = qt.QToolBar(plot2d)
+        from silx.gui.plot import actions
+        logAction = actions.control.YAxisLogarithmicAction(parent=ownToolBar, plot=plot1d)
+        logAction.setToolTip("Logarithmic y-axis intensity when checked")
+        ownToolBar.addAction(logAction)
+        plot2d.addToolBar(ownToolBar)
+
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
+        self.__defaultColorMap = colormap
+        plot2d.setDefaultColormap(self.__defaultColorMap)
+
+        from silx.gui.plot.utils.axis import SyncAxes
+        self.__syncAxes = SyncAxes([plot1d.getXAxis(), plot2d.getXAxis()])
+
+        return plot1d, plot2d
 
     def __polarizationFactorChecked(self, checked):
         self.__polarizationModel.setEnabled(checked)
