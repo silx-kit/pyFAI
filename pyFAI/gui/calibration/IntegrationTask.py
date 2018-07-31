@@ -235,6 +235,8 @@ class IntegrationTask(AbstractCalibrationTask):
         callback = functools.partial(syncMode, weakref.proxy(plot1d), weakref.proxy(plot2d))
         plot2d.sigInteractiveModeChanged.connect(callback)
 
+        # TODO: resetzoom action is not sync on both plot
+
         from silx.gui.plot import tools
         toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot2d)
         plot2d.addToolBar(toolBar)
