@@ -257,11 +257,13 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
     def setData(self, index, value, role=qt.Qt.EditRole):
         if not index.isValid():
-            return
+            return False
         peakModel = self.__peakSelectionModel[index.row()]
         column = index.column()
         if column == 2:
             self.requestRingChange.emit(peakModel, value)
+            return True
+        return False
 
     def removeRows(self, row, count, parent=qt.QModelIndex()):
         # while the tablempdel is already connected to the data model
