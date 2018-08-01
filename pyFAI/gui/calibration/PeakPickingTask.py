@@ -294,6 +294,18 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__callbacks = {}
         self.__markerColors = {}
 
+        if hasattr(self, "centralWidget"):
+            self.centralWidget().installEventFilter(self)
+
+    def eventFilter(self, widget, event):
+        if event.type() == qt.QEvent.Enter:
+            self.setCursor(qt.Qt.CrossCursor)
+            return True
+        elif event.type() == qt.QEvent.Leave:
+            self.unsetCursor()
+            return True
+        return False
+
     def setModel(self, peakSelectionModel):
         assert self.__peakSelectionModel is None
         self.__peakSelectionModel = peakSelectionModel
