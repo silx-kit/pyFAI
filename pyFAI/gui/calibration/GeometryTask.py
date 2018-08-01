@@ -639,7 +639,11 @@ class GeometryTask(AbstractCalibrationTask):
             self.__plot.setGraphYLimits(0, image.shape[1])
             self.__plot.resetZoom()
 
+    def __refreshDisplay(self):
+        self.__initGeometryFromPeaks()
+        self.__formatResidual()
+
     def __widgetShow(self):
         if self.__peaksInvalidated:
-            self.__initGeometryFromPeaks()
-            self.__formatResidual()
+            # Wait for Qt repaint first
+            qt.QTimer.singleShot(1, self.__refreshDisplay)
