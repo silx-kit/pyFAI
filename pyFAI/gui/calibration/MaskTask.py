@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/07/2018"
+__date__ = "01/08/2018"
 
 import logging
 from silx.gui import qt
@@ -149,24 +149,43 @@ class MaskTask(AbstractCalibrationTask):
         else:
             self.__plot.removeImage("image")
 
+    def __widgetShow(self):
+        self.__updateWidgetFromModel()
+
+    def __widgetHide(self):
+        self.__updateModelFromWidget()
+
     def __maskFromPlotChanged(self):
         self.__plotMaskChanged = True
 
     def __maskFromModelChanged(self):
         self.__modelMaskChanged = True
         if self.isVisible():
-            self.__widgetShow()
+            self.__updateWidgetFromModel()
 
-    def __widgetShow(self):
-        if self.__modelMaskChanged:
-            mask = self.model().experimentSettingsModel().mask().value()
-            # FIXME if mask is not, the mask should be cleaned up
-            if mask is not None:
-                self.__maskPanel.setSelectionMask(mask)
-                self.__modelMaskChanged = False
+    def __updateWidgetFromModel(self):
+        """Update the widget using the mask from the model, only if needed"""
+        if not self.__modelMaskChanged:
+            return
 
-    def __widgetHide(self):
-        if self.__plotMaskChanged:
-            mask = self.__maskPanel.getSelectionMask()
-            self.model().experimentSettingsModel().mask().setValue(mask)
-            self.__plotMaskChanged = False
+        mask = self.model().experimentSettingsModel().mask().value()
+        # FIXME if mask is none, the mask should be cleaned up
+        if mask is not None:
+            self.__maskPanel.setSelectionMask(mask)
+        # Everything is synchronized now
+        self.__plotMaskChanged = False
+        self.__modelMaskChanged = False
+
+    def __updateModelFromWidget(self):
+        """Update the model using the mask stored on the widget, only if needed"""
+        if not self.__plotMaskChanged:
+            return
+
+        mask = self.__maskPanel.getSelectionMask()
+        maskModel = self.model().experimentSettingsModel().mask()
+        maskModel.changed.disconnect(self.__maskFromModelChanged)
+        maskModel.setValue(mask)
+        maskModel.changed.connect(self.__maskFromModelChanged)
+        # Everything is synchronized now
+        self.__plotMaskChanged = False
+        self.__modelMaskChanged = False
