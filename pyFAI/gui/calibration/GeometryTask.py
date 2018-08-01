@@ -348,21 +348,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__processing.deleteLater()
 
     def setProcessing(self):
-        parent = self
-        if hasattr(parent, "centralWidget"):
-            parent = parent.centralWidget()
-        from silx.gui.widgets.WaitingPushButton import WaitingPushButton
-        button = WaitingPushButton(parent)
-        button.setWaiting(True)
-        button.setText("Processing...")
-        button.setDown(True)
-        position = parent.size()
-        size = button.sizeHint()
-        position = (position - size) / 2
-        rect = qt.QRect(qt.QPoint(position.width(), position.height()), size)
-        button.setGeometry(rect)
-        button.setVisible(True)
-        self.__processing = button
+        self.__processing = utils.createProcessingWidgetOverlay(self)
 
 
 class GeometryTask(AbstractCalibrationTask):

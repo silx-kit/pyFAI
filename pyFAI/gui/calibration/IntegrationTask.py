@@ -309,25 +309,9 @@ class IntegrationTask(AbstractCalibrationTask):
             # Maybe it was invalidated while priocessing
             self._integrateButton.executeCallable()
 
-    def __createProcessingWidget(self, parent):
-        if hasattr(parent, "centralWidget"):
-            parent = parent.centralWidget()
-        from silx.gui.widgets.WaitingPushButton import WaitingPushButton
-        button = WaitingPushButton(parent)
-        button.setWaiting(True)
-        button.setText("Processing...")
-        button.setDown(True)
-        position = parent.size()
-        size = button.sizeHint()
-        position = (position - size) / 2
-        rect = qt.QRect(qt.QPoint(position.width(), position.height()), size)
-        button.setGeometry(rect)
-        button.setVisible(True)
-        return button
-
     def __updateGUIWhileIntegrating(self):
-        self.__processing1d = self.__createProcessingWidget(self.__plot1d)
-        self.__processing2d = self.__createProcessingWidget(self.__plot2d)
+        self.__processing1d = utils.createProcessingWidgetOverlay(self.__plot1d)
+        self.__processing2d = utils.createProcessingWidgetOverlay(self.__plot2d)
 
     def __updateGUIWithIntegrationResult(self, integrationProcess):
         colormap = self.__defaultColorMap
