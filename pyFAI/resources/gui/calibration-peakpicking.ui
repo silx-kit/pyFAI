@@ -250,7 +250,7 @@
           </widget>
          </item>
          <item row="4" column="0" colspan="3">
-          <widget class="QPushButton" name="_extract">
+          <widget class="WaitingPushButton" name="_extract">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -309,6 +309,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>WaitingPushButton</class>
+   <extends>QPushButton</extends>
+   <header>silx.gui.widgets.WaitingPushButton</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

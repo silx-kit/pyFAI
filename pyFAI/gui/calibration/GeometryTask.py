@@ -148,6 +148,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__ringItems = {}
         self.__angleUnderMouse = None
         self.__displayedAngles = []
+        self.__processing = None
 
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
@@ -343,6 +344,26 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__ringItems = {}
         self.__updateRings()
 
+    def unsetProcessing(self):
+        self.__processing.deleteLater()
+
+    def setProcessing(self):
+        parent = self
+        if hasattr(parent, "centralWidget"):
+            parent = parent.centralWidget()
+        from silx.gui.widgets.WaitingPushButton import WaitingPushButton
+        button = WaitingPushButton(parent)
+        button.setWaiting(True)
+        button.setText("Processing...")
+        button.setDown(True)
+        position = parent.size()
+        size = button.sizeHint()
+        position = (position - size) / 2
+        rect = qt.QRect(qt.QPoint(position.width(), position.height()), size)
+        button.setGeometry(rect)
+        button.setVisible(True)
+        self.__processing = button
+
 
 class GeometryTask(AbstractCalibrationTask):
 
@@ -377,9 +398,9 @@ class GeometryTask(AbstractCalibrationTask):
         self.addParameterToLayout(layout, self.__rotation2)
         self.addParameterToLayout(layout, self.__rotation3)
 
-        self._fitButton.clicked.connect(self.__fitGeometry)
+        self._fitButton.clicked.connect(self.__fitGeometryLater)
         self._fitButton.setDisabledWhenWaiting(True)
-        self._resetButton.clicked.connect(self.__resetGeometry)
+        self._resetButton.clicked.connect(self.__resetGeometryLater)
         self.__calibration = None
         self.__peaksInvalidated = False
         self.__fitting = False
@@ -496,6 +517,33 @@ class GeometryTask(AbstractCalibrationTask):
 
         self.model().fittedGeometry().setFrom(self.model().peakGeometry())
 
+    def __initGeometryLater(self):
+        self.__plot.setProcessing()
+        # Wait for Qt repaint first
+        qt.QTimer.singleShot(1, self.__initGeometry)
+
+    def __resetGeometryLater(self):
+        self.__plot.setProcessing()
+        self._resetButton.setWaiting(True)
+        # Wait for Qt repaint first
+        qt.QTimer.singleShot(1, self.__resetGeometry)
+
+    def __fitGeometryLater(self):
+        self.__plot.setProcessing()
+        self._fitButton.setWaiting(True)
+        # Wait for Qt repaint first
+        qt.QTimer.singleShot(1, self.__fitGeometry)
+
+    def __unsetProcessing(self):
+        self.__plot.unsetProcessing()
+        self._resetButton.setWaiting(False)
+        self._fitButton.setWaiting(False)
+
+    def __initGeometry(self):
+        self.__initGeometryFromPeaks()
+        self.__formatResidual()
+        self.__unsetProcessing()
+
     def __resetGeometry(self):
         calibration = self.__getCalibration()
         self.__initGeometryFromPeaks()
@@ -503,6 +551,7 @@ class GeometryTask(AbstractCalibrationTask):
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
         self.__formatResidual()
+        self.__unsetProcessing()
 
     def __fitGeometry(self):
         self.__fitting = True
@@ -519,6 +568,7 @@ class GeometryTask(AbstractCalibrationTask):
         calibration.toGeometryModel(model)
         self._fitButton.setWaiting(False)
         self.__fitting = False
+        self.__unsetProcessing()
 
     def __formatResidual(self):
         calibration = self.__getCalibration()
@@ -639,11 +689,6 @@ class GeometryTask(AbstractCalibrationTask):
             self.__plot.setGraphYLimits(0, image.shape[1])
             self.__plot.resetZoom()
 
-    def __refreshDisplay(self):
-        self.__initGeometryFromPeaks()
-        self.__formatResidual()
-
     def __widgetShow(self):
         if self.__peaksInvalidated:
-            # Wait for Qt repaint first
-            qt.QTimer.singleShot(1, self.__refreshDisplay)
+            self.__initGeometryLater()
