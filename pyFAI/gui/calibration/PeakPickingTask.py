@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/07/2018"
+__date__ = "01/08/2018"
 
 import logging
 import numpy
@@ -101,7 +101,8 @@ class _PeakSelectionTableView(qt.QTableView):
         self.setVerticalScrollMode(qt.QAbstractItemView.ScrollPerPixel)
         self.setShowGrid(False)
         self.setWordWrap(False)
-        self.setFrameShape(qt.QFrame.NoFrame)
+        # NoFrame glitchies on Debian8 Qt5
+        # self.setFrameShape(qt.QFrame.NoFrame)
 
         self.horizontalHeader().setHighlightSections(False)
         self.verticalHeader().setVisible(False)
@@ -456,19 +457,24 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.initNextStep()
         self.__dialogState = None
 
-        layout = qt.QVBoxLayout(self._imageHolder)
-        self.__plot = _PeakPickingPlot(parent=self._imageHolder)
+        # Insert the plot on the layout
+        holder = self._plotDummy.parent()
+        self.__plot = _PeakPickingPlot(parent=holder)
+        holderLayout = holder.layout()
+        holderLayout.replaceWidget(self._plotDummy, self.__plot)
+
+        # Insert the peak view on the layout
+        holder = self._peakSelectionDummy.parent()
+        self.__peakSelectionView = _PeakSelectionTableView(holder)
+        holderLayout = holder.layout()
+        holderLayout.replaceWidget(self._peakSelectionDummy, self.__peakSelectionView)
+
         self.__createPlotToolBar(self.__plot)
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
 
-        layout.addWidget(self.__plot)
-        layout.setContentsMargins(1, 1, 1, 1)
-        self._imageHolder.setLayout(layout)
-
         self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
         self._peakSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
-        self.__peakSelectionView = None
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
         self.__undoStack = qt.QUndoStack(self)
@@ -857,13 +863,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__undoStack.clear()
 
     def __initPeakSelectionView(self, model):
-        if self.__peakSelectionView is None:
-            self.__peakSelectionView = _PeakSelectionTableView(self)
-            layout = qt.QHBoxLayout(self._peakSelectionHolder)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(self.__peakSelectionView)
-            self._peakSelectionHolder.setLayout(layout)
-
         tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())
         tableModel.requestRingChange.connect(self.__setRingNumber)
         tableModel.requestRemovePeak.connect(self.__removePeak)

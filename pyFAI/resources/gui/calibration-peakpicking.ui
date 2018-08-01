@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>713</width>
-    <height>623</height>
+    <width>772</width>
+    <height>640</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="_imageHolder">
+    <widget class="QFrame" name="_plotDummy">
      <property name="frameShape">
       <enum>QFrame::Box</enum>
      </property>
@@ -155,20 +155,10 @@
          <string>Picked rings</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
-         <property name="leftMargin">
-          <number>9</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>9</number>
-         </property>
-         <property name="bottomMargin">
-          <number>9</number>
-         </property>
          <item>
-          <widget class="QWidget" name="_peakSelectionHolder" native="true"/>
+          <widget class="QWidget" name="_peakSelectionDummy" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_2"/>
+          </widget>
          </item>
          <item>
           <widget class="QWidget" name="widget_12" native="true">
