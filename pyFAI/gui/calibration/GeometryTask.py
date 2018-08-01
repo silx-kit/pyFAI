@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/07/2018"
+__date__ = "01/08/2018"
 
 import logging
 import numpy
@@ -149,6 +149,15 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__angleUnderMouse = None
         self.__displayedAngles = []
 
+        if hasattr(self, "centralWidget"):
+            self.centralWidget().installEventFilter(self)
+
+    def eventFilter(self, widget, event):
+        if event.type() == qt.QEvent.Leave:
+            self.__mouseLeave()
+            return True
+        return False
+
     def __plotSignalReceived(self, event):
         """Called when old style signals at emmited from the plot."""
         if event["event"] == "mouseMoved":
@@ -171,6 +180,15 @@ class _RingPlot(silx.gui.plot.PlotWidget):
                 result = ringAngle
                 iresult = ringId
         return iresult, result
+
+    def __mouseLeave(self):
+        if self.__angleUnderMouse is None:
+            return
+        if self.__angleUnderMouse not in self.__displayedAngles:
+            items = self.__ringItems.get(self.__angleUnderMouse, [])
+            for item in items:
+                item.setVisible(False)
+        self.__angleUnderMouse = None
 
     def __mouseMoved(self, x, y):
         """Called when mouse move over the plot."""
