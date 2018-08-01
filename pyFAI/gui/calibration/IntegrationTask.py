@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/07/2018"
+__date__ = "01/08/2018"
 
 import logging
 import numpy
@@ -296,36 +296,41 @@ class IntegrationTask(AbstractCalibrationTask):
         self.__integrationUpToDate = True
 
     def __integratingFinished(self):
+        if self.__processing1d is not None:
+            self.__processing1d.deleteLater()
+            self.__processing1d = None
+        if self.__processing2d is not None:
+            self.__processing2d.deleteLater()
+            self.__processing2d = None
+
         self.__updateGUIWithIntegrationResult(self.__integrationProcess)
         self.__integrationProcess = None
         if not self.__integrationUpToDate:
             # Maybe it was invalidated while priocessing
             self._integrateButton.executeCallable()
 
-    def __updateGUIWhileIntegrating(self):
-        self.__defaultColorMap = self.__plot2d.getDefaultColormap()
-        colormap = {
-            'name': "Greys",
-            'normalization': 'log',
-            'autoscale': True,
-        }
-        self.__plot2d.setDefaultColormap(colormap)
+    def __createProcessingWidget(self, parent):
+        if hasattr(parent, "centralWidget"):
+            parent = parent.centralWidget()
+        from silx.gui.widgets.WaitingPushButton import WaitingPushButton
+        button = WaitingPushButton(parent)
+        button.setWaiting(True)
+        button.setText("Processing...")
+        button.setDown(True)
+        position = parent.size()
+        size = button.sizeHint()
+        position = (position - size) / 2
+        rect = qt.QRect(qt.QPoint(position.width(), position.height()), size)
+        button.setGeometry(rect)
+        button.setVisible(True)
+        return button
 
-        # Update active image
-        image = self.__plot2d.getActiveImage()
-        if image is not None:
-            # Update image: This do not preserve pixmap
-            self.__plot2d.addImage(
-                image.getData(copy=False),
-                legend=image.getLegend(),
-                info=image.getInfo(),
-                colormap=colormap,
-                replace=False,
-                resetzoom=False)
+    def __updateGUIWhileIntegrating(self):
+        self.__processing1d = self.__createProcessingWidget(self.__plot1d)
+        self.__processing2d = self.__createProcessingWidget(self.__plot2d)
 
     def __updateGUIWithIntegrationResult(self, integrationProcess):
         colormap = self.__defaultColorMap
-        self.__plot2d.setDefaultColormap(colormap)
 
         # Add a marker for each rings on the plots
         ringAngles = integrationProcess.ringAngles()

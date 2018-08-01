@@ -293,6 +293,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__peakSelectionModel = None
         self.__callbacks = {}
         self.__markerColors = {}
+        self.__processing = None
 
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
@@ -377,6 +378,26 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
     def createMarkerColors(self):
         colormap = self.getDefaultColormap()
         return utils.getFreeColorRange(colormap)
+
+    def unsetProcessing(self):
+        self.__processing.deleteLater()
+
+    def setProcessing(self):
+        parent = self
+        if hasattr(parent, "centralWidget"):
+            parent = parent.centralWidget()
+        from silx.gui.widgets.WaitingPushButton import WaitingPushButton
+        button = WaitingPushButton(parent)
+        button.setWaiting(True)
+        button.setText("Processing...")
+        button.setDown(True)
+        position = parent.size()
+        size = button.sizeHint()
+        position = (position - size) / 2
+        rect = qt.QRect(qt.QPoint(position.width(), position.height()), size)
+        button.setGeometry(rect)
+        button.setVisible(True)
+        self.__processing = button
 
 
 class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
@@ -503,7 +524,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__mode.addButton(self._ringSelectionMode)
         self._ringSelectionMode.setChecked(True)
 
-        self._extract.clicked.connect(self.__autoExtractRings)
+        self._extract.clicked.connect(self.__autoExtractRingsLater)
 
     def __createSavePeakDialog(self):
         dialog = qt.QFileDialog(self)
@@ -797,6 +818,12 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         return peakModel
 
+    def __autoExtractRingsLater(self):
+        self.__plot.setProcessing()
+        self._extract.setWaiting(True)
+        # Wait for Qt repaint first
+        qt.QTimer.singleShot(1, self.__autoExtractRings)
+
     def __autoExtractRings(self):
         maxRings = self._maxRingToExtract.value()
         pointPerDegree = self._numberOfPeakPerDegree.value()
@@ -846,6 +873,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
+        self.__plot.unsetProcessing()
+        self._extract.setWaiting(False)
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
