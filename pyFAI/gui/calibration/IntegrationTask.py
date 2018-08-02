@@ -27,13 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/08/2018"
+__date__ = "02/08/2018"
 
 import logging
 import numpy
 import weakref
 import functools
-from collections import OrderedDict
+import collections
 
 from silx.gui import qt
 from silx.gui.colors import Colormap
@@ -385,7 +385,7 @@ class IntegrationTask(AbstractCalibrationTask):
         dialog.setModal(True)
         dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
 
-        extensions = OrderedDict()
+        extensions = collections.OrderedDict()
         if poni:
             extensions["PONI files"] = "*.poni"
         if json:
