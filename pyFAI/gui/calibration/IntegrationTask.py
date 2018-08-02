@@ -333,22 +333,14 @@ class IntegrationTask(AbstractCalibrationTask):
 
         # FIXME set axes
         result1d = integrationProcess.result1d()
-        if hasattr(self.__plot1d, "addHistogram"):
-            # silx >= 0.5
-            # Removing item fixes bug in silx 0.5 when histogram data changed
-            self.__plot1d.remove(legend="result1d", kind="histogram")
-            self.__plot1d.addHistogram(
-                legend="result1d",
-                align="right",
-                edges=result1d.radial,
-                color="blue",
-                histogram=result1d.intensity)
-        else:
-            # older
-            self.__plot1d.addCurve(
-                legend="result1d",
-                x=result1d.radial,
-                y=result1d.intensity)
+        # Removing item fixes bug in silx 0.5 when histogram data changed
+        self.__plot1d.remove(legend="result1d", kind="histogram")
+        self.__plot1d.addHistogram(
+            legend="result1d",
+            align="right",
+            edges=result1d.radial,
+            color="blue",
+            histogram=result1d.intensity)
 
         # Assume that axes are linear
         result2d = integrationProcess.result2d()
