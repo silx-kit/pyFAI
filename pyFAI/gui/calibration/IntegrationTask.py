@@ -239,12 +239,24 @@ class IntegrationTask(AbstractCalibrationTask):
         callback = functools.partial(syncMode, weakref.proxy(plot1d), weakref.proxy(plot2d))
         plot2d.sigInteractiveModeChanged.connect(callback)
 
-        # TODO: resetzoom action is not sync on both plot
-
         from silx.gui.plot import tools
         toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot2d)
         plot2d.addToolBar(toolBar)
+
+        def resetZoom(plot1d, plot2d):
+            plot2d.resetZoom()
+            plot1d.resetZoom()
+        callback = functools.partial(resetZoom, weakref.proxy(plot1d), weakref.proxy(plot2d))
         toolBar = tools.ImageToolBar(parent=self, plot=plot2d)
+        previousResetZoomAction = toolBar.getResetZoomAction()
+        resetZoomAction = qt.QAction()
+        resetZoomAction.triggered.connect(callback)
+        resetZoomAction.setIcon(previousResetZoomAction.icon())
+        resetZoomAction.setText(previousResetZoomAction.text())
+        resetZoomAction.setToolTip(previousResetZoomAction.toolTip())
+        toolBar.insertAction(previousResetZoomAction, resetZoomAction)
+        previousResetZoomAction.setVisible(False)
+        self.__resetZoomAction = resetZoomAction
         plot2d.addToolBar(toolBar)
 
         ownToolBar = qt.QToolBar(plot2d)
