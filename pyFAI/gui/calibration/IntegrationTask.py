@@ -232,16 +232,108 @@ class IntegrationPlot(qt.QFrame):
         self.__setResult(None)
         self.__processing1d = None
         self.__processing2d = None
-        self.__ringLegends = []
+        self.__ringItems = {}
+        self.__axisOfCurrentView = None
+        self.__markerColors = {}
+
+        self.__plot2d.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
 
     def resetZoom(self):
         self.__plot2d.resetZoom()
         self.__plot1d.resetZoom()
 
+    def __axesChanged(self, minValue, maxValue):
+        axisOfCurrentView = self.__plot2d.getXAxis().getLimits()
+        if self.__axisOfCurrentView == axisOfCurrentView:
+            return
+        self.__updateRings()
+
+    def markerColorList(self):
+        colormap = self.getDefaultColormap()
+
+        name = colormap['name']
+        if name not in self.__markerColors:
+            colors = self.createMarkerColors()
+            self.__markerColors[name] = colors
+        else:
+            colors = self.__markerColors[name]
+        return colors
+
+    def createMarkerColors(self):
+        colormap = self.getDefaultColormap()
+        return utils.getFreeColorRange(colormap)
+
+    def __getAvailableAngles(self, minTth, maxTth):
+        result = []
+        for ringId, angle in enumerate(self.__availableRingAngles):
+            if minTth is None or maxTth is None:
+                result.append(ringId, angle)
+            if minTth <= angle <= maxTth:
+                result.append((ringId, angle))
+        return result
+
+    def __updateRings(self):
+        minTth, maxTth = self.__plot2d.getXAxis().getLimits()
+        angles = self.__getAvailableAngles(minTth, maxTth)
+
+        if len(angles) < 20:
+            step = 1
+        elif len(angles) < 100:
+            step = 2
+        elif len(angles) < 200:
+            step = 5
+        elif len(angles) < 500:
+            step = 10
+        elif len(angles) < 1000:
+            step = 20
+        elif len(angles) < 5000:
+            step = 100
+        else:
+            step = int(len(angles) / 50)
+
+        self.__displayedAngles = set([])
+
+        for items in self.__ringItems.values():
+            for item in items:
+                item.setVisible(False)
+
+        for angleId in range(0, len(angles), step):
+            ringId, ringAngle = angles[angleId]
+            self.__displayedAngles.add(ringAngle)
+            items = self.__getItemsFromAngle(ringId, ringAngle)
+            for item in items:
+                item.setVisible(True)
+
+    def __getItemsFromAngle(self, ringId, ringAngle):
+        items = self.__ringItems.get(ringAngle, None)
+        if items is not None:
+            return items
+
+        colors = self.markerColorList()
+        color = colors[ringId % len(colors)]
+        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+        items = []
+
+        legend = "ring-%i" % (ringId,)
+
+        self.__plot1d.addXMarker(x=ringAngle, color=numpyColor, legend=legend)
+        item = self.__plot1d._getMarker(legend)
+        items.append(item)
+
+        self.__plot2d.addXMarker(x=ringAngle, color=numpyColor, legend=legend)
+        item = self.__plot2d._getMarker(legend)
+        items.append(item)
+
+        self.__ringItems[ringAngle] = items
+        return items
+
     def __syncModeToPlot1d(self, _event):
         modeDict = self.__plot2d.getInteractiveMode()
         mode = modeDict["mode"]
         self.__plot1d.setInteractiveMode(mode)
+
+    def getDefaultColormap(self):
+        return self.__plot2d.getDefaultColormap()
 
     def __createPlots(self, parent):
         plot1d = silx.gui.plot.PlotWidget(parent)
@@ -283,32 +375,27 @@ class IntegrationPlot(qt.QFrame):
         self.__saveResult1dAction = action
         ownToolBar.addAction(action)
 
-        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
-        self.__defaultColorMap = colormap
-        plot2d.setDefaultColormap(self.__defaultColorMap)
+        colorMap = Colormap("inferno", normalization=Colormap.LOGARITHM)
+        plot2d.setDefaultColormap(colorMap)
 
         from silx.gui.plot.utils.axis import SyncAxes
         self.__syncAxes = SyncAxes([plot1d.getXAxis(), plot2d.getXAxis()])
 
         return plot1d, plot2d
 
-    def setIntegrationProcess(self, integrationProcess):
-        colormap = self.__defaultColorMap
+    def __clearRings(self):
+        """Remove of ring item cached on the plots"""
+        for items in self.__ringItems.values():
+            for item in items:
+                self.__plot1d.removeMarker(item.getLegend())
+                self.__plot2d.removeMarker(item.getLegend())
+        self.__ringItems = {}
 
-        # Add a marker for each rings on the plots
-        ringAngles = integrationProcess.ringAngles()
-        for legend in self.__ringLegends:
-            self.__plot1d.removeMarker(legend)
-            self.__plot2d.removeMarker(legend)
-        self.__ringLegends = []
-        colors = utils.getFreeColorRange(self.__plot2d.getDefaultColormap())
-        for i, angle in enumerate(ringAngles):
-            legend = "ring_%i" % (i + 1)
-            color = colors[i % len(colors)]
-            htmlColor = "#%02X%02X%02X60" % (color.red(), color.green(), color.blue())
-            self.__plot1d.addXMarker(x=angle, color=htmlColor, legend=legend)
-            self.__plot2d.addXMarker(x=angle, color=htmlColor, legend=legend)
-            self.__ringLegends.append(legend)
+    def setIntegrationProcess(self, integrationProcess):
+        self.__clearRings()
+
+        self.__availableRingAngles = integrationProcess.ringAngles()
+        self.__updateRings()
 
         # FIXME set axes
         result1d = integrationProcess.result1d()
@@ -328,6 +415,7 @@ class IntegrationPlot(qt.QFrame):
         origin = (result2d.radial[0], result2d.azimuthal[0])
         scaleX = (result2d.radial[-1] - result2d.radial[0]) / result2d.intensity.shape[1]
         scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / result2d.intensity.shape[0]
+        colormap = self.getDefaultColormap()
         self.__plot2d.addImage(
             legend="result2d",
             data=result2d.intensity,
