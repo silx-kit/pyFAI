@@ -194,34 +194,54 @@ class IntegrationProcess(object):
         return self.__result2d
 
 
-class IntegrationTask(AbstractCalibrationTask):
+def createSaveDialog(parent, title, poni=False, json=False, csv=False):
+    """Util to create create a save dialog"""
+    dialog = qt.QFileDialog(parent)
+    dialog.setWindowTitle(title)
+    dialog.setModal(True)
+    dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
 
-    def __init__(self):
-        super(IntegrationTask, self).__init__()
-        qt.loadUi(pyFAI.utils.get_ui_file("calibration-result.ui"), self)
-        self.initNextStep()
+    extensions = collections.OrderedDict()
+    if poni:
+        extensions["PONI files"] = "*.poni"
+    if json:
+        extensions["JSON files"] = "*.json"
+    if csv:
+        extensions["CSV files"] = "*.csv"
 
-        self.__integrationUpToDate = True
-        self.__ringLegends = []
+    filters = []
+    filters.append("All supported files (%s)" % " ".join(extensions.values()))
+    for name, extension in extensions.items():
+        filters.append("%s (%s)" % (name, extension))
+    filters.append("All files (*)")
+
+    dialog.setNameFilters(filters)
+    return dialog
+
+
+class IntegrationPlot(qt.QFrame):
+
+    def __init__(self, parent=None):
+        super(IntegrationPlot, self).__init__(parent)
 
         self.__plot1d, self.__plot2d = self.__createPlots(self)
-        layout = qt.QVBoxLayout(self._imageHolder)
+        layout = qt.QVBoxLayout(self)
         layout.setContentsMargins(1, 1, 1, 1)
         layout.addWidget(self.__plot2d)
         layout.addWidget(self.__plot1d)
-        self._radialUnit.setUnits(pyFAI.units.RADIAL_UNITS.values())
-        self.__polarizationModel = None
-        self._polarizationFactorCheck.clicked[bool].connect(self.__polarizationFactorChecked)
-        self.widgetShow.connect(self.__widgetShow)
-
-        self._integrateButton.beforeExecuting.connect(self.__integrate)
-        self._integrateButton.setDisabledWhenWaiting(True)
-        self._integrateButton.finished.connect(self.__integratingFinished)
-
-        self._savePoniButton.clicked.connect(self.__saveAsPoni)
-        self._saveJsonButton.clicked.connect(self.__saveAsJson)
-
         self.__setResult(None)
+        self.__processing1d = None
+        self.__processing2d = None
+        self.__ringLegends = []
+
+    def resetZoom(self):
+        self.__plot2d.resetZoom()
+        self.__plot1d.resetZoom()
+
+    def __syncModeToPlot1d(self, _event):
+        modeDict = self.__plot2d.getInteractiveMode()
+        mode = modeDict["mode"]
+        self.__plot1d.setInteractiveMode(mode)
 
     def __createPlots(self, parent):
         plot1d = silx.gui.plot.PlotWidget(parent)
@@ -231,26 +251,16 @@ class IntegrationTask(AbstractCalibrationTask):
         plot2d = silx.gui.plot.PlotWidget(parent)
         plot2d.setGraphXLabel("Radial")
         plot2d.setGraphYLabel("Azimuthal")
-
-        def syncMode(plot1d, plot2d, _event):
-            modeDict = plot2d.getInteractiveMode()
-            mode = modeDict["mode"]
-            plot1d.setInteractiveMode(mode)
-        callback = functools.partial(syncMode, weakref.proxy(plot1d), weakref.proxy(plot2d))
-        plot2d.sigInteractiveModeChanged.connect(callback)
+        plot2d.sigInteractiveModeChanged.connect(self.__syncModeToPlot1d)
 
         from silx.gui.plot import tools
         toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot2d)
         plot2d.addToolBar(toolBar)
 
-        def resetZoom(plot1d, plot2d):
-            plot2d.resetZoom()
-            plot1d.resetZoom()
-        callback = functools.partial(resetZoom, weakref.proxy(plot1d), weakref.proxy(plot2d))
         toolBar = tools.ImageToolBar(parent=self, plot=plot2d)
         previousResetZoomAction = toolBar.getResetZoomAction()
         resetZoomAction = qt.QAction()
-        resetZoomAction.triggered.connect(callback)
+        resetZoomAction.triggered.connect(self.resetZoom)
         resetZoomAction.setIcon(previousResetZoomAction.icon())
         resetZoomAction.setText(previousResetZoomAction.text())
         resetZoomAction.setToolTip(previousResetZoomAction.toolTip())
@@ -281,6 +291,105 @@ class IntegrationTask(AbstractCalibrationTask):
         self.__syncAxes = SyncAxes([plot1d.getXAxis(), plot2d.getXAxis()])
 
         return plot1d, plot2d
+
+    def setIntegrationProcess(self, integrationProcess):
+        colormap = self.__defaultColorMap
+
+        # Add a marker for each rings on the plots
+        ringAngles = integrationProcess.ringAngles()
+        for legend in self.__ringLegends:
+            self.__plot1d.removeMarker(legend)
+            self.__plot2d.removeMarker(legend)
+        self.__ringLegends = []
+        colors = utils.getFreeColorRange(self.__plot2d.getDefaultColormap())
+        for i, angle in enumerate(ringAngles):
+            legend = "ring_%i" % (i + 1)
+            color = colors[i % len(colors)]
+            htmlColor = "#%02X%02X%02X60" % (color.red(), color.green(), color.blue())
+            self.__plot1d.addXMarker(x=angle, color=htmlColor, legend=legend)
+            self.__plot2d.addXMarker(x=angle, color=htmlColor, legend=legend)
+            self.__ringLegends.append(legend)
+
+        # FIXME set axes
+        result1d = integrationProcess.result1d()
+        # Removing item fixes bug in silx 0.5 when histogram data changed
+        self.__plot1d.remove(legend="result1d", kind="histogram")
+        self.__plot1d.addHistogram(
+            legend="result1d",
+            align="right",
+            edges=result1d.radial,
+            color="blue",
+            histogram=result1d.intensity)
+
+        self.__setResult(result1d)
+
+        # Assume that axes are linear
+        result2d = integrationProcess.result2d()
+        origin = (result2d.radial[0], result2d.azimuthal[0])
+        scaleX = (result2d.radial[-1] - result2d.radial[0]) / result2d.intensity.shape[1]
+        scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / result2d.intensity.shape[0]
+        self.__plot2d.addImage(
+            legend="result2d",
+            data=result2d.intensity,
+            origin=origin,
+            scale=(scaleX, scaleY),
+            colormap=colormap)
+
+    def __setResult(self, result1d):
+        self.__result1d = result1d
+        self.__saveResult1dAction.setEnabled(result1d is not None)
+
+    def __saveAsCsv(self):
+        if self.__result1d is None:
+            return
+        dialog = createSaveDialog(self, "Save 1D integration as CSV file", csv=True)
+        result = dialog.exec_()
+        if not result:
+            return
+        filename = dialog.selectedFiles()[0]
+        # TODO: it would be good to store the units
+        silx.io.save1D(filename,
+                       x=self.__result1d.radial,
+                       y=self.__result1d.intensity,
+                       xlabel="radial",
+                       ylabels=["intensity"],
+                       filetype="csv",
+                       autoheader=True)
+
+    def setProcessing(self):
+        self.__setResult(None)
+        self.__processing1d = utils.createProcessingWidgetOverlay(self.__plot1d)
+        self.__processing2d = utils.createProcessingWidgetOverlay(self.__plot2d)
+
+    def unsetProcessing(self):
+        if self.__processing1d is not None:
+            self.__processing1d.deleteLater()
+            self.__processing1d = None
+        if self.__processing2d is not None:
+            self.__processing2d.deleteLater()
+            self.__processing2d = None
+
+
+class IntegrationTask(AbstractCalibrationTask):
+
+    def __init__(self):
+        super(IntegrationTask, self).__init__()
+        qt.loadUi(pyFAI.utils.get_ui_file("calibration-result.ui"), self)
+        self.initNextStep()
+
+        self.__integrationUpToDate = True
+
+        self._radialUnit.setUnits(pyFAI.units.RADIAL_UNITS.values())
+        self.__polarizationModel = None
+        self._polarizationFactorCheck.clicked[bool].connect(self.__polarizationFactorChecked)
+        self.widgetShow.connect(self.__widgetShow)
+
+        self._integrateButton.beforeExecuting.connect(self.__integrate)
+        self._integrateButton.setDisabledWhenWaiting(True)
+        self._integrateButton.finished.connect(self.__integratingFinished)
+
+        self._savePoniButton.clicked.connect(self.__saveAsPoni)
+        self._saveJsonButton.clicked.connect(self.__saveAsJson)
 
     def __polarizationFactorChecked(self, checked):
         self.__polarizationModel.setEnabled(checked)
@@ -319,12 +428,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self.__integrationUpToDate = True
 
     def __integratingFinished(self):
-        if self.__processing1d is not None:
-            self.__processing1d.deleteLater()
-            self.__processing1d = None
-        if self.__processing2d is not None:
-            self.__processing2d.deleteLater()
-            self.__processing2d = None
+        self._plot.unsetProcessing()
 
         self.__updateGUIWithIntegrationResult(self.__integrationProcess)
         self.__integrationProcess = None
@@ -333,51 +437,10 @@ class IntegrationTask(AbstractCalibrationTask):
             self._integrateButton.executeCallable()
 
     def __updateGUIWhileIntegrating(self):
-        self.__setResult(None)
-        self.__processing1d = utils.createProcessingWidgetOverlay(self.__plot1d)
-        self.__processing2d = utils.createProcessingWidgetOverlay(self.__plot2d)
+        self._plot.setProcessing()
 
     def __updateGUIWithIntegrationResult(self, integrationProcess):
-        colormap = self.__defaultColorMap
-
-        # Add a marker for each rings on the plots
-        ringAngles = integrationProcess.ringAngles()
-        for legend in self.__ringLegends:
-            self.__plot1d.removeMarker(legend)
-            self.__plot2d.removeMarker(legend)
-        self.__ringLegends = []
-        colors = utils.getFreeColorRange(self.__plot2d.getDefaultColormap())
-        for i, angle in enumerate(ringAngles):
-            legend = "ring_%i" % (i + 1)
-            color = colors[i % len(colors)]
-            htmlColor = "#%02X%02X%02X60" % (color.red(), color.green(), color.blue())
-            self.__plot1d.addXMarker(x=angle, color=htmlColor, legend=legend)
-            self.__plot2d.addXMarker(x=angle, color=htmlColor, legend=legend)
-            self.__ringLegends.append(legend)
-
-        # FIXME set axes
-        result1d = integrationProcess.result1d()
-        # Removing item fixes bug in silx 0.5 when histogram data changed
-        self.__plot1d.remove(legend="result1d", kind="histogram")
-        self.__plot1d.addHistogram(
-            legend="result1d",
-            align="right",
-            edges=result1d.radial,
-            color="blue",
-            histogram=result1d.intensity)
-        self.__setResult(result1d)
-
-        # Assume that axes are linear
-        result2d = integrationProcess.result2d()
-        origin = (result2d.radial[0], result2d.azimuthal[0])
-        scaleX = (result2d.radial[-1] - result2d.radial[0]) / result2d.intensity.shape[1]
-        scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / result2d.intensity.shape[0]
-        self.__plot2d.addImage(
-            legend="result2d",
-            data=result2d.intensity,
-            origin=origin,
-            scale=(scaleX, scaleY),
-            colormap=colormap)
+        self._plot.setIntegrationProcess(integrationProcess)
 
     def _updateModel(self, model):
         experimentSettings = model.experimentSettingsModel()
@@ -396,53 +459,9 @@ class IntegrationTask(AbstractCalibrationTask):
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
         integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)
 
-    def createSaveDialog(self, title, poni=False, json=False, csv=False):
-        dialog = qt.QFileDialog(self)
-        dialog.setWindowTitle(title)
-        dialog.setModal(True)
-        dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
-
-        extensions = collections.OrderedDict()
-        if poni:
-            extensions["PONI files"] = "*.poni"
-        if json:
-            extensions["JSON files"] = "*.json"
-        if csv:
-            extensions["CSV files"] = "*.csv"
-
-        filters = []
-        filters.append("All supported files (%s)" % " ".join(extensions.values()))
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-        filters.append("All files (*)")
-
-        dialog.setNameFilters(filters)
-        return dialog
-
-    def __setResult(self, result1d):
-        self.__result1d = result1d
-        self.__saveResult1dAction.setEnabled(result1d is not None)
-
-    def __saveAsCsv(self):
-        if self.__result1d is None:
-            return
-        dialog = self.createSaveDialog("Save 1D integration as CSV file", csv=True)
-        result = dialog.exec_()
-        if not result:
-            return
-        filename = dialog.selectedFiles()[0]
-        # TODO: it would be good to store the units
-        silx.io.save1D(filename,
-                       x=self.__result1d.radial,
-                       y=self.__result1d.intensity,
-                       xlabel="radial",
-                       ylabels=["intensity"],
-                       filetype="csv",
-                       autoheader=True)
-
     def __saveAsPoni(self):
         # FIXME test the validity of the geometry before opening the dialog
-        dialog = self.createSaveDialog("Save as PONI file", poni=True)
+        dialog = createSaveDialog(self, "Save as PONI file", poni=True)
         result = dialog.exec_()
         if not result:
             return
