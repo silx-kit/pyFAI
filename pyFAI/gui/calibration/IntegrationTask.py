@@ -236,14 +236,39 @@ class IntegrationPlot(qt.QFrame):
         self.__axisOfCurrentView = None
         self.__markerColors = {}
         self.__angleUnderMouse = None
+        self.__availableRingAngles = None
 
         self.__plot2d.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
         self.__plot1d.sigPlotSignal.connect(self.__plotSignalReceived)
         self.__plot2d.sigPlotSignal.connect(self.__plotSignalReceived)
 
+        widget = self.__plot1d
+        if hasattr(widget, "centralWidget"):
+            widget.centralWidget()
+        widget.installEventFilter(self)
+        widget = self.__plot2d
+        if hasattr(widget, "centralWidget"):
+            widget.centralWidget()
+        widget.installEventFilter(self)
+
     def resetZoom(self):
         self.__plot2d.resetZoom()
         self.__plot1d.resetZoom()
+
+    def eventFilter(self, widget, event):
+        if event.type() == qt.QEvent.Leave:
+            self.__mouseLeave()
+            return True
+        return False
+
+    def __mouseLeave(self):
+        if self.__angleUnderMouse is None:
+            return
+        if self.__angleUnderMouse not in self.__displayedAngles:
+            items = self.__ringItems.get(self.__angleUnderMouse, [])
+            for item in items:
+                item.setVisible(False)
+        self.__angleUnderMouse = None
 
     def __plotSignalReceived(self, event):
         """Called when old style signals at emmited from the plot."""
