@@ -235,12 +235,59 @@ class IntegrationPlot(qt.QFrame):
         self.__ringItems = {}
         self.__axisOfCurrentView = None
         self.__markerColors = {}
+        self.__angleUnderMouse = None
 
         self.__plot2d.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
+        self.__plot1d.sigPlotSignal.connect(self.__plotSignalReceived)
+        self.__plot2d.sigPlotSignal.connect(self.__plotSignalReceived)
 
     def resetZoom(self):
         self.__plot2d.resetZoom()
         self.__plot1d.resetZoom()
+
+    def __plotSignalReceived(self, event):
+        """Called when old style signals at emmited from the plot."""
+        if event["event"] == "mouseMoved":
+            x, y = event["x"], event["y"]
+            self.__mouseMoved(x, y)
+
+    def __getClosestAngle(self, angle):
+        """
+        Returns the closest ring index and ring angle
+        """
+        # TODO: Could be done in log(n) using bisect search
+        result = None
+        iresult = None
+        minDistance = float("inf")
+        for ringId, ringAngle in enumerate(self.__availableRingAngles):
+            distance = abs(angle - ringAngle)
+            if distance < minDistance:
+                minDistance = distance
+                result = ringAngle
+                iresult = ringId
+        return iresult, result
+
+    def __mouseMoved(self, x, y):
+        """Called when mouse move over the plot."""
+        if self.__availableRingAngles is None:
+            return
+        angle = x
+        ringId, angle = self.__getClosestAngle(angle)
+
+        if angle == self.__angleUnderMouse:
+            return
+
+        if self.__angleUnderMouse not in self.__displayedAngles:
+            items = self.__ringItems.get(self.__angleUnderMouse, [])
+            for item in items:
+                item.setVisible(False)
+
+        self.__angleUnderMouse = angle
+
+        if angle is not None:
+            items = self.__getItemsFromAngle(ringId, angle)
+            for item in items:
+                item.setVisible(True)
 
     def __axesChanged(self, minValue, maxValue):
         axisOfCurrentView = self.__plot2d.getXAxis().getLimits()
