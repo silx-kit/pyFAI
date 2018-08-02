@@ -38,6 +38,8 @@ import collections
 from silx.gui import qt
 from silx.gui.colors import Colormap
 import silx.gui.plot
+import silx.gui.icons
+import silx.io
 
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
@@ -219,6 +221,8 @@ class IntegrationTask(AbstractCalibrationTask):
         self._savePoniButton.clicked.connect(self.__saveAsPoni)
         self._saveJsonButton.clicked.connect(self.__saveAsJson)
 
+        self.__setResult(None)
+
     def __createPlots(self, parent):
         plot1d = silx.gui.plot.PlotWidget(parent)
         plot1d.setGraphXLabel("Radial")
@@ -249,6 +253,13 @@ class IntegrationTask(AbstractCalibrationTask):
         logAction.setToolTip("Logarithmic y-axis intensity when checked")
         ownToolBar.addAction(logAction)
         plot2d.addToolBar(ownToolBar)
+
+        action = qt.QAction(ownToolBar)
+        action.setIcon(silx.gui.icons.getQIcon("document-save"))
+        action.triggered.connect(self.__saveAsCsv)
+        action.setToolTip("Save 1D integration as CSV file")
+        self.__saveResult1dAction = action
+        ownToolBar.addAction(action)
 
         colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
         self.__defaultColorMap = colormap
@@ -310,6 +321,7 @@ class IntegrationTask(AbstractCalibrationTask):
             self._integrateButton.executeCallable()
 
     def __updateGUIWhileIntegrating(self):
+        self.__setResult(None)
         self.__processing1d = utils.createProcessingWidgetOverlay(self.__plot1d)
         self.__processing2d = utils.createProcessingWidgetOverlay(self.__plot2d)
 
@@ -341,6 +353,7 @@ class IntegrationTask(AbstractCalibrationTask):
             edges=result1d.radial,
             color="blue",
             histogram=result1d.intensity)
+        self.__setResult(result1d)
 
         # Assume that axes are linear
         result2d = integrationProcess.result2d()
@@ -371,7 +384,7 @@ class IntegrationTask(AbstractCalibrationTask):
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
         integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)
 
-    def createSaveDialog(self, title, poni=False, json=False):
+    def createSaveDialog(self, title, poni=False, json=False, csv=False):
         dialog = qt.QFileDialog(self)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
@@ -382,6 +395,8 @@ class IntegrationTask(AbstractCalibrationTask):
             extensions["PONI files"] = "*.poni"
         if json:
             extensions["JSON files"] = "*.json"
+        if csv:
+            extensions["CSV files"] = "*.csv"
 
         filters = []
         filters.append("All supported files (%s)" % " ".join(extensions.values()))
@@ -391,6 +406,27 @@ class IntegrationTask(AbstractCalibrationTask):
 
         dialog.setNameFilters(filters)
         return dialog
+
+    def __setResult(self, result1d):
+        self.__result1d = result1d
+        self.__saveResult1dAction.setEnabled(result1d is not None)
+
+    def __saveAsCsv(self):
+        if self.__result1d is None:
+            return
+        dialog = self.createSaveDialog("Save 1D integration as CSV file", csv=True)
+        result = dialog.exec_()
+        if not result:
+            return
+        filename = dialog.selectedFiles()[0]
+        # TODO: it would be good to store the units
+        silx.io.save1D(filename,
+                       x=self.__result1d.radial,
+                       y=self.__result1d.intensity,
+                       xlabel="radial",
+                       ylabels=["intensity"],
+                       filetype="csv",
+                       autoheader=True)
 
     def __saveAsPoni(self):
         # FIXME test the validity of the geometry before opening the dialog
