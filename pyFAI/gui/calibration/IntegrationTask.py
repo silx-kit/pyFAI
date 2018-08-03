@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/08/2018"
+__date__ = "03/08/2018"
 
 import logging
 import numpy
@@ -469,10 +469,8 @@ class IntegrationPlot(qt.QFrame):
         self.__availableRingAngles = integrationProcess.ringAngles()
         self.__updateRings()
 
-        # FIXME set axes
+        # FIXME set axes units
         result1d = integrationProcess.result1d()
-        # Removing item fixes bug in silx 0.5 when histogram data changed
-        self.__plot1d.remove(legend="result1d", kind="histogram")
         self.__plot1d.addHistogram(
             legend="result1d",
             align="right",
