@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/08/2018"
+__date__ = "03/08/2018"
 
 import logging
 import numpy
@@ -327,7 +327,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
                 legend=legend,
                 resetzoom=False,
                 color=numpyColor,
-                linewidth=3,
+                linewidth=1,
                 linestyle=":",
                 copy=False)
             item = self.getCurve(legend)
