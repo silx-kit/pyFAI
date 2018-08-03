@@ -84,3 +84,45 @@ class ProxyAction(qt.QAction):
 
     def trigger(self):
         self.__source.trigger()
+
+
+class CustomProxyAction(ProxyAction):
+    """Create a QAction synchronized with a source action.
+
+    Some properties of the source can be overrided.
+    """
+
+    def __init__(self, parent, source):
+        self.__forcedText = None
+        self.__forcedIconText = None
+        super(CustomProxyAction, self).__init__(parent, source)
+
+    def forceText(self, text):
+        """Override the text of the the source action.
+
+        Property can be removed by using None. In this case the text set back
+        using the sourceAction.
+        """
+        self.__forcedText = text
+        if self.__forcedText is None:
+            text = self.sourceAction().text()
+        super(CustomProxyAction, self).setText(text)
+
+    def setText(self, text):
+        if self.__forcedText is None:
+            super(CustomProxyAction, self).setText(text)
+
+    def forceIconText(self, iconText):
+        """Override the iconText of the the source action.
+
+        Property can be removed by using None. In this case the text set back
+        using the sourceAction.
+        """
+        self.__forcedIconText = iconText
+        if self.__forcedIconText is None:
+            iconText = self.sourceAction().iconText()
+        super(CustomProxyAction, self).setIconText(iconText)
+
+    def setIconText(self, text):
+        if self.__forcedIconText is None:
+            super(CustomProxyAction, self).setIconText(text)
