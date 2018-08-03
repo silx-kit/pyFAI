@@ -342,7 +342,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     def addPeak(self, peakModel):
         color = peakModel.color()
-        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF(), 0.5])
         points = peakModel.coords()
         name = peakModel.name()
 
