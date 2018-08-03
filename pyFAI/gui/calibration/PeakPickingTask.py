@@ -47,6 +47,7 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.gui.calibration.model.PeakModel import PeakModel
 from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
+from pyFAI.gui.utils.ProxyAction import CustomProxyAction
 from . import utils
 
 _logger = logging.getLogger(__name__)
@@ -502,8 +503,14 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
         self.__undoStack = qt.QUndoStack(self)
-        self._undoButton.setDefaultAction(self.__undoStack.createUndoAction(self, "Undo"))
-        self._redoButton.setDefaultAction(self.__undoStack.createRedoAction(self, "Redo"))
+        undoAction = CustomProxyAction(self, self.__undoStack.createUndoAction(self, "Undo"))
+        undoAction.forceText("Undo")
+        undoAction.forceIconText("Undo")
+        redoAction = CustomProxyAction(self, self.__undoStack.createRedoAction(self, "Redo"))
+        redoAction.forceText("Redo")
+        redoAction.forceIconText("Redo")
+        self._undoButton.setDefaultAction(undoAction)
+        self._redoButton.setDefaultAction(redoAction)
 
         self.__mode = qt.QButtonGroup()
         self.__mode.setExclusive(True)
