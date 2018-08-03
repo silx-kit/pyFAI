@@ -77,12 +77,11 @@ Depends: ${misc:Depends},
          python-imaging,
          python-matplotlib,
          python-scipy,
-         python-silx
+         python-silx (>=0.8)
 Recommends: python-h5py,
             python-pyopencl,
             python-qt4|python-pyside|python-pyqt5
 Suggests: pymca,
-          python-silx,
           python-rfoo
 Breaks: ${python:Breaks},
         pyfai (<< 0.11.0+dfsg-2)
@@ -116,11 +115,10 @@ Depends: ${misc:Depends},
          python3-pil,
          python3-matplotlib,
          python3-scipy,
-         python3-silx
+         python3-silx (>=0.8)
 Recommends: python3-pyopencl,
             python3-pyqt5|python3-pyside
-Suggests: python3-h5py,
-          python3-silx
+Suggests: python3-h5py
 Description: Fast Azimuthal Integration scripts - Python3
  PyFAI is a Python library for azimuthal integration; it allows the conversion
  of diffraction images taken with 2D detectors like CCD cameras into X-Ray

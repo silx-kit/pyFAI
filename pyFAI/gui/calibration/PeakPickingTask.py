@@ -27,24 +27,27 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2018"
+__date__ = "03/08/2018"
 
 import logging
 import numpy
 import functools
+import os
+from collections import OrderedDict
+
 from silx.gui import qt
 from silx.gui import icons
+import silx.gui.plot
+from silx.gui.plot.tools import PositionInfo
+from silx.gui.colors import Colormap
+
 import pyFAI.utils
 import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.PeakModel import PeakModel
 from pyFAI.gui.calibration.RingExtractor import RingExtractor
-from collections import OrderedDict
 import pyFAI.control_points
-
-import silx.gui.plot
-import os
-from silx.gui.plot.PlotTools import PositionInfo
+from pyFAI.gui.utils.ProxyAction import CustomProxyAction
 from . import utils
 
 _logger = logging.getLogger(__name__)
@@ -99,7 +102,8 @@ class _PeakSelectionTableView(qt.QTableView):
         self.setVerticalScrollMode(qt.QAbstractItemView.ScrollPerPixel)
         self.setShowGrid(False)
         self.setWordWrap(False)
-        self.setFrameShape(qt.QFrame.NoFrame)
+        # NoFrame glitchies on Debian8 Qt5
+        # self.setFrameShape(qt.QFrame.NoFrame)
 
         self.horizontalHeader().setHighlightSections(False)
         self.verticalHeader().setVisible(False)
@@ -254,11 +258,13 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
     def setData(self, index, value, role=qt.Qt.EditRole):
         if not index.isValid():
-            return
+            return False
         peakModel = self.__peakSelectionModel[index.row()]
         column = index.column()
         if column == 2:
             self.requestRingChange.emit(peakModel, value)
+            return True
+        return False
 
     def removeRows(self, row, count, parent=qt.QModelIndex()):
         # while the tablempdel is already connected to the data model
@@ -280,26 +286,27 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
     def __init__(self, parent):
         super(_PeakPickingPlot, self).__init__(parent=parent)
         self.setKeepDataAspectRatio(True)
+        self.setAxesDisplayed(False)
 
-        # FIXME Fix using silx 0.5
-        if "BackendMatplotlib" in self._backend.__class__.__name__:
-            # hide axes and viewbox rect
-            self._backend.ax.set_axis_off()
-            self._backend.ax2.set_axis_off()
-            # remove external margins
-            self._backend.ax.set_position([0, 0, 1, 1])
-            self._backend.ax2.set_position([0, 0, 1, 1])
-
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
         self.setDefaultColormap(colormap)
 
         self.__peakSelectionModel = None
         self.__callbacks = {}
         self.__markerColors = {}
+        self.__processing = None
+
+        if hasattr(self, "centralWidget"):
+            self.centralWidget().installEventFilter(self)
+
+    def eventFilter(self, widget, event):
+        if event.type() == qt.QEvent.Enter:
+            self.setCursor(qt.Qt.CrossCursor)
+            return True
+        elif event.type() == qt.QEvent.Leave:
+            self.unsetCursor()
+            return True
+        return False
 
     def setModel(self, peakSelectionModel):
         assert self.__peakSelectionModel is None
@@ -336,7 +343,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     def addPeak(self, peakModel):
         color = peakModel.color()
-        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF(), 0.5])
         points = peakModel.coords()
         name = peakModel.name()
 
@@ -349,6 +356,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.addCurve(x=x, y=y,
                       legend="coord" + name,
                       linestyle=' ',
+                      selectable=False,
                       symbol='o',
                       color=numpyColor,
                       resetzoom=False)
@@ -372,6 +380,12 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         colormap = self.getDefaultColormap()
         return utils.getFreeColorRange(colormap)
 
+    def unsetProcessing(self):
+        self.__processing.deleteLater()
+
+    def setProcessing(self):
+        self.__processing = utils.createProcessingWidgetOverlay(self)
+
 
 class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
 
@@ -386,6 +400,8 @@ class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
         editor.setFocusPolicy(qt.Qt.StrongFocus)
         editor.setValue(index.data())
         editor.installEventFilter(self)
+        editor.setBackgroundRole(qt.QPalette.Background)
+        editor.setAutoFillBackground(True)
         return editor
 
     def eventFilter(self, widget, event):
@@ -465,25 +481,36 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.initNextStep()
         self.__dialogState = None
 
-        layout = qt.QVBoxLayout(self._imageHolder)
-        self.__plot = _PeakPickingPlot(parent=self._imageHolder)
-        toolBar = self.__createPlotToolBar(self.__plot)
-        self.__plot.addToolBar(toolBar)
+        # Insert the plot on the layout
+        holder = self._plotHolder
+        self.__plot = _PeakPickingPlot(parent=holder)
+        holderLayout = qt.QVBoxLayout(holder)
+        holderLayout.setContentsMargins(1, 1, 1, 1)
+        holderLayout.addWidget(self.__plot)
+
+        # Insert the peak view on the layout
+        holder = self._peakSelectionDummy.parent()
+        self.__peakSelectionView = _PeakSelectionTableView(holder)
+        holderLayout = holder.layout()
+        holderLayout.replaceWidget(self._peakSelectionDummy, self.__peakSelectionView)
+
+        self.__createPlotToolBar(self.__plot)
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
 
-        layout.addWidget(self.__plot)
-        layout.setContentsMargins(1, 1, 1, 1)
-        self._imageHolder.setLayout(layout)
-
         self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
         self._peakSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
-        self.__peakSelectionView = None
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
         self.__undoStack = qt.QUndoStack(self)
-        self._undoButton.setDefaultAction(self.__undoStack.createUndoAction(self, "Undo"))
-        self._redoButton.setDefaultAction(self.__undoStack.createRedoAction(self, "Redo"))
+        undoAction = CustomProxyAction(self, self.__undoStack.createUndoAction(self, "Undo"))
+        undoAction.forceText("Undo")
+        undoAction.forceIconText("Undo")
+        redoAction = CustomProxyAction(self, self.__undoStack.createRedoAction(self, "Redo"))
+        redoAction.forceText("Redo")
+        redoAction.forceIconText("Redo")
+        self._undoButton.setDefaultAction(undoAction)
+        self._redoButton.setDefaultAction(redoAction)
 
         self.__mode = qt.QButtonGroup()
         self.__mode.setExclusive(True)
@@ -491,7 +518,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__mode.addButton(self._ringSelectionMode)
         self._ringSelectionMode.setChecked(True)
 
-        self._extract.clicked.connect(self.__autoExtractRings)
+        self._extract.clicked.connect(self.__autoExtractRingsLater)
 
     def __createSavePeakDialog(self):
         dialog = qt.QFileDialog(self)
@@ -627,31 +654,16 @@ class PeakPickingTask(AbstractCalibrationTask):
         return options
 
     def __createPlotToolBar(self, plot):
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+
         toolBar = qt.QToolBar("Plot tools", plot)
-
-        from silx.gui.plot.actions import control
-        from silx.gui.plot.actions import io
-        from silx.gui.plot.actions import histogram
-
-        toolBar.addAction(control.ResetZoomAction(plot, toolBar))
-        toolBar.addAction(control.ZoomInAction(plot, toolBar))
-        toolBar.addAction(control.ZoomOutAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(control.ColormapAction(plot, toolBar))
-        toolBar.addAction(histogram.PixelIntensitiesHistoAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(io.CopyAction(plot, toolBar))
-        toolBar.addAction(io.SaveAction(plot, toolBar))
-        toolBar.addAction(io.PrintAction(plot, toolBar))
-
-        stretch = qt.QWidget(self)
-        stretch.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Fixed)
-        toolBar.addWidget(stretch)
-
         self.__options = self.__createOptionsWidget()
         toolBar.addWidget(self.__options)
-
-        return toolBar
+        plot.addToolBar(toolBar)
 
     def __createPlotStatusBar(self, plot):
 
@@ -664,7 +676,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         hbox.setContentsMargins(0, 0, 0, 0)
 
         info = PositionInfo(plot=plot, converters=converters)
-        info.autoSnapToActiveCurve = True
+        info.setSnappingMode(True)
         statusBar = qt.QStatusBar(plot)
         statusBar.setSizeGripEnabled(False)
         statusBar.addWidget(info)
@@ -800,6 +812,12 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         return peakModel
 
+    def __autoExtractRingsLater(self):
+        self.__plot.setProcessing()
+        self._extract.setWaiting(True)
+        # Wait for Qt repaint first
+        qt.QTimer.singleShot(1, self.__autoExtractRings)
+
     def __autoExtractRings(self):
         maxRings = self._maxRingToExtract.value()
         pointPerDegree = self._numberOfPeakPerDegree.value()
@@ -849,6 +867,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
+        self.__plot.unsetProcessing()
+        self._extract.setWaiting(False)
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
@@ -862,7 +882,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         image = self.__plot.getImage("image")
         if image is None:
             return value
-        data = image.getData()
+        data = image.getData(copy=False)
         ox, oy = image.getOrigin()
         sx, sy = image.getScale()
         row, col = (y - oy) / sy, (x - ox) / sx
@@ -882,13 +902,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__undoStack.clear()
 
     def __initPeakSelectionView(self, model):
-        if self.__peakSelectionView is None:
-            self.__peakSelectionView = _PeakSelectionTableView(self)
-            layout = qt.QHBoxLayout(self._peakSelectionHolder)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(self.__peakSelectionView)
-            self._peakSelectionHolder.setLayout(layout)
-
         tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())
         tableModel.requestRingChange.connect(self.__setRingNumber)
         tableModel.requestRemovePeak.connect(self.__removePeak)
