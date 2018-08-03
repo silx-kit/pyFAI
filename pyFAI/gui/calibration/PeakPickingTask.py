@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/08/2018"
+__date__ = "03/08/2018"
 
 import logging
 import numpy
@@ -481,10 +481,11 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__dialogState = None
 
         # Insert the plot on the layout
-        holder = self._plotDummy.parent()
+        holder = self._plotHolder
         self.__plot = _PeakPickingPlot(parent=holder)
-        holderLayout = holder.layout()
-        holderLayout.replaceWidget(self._plotDummy, self.__plot)
+        holderLayout = qt.QVBoxLayout(holder)
+        holderLayout.setContentsMargins(1, 1, 1, 1)
+        holderLayout.addWidget(self.__plot)
 
         # Insert the peak view on the layout
         holder = self._peakSelectionDummy.parent()

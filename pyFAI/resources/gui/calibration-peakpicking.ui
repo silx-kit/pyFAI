@@ -18,7 +18,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="_plotDummy">
+    <widget class="QFrame" name="_plotHolder">
      <property name="frameShape">
       <enum>QFrame::Box</enum>
      </property>
