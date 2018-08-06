@@ -329,6 +329,7 @@ class Calibrant(object):
             self._dSpacing = []
         else:
             self._dSpacing = list(dSpacing)
+        self._out_dSpacing = []
         if self._dSpacing and self._wavelength:
             self._calc_2th()
 
@@ -500,14 +501,17 @@ class Calibrant(object):
             logger.error("Cannot calculate 2theta angle without knowing wavelength")
             return
         tths = []
-        dSpacing = self._dSpacing[:]  # explicit copy
+        dSpacing = self._dSpacing[:] + self._out_dSpacing  # explicit copy
+        self._out_dSpacing = []
         for ds in dSpacing:
             try:
                 tth = 2.0 * asin(5.0e9 * self._wavelength / ds)
             except ValueError:
                 size = len(tths)
                 if size > 0:
-                    self._dSpacing = self._dSpacing[:size]
+                    # remove dSpacing outside of 0..180
+                    self._dSpacing = dSpacing[:size]
+                    self._out_dSpacing = dSpacing[size:]
                     # avoid turning around...
                     break
             else:
