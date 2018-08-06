@@ -386,7 +386,7 @@ class Calibrant(object):
         :rtype: Calibrant
         """
         return Calibrant(filename=self._filename,
-                         dSpacing=self._dSpacing,
+                         dSpacing=self._dSpacing + self._out_dSpacing,
                          wavelength=self._wavelength)
 
     def __repr__(self):
