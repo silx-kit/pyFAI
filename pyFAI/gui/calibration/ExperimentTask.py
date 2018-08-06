@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/07/2018"
+__date__ = "06/08/2018"
 
 import os
 import fabio
@@ -90,6 +90,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._mask.setModel(settings.maskFile())
         self._dark.setModel(settings.darkFile())
         self._spline.setModel(settings.splineFile())
+        self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
 
         adaptor = WavelengthToEnergyAdaptor(self, settings.wavelength())
         self._wavelength.setModel(settings.wavelength())
@@ -97,10 +98,20 @@ class ExperimentTask(AbstractCalibrationTask):
 
         settings.image().changed.connect(self.__imageUpdated)
 
-        # FIXME debug purpous
-        settings.calibrantModel().changed.connect(self.printSelectedCalibrant)
+        settings.calibrantModel().changed.connect(self.__calibrantChanged)
         settings.detectorModel().changed.connect(self.__detectorModelUpdated)
+        settings.wavelength().changed.connect(self.__waveLengthChanged)
         self.__detectorModelUpdated()
+
+    def __waveLengthChanged(self):
+        settings = self.model().experimentSettingsModel()
+        self._calibrantPreview.setWaveLength(settings.wavelength().value())
+
+    def __calibrantChanged(self):
+        settings = self.model().experimentSettingsModel()
+        self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
+        # FIXME debug purpous
+        self.printSelectedCalibrant()
 
     def __detectorModelUpdated(self):
         detector = self.model().experimentSettingsModel().detectorModel().detector()
