@@ -158,8 +158,7 @@ class CalibrantPreview(qt.QFrame):
         option = qt.QStyleOptionProgressBar()
         option.initFrom(self)
         option.rect = self.rect()
-        option.state = ((self.isEnabled() and qt.QStyle.State_Enabled)
-                        or qt.QStyle.State_None)
+        option.state = qt.QStyle.State_Enabled if self.isEnabled() else qt.QStyle.State_None
         style = qt.QApplication.style()
         style.drawControl(qt.QStyle.CE_ProgressBarGroove,
                           option,
