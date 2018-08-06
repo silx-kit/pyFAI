@@ -31,6 +31,7 @@ __date__ = "06/08/2018"
 
 import logging
 import numpy
+import os.path
 
 from silx.gui import qt
 from silx.gui.colors import Colormap
@@ -61,6 +62,7 @@ class CalibrantPreview(qt.QFrame):
             return
         self.__calibrant = calibrant
         self.__pixmap = None
+        self.__updateToolTip()
         self.repaint()
 
     def setWaveLength(self, waveLength):
@@ -68,15 +70,13 @@ class CalibrantPreview(qt.QFrame):
             return
         self.__waveLength = waveLength
         self.__pixmap = None
+        self.__updateToolTip()
         self.repaint()
 
     def getCalibrant(self):
         return self.__pixmap
 
-    def __getPixmap(self):
-        if self.__pixmap is not None:
-            return self.__pixmap
-
+    def __getConfiguredCalibrant(self):
         calibrant = self.__calibrant
         if calibrant is None:
             return None
@@ -85,6 +85,50 @@ class CalibrantPreview(qt.QFrame):
             return None
 
         calibrant.setWavelength_change2th(waveLenght * 1e-10)
+        return calibrant
+
+    def __updateToolTip(self):
+        calibrant = self.__getConfiguredCalibrant()
+        if calibrant is None:
+            return
+
+        name = calibrant.filename
+        if name is not None:
+            name = os.path.basename(name)
+            if name.endswith(".D"):
+                name = name[0:-2]
+
+        fileds = []
+        if name is not None:
+            fileds.append(("Name", name, None))
+        fileds.append(("Nb registered rays", calibrant.count_registered_dSpacing(), None))
+        dSpacing = calibrant.get_dSpacing()
+        fileds.append(("Nb visible rays", len(dSpacing), "between 0 and π"))
+        if len(dSpacing) > 0:
+            ray = calibrant.get_dSpacing()[0]
+            angle = calibrant.get_2th()[0]
+            fileds.append(("First visible ray", "%f (%f rad)" % (ray, angle), None))
+            ray = calibrant.get_dSpacing()[-1]
+            angle = calibrant.get_2th()[-1]
+            fileds.append(("Last visible ray", "%f (%f rad)" % (ray, angle), None))
+
+        toolTip = []
+        for f in fileds:
+            field_name, field_value, suffix = f
+            field = "<li><b>%s</b>: %s</li>" % (field_name, field_value)
+            if suffix is not None:
+                field = "%s (%s)" % (field, suffix)
+            toolTip.append(field)
+
+        toolTip = "\n".join(toolTip)
+        toolTip = "<html><ul>%s</ul></html>" % toolTip
+        self.setToolTip(toolTip)
+
+    def __getPixmap(self):
+        if self.__pixmap is not None:
+            return self.__pixmap
+
+        calibrant = self.__getConfiguredCalibrant()
         tths = numpy.array(calibrant.get_2th())
 
         tth_min, tth_max = 0, numpy.pi
