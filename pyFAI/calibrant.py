@@ -400,6 +400,11 @@ class Calibrant(object):
             name += "at wavelength %s" % self._wavelength
         return name
 
+    def get_filename(self):
+        return self._filename
+
+    filename = property(get_filename)
+
     def load_file(self, filename=None):
         with self._sem:
             if filename:
@@ -413,6 +418,10 @@ class Calibrant(object):
             # self._dSpacing.sort(reverse=True)
             if self._wavelength:
                 self._calc_2th()
+
+    def count_registered_dSpacing(self):
+        """Count of registered dSpacing positons."""
+        return len(self._dSpacing) + len(self._out_dSpacing)
 
     def save_dSpacing(self, filename=None):
         """
