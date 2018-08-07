@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>722</width>
-    <height>730</height>
+    <height>777</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -164,31 +164,31 @@
          <string>Detector</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0">
-         <item row="0" column="1">
+         <item row="1" column="1">
           <widget class="DetectorSelector" name="_detector"/>
          </item>
-         <item row="0" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="label_8">
            <property name="text">
             <string>Model:</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="2" column="1">
           <widget class="FileEdit" name="_spline">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
+         <item row="2" column="2">
           <widget class="QToolButton" name="_splineLoader">
            <property name="text">
             <string>...</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>Spline file:</string>
@@ -198,21 +198,21 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="_detectorSizeLabel">
            <property name="text">
             <string>Max size:</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="2">
+         <item row="3" column="2">
           <widget class="QLabel" name="_detectorSizeUnit">
            <property name="text">
             <string>px</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="3" column="1">
           <widget class="QLabel" name="_detectorSize">
            <property name="text">
             <string/>
@@ -221,6 +221,16 @@
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Manufacturer:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="DetectorManufacturer" name="_manufacturer"/>
          </item>
         </layout>
        </widget>
@@ -414,6 +424,11 @@
    <extends>QWidget</extends>
    <header>pyFAI.gui.calibration.CalibrantPreview</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DetectorManufacturer</class>
+   <extends>QComboBox</extends>
+   <header>pyFAI.gui.calibration.DetectorManufacturer</header>
   </customwidget>
  </customwidgets>
  <resources/>
