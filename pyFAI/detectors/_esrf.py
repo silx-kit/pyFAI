@@ -60,6 +60,8 @@ class FReLoN(Detector):
 
     TODO: create automatically a mask that removes pixels out of the "valid reagion"
     """
+    MANUFACTURER = "ESRF"
+
     MAX_SHAPE = (2048, 2048)
 
     HAVE_TAPER = True
@@ -108,6 +110,8 @@ class Maxipix(Detector):
 
     Sub-classed by Maxipix2x2 and Maxipix5x1
     """
+    MANUFACTURER = "ESRF"
+
     MODULE_SIZE = (256, 256)
     MODULE_GAP = (4, 4)
     MAX_SHAPE = (256, 256)

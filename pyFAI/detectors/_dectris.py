@@ -58,7 +58,12 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class Eiger(Detector):
+class _Dectris(Detector):
+
+    MANUFACTURER = "Dectris"
+
+
+class Eiger(_Dectris):
     """
     Eiger detector: generic description containing mask algorithm
     """
@@ -239,7 +244,7 @@ class Eiger16M(Eiger):
     aliases = ["Eiger 16M"]
 
 
-class Mythen(Detector):
+class Mythen(_Dectris):
     "Mythen dtrip detector from Dectris"
     aliases = ["Mythen 1280"]
     force_pixel = True
@@ -257,7 +262,7 @@ class Mythen(Detector):
                             ("pixel2", self._pixel2)))
 
 
-class Pilatus(Detector):
+class Pilatus(_Dectris):
     """
     Pilatus detector: generic description containing mask algorithm
 

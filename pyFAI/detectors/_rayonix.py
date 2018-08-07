@@ -51,6 +51,9 @@ logger = logging.getLogger(__name__)
 
 
 class Rayonix(Detector):
+
+    MANUFACTURER = "Rayonix"
+
     force_pixel = True
     BINNED_PIXEL_SIZE = {1: 32e-6}
     MAX_SHAPE = (4096, 4096)
@@ -494,6 +497,8 @@ class Mar345(Detector):
     In this detector, pixels are always square
     The valid image size are 2300, 2000, 1600, 1200, 3450, 3000, 2400, 1800
     """
+    MANUFACTURER = "Rayonix"
+
     force_pixel = True
     MAX_SHAPE = (3450, 3450)
     # Valid image width with corresponding pixel size
@@ -597,6 +602,8 @@ class Mar555(Detector):
     The detector specifications are adapted from
     http://xds.mpimf-heidelberg.mpg.de/html_doc/detectors.html
     """
+    MANUFACTURER = "Rayonix"
+
     force_pixel = True
     MAX_SHAPE = (3072, 2560)
     aliases = ["MAR 555"]
