@@ -267,8 +267,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def __eq__(self, other):
         """Equality checker for detector, used in tests
-        
-        Checks for pixel1, pixel2, binning, shape, max_shape,  
+
+        Checks for pixel1, pixel2, binning, shape, max_shape.
         """
         res = True
         for what in ["pixel1", "pixel2", "binning", "shape", "max_shape"]:
@@ -277,15 +277,15 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_config(self, config):
         """
-        Sets the configuration of the detector.        
-        
+        Sets the configuration of the detector.
+
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
         keys in that dictionary are:  pixel1, pixel2, splineFile, max_shape
-       
+
         :param config: string or JSON-serialized dict
-        :retuen: self 
+        :return: self
         """
         if not isinstance(config, dict):
             try:
@@ -309,10 +309,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
-        Derivative classes should implement this method 
-        if they change the constructor ! 
-        
+
+        Derivative classes should implement this method
+        if they change the constructor!
+
         :return: dict with param for serialization
         """
         dico = OrderedDict((("pixel1", self._pixel1),
@@ -1041,9 +1041,9 @@ class NexusDetector(Detector):
 
     def set_config(self, config):
         """set the config of the detector
-        
+
         For Nexus detector, the only valid key is "filename"
-        
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
@@ -1064,7 +1064,7 @@ class NexusDetector(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return {"filename": self._filename}
