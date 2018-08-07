@@ -65,7 +65,18 @@ class DetectorSelector(qt.QComboBox):
         # feed the widget with default detectors
         model = qt.QStandardItemModel(self)
 
-        items = pyFAI.detectors.ALL_DETECTORS.items()
+        detectorClasses = set(pyFAI.detectors.ALL_DETECTORS.values())
+
+        def getClassModel(detectorClass):
+            modelName = None
+            if hasattr(detectorClass, "aliases"):
+                if len(detectorClass.aliases) > 0:
+                    modelName = detectorClass.aliases[0]
+            if modelName is None:
+                modelName = detectorClass.__name__
+            return modelName
+
+        items = [(getClassModel(c), c) for c in detectorClasses]
         items = sorted(items)
         for detectorName, detector in items:
             if detector is pyFAI.detectors.Detector:
