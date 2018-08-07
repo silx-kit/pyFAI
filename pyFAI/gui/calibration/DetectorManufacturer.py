@@ -53,6 +53,7 @@ class DetectorManufacturer(qt.QComboBox):
         if hasOther:
             self.addItem("Others", None)
         self.insertItem(0, "Any", "*")
+        self.insertSeparator(1)
 
         self.__model = None
         self.setModel(DetectorModel())
