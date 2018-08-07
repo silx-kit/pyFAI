@@ -68,6 +68,12 @@ class ExperimentTask(AbstractCalibrationTask):
         self._calibrant.setFileLoadable(True)
         self._calibrant.sigLoadFileRequested.connect(self.loadCalibrant)
 
+        self._manufacturer.currentIndexChanged[int].connect(self.__manufacturerChanged)
+
+    def __manufacturerChanged(self, index):
+        manufacturer = self._manufacturer.currentManufacturer()
+        self._detector.setManufacturerFilter(manufacturer)
+
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
         plot.setKeepDataAspectRatio(True)
