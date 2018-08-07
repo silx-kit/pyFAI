@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2018"
+__date__ = "07/08/2018"
 __status__ = "production"
 
 from collections import OrderedDict
@@ -52,14 +52,13 @@ logger = logging.getLogger(__name__)
 class ADSC(Detector):
     """Common class for ADSC detector:
     they all share the same constructor signature
-
     """
     def __init__(self, pixel1=51e-6, pixel2=51e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
