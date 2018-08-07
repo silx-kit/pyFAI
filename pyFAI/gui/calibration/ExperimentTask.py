@@ -69,8 +69,9 @@ class ExperimentTask(AbstractCalibrationTask):
         self._calibrant.sigLoadFileRequested.connect(self.loadCalibrant)
 
         self._manufacturer.currentIndexChanged[int].connect(self.__manufacturerChanged)
+        self.__manufacturerChanged()
 
-    def __manufacturerChanged(self, index):
+    def __manufacturerChanged(self, index=None):
         manufacturer = self._manufacturer.currentManufacturer()
         self._detector.setManufacturerFilter(manufacturer)
 
