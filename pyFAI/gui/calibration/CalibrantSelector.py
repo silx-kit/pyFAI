@@ -27,14 +27,19 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/03/2017"
+__date__ = "07/08/2018"
+
+import os.path
 
 from silx.gui import qt
+from silx.gui import icons
 import pyFAI.calibrant
 from .model.CalibrantModel import CalibrantModel
 
 
 class CalibrantSelector(qt.QComboBox):
+
+    sigLoadFileRequested = qt.Signal()
 
     def __init__(self, parent=None):
         super(CalibrantSelector, self).__init__(parent)
@@ -44,6 +49,11 @@ class CalibrantSelector(qt.QComboBox):
         items = sorted(items)
         for calibrantName, calibrant in items:
             self.addItem(calibrantName, calibrant)
+            icon = icons.getQIcon("pyfai:gui/icons/calibrant")
+            self.setItemIcon(self.count() - 1, icon)
+
+        self.__calibrantCount = self.count()
+        self.__isFileLoadable = False
 
         self.__model = None
         self.setModel(CalibrantModel())
@@ -53,10 +63,36 @@ class CalibrantSelector(qt.QComboBox):
         model = self.model()
         if model is None:
             return
+        if self.__isFileLoadable:
+            if index == self.count() - 1:
+                # Selection back to the previous location
+                calibrant = model.calibrant()
+                index = self.findCalibrant(calibrant)
+                self.setCurrentIndex(index)
+                # Send the request
+                self.__loadFileRequested()
+                return
+
         item = self.itemData(index)
         old = self.blockSignals(True)
         model.setCalibrant(item)
         self.blockSignals(old)
+
+    def setFileLoadable(self, isFileLoadable):
+        if self.__isFileLoadable == isFileLoadable:
+            return
+
+        self.__isFileLoadable = isFileLoadable
+
+        if isFileLoadable:
+            self.insertSeparator(self.count())
+            self.addItem("Load calibrant from file...")
+        else:
+            self.removeItem(self.count())
+            self.removeItem(self.count())
+
+    def __loadFileRequested(self):
+        self.sigLoadFileRequested.emit()
 
     def setModel(self, model):
         if self.__model is not None:
@@ -69,11 +105,18 @@ class CalibrantSelector(qt.QComboBox):
     def findCalibrant(self, calibrant):
         """Returns the first index containing the requested calibrant.
         Else return -1"""
-        for index in range(self.count()):
+        for index in range(self.__calibrantCount):
             item = self.itemData(index)
             if item == calibrant:
                 return index
         return -1
+
+    def __findInsertion(self, name):
+        for index in range(self.__calibrantCount):
+            itemName = self.itemText(index)
+            if name < itemName:
+                return index
+        return self.__calibrantCount
 
     def __modelChanged(self):
         value = self.__model.calibrant()
@@ -85,6 +128,16 @@ class CalibrantSelector(qt.QComboBox):
             if item != value:
                 # findData is not working
                 index = self.findCalibrant(value)
+                if index == -1:
+                    if value.filename is not None:
+                        calibrantName = os.path.basename(value.filename)
+                    else:
+                        calibrantName = "No name"
+                    index = self.__findInsertion(calibrantName)
+                    self.insertItem(index, calibrantName, value)
+                    icon = icons.getQIcon("pyfai:gui/icons/calibrant-custom")
+                    self.setItemIcon(index, icon)
+                    self.__calibrantCount += 1
                 self.setCurrentIndex(index)
 
     def model(self):

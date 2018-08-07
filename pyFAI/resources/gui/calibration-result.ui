@@ -18,7 +18,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="_imageHolder">
+    <widget class="IntegrationPlot" name="_plot">
      <property name="frameShape">
       <enum>QFrame::Box</enum>
      </property>
@@ -218,6 +218,12 @@
    <class>ThreadPoolPushButton</class>
    <extends>QPushButton</extends>
    <header>silx.gui.widgets.ThreadPoolPushButton</header>
+  </customwidget>
+  <customwidget>
+   <class>IntegrationPlot</class>
+   <extends>QFrame</extends>
+   <header>pyFAI.gui.calibration.IntegrationTask</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

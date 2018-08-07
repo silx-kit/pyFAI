@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/01/2018"
+__date__ = "07/08/2018"
 
 import os
 import fabio
@@ -36,8 +36,10 @@ import logging
 from contextlib import contextmanager
 from collections import OrderedDict
 import silx.gui.plot
+from silx.gui.colors import Colormap
 from silx.gui import qt
 import pyFAI.utils
+from pyFAI.calibrant import Calibrant
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
 
@@ -57,25 +59,31 @@ class ExperimentTask(AbstractCalibrationTask):
         self._darkLoader.clicked.connect(self.loadDark)
         self._splineLoader.clicked.connect(self.loadSpline)
 
-        self.__plot2D = silx.gui.plot.Plot2D(parent=self._imageHolder)
-        self.__plot2D.setKeepDataAspectRatio(True)
-        self.__plot2D.getMaskAction().setVisible(False)
-        self.__plot2D.getProfileToolbar().setVisible(False)
-        self.__plot2D.setDataMargins(0.1, 0.1, 0.1, 0.1)
-        self.__plot2D.setGraphXLabel("Y")
-        self.__plot2D.setGraphYLabel("X")
-
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
-        self.__plot2D.setDefaultColormap(colormap)
-
+        self.__plot = self.__createPlot(parent=self._imageHolder)
         layout = qt.QVBoxLayout(self._imageHolder)
-        layout.addWidget(self.__plot2D)
+        layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
+
+        self._calibrant.setFileLoadable(True)
+        self._calibrant.sigLoadFileRequested.connect(self.loadCalibrant)
+
+    def __createPlot(self, parent):
+        plot = silx.gui.plot.PlotWidget(parent=parent)
+        plot.setKeepDataAspectRatio(True)
+        plot.setDataMargins(0.1, 0.1, 0.1, 0.1)
+        plot.setGraphXLabel("Y")
+        plot.setGraphYLabel("X")
+
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
+        plot.setDefaultColormap(colormap)
+        return plot
 
     def _updateModel(self, model):
         settings = model.experimentSettingsModel()
@@ -86,6 +94,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._mask.setModel(settings.maskFile())
         self._dark.setModel(settings.darkFile())
         self._spline.setModel(settings.splineFile())
+        self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
 
         adaptor = WavelengthToEnergyAdaptor(self, settings.wavelength())
         self._wavelength.setModel(settings.wavelength())
@@ -93,10 +102,20 @@ class ExperimentTask(AbstractCalibrationTask):
 
         settings.image().changed.connect(self.__imageUpdated)
 
-        # FIXME debug purpous
-        settings.calibrantModel().changed.connect(self.printSelectedCalibrant)
+        settings.calibrantModel().changed.connect(self.__calibrantChanged)
         settings.detectorModel().changed.connect(self.__detectorModelUpdated)
+        settings.wavelength().changed.connect(self.__waveLengthChanged)
         self.__detectorModelUpdated()
+
+    def __waveLengthChanged(self):
+        settings = self.model().experimentSettingsModel()
+        self._calibrantPreview.setWaveLength(settings.wavelength().value())
+
+    def __calibrantChanged(self):
+        settings = self.model().experimentSettingsModel()
+        self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
+        # FIXME debug purpous
+        self.printSelectedCalibrant()
 
     def __detectorModelUpdated(self):
         detector = self.model().experimentSettingsModel().detectorModel().detector()
@@ -128,10 +147,10 @@ class ExperimentTask(AbstractCalibrationTask):
 
         if detector is None:
             self._detectorSize.setText("")
-            self.__plot2D.removeMarker("xmin")
-            self.__plot2D.removeMarker("xmax")
-            self.__plot2D.removeMarker("ymin")
-            self.__plot2D.removeMarker("ymax")
+            self.__plot.removeMarker("xmin")
+            self.__plot.removeMarker("xmax")
+            self.__plot.removeMarker("ymin")
+            self.__plot.removeMarker("ymax")
         else:
             try:
                 binning = detector.get_binning()
@@ -144,13 +163,13 @@ class ExperimentTask(AbstractCalibrationTask):
                 binning = binning[0], 1
 
             shape = detector.max_shape[1] // binning[1], detector.max_shape[0] // binning[0]
-            self.__plot2D.addXMarker(x=0, legend="xmin", color="grey")
-            self.__plot2D.addXMarker(x=shape[0], legend="xmax", color="grey")
-            self.__plot2D.addYMarker(y=0, legend="ymin", color="grey")
-            self.__plot2D.addYMarker(y=shape[1], legend="ymax", color="grey")
+            self.__plot.addXMarker(x=0, legend="xmin", color="grey")
+            self.__plot.addXMarker(x=shape[0], legend="xmax", color="grey")
+            self.__plot.addYMarker(y=0, legend="ymin", color="grey")
+            self.__plot.addYMarker(y=shape[1], legend="ymax", color="grey")
             dummy = numpy.array([[[0xF0, 0xF0, 0xF0]]], dtype=numpy.uint8)
-            self.__plot2D.addImage(data=dummy, scale=shape, legend="dummy", z=-10, replace=False)
-            self.__plot2D.resetZoom()
+            self.__plot.addImage(data=dummy, scale=shape, legend="dummy", z=-10, replace=False)
+            self.__plot.resetZoom()
 
     def __updateDetector(self):
         image = self.model().experimentSettingsModel().image().value()
@@ -204,8 +223,8 @@ class ExperimentTask(AbstractCalibrationTask):
             self._imageSize.setText(text)
 
         image = self.model().experimentSettingsModel().image().value()
-        self.__plot2D.addImage(image, legend="image", z=-1, replace=False)
-        self.__plot2D.resetZoom()
+        self.__plot.addImage(image, legend="image", z=-1, replace=False)
+        self.__plot.resetZoom()
         self.__updateDetector()
 
     def createImageDialog(self, title, forMask=False):
@@ -278,6 +297,24 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
         return dialog
 
+    def createCalibrantDialog(self, title):
+        dialog = qt.QFileDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.setModal(True)
+
+        extensions = OrderedDict()
+        extensions["Calibrant files"] = "*.D"
+
+        filters = []
+        filters.append("All supported files (%s)" % " ".join(extensions.values()))
+        for name, extension in extensions.items():
+            filters.append("%s (%s)" % (name, extension))
+        filters.append("All files (*)")
+
+        dialog.setNameFilters(filters)
+        dialog.setFileMode(qt.QFileDialog.ExistingFile)
+        return dialog
+
     def loadImage(self):
         with self.getImageFromDialog("Load calibration image") as image:
             if image is not None:
@@ -298,6 +335,41 @@ class ExperimentTask(AbstractCalibrationTask):
                 settings = self.model().experimentSettingsModel()
                 settings.darkFile().setValue(image.filename)
                 settings.dark().setValue(image.data)
+
+    def loadCalibrant(self):
+        dialog = self.createCalibrantDialog("Load calibrant file")
+
+        if self.__dialogState is None:
+            currentDirectory = os.getcwd()
+            dialog.setDirectory(currentDirectory)
+        else:
+            dialog.restoreState(self.__dialogState)
+
+        result = dialog.exec_()
+        if not result:
+            return
+
+        self.__dialogState = dialog.saveState()
+        filename = dialog.selectedFiles()[0]
+        try:
+            calibrant = Calibrant(filename=filename)
+        except Exception as e:
+            _logger.error(e.args[0])
+            _logger.debug("Backtrace", exc_info=True)
+            # FIXME Display error dialog
+            return
+        except KeyboardInterrupt:
+            raise
+
+        try:
+            settings = self.model().experimentSettingsModel()
+            settings.calibrantModel().setCalibrant(calibrant)
+        except Exception as e:
+            _logger.error(e.args[0])
+            _logger.debug("Backtrace", exc_info=True)
+            # FIXME Display error dialog
+        except KeyboardInterrupt:
+            raise
 
     def loadSpline(self):
         dialog = self.createSplineDialog("Load spline image")

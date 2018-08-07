@@ -27,10 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/03/2018"
+__date__ = "30/07/2018"
 
 import logging
 import numpy
+import collections
+
+from silx.image import marchingsquares
 import pyFAI.utils
 from ...geometryRefinement import GeometryRefinement
 from ..peak_picker import PeakPicker
@@ -162,33 +165,40 @@ class RingCalibration(object):
         """Returns the residual computed from the peak selection."""
         return self.__peakResidual
 
+    def getTwoThetaArray(self):
+        """
+        Returns the 2th array corresponding to the calibrated image
+        """
+        # 2th array is cached insided
+        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+        return tth
+
     def getRings(self):
         """
-        Overlay a contour-plot
+        Returns polygons of rings
+
+        :returns: List of ring angle with the associated polygon
+        :rtype: List[Tuple[float,List[numpy.ndarray]]]
         """
         tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
 
+        result = collections.OrderedDict()
+
         tth_max = tth.max()
         tth_min = tth.min()
-        if self.__calibrant:
-            angles = [i for i in self.__calibrant.get_2th()
-                      if (i is not None) and (i >= tth_min) and (i <= tth_max)]
-            if len(angles) == 0:
-                return []
-        else:
-            return []
+        if not self.__calibrant:
+            return result
 
-        # FIXME use documentaed function
-        import matplotlib._cntr
-        x, y = numpy.mgrid[:tth.shape[0], :tth.shape[1]]
-        contour = matplotlib._cntr.Cntr(x, y, tth)
+        angles = [i for i in self.__calibrant.get_2th()
+                  if (i is not None) and (i >= tth_min) and (i <= tth_max)]
+        if len(angles) == 0:
+            return result
 
+        ms = marchingsquares.MarchingSquaresMergeImpl(tth, self.__mask, use_minmax_cache=True)
         rings = []
         for angle in angles:
-            res = contour.trace(angle)
-            nseg = len(res) // 2
-            segments, _codes = res[:nseg], res[nseg:]
-            rings.append(segments)
+            polygons = ms.find_contours(angle)
+            rings.append((angle, polygons))
 
         return rings
 
