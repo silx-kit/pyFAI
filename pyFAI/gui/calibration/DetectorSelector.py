@@ -27,29 +27,64 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/01/2018"
+__date__ = "07/08/2018"
 
 from silx.gui import qt
 import pyFAI.detectors
 from .model.DetectorModel import DetectorModel
 
 
+class _DetectorFilter(qt.QSortFilterProxyModel):
+
+    def __init__(self, parent):
+        super(_DetectorFilter, self).__init__(parent)
+        self.__manufacturerFilter = None
+
+    def setManufacturerFilter(self, manufacturer):
+        if self.__manufacturerFilter == manufacturer:
+            return
+        self.__manufacturerFilter = manufacturer
+        self.invalidateFilter()
+
+    def filterAcceptsRow(self, sourceRow, sourceParent):
+        if self.__manufacturerFilter == "*":
+            return True
+        sourceModel = self.sourceModel()
+        index = sourceModel.index(sourceRow, 0, sourceParent)
+        detectorClass = index.data(DetectorSelector._CLASS_ROLE)
+        return detectorClass.MANUFACTURER == self.__manufacturerFilter
+
+
 class DetectorSelector(qt.QComboBox):
+
+    _CLASS_ROLE = qt.Qt.UserRole
 
     def __init__(self, parent=None):
         super(DetectorSelector, self).__init__(parent)
 
         # feed the widget with default detectors
+        model = qt.QStandardItemModel(self)
+
         items = pyFAI.detectors.ALL_DETECTORS.items()
         items = sorted(items)
         for detectorName, detector in items:
             if detector is pyFAI.detectors.Detector:
                 continue
-            self.addItem(detectorName, detector)
+            item = qt.QStandardItem(detectorName)
+            item.setData(detector, role=self._CLASS_ROLE)
+            model.appendRow(item)
+
+        self.__filter = _DetectorFilter(self)
+        self.__filter.setSourceModel(model)
+
+        super(DetectorSelector, self).setModel(self.__filter)
 
         self.__model = None
         self.setModel(DetectorModel())
         self.currentIndexChanged[int].connect(self.__currentIndexChanged)
+
+    def setManufacturerFilter(self, manufacturer):
+        self.__filter.setManufacturerFilter(manufacturer)
 
     def __currentIndexChanged(self, index):
         model = self.model()
