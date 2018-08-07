@@ -56,8 +56,12 @@ class DetectorSelector(qt.QComboBox):
         if model is None:
             return
         detectorClass = self.itemData(index)
+        if detectorClass is not None:
+            detector = detectorClass()
+        else:
+            detector = None
         old = self.blockSignals(True)
-        model.setDetector(detectorClass())
+        model.setDetector(detector)
         self.blockSignals(old)
 
     def setModel(self, model):
