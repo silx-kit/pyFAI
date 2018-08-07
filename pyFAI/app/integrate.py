@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "07/08/2018"
 __satus__ = "production"
 import sys
 import logging
@@ -74,6 +74,7 @@ def integrate_gui(options, args):
     app = qt.QApplication([])
     if not args:
         dialog = qt.QFileDialog(directory=os.getcwd())
+        dialog.setWindowTitle("Select images to integrate")
         dialog.setFileMode(qt.QFileDialog.ExistingFiles)
         dialog.exec_()
         args = [str(i) for i in dialog.selectedFiles()]

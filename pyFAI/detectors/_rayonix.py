@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "07/08/2018"
 __status__ = "production"
 
 
@@ -135,7 +135,7 @@ class Rayonix(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -563,7 +563,7 @@ class Mar345(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         dico = OrderedDict((("pixel1", self.pixel1),
@@ -572,9 +572,9 @@ class Mar345(Detector):
 
     def set_config(self, config):
         """set the config of the detector
-        
-        For Eiger detector, possible keys are: max_shape, module_size 
-        
+
+        For Eiger detector, possible keys are: max_shape, module_size
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
@@ -593,9 +593,9 @@ class Mar345(Detector):
 class Mar555(Detector):
 
     """Mar555 is a Selenium flat panel detector.
-    
+
     The detector specifications are adapted from
-    http://xds.mpimf-heidelberg.mpg.de/html_doc/detectors.html 
+    http://xds.mpimf-heidelberg.mpg.de/html_doc/detectors.html
     """
     force_pixel = True
     MAX_SHAPE = (3072, 2560)
@@ -606,7 +606,7 @@ class Mar555(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         dico = OrderedDict((("pixel1", self.pixel1),
@@ -615,9 +615,9 @@ class Mar555(Detector):
 
     def set_config(self, config):
         """set the config of the detector
-        
-        For Eiger detector, possible keys are: max_shape, module_size 
-        
+
+        For Eiger detector, possible keys are: max_shape, module_size
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
