@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "06/08/2018"
+__date__ = "07/08/2018"
 
 import os
 import fabio
@@ -39,6 +39,7 @@ import silx.gui.plot
 from silx.gui.colors import Colormap
 from silx.gui import qt
 import pyFAI.utils
+from pyFAI.calibrant import Calibrant
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
 
@@ -63,6 +64,9 @@ class ExperimentTask(AbstractCalibrationTask):
         layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
+
+        self._calibrant.setFileLoadable(True)
+        self._calibrant.sigLoadFileRequested.connect(self.loadCalibrant)
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
@@ -293,6 +297,24 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
         return dialog
 
+    def createCalibrantDialog(self, title):
+        dialog = qt.QFileDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.setModal(True)
+
+        extensions = OrderedDict()
+        extensions["Calibrant files"] = "*.D"
+
+        filters = []
+        filters.append("All supported files (%s)" % " ".join(extensions.values()))
+        for name, extension in extensions.items():
+            filters.append("%s (%s)" % (name, extension))
+        filters.append("All files (*)")
+
+        dialog.setNameFilters(filters)
+        dialog.setFileMode(qt.QFileDialog.ExistingFile)
+        return dialog
+
     def loadImage(self):
         with self.getImageFromDialog("Load calibration image") as image:
             if image is not None:
@@ -313,6 +335,41 @@ class ExperimentTask(AbstractCalibrationTask):
                 settings = self.model().experimentSettingsModel()
                 settings.darkFile().setValue(image.filename)
                 settings.dark().setValue(image.data)
+
+    def loadCalibrant(self):
+        dialog = self.createCalibrantDialog("Load calibrant file")
+
+        if self.__dialogState is None:
+            currentDirectory = os.getcwd()
+            dialog.setDirectory(currentDirectory)
+        else:
+            dialog.restoreState(self.__dialogState)
+
+        result = dialog.exec_()
+        if not result:
+            return
+
+        self.__dialogState = dialog.saveState()
+        filename = dialog.selectedFiles()[0]
+        try:
+            calibrant = Calibrant(filename=filename)
+        except Exception as e:
+            _logger.error(e.args[0])
+            _logger.debug("Backtrace", exc_info=True)
+            # FIXME Display error dialog
+            return
+        except KeyboardInterrupt:
+            raise
+
+        try:
+            settings = self.model().experimentSettingsModel()
+            settings.calibrantModel().setCalibrant(calibrant)
+        except Exception as e:
+            _logger.error(e.args[0])
+            _logger.debug("Backtrace", exc_info=True)
+            # FIXME Display error dialog
+        except KeyboardInterrupt:
+            raise
 
     def loadSpline(self):
         dialog = self.createSplineDialog("Load spline image")
