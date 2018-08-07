@@ -27,7 +27,9 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/03/2017"
+__date__ = "07/08/2018"
+
+import os.path
 
 from silx.gui import qt
 import pyFAI.calibrant
@@ -75,6 +77,13 @@ class CalibrantSelector(qt.QComboBox):
                 return index
         return -1
 
+    def __findInsertion(self, name):
+        for index in range(self.count()):
+            itemName = self.itemText(index)
+            if name < itemName:
+                return index
+        return self.count()
+
     def __modelChanged(self):
         value = self.__model.calibrant()
         if value is None:
@@ -85,6 +94,13 @@ class CalibrantSelector(qt.QComboBox):
             if item != value:
                 # findData is not working
                 index = self.findCalibrant(value)
+                if index == -1:
+                    if value.filename is not None:
+                        calibrantName = os.path.basename(value.filename)
+                    else:
+                        calibrantName = "No name"
+                    index = self.__findInsertion(calibrantName)
+                    self.insertItem(index, calibrantName, value)
                 self.setCurrentIndex(index)
 
     def model(self):
