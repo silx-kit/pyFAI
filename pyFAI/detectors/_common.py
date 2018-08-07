@@ -94,6 +94,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
     """
     Generic class representing a 2D detector
     """
+    MANUFACTURER = None
+
     force_pixel = False  # Used to specify pixel size should be defined by the class itself.
     aliases = []  # list of alternative names
     registry = {}  # list of  detectors ...
