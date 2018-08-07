@@ -58,6 +58,8 @@ class Fairchild(Detector):
     """
     Fairchild Condor 486:90 detector
     """
+    MANUFACTURER = "Fairchild Semiconductor"
+
     force_pixel = True
     uniform_pixel = True
     aliases = ["Fairchild", "Condor", "Fairchild Condor 486:90"]
@@ -83,6 +85,8 @@ class Titan(Detector):
     """
     Titan CCD detector from Agilent. Mask not handled
     """
+    MANUFACTURER = "Agilent"
+
     force_pixel = True
     MAX_SHAPE = (2048, 2048)
     aliases = ["Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
@@ -133,6 +137,8 @@ class Basler(Detector):
     Basler camera are simple CCD camara over GigaE
 
     """
+    MANUFACTURER = "Basler"
+
     force_pixel = True
     aliases = ["aca1300"]
     MAX_SHAPE = (966, 1296)
@@ -181,6 +187,8 @@ class Perkin(Detector):
     Perkin detector
 
     """
+    MANUFACTURER = "Perkin Elmer"
+
     aliases = ["Perkin detector", "Perkin Elmer"]
     force_pixel = True
     MAX_SHAPE = (4096, 4096)
@@ -228,6 +236,8 @@ class Aarhus(Detector):
     TODO: update cython code for 3d detectors
     use expand2d instead of outer product with ones
     """
+    MANUFACTURER = "Aarhus University"
+
     MAX_SHAPE = (1000, 16000)
     IS_FLAT = False
     force_pixel = True
@@ -417,6 +427,8 @@ class Pixium(Detector):
     High energy X ray diffraction using the Pixium 4700 flat panel detector
     J E Daniels, M Drakopoulos, et al.; Journal of Synchrotron Radiation 16(Pt 4):463-8 · August 2009
     """
+    MANUFACTURER = "Thales Electronics"
+
     aliases = ["Pixium 4700 detector", "Thales Electronics"]
     force_pixel = True
     MAX_SHAPE = (1910, 2480)
@@ -449,6 +461,8 @@ class Apex2(Detector):
 
     Actually a derivative from the Fairchild detector with higher binning
     """
+    MANUFACTURER = "Bruker"
+
     aliases = ["ApexII", "Bruker"]
     force_pixel = True
     MAX_SHAPE = (1024, 1024)

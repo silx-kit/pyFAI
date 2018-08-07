@@ -60,6 +60,8 @@ class ImXPadS10(Detector):
     """
     ImXPad detector: ImXPad s10 detector with 1x1modules
     """
+    MANUFACTURER = "ImXPad"
+
     MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
     MAX_SHAPE = (120, 80)  # max size of the detector
     PIXEL_SIZE = (130e-6, 130e-6)

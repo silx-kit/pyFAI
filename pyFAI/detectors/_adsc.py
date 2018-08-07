@@ -53,6 +53,8 @@ class ADSC(Detector):
     """Common class for ADSC detector:
     they all share the same constructor signature
     """
+    MANUFACTURER = "ADSC"
+
     def __init__(self, pixel1=51e-6, pixel2=51e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
