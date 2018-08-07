@@ -80,6 +80,10 @@ class DetectorMeta(type):
     # created
     def __init__(cls, name, bases, dct):
         # "Detector" is a bit peculiar: while abstract it may be needed by the GUI, so adding it to the repository
+        if name.startswith("_"):
+            # It's not a public class
+            return
+
         if hasattr(cls, 'MAX_SHAPE') or name == "Detector":
             cls.registry[name.lower()] = cls
             if hasattr(cls, "aliases"):
