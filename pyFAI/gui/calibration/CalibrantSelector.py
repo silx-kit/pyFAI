@@ -32,6 +32,7 @@ __date__ = "07/08/2018"
 import os.path
 
 from silx.gui import qt
+from silx.gui import icons
 import pyFAI.calibrant
 from .model.CalibrantModel import CalibrantModel
 
@@ -48,6 +49,8 @@ class CalibrantSelector(qt.QComboBox):
         items = sorted(items)
         for calibrantName, calibrant in items:
             self.addItem(calibrantName, calibrant)
+            icon = icons.getQIcon("pyfai:gui/icons/calibrant")
+            self.setItemIcon(self.count() - 1, icon)
 
         self.__calibrantCount = self.count()
         self.__isFileLoadable = False
@@ -132,6 +135,8 @@ class CalibrantSelector(qt.QComboBox):
                         calibrantName = "No name"
                     index = self.__findInsertion(calibrantName)
                     self.insertItem(index, calibrantName, value)
+                    icon = icons.getQIcon("pyfai:gui/icons/calibrant-custom")
+                    self.setItemIcon(index, icon)
                     self.__calibrantCount += 1
                 self.setCurrentIndex(index)
 
