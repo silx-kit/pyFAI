@@ -276,6 +276,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
         Checks for pixel1, pixel2, binning, shape, max_shape.
         """
+        if other is None:
+            return False
         res = True
         for what in ["pixel1", "pixel2", "binning", "shape", "max_shape"]:
             res &= getattr(self, what) == getattr(other, what)
