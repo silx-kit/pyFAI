@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2018"
+__date__ = "08/08/2018"
 __status__ = "stable"
 
 
@@ -253,6 +253,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
         Checks for pixel1, pixel2, binning, shape, max_shape.
         """
+        if other is None:
+            return False
         res = True
         for what in ["pixel1", "pixel2", "binning", "shape", "max_shape"]:
             res &= getattr(self, what) == getattr(other, what)
