@@ -39,6 +39,7 @@ import silx.gui.plot
 from silx.gui.colors import Colormap
 from silx.gui import qt
 import pyFAI.utils
+from pyFAI.gui.utils import eventutils
 from pyFAI.calibrant import Calibrant
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
@@ -58,6 +59,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._maskLoader.clicked.connect(self.loadMask)
         self._darkLoader.clicked.connect(self.loadDark)
         self._splineLoader.clicked.connect(self.loadSpline)
+        self._customDetector.clicked.connect(self.__customDetector)
 
         self.__plot = self.__createPlot(parent=self._imageHolder)
         layout = qt.QVBoxLayout(self._imageHolder)
@@ -114,6 +116,30 @@ class ExperimentTask(AbstractCalibrationTask):
         settings.detectorModel().changed.connect(self.__detectorModelUpdated)
         settings.wavelength().changed.connect(self.__waveLengthChanged)
         self.__detectorModelUpdated()
+
+    def __customDetector(self):
+        settings = self.model().experimentSettingsModel()
+        detector = settings.detectorModel().detector()
+        from .DetectorSelectorDrop import DetectorSelectorDrop
+        popup = DetectorSelectorDrop(self)
+        popup.setDetector(detector)
+        popup.setWindowFlags(qt.Qt.Popup)
+        popup.setAttribute(qt.Qt.WA_DeleteOnClose)
+        eventutils.createCloseSignal(popup)
+        popup.sigClosed.connect(self.__customDetectorPopupClosed)
+        self.__customDetectorPopup = popup
+
+        popupParent = self._customDetector
+        pos = popupParent.mapToGlobal(popupParent.rect().bottomLeft())
+        popup.move(pos)
+        popup.show()
+
+    def __customDetectorPopupClosed(self):
+        popup = self.__customDetectorPopup
+        self.__customDetectorPopup = None
+        newDetector = popup.detector()
+        settings = self.model().experimentSettingsModel()
+        settings.detectorModel().setDetector(newDetector)
 
     def __waveLengthChanged(self):
         settings = self.model().experimentSettingsModel()
