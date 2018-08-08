@@ -27,65 +27,22 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/08/2018"
+__date__ = "08/08/2018"
 
 from silx.gui import qt
-import pyFAI.detectors
 from .model.DetectorModel import DetectorModel
-
-
-class _DetectorFilter(qt.QSortFilterProxyModel):
-
-    def __init__(self, parent):
-        super(_DetectorFilter, self).__init__(parent)
-        self.__manufacturerFilter = None
-
-    def setManufacturerFilter(self, manufacturer):
-        if self.__manufacturerFilter == manufacturer:
-            return
-        self.__manufacturerFilter = manufacturer
-        self.invalidateFilter()
-
-    def filterAcceptsRow(self, sourceRow, sourceParent):
-        if self.__manufacturerFilter == "*":
-            return True
-        sourceModel = self.sourceModel()
-        index = sourceModel.index(sourceRow, 0, sourceParent)
-        detectorClass = index.data(DetectorSelector._CLASS_ROLE)
-        return detectorClass.MANUFACTURER == self.__manufacturerFilter
+from .DetectorModel import AllDetectorModel
+from .DetectorModel import DetectorFilter
 
 
 class DetectorSelector(qt.QComboBox):
-
-    _CLASS_ROLE = qt.Qt.UserRole
 
     def __init__(self, parent=None):
         super(DetectorSelector, self).__init__(parent)
 
         # feed the widget with default detectors
-        model = qt.QStandardItemModel(self)
-
-        detectorClasses = set(pyFAI.detectors.ALL_DETECTORS.values())
-
-        def getClassModel(detectorClass):
-            modelName = None
-            if hasattr(detectorClass, "aliases"):
-                if len(detectorClass.aliases) > 0:
-                    modelName = detectorClass.aliases[0]
-            if modelName is None:
-                modelName = detectorClass.__name__
-            return modelName
-
-        items = [(getClassModel(c), c) for c in detectorClasses]
-        items = sorted(items)
-        for detectorName, detector in items:
-            if detector is pyFAI.detectors.Detector:
-                continue
-            item = qt.QStandardItem(detectorName)
-            item.setData(detector, role=self._CLASS_ROLE)
-            model.appendRow(item)
-
-        self.__filter = _DetectorFilter(self)
+        model = AllDetectorModel(self)
+        self.__filter = DetectorFilter(self)
         self.__filter.setSourceModel(model)
 
         super(DetectorSelector, self).setModel(self.__filter)
