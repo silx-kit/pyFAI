@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/08/2018"
+__date__ = "09/08/2018"
 
 from silx.gui import qt
 
@@ -52,20 +52,23 @@ class DetectorLineEdit(qt.QLineEdit):
     def __updateDisplay(self):
         if self.__model is None:
             self.setText("No detector")
+            self.setCursorPosition(0)
             self.setToolTip("No detector")
             return
 
         detector = self.__model.detector()
         if detector is None:
             self.setText("No detector")
+            self.setCursorPosition(0)
             self.setToolTip("No detector")
             return
 
         manufacturer = detector.MANUFACTURER
         name = self.__getModelName(detector.__class__)
         if manufacturer is not None:
-            name = "%s %s" % (manufacturer, name)
+            name = "%s - %s" % (manufacturer, name)
         self.setText(name)
+        self.setCursorPosition(0)
         self.setToolTip(name)
 
     def setAppModel(self, model):
