@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>536</width>
-    <height>232</height>
+    <height>353</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,7 +22,7 @@
   <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
    <item>
     <widget class="QWidget" name="widget" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0,0,0,0">
       <property name="margin">
        <number>0</number>
       </property>
@@ -47,7 +47,7 @@
       <item>
        <widget class="QListView" name="_manufacturerList">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+         <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -60,8 +60,8 @@ background-color: transparent;
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>
-        <property name="textElideMode">
-         <enum>Qt::ElideNone</enum>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
         </property>
         <property name="uniformItemSizes">
          <bool>true</bool>
@@ -105,7 +105,7 @@ background-color: transparent;
       <item>
        <widget class="QListView" name="_customList">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -118,11 +118,8 @@ background-color: transparent;
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>
-        <property name="resizeMode">
-         <enum>QListView::Adjust</enum>
-        </property>
-        <property name="layoutMode">
-         <enum>QListView::SinglePass</enum>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
         </property>
         <property name="uniformItemSizes">
          <bool>true</bool>
@@ -178,6 +175,9 @@ background-color: transparent;
         </property>
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
         </property>
        </widget>
       </item>
