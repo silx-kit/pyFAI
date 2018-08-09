@@ -30,6 +30,7 @@ __license__ = "MIT"
 __date__ = "09/08/2018"
 
 from silx.gui import qt
+import pyFAI.detectors
 
 
 class DetectorLineEdit(qt.QLineEdit):
@@ -63,13 +64,24 @@ class DetectorLineEdit(qt.QLineEdit):
             self.setToolTip("No detector")
             return
 
-        manufacturer = detector.MANUFACTURER
-        name = self.__getModelName(detector.__class__)
-        if manufacturer is not None:
-            name = "%s - %s" % (manufacturer, name)
-        self.setText(name)
+        if isinstance(detector, pyFAI.detectors.NexusDetector):
+            className = detector.__class__.__name__
+            name = self.__getModelName(detector.__class__)
+
+            if className == name:
+                description = className
+            else:
+                description = "%s: %s" % (className, name)
+            description = "%s - %s" % (description, detector.filename)
+        else:
+            manufacturer = detector.MANUFACTURER
+            description = self.__getModelName(detector.__class__)
+            if manufacturer is not None:
+                description = "%s - %s" % (manufacturer, description)
+
+        self.setText(description)
         self.setCursorPosition(0)
-        self.setToolTip(name)
+        self.setToolTip(description)
 
     def setAppModel(self, model):
         if self.__model is not None:
