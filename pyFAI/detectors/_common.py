@@ -1034,6 +1034,15 @@ class NexusDetector(Detector):
                 self.max_shape = tuple(i * j for i, j in zip(self.shape, self._binning))
         self._filename = filename
 
+    def get_filename(self):
+        """Returns the filename containing the description of this detector.
+
+        :rtype: Enum[None|str]
+        """
+        return self._filename
+
+    filename = property(get_filename)
+
     @classmethod
     def sload(cls, filename):
         """
