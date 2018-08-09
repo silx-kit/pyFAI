@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/08/2018"
+__date__ = "09/08/2018"
 
 from silx.gui import qt
 import pyFAI.detectors
@@ -60,6 +60,14 @@ class AllDetectorModel(qt.QStandardItemModel):
             item.setData(detector, role=self.CLASS_ROLE)
             self.appendRow(item)
 
+    def indexFromDetector(self, detector):
+        for row in range(self.rowCount()):
+            index = self.index(row, 0)
+            detectorClass = self.data(index, role=self.CLASS_ROLE)
+            if detectorClass == detector:
+                return index
+        return qt.QModelIndex()
+
 
 class DetectorFilter(qt.QSortFilterProxyModel):
 
@@ -80,3 +88,9 @@ class DetectorFilter(qt.QSortFilterProxyModel):
         index = sourceModel.index(sourceRow, 0, sourceParent)
         detectorClass = index.data(AllDetectorModel.CLASS_ROLE)
         return detectorClass.MANUFACTURER == self.__manufacturerFilter
+
+    def indexFromDetector(self, detector):
+        sourceModel = self.sourceModel()
+        index = sourceModel.indexFromDetector(detector)
+        index = self.mapFromSource(index)
+        return index
