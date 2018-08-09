@@ -165,12 +165,6 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,0,0">
          <item row="2" column="1">
-          <widget class="DetectorSelector" name="_detector"/>
-         </item>
-         <item row="1" column="1">
-          <widget class="DetectorManufacturer" name="_manufacturer"/>
-         </item>
-         <item row="3" column="1">
           <widget class="FileEdit" name="_spline">
            <property name="text">
             <string/>
@@ -184,28 +178,21 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="2">
+         <item row="3" column="2">
           <widget class="QLabel" name="_detectorSizeUnit">
            <property name="text">
             <string>px</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_8">
-           <property name="text">
-            <string>Model:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="_detectorSizeLabel">
            <property name="text">
             <string>Max size:</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>Spline file:</string>
@@ -215,7 +202,7 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
+         <item row="3" column="1">
           <widget class="QLabel" name="_detectorSize">
            <property name="text">
             <string/>
@@ -225,14 +212,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>Manufacturer:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2">
+         <item row="2" column="2">
           <widget class="QToolButton" name="_splineLoader">
            <property name="text">
             <string>...</string>
@@ -241,6 +221,13 @@
          </item>
          <item row="0" column="1">
           <widget class="DetectorLineEdit" name="_detectorLineEdit"/>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Name:</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -420,11 +407,6 @@
    <header>pyFAI.gui.calibration.CalibrantSelector</header>
   </customwidget>
   <customwidget>
-   <class>DetectorSelector</class>
-   <extends>QComboBox</extends>
-   <header>pyFAI.gui.calibration.DetectorSelector</header>
-  </customwidget>
-  <customwidget>
    <class>FileEdit</class>
    <extends>QLineEdit</extends>
    <header>pyFAI.gui.calibration.FileEdit</header>
@@ -434,11 +416,6 @@
    <extends>QWidget</extends>
    <header>pyFAI.gui.calibration.CalibrantPreview</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DetectorManufacturer</class>
-   <extends>QComboBox</extends>
-   <header>pyFAI.gui.calibration.DetectorManufacturer</header>
   </customwidget>
   <customwidget>
    <class>DetectorLineEdit</class>
