@@ -39,7 +39,6 @@ import silx.gui.plot
 from silx.gui.colors import Colormap
 from silx.gui import qt
 import pyFAI.utils
-from pyFAI.gui.utils import eventutils
 from pyFAI.calibrant import Calibrant
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
@@ -115,24 +114,28 @@ class ExperimentTask(AbstractCalibrationTask):
         from .DetectorSelectorDrop import DetectorSelectorDrop
         popup = DetectorSelectorDrop(self)
         popup.setDetector(detector)
-        popup.setWindowFlags(qt.Qt.Popup)
-        popup.setAttribute(qt.Qt.WA_DeleteOnClose)
-        eventutils.createCloseSignal(popup)
-        popup.sigClosed.connect(self.__customDetectorPopupClosed)
-        self.__customDetectorPopup = popup
-
         popupParent = self._customDetector
         pos = popupParent.mapToGlobal(popupParent.rect().bottomRight())
         pos = pos + popup.rect().topLeft() - popup.rect().topRight()
         popup.move(pos)
         popup.show()
 
-    def __customDetectorPopupClosed(self):
-        popup = self.__customDetectorPopup
-        self.__customDetectorPopup = None
-        newDetector = popup.detector()
-        settings = self.model().experimentSettingsModel()
-        settings.detectorModel().setDetector(newDetector)
+        dialog = qt.QDialog(self)
+        dialog.setWindowTitle("Detector selection")
+        layout = qt.QVBoxLayout(dialog)
+        layout.addWidget(popup)
+
+        buttonBox = qt.QDialogButtonBox(qt.QDialogButtonBox.Ok |
+                                        qt.QDialogButtonBox.Cancel)
+        buttonBox.accepted.connect(dialog.accept)
+        buttonBox.rejected.connect(dialog.reject)
+        layout.addWidget(buttonBox)
+
+        result = dialog.exec_()
+        if result:
+            newDetector = popup.detector()
+            settings = self.model().experimentSettingsModel()
+            settings.detectorModel().setDetector(newDetector)
 
     def __waveLengthChanged(self):
         settings = self.model().experimentSettingsModel()
