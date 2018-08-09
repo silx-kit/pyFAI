@@ -61,7 +61,18 @@ class DetectorSelectorDrop(qt.QWidget):
         modelFilter.setSourceModel(model)
         self._modelList.setModel(modelFilter)
 
+        customModel = qt.QStandardItemModel(self)
+        item = qt.QStandardItem("From file")
+        customModel.appendRow(item)
+        item = qt.QStandardItem("Manual definition")
+        customModel.appendRow(item)
+        self._customList.setModel(customModel)
+        self._customList.setFixedHeight(self._customList.sizeHintForRow(0) * 2)
+        selection = self._customList.selectionModel()
+        selection.selectionChanged.connect(self.__customDetectorChanged)
+
     def setDetector(self, detector):
+        print("setDetector")
         if self.__detector == detector:
             return
         self.__detector = detector
@@ -151,6 +162,20 @@ class DetectorSelectorDrop(qt.QWidget):
         return model.data(index, role=AllDetectorModel.CLASS_ROLE)
 
     def __manufacturerChanged(self, selected, deselected):
+        # Clean up custom selection
+        selection = self._customList.selectionModel()
+        selection.reset()
+        self._customList.repaint()
+
         manufacturer = self.currentManufacturer()
         model = self._modelList.model()
         model.setManufacturerFilter(manufacturer)
+
+    def __customDetectorChanged(self, selected, deselected):
+        # Clean up manufacurer selection
+        selection = self._modelList.selectionModel()
+        selection.reset()
+        selection = self._manufacturerList.selectionModel()
+        selection.reset()
+        self._modelList.repaint()
+        self._manufacturerList.repaint()
