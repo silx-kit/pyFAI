@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/08/2018"
+__date__ = "09/08/2018"
 __status__ = "stable"
 
 
@@ -1010,6 +1010,15 @@ class NexusDetector(Detector):
             else:
                 self.max_shape = tuple(i * j for i, j in zip(self.shape, self._binning))
         self._filename = filename
+
+    def get_filename(self):
+        """Returns the filename containing the description of this detector.
+
+        :rtype: Enum[None|str]
+        """
+        return self._filename
+
+    filename = property(get_filename)
 
     @classmethod
     def sload(cls, filename):
