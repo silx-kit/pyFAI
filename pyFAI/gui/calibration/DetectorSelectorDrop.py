@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/08/2018"
+__date__ = "09/08/2018"
 
 import logging
 
@@ -65,6 +65,10 @@ class DetectorSelectorDrop(qt.QWidget):
         if self.__detector == detector:
             return
         self.__detector = detector
+        if self.__detector is None:
+            self.__selectNoDetector()
+        else:
+            self.__selectRegistreredDetector(detector)
 
     def detector(self):
         classDetector = self.currentDetectorClass()
@@ -107,6 +111,28 @@ class DetectorSelectorDrop(qt.QWidget):
             model.appendRow(item)
 
         return model
+
+    def __selectNoDetector(self):
+        self.__setManufacturer("*")
+
+    def __selectRegistreredDetector(self, detector):
+        self.__setManufacturer(detector.MANUFACTURER)
+        model = self._modelList.model()
+        index = model.indexFromDetector(detector.__class__)
+        selection = self._modelList.selectionModel()
+        selection.select(index, qt.QItemSelectionModel.ClearAndSelect)
+        self._modelList.scrollTo(index)
+
+    def __setManufacturer(self, manufacturer):
+        model = self._manufacturerList.model()
+        for row in range(model.rowCount()):
+            index = model.index(row, 0)
+            storedManufacturer = model.data(index, role=self._ManufacturerRole)
+            if manufacturer == storedManufacturer:
+                selection = self._manufacturerList.selectionModel()
+                selection.select(index, qt.QItemSelectionModel.ClearAndSelect)
+                self._manufacturerList.scrollTo(index)
+                return
 
     def currentManufacturer(self):
         indexes = self._manufacturerList.selectedIndexes()
