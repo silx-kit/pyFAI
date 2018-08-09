@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/08/2018"
+__date__ = "09/08/2018"
 
 import os
 import fabio
@@ -70,13 +70,6 @@ class ExperimentTask(AbstractCalibrationTask):
         self._calibrant.setFileLoadable(True)
         self._calibrant.sigLoadFileRequested.connect(self.loadCalibrant)
 
-        self._manufacturer.currentIndexChanged[int].connect(self.__manufacturerChanged)
-        self.__manufacturerChanged()
-
-    def __manufacturerChanged(self, index=None):
-        manufacturer = self._manufacturer.currentManufacturer()
-        self._detector.setManufacturerFilter(manufacturer)
-
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
         plot.setKeepDataAspectRatio(True)
@@ -98,7 +91,6 @@ class ExperimentTask(AbstractCalibrationTask):
         settings = model.experimentSettingsModel()
 
         self._calibrant.setModel(settings.calibrantModel())
-        self._detector.setModel(settings.detectorModel())
         self._detectorLineEdit.setAppModel(settings.detectorModel())
         self._image.setModel(settings.imageFile())
         self._mask.setModel(settings.maskFile())
@@ -130,7 +122,8 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__customDetectorPopup = popup
 
         popupParent = self._customDetector
-        pos = popupParent.mapToGlobal(popupParent.rect().bottomLeft())
+        pos = popupParent.mapToGlobal(popupParent.rect().bottomRight())
+        pos = pos + popup.rect().topLeft() - popup.rect().topRight()
         popup.move(pos)
         popup.show()
 
