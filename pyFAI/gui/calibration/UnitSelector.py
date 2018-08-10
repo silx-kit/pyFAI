@@ -27,10 +27,9 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/03/2017"
+__date__ = "10/08/2018"
 
 from silx.gui import qt
-import pyFAI.units
 from .model.DataModel import DataModel
 
 
@@ -48,10 +47,7 @@ class UnitSelector(qt.QComboBox):
         old = self.blockSignals(True)
         # clean up
         self.clear()
-        # feed the widget with default detectors
-        items = pyFAI.detectors.ALL_DETECTORS.items()
-        items = sorted(items)
-        for unit in pyFAI.units.RADIAL_UNITS.values():
+        for unit in units:
             self.addItem(unit.name, unit)
         # try to find the previous unit in the new list
         if previousUnit is None:
