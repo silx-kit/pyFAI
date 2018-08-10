@@ -145,3 +145,45 @@ class DoubleAndEmptyValidator(DoubleValidator):
         if value is None:
             return ""
         return super(DoubleAndEmptyValidator, self).toText(value)
+
+
+class IntegerAndEmptyValidator(qt.QIntValidator):
+    """
+    Validate double values or empty string.
+    """
+
+    def validate(self, inputText, pos):
+        """
+        Reimplemented from `QIntValidator.validate`.
+
+        Allow to provide an empty value.
+
+        :param str inputText: Text to validate
+        :param int pos: Position of the cursor
+        """
+        if inputText.strip() == "":
+            # python API is not the same as C++ one
+            return qt.QValidator.Acceptable, inputText, pos
+
+        return super(IntegerAndEmptyValidator, self).validate(inputText, pos)
+
+    def toValue(self, text):
+        """Convert the input string into an interpreted value
+
+        :param str text: Input string
+        :rtype: Tuple[object,bool]
+        :returns: A tuple containing the resulting object and True if the
+            string is valid
+        """
+        value, validated = self.locale().toInt(text)
+        return value, validated
+
+    def toText(self, value):
+        """Convert the input string into an interpreted value
+
+        :param object value: Input object
+        :rtype: str
+        """
+        if value is None:
+            return ""
+        return str(value)
