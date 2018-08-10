@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/08/2018"
+__date__ = "10/08/2018"
 
 from silx.gui import qt
 import pyFAI.detectors
@@ -64,7 +64,7 @@ class DetectorLineEdit(qt.QLineEdit):
             self.setToolTip("No detector")
             return
 
-        if isinstance(detector, pyFAI.detectors.NexusDetector):
+        if detector.__class__ is pyFAI.detectors.NexusDetector:
             className = detector.__class__.__name__
             name = self.__getModelName(detector.__class__)
 
@@ -73,6 +73,16 @@ class DetectorLineEdit(qt.QLineEdit):
             else:
                 description = "%s: %s" % (className, name)
             description = "%s - %s" % (description, detector.filename)
+        elif detector.__class__ is pyFAI.detectors.Detector:
+            description = "Custom detector"
+
+            pixel1 = detector.pixel1
+            pixel2 = detector.pixel2
+            description += u" - pixel: %0.2f×%0.2f" % (pixel1 * 10**6, pixel2 * 10**6)
+
+            splineFile = detector.splineFile
+            if splineFile is not None:
+                description += " - " + splineFile
         else:
             manufacturer = detector.MANUFACTURER
             description = self.__getModelName(detector.__class__)
