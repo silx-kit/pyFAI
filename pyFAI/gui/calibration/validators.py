@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/06/2017"
+__date__ = "10/08/2018"
 
 import logging
 from silx.gui import qt
@@ -84,6 +84,25 @@ class DoubleValidator(qt.QDoubleValidator):
             inputText = input.replace(locale.groupSeparator(), "")
         return inputText
 
+    def toValue(self, text):
+        """Convert the input string into an interpreted value
+
+        :param str text: Input string
+        :rtype: Tuple[object,bool]
+        :returns: A tuple containing the resulting object and True if the
+            string is valid
+        """
+        value, validated = self.locale().toDouble(text)
+        return value, validated
+
+    def toText(self, value):
+        """Convert the input string into an interpreted value
+
+        :param object value: Input object
+        :rtype: str
+        """
+        return str(value)
+
 
 class DoubleAndEmptyValidator(DoubleValidator):
     """
@@ -104,3 +123,25 @@ class DoubleAndEmptyValidator(DoubleValidator):
             return qt.QValidator.Acceptable, inputText, pos
 
         return super(DoubleAndEmptyValidator, self).validate(inputText, pos)
+
+    def toValue(self, text):
+        """Convert the input string into an interpreted value
+
+        :param str text: Input string
+        :rtype: Tuple[object,bool]
+        :returns: A tuple containing the resulting object and True if the
+            string is valid
+        """
+        if text.strip() == "":
+            return None, True
+        return super(DoubleAndEmptyValidator, self).toValue(text)
+
+    def toText(self, value):
+        """Convert the input string into an interpreted value
+
+        :param object value: Input object
+        :rtype: str
+        """
+        if value is None:
+            return ""
+        return super(DoubleAndEmptyValidator, self).toText(value)

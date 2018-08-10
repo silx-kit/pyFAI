@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/06/2017"
+__date__ = "10/08/2018"
 
 import logging
 from silx.gui import qt
@@ -90,12 +90,8 @@ class QuantityEdit(qt.QLineEdit):
 
     def __applyText(self):
         text = self.text()
-
-        if text.strip() == "":
-            value, validated = None, True
-        else:
-            value, validated = self.validator().locale().toDouble(text)
-
+        validator = self.validator()
+        value, validated = validator.toValue(text)
         try:
             if validated:
                 self.__model.setValue(value)
@@ -108,10 +104,8 @@ class QuantityEdit(qt.QLineEdit):
     def __cancelText(self):
         """Reset the edited value to the original one"""
         value = self.__model.value()
-        if value is None:
-            text = ""
-        else:
-            text = str(value)
+        validator = self.validator()
+        text = validator.toText(value)
         old = self.blockSignals(True)
         self.setText(text)
         self.blockSignals(old)
