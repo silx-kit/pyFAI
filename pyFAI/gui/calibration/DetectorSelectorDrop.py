@@ -115,10 +115,13 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
         self.__customDetector = None
 
-    def __splineFileChanged(self):
+    def __updateDetectorSizeState(self):
         detectorSizeCustomable = self.__splineFile.value() in [None, ""]
         self._detectorWidth.setEnabled(detectorSizeCustomable)
         self._detectorHeight.setEnabled(detectorSizeCustomable)
+
+    def __splineFileChanged(self):
+        self.__updateDetectorSizeState()
         self.__customDetectorChanged()
 
     def __customDetectorChanged(self):
@@ -358,6 +361,14 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight.changed.disconnect(self.__customDetectorChanged)
         self.__pixelWidth.changed.disconnect(self.__customDetectorChanged)
         self.__pixelHeight.changed.disconnect(self.__customDetectorChanged)
+
+        self.__splineFile.setValue(detector.splineFile)
+        self.__detectorWidth.setValue(detector.max_shape[0])
+        self.__detectorHeight.setValue(detector.max_shape[1])
+        self.__pixelWidth.setValue(detector.pixel1 * 10.0**6)
+        self.__pixelHeight.setValue(detector.pixel2 * 10.0**6)
+        self.__updateDetectorSizeState()
+
         self.__customDetector = detector
         self.__splineFile.changed.connect(self.__splineFileChanged)
         self.__detectorWidth.changed.connect(self.__customDetectorChanged)
