@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "07/08/2018"
 __status__ = "production"
 
 
@@ -50,13 +50,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class Rayonix(Detector):
+class _Rayonix(Detector):
+
+    MANUFACTURER = "Rayonix"
+
     force_pixel = True
     BINNED_PIXEL_SIZE = {1: 32e-6}
     MAX_SHAPE = (4096, 4096)
 
     def __init__(self, pixel1=32e-6, pixel2=32e-6):
-        super(Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        super(_Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2)
         binning = [1, 1]
         for b, p in self.BINNED_PIXEL_SIZE.items():
             if p == pixel1:
@@ -135,14 +138,14 @@ class Rayonix(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
                             ("pixel2", self._pixel2)))
 
 
-class Rayonix133(Rayonix):
+class Rayonix133(_Rayonix):
     """
     Rayonix 133 2D CCD detector detector also known as mar133
 
@@ -162,7 +165,7 @@ class Rayonix133(Rayonix):
     aliases = ["MAR133"]
 
     def __init__(self, pixel1=64e-6, pixel2=64e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
     def calc_mask(self):
         """Circular mask"""
@@ -172,7 +175,7 @@ class Rayonix133(Rayonix):
         return mask.astype(numpy.int8)
 
 
-class RayonixSx165(Rayonix):
+class RayonixSx165(_Rayonix):
     """
     Rayonix sx165 2d Detector also known as MAR165.
 
@@ -189,7 +192,7 @@ class RayonixSx165(Rayonix):
     force_pixel = True
 
     def __init__(self, pixel1=39.5e-6, pixel2=39.5e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
     def calc_mask(self):
         """Circular mask"""
@@ -199,7 +202,7 @@ class RayonixSx165(Rayonix):
         return mask.astype(numpy.int8)
 
 
-class RayonixSx200(Rayonix):
+class RayonixSx200(_Rayonix):
     """
     Rayonix sx200 2d CCD Detector.
 
@@ -215,10 +218,10 @@ class RayonixSx200(Rayonix):
     aliases = ["Rayonix sx200"]
 
     def __init__(self, pixel1=48e-6, pixel2=48e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixLx170(Rayonix):
+class RayonixLx170(_Rayonix):
     """
     Rayonix lx170 2d CCD Detector (2x1 CCDs).
 
@@ -238,10 +241,10 @@ class RayonixLx170(Rayonix):
     aliases = ["Rayonix LX170", "Rayonix LX170-HS", "Rayonix LX170 HS", "RayonixLX170HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixMx170(Rayonix):
+class RayonixMx170(_Rayonix):
     """
     Rayonix mx170 2d CCD Detector (2x2 CCDs).
 
@@ -260,10 +263,10 @@ class RayonixMx170(Rayonix):
     aliases = ["Rayonix MX170", "Rayonix MX170-HS", "RayonixMX170HS", "Rayonix MX170 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixLx255(Rayonix):
+class RayonixLx255(_Rayonix):
     """
     Rayonix lx255 2d Detector (3x1 CCDs)
 
@@ -282,10 +285,10 @@ class RayonixLx255(Rayonix):
     aliases = ["Rayonix LX255", "Rayonix LX255-HS", "Rayonix LX 255HS", "RayonixLX225HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixMx225(Rayonix):
+class RayonixMx225(_Rayonix):
     """
     Rayonix mx225 2D CCD detector detector
 
@@ -303,10 +306,10 @@ class RayonixMx225(Rayonix):
     aliases = ["Rayonix MX225", "MAR225"]
 
     def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixMx225hs(Rayonix):
+class RayonixMx225hs(_Rayonix):
     """
     Rayonix mx225hs 2D CCD detector detector
 
@@ -326,10 +329,10 @@ class RayonixMx225hs(Rayonix):
     aliases = ["Rayonix MX225HS", "Rayonix MX225 HS"]
 
     def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixMx300(Rayonix):
+class RayonixMx300(_Rayonix):
     """
     Rayonix mx300 2D detector (4x4 CCDs)
 
@@ -346,10 +349,10 @@ class RayonixMx300(Rayonix):
     aliases = ["Rayonix mx300", "MAR300"]
 
     def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixMx300hs(Rayonix):
+class RayonixMx300hs(_Rayonix):
     """
     Rayonix mx300hs 2D detector (4x4 CCDs)
 
@@ -369,10 +372,10 @@ class RayonixMx300hs(Rayonix):
     aliases = ["Rayonix MX300HS", "Rayonix MX300 HS"]
 
     def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixMx340hs(Rayonix):
+class RayonixMx340hs(_Rayonix):
     """
     Rayonix mx340hs 2D detector (4x4 CCDs)
 
@@ -392,10 +395,10 @@ class RayonixMx340hs(Rayonix):
     aliases = ["Rayonix MX340HS", "Rayonix MX340HS"]
 
     def __init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixSx30hs(Rayonix):
+class RayonixSx30hs(_Rayonix):
     """
     Rayonix sx30hs 2D CCD camera (1 CCD chip)
 
@@ -414,10 +417,10 @@ class RayonixSx30hs(Rayonix):
     aliases = ["Rayonix SX30HS", "Rayonix SX30 HS"]
 
     def __init__(self, pixel1=15.625e-6, pixel2=15.625e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixSx85hs(Rayonix):
+class RayonixSx85hs(_Rayonix):
     """
     Rayonix sx85hs 2D CCD camera (1 CCD chip)
 
@@ -436,10 +439,10 @@ class RayonixSx85hs(Rayonix):
     aliases = ["Rayonix SX85HS", "Rayonix SX85 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixMx425hs(Rayonix):
+class RayonixMx425hs(_Rayonix):
     """
     Rayonix mx425hs 2D CCD camera (5x5 CCD chip)
 
@@ -458,10 +461,10 @@ class RayonixMx425hs(Rayonix):
     aliases = ["Rayonix MX425HS", "Rayonix MX425 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class RayonixMx325(Rayonix):
+class RayonixMx325(_Rayonix):
     """
     Rayonix mx325 and mx325he 2D detector (4x4 CCD chips)
 
@@ -477,7 +480,7 @@ class RayonixMx325(Rayonix):
     aliases = ["Rayonix MX325"]
 
     def __init__(self, pixel1=79.346e-6, pixel2=79.346e-6):
-        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 ################################################################################
@@ -494,6 +497,8 @@ class Mar345(Detector):
     In this detector, pixels are always square
     The valid image size are 2300, 2000, 1600, 1200, 3450, 3000, 2400, 1800
     """
+    MANUFACTURER = "Rayonix"
+
     force_pixel = True
     MAX_SHAPE = (3450, 3450)
     # Valid image width with corresponding pixel size
@@ -563,7 +568,7 @@ class Mar345(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         dico = OrderedDict((("pixel1", self.pixel1),
@@ -572,9 +577,9 @@ class Mar345(Detector):
 
     def set_config(self, config):
         """set the config of the detector
-        
-        For Eiger detector, possible keys are: max_shape, module_size 
-        
+
+        For Eiger detector, possible keys are: max_shape, module_size
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
@@ -593,10 +598,12 @@ class Mar345(Detector):
 class Mar555(Detector):
 
     """Mar555 is a Selenium flat panel detector.
-    
+
     The detector specifications are adapted from
-    http://xds.mpimf-heidelberg.mpg.de/html_doc/detectors.html 
+    http://xds.mpimf-heidelberg.mpg.de/html_doc/detectors.html
     """
+    MANUFACTURER = "Rayonix"
+
     force_pixel = True
     MAX_SHAPE = (3072, 2560)
     aliases = ["MAR 555"]
@@ -606,7 +613,7 @@ class Mar555(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         dico = OrderedDict((("pixel1", self.pixel1),
@@ -615,9 +622,9 @@ class Mar555(Detector):
 
     def set_config(self, config):
         """set the config of the detector
-        
-        For Eiger detector, possible keys are: max_shape, module_size 
-        
+
+        For Eiger detector, possible keys are: max_shape, module_size
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """

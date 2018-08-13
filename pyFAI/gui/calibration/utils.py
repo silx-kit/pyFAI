@@ -27,13 +27,16 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/05/2017"
+__date__ = "01/08/2018"
 
 
-from silx.gui import qt
-from pyFAI import units
 import numpy
 import collections
+
+from silx.gui import qt
+from silx.gui.widgets.WaitingPushButton import WaitingPushButton
+
+from pyFAI import units
 
 
 def getFreeColorRange(colormap):
@@ -41,13 +44,8 @@ def getFreeColorRange(colormap):
 
     import matplotlib.cm
 
-    try:
-        from silx.gui.plot.matplotlib import Colormap
-        cmap = Colormap.getColormap(name)
-    except ImportError:
-        # Compatibility with silx <= 0.5
-        from silx.gui.plot import Colors
-        cmap = Colors.getMPLColormap(name)
+    from silx.gui.plot.matplotlib import Colormap
+    cmap = Colormap.getColormap(name)
 
     norm = matplotlib.colors.Normalize(0, 255)
     scalarMappable = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -129,3 +127,25 @@ def from2ThRad(twoTheta, unit, wavelength=None, ai=None):
         return beamCentre * numpy.tan(twoTheta) * 0.001
     else:
         raise ValueError("Converting from 2th to unit %s is not supported", unit)
+
+
+def createProcessingWidgetOverlay(parent):
+    """Create a widget overlay to show that the application is processing data
+    to update the plot.
+
+    :param qt.QWidget widget: Widget containing the overlay
+    :rtype: qt.QWidget
+    """
+    if hasattr(parent, "centralWidget"):
+        parent = parent.centralWidget()
+    button = WaitingPushButton(parent)
+    button.setWaiting(True)
+    button.setText("Processing...")
+    button.setDown(True)
+    position = parent.size()
+    size = button.sizeHint()
+    position = (position - size) / 2
+    rect = qt.QRect(qt.QPoint(position.width(), position.height()), size)
+    button.setGeometry(rect)
+    button.setVisible(True)
+    return button

@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/06/2018"
+__date__ = "10/08/2018"
 __status__ = "production"
 
 import logging
@@ -54,6 +54,7 @@ from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
 
 import pyFAI.resources
 import pyFAI.calibrant
+import pyFAI.detectors
 # TODO: This should be removed
 import pyFAI.gui.cli_calibration
 import fabio
@@ -101,6 +102,8 @@ def configure_parser_arguments(parser):
                         help="Detector name (instead of pixel size+spline)", default=None)
     parser.add_argument("-m", "--mask", dest="mask",
                         help="file containing the mask (for image reconstruction)", default=None)
+    parser.add_argument("-p", "--pixel", dest="pixel",
+                        help="size of the pixel in micron", default=None)
 
     # Not yet used
     parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
@@ -228,9 +231,6 @@ decrease the value if arcs are mixed together.""", default=None)
     parser.add_argument("--square", dest="square", action="store_true",
                         help="Use square kernel shape for neighbor search instead of diamond shape",
                         default=False)
-    # Not yet used
-    parser.add_argument("-p", "--pixel", dest="pixel",
-                        help="size of the pixel in micron", default=None)
 
 
 description = """Calibrate the diffraction setup geometry based on
@@ -244,6 +244,33 @@ epilog = """The output of this program is a "PONI" file containing the
 detector description and the 6 refined parameters (distance, center, rotation)
 and wavelength. An 1D and 2D diffraction patterns are also produced.
 (.dat and .azim files)"""
+
+
+def parse_pixel_size(pixel_size):
+    """Convert a comma separated sting into pixel size
+
+    :param str pixel_size: String containing pixel size in micron
+    :rtype: Tuple[float,float]
+    :returns: Returns floating point pixel size in meter
+    """
+    sp = pixel_size.split(",")
+    if len(sp) >= 2:
+        try:
+            result = [float(i) * 1e-6 for i in sp[:2]]
+        except Exception:
+            logger.error("Error in reading pixel size_2")
+            raise ValueError("Not a valid pixel size")
+    elif len(sp) == 1:
+        px = sp[0]
+        try:
+            result = [float(px) * 1e-6, float(px) * 1e-6]
+        except Exception:
+            logger.error("Error in reading pixel size_1")
+            raise ValueError("Not a valid pixel size")
+    else:
+        logger.error("Error in reading pixel size_0")
+        raise ValueError("Not a valid pixel size")
+    return result
 
 
 def setup(model):
@@ -284,10 +311,23 @@ def setup(model):
 
     if options.detector_name:
         detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name, args)
-        settings.detectorModel().setDetector(detector)
+        if options.pixel:
+            logger.warning("Detector model already specified. Pixel size argument ignored.")
+    elif options.pixel:
+        pixel_size = parse_pixel_size(options.pixel)
+        detector = pyFAI.detectors.Detector(pixel1=pixel_size[0], pixel2=pixel_size[0])
+    else:
+        detector = None
 
     if options.spline:
-        settings.splineFile().setValue(options.spline)
+        if detector is None:
+            detector = pyFAI.detectors.Detector(splineFile=options.spline)
+        elif detector.__class__ is pyFAI.detectors.Detector or detector.HAVE_TAPER:
+            detector.set_splineFile(options.spline)
+        else:
+            logger.warning("Spline file not supported with this kind of detector. Argument ignored.")
+
+    settings.detectorModel().setDetector(detector)
 
     if options.mask:
         settings.maskFile().setValue(options.mask)

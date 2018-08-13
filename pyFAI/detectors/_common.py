@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "13/08/2018"
 __status__ = "stable"
 
 
@@ -80,6 +80,10 @@ class DetectorMeta(type):
     # created
     def __init__(cls, name, bases, dct):
         # "Detector" is a bit peculiar: while abstract it may be needed by the GUI, so adding it to the repository
+        if name.startswith("_"):
+            # It's not a public class
+            return
+
         if hasattr(cls, 'MAX_SHAPE') or name == "Detector":
             cls.registry[name.lower()] = cls
             if hasattr(cls, "aliases"):
@@ -94,6 +98,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
     """
     Generic class representing a 2D detector
     """
+    MANUFACTURER = None
+
     force_pixel = False  # Used to specify pixel size should be defined by the class itself.
     aliases = []  # list of alternative names
     registry = {}  # list of  detectors ...
@@ -244,9 +250,11 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def __eq__(self, other):
         """Equality checker for detector, used in tests
-        
-        Checks for pixel1, pixel2, binning, shape, max_shape,  
+
+        Checks for pixel1, pixel2, binning, shape, max_shape.
         """
+        if other is None:
+            return False
         res = True
         for what in ["pixel1", "pixel2", "binning", "shape", "max_shape"]:
             res &= getattr(self, what) == getattr(other, what)
@@ -254,15 +262,15 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_config(self, config):
         """
-        Sets the configuration of the detector.        
-        
+        Sets the configuration of the detector.
+
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
         keys in that dictionary are:  pixel1, pixel2, splineFile, max_shape
-       
+
         :param config: string or JSON-serialized dict
-        :retuen: self 
+        :return: self
         """
         if not isinstance(config, dict):
             try:
@@ -286,10 +294,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
-        Derivative classes should implement this method 
-        if they change the constructor ! 
-        
+
+        Derivative classes should implement this method
+        if they change the constructor!
+
         :return: dict with param for serialization
         """
         dico = OrderedDict((("pixel1", self._pixel1),
@@ -310,7 +318,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
             self.uniform_pixel = False
-            self.max_shape = (int(self.spline.ymax - self.spline.ymin), int(self.spline.xmax - self.spline.xmin))
+            self.max_shape = self.spline.getDetectorSize()
             # assume no binning
             self.shape = self.max_shape
             self._binning = (1, 1)
@@ -1003,6 +1011,15 @@ class NexusDetector(Detector):
                 self.max_shape = tuple(i * j for i, j in zip(self.shape, self._binning))
         self._filename = filename
 
+    def get_filename(self):
+        """Returns the filename containing the description of this detector.
+
+        :rtype: Enum[None|str]
+        """
+        return self._filename
+
+    filename = property(get_filename)
+
     @classmethod
     def sload(cls, filename):
         """
@@ -1018,9 +1035,9 @@ class NexusDetector(Detector):
 
     def set_config(self, config):
         """set the config of the detector
-        
+
         For Nexus detector, the only valid key is "filename"
-        
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
@@ -1041,7 +1058,7 @@ class NexusDetector(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return {"filename": self._filename}

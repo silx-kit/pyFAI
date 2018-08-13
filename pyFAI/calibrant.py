@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2018"
+__date__ = "06/08/2018"
 __status__ = "production"
 
 
@@ -329,6 +329,7 @@ class Calibrant(object):
             self._dSpacing = []
         else:
             self._dSpacing = list(dSpacing)
+        self._out_dSpacing = []
         if self._dSpacing and self._wavelength:
             self._calc_2th()
 
@@ -385,7 +386,7 @@ class Calibrant(object):
         :rtype: Calibrant
         """
         return Calibrant(filename=self._filename,
-                         dSpacing=self._dSpacing,
+                         dSpacing=self._dSpacing + self._out_dSpacing,
                          wavelength=self._wavelength)
 
     def __repr__(self):
@@ -399,6 +400,11 @@ class Calibrant(object):
             name += "at wavelength %s" % self._wavelength
         return name
 
+    def get_filename(self):
+        return self._filename
+
+    filename = property(get_filename)
+
     def load_file(self, filename=None):
         with self._sem:
             if filename:
@@ -409,9 +415,13 @@ class Calibrant(object):
             self._filename = os.path.abspath(self._filename)
             self._dSpacing = numpy.unique(numpy.loadtxt(self._filename))
             self._dSpacing = list(self._dSpacing[-1::-1])  # reverse order
-#            self._dSpacing.sort(reverse=True)
+            # self._dSpacing.sort(reverse=True)
             if self._wavelength:
                 self._calc_2th()
+
+    def count_registered_dSpacing(self):
+        """Count of registered dSpacing positons."""
+        return len(self._dSpacing) + len(self._out_dSpacing)
 
     def save_dSpacing(self, filename=None):
         """
@@ -495,24 +505,27 @@ class Calibrant(object):
     wavelength = property(get_wavelength, set_wavelength)
 
     def _calc_2th(self):
-        "Calculate the 2theta positions for all peaks"
+        """Calculate the 2theta positions for all peaks"""
         if self._wavelength is None:
             logger.error("Cannot calculate 2theta angle without knowing wavelength")
             return
-        _2th = []
-        dSpacing = self._dSpacing[:]  # explicit copy
+        tths = []
+        dSpacing = self._dSpacing[:] + self._out_dSpacing  # explicit copy
+        self._out_dSpacing = []
         for ds in dSpacing:
             try:
                 tth = 2.0 * asin(5.0e9 * self._wavelength / ds)
             except ValueError:
-                l = len(_2th)
-                if l:
-                    self._dSpacing = self._dSpacing[:l]
+                size = len(tths)
+                if size > 0:
+                    # remove dSpacing outside of 0..180
+                    self._dSpacing = dSpacing[:size]
+                    self._out_dSpacing = dSpacing[size:]
                     # avoid turning around...
                     break
             else:
-                _2th.append(tth)
-        self._2th = _2th
+                tths.append(tth)
+        self._2th = tths
 
     def _calc_dSpacing(self):
         if self._wavelength is None:
@@ -521,7 +534,7 @@ class Calibrant(object):
         self._dSpacing = [5.0e9 * self._wavelength / sin(tth / 2.0) for tth in self._2th]
 
     def get_2th(self):
-        "Returns the 2theta positions for all peaks (cached)"
+        """Returns the 2theta positions for all peaks (cached)"""
         if not self._2th:
             ds = self.dSpacing  # forces the file reading if not done
             if not ds:
@@ -532,8 +545,8 @@ class Calibrant(object):
         return self._2th
 
     def get_2th_index(self, angle, delta=None):
-        """return the index in the 2theta angle index
-        
+        """Returns the index in the 2theta angle index
+
         :param angle: expected angle in radians
         :param delta: precision on angle
         :return: 0-based index or None
@@ -546,8 +559,8 @@ class Calibrant(object):
                 return d2th.argmin()
 
     def get_peaks(self, unit="2th_deg"):
-        """Calculate the peak position as 
-        :return: numpy array (unlike other methods which return lists) 
+        """Calculate the peak position as
+        :return: numpy array (unlike other methods which return lists)
         """
         unit = units.to_unit(unit)
         scale = unit.scale
@@ -569,7 +582,7 @@ class Calibrant(object):
 
         :param ai: azimuthal integrator
         :param Imax: maximum intensity of rings
-        :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W) 
+        :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W)
         """
         if shape is None:
             if ai.detector.shape:
@@ -611,7 +624,8 @@ class Calibrant(object):
         state_blacklist = ('_sem',)
         state = self.__dict__.copy()
         for key in state_blacklist:
-            if key in state: del state[key]
+            if key in state:
+                del state[key]
         return state
 
     def __setstate__(self, state):
