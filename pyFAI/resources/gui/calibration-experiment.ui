@@ -187,8 +187,11 @@
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="_detectorSizeLabel">
+           <property name="toolTip">
+            <string>Detector size without binning</string>
+           </property>
            <property name="text">
-            <string>Max size:</string>
+            <string>Size:</string>
            </property>
           </widget>
          </item>
@@ -402,14 +405,14 @@
    <header>pyFAI.gui.calibration.QuantityEdit</header>
   </customwidget>
   <customwidget>
-   <class>CalibrantSelector</class>
-   <extends>QComboBox</extends>
-   <header>pyFAI.gui.calibration.CalibrantSelector</header>
-  </customwidget>
-  <customwidget>
    <class>FileEdit</class>
    <extends>QLineEdit</extends>
    <header>pyFAI.gui.calibration.FileEdit</header>
+  </customwidget>
+  <customwidget>
+   <class>CalibrantSelector</class>
+   <extends>QComboBox</extends>
+   <header>pyFAI.gui.calibration.CalibrantSelector</header>
   </customwidget>
   <customwidget>
    <class>CalibrantPreview</class>
