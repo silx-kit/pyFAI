@@ -151,7 +151,7 @@ background-color: transparent;
    <item>
     <widget class="QStackedWidget" name="_stacked">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="_modelPanel">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -547,6 +547,19 @@ background-color: transparent;
    <header>pyFAI.gui.calibration.FileEdit</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>_manufacturerList</tabstop>
+  <tabstop>_customList</tabstop>
+  <tabstop>_modelList</tabstop>
+  <tabstop>_splineFile</tabstop>
+  <tabstop>_splineLoader</tabstop>
+  <tabstop>_fileSelection</tabstop>
+  <tabstop>_fileLoader</tabstop>
+  <tabstop>_pixelWidth</tabstop>
+  <tabstop>_pixelHeight</tabstop>
+  <tabstop>_detectorWidth</tabstop>
+  <tabstop>_detectorHeight</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
