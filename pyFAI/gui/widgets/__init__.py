@@ -1,5 +1,6 @@
 # coding: utf-8
 # /*##########################################################################
+#
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,24 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# ############################################################################*/
+# ###########################################################################*/
+"""Module containing generic widgets"""
 
-__authors__ = ["V. Valls"]
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
 __date__ = "13/08/2018"
-
-from numpy.distutils.misc_util import Configuration
-
-
-def configuration(parent_package='', top_path=None):
-    config = Configuration('gui', parent_package, top_path)
-    config.add_subpackage('test')
-    config.add_subpackage('utils')
-    config.add_subpackage('widgets')
-    config.add_subpackage('calibration')
-    return config
-
-
-if __name__ == "__main__":
-    from numpy.distutils.core import setup
-    setup(configuration=configuration)
