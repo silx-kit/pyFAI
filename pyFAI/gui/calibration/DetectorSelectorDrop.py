@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/08/2018"
+__date__ = "13/08/2018"
 
 import os
 import logging
@@ -67,6 +67,8 @@ class DetectorSelectorDrop(qt.QWidget):
         modelFilter = DetectorFilter(self)
         modelFilter.setSourceModel(model)
         self._modelList.setModel(modelFilter)
+        selection = self._modelList.selectionModel()
+        selection.selectionChanged.connect(self.__modelChanged)
 
         customModel = qt.QStandardItemModel(self)
         item = qt.QStandardItem("From file")
@@ -80,12 +82,18 @@ class DetectorSelectorDrop(qt.QWidget):
         selection = self._customList.selectionModel()
         selection.selectionChanged.connect(self.__customSelectionChanged)
 
-        self.__hdf5File = DataModel()
-        self.__hdf5File.changed.connect(self.__nexusFileChanged)
-        self._hdf5Selection.setModel(self.__hdf5File)
-        self._hdf5Loader.clicked.connect(self.__loadDetectorFormFile)
-        self._hdf5Result.setVisible(False)
-        self._hdf5Error.setVisible(False)
+        self.__splineFile = DataModel()
+        self._splineFile.setModel(self.__splineFile)
+        self._splineLoader.clicked.connect(self.loadSplineFile)
+        self.__splineFile.changed.connect(self.__splineFileChanged)
+        self._splineError.setVisible(False)
+
+        self.__descriptionFile = DataModel()
+        self.__descriptionFile.changed.connect(self.__descriptionFileChanged)
+        self._fileSelection.setModel(self.__descriptionFile)
+        self._fileLoader.clicked.connect(self.__loadDetectorFormFile)
+        self._fileResult.setVisible(False)
+        self._fileError.setVisible(False)
 
         validator = validators.IntegerAndEmptyValidator()
         validator.setBottom(0)
@@ -96,44 +104,48 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight = DataModel()
         self.__pixelWidth = DataModel()
         self.__pixelHeight = DataModel()
-        self.__splineFile = DataModel()
 
         self._detectorWidth.setModel(self.__detectorWidth)
         self._detectorHeight.setModel(self.__detectorHeight)
         self._pixelWidth.setModel(self.__pixelWidth)
         self._pixelHeight.setModel(self.__pixelHeight)
-        self._splineFile.setModel(self.__splineFile)
 
-        self._splineLoader.clicked.connect(self.loadSplineFile)
-        self._splineRemove.clicked.connect(self.removeSplineFile)
         self._customResult.setVisible(False)
         self._customError.setVisible(False)
-        self.__splineFile.changed.connect(self.__splineFileChanged)
         self.__detectorWidth.changed.connect(self.__customDetectorChanged)
         self.__detectorHeight.changed.connect(self.__customDetectorChanged)
         self.__pixelWidth.changed.connect(self.__customDetectorChanged)
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
         self.__customDetector = None
 
-    def __updateDetectorSizeState(self):
-        detectorSizeCustomable = self.__splineFile.value() in [None, ""]
-        self._detectorWidth.setEnabled(detectorSizeCustomable)
-        self._detectorHeight.setEnabled(detectorSizeCustomable)
-
     def __splineFileChanged(self):
-        self.__updateDetectorSizeState()
-        self.__customDetectorChanged()
+        splineFile = self.__splineFile.value()
+        if splineFile is not None:
+            splineFile = splineFile.strip()
+            if splineFile == "":
+                splineFile = None
+
+        if splineFile is None:
+            # No file, no error
+            self._splineError.setVisible(False)
+            return
+
+        try:
+            import pyFAI.spline
+            pyFAI.spline.Spline(splineFile)
+            self._splineError.setVisible(False)
+        except Exception as e:
+            self._splineError.setVisible(True)
+            self._splineError.setText(e.args[0])
+            _logger.error(e.args[0])
+            _logger.debug("Backtrace", exc_info=True)
+            # FIXME Display error dialog
 
     def __customDetectorChanged(self):
         detectorWidth = self.__detectorWidth.value()
         detectorHeight = self.__detectorHeight.value()
         pixelWidth = self.__pixelWidth.value()
         pixelHeight = self.__pixelHeight.value()
-        splineFile = self.__splineFile.value()
-        if splineFile is not None:
-            splineFile = splineFile.strip()
-            if splineFile == "":
-                splineFile = None
 
         self._customResult.setVisible(False)
         self._customError.setVisible(False)
@@ -144,41 +156,27 @@ class DetectorSelectorDrop(qt.QWidget):
             self._customError.setText("Pixel size expected")
             return
 
-        if splineFile is None:
-            if detectorWidth is None or detectorHeight is None:
-                self._customError.setVisible(True)
-                self._customError.setText("Spline file or detector size expected")
-                return
-            maxShape = detectorWidth, detectorHeight
-        else:
-            maxShape = None
-
-        try:
-            detector = pyFAI.detectors.Detector(
-                pixel1=pixelWidth / 10.0**6,
-                pixel2=pixelHeight / 10.0**6,
-                splineFile=splineFile,
-                max_shape=maxShape)
-            self.__customDetector = detector
-            self._customResult.setVisible(True)
-            self._customResult.setText("Detector configured")
-            if splineFile is not None:
-                self.__detectorWidth.changed.disconnect(self.__customDetectorChanged)
-                self.__detectorHeight.changed.disconnect(self.__customDetectorChanged)
-                self.__detectorWidth.setValue(detector.max_shape[0])
-                self.__detectorHeight.setValue(detector.max_shape[1])
-                self.__detectorWidth.changed.connect(self.__customDetectorChanged)
-                self.__detectorHeight.changed.connect(self.__customDetectorChanged)
-        except Exception as e:
+        if detectorWidth is None or detectorHeight is None:
             self._customError.setVisible(True)
-            self._customError.setText(e.args[0])
-            _logger.error(e.args[0])
-            _logger.debug("Backtrace", exc_info=True)
-            # FIXME Display error dialog
-        pass
+            self._customError.setText("Detector size expected")
+            return
 
-    def removeSplineFile(self):
-        self.__splineFile.setValue("")
+        maxShape = detectorWidth, detectorHeight
+        detector = pyFAI.detectors.Detector(
+            pixel1=pixelWidth / 10.0**6,
+            pixel2=pixelHeight / 10.0**6,
+            max_shape=maxShape)
+        self.__customDetector = detector
+        self._customResult.setVisible(True)
+        self._customResult.setText("Detector configured")
+
+        detector = pyFAI.detectors.Detector(
+            pixel1=pixelWidth / 10.0**6,
+            pixel2=pixelHeight / 10.0**6,
+            max_shape=maxShape)
+        self.__customDetector = detector
+        self._customResult.setVisible(True)
+        self._customResult.setText("Detector configured")
 
     def createSplineDialog(self, title):
         dialog = qt.QFileDialog(self)
@@ -222,32 +220,48 @@ class DetectorSelectorDrop(qt.QWidget):
         except KeyboardInterrupt:
             raise
 
-    def __nexusFileChanged(self):
-        filename = self.__hdf5File.value()
-        self._hdf5Result.setVisible(False)
-        self._hdf5Error.setVisible(False)
-        self.__hdf5Detector = None
+    def __descriptionFileChanged(self):
+        filename = self.__descriptionFile.value()
+        self._fileResult.setVisible(False)
+        self._fileError.setVisible(False)
+        self.__detectorFromFile = None
 
         if not os.path.exists(filename):
-            self._hdf5Error.setVisible(True)
-            self._hdf5Error.setText("File not found")
+            self._fileError.setVisible(True)
+            self._fileError.setText("File not found")
             return
 
-        try:
-            self.__hdf5Detector = pyFAI.detectors.NexusDetector(filename=filename)
-            self._hdf5Result.setVisible(True)
-            self._hdf5Result.setText("Detector loaded")
-        except Exception as e:
-            self._hdf5Error.setVisible(True)
-            self._hdf5Error.setText(e.args[0])
-            _logger.error(e.args[0])
-            _logger.debug("Backtrace", exc_info=True)
-            # FIXME Display error dialog
-        except KeyboardInterrupt:
-            raise
+        # TODO: this test should be reworked in case of another extension
+        if filename.endswith(".spline"):
+            try:
+                self.__detectorFromFile = pyFAI.detectors.Detector(splineFile=filename)
+                self._fileResult.setVisible(True)
+                self._fileResult.setText("Spline detector loaded")
+            except Exception as e:
+                self._fileError.setVisible(True)
+                self._fileError.setText(e.args[0])
+                _logger.error(e.args[0])
+                _logger.debug("Backtrace", exc_info=True)
+                # FIXME Display error dialog
+            except KeyboardInterrupt:
+                raise
+            return
+        else:
+            try:
+                self.__detectorFromFile = pyFAI.detectors.NexusDetector(filename=filename)
+                self._fileResult.setVisible(True)
+                self._fileResult.setText("HDF5 detector loaded")
+            except Exception as e:
+                self._fileError.setVisible(True)
+                self._fileError.setText(e.args[0])
+                _logger.error(e.args[0])
+                _logger.debug("Backtrace", exc_info=True)
+                # FIXME Display error dialog
+            except KeyboardInterrupt:
+                raise
 
     def __loadDetectorFormFile(self):
-        dialog = self.createHdf5Dialog("Load detector from HDF5 file")
+        dialog = self.createFileDialog("Load detector from HDF5 file")
         if self.__dialogState is None:
             currentDirectory = os.getcwd()
             dialog.setDirectory(currentDirectory)
@@ -259,15 +273,18 @@ class DetectorSelectorDrop(qt.QWidget):
             return
         self.__dialogState = dialog.saveState()
         filename = dialog.selectedFiles()[0]
-        self.__hdf5File.setValue(filename)
+        self.__descriptionFile.setValue(filename)
 
-    def createHdf5Dialog(self, title):
+    def createFileDialog(self, title, h5file=True, splineFile=True):
         dialog = qt.QFileDialog(self)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
         extensions = collections.OrderedDict()
-        extensions["HDF5 files"] = "*.h5"
+        if h5file:
+            extensions["HDF5 files"] = "*.h5"
+        if splineFile:
+            extensions["Spline files"] = "*.spline"
 
         filters = []
         filters.append("All supported files (%s)" % " ".join(extensions.values()))
@@ -288,21 +305,32 @@ class DetectorSelectorDrop(qt.QWidget):
         elif self.__detector.__class__ is pyFAI.detectors.NexusDetector:
             self.__selectNexusDetector(self.__detector)
         elif self.__detector.__class__ is pyFAI.detectors.Detector:
-            self.__selectCustomDetector(self.__detector)
+            if self.__detector.get_splineFile() is not None:
+                self.__selectSplineDetector(self.__detector)
+            else:
+                self.__selectCustomDetector(self.__detector)
         else:
             self.__selectRegistreredDetector(detector)
 
     def detector(self):
         field = self.currentCustomField()
         if field == "FILE":
-            return self.__hdf5Detector
+            return self.__detectorFromFile
         elif field == "MANUAL":
             return self.__customDetector
         elif field is None:
             classDetector = self.currentDetectorClass()
             if classDetector is None:
                 return None
-            return classDetector()
+            detector = classDetector()
+            if detector.HAVE_TAPER:
+                splineFile = self.__splineFile.value()
+                if splineFile is not None:
+                    splineFile = splineFile.strip()
+                    if splineFile == "":
+                        splineFile = None
+                detector.set_splineFile(splineFile)
+            return detector
         else:
             assert(False)
 
@@ -347,30 +375,37 @@ class DetectorSelectorDrop(qt.QWidget):
 
     def __selectNexusDetector(self, detector):
         """Select and display the detector using zero copy."""
-        self.__hdf5File.lockSignals()
-        self.__hdf5File.setValue(detector.filename)
-        self.__hdf5File.unlockSignals()
-        self.__hdf5Detector = detector
+        self.__descriptionFile.lockSignals()
+        self.__descriptionFile.setValue(detector.filename)
+        # FIXME: THe unlock send signals, then it's not the way to avoid processing
+        self.__descriptionFile.unlockSignals()
+        self.__detectorFromFile = detector
+        # Update the GUI
+        self.__setCustomField("FILE")
+
+    def __selectSplineDetector(self, detector):
+        """Select and display the detector using zero copy."""
+        self.__descriptionFile.lockSignals()
+        self.__descriptionFile.setValue(detector.get_splineFile())
+        # FIXME: THe unlock send signals, then it's not the way to avoid processing
+        self.__descriptionFile.unlockSignals()
+        self.__detectorFromFile = detector
         # Update the GUI
         self.__setCustomField("FILE")
 
     def __selectCustomDetector(self, detector):
         """Select and display the detector using zero copy."""
-        self.__splineFile.changed.disconnect(self.__splineFileChanged)
         self.__detectorWidth.changed.disconnect(self.__customDetectorChanged)
         self.__detectorHeight.changed.disconnect(self.__customDetectorChanged)
         self.__pixelWidth.changed.disconnect(self.__customDetectorChanged)
         self.__pixelHeight.changed.disconnect(self.__customDetectorChanged)
 
-        self.__splineFile.setValue(detector.splineFile)
         self.__detectorWidth.setValue(detector.max_shape[0])
         self.__detectorHeight.setValue(detector.max_shape[1])
         self.__pixelWidth.setValue(detector.pixel1 * 10.0**6)
         self.__pixelHeight.setValue(detector.pixel2 * 10.0**6)
-        self.__updateDetectorSizeState()
 
         self.__customDetector = detector
-        self.__splineFile.changed.connect(self.__splineFileChanged)
         self.__detectorWidth.changed.connect(self.__customDetectorChanged)
         self.__detectorHeight.changed.connect(self.__customDetectorChanged)
         self.__pixelWidth.changed.connect(self.__customDetectorChanged)
@@ -435,6 +470,11 @@ class DetectorSelectorDrop(qt.QWidget):
         index = indexes[0]
         model = self._modelList.model()
         return model.data(index, role=AllDetectorModel.CLASS_ROLE)
+
+    def __modelChanged(self, selected, deselected):
+        model = self.currentDetectorClass()
+        splineAvailable = model is not None and model.HAVE_TAPER
+        self._splinePanel.setVisible(splineAvailable)
 
     def __manufacturerChanged(self, selected, deselected):
         # Clean up custom selection
