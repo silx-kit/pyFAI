@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>767</width>
+    <width>732</width>
     <height>353</height>
    </rect>
   </property>
@@ -151,7 +151,7 @@ background-color: transparent;
    <item>
     <widget class="QStackedWidget" name="_stacked">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="_modelPanel">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -191,6 +191,60 @@ background-color: transparent;
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QWidget" name="_splinePanel" native="true">
+         <layout class="QGridLayout" name="gridLayout_4">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="font">
+             <font>
+              <underline>true</underline>
+             </font>
+            </property>
+            <property name="text">
+             <string>Spline file:</string>
+            </property>
+            <property name="buddy">
+             <cstring>_image</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="_splineError">
+            <property name="styleSheet">
+             <string notr="true">QLabel {color:red}</string>
+            </property>
+            <property name="text">
+             <string>dsdfsddsf</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="FileEdit" name="_splineFile">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QToolButton" name="_splineLoader">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="_filePanel">
@@ -225,26 +279,26 @@ background-color: transparent;
           </font>
          </property>
          <property name="text">
-          <string>HDF5 file selection</string>
+          <string>HDF5 or spline file description</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="FileEdit" name="_hdf5Selection">
+        <widget class="FileEdit" name="_fileSelection">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QToolButton" name="_hdf5Loader">
+        <widget class="QToolButton" name="_fileLoader">
          <property name="text">
           <string>...</string>
          </property>
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="_hdf5Result">
+        <widget class="QLabel" name="_fileResult">
          <property name="styleSheet">
           <string notr="true"/>
          </property>
@@ -260,7 +314,7 @@ background-color: transparent;
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="_hdf5Error">
+        <widget class="QLabel" name="_fileError">
          <property name="styleSheet">
           <string notr="true">QLabel {color:red}</string>
          </property>
@@ -309,23 +363,6 @@ background-color: transparent;
           </sizepolicy>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Spline file:</string>
-            </property>
-            <property name="buddy">
-             <cstring>_image</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="5">
-           <widget class="QToolButton" name="_splineRemove">
-            <property name="text">
-             <string>X</string>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="2">
            <widget class="QLabel" name="_energyUnit_3">
             <property name="sizePolicy">
@@ -414,13 +451,6 @@ background-color: transparent;
             </property>
            </spacer>
           </item>
-          <item row="2" column="4">
-           <widget class="QToolButton" name="_splineLoader">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="1">
            <widget class="QuantityEdit" name="_detectorWidth">
             <property name="text">
@@ -428,13 +458,6 @@ background-color: transparent;
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" colspan="3">
-           <widget class="FileEdit" name="_splineFile">
-            <property name="text">
-             <string/>
             </property>
            </widget>
           </item>
