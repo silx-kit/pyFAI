@@ -341,7 +341,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
             self.uniform_pixel = False
-            self.max_shape = (int(self.spline.ymax - self.spline.ymin), int(self.spline.xmax - self.spline.xmin))
+            self.max_shape = self.spline.getDetectorSize()
             # assume no binning
             self.shape = self.max_shape
             self._binning = (1, 1)
