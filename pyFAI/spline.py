@@ -640,6 +640,14 @@ class Spline(object):
             logger.info("Time for the generation of the distorted spline: %.3f sec", time.time() - startTime)
         return tiltedSpline
 
+    def getDetectorSize(self):
+        """Returns the size of the detector.
+
+        :rtype: Tuple[int,int]
+        :return: Size y then x
+        """
+        return int(self.ymax - self.ymin), int(self.xmax - self.xmin)
+
     def setPixelSize(self, pixelSize):
         """
         Sets the size of the pixel from a 2-tuple of floats expressed

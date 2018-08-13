@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/08/2018"
+__date__ = "13/08/2018"
 __status__ = "stable"
 
 
@@ -318,7 +318,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
             self.uniform_pixel = False
-            self.max_shape = (int(self.spline.ymax - self.spline.ymin), int(self.spline.xmax - self.spline.xmin))
+            self.max_shape = self.spline.getDetectorSize()
             # assume no binning
             self.shape = self.max_shape
             self._binning = (1, 1)
