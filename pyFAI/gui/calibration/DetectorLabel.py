@@ -30,17 +30,23 @@ __license__ = "MIT"
 __date__ = "13/08/2018"
 
 from silx.gui import qt
+from silx.utils import html
+
 import pyFAI.detectors
 
 
-class DetectorLineEdit(qt.QLineEdit):
+class DetectorLabel(qt.QLabel):
     """Readonly line display"""
 
+    _BASE_TEMPLATE = "<html><head/><body>%s</body></html>"
+
+    _MANUFACTURER_TEMPLATE = "<span style=\"vertical-align:sub;\">%s</span>"
+
+    _MODEL_TEMPLATE = "%s"
+
     def __init__(self, parent=None):
-        super(DetectorLineEdit, self).__init__(parent)
-        self.setReadOnly(True)
+        super(DetectorLabel, self).__init__(parent)
         self.__model = None
-        self.__displayFile = False
 
     def __getModelName(self, detectorClass):
         modelName = None
@@ -54,14 +60,12 @@ class DetectorLineEdit(qt.QLineEdit):
     def __updateDisplay(self):
         if self.__model is None:
             self.setText("No detector")
-            self.setCursorPosition(0)
             self.setToolTip("No detector")
             return
 
         detector = self.__model.detector()
         if detector is None:
             self.setText("No detector")
-            self.setCursorPosition(0)
             self.setToolTip("No detector")
             return
 
@@ -70,31 +74,23 @@ class DetectorLineEdit(qt.QLineEdit):
             name = self.__getModelName(detector.__class__)
 
             if className == name:
-                description = className
+                description = self._MODEL_TEMPLATE % html.escape(className)
             else:
-                description = "%s: %s" % (className, name)
+                description = self._MANUFACTURER_TEMPLATE % html.escape(className)
+                description += self._MODEL_TEMPLATE % html.escape(name)
 
-            if self.__displayFile:
-                description = "%s - %s" % (description, detector.filename)
         elif detector.__class__ is pyFAI.detectors.Detector:
-            description = "Custom detector"
+            description = self._MODEL_TEMPLATE % "Custom detector"
 
-            pixel1 = detector.pixel1
-            pixel2 = detector.pixel2
-            description += u" - pixel: %0.2f×%0.2f" % (pixel1 * 10**6, pixel2 * 10**6)
-
-            if self.__displayFile:
-                splineFile = detector.splineFile
-                if splineFile is not None:
-                    description += " - " + splineFile
         else:
             manufacturer = detector.MANUFACTURER
-            description = self.__getModelName(detector.__class__)
+            model = self.__getModelName(detector.__class__)
+            description = self._MODEL_TEMPLATE % html.escape(model)
             if manufacturer is not None:
-                description = "%s - %s" % (manufacturer, description)
+                description = self._MANUFACTURER_TEMPLATE % html.escape(manufacturer) + " " + description
 
-        self.setText(description)
-        self.setCursorPosition(0)
+        text = self._BASE_TEMPLATE % description
+        self.setText(text)
         self.setToolTip(description)
 
     def setAppModel(self, model):

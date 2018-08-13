@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>722</width>
-    <height>814</height>
+    <height>830</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -163,7 +163,27 @@
         <property name="title">
          <string>Detector</string>
         </property>
-        <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,0,0">
+        <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Name:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="DetectorLabel" name="_detectorLabel">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="textInteractionFlags">
+            <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="2">
           <widget class="QToolButton" name="_customDetector">
            <property name="text">
@@ -171,24 +191,7 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="2">
-          <widget class="QLabel" name="_detectorSizeUnit">
-           <property name="text">
-            <string>px</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="_detectorSizeLabel">
-           <property name="toolTip">
-            <string>Detector size without binning</string>
-           </property>
-           <property name="text">
-            <string>Size:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="_detectorFileDescriptionTitle">
            <property name="toolTip">
             <string>File describing this detector</string>
@@ -201,7 +204,24 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="1" column="1">
+          <widget class="ElidedLabel" name="_detectorFileDescription">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="_detectorSizeLabel">
+           <property name="toolTip">
+            <string>Detector size without binning</string>
+           </property>
+           <property name="text">
+            <string>Size:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
           <widget class="QLabel" name="_detectorSize">
            <property name="text">
             <string/>
@@ -211,20 +231,10 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="DetectorLineEdit" name="_detectorLineEdit"/>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_9">
+         <item row="2" column="2">
+          <widget class="QLabel" name="_detectorSizeUnit">
            <property name="text">
-            <string>Name:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="ElidedLabel" name="_detectorFileDescription">
-           <property name="text">
-            <string/>
+            <string>px</string>
            </property>
           </widget>
          </item>
@@ -417,14 +427,14 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>DetectorLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>pyFAI.gui.calibration.DetectorLineEdit</header>
-  </customwidget>
-  <customwidget>
    <class>ElidedLabel</class>
    <extends>QLabel</extends>
    <header>pyFAI.gui.widgets.ElidedLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>DetectorLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.calibration.DetectorLabel</header>
   </customwidget>
  </customwidgets>
  <resources/>
