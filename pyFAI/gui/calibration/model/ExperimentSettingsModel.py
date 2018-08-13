@@ -73,6 +73,9 @@ class ExperimentSettingsModel(AbstractModel):
         return self.__detectorModel
 
     def detector(self):
+        """Detector getter synchronizing internal detector configuration to
+        match the input image.
+        """
         detector = self.__detectorModel.detector()
         splineFile = self.__splineFile.value()
         image = self.__image.value()
@@ -83,6 +86,7 @@ class ExperimentSettingsModel(AbstractModel):
         # While things are not fixed as expected
         # detector = detector.__class__()
 
+        # TODO: guess_binning should only be called when image or detector have changed
         if detector.__class__.HAVE_TAPER:
             if splineFile is not None:
                 detector.set_splineFile(splineFile)
