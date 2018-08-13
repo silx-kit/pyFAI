@@ -421,6 +421,10 @@ class DetectorSelectorDrop(qt.QWidget):
         selection.select(index, qt.QItemSelectionModel.ClearAndSelect)
         self._modelList.scrollTo(index)
 
+        splineFile = detector.get_splineFile()
+        if splineFile is not None:
+            self.__splineFile.setValue(splineFile)
+
     def __setManufacturer(self, manufacturer):
         model = self._manufacturerList.model()
         for row in range(model.rowCount()):
