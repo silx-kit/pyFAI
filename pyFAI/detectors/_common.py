@@ -127,7 +127,15 @@ class Detector(with_metaclass(DetectorMeta, object)):
             return NexusDetector(name)
 
         # Search for the detector class
+        import pyFAI.detectors
         detectorClass = None
+        if hasattr(pyFAI.detectors, name):
+            # It's a classname
+            cls = getattr(pyFAI.detectors, name)
+            if issubclass(cls, pyFAI.detectors.Detector):
+                # Avoid code injection
+                detectorClass = cls
+
         if detectorClass is None:
             # Search the name using the name database
             name = name.lower()
