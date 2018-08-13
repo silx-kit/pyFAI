@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/07/2018"
+__date__ = "13/08/2018"
 
 import logging
 import numpy
@@ -196,7 +196,7 @@ class RingExtractor(object):
                 # Coords in points are y, x
                 points = ms.find_pixels(tth[i])
 
-                seeds = set((i[0], i[1]) for i in points if mask2[i[1], i[0]])
+                seeds = set((i[0], i[1]) for i in points if mask2[i[0], i[1]])
                 # max number of points: 360 points for a full circle
                 azimuthal = chia[points[:, 0].clip(0, peakPicker.data.shape[0]), points[:, 1].clip(0, peakPicker.data.shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
