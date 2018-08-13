@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/08/2018"
+__date__ = "13/08/2018"
 
 import os
 import fabio
@@ -134,7 +134,6 @@ class ExperimentTask(AbstractCalibrationTask):
         result = dialog.exec_()
         if result:
             newDetector = popup.detector()
-            settings = self.model().experimentSettingsModel()
             settings.detectorModel().setDetector(newDetector)
 
     def __waveLengthChanged(self):
