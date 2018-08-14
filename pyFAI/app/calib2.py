@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/08/2018"
+__date__ = "14/08/2018"
 __status__ = "production"
 
 import logging
@@ -457,8 +457,12 @@ def main():
     widget = CalibrationWindow()
     setup(widget.model())
     widget.setVisible(True)
-    app.exec_()
+    result = app.exec_()
+    # remove ending warnings relative to QTimer
+    app.deleteLater()
+    return result
 
 
 if __name__ == "__main__":
-    main()
+    result = main()
+    sys.exit(result)
