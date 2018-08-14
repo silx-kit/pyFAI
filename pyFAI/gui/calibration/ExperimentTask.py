@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/08/2018"
+__date__ = "13/08/2018"
 
 import os
 import fabio
@@ -42,6 +42,7 @@ import pyFAI.utils
 from pyFAI.calibrant import Calibrant
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
+import pyFAI.detectors
 
 _logger = logging.getLogger(__name__)
 
@@ -57,13 +58,15 @@ class ExperimentTask(AbstractCalibrationTask):
         self._imageLoader.clicked.connect(self.loadImage)
         self._maskLoader.clicked.connect(self.loadMask)
         self._darkLoader.clicked.connect(self.loadDark)
-        self._splineLoader.clicked.connect(self.loadSpline)
+        self._customDetector.clicked.connect(self.__customDetector)
 
         self.__plot = self.__createPlot(parent=self._imageHolder)
         layout = qt.QVBoxLayout(self._imageHolder)
         layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
+
+        self._detectorFileDescription.setElideMode(qt.Qt.ElideMiddle)
 
         self._calibrant.setFileLoadable(True)
         self._calibrant.sigLoadFileRequested.connect(self.loadCalibrant)
@@ -89,11 +92,10 @@ class ExperimentTask(AbstractCalibrationTask):
         settings = model.experimentSettingsModel()
 
         self._calibrant.setModel(settings.calibrantModel())
-        self._detector.setModel(settings.detectorModel())
+        self._detectorLabel.setAppModel(settings.detectorModel())
         self._image.setModel(settings.imageFile())
         self._mask.setModel(settings.maskFile())
         self._dark.setModel(settings.darkFile())
-        self._spline.setModel(settings.splineFile())
         self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
 
         adaptor = WavelengthToEnergyAdaptor(self, settings.wavelength())
@@ -106,6 +108,34 @@ class ExperimentTask(AbstractCalibrationTask):
         settings.detectorModel().changed.connect(self.__detectorModelUpdated)
         settings.wavelength().changed.connect(self.__waveLengthChanged)
         self.__detectorModelUpdated()
+
+    def __customDetector(self):
+        settings = self.model().experimentSettingsModel()
+        detector = settings.detectorModel().detector()
+        from .DetectorSelectorDrop import DetectorSelectorDrop
+        popup = DetectorSelectorDrop(self)
+        popup.setDetector(detector)
+        popupParent = self._customDetector
+        pos = popupParent.mapToGlobal(popupParent.rect().bottomRight())
+        pos = pos + popup.rect().topLeft() - popup.rect().topRight()
+        popup.move(pos)
+        popup.show()
+
+        dialog = qt.QDialog(self)
+        dialog.setWindowTitle("Detector selection")
+        layout = qt.QVBoxLayout(dialog)
+        layout.addWidget(popup)
+
+        buttonBox = qt.QDialogButtonBox(qt.QDialogButtonBox.Ok |
+                                        qt.QDialogButtonBox.Cancel)
+        buttonBox.accepted.connect(dialog.accept)
+        buttonBox.rejected.connect(dialog.reject)
+        layout.addWidget(buttonBox)
+
+        result = dialog.exec_()
+        if result:
+            newDetector = popup.detector()
+            settings.detectorModel().setDetector(newDetector)
 
     def __waveLengthChanged(self):
         settings = self.model().experimentSettingsModel()
@@ -123,12 +153,28 @@ class ExperimentTask(AbstractCalibrationTask):
         self._detectorSizeUnit.setVisible(detector is not None)
         if detector is None:
             self._detectorSize.setText("")
+            self._detectorFileDescription.setVisible(False)
+            self._detectorFileDescriptionTitle.setVisible(False)
         else:
             text = [str(s) for s in detector.max_shape]
             text = u" × ".join(text)
             self._detectorSize.setText(text)
 
-        self.__updateSplineFileVisibility()
+            if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
+                fileDescription = detector.get_splineFile()
+            elif isinstance(detector, pyFAI.detectors.NexusDetector):
+                fileDescription = detector.filename
+            else:
+                fileDescription = None
+            if fileDescription is not None:
+                fileDescription = fileDescription.strip()
+            if fileDescription == "":
+                fileDescription = None
+
+            self._detectorFileDescription.setVisible(fileDescription is not None)
+            self._detectorFileDescriptionTitle.setVisible(fileDescription is not None)
+            self._detectorFileDescription.setText(fileDescription if fileDescription else "")
+
         self.__updateDetector()
 
     def __displayError(self, label, message=""):
@@ -203,15 +249,6 @@ class ExperimentTask(AbstractCalibrationTask):
         else:
             self.__displayError("Sizes not valid", "Inconsistency between image and detector")
 
-    def __updateSplineFileVisibility(self):
-        detector = self.model().experimentSettingsModel().detectorModel().detector()
-        if detector is not None:
-            enabled = detector.__class__.HAVE_TAPER
-        else:
-            enabled = False
-        self._spline.setEnabled(enabled)
-        self._splineLoader.setEnabled(enabled)
-
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
         self._imageSize.setVisible(image is not None)
@@ -278,24 +315,6 @@ class ExperimentTask(AbstractCalibrationTask):
             yield None
         except KeyboardInterrupt:
             raise
-
-    def createSplineDialog(self, title):
-        dialog = qt.QFileDialog(self)
-        dialog.setWindowTitle(title)
-        dialog.setModal(True)
-
-        extensions = OrderedDict()
-        extensions["Spline files"] = "*.spline"
-
-        filters = []
-        filters.append("All supported files (%s)" % " ".join(extensions.values()))
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-        filters.append("All files (*)")
-
-        dialog.setNameFilters(filters)
-        dialog.setFileMode(qt.QFileDialog.ExistingFile)
-        return dialog
 
     def createCalibrantDialog(self, title):
         dialog = qt.QFileDialog(self)
@@ -364,31 +383,6 @@ class ExperimentTask(AbstractCalibrationTask):
         try:
             settings = self.model().experimentSettingsModel()
             settings.calibrantModel().setCalibrant(calibrant)
-        except Exception as e:
-            _logger.error(e.args[0])
-            _logger.debug("Backtrace", exc_info=True)
-            # FIXME Display error dialog
-        except KeyboardInterrupt:
-            raise
-
-    def loadSpline(self):
-        dialog = self.createSplineDialog("Load spline image")
-
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
-
-        result = dialog.exec_()
-        if not result:
-            return
-
-        self.__dialogState = dialog.saveState()
-        filename = dialog.selectedFiles()[0]
-        try:
-            settings = self.model().experimentSettingsModel()
-            settings.splineFile().setValue(filename)
         except Exception as e:
             _logger.error(e.args[0])
             _logger.debug("Backtrace", exc_info=True)

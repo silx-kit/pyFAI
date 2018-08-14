@@ -49,10 +49,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ADSC(Detector):
+class _ADSC(Detector):
     """Common class for ADSC detector:
     they all share the same constructor signature
     """
+    MANUFACTURER = "ADSC"
+
     def __init__(self, pixel1=51e-6, pixel2=51e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -65,7 +67,7 @@ class ADSC(Detector):
                             ("pixel2", self._pixel2)))
 
 
-class ADSC_Q315(ADSC):
+class ADSC_Q315(_ADSC):
     """
     ADSC Quantum 315r detector, 3x3 chips
 
@@ -79,10 +81,10 @@ class ADSC_Q315(ADSC):
     aliases = ["Quantum 315"]
 
     def __init__(self, pixel1=51e-6, pixel2=51e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class ADSC_Q210(ADSC):
+class ADSC_Q210(_ADSC):
     """
     ADSC Quantum 210r detector, 2x2 chips
 
@@ -96,10 +98,10 @@ class ADSC_Q210(ADSC):
     aliases = ["Quantum 210"]
 
     def __init__(self, pixel1=51e-6, pixel2=51e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class ADSC_Q270(ADSC):
+class ADSC_Q270(_ADSC):
     """
     ADSC Quantum 270r detector, 2x2 chips
 
@@ -113,10 +115,10 @@ class ADSC_Q270(ADSC):
     aliases = ["Quantum 270"]
 
     def __init__(self, pixel1=64.8e-6, pixel2=64.8e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class ADSC_Q4(ADSC):
+class ADSC_Q4(_ADSC):
     """
     ADSC Quantum 4r detector, 2x2 chips
 
@@ -130,10 +132,10 @@ class ADSC_Q4(ADSC):
     aliases = ["Quantum 4"]
 
     def __init__(self, pixel1=82e-6, pixel2=82e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class HF_130K(ADSC):
+class HF_130K(_ADSC):
     """
     ADSC HF-130K 1 module
 
@@ -146,10 +148,10 @@ class HF_130K(ADSC):
     aliases = ["HF-130k"]
 
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class HF_262k(ADSC):
+class HF_262k(_ADSC):
     """
     ADSC HF-262k 2 module
 
@@ -163,10 +165,10 @@ class HF_262k(ADSC):
     aliases = ["HF-262k"]
 
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class HF_1M(ADSC):
+class HF_1M(_ADSC):
     """
     ADSC HF-1M 2x4 modules
 
@@ -180,10 +182,10 @@ class HF_1M(ADSC):
     aliases = ["HF-1M"]
 
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class HF_2M(ADSC):
+class HF_2M(_ADSC):
     """
     ADSC HF-1M 3x6 modules
 
@@ -197,10 +199,10 @@ class HF_2M(ADSC):
     aliases = ["HF-2.4M"]
 
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class HF_4M(ADSC):
+class HF_4M(_ADSC):
     """
     ADSC HF-4M 4x8 modules
 
@@ -212,10 +214,10 @@ class HF_4M(ADSC):
     aliases = ["HF-4M"]
 
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
-class HF_9M(ADSC):
+class HF_9M(_ADSC):
     """
     ADSC HF-130K 1 module
 
@@ -228,4 +230,4 @@ class HF_9M(ADSC):
     aliases = ["HF-9.4M"]
 
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
-        ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2)

@@ -80,6 +80,10 @@ class DetectorMeta(type):
     # created
     def __init__(cls, name, bases, dct):
         # "Detector" is a bit peculiar: while abstract it may be needed by the GUI, so adding it to the repository
+        if name.startswith("_"):
+            # It's not a public class
+            return
+
         if hasattr(cls, 'MAX_SHAPE') or name == "Detector":
             cls.registry[name.lower()] = cls
             if hasattr(cls, "aliases"):
@@ -94,6 +98,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
     """
     Generic class representing a 2D detector
     """
+    MANUFACTURER = None
+
     force_pixel = False  # Used to specify pixel size should be defined by the class itself.
     aliases = []  # list of alternative names
     registry = {}  # list of  detectors ...
@@ -270,6 +276,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
         Checks for pixel1, pixel2, binning, shape, max_shape.
         """
+        if other is None:
+            return False
         res = True
         for what in ["pixel1", "pixel2", "binning", "shape", "max_shape"]:
             res &= getattr(self, what) == getattr(other, what)
@@ -333,7 +341,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
             self.uniform_pixel = False
-            self.max_shape = (int(self.spline.ymax - self.spline.ymin), int(self.spline.xmax - self.spline.xmin))
+            self.max_shape = self.spline.getDetectorSize()
             # assume no binning
             self.shape = self.max_shape
             self._binning = (1, 1)
@@ -1025,6 +1033,15 @@ class NexusDetector(Detector):
             else:
                 self.max_shape = tuple(i * j for i, j in zip(self.shape, self._binning))
         self._filename = filename
+
+    def get_filename(self):
+        """Returns the filename containing the description of this detector.
+
+        :rtype: Enum[None|str]
+        """
+        return self._filename
+
+    filename = property(get_filename)
 
     @classmethod
     def sload(cls, filename):
