@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "07/08/2018"
 __status__ = "production"
 
 
@@ -72,7 +72,7 @@ class Fairchild(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -97,7 +97,7 @@ class Titan(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -121,7 +121,7 @@ class Dexela2923(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -146,21 +146,21 @@ class Basler(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return {"pixel": self._pixel1}
 
     def set_config(self, config):
-        """Sets the configuration of the detector.        
-        
+        """Sets the configuration of the detector.
+
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
         keys in that dictionary are:  pixel
-       
+
         :param config: string or JSON-serialized dict
-        :retuen: self 
+        :return: self
         """
         if not isinstance(config, dict):
             try:
@@ -201,7 +201,7 @@ class Perkin(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -239,7 +239,7 @@ class Aarhus(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -247,15 +247,15 @@ class Aarhus(Detector):
                             ("radius", self.radius)))
 
     def set_config(self, config):
-        """Sets the configuration of the detector.        
-        
+        """Sets the configuration of the detector.
+
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
         keys in that dictionary are:  pixel1, pixel2, radius
-       
+
         :param config: string or JSON-serialized dict
-        :retuen: self 
+        :return: self
         """
         if not isinstance(config, dict):
             try:
@@ -437,7 +437,7 @@ class Pixium(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -469,7 +469,7 @@ class Apex2(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -489,7 +489,7 @@ class RaspberryPi5M(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -509,7 +509,7 @@ class RaspberryPi8M(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
