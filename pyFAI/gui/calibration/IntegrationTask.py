@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/08/2018"
+__date__ = "14/08/2018"
 
 import logging
 import numpy
@@ -251,6 +251,14 @@ class IntegrationPlot(qt.QFrame):
             widget.centralWidget()
         widget.installEventFilter(self)
 
+        from silx.gui.plot.utils.axis import SyncAxes
+        self.__syncAxes = SyncAxes([self.__plot1d.getXAxis(), self.__plot2d.getXAxis()])
+
+    def aboutToClose(self):
+        # Avoid double free release problem. See #892
+        self.__syncAxes.stop()
+        self.__syncAxes = None
+
     def resetZoom(self):
         self.__plot2d.resetZoom()
         self.__plot1d.resetZoom()
@@ -450,9 +458,6 @@ class IntegrationPlot(qt.QFrame):
         colorMap = Colormap("inferno", normalization=Colormap.LOGARITHM)
         plot2d.setDefaultColormap(colorMap)
 
-        from silx.gui.plot.utils.axis import SyncAxes
-        self.__syncAxes = SyncAxes([plot1d.getXAxis(), plot2d.getXAxis()])
-
         return plot1d, plot2d
 
     def __clearRings(self):
@@ -548,6 +553,9 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self._savePoniButton.clicked.connect(self.__saveAsPoni)
         self._saveJsonButton.clicked.connect(self.__saveAsJson)
+
+    def aboutToClose(self):
+        self._plot.aboutToClose()
 
     def __polarizationFactorChecked(self, checked):
         self.__polarizationModel.setEnabled(checked)

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/03/2017"
+__date__ = "14/08/2018"
 
 from silx.gui import qt
 import pyFAI.utils
@@ -49,6 +49,10 @@ class CalibrationWindow(qt.QMainWindow):
             self._stack.addWidget(task)
         if len(self.__tasks) > 0:
             self._list.setCurrentRow(0)
+
+    def closeEvent(self, event):
+        for task in self.__tasks:
+            task.aboutToClose()
 
     def createTasks(self):
         from pyFAI.gui.calibration.ExperimentTask import ExperimentTask
