@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/04/2018"
+__date__ = "14/08/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -70,19 +70,18 @@ except ImportError:
 PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])
 
 
-
 class BaseTransformation(object):
     """This class, once instanciated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it
     into a set of parameters compatible with pyFAI, i.e. a tuple with:
     (dist, poni1, poni2, rot1, rot2, rot3)
-    
+
     This class relies on a user provided function which does the work.
     """
     def __init__(self, funct, param_names, pos_names=None):
         """Constructor of the class
-        
-        :param funct: function which takes as parameter the param_names and the pos_name 
+
+        :param funct: function which takes as parameter the param_names and the pos_name
         :param param_names: list of names of the parameters used in the model
         :param pos_names: list of motor names for gonio with >1 degree of freedom
         """
@@ -142,7 +141,7 @@ class GeometryTransformation(object):
                  param_names, pos_names=None, constants=None,
                  content=None):
         """Constructor of the class
-        
+
         :param dist_expr: formula (as string) providing with the dist
         :param poni1_expr: formula (as string) providing with the poni1
         :param poni2_expr: formula (as string) providing with the poni2
