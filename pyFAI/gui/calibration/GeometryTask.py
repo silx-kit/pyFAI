@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/08/2018"
+__date__ = "14/08/2018"
 
 import logging
 import numpy
@@ -43,6 +43,7 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
 from . import utils
 from . import validators
+from .helper.SynchronizeRawView import SynchronizeRawView
 
 _logger = logging.getLogger(__name__)
 
@@ -391,6 +392,10 @@ class GeometryTask(AbstractCalibrationTask):
         self.__peaksInvalidated = False
         self.__fitting = False
 
+        self.__synchronizeRawView = SynchronizeRawView()
+        self.__synchronizeRawView.registerTask(self)
+        self.__synchronizeRawView.registerPlot(self.__plot)
+
     def addParameterToLayout(self, layout, param):
         # an empty grid returns 1
         row = layout.rowCount()
@@ -641,6 +646,7 @@ class GeometryTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
+        self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
         settings.wavelength().changed.connect(self.__invalidateWavelength)

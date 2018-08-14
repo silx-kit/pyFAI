@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/08/2018"
+__date__ = "14/08/2018"
 
 import logging
 from silx.gui import qt
@@ -37,6 +37,7 @@ from silx.gui.plot.tools import PositionInfo
 
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from .helper.SynchronizeRawView import SynchronizeRawView
 
 _logger = logging.getLogger(__name__)
 
@@ -70,6 +71,10 @@ class MaskTask(AbstractCalibrationTask):
 
         self.__plotMaskChanged = False
         self.__modelMaskChanged = False
+
+        self.__synchronizeRawView = SynchronizeRawView()
+        self.__synchronizeRawView.registerTask(self)
+        self.__synchronizeRawView.registerPlot(self.__plot)
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
@@ -133,6 +138,8 @@ class MaskTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
+        self.__synchronizeRawView.registerModel(model.rawPlotView())
+
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
         settings.mask().changed.connect(self.__maskFromModelChanged)

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/08/2018"
+__date__ = "14/08/2018"
 
 import logging
 import numpy
@@ -49,6 +49,7 @@ from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
 from pyFAI.gui.utils.ProxyAction import CustomProxyAction
 from . import utils
+from .helper.SynchronizeRawView import SynchronizeRawView
 
 _logger = logging.getLogger(__name__)
 
@@ -520,6 +521,10 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         self._extract.clicked.connect(self.__autoExtractRingsLater)
 
+        self.__synchronizeRawView = SynchronizeRawView()
+        self.__synchronizeRawView.registerTask(self)
+        self.__synchronizeRawView.registerPlot(self.__plot)
+
     def __createSavePeakDialog(self):
         dialog = qt.QFileDialog(self)
         dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
@@ -894,6 +899,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
+        self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
         settings.mask().changed.connect(self.__maskUpdated)

@@ -1,5 +1,6 @@
 # coding: utf-8
 # /*##########################################################################
+#
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,22 +21,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# ############################################################################*/
+# ###########################################################################*/
+
+from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "14/08/2018"
 
-from numpy.distutils.misc_util import Configuration
+from .DataModel import DataModel
 
 
-def configuration(parent_package='', top_path=None):
-    config = Configuration('calibration', parent_package, top_path)
-    config.add_subpackage('model')
-    config.add_subpackage('helper')
-    return config
+class PlotViewModel(DataModel):
 
+    def setFromPlot(self, plot):
+        xLimits = plot.getXAxis().getLimits()
+        yLimits = plot.getYAxis().getLimits()
+        value = xLimits, yLimits
+        self.setValue(value)
 
-if __name__ == "__main__":
-    from numpy.distutils.core import setup
-    setup(configuration=configuration)
+    def synchronizePlot(self, plot):
+        value = self.value()
+        xLimits, yLimits = value
+        plot.getXAxis().setLimits(*xLimits)
+        plot.getYAxis().setLimits(*yLimits)

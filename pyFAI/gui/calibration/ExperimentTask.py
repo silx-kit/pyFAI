@@ -44,6 +44,7 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
 import pyFAI.detectors
 from .DetectorSelectorDrop import DetectorSelectorDrop
+from .helper.SynchronizeRawView import SynchronizeRawView
 
 _logger = logging.getLogger(__name__)
 
@@ -72,6 +73,10 @@ class ExperimentTask(AbstractCalibrationTask):
         self._calibrant.setFileLoadable(True)
         self._calibrant.sigLoadFileRequested.connect(self.loadCalibrant)
 
+        self.__synchronizeRawView = SynchronizeRawView()
+        self.__synchronizeRawView.registerTask(self)
+        self.__synchronizeRawView.registerPlot(self.__plot)
+
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
         plot.setKeepDataAspectRatio(True)
@@ -90,6 +95,8 @@ class ExperimentTask(AbstractCalibrationTask):
         return plot
 
     def _updateModel(self, model):
+        self.__synchronizeRawView.registerModel(model.rawPlotView())
+
         settings = model.experimentSettingsModel()
 
         self._calibrant.setModel(settings.calibrantModel())
