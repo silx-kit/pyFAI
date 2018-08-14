@@ -31,8 +31,6 @@ __date__ = "14/08/2018"
 
 import logging
 import numpy
-import weakref
-import functools
 import collections
 
 from silx.gui import qt
