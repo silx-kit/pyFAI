@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/08/2018"
+__date__ = "14/08/2018"
 
 import os
 import fabio
@@ -43,6 +43,7 @@ from pyFAI.calibrant import Calibrant
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
 import pyFAI.detectors
+from .DetectorSelectorDrop import DetectorSelectorDrop
 
 _logger = logging.getLogger(__name__)
 
@@ -112,7 +113,6 @@ class ExperimentTask(AbstractCalibrationTask):
     def __customDetector(self):
         settings = self.model().experimentSettingsModel()
         detector = settings.detectorModel().detector()
-        from .DetectorSelectorDrop import DetectorSelectorDrop
         popup = DetectorSelectorDrop(self)
         popup.setDetector(detector)
         popupParent = self._customDetector
