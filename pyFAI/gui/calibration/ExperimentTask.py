@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/01/2018"
+__date__ = "31/07/2018"
 
 import os
 import fabio
@@ -36,6 +36,7 @@ import logging
 from contextlib import contextmanager
 from collections import OrderedDict
 import silx.gui.plot
+from silx.gui.colors import Colormap
 from silx.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
@@ -57,25 +58,28 @@ class ExperimentTask(AbstractCalibrationTask):
         self._darkLoader.clicked.connect(self.loadDark)
         self._splineLoader.clicked.connect(self.loadSpline)
 
-        self.__plot2D = silx.gui.plot.Plot2D(parent=self._imageHolder)
-        self.__plot2D.setKeepDataAspectRatio(True)
-        self.__plot2D.getMaskAction().setVisible(False)
-        self.__plot2D.getProfileToolbar().setVisible(False)
-        self.__plot2D.setDataMargins(0.1, 0.1, 0.1, 0.1)
-        self.__plot2D.setGraphXLabel("Y")
-        self.__plot2D.setGraphYLabel("X")
-
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
-        self.__plot2D.setDefaultColormap(colormap)
-
+        self.__plot = self.__createPlot(parent=self._imageHolder)
         layout = qt.QVBoxLayout(self._imageHolder)
-        layout.addWidget(self.__plot2D)
+        layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
+
+    def __createPlot(self, parent):
+        plot = silx.gui.plot.PlotWidget(parent=parent)
+        plot.setKeepDataAspectRatio(True)
+        plot.setDataMargins(0.1, 0.1, 0.1, 0.1)
+        plot.setGraphXLabel("Y")
+        plot.setGraphYLabel("X")
+
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
+        plot.setDefaultColormap(colormap)
+        return plot
 
     def _updateModel(self, model):
         settings = model.experimentSettingsModel()
@@ -128,10 +132,10 @@ class ExperimentTask(AbstractCalibrationTask):
 
         if detector is None:
             self._detectorSize.setText("")
-            self.__plot2D.removeMarker("xmin")
-            self.__plot2D.removeMarker("xmax")
-            self.__plot2D.removeMarker("ymin")
-            self.__plot2D.removeMarker("ymax")
+            self.__plot.removeMarker("xmin")
+            self.__plot.removeMarker("xmax")
+            self.__plot.removeMarker("ymin")
+            self.__plot.removeMarker("ymax")
         else:
             try:
                 binning = detector.get_binning()
@@ -144,13 +148,13 @@ class ExperimentTask(AbstractCalibrationTask):
                 binning = binning[0], 1
 
             shape = detector.max_shape[1] // binning[1], detector.max_shape[0] // binning[0]
-            self.__plot2D.addXMarker(x=0, legend="xmin", color="grey")
-            self.__plot2D.addXMarker(x=shape[0], legend="xmax", color="grey")
-            self.__plot2D.addYMarker(y=0, legend="ymin", color="grey")
-            self.__plot2D.addYMarker(y=shape[1], legend="ymax", color="grey")
+            self.__plot.addXMarker(x=0, legend="xmin", color="grey")
+            self.__plot.addXMarker(x=shape[0], legend="xmax", color="grey")
+            self.__plot.addYMarker(y=0, legend="ymin", color="grey")
+            self.__plot.addYMarker(y=shape[1], legend="ymax", color="grey")
             dummy = numpy.array([[[0xF0, 0xF0, 0xF0]]], dtype=numpy.uint8)
-            self.__plot2D.addImage(data=dummy, scale=shape, legend="dummy", z=-10, replace=False)
-            self.__plot2D.resetZoom()
+            self.__plot.addImage(data=dummy, scale=shape, legend="dummy", z=-10, replace=False)
+            self.__plot.resetZoom()
 
     def __updateDetector(self):
         image = self.model().experimentSettingsModel().image().value()
@@ -204,8 +208,8 @@ class ExperimentTask(AbstractCalibrationTask):
             self._imageSize.setText(text)
 
         image = self.model().experimentSettingsModel().image().value()
-        self.__plot2D.addImage(image, legend="image", z=-1, replace=False)
-        self.__plot2D.resetZoom()
+        self.__plot.addImage(image, legend="image", z=-1, replace=False)
+        self.__plot.resetZoom()
         self.__updateDetector()
 
     def createImageDialog(self, title, forMask=False):
