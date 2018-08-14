@@ -366,7 +366,9 @@ class Goniometer(object):
     it may include translation in addition to rotations
     """
 
-    file_version = "Goniometer calibration v1.1"
+    _file_version_1_1 = "Goniometer calibration v1.1"
+
+    file_version = "Goniometer calibration v2"
 
     def __init__(self, param, trans_function, detector="Detector",
                  wavelength=None, param_names=None, pos_names=None):
@@ -434,7 +436,10 @@ class Goniometer(object):
         :return: Ordered dictionary
         """
         dico = OrderedDict([("content", self.file_version)])
-        dico.update(self.detector.getPyFAI())
+
+        dico["detector"] = self.detector.name
+        dico["detector_config"] = self.detector.get_config()
+
         if self.wavelength:
             dico["wavelength"] = self.wavelength
         dico["param"] = tuple(self.param)
@@ -462,6 +467,26 @@ class Goniometer(object):
     write = save
 
     @classmethod
+    def _get_detector_from_dict(cls, dico):
+        file_version = dico["content"]
+        if file_version == cls._file_version_1_1:
+            # v1.1
+            # Try to extract useful keys
+            detector = Detector.factory(dico["detector"])
+            # This is not accurate, some keys could be missing
+            keys = detector.get_config().keys()
+            config = {}
+            for k in keys:
+                if k in dico:
+                    config[k] = dico[k]
+                    del dico[k]
+            detector = Detector.factory(dico["detector"], config)
+        else:
+            # v2
+            detector = Detector.factory(dico["detector"], dico.get("detector_config", None))
+        return detector
+
+    @classmethod
     def sload(cls, filename):
         """Class method for instanciating a Goniometer object from a JSON file
 
@@ -471,9 +496,10 @@ class Goniometer(object):
 
         with open(filename) as f:
             dico = json.load(f)
-        assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
         assert "trans_function" in dico, "No translation function defined in JSON file"
-        detector = Detector.from_dict(dico)
+        file_version = dico["content"]
+        assert file_version in [cls.file_version, cls._file_version_1_1], "JSON file contains a goniometer calibration"
+        detector = cls._get_detector_from_dict(dico)
         tansfun = dico.get("trans_function", {})
         if "content" in tansfun:
             content = tansfun.pop("content")
@@ -796,7 +822,7 @@ class GoniometerRefinement(Goniometer):
             dico = json.load(f)
         assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
         assert "trans_function" in dico, "No translation function defined in JSON file"
-        detector = Detector.from_dict(dico)
+        detector = cls._get_detector_from_dict(dico)
         tansfun = dico.get("trans_function", {})
         if "content" in tansfun:
             content = tansfun.pop("content")
