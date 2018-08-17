@@ -106,7 +106,6 @@ class ExperimentTask(AbstractCalibrationTask):
         self._image.setModel(settings.imageFile())
         self._mask.setModel(settings.maskFile())
         self._dark.setModel(settings.darkFile())
-        self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
 
         adaptor = WavelengthToEnergyAdaptor(self, settings.wavelength())
         self._wavelength.setModel(settings.wavelength())
@@ -117,6 +116,10 @@ class ExperimentTask(AbstractCalibrationTask):
         settings.calibrantModel().changed.connect(self.__calibrantChanged)
         settings.detectorModel().changed.connect(self.__detectorModelUpdated)
         settings.wavelength().changed.connect(self.__waveLengthChanged)
+
+        self.__imageUpdated()
+        self.__waveLengthChanged()
+        self.__calibrantChanged()
         self.__detectorModelUpdated()
 
     def __customDetector(self):

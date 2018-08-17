@@ -675,6 +675,8 @@ class GeometryTask(AbstractCalibrationTask):
         model.fittedGeometry().changed.connect(self.__geometryUpdated)
         model.peakSelectionModel().changed.connect(self.__invalidatePeakSelection)
 
+        self.__imageUpdated()
+
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
         self.__plot.addImage(image, legend="image")

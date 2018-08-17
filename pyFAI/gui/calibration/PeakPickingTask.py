@@ -909,6 +909,9 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__initPeakSelectionView(model)
         self.__undoStack.clear()
 
+        self.__imageUpdated()
+        self.__maskUpdated()
+
     def __initPeakSelectionView(self, model):
         tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())
         tableModel.requestRingChange.connect(self.__setRingNumber)
