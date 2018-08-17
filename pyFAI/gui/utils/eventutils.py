@@ -30,7 +30,7 @@ from __future__ import division
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/08/2018"
+__date__ = "17/08/2018"
 
 
 import logging
@@ -85,3 +85,45 @@ def createCloseSignal(widget):
     widget.sigClosed = SimulatedSignal()
     widget._createCloseSignal_oldCloseEvent = widget.closeEvent
     widget.closeEvent = types.MethodType(closeEvent, widget)
+
+
+def createShowSignal(widget):
+    """
+    Create a Qt shown signal to the widget as sigShown attribute
+
+    :type widget: Qt.QWidget
+    """
+
+    if hasattr(widget, "sigShown"):
+        if isinstance(widget.sigShown, SimulatedSignal):
+            return
+        raise Exception("Attribute sigClose already exists and is not a Qt signal")
+
+    def showEvent(self, event):
+        widget.sigShown.emit()
+        self._createShowSignal_oldShowEvent(event)
+
+    widget.sigShown = SimulatedSignal()
+    widget._createShowSignal_oldShowEvent = widget.showEvent
+    widget.showEvent = types.MethodType(showEvent, widget)
+
+
+def createHideSignal(widget):
+    """
+    Create a Qt hidden signal to the widget as sigHidden attribute
+
+    :type widget: Qt.QWidget
+    """
+
+    if hasattr(widget, "sigHidden"):
+        if isinstance(widget.sigHidden, SimulatedSignal):
+            return
+        raise Exception("Attribute sigClose already exists and is not a Qt signal")
+
+    def hideEvent(self, event):
+        widget.sigHidden.emit()
+        self._createHideSignal_oldHideEvent(event)
+
+    widget.sigHidden = SimulatedSignal()
+    widget._createHideSignal_oldHideEvent = widget.hideEvent
+    widget.hideEvent = types.MethodType(hideEvent, widget)

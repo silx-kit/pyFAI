@@ -191,5 +191,20 @@ class CalibrationContext(object):
                 return None
             dialog = ColormapDialog(parent=parent)
             dialog.setModal(False)
+
+            def dialogShown():
+                dialog = self.__defaultColormapDialog
+                self.restoreWindowLocationSettings("colormap-dialog", dialog)
+
+            def dialogHidden():
+                dialog = self.__defaultColormapDialog
+                self.saveWindowLocationSettings("colormap-dialog", dialog)
+
+            eventutils.createShowSignal(dialog)
+            eventutils.createHideSignal(dialog)
+
+            dialog.sigShown.connect(dialogShown)
+            dialog.sigHidden.connect(dialogHidden)
             self.__defaultColormapDialog = dialog
+
         return self.__defaultColormapDialog
