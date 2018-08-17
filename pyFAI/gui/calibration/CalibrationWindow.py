@@ -31,7 +31,6 @@ __date__ = "17/08/2018"
 
 from silx.gui import qt
 import pyFAI.utils
-from pyFAI.gui.calibration.model.CalibrationModel import CalibrationModel
 
 
 class CalibrationWindow(qt.QMainWindow):
@@ -40,7 +39,7 @@ class CalibrationWindow(qt.QMainWindow):
         super(CalibrationWindow, self).__init__()
         context.setParent(self)
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-main.ui"), self)
-        self.__model = CalibrationModel()
+        self.__model = context.getCalibrationModel()
 
         self.__tasks = self.createTasks()
         for task in self.__tasks:

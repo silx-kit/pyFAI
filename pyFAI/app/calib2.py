@@ -456,8 +456,8 @@ def main():
     app = qt.QApplication([])
     pyFAI.resources.silx_integration()
     context = CalibrationContext()
+    setup(context.getCalibrationModel())
     widget = CalibrationWindow(context)
-    setup(widget.model())
     widget.setVisible(True)
     result = app.exec_()
     # remove ending warnings relative to QTimer
