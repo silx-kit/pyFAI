@@ -69,7 +69,6 @@ class FitParamView(qt.QObject):
         self.__constraints.setAutoRaise(True)
         self.__constraints.clicked.connect(self.__constraintsClicked)
         self.__model = None
-        self.__wavelengthInvalidated = False
         self.__constraintsModel = None
 
         global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
@@ -391,6 +390,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.__calibration = None
         self.__peaksInvalidated = False
         self.__fitting = False
+        self.__wavelengthInvalidated = False
 
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
