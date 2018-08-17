@@ -105,10 +105,6 @@ class CalibrationContext(object):
             return
         self.__saveColormap("raw-colormap", self.__rawColormap)
 
-        settings.beginGroup("foobar")
-        settings.setValue("toto", 10)
-        settings.endGroup()
-
         # Synchronize the file storage
         settings.sync()
 
