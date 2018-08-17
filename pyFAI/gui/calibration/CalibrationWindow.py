@@ -39,7 +39,10 @@ class CalibrationWindow(qt.QMainWindow):
         super(CalibrationWindow, self).__init__()
         context.setParent(self)
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-main.ui"), self)
+        self.__context = context
         self.__model = context.getCalibrationModel()
+
+        context.restoreWindowLocationSettings("main-window", self)
 
         self.__tasks = self.createTasks()
         for task in self.__tasks:
@@ -53,6 +56,7 @@ class CalibrationWindow(qt.QMainWindow):
     def closeEvent(self, event):
         for task in self.__tasks:
             task.aboutToClose()
+        self.__context.saveWindowLocationSettings("main-window", self)
 
     def createTasks(self):
         from pyFAI.gui.calibration.ExperimentTask import ExperimentTask

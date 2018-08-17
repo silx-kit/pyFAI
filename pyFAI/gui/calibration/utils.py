@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/08/2018"
+__date__ = "17/08/2018"
 
 
 import numpy
@@ -149,3 +149,20 @@ def createProcessingWidgetOverlay(parent):
     button.setGeometry(rect)
     button.setVisible(True)
     return button
+
+
+_trueStrings = set(["yes", "true", "1"])
+_falseStrings = set(["no", "false", "0"])
+
+
+def stringToBool(string):
+    """Returns a boolean from a string.
+
+    :raise ValueError: If the string do not contains a boolean information.
+    """
+    lower = string.lower()
+    if lower in _trueStrings:
+        return True
+    if lower in _falseStrings:
+        return False
+    raise ValueError("'%s' is not a valid boolean" % string)

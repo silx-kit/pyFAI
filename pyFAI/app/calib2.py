@@ -455,13 +455,27 @@ def main():
     sys.excepthook = logUncaughtExceptions
     app = qt.QApplication([])
     pyFAI.resources.silx_integration()
-    context = CalibrationContext()
+
+    settings = qt.QSettings(qt.QSettings.IniFormat,
+                            qt.QSettings.UserScope,
+                            "esrf",
+                            "pyfai-calib2",
+                            None)
+
+    context = CalibrationContext(settings)
+    context.restoreSettings()
+
     setup(context.getCalibrationModel())
-    widget = CalibrationWindow(context)
-    widget.setVisible(True)
+    window = CalibrationWindow(context)
+    window.setVisible(True)
+    window.setAttribute(qt.Qt.WA_DeleteOnClose, True)
+
     result = app.exec_()
+    context.saveSettings()
+
     # remove ending warnings relative to QTimer
     app.deleteLater()
+
     return result
 
 

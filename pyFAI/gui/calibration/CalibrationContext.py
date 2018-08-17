@@ -30,9 +30,13 @@ __date__ = "17/08/2018"
 import weakref
 import logging
 
+from silx.gui import qt
 from silx.gui.dialog.ColormapDialog import ColormapDialog
 from silx.gui.colors import Colormap
+
 from .model.CalibrationModel import CalibrationModel
+from . import utils
+from ..utils import eventutils
 
 
 _logger = logging.getLogger(__name__)
@@ -50,14 +54,115 @@ class CalibrationContext(object):
         assert(cls._instance is not None)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, settings=None):
         assert(self.__class__._instance is None)
         self.__parent = None
         self.__defaultColormapDialog = None
         self.__class__._instance = self
         self.__calibrationModel = None
-        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
-        self.__rawColormap = colormap
+        self.__rawColormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
+        self.__settings = settings
+
+    def __restoreColormap(self, groupName, colormap):
+        settings = self.__settings
+        if settings is None:
+            _logger.debug("Settings not set")
+            return
+        settings.beginGroup(groupName)
+        byteArray = settings.value("default", None)
+        if byteArray is not None:
+            try:
+                colormap.restoreState(byteArray)
+            except Exception:
+                _logger.debug("Backtrace", exc_info=True)
+        settings.endGroup()
+
+    def __saveColormap(self, groupName, colormap):
+        settings = self.__settings
+        if settings is None:
+            _logger.debug("Settings not set")
+            return
+
+        if colormap is None:
+            return
+        settings.beginGroup(groupName)
+        settings.setValue("default", colormap.saveState())
+        settings.endGroup()
+
+    def restoreSettings(self):
+        """Restore the settings of all the application"""
+        settings = self.__settings
+        if settings is None:
+            _logger.debug("Settings not set")
+            return
+        self.__restoreColormap("raw-colormap", self.__rawColormap)
+
+    def saveSettings(self):
+        """Save the settings of all the application"""
+        settings = self.__settings
+        if settings is None:
+            _logger.debug("Settings not set")
+            return
+        self.__saveColormap("raw-colormap", self.__rawColormap)
+
+        settings.beginGroup("foobar")
+        settings.setValue("toto", 10)
+        settings.endGroup()
+
+        # Synchronize the file storage
+        settings.sync()
+
+    def restoreWindowLocationSettings(self, groupName, window):
+        """Restore the window settings using this settings object
+
+        :param qt.QSettings settings: Initialized settings
+        """
+        settings = self.__settings
+        if settings is None:
+            _logger.debug("Settings not set")
+            return
+
+        settings.beginGroup(groupName)
+        size = settings.value("size", qt.QSize())
+        pos = settings.value("pos", qt.QPoint())
+        isFullScreen = settings.value("full-screen", False)
+        try:
+            if not isinstance(isFullScreen, bool):
+                isFullScreen = utils.stringToBool(isFullScreen)
+        except ValueError:
+            isFullScreen = False
+        settings.endGroup()
+
+        if not pos.isNull():
+            window.move(pos)
+        if not size.isNull():
+            window.resize(size)
+        if isFullScreen:
+            window.showFullScreen()
+
+    def saveWindowLocationSettings(self, groupName, window):
+        """Save the window settings to this settings object
+
+        :param qt.QSettings settings: Initialized settings
+        """
+        settings = self.__settings
+        if settings is None:
+            _logger.debug("Settings not set")
+            return
+
+        isFullScreen = bool(window.windowState() & qt.Qt.WindowFullScreen)
+        if isFullScreen:
+            # show in normal to catch the normal geometry
+            window.showNormal()
+
+        settings.beginGroup(groupName)
+        settings.setValue("size", window.size())
+        settings.setValue("pos", window.pos())
+        settings.setValue("full-screen", isFullScreen)
+        settings.endGroup()
+
+        if isFullScreen:
+            window.showFullScreen()
 
     def setParent(self, parent):
         self.__parent = weakref.ref(parent)
