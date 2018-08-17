@@ -156,8 +156,6 @@ class ExperimentTask(AbstractCalibrationTask):
     def __calibrantChanged(self):
         settings = self.model().experimentSettingsModel()
         self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
-        # FIXME debug purpous
-        self.printSelectedCalibrant()
 
     def __detectorModelUpdated(self):
         detector = self.model().experimentSettingsModel().detectorModel().detector()
@@ -401,6 +399,3 @@ class ExperimentTask(AbstractCalibrationTask):
             # FIXME Display error dialog
         except KeyboardInterrupt:
             raise
-
-    def printSelectedCalibrant(self):
-        print(self.model().experimentSettingsModel().calibrantModel().calibrant())
