@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/08/2018"
+__date__ = "17/08/2018"
 __status__ = "production"
 
 
@@ -517,12 +517,11 @@ class Calibrant(object):
                 tth = 2.0 * asin(5.0e9 * self._wavelength / ds)
             except ValueError:
                 size = len(tths)
-                if size > 0:
-                    # remove dSpacing outside of 0..180
-                    self._dSpacing = dSpacing[:size]
-                    self._out_dSpacing = dSpacing[size:]
-                    # avoid turning around...
-                    break
+                # remove dSpacing outside of 0..180
+                self._dSpacing = dSpacing[:size]
+                self._out_dSpacing = dSpacing[size:]
+                # avoid turning around...
+                break
             else:
                 tths.append(tth)
         self._2th = tths
