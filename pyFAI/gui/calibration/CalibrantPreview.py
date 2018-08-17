@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "06/08/2018"
+__date__ = "17/08/2018"
 
 import logging
 import numpy
@@ -129,6 +129,8 @@ class CalibrantPreview(qt.QFrame):
             return self.__pixmap
 
         calibrant = self.__getConfiguredCalibrant()
+        if calibrant is None:
+            return None
         tths = numpy.array(calibrant.get_2th())
 
         tth_min, tth_max = 0, numpy.pi
