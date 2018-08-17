@@ -294,6 +294,9 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__markerColors = {}
         self.__processing = None
 
+        colormap = CalibrationContext.instance().getRawColormap()
+        self.setDefaultColormap(colormap)
+
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
 
@@ -898,9 +901,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
-        colormap = model.rawColormap()
-        self.__plot.setDefaultColormap(colormap)
-
         self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)

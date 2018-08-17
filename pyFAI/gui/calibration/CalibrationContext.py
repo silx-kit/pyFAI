@@ -31,6 +31,7 @@ import weakref
 import logging
 
 from silx.gui.dialog.ColormapDialog import ColormapDialog
+from silx.gui.colors import Colormap
 from .model.CalibrationModel import CalibrationModel
 
 
@@ -55,6 +56,8 @@ class CalibrationContext(object):
         self.__defaultColormapDialog = None
         self.__class__._instance = self
         self.__calibrationModel = None
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
+        self.__rawColormap = colormap
 
     def setParent(self, parent):
         self.__parent = weakref.ref(parent)
@@ -63,6 +66,14 @@ class CalibrationContext(object):
         if self.__calibrationModel is None:
             self.__calibrationModel = CalibrationModel()
         return self.__calibrationModel
+
+    def getRawColormap(self):
+        """Returns the user preference colormap used to display raw data
+        images
+
+        :rtype:Colormap
+        """
+        return self.__rawColormap
 
     def getColormapDialog(self):
         """Returns a shared color dialog.

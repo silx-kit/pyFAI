@@ -84,6 +84,9 @@ class ExperimentTask(AbstractCalibrationTask):
         plot.setGraphXLabel("Y")
         plot.setGraphYLabel("X")
 
+        colormap = CalibrationContext.instance().getRawColormap()
+        plot.setDefaultColormap(colormap)
+
         from silx.gui.plot import tools
         toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
         plot.addToolBar(toolBar)
@@ -91,12 +94,10 @@ class ExperimentTask(AbstractCalibrationTask):
         colormapDialog = CalibrationContext.instance().getColormapDialog()
         toolBar.getColormapAction().setColorDialog(colormapDialog)
         plot.addToolBar(toolBar)
+
         return plot
 
     def _updateModel(self, model):
-        colormap = model.rawColormap()
-        self.__plot.setDefaultColormap(colormap)
-
         self.__synchronizeRawView.registerModel(model.rawPlotView())
 
         settings = model.experimentSettingsModel()

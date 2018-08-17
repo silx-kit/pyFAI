@@ -249,11 +249,11 @@ class IntegrationPlot(qt.QFrame):
             widget.centralWidget()
         widget.installEventFilter(self)
 
+        colormap = CalibrationContext.instance().getRawColormap()
+        self.__plot2d.setDefaultColormap(colormap)
+
         from silx.gui.plot.utils.axis import SyncAxes
         self.__syncAxes = SyncAxes([self.__plot1d.getXAxis(), self.__plot2d.getXAxis()])
-
-    def setDefaultColormap(self, colormap):
-        self.__plot2d.setDefaultColormap(colormap)
 
     def aboutToClose(self):
         # Avoid double free release problem. See #892
@@ -609,9 +609,6 @@ class IntegrationTask(AbstractCalibrationTask):
         self._plot.setIntegrationProcess(integrationProcess)
 
     def _updateModel(self, model):
-        colormap = model.rawColormap()
-        self._plot.setDefaultColormap(colormap)
-
         experimentSettings = model.experimentSettingsModel()
         integrationSettings = model.integrationSettingsModel()
         self.__polarizationModel = EnablableDataModel(self, experimentSettings.polarizationFactor())

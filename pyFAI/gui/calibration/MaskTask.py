@@ -84,6 +84,9 @@ class MaskTask(AbstractCalibrationTask):
         plot.setGraphYLabel("X")
         plot.setAxesDisplayed(False)
 
+        colormap = CalibrationContext.instance().getRawColormap()
+        plot.setDefaultColormap(colormap)
+
         from silx.gui.plot import tools
         toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
         plot.addToolBar(toolBar)
@@ -137,9 +140,6 @@ class MaskTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
-        colormap = model.rawColormap()
-        self.__plot.setDefaultColormap(colormap)
-
         self.__synchronizeRawView.registerModel(model.rawPlotView())
 
         settings = model.experimentSettingsModel()

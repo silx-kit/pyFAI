@@ -52,9 +52,6 @@ class CalibrationModel(AbstractModel):
         self.__integrationSettingsModel = IntegrationSettingsModel(self)
         self.__rawPlotView = PlotViewModel(self)
 
-        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
-        self.__rawColormap = colormap
-
     def isValid(self):
         return True
 
@@ -82,10 +79,3 @@ class CalibrationModel(AbstractModel):
         This view is shared by some plots
         """
         return self.__rawPlotView
-
-    def rawColormap(self):
-        """Colormap used to display raw data
-
-        This colormap is shared by some plots
-        """
-        return self.__rawColormap

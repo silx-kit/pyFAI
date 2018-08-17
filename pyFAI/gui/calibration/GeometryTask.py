@@ -411,6 +411,9 @@ class GeometryTask(AbstractCalibrationTask):
         plot.setStatusBar(statusBar)
         plot.setAxesDisplayed(False)
 
+        colormap = CalibrationContext.instance().getRawColormap()
+        plot.setDefaultColormap(colormap)
+
         return plot
 
     def __createPlotToolBar(self, plot):
@@ -645,9 +648,6 @@ class GeometryTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
-        colormap = model.rawColormap()
-        self.__plot.setDefaultColormap(colormap)
-
         self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
