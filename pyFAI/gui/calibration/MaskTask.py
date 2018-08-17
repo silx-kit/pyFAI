@@ -27,11 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "17/08/2018"
 
 import logging
 from silx.gui import qt
-from silx.gui.colors import Colormap
 import silx.gui.plot
 from silx.gui.plot.tools import PositionInfo
 
@@ -92,9 +91,6 @@ class MaskTask(AbstractCalibrationTask):
 
         statusBar = self.__createPlotStatusBar(plot)
         plot.setStatusBar(statusBar)
-
-        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
-        plot.setDefaultColormap(colormap)
         return plot
 
     def __createPlotStatusBar(self, plot):
@@ -138,6 +134,9 @@ class MaskTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
+        colormap = model.rawColormap()
+        self.__plot.setDefaultColormap(colormap)
+
         self.__synchronizeRawView.registerModel(model.rawPlotView())
 
         settings = model.experimentSettingsModel()

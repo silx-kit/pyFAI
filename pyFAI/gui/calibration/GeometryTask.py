@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "17/08/2018"
 
 import logging
 import numpy
@@ -36,7 +36,6 @@ from silx.gui import qt
 from silx.gui import icons
 import silx.gui.plot
 from silx.gui.plot.tools import PositionInfo
-from silx.gui.colors import Colormap
 
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
@@ -411,9 +410,6 @@ class GeometryTask(AbstractCalibrationTask):
         plot.setStatusBar(statusBar)
         plot.setAxesDisplayed(False)
 
-        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
-        plot.setDefaultColormap(colormap)
-
         return plot
 
     def __createPlotToolBar(self, plot):
@@ -646,6 +642,9 @@ class GeometryTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
+        colormap = model.rawColormap()
+        self.__plot.setDefaultColormap(colormap)
+
         self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)

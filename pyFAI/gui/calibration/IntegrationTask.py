@@ -27,14 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "17/08/2018"
 
 import logging
 import numpy
 import collections
 
 from silx.gui import qt
-from silx.gui.colors import Colormap
 import silx.gui.plot
 import silx.gui.icons
 import silx.io
@@ -252,6 +251,9 @@ class IntegrationPlot(qt.QFrame):
         from silx.gui.plot.utils.axis import SyncAxes
         self.__syncAxes = SyncAxes([self.__plot1d.getXAxis(), self.__plot2d.getXAxis()])
 
+    def setDefaultColormap(self, colormap):
+        self.__plot2d.setDefaultColormap(colormap)
+
     def aboutToClose(self):
         # Avoid double free release problem. See #892
         self.__syncAxes.stop()
@@ -453,9 +455,6 @@ class IntegrationPlot(qt.QFrame):
         self.__saveResult1dAction = action
         ownToolBar.addAction(action)
 
-        colorMap = Colormap("inferno", normalization=Colormap.LOGARITHM)
-        plot2d.setDefaultColormap(colorMap)
-
         return plot1d, plot2d
 
     def __clearRings(self):
@@ -607,6 +606,9 @@ class IntegrationTask(AbstractCalibrationTask):
         self._plot.setIntegrationProcess(integrationProcess)
 
     def _updateModel(self, model):
+        colormap = model.rawColormap()
+        self._plot.setDefaultColormap(colormap)
+
         experimentSettings = model.experimentSettingsModel()
         integrationSettings = model.integrationSettingsModel()
         self.__polarizationModel = EnablableDataModel(self, experimentSettings.polarizationFactor())

@@ -27,7 +27,9 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "17/08/2018"
+
+from silx.gui.colors import Colormap
 
 from .AbstractModel import AbstractModel
 from .PlotViewModel import PlotViewModel
@@ -49,6 +51,9 @@ class CalibrationModel(AbstractModel):
         self.__geometryConstraintsModel = GeometryConstraintsModel(self)
         self.__integrationSettingsModel = IntegrationSettingsModel(self)
         self.__rawPlotView = PlotViewModel(self)
+
+        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
+        self.__rawColormap = colormap
 
     def isValid(self):
         return True
@@ -77,3 +82,10 @@ class CalibrationModel(AbstractModel):
         This view is shared by some plots
         """
         return self.__rawPlotView
+
+    def rawColormap(self):
+        """Colormap used to display raw data
+
+        This colormap is shared by some plots
+        """
+        return self.__rawColormap

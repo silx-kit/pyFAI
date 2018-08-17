@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "17/08/2018"
 
 import os
 import fabio
@@ -36,7 +36,6 @@ import logging
 from contextlib import contextmanager
 from collections import OrderedDict
 import silx.gui.plot
-from silx.gui.colors import Colormap
 from silx.gui import qt
 import pyFAI.utils
 from pyFAI.calibrant import Calibrant
@@ -89,12 +88,12 @@ class ExperimentTask(AbstractCalibrationTask):
         plot.addToolBar(toolBar)
         toolBar = tools.ImageToolBar(parent=self, plot=plot)
         plot.addToolBar(toolBar)
-
-        colormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
-        plot.setDefaultColormap(colormap)
         return plot
 
     def _updateModel(self, model):
+        colormap = model.rawColormap()
+        self.__plot.setDefaultColormap(colormap)
+
         self.__synchronizeRawView.registerModel(model.rawPlotView())
 
         settings = model.experimentSettingsModel()
