@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/08/2018"
+__date__ = "17/08/2018"
 __status__ = "production"
 
 import logging
@@ -51,6 +51,7 @@ from silx.gui import qt
 import silx.gui.plot.matplotlib
 
 from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
+from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
 
 import pyFAI.resources
 import pyFAI.calibrant
@@ -454,7 +455,8 @@ def main():
     sys.excepthook = logUncaughtExceptions
     app = qt.QApplication([])
     pyFAI.resources.silx_integration()
-    widget = CalibrationWindow()
+    context = CalibrationContext()
+    widget = CalibrationWindow(context)
     setup(widget.model())
     widget.setVisible(True)
     result = app.exec_()

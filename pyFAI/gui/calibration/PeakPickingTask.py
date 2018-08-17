@@ -49,6 +49,7 @@ import pyFAI.control_points
 from pyFAI.gui.utils.ProxyAction import CustomProxyAction
 from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
+from .CalibrationContext import CalibrationContext
 
 _logger = logging.getLogger(__name__)
 
@@ -659,6 +660,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
         plot.addToolBar(toolBar)
         toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        colormapDialog = CalibrationContext.instance().getColormapDialog()
+        toolBar.getColormapAction().setColorDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
         toolBar = qt.QToolBar("Plot tools", plot)

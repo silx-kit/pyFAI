@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "17/08/2018"
 
 from silx.gui import qt
 import pyFAI.utils
@@ -36,8 +36,9 @@ from pyFAI.gui.calibration.model.CalibrationModel import CalibrationModel
 
 class CalibrationWindow(qt.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, context):
         super(CalibrationWindow, self).__init__()
+        context.setParent(self)
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-main.ui"), self)
         self.__model = CalibrationModel()
 

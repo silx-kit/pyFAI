@@ -43,6 +43,7 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from . import utils
 from .model.DataModel import DataModel
+from .CalibrationContext import CalibrationContext
 
 _logger = logging.getLogger(__name__)
 
@@ -430,6 +431,8 @@ class IntegrationPlot(qt.QFrame):
         plot2d.addToolBar(toolBar)
 
         toolBar = tools.ImageToolBar(parent=self, plot=plot2d)
+        colormapDialog = CalibrationContext.instance().getColormapDialog()
+        toolBar.getColormapAction().setColorDialog(colormapDialog)
         previousResetZoomAction = toolBar.getResetZoomAction()
         resetZoomAction = qt.QAction()
         resetZoomAction.triggered.connect(self.resetZoom)

@@ -37,6 +37,7 @@ from silx.gui.plot.tools import PositionInfo
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from .helper.SynchronizeRawView import SynchronizeRawView
+from .CalibrationContext import CalibrationContext
 
 _logger = logging.getLogger(__name__)
 
@@ -87,6 +88,8 @@ class MaskTask(AbstractCalibrationTask):
         toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
         plot.addToolBar(toolBar)
         toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        colormapDialog = CalibrationContext.instance().getColormapDialog()
+        toolBar.getColormapAction().setColorDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
         statusBar = self.__createPlotStatusBar(plot)
