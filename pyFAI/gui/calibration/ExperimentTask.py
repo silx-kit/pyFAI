@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "20/08/2018"
 
 import os
 import fabio
@@ -35,16 +35,18 @@ import numpy
 import logging
 from contextlib import contextmanager
 from collections import OrderedDict
+
 import silx.gui.plot
 from silx.gui import qt
+
 import pyFAI.utils
 from pyFAI.calibrant import Calibrant
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
-from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
 import pyFAI.detectors
 from .DetectorSelectorDrop import DetectorSelectorDrop
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
+from . import units
 
 _logger = logging.getLogger(__name__)
 
@@ -108,9 +110,12 @@ class ExperimentTask(AbstractCalibrationTask):
         self._mask.setModel(settings.maskFile())
         self._dark.setModel(settings.darkFile())
 
-        adaptor = WavelengthToEnergyAdaptor(self, settings.wavelength())
+        self._wavelength.setModelUnit(units.Unit.ANGSTROM)
+        self._wavelength.setDisplayedUnit(units.Unit.ANGSTROM)
+        self._energy.setModelUnit(units.Unit.ANGSTROM)
+        self._energy.setDisplayedUnit(units.Unit.ENERGY)
         self._wavelength.setModel(settings.wavelength())
-        self._energy.setModel(adaptor)
+        self._energy.setModel(settings.wavelength())
 
         settings.image().changed.connect(self.__imageUpdated)
 
