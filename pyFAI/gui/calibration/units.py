@@ -31,15 +31,28 @@ import enum
 import numpy
 
 
+class Dimentionality(enum.Enum):
+
+    ANGLE = "Angle"
+
+    LENGTH = "Length"
+
+    WAVELENGTH = "Wavelength"
+
+    @property
+    def fullname(self):
+        return self.value
+
+
 class Unit(enum.Enum):
 
-    DEGREE = ("Degree", u"deg"),
+    DEGREE = ("Degree", u"deg", Dimentionality.ANGLE),
 
-    RADIAN = ("Radian", u"rad"),
+    RADIAN = ("Radian", u"rad", Dimentionality.ANGLE),
 
-    METER = ("Meter", u"m"),
+    METER = ("Meter", u"m", Dimentionality.LENGTH),
 
-    ANGSTROM = ("Ångström", u"Å"),
+    ANGSTROM = ("Ångström", u"Å", Dimentionality.WAVELENGTH),
 
     @property
     def fullname(self):
@@ -48,6 +61,18 @@ class Unit(enum.Enum):
     @property
     def symbol(self):
         return self.value[0][1]
+
+    @property
+    def dimensionality(self):
+        return self.value[0][2]
+
+    @classmethod
+    def get_units(cls, dimensionality):
+        result = []
+        for unit in cls:
+            if unit.dimensionality is dimensionality:
+                result.append(unit)
+        return result
 
 
 _converters = None
