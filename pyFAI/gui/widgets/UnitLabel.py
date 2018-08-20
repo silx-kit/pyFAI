@@ -27,7 +27,11 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
 __date__ = "20/08/2018"
 
+import functools
+
 from silx.gui import qt
+
+from ..calibration import units
 
 
 class UnitLabel(qt.QLabel):
@@ -38,6 +42,7 @@ class UnitLabel(qt.QLabel):
         super(qt.QLabel, self).__init__(parent)
         self.__unit = None
         self.__model = None
+        self.__isUnitEditable = False
 
     def setUnit(self, unit):
         """
@@ -86,3 +91,50 @@ class UnitLabel(qt.QLabel):
         :rtype: pyFAI.gui.calibration.model.DataUnit.DataUnit
         """
         return self.__model
+
+    def __popupUnitSelection(self, pos):
+        """Display a popup list to allow to select a new unit"""
+        if self.__unit is None:
+            return
+
+        unitList = units.Unit.get_units(self.__unit.dimensionality)
+        if len(unitList) <= 1:
+            return
+
+        menu = qt.QMenu(self)
+        title = qt.QAction(menu)
+        title.setEnabled(False)
+        title.setText(self.__unit.dimensionality.fullname)
+        menu.addAction(title)
+
+        for unit in unitList:
+            action = qt.QAction(menu)
+            text = "%s: %s" % (unit.fullname, unit.symbol)
+            if unit is self.__unit:
+                text += " (current)"
+            action.setText(text)
+            action.triggered.connect(functools.partial(self.__unitSelected, unit))
+            menu.addAction(action)
+
+        menu.popup(pos)
+
+    def __unitSelected(self, unit):
+        model = self.getUnitModel()
+        if model is not None:
+            model.setValue(unit)
+        else:
+            self.setUnit(unit)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == qt.Qt.LeftButton and self.__isUnitEditable:
+            pos = event.pos()
+            pos = self.mapToGlobal(pos)
+            self.__popupUnitSelection(pos)
+            return
+        super(UnitLabel, self).mouseReleaseEvent(event)
+
+    def setUnitEditable(self, isUnitEditable):
+        self.__isUnitEditable = isUnitEditable
+
+    def isUnitEditable(self):
+        return self.__isUnitEditable
