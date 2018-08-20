@@ -55,9 +55,14 @@ class QuantityEdit(qt.QLineEdit):
         self.__modelUnit = None
         self.__displayedUnit = None
         self.__displayedUnitModel = None
+        self.__previousText = None
 
         self.editingFinished.connect(self.__editingFinished)
         self.returnPressed.connect(self.__returnPressed)
+
+    def focusInEvent(self, event):
+        self.__previousText = self.text()
+        super(QuantityEdit, self).focusInEvent(event)
 
     def setModel(self, model):
         if self.__model is not None:
@@ -170,6 +175,8 @@ class QuantityEdit(qt.QLineEdit):
 
     def __applyText(self):
         text = self.text()
+        if text == self.__previousText:
+            return
         validator = self.validator()
         value, validated = validator.toValue(text)
         try:
