@@ -71,14 +71,16 @@ class FitParamView(qt.QObject):
 
         self.__quantity.setModelUnit(internalUnit)
 
-        if isinstance(displayedUnit, DataModel):
-            self.__unit.setUnitModel(displayedUnit)
-            self.__quantity.setDisplayedUnitModel(displayedUnit)
-        elif isinstance(displayedUnit, units.Unit):
-            self.__unit.setUnit(displayedUnit)
-            self.__quantity.setDisplayedUnit(displayedUnit)
+        if isinstance(displayedUnit, units.Unit):
+            model = DataModel()
+            model.setValue(displayedUnit)
+            displayedUnit = model
+        elif isinstance(displayedUnit, DataModel):
+            pass
         else:
             raise TypeError("Unsupported type %s" % type(displayedUnit))
+        self.__unit.setUnitModel(displayedUnit)
+        self.__quantity.setDisplayedUnitModel(displayedUnit)
 
         self.__constraints = qt.QToolButton(parent)
         self.__constraints.setAutoRaise(True)
