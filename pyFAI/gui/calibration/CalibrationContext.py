@@ -101,6 +101,20 @@ class CalibrationContext(object):
             return
         self.__restoreColormap("raw-colormap", self.__rawColormap)
 
+        settings.beginGroup("units")
+        angleUnit = settings.value("angle-unit", None)
+        settings.endGroup()
+
+        try:
+            angleUnit = getattr(units.Unit, angleUnit)
+            if not isinstance(angleUnit, units.Unit):
+                angleUnit = None
+        except Exception:
+            angleUnit = None
+        if angleUnit is None:
+            angleUnit = units.Unit.RADIAN
+        self.__angleUnit.setValue(angleUnit)
+
     def saveSettings(self):
         """Save the settings of all the application"""
         settings = self.__settings
@@ -108,6 +122,10 @@ class CalibrationContext(object):
             _logger.debug("Settings not set")
             return
         self.__saveColormap("raw-colormap", self.__rawColormap)
+
+        settings.beginGroup("units")
+        settings.setValue("angle-unit", self.__angleUnit.value().name)
+        settings.endGroup()
 
         # Synchronize the file storage
         settings.sync()
