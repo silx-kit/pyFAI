@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "20/08/2018"
 
 import logging
 import numpy
@@ -41,9 +41,12 @@ import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
 from . import utils
-from . import validators
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
+from ..widgets.UnitLabel import UnitLabel
+from .model.DataModel import DataModel
+from .QuantityEdit import QuantityEdit
+from . import units
 
 _logger = logging.getLogger(__name__)
 
@@ -54,17 +57,29 @@ _iconVariableConstrainedOut = None
 
 class FitParamView(qt.QObject):
 
-    def __init__(self, parent, label, unit):
+    def __init__(self, parent, label, internalUnit, displayedUnit=None):
         qt.QObject.__init__(self, parent=parent)
-        validator = validators.DoubleValidator(self)
         self.__label = qt.QLabel(parent)
         self.__label.setText(label)
-        self.__lineEdit = qt.QLineEdit(parent)
-        self.__lineEdit.setValidator(validator)
-        self.__lineEdit.setAlignment(qt.Qt.AlignRight)
-        self.__lineEdit.editingFinished.connect(self.__lineEditChanged)
-        self.__unit = qt.QLabel(parent)
-        self.__unit.setText(unit)
+        self.__quantity = QuantityEdit(parent)
+        self.__quantity.setAlignment(qt.Qt.AlignRight)
+        self.__unit = UnitLabel(parent)
+        self.__unit.setUnitEditable(True)
+
+        if displayedUnit is None:
+            displayedUnit = internalUnit
+
+        self.__quantity.setModelUnit(internalUnit)
+
+        if isinstance(displayedUnit, DataModel):
+            self.__unit.setUnitModel(displayedUnit)
+            self.__quantity.setDisplayedUnitModel(displayedUnit)
+        elif isinstance(displayedUnit, units.Unit):
+            self.__unit.setUnit(displayedUnit)
+            self.__quantity.setDisplayedUnit(displayedUnit)
+        else:
+            raise TypeError("Unsupported type %s" % type(displayedUnit))
+
         self.__constraints = qt.QToolButton(parent)
         self.__constraints.setAutoRaise(True)
         self.__constraints.clicked.connect(self.__constraintsClicked)
@@ -79,24 +94,12 @@ class FitParamView(qt.QObject):
         if _iconVariableConstrainedOut is None:
             _iconVariableConstrainedOut = icons.getQIcon("pyfai:gui/icons/variable-constrained-out")
 
-    def __lineEditChanged(self):
-        value = self.__lineEdit.text()
-        try:
-            value = float(value)
-            self.__model.setValue(value)
-        except ValueError:
-            pass
-
     def model(self):
         return self.__model
 
     def setModel(self, model):
-        if self.__model is not None:
-            self.__model.changed.disconnect(self.__modelChanged)
+        self.__quantity.setModel(model)
         self.__model = model
-        if self.__model is not None:
-            self.__model.changed.connect(self.__modelChanged)
-            self.__modelChanged()
 
     def setConstraintsModel(self, model):
         if self.__constraintsModel is not None:
@@ -105,17 +108,6 @@ class FitParamView(qt.QObject):
         if self.__constraintsModel is not None:
             self.__constraintsModel.changed.connect(self.__constraintsModelChanged)
             self.__constraintsModelChanged()
-
-    def __modelChanged(self):
-        old = self.__lineEdit.blockSignals(True)
-        if self.__model is None:
-            self.__lineEdit.setText("")
-        else:
-            value = self.__model.value()
-            if value is None:
-                value = ""
-            self.__lineEdit.setText(str(value))
-        self.__lineEdit.blockSignals(old)
 
     def __constraintsModelChanged(self):
         constraint = self.__constraintsModel
@@ -131,7 +123,7 @@ class FitParamView(qt.QObject):
         constraint.setFixed(not constraint.isFixed())
 
     def widgets(self):
-        return [self.__label, self.__lineEdit, self.__unit, self.__constraints]
+        return [self.__label, self.__quantity, self.__unit, self.__constraints]
 
 
 class _RingPlot(silx.gui.plot.PlotWidget):
@@ -367,16 +359,19 @@ class GeometryTask(AbstractCalibrationTask):
         self._imageHolder.setLayout(layout)
 
         layout = qt.QGridLayout(self._settings)
-        self.__wavelength = FitParamView(self, "Wavelength:", u"Å")
+        self.__wavelength = FitParamView(self, "Wavelength:", units.Unit.ANGSTROM)
         self.addParameterToLayout(layout, self.__wavelength)
 
         layout = qt.QGridLayout(self._geometry)
-        self.__distance = FitParamView(self, "Distance:", "m")
-        self.__poni1 = FitParamView(self, "PONI1:", u"m")
-        self.__poni2 = FitParamView(self, "PONI2:", u"m")
-        self.__rotation1 = FitParamView(self, "Rotation 1:", u"rad")
-        self.__rotation2 = FitParamView(self, "Rotation 2:", u"rad")
-        self.__rotation3 = FitParamView(self, "Rotation 3:", u"rad")
+        self.__distance = FitParamView(self, "Distance:", units.Unit.METER)
+        self.__poni1 = FitParamView(self, "PONI1:", units.Unit.METER)
+        self.__poni2 = FitParamView(self, "PONI2:", units.Unit.METER)
+
+        userAngleUnit = CalibrationContext.instance().getAngleUnit()
+
+        self.__rotation1 = FitParamView(self, "Rotation 1:", units.Unit.RADIAN, userAngleUnit)
+        self.__rotation2 = FitParamView(self, "Rotation 2:", units.Unit.RADIAN, userAngleUnit)
+        self.__rotation3 = FitParamView(self, "Rotation 3:", units.Unit.RADIAN, userAngleUnit)
         self.addParameterToLayout(layout, self.__distance)
         self.addParameterToLayout(layout, self.__poni1)
         self.addParameterToLayout(layout, self.__poni2)

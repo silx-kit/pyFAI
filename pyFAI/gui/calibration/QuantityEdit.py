@@ -27,11 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/08/2018"
+__date__ = "20/08/2018"
 
 import logging
 from silx.gui import qt
 from . import validators
+from . import units
 
 _logger = logging.getLogger(__name__)
 
@@ -51,6 +52,9 @@ class QuantityEdit(qt.QLineEdit):
 
         self.__model = None
         self.__applyedWhenFocusOut = True
+        self.__modelUnit = None
+        self.__displayedUnit = None
+        self.__displayedUnitModel = None
 
         self.editingFinished.connect(self.__editingFinished)
         self.returnPressed.connect(self.__returnPressed)
@@ -65,6 +69,66 @@ class QuantityEdit(qt.QLineEdit):
 
     def model(self):
         return self.__model
+
+    def setDisplayedUnit(self, displayedUnit):
+        """
+        Set the displayed unit.
+
+        :param pyFAI.gui.calibration.units.Unit displayedUnit: An unit
+        """
+        if self.__displayedUnit is displayedUnit:
+            return
+        self.__displayedUnit = displayedUnit
+        self.__cancelText()
+
+    def getDisplayedUnit(self):
+        """
+        :rtype: pyFAI.gui.calibration.units.Unit
+        """
+        return self.__displayedUnit
+
+    def setDisplayedUnitModel(self, displayedUnitModel):
+        """
+        Set the displayed unit.
+
+        :param pyFAI.gui.calibration.units.Unit displayedUnitModel: A model containing a unit
+        """
+        if self.__displayedUnitModel is not None:
+            self.__displayedUnitModel.changed.disconnect(self.__modelChanged)
+        self.__displayedUnitModel = displayedUnitModel
+        if self.__displayedUnitModel is not None:
+            self.__displayedUnitModel.changed.connect(self.__displayedUnitModelChanged)
+        self.__displayedUnitModelChanged()
+
+    def __displayedUnitModelChanged(self):
+        model = self.__displayedUnitModel
+        if model is None:
+            self.setDisplayedUnit(None)
+        else:
+            self.setDisplayedUnit(model.value())
+
+    def getDisplayedUnitModel(self):
+        """
+        :rtype: pyFAI.gui.calibration.model.DataModel.DataModel
+        """
+        return self.__displayedUnitModel
+
+    def setModelUnit(self, modelUnit):
+        """
+        Set the unit of the stroed data in the model.
+
+        :param pyFAI.gui.calibration.units.Unit unit: An unit
+        """
+        if self.__modelUnit is modelUnit:
+            return
+        self.__modelUnit = modelUnit
+        self.__cancelText()
+
+    def getModelUnit(self):
+        """
+        :rtype: pyFAI.gui.calibration.units.Unit
+        """
+        return self.__modelUnit
 
     def keyPressEvent(self, event):
         if event.key() in (qt.Qt.Key_Return, qt.Qt.Key_Enter):
@@ -88,12 +152,29 @@ class QuantityEdit(qt.QLineEdit):
     def __returnPressed(self):
         self.__applyText()
 
+    def __getUnits(self):
+        """Returns internal unit and displayed unit"""
+        return self.__modelUnit, self.__displayedUnit
+
+    def __convertToModel(self, value):
+        internalUnit, displayedUnit = self.__getUnits()
+        if internalUnit is displayedUnit:
+            return value
+        return units.convert(value, displayedUnit, internalUnit)
+
+    def __convertToDisplay(self, value):
+        internalUnit, displayedUnit = self.__getUnits()
+        if internalUnit is displayedUnit:
+            return value
+        return units.convert(value, internalUnit, displayedUnit)
+
     def __applyText(self):
         text = self.text()
         validator = self.validator()
         value, validated = validator.toValue(text)
         try:
             if validated:
+                value = self.__convertToModel(value)
                 self.__model.setValue(value)
             else:
                 self.__cancelText()
@@ -103,9 +184,13 @@ class QuantityEdit(qt.QLineEdit):
 
     def __cancelText(self):
         """Reset the edited value to the original one"""
-        value = self.__model.value()
-        validator = self.validator()
-        text = validator.toText(value)
+        if self.__model is None:
+            text = ""
+        else:
+            value = self.__model.value()
+            value = self.__convertToDisplay(value)
+            validator = self.validator()
+            text = validator.toText(value)
         old = self.blockSignals(True)
         self.setText(text)
         self.blockSignals(old)

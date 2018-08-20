@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "20/08/2018"
 
 import weakref
 import logging
@@ -35,8 +35,10 @@ from silx.gui.dialog.ColormapDialog import ColormapDialog
 from silx.gui.colors import Colormap
 
 from .model.CalibrationModel import CalibrationModel
+from .model.DataModel import DataModel
 from . import utils
 from ..utils import eventutils
+from . import units
 
 
 _logger = logging.getLogger(__name__)
@@ -62,6 +64,8 @@ class CalibrationContext(object):
         self.__calibrationModel = None
         self.__rawColormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
         self.__settings = settings
+        self.__angleUnit = DataModel()
+        self.__angleUnit.setValue(units.Unit.RADIAN)
 
     def __restoreColormap(self, groupName, colormap):
         settings = self.__settings
@@ -97,6 +101,20 @@ class CalibrationContext(object):
             return
         self.__restoreColormap("raw-colormap", self.__rawColormap)
 
+        settings.beginGroup("units")
+        angleUnit = settings.value("angle-unit", None)
+        settings.endGroup()
+
+        try:
+            angleUnit = getattr(units.Unit, angleUnit)
+            if not isinstance(angleUnit, units.Unit):
+                angleUnit = None
+        except Exception:
+            angleUnit = None
+        if angleUnit is None:
+            angleUnit = units.Unit.RADIAN
+        self.__angleUnit.setValue(angleUnit)
+
     def saveSettings(self):
         """Save the settings of all the application"""
         settings = self.__settings
@@ -104,6 +122,10 @@ class CalibrationContext(object):
             _logger.debug("Settings not set")
             return
         self.__saveColormap("raw-colormap", self.__rawColormap)
+
+        settings.beginGroup("units")
+        settings.setValue("angle-unit", self.__angleUnit.value().name)
+        settings.endGroup()
 
         # Synchronize the file storage
         settings.sync()
@@ -204,3 +226,6 @@ class CalibrationContext(object):
             self.__defaultColormapDialog = dialog
 
         return self.__defaultColormapDialog
+
+    def getAngleUnit(self):
+        return self.__angleUnit
