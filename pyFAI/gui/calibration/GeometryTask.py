@@ -105,7 +105,7 @@ class FitParamView(qt.QObject):
         self.__model = model
         if self.__model is not None:
             self.__model.changed.connect(self.__modelChanged)
-            self.__modelChanged()
+        self.__modelChanged()
 
     def setConstraintsModel(self, model):
         if self.__constraintsModel is not None:
