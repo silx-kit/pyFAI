@@ -41,7 +41,6 @@ import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
 from . import utils
-from . import validators
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from ..widgets.UnitLabel import UnitLabel
@@ -58,21 +57,28 @@ _iconVariableConstrainedOut = None
 
 class FitParamView(qt.QObject):
 
-    def __init__(self, parent, label, unit):
+    def __init__(self, parent, label, internalUnit, displayedUnit=None):
         qt.QObject.__init__(self, parent=parent)
-        validator = validators.DoubleValidator(self)
         self.__label = qt.QLabel(parent)
         self.__label.setText(label)
         self.__quantity = QuantityEdit(parent)
-        self.__quantity.setValidator(validator)
         self.__quantity.setAlignment(qt.Qt.AlignRight)
         self.__unit = UnitLabel(parent)
-        if isinstance(unit, DataModel):
-            self.__unit.setUnitModel(unit)
-        elif isinstance(unit, units.Unit):
-            self.__unit.setUnit(unit)
+        self.__unit.setUnitEditable(True)
+
+        if displayedUnit is None:
+            displayedUnit = internalUnit
+
+        self.__quantity.setModelUnit(internalUnit)
+
+        if isinstance(displayedUnit, DataModel):
+            self.__unit.setUnitModel(displayedUnit)
+            self.__quantity.setDisplayedUnitModel(displayedUnit)
+        elif isinstance(displayedUnit, units.Unit):
+            self.__unit.setUnit(displayedUnit)
+            self.__quantity.setDisplayedUnit(displayedUnit)
         else:
-            raise TypeError("Unsupported type %s" % type(unit))
+            raise TypeError("Unsupported type %s" % type(displayedUnit))
 
         self.__constraints = qt.QToolButton(parent)
         self.__constraints.setAutoRaise(True)
@@ -360,9 +366,12 @@ class GeometryTask(AbstractCalibrationTask):
         self.__distance = FitParamView(self, "Distance:", units.Unit.METER)
         self.__poni1 = FitParamView(self, "PONI1:", units.Unit.METER)
         self.__poni2 = FitParamView(self, "PONI2:", units.Unit.METER)
-        self.__rotation1 = FitParamView(self, "Rotation 1:", units.Unit.RADIAN)
-        self.__rotation2 = FitParamView(self, "Rotation 2:", units.Unit.RADIAN)
-        self.__rotation3 = FitParamView(self, "Rotation 3:", units.Unit.RADIAN)
+
+        userAngleUnit = CalibrationContext.instance().getAngleUnit()
+
+        self.__rotation1 = FitParamView(self, "Rotation 1:", units.Unit.RADIAN, userAngleUnit)
+        self.__rotation2 = FitParamView(self, "Rotation 2:", units.Unit.RADIAN, userAngleUnit)
+        self.__rotation3 = FitParamView(self, "Rotation 3:", units.Unit.RADIAN, userAngleUnit)
         self.addParameterToLayout(layout, self.__distance)
         self.addParameterToLayout(layout, self.__poni1)
         self.addParameterToLayout(layout, self.__poni2)
