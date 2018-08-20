@@ -24,10 +24,11 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "20/08/2018"
 
 
 import enum
+import numpy
 
 
 class Unit(enum.Enum):
@@ -47,3 +48,29 @@ class Unit(enum.Enum):
     @property
     def symbol(self):
         return self.value[0][1]
+
+
+_converters = None
+
+
+def _initConverters():
+    global _converters
+    _converters = {}
+    _converters[(Unit.RADIAN, Unit.DEGREE)] = lambda v: v * 180.0 / numpy.pi
+    _converters[(Unit.DEGREE, Unit.RADIAN)] = lambda v: v * numpy.pi / 180.0
+
+
+def convert(value, inputUnit, outputUnit):
+    if inputUnit is outputUnit:
+        return value
+    if value is None:
+        return None
+
+    if _converters is None:
+        _initConverters()
+
+    converter = _converters.get((inputUnit, outputUnit), None)
+    if converter is None:
+        raise TypeError("Impossible to convert from %s to %s" % (inputUnit.name, outputUnit.name))
+
+    return converter(value)
