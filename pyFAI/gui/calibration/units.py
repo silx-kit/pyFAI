@@ -31,6 +31,9 @@ import enum
 import numpy
 
 
+from pyFAI import units
+
+
 class Dimentionality(enum.Enum):
 
     ANGLE = "Angle"
@@ -53,6 +56,10 @@ class Unit(enum.Enum):
     METER = ("Meter", u"m", Dimentionality.LENGTH),
 
     ANGSTROM = ("Ångström", u"Å", Dimentionality.WAVELENGTH),
+
+    METER_WL = ("Meter", u"m", Dimentionality.WAVELENGTH),
+
+    ENERGY = ("Energy", u"keV", Dimentionality.WAVELENGTH),
 
     @property
     def fullname(self):
@@ -83,6 +90,15 @@ def _initConverters():
     _converters = {}
     _converters[(Unit.RADIAN, Unit.DEGREE)] = lambda v: v * 180.0 / numpy.pi
     _converters[(Unit.DEGREE, Unit.RADIAN)] = lambda v: v * numpy.pi / 180.0
+
+    _converters[(Unit.ENERGY, Unit.ANGSTROM)] = lambda v: units.hc / v
+    _converters[(Unit.ANGSTROM, Unit.ENERGY)] = lambda v: units.hc / v
+
+    _converters[(Unit.METER_WL, Unit.ANGSTROM)] = lambda v: v * 1e10
+    _converters[(Unit.ANGSTROM, Unit.METER_WL)] = lambda v: v / 1e10
+
+    _converters[(Unit.ENERGY, Unit.METER_WL)] = lambda v: (units.hc / v) / 1e10
+    _converters[(Unit.METER_WL, Unit.ENERGY)] = lambda v: units.hc / (v * 1e10)
 
 
 def convert(value, inputUnit, outputUnit):
