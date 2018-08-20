@@ -46,6 +46,7 @@ from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from ..widgets.UnitLabel import UnitLabel
 from .model.DataModel import DataModel
+from .QuantityEdit import QuantityEdit
 from . import units
 
 _logger = logging.getLogger(__name__)
@@ -62,10 +63,9 @@ class FitParamView(qt.QObject):
         validator = validators.DoubleValidator(self)
         self.__label = qt.QLabel(parent)
         self.__label.setText(label)
-        self.__lineEdit = qt.QLineEdit(parent)
-        self.__lineEdit.setValidator(validator)
-        self.__lineEdit.setAlignment(qt.Qt.AlignRight)
-        self.__lineEdit.editingFinished.connect(self.__lineEditChanged)
+        self.__quantity = QuantityEdit(parent)
+        self.__quantity.setValidator(validator)
+        self.__quantity.setAlignment(qt.Qt.AlignRight)
         self.__unit = UnitLabel(parent)
         if isinstance(unit, DataModel):
             self.__unit.setUnitModel(unit)
@@ -88,24 +88,12 @@ class FitParamView(qt.QObject):
         if _iconVariableConstrainedOut is None:
             _iconVariableConstrainedOut = icons.getQIcon("pyfai:gui/icons/variable-constrained-out")
 
-    def __lineEditChanged(self):
-        value = self.__lineEdit.text()
-        try:
-            value = float(value)
-            self.__model.setValue(value)
-        except ValueError:
-            pass
-
     def model(self):
         return self.__model
 
     def setModel(self, model):
-        if self.__model is not None:
-            self.__model.changed.disconnect(self.__modelChanged)
+        self.__quantity.setModel(model)
         self.__model = model
-        if self.__model is not None:
-            self.__model.changed.connect(self.__modelChanged)
-        self.__modelChanged()
 
     def setConstraintsModel(self, model):
         if self.__constraintsModel is not None:
@@ -114,17 +102,6 @@ class FitParamView(qt.QObject):
         if self.__constraintsModel is not None:
             self.__constraintsModel.changed.connect(self.__constraintsModelChanged)
             self.__constraintsModelChanged()
-
-    def __modelChanged(self):
-        old = self.__lineEdit.blockSignals(True)
-        if self.__model is None:
-            self.__lineEdit.setText("")
-        else:
-            value = self.__model.value()
-            if value is None:
-                value = ""
-            self.__lineEdit.setText(str(value))
-        self.__lineEdit.blockSignals(old)
 
     def __constraintsModelChanged(self):
         constraint = self.__constraintsModel
@@ -140,7 +117,7 @@ class FitParamView(qt.QObject):
         constraint.setFixed(not constraint.isFixed())
 
     def widgets(self):
-        return [self.__label, self.__lineEdit, self.__unit, self.__constraints]
+        return [self.__label, self.__quantity, self.__unit, self.__constraints]
 
 
 class _RingPlot(silx.gui.plot.PlotWidget):
