@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "20/08/2018"
 
 import weakref
 import logging
@@ -35,8 +35,10 @@ from silx.gui.dialog.ColormapDialog import ColormapDialog
 from silx.gui.colors import Colormap
 
 from .model.CalibrationModel import CalibrationModel
+from .model.DataModel import DataModel
 from . import utils
 from ..utils import eventutils
+from . import units
 
 
 _logger = logging.getLogger(__name__)
@@ -62,6 +64,8 @@ class CalibrationContext(object):
         self.__calibrationModel = None
         self.__rawColormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
         self.__settings = settings
+        self.__angleUnit = DataModel()
+        self.__angleUnit.setValue(units.Unit.RADIAN)
 
     def __restoreColormap(self, groupName, colormap):
         settings = self.__settings
@@ -204,3 +208,6 @@ class CalibrationContext(object):
             self.__defaultColormapDialog = dialog
 
         return self.__defaultColormapDialog
+
+    def getAngleUnit(self):
+        return self.__angleUnit

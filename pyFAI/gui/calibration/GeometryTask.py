@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "20/08/2018"
 
 import logging
 import numpy
@@ -44,6 +44,9 @@ from . import utils
 from . import validators
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
+from ..widgets.UnitLabel import UnitLabel
+from .model.DataModel import DataModel
+from . import units
 
 _logger = logging.getLogger(__name__)
 
@@ -63,8 +66,14 @@ class FitParamView(qt.QObject):
         self.__lineEdit.setValidator(validator)
         self.__lineEdit.setAlignment(qt.Qt.AlignRight)
         self.__lineEdit.editingFinished.connect(self.__lineEditChanged)
-        self.__unit = qt.QLabel(parent)
-        self.__unit.setText(unit)
+        self.__unit = UnitLabel(parent)
+        if isinstance(unit, DataModel):
+            self.__unit.setUnitModel(unit)
+        elif isinstance(unit, units.Unit):
+            self.__unit.setUnit(unit)
+        else:
+            raise TypeError("Unsupported type %s" % type(unit))
+
         self.__constraints = qt.QToolButton(parent)
         self.__constraints.setAutoRaise(True)
         self.__constraints.clicked.connect(self.__constraintsClicked)
@@ -367,16 +376,16 @@ class GeometryTask(AbstractCalibrationTask):
         self._imageHolder.setLayout(layout)
 
         layout = qt.QGridLayout(self._settings)
-        self.__wavelength = FitParamView(self, "Wavelength:", u"Å")
+        self.__wavelength = FitParamView(self, "Wavelength:", units.Unit.ANGSTROM)
         self.addParameterToLayout(layout, self.__wavelength)
 
         layout = qt.QGridLayout(self._geometry)
-        self.__distance = FitParamView(self, "Distance:", "m")
-        self.__poni1 = FitParamView(self, "PONI1:", u"m")
-        self.__poni2 = FitParamView(self, "PONI2:", u"m")
-        self.__rotation1 = FitParamView(self, "Rotation 1:", u"rad")
-        self.__rotation2 = FitParamView(self, "Rotation 2:", u"rad")
-        self.__rotation3 = FitParamView(self, "Rotation 3:", u"rad")
+        self.__distance = FitParamView(self, "Distance:", units.Unit.METER)
+        self.__poni1 = FitParamView(self, "PONI1:", units.Unit.METER)
+        self.__poni2 = FitParamView(self, "PONI2:", units.Unit.METER)
+        self.__rotation1 = FitParamView(self, "Rotation 1:", units.Unit.RADIAN)
+        self.__rotation2 = FitParamView(self, "Rotation 2:", units.Unit.RADIAN)
+        self.__rotation3 = FitParamView(self, "Rotation 3:", units.Unit.RADIAN)
         self.addParameterToLayout(layout, self.__distance)
         self.addParameterToLayout(layout, self.__poni1)
         self.addParameterToLayout(layout, self.__poni2)
