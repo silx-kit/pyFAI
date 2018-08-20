@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "20/08/2018"
 
 import logging
 import numpy
@@ -84,7 +84,7 @@ class CalibrantPreview(qt.QFrame):
         if waveLenght is None:
             return None
 
-        calibrant.setWavelength_change2th(waveLenght * 1e-10)
+        calibrant.setWavelength_change2th(waveLenght)
         return calibrant
 
     def __updateToolTip(self):

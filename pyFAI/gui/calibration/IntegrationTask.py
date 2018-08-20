@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "20/08/2018"
 
 import logging
 import numpy
@@ -122,8 +122,7 @@ class IntegrationProcess(object):
         self.__image = image
         self.__mask = mask
 
-        wavelength = geometry.wavelength().value()
-        self.__wavelength = wavelength / 1e10
+        self.__wavelength = geometry.wavelength().value()
         self.__distance = geometry.distance().value()
         self.__poni1 = geometry.poni1().value()
         self.__poni2 = geometry.poni2().value()
@@ -642,7 +641,7 @@ class IntegrationTask(AbstractCalibrationTask):
         pyfaiGeometry.rot1 = geometry.rotation1().value()
         pyfaiGeometry.rot2 = geometry.rotation2().value()
         pyfaiGeometry.rot3 = geometry.rotation3().value()
-        pyfaiGeometry.wavelength = geometry.wavelength().value() * 1e-10
+        pyfaiGeometry.wavelength = geometry.wavelength().value()
 
         experimentSettingsModel = self.model().experimentSettingsModel()
         detector = experimentSettingsModel.detector()

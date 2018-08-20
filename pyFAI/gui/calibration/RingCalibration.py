@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/07/2018"
+__date__ = "20/08/2018"
 
 import logging
 import numpy
@@ -226,7 +226,7 @@ class RingCalibration(object):
 
     def toGeometryModel(self, model):
         model.lockSignals()
-        model.wavelength().setValue(self.__geoRef.wavelength * 1e10)
+        model.wavelength().setValue(self.__geoRef.wavelength)
         model.distance().setValue(self.__geoRef.dist)
         model.poni1().setValue(self.__geoRef.poni1)
         model.poni2().setValue(self.__geoRef.poni2)
@@ -236,7 +236,7 @@ class RingCalibration(object):
         model.unlockSignals()
 
     def fromGeometryModel(self, model, resetResidual=True):
-        wavelength = model.wavelength().value() * 1e-10
+        wavelength = model.wavelength().value()
         self.__calibrant.setWavelength_change2th(wavelength)
         self.__geoRef.wavelength = wavelength
         self.__geoRef.dist = model.distance().value()

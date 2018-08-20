@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "20/08/2018"
 
 import logging
 import numpy
@@ -616,7 +616,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         try:
             calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
             wavelength = self.model().experimentSettingsModel().wavelength().value()
-            wavelength = wavelength / 1e10
             controlPoints = pyFAI.control_points.ControlPoints(None, calibrant, wavelength)
             for peakModel in self.model().peakSelectionModel():
                 ringNumber = peakModel.ringNumber() - 1
@@ -835,7 +834,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
-        wavelength = wavelength / 1e10
         extractor = RingExtractor(image, mask, calibrant, detector, wavelength)
 
         # FIXME numpy array can be allocated first

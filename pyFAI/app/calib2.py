@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/08/2018"
+__date__ = "20/08/2018"
 __status__ = "production"
 
 import logging
@@ -52,6 +52,7 @@ import silx.gui.plot.matplotlib
 
 from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
 from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
+from pyFAI.gui.calibration import units
 
 import pyFAI.resources
 import pyFAI.calibrant
@@ -302,10 +303,12 @@ def setup(model):
             settings.calibrantModel().setCalibrant(calibrant)
 
     if options.wavelength:
-        settings.wavelength().setValue(options.wavelength)
+        value = units.convert(options.wavelength, units.Unit.ANGSTROM, units.Unit.METER_WL)
+        settings.wavelength().setValue(value)
 
     if options.energy:
-        settings.wavelength().setValue(pyFAI.units.hc / options.energy)
+        value = units.convert(options.energy, units.Unit.ENERGY, units.Unit.METER_WL)
+        settings.wavelength().setValue(value)
 
     if options.polarization_factor:
         settings.polarizationFactor(options.polarization_factor)

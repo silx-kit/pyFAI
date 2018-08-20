@@ -359,7 +359,7 @@ class GeometryTask(AbstractCalibrationTask):
         self._imageHolder.setLayout(layout)
 
         layout = qt.QGridLayout(self._settings)
-        self.__wavelength = FitParamView(self, "Wavelength:", units.Unit.ANGSTROM)
+        self.__wavelength = FitParamView(self, "Wavelength:", units.Unit.METER_WL, units.Unit.ANGSTROM)
         self.addParameterToLayout(layout, self.__wavelength)
 
         layout = qt.QGridLayout(self._geometry)
@@ -443,7 +443,6 @@ class GeometryTask(AbstractCalibrationTask):
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
-        wavelength = wavelength / 1e10
 
         peaks = []
         for peakModel in self.model().peakSelectionModel():
@@ -477,7 +476,6 @@ class GeometryTask(AbstractCalibrationTask):
         if self.__wavelengthInvalidated:
             self.__wavelengthInvalidated = False
             wavelength = self.model().experimentSettingsModel().wavelength().value()
-            wavelength = wavelength / 1e10
         else:
             wavelength = None
         self.__calibration.update(image, mask, calibrant, detector, wavelength)

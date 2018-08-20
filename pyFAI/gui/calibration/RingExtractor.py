@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/08/2018"
+__date__ = "20/08/2018"
 
 import logging
 import numpy
@@ -220,7 +220,7 @@ class RingExtractor(object):
 
     def toGeometryModel(self, model):
         model.lockSignals()
-        model.wavelength().setValue(self.__geoRef.wavelength * 1e10)
+        model.wavelength().setValue(self.__geoRef.wavelength)
         model.distance().setValue(self.__geoRef.dist)
         model.poni1().setValue(self.__geoRef.poni1)
         model.poni2().setValue(self.__geoRef.poni2)
