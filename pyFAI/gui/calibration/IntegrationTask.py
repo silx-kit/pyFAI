@@ -43,7 +43,9 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from . import utils
 from .model.DataModel import DataModel
+from ..widgets.QuantityLabel import QuantityLabel
 from .CalibrationContext import CalibrationContext
+from . import units
 
 _logger = logging.getLogger(__name__)
 
@@ -180,6 +182,12 @@ class IntegrationProcess(object):
         else:
             rings = []
         self.__ringAngles = rings
+        try:
+            self.__directDist = ai.getFit2D()["directDist"]
+        except Exception:
+            # The geometry could not fit this param
+            _logger.debug("Backtrace", exc_info=True)
+            self.__directDist = None
 
     def ringAngles(self):
         return self.__ringAngles
@@ -189,6 +197,15 @@ class IntegrationProcess(object):
 
     def result2d(self):
         return self.__result2d
+
+    def radialUnit(self):
+        return self.__radialUnit
+
+    def wavelength(self):
+        return self.__wavelength
+
+    def directDist(self):
+        return self.__directDist
 
 
 def createSaveDialog(parent, title, poni=False, json=False, csv=False):
@@ -216,16 +233,61 @@ def createSaveDialog(parent, title, poni=False, json=False, csv=False):
     return dialog
 
 
+class _StatusBar(qt.QStatusBar):
+
+    def __init__(self, parent=None):
+        qt.QStatusBar.__init__(self, parent)
+
+        angleUnitModel = CalibrationContext.instance().getAngleUnit()
+
+        self.__chi = QuantityLabel(self)
+        self.__chi.setPrefix(u"<b>χ</b>: ")
+        self.__chi.setFormatter(u"{value}")
+        self.__chi.setInternalUnit(units.Unit.RADIAN)
+        self.__chi.setDisplayedUnit(units.Unit.RADIAN)
+        self.__chi.setDisplayedUnitModel(angleUnitModel)
+        self.__chi.setUnitEditable(True)
+        self.addWidget(self.__chi)
+        self.__2theta = QuantityLabel(self)
+        self.__2theta.setPrefix(u"<b>2θ</b>: ")
+        self.__2theta.setFormatter(u"{value}")
+        self.__2theta.setInternalUnit(units.Unit.RADIAN)
+        self.__2theta.setDisplayedUnitModel(angleUnitModel)
+        self.__2theta.setUnitEditable(True)
+        self.addWidget(self.__2theta)
+
+        self.clearValues()
+
+    def setValue(self, tth):
+        self.__chi.setVisible(False)
+        self.__2theta.setVisible(True)
+        self.__2theta.setValue(tth)
+
+    def setValues(self, chi, tth):
+        self.__chi.setVisible(True)
+        self.__2theta.setVisible(True)
+        self.__chi.setValue(chi)
+        self.__2theta.setValue(tth)
+
+    def clearValues(self):
+        self.__chi.setVisible(False)
+        self.__2theta.setValue(float("nan"))
+
+
 class IntegrationPlot(qt.QFrame):
 
     def __init__(self, parent=None):
         super(IntegrationPlot, self).__init__(parent)
 
         self.__plot1d, self.__plot2d = self.__createPlots(self)
+        self.__statusBar = _StatusBar(self)
+        self.__statusBar.setSizeGripEnabled(False)
+
         layout = qt.QVBoxLayout(self)
         layout.setContentsMargins(1, 1, 1, 1)
         layout.addWidget(self.__plot2d)
         layout.addWidget(self.__plot1d)
+        layout.addWidget(self.__statusBar)
         self.__setResult(None)
         self.__processing1d = None
         self.__processing2d = None
@@ -234,10 +296,13 @@ class IntegrationPlot(qt.QFrame):
         self.__markerColors = {}
         self.__angleUnderMouse = None
         self.__availableRingAngles = None
+        self.__radialUnit = None
+        self.__wavelength = None
+        self.__directDist = None
 
         self.__plot2d.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
-        self.__plot1d.sigPlotSignal.connect(self.__plotSignalReceived)
-        self.__plot2d.sigPlotSignal.connect(self.__plotSignalReceived)
+        self.__plot1d.sigPlotSignal.connect(self.__plot1dSignalReceived)
+        self.__plot2d.sigPlotSignal.connect(self.__plot2dSignalReceived)
 
         widget = self.__plot1d
         if hasattr(widget, "centralWidget"):
@@ -270,6 +335,8 @@ class IntegrationPlot(qt.QFrame):
         return False
 
     def __mouseLeave(self):
+        self.__statusBar.clearValues()
+
         if self.__angleUnderMouse is None:
             return
         if self.__angleUnderMouse not in self.__displayedAngles:
@@ -278,11 +345,19 @@ class IntegrationPlot(qt.QFrame):
                 item.setVisible(False)
         self.__angleUnderMouse = None
 
-    def __plotSignalReceived(self, event):
+    def __plot1dSignalReceived(self, event):
         """Called when old style signals at emmited from the plot."""
         if event["event"] == "mouseMoved":
             x, y = event["x"], event["y"]
             self.__mouseMoved(x, y)
+            self.__updateStatusBar(x, None)
+
+    def __plot2dSignalReceived(self, event):
+        """Called when old style signals at emmited from the plot."""
+        if event["event"] == "mouseMoved":
+            x, y = event["x"], event["y"]
+            self.__mouseMoved(x, y)
+            self.__updateStatusBar(x, y)
 
     def __getClosestAngle(self, angle):
         """
@@ -299,6 +374,29 @@ class IntegrationPlot(qt.QFrame):
                 result = ringAngle
                 iresult = ringId
         return iresult, result
+
+    def __updateStatusBar(self, x, y):
+        try:
+            tthRad = utils.tthToRad(x,
+                                    unit=self.__radialUnit,
+                                    wavelength=self.__wavelength,
+                                    directDist=self.__directDist)
+        except Exception:
+            _logger.debug("Backtrace", exc_info=True)
+            tthRad = None
+
+        chiDeg = y
+        if chiDeg is not None:
+            chiRad = numpy.deg2rad(chiDeg)
+        else:
+            chiRad = None
+
+        if tthRad is not None and chiRad is not None:
+            self.__statusBar.setValues(chiRad, tthRad)
+        elif tthRad is not None:
+            self.__statusBar.setValue(tthRad)
+        else:
+            self.__statusBar.removeValues()
 
     def __mouseMoved(self, x, y):
         """Called when mouse move over the plot."""
@@ -496,6 +594,10 @@ class IntegrationPlot(qt.QFrame):
             origin=origin,
             scale=(scaleX, scaleY),
             colormap=colormap)
+
+        self.__radialUnit = integrationProcess.radialUnit()
+        self.__wavelength = integrationProcess.wavelength()
+        self.__directDist = integrationProcess.directDist()
 
     def __setResult(self, result1d):
         self.__result1d = result1d
