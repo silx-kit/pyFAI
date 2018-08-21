@@ -278,8 +278,8 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__plot.resetZoom()
         self.__updateDetector()
 
-    def createImageDialog(self, title, forMask=False):
-        dialog = CalibrationContext.instance().createFileDialog(self)
+    def createImageDialog(self, title, forMask=False, previousFile=None):
+        dialog = CalibrationContext.instance().createFileDialog(self, previousFile=previousFile)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -303,8 +303,8 @@ class ExperimentTask(AbstractCalibrationTask):
         return dialog
 
     @contextmanager
-    def getImageFromDialog(self, title, forMask=False):
-        dialog = self.createImageDialog(title, forMask)
+    def getImageFromDialog(self, title, forMask=False, previousFile=None):
+        dialog = self.createImageDialog(title, forMask, previousFile=previousFile)
 
         result = dialog.exec_()
         if not result:
@@ -342,23 +342,26 @@ class ExperimentTask(AbstractCalibrationTask):
         return dialog
 
     def loadImage(self):
-        with self.getImageFromDialog("Load calibration image") as image:
+        settings = self.model().experimentSettingsModel()
+        previousFile = settings.imageFile().value()
+        with self.getImageFromDialog("Load calibration image", previousFile=previousFile) as image:
             if image is not None:
-                settings = self.model().experimentSettingsModel()
                 settings.imageFile().setValue(str(image.filename))
                 settings.image().setValue(image.data.copy())
 
     def loadMask(self):
-        with self.getImageFromDialog("Load mask image", forMask=True) as image:
+        settings = self.model().experimentSettingsModel()
+        previousFile = settings.maskFile().value()
+        with self.getImageFromDialog("Load mask image", previousFile=previousFile, forMask=True) as image:
             if image is not None:
-                settings = self.model().experimentSettingsModel()
                 settings.maskFile().setValue(image.filename)
                 settings.mask().setValue(image.data)
 
     def loadDark(self):
-        with self.getImageFromDialog("Load dark image") as image:
+        settings = self.model().experimentSettingsModel()
+        previousFile = settings.darkFile().value()
+        with self.getImageFromDialog("Load dark image", previousFile=previousFile) as image:
             if image is not None:
-                settings = self.model().experimentSettingsModel()
                 settings.darkFile().setValue(image.filename)
                 settings.dark().setValue(image.data)
 

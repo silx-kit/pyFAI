@@ -198,13 +198,11 @@ class DetectorSelectorDrop(qt.QWidget):
         return dialog
 
     def loadSplineFile(self):
-        dialog = self.createSplineDialog("Load spline image")
-
-
+        previousFile = self.__splineFile.value()
+        dialog = self.createSplineDialog("Load spline image", previousFile=previousFile)
         result = dialog.exec_()
         if not result:
             return
-
         filename = dialog.selectedFiles()[0]
         try:
             self.__splineFile.setValue(filename)
@@ -256,16 +254,16 @@ class DetectorSelectorDrop(qt.QWidget):
                 raise
 
     def __loadDetectorFormFile(self):
-        dialog = self.createFileDialog("Load detector from HDF5 file")
-
+        previousFile = self.__descriptionFile.value()
+        dialog = self.createFileDialog("Load detector from HDF5 file", previousFile=previousFile)
         result = dialog.exec_()
         if not result:
             return
         filename = dialog.selectedFiles()[0]
         self.__descriptionFile.setValue(filename)
 
-    def createFileDialog(self, title, h5file=True, splineFile=True):
-        dialog = CalibrationContext.instance().createFileDialog(self)
+    def createFileDialog(self, title, h5file=True, splineFile=True, previousFile=None):
+        dialog = CalibrationContext.instance().createFileDialog(self, previousFile=previousFile)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 

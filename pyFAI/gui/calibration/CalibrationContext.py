@@ -233,7 +233,7 @@ class CalibrationContext(object):
     def getAngleUnit(self):
         return self.__angleUnit
 
-    def createFileDialog(self, parent):
+    def createFileDialog(self, parent, previousFile=None):
         """Create a file dialog configured with a default path.
 
         :rtype: qt.QFileDialog
@@ -245,6 +245,15 @@ class CalibrationContext(object):
             dialog.setDirectory(currentDirectory)
         else:
             dialog.restoreState(self.__dialogState)
+
+        if previousFile is not None:
+            if os.path.exists(previousFile):
+                if os.path.isdir(previousFile):
+                    directory = previousFile
+                else:
+                    directory = os.path.dirname(previousFile)
+                dialog.setDirectory(directory)
+
         return dialog
 
     def __saveDialogState(self, dialog):
