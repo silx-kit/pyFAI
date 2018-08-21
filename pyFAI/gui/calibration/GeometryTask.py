@@ -159,6 +159,11 @@ class _StatusBar(qt.QStatusBar):
         self.__2theta.setUnitEditable(True)
         self.addWidget(self.__2theta)
 
+        self.clearValues()
+
+    def clearValues(self):
+        self.setValues(None, None, float("nan"), float("nan"), float("nan"))
+
     def setValues(self, x, y, pixel, chi, tth):
         if x is None:
             pos = None
@@ -504,7 +509,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.__statusBar.setValues(x, y, value, chi, tth)
 
     def __mouseLeft(self):
-        self.__statusBar.setValues(float("nan"), float("nan"), float("nan"), float("nan"), float("nan"))
+        self.__statusBar.clearValues()
 
     def __createPlotStatusBar(self, plot):
         statusBar = _StatusBar(self)
