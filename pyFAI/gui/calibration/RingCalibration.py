@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "21/08/2018"
 
 import logging
 import numpy
@@ -112,6 +112,9 @@ class RingCalibration(object):
         self.__detector = detector
         if wavelength is not None:
             self.__wavelength = wavelength
+
+    def getPyfaiGeometry(self):
+        return self.__geoRef
 
     def __computeResidual(self):
         if "wavelength" in self.__fixed:

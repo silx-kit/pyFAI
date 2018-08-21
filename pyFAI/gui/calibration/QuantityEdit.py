@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "21/08/2018"
 
 import logging
 from silx.gui import qt
@@ -99,7 +99,7 @@ class QuantityEdit(qt.QLineEdit):
         :param pyFAI.gui.calibration.units.Unit displayedUnitModel: A model containing a unit
         """
         if self.__displayedUnitModel is not None:
-            self.__displayedUnitModel.changed.disconnect(self.__modelChanged)
+            self.__displayedUnitModel.changed.disconnect(self.__displayedUnitModelChanged)
         self.__displayedUnitModel = displayedUnitModel
         if self.__displayedUnitModel is not None:
             self.__displayedUnitModel.changed.connect(self.__displayedUnitModelChanged)
