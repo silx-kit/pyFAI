@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "21/08/2018"
 
 import logging
 import numpy
@@ -35,7 +35,6 @@ import numpy
 from silx.gui import qt
 from silx.gui import icons
 import silx.gui.plot
-from silx.gui.plot.tools import PositionInfo
 
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
@@ -44,6 +43,7 @@ from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from ..widgets.UnitLabel import UnitLabel
+from ..widgets.QuantityLabel import QuantityLabel
 from .model.DataModel import DataModel
 from .QuantityEdit import QuantityEdit
 from . import units
@@ -128,7 +128,53 @@ class FitParamView(qt.QObject):
         return [self.__label, self.__quantity, self.__unit, self.__constraints]
 
 
+class _StatusBar(qt.QStatusBar):
+
+    def __init__(self, parent=None):
+        qt.QStatusBar.__init__(self, parent)
+
+        angleUnitModel = CalibrationContext.instance().getAngleUnit()
+
+        self.__position = QuantityLabel(self)
+        self.__position.setPrefix(u"<b>Pos</b>: ")
+        self.__position.setFormatter(u"{value[0]: >4.2F}×{value[1]:4.2F} px")
+        self.addWidget(self.__position)
+        self.__pixel = QuantityLabel(self)
+        self.__pixel.setPrefix(u"<b>Pixel</b>: ")
+        self.__pixel.setFormatter(u"{value}")
+        self.addWidget(self.__pixel)
+        self.__chi = QuantityLabel(self)
+        self.__chi.setPrefix(u"<b>χ</b>: ")
+        self.__chi.setFormatter(u"{value}")
+        self.__chi.setInternalUnit(units.Unit.RADIAN)
+        self.__chi.setDisplayedUnit(units.Unit.RADIAN)
+        self.__chi.setDisplayedUnitModel(angleUnitModel)
+        self.__chi.setUnitEditable(True)
+        self.addWidget(self.__chi)
+        self.__2theta = QuantityLabel(self)
+        self.__2theta.setPrefix(u"<b>2θ</b>: ")
+        self.__2theta.setFormatter(u"{value}")
+        self.__2theta.setInternalUnit(units.Unit.RADIAN)
+        self.__2theta.setDisplayedUnitModel(angleUnitModel)
+        self.__2theta.setUnitEditable(True)
+        self.addWidget(self.__2theta)
+
+    def setValues(self, x, y, pixel, chi, tth):
+        if x is None:
+            pos = None
+        else:
+            pos = x, y
+        self.__position.setValue(pos)
+        self.__pixel.setValue(pixel)
+        self.__chi.setValue(chi)
+        self.__2theta.setValue(tth)
+
+
 class _RingPlot(silx.gui.plot.PlotWidget):
+
+    sigMouseMove = qt.Signal(float, float)
+
+    sigMouseLeave = qt.Signal()
 
     def __init__(self, parent=None):
         silx.gui.plot.PlotWidget.__init__(self, parent=parent)
@@ -158,6 +204,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         if event["event"] == "mouseMoved":
             x, y = event["x"], event["y"]
             self.__mouseMoved(x, y)
+            self.sigMouseMove.emit(x, y)
 
     def __getClosestAngle(self, angle):
         """
@@ -177,6 +224,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         return iresult, result
 
     def __mouseLeave(self):
+        self.sigMouseLeave.emit()
         if self.__angleUnderMouse is None:
             return
         if self.__angleUnderMouse not in self.__displayedAngles:
@@ -354,6 +402,8 @@ class GeometryTask(AbstractCalibrationTask):
         self.widgetShow.connect(self.__widgetShow)
 
         self.__plot = self.__createPlot()
+        self.__plot.sigMouseMove.connect(self.__mouseMoved)
+        self.__plot.sigMouseLeave.connect(self.__mouseLeft)
 
         layout = qt.QVBoxLayout(self._imageHolder)
         layout.addWidget(self.__plot)
@@ -405,6 +455,7 @@ class GeometryTask(AbstractCalibrationTask):
         plot.setKeepDataAspectRatio(True)
         self.__createPlotToolBar(plot)
         statusBar = self.__createPlotStatusBar(plot)
+        self.__statusBar = statusBar
         plot.setStatusBar(statusBar)
         plot.setAxesDisplayed(False)
 
@@ -422,21 +473,42 @@ class GeometryTask(AbstractCalibrationTask):
         toolBar.getColormapAction().setColorDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
+    def __mouseMoved(self, x, y):
+        value = None
+
+        image = self.__plot.getImage("image")
+        if image is None:
+            return value
+        data = image.getData(copy=False)
+        ox, oy = image.getOrigin()
+        sx, sy = image.getScale()
+        row, col = (y - oy) / sy, (x - ox) / sx
+        if row >= 0 and col >= 0:
+            # Test positive before cast otherwise issue with int(-0.5) = 0
+            row, col = int(row), int(col)
+            if (row < data.shape[0] and col < data.shape[1]):
+                value = data[row, col]
+
+        if value is None:
+            self.__mouseLeft()
+            return
+
+        if self.__calibration is None:
+            self.__mouseLeft()
+            return
+
+        geometry = self.__calibration.getPyfaiGeometry()
+        ax, ay = numpy.array([x]), numpy.array([y])
+        chi = geometry.chi(ay, ax)[0]
+        tth = geometry.tth(ay, ax)[0]
+        self.__statusBar.setValues(x, y, value, chi, tth)
+
+    def __mouseLeft(self):
+        self.__statusBar.setValues(float("nan"), float("nan"), float("nan"), float("nan"), float("nan"))
+
     def __createPlotStatusBar(self, plot):
-
-        converters = [
-            ('X', lambda x, y: x),
-            ('Y', lambda x, y: y),
-            ('Value', self.__getImageValue)]
-
-        hbox = qt.QHBoxLayout()
-        hbox.setContentsMargins(0, 0, 0, 0)
-
-        info = PositionInfo(plot=plot, converters=converters)
-        info.setSnappingMode(True)
-        statusBar = qt.QStatusBar(plot)
+        statusBar = _StatusBar(self)
         statusBar.setSizeGripEnabled(False)
-        statusBar.addWidget(info)
         return statusBar
 
     def __createCalibration(self):
@@ -618,29 +690,6 @@ class GeometryTask(AbstractCalibrationTask):
                 legend="poni",
                 color=htmlColor,
                 symbol="+")
-
-    def __getImageValue(self, x, y):
-        """Get value of top most image at position (x, y).
-
-        :param float x: X position in plot coordinates
-        :param float y: Y position in plot coordinates
-        :return: The value at that point or 'n/a'
-        """
-        value = 'n/a'
-
-        image = self.__plot.getImage("image")
-        if image is None:
-            return value
-        data = image.getData(copy=False)
-        ox, oy = image.getOrigin()
-        sx, sy = image.getScale()
-        row, col = (y - oy) / sy, (x - ox) / sx
-        if row >= 0 and col >= 0:
-            # Test positive before cast otherwise issue with int(-0.5) = 0
-            row, col = int(row), int(col)
-            if (row < data.shape[0] and col < data.shape[1]):
-                value = data[row, col]
-        return value
 
     def _updateModel(self, model):
         self.__synchronizeRawView.registerModel(model.rawPlotView())
