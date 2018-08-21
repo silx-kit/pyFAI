@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "21/08/2018"
 
 import logging
 import numpy
@@ -193,7 +193,7 @@ class IntegrationProcess(object):
 
 def createSaveDialog(parent, title, poni=False, json=False, csv=False):
     """Util to create create a save dialog"""
-    dialog = qt.QFileDialog(parent)
+    dialog = CalibrationContext.instance().createFileDialog(parent)
     dialog.setWindowTitle(title)
     dialog.setModal(True)
     dialog.setAcceptMode(qt.QFileDialog.AcceptSave)

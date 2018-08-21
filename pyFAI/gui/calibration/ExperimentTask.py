@@ -27,9 +27,8 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "21/08/2018"
 
-import os
 import fabio
 import numpy
 import logging
@@ -57,7 +56,6 @@ class ExperimentTask(AbstractCalibrationTask):
         super(ExperimentTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-experiment.ui"), self)
         self.initNextStep()
-        self.__dialogState = None
 
         self._imageLoader.clicked.connect(self.loadImage)
         self._maskLoader.clicked.connect(self.loadMask)
@@ -281,7 +279,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__updateDetector()
 
     def createImageDialog(self, title, forMask=False):
-        dialog = qt.QFileDialog(self)
+        dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -308,18 +306,11 @@ class ExperimentTask(AbstractCalibrationTask):
     def getImageFromDialog(self, title, forMask=False):
         dialog = self.createImageDialog(title, forMask)
 
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
-
         result = dialog.exec_()
         if not result:
             yield None
             return
 
-        self.__dialogState = dialog.saveState()
         filename = dialog.selectedFiles()[0]
         try:
             with fabio.open(filename) as image:
@@ -333,7 +324,7 @@ class ExperimentTask(AbstractCalibrationTask):
             raise
 
     def createCalibrantDialog(self, title):
-        dialog = qt.QFileDialog(self)
+        dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -374,17 +365,10 @@ class ExperimentTask(AbstractCalibrationTask):
     def loadCalibrant(self):
         dialog = self.createCalibrantDialog("Load calibrant file")
 
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
-
         result = dialog.exec_()
         if not result:
             return
 
-        self.__dialogState = dialog.saveState()
         filename = dialog.selectedFiles()[0]
         try:
             calibrant = Calibrant(filename=filename)

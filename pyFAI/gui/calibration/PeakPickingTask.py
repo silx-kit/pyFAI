@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "21/08/2018"
 
 import logging
 import numpy
@@ -480,7 +480,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         super(PeakPickingTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-peakpicking.ui"), self)
         self.initNextStep()
-        self.__dialogState = None
 
         # Insert the plot on the layout
         holder = self._plotHolder
@@ -526,7 +525,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerPlot(self.__plot)
 
     def __createSavePeakDialog(self):
-        dialog = qt.QFileDialog(self)
+        dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
         dialog.setWindowTitle("Save selected peaks")
         dialog.setModal(True)
@@ -542,7 +541,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         return dialog
 
     def __createLoadPeakDialog(self):
-        dialog = qt.QFileDialog(self)
+        dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setWindowTitle("Load peaks")
         dialog.setModal(True)
 
@@ -559,17 +558,9 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __loadPeaksFromFile(self):
         dialog = self.__createLoadPeakDialog()
 
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
-
         result = dialog.exec_()
         if not result:
             return
-
-        self.__dialogState = dialog.saveState()
 
         filename = dialog.selectedFiles()[0]
         if os.path.exists(filename):
@@ -599,17 +590,10 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __savePeaksAsFile(self):
         dialog = self.__createSavePeakDialog()
 
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
-
         result = dialog.exec_()
         if not result:
             return
 
-        self.__dialogState = dialog.saveState()
         filename = dialog.selectedFiles()[0]
         if not os.path.exists(filename) and not filename.endswith(".npt"):
             filename = filename + ".npt"

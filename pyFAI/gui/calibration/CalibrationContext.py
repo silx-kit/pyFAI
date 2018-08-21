@@ -25,10 +25,12 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "21/08/2018"
 
 import weakref
 import logging
+import functools
+import os
 
 from silx.gui import qt
 from silx.gui.dialog.ColormapDialog import ColormapDialog
@@ -66,6 +68,7 @@ class CalibrationContext(object):
         self.__settings = settings
         self.__angleUnit = DataModel()
         self.__angleUnit.setValue(units.Unit.RADIAN)
+        self.__dialogState = None
 
     def __restoreColormap(self, groupName, colormap):
         settings = self.__settings
@@ -229,3 +232,20 @@ class CalibrationContext(object):
 
     def getAngleUnit(self):
         return self.__angleUnit
+
+    def createFileDialog(self, parent):
+        """Create a file dialog configured with a default path.
+
+        :rtype: qt.QFileDialog
+        """
+        dialog = qt.QFileDialog(parent)
+        dialog.finished.connect(functools.partial(self.__saveDialogState, dialog))
+        if self.__dialogState is None:
+            currentDirectory = os.getcwd()
+            dialog.setDirectory(currentDirectory)
+        else:
+            dialog.restoreState(self.__dialogState)
+        return dialog
+
+    def __saveDialogState(self, dialog):
+        self.__dialogState = dialog.saveState()

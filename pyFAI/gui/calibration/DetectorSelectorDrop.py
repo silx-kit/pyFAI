@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/08/2018"
+__date__ = "21/08/2018"
 
 import os
 import logging
@@ -41,6 +41,7 @@ from .DetectorModel import AllDetectorModel
 from .DetectorModel import DetectorFilter
 from .model.DataModel import DataModel
 from . import validators
+from .CalibrationContext import CalibrationContext
 
 _logger = logging.getLogger(__name__)
 
@@ -179,7 +180,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self._customResult.setText("Detector configured")
 
     def createSplineDialog(self, title):
-        dialog = qt.QFileDialog(self)
+        dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -199,17 +200,11 @@ class DetectorSelectorDrop(qt.QWidget):
     def loadSplineFile(self):
         dialog = self.createSplineDialog("Load spline image")
 
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
 
         result = dialog.exec_()
         if not result:
             return
 
-        self.__dialogState = dialog.saveState()
         filename = dialog.selectedFiles()[0]
         try:
             self.__splineFile.setValue(filename)
@@ -262,21 +257,15 @@ class DetectorSelectorDrop(qt.QWidget):
 
     def __loadDetectorFormFile(self):
         dialog = self.createFileDialog("Load detector from HDF5 file")
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
 
         result = dialog.exec_()
         if not result:
             return
-        self.__dialogState = dialog.saveState()
         filename = dialog.selectedFiles()[0]
         self.__descriptionFile.setValue(filename)
 
     def createFileDialog(self, title, h5file=True, splineFile=True):
-        dialog = qt.QFileDialog(self)
+        dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
