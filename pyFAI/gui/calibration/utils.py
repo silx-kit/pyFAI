@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "21/08/2018"
 
 
 import numpy
@@ -101,6 +101,43 @@ def getFreeColorRange(colormap):
         c = qt.QColor.fromHsvF(h % 1.0, 1.0, v)
         colors.append(c)
     return colors
+
+
+def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
+    """
+    Convert a two theta angle from original `unit` to radian.
+
+    `directDist = ai.getFit2D()["directDist"]`
+    """
+    if isinstance(twoTheta, numpy.ndarray):
+        pass
+    elif isinstance(twoTheta, collections.Iterable):
+        twoTheta = numpy.array(twoTheta)
+
+    if unit == units.TTH_RAD:
+        return twoTheta
+    elif unit == units.TTH_DEG:
+        return numpy.deg2rad(twoTheta)
+    elif unit == units.Q_A:
+        if wavelength is None:
+            raise AttributeError("wavelength have to be specified")
+        return numpy.arcsin((twoTheta * wavelength) / (4.e-10 * numpy.pi)) * 2.0
+    elif unit == units.Q_NM:
+        if wavelength is None:
+            raise AttributeError("wavelength have to be specified")
+        return numpy.arcsin((twoTheta * wavelength) / (4.e-9 * numpy.pi)) * 2.0
+    elif unit == units.R_MM:
+        if directDist is None:
+            raise AttributeError("directDist have to be specified")
+        # GF: correct formula?
+        return numpy.arctan(twoTheta / directDist)
+    elif unit == units.R_M:
+        if directDist is None:
+            raise AttributeError("directDist have to be specified")
+        # GF: correct formula?
+        return numpy.arctan(twoTheta / (directDist * 0.001))
+    else:
+        raise ValueError("Converting from 2th to unit %s is not supported", unit)
 
 
 def from2ThRad(twoTheta, unit, wavelength=None, ai=None):
