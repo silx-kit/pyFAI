@@ -182,6 +182,9 @@ class IntegrationProcess(object):
         else:
             rings = []
         self.__ringAngles = rings
+
+        self.__ai = ai
+
         try:
             self.__directDist = ai.getFit2D()["directDist"]
         except Exception:
@@ -206,6 +209,12 @@ class IntegrationProcess(object):
 
     def directDist(self):
         return self.__directDist
+
+    def geometry(self):
+        """
+        :rtype: pyFAI.geometry.Geometry
+        """
+        return self.__ai
 
 
 def createSaveDialog(parent, title, poni=False, json=False, csv=False):
