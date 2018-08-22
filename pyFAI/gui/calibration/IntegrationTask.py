@@ -375,9 +375,10 @@ class IntegrationPlot(qt.QFrame):
                 iresult = ringId
         return iresult, result
 
-    def __updateStatusBar(self, x, y):
+    def dataToChiTth(self, data):
+        """Returns chi and 2theta angles in radian from data coordinate"""
         try:
-            tthRad = utils.tthToRad(x,
+            tthRad = utils.tthToRad(data[0],
                                     unit=self.__radialUnit,
                                     wavelength=self.__wavelength,
                                     directDist=self.__directDist)
@@ -385,12 +386,16 @@ class IntegrationPlot(qt.QFrame):
             _logger.debug("Backtrace", exc_info=True)
             tthRad = None
 
-        chiDeg = y
+        chiDeg = data[1]
         if chiDeg is not None:
             chiRad = numpy.deg2rad(chiDeg)
         else:
             chiRad = None
 
+        return chiRad, tthRad
+
+    def __updateStatusBar(self, x, y):
+        chiRad, tthRad = self.dataToChiTth((x, y))
         if tthRad is not None and chiRad is not None:
             self.__statusBar.setValues(chiRad, tthRad)
         elif tthRad is not None:
