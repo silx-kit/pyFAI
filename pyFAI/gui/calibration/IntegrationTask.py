@@ -396,7 +396,7 @@ class IntegrationPlot(qt.QFrame):
         elif tthRad is not None:
             self.__statusBar.setValue(tthRad)
         else:
-            self.__statusBar.removeValues()
+            self.__statusBar.clearValues()
 
     def __mouseMoved(self, x, y):
         """Called when mouse move over the plot."""
