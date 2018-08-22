@@ -29,8 +29,6 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "17/08/2018"
 
-from silx.gui.colors import Colormap
-
 from .AbstractModel import AbstractModel
 from .PlotViewModel import PlotViewModel
 from .ExperimentSettingsModel import ExperimentSettingsModel
