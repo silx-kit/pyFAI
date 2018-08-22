@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "22/08/2018"
 
 
 import numpy
@@ -101,6 +101,27 @@ def getFreeColorRange(colormap):
         c = qt.QColor.fromHsvF(h % 1.0, 1.0, v)
         colors.append(c)
     return colors
+
+
+def findPixel(geometry, chi, tth):
+    """
+    Find the approximative pixel location from the resulting chi and 2theta
+    value.
+
+    The current implementation returns the center of the closest pixel. This
+    could be improved by triangulation.
+
+    :param pyFAI.geometry.Geometry geometry: Modelization of the geometry
+    :param float chi: Chi angle value in radian
+    :param float tth: 2 theta angle in radian
+    :rtype: Tuple[float,float]
+    """
+    chia = geometry.get_chia()
+    ttha = geometry.get_ttha()
+    array = (chia - chi) ** 2 + (ttha - tth) ** 2
+    index = numpy.argmin(array)
+    coord = numpy.unravel_index(index, array.shape)
+    return coord[0] + 0.5, coord[1] + 0.5
 
 
 def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
