@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "22/08/2018"
 __status__ = "stable"
 
 
@@ -462,12 +462,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         if "detector" in kwarg:
             import pyFAI.detectors
-            self = pyFAI.detectors.detector_factory(kwarg["detector"])
-        for kw in kwarg:
-            if kw in ["pixel1", "pixel2"]:
-                setattr(self, kw, kwarg[kw])
-            elif kw == "splineFile":
-                self.set_splineFile(kwarg[kw])
+            config = {}
+            for key in ("pixel1", "pixel2", 'max_shape', "splineFile"):
+                if key in kwarg:
+                    config[key] = kwarg[key]
+            self = pyFAI.detectors.detector_factory(kwarg["detector"], config)
+        return self
 
     @classmethod
     def from_dict(cls, dico):
