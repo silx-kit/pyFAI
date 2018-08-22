@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/04/2018"
+__date__ = "14/08/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -47,6 +47,7 @@ import json
 import numpy
 from collections import OrderedDict, namedtuple
 from scipy.optimize import minimize
+from silx.image import marchingsquares
 from .massif import Massif
 from .control_points import ControlPoints
 from .detectors import detector_factory, Detector
@@ -55,7 +56,6 @@ from .geometryRefinement import GeometryRefinement
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .utils import StringTypes
 from .multi_geometry import MultiGeometry
-from .ext.marchingsquares import isocontour
 from .units import CONST_hc, CONST_q
 
 logger = logging.getLogger(__name__)
@@ -581,6 +581,10 @@ class SingleGeometry(object):
         cp = ControlPoints(calibrant=self.calibrant)
         if max_rings is None:
             max_rings = tth.size
+
+        ms = marchingsquares.MarchingSquaresMergeImpl(ttha,
+                                                      mask=self.geometry_refinement.detector.mask,
+                                                      use_minmax_cache=True)
         for i in range(tth.size):
             if rings >= max_rings:
                 break
@@ -601,10 +605,10 @@ class SingleGeometry(object):
                     mask2 = numpy.logical_and(self.image > upper_limit, mask)
                     size2 = mask2.sum()
                 # length of the arc:
-                points = isocontour(ttha, tth[i]).round().astype(int)
-                seeds = set((i[1], i[0]) for i in points if mask2[i[1], i[0]])
+                points = ms.find_pixels(tth[i])
+                seeds = set((i[0], i[1]) for i in points if mask2[i[0], i[1]])
                 # max number of points: 360 points for a full circle
-                azimuthal = chia[points[:, 1].clip(0, shape[0]), points[:, 0].clip(0, shape[1])]
+                azimuthal = chia[points[:, 0].clip(0, shape[0]), points[:, 1].clip(0, shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
                 keep = int(nb_deg_azim * pts_per_deg)
                 if keep == 0:
