@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "22/08/2018"
 
 import functools
 
@@ -102,10 +102,7 @@ class UnitLabel(qt.QLabel):
             return
 
         menu = qt.QMenu(self)
-        title = qt.QAction(menu)
-        title.setEnabled(False)
-        title.setText(self.__unit.dimensionality.fullname)
-        menu.addAction(title)
+        menu.addSection("Unit for %s" % self.__unit.dimensionality.fullname.lower())
 
         for unit in unitList:
             action = qt.QAction(menu)
