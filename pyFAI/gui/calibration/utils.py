@@ -140,7 +140,7 @@ def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
         raise ValueError("Converting from 2th to unit %s is not supported", unit)
 
 
-def from2ThRad(twoTheta, unit, wavelength=None, ai=None):
+def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
     if isinstance(twoTheta, numpy.ndarray):
         pass
     elif isinstance(twoTheta, collections.Iterable):
@@ -156,11 +156,17 @@ def from2ThRad(twoTheta, unit, wavelength=None, ai=None):
         return (4.e-9 * numpy.pi / wavelength) * numpy.sin(.5 * twoTheta)
     elif unit == units.R_MM:
         # GF: correct formula?
-        beamCentre = ai.getFit2D()["directDist"]  # in mm!!
+        if directDist is not None:
+            beamCentre = directDist
+        else:
+            beamCentre = ai.getFit2D()["directDist"]  # in mm!!
         return beamCentre * numpy.tan(twoTheta)
     elif unit == units.R_M:
         # GF: correct formula?
-        beamCentre = ai.getFit2D()["directDist"]  # in mm!!
+        if directDist is not None:
+            beamCentre = directDist
+        else:
+            beamCentre = ai.getFit2D()["directDist"]  # in mm!!
         return beamCentre * numpy.tan(twoTheta) * 0.001
     else:
         raise ValueError("Converting from 2th to unit %s is not supported", unit)
