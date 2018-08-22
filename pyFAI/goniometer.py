@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/08/2018"
+__date__ = "22/08/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -569,6 +569,9 @@ class SingleGeometry(object):
             dict_geo["data"] = self.control_points.getList()
         if self.calibrant is not None:
             dict_geo["calibrant"] = self.calibrant
+        if "max_shape" in dict_geo:
+            # not used in constructor
+            dict_geo.pop("max_shape")
         self.geometry_refinement = GeometryRefinement(**dict_geo)
         if self.detector is None:
             self.detector = self.geometry_refinement.detector
