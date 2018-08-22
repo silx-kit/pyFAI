@@ -45,6 +45,7 @@ from . import utils
 from .model.DataModel import DataModel
 from ..widgets.QuantityLabel import QuantityLabel
 from .CalibrationContext import CalibrationContext
+from .model import MarkerModel
 from . import units
 
 _logger = logging.getLogger(__name__)
@@ -283,6 +284,52 @@ class _StatusBar(qt.QStatusBar):
         self.__2theta.setValue(float("nan"))
 
 
+class MarkerManager(object):
+
+    def __init__(self, plot, markerModel):
+        self.__plot = plot
+        self.__markerModel = markerModel
+        self.__markerModel.changed.connect(self.__updateMarkers)
+        self.__geometry = None
+        self.__markers = []
+
+    def updateProjection(self, geometry, radialUnit, wavelength, directDist):
+        self.__geometry = geometry
+        self.__radialUnit = radialUnit
+        self.__wavelength = wavelength
+        self.__directDist = directDist
+        self.__updateMarkers()
+
+    def __updateMarkers(self):
+        for item in self.__markers:
+            self.__plot.removeMarker(item.getLegend())
+
+        template = "__markers__%s"
+
+        for marker in self.__markerModel:
+            if isinstance(marker, MarkerModel.PhysicalMarker):
+                chiRad, tthRad = marker.physicalPosition()
+            elif isinstance(marker, MarkerModel.PixelMarker):
+                x, y = marker.pixelPosition()
+                ax, ay = numpy.array([x]), numpy.array([y])
+                chiRad = self.__geometry.chi(ay, ax)[0]
+                tthRad = self.__geometry.tth(ay, ax)[0]
+            else:
+                _logger.debug("Unsupported logger %s", type(marker))
+                continue
+
+            tth = utils.from2ThRad(tthRad,
+                                   unit=self.__radialUnit,
+                                   wavelength=self.__wavelength,
+                                   directDist=self.__directDist)
+            chi = numpy.rad2deg(chiRad)
+
+            legend = template % marker.name()
+            self.__plot.addMarker(x=tth, y=chi, color="pink", legend=legend, text=marker.name())
+            item = self.__plot._getMarker(legend)
+            self.__markers.append(item)
+
+
 class IntegrationPlot(qt.QFrame):
 
     def __init__(self, parent=None):
@@ -308,6 +355,10 @@ class IntegrationPlot(qt.QFrame):
         self.__radialUnit = None
         self.__wavelength = None
         self.__directDist = None
+        self.__geometry = None
+
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self.__plot2d, markerModel)
 
         self.__plot2d.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
         self.__plot1d.sigPlotSignal.connect(self.__plot1dSignalReceived)
@@ -612,6 +663,11 @@ class IntegrationPlot(qt.QFrame):
         self.__radialUnit = integrationProcess.radialUnit()
         self.__wavelength = integrationProcess.wavelength()
         self.__directDist = integrationProcess.directDist()
+        self.__geometry = integrationProcess.geometry()
+        self.__markerManager.updateProjection(self.__geometry,
+                                              self.__radialUnit,
+                                              self.__wavelength,
+                                              self.__directDist)
 
     def __setResult(self, result1d):
         self.__result1d = result1d
