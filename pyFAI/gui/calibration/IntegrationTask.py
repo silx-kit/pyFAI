@@ -517,6 +517,9 @@ class IntegrationPlot(qt.QFrame):
         return result
 
     def __updateRings(self):
+        if self.__availableRingAngles is None:
+            return
+
         minTth, maxTth = self.__plot2d.getXAxis().getLimits()
         angles = self.__getAvailableAngles(minTth, maxTth)
 
