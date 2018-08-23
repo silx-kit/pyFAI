@@ -158,6 +158,9 @@ def findPixel(geometry, chi, tth):
     """
     # Find the right pixel
     chia = geometry.get_chia()
+    if chia is None:
+        # get_chia do not compute data if not in the cache
+        chia = geometry.chiArray()
     ttha = geometry.get_ttha()
     array = (chia - chi) ** 2.0 + (ttha - tth) ** 2.0
     index = numpy.argmin(array)
