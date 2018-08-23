@@ -32,7 +32,6 @@ __date__ = "23/08/2018"
 import logging
 import numpy
 import collections
-import functools
 
 from silx.gui import qt
 import silx.gui.plot
@@ -46,7 +45,6 @@ from . import utils
 from .model.DataModel import DataModel
 from ..widgets.QuantityLabel import QuantityLabel
 from .CalibrationContext import CalibrationContext
-from .model import MarkerModel
 from . import units
 from .helper.MarkerManager import MarkerManager
 
