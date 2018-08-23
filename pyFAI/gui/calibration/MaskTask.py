@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "23/08/2018"
 
 import logging
 from silx.gui import qt
@@ -38,6 +38,8 @@ import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
+from .helper.MarkerManager import MarkerManager
+
 
 _logger = logging.getLogger(__name__)
 
@@ -50,6 +52,10 @@ class MaskTask(AbstractCalibrationTask):
         self.initNextStep()
 
         self.__plot = self.__createPlot(self._imageHolder)
+
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self.__plot, markerModel, pixelBasedPlot=True)
+
         self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(parent=self._toolHolder, plot=self.__plot)
         self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
         self.__maskPanel.setMultipleMasks("single")

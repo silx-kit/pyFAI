@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "23/08/2018"
 
 import logging
 import numpy
@@ -50,6 +50,7 @@ from pyFAI.gui.utils.ProxyAction import CustomProxyAction
 from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
+from .helper.MarkerManager import MarkerManager
 
 _logger = logging.getLogger(__name__)
 
@@ -487,6 +488,9 @@ class PeakPickingTask(AbstractCalibrationTask):
         holderLayout = qt.QVBoxLayout(holder)
         holderLayout.setContentsMargins(1, 1, 1, 1)
         holderLayout.addWidget(self.__plot)
+
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self.__plot, markerModel, pixelBasedPlot=True)
 
         # Insert the peak view on the layout
         holder = self._peakSelectionDummy.parent()
