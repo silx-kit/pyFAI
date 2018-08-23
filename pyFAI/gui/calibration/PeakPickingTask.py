@@ -295,6 +295,13 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__markerColors = {}
         self.__processing = None
 
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self, markerModel, pixelBasedPlot=True)
+
+        handle = self.getWidgetHandle()
+        handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        handle.customContextMenuRequested.connect(self.__plotContextMenu)
+
         colormap = CalibrationContext.instance().getRawColormap()
         self.setDefaultColormap(colormap)
 
@@ -309,6 +316,21 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             self.unsetCursor()
             return True
         return False
+
+    def __plotContextMenu(self, pos):
+        plot = self
+        from silx.gui.plot.actions.control import ZoomBackAction
+        zoomBackAction = ZoomBackAction(plot=plot, parent=plot)
+
+        menu = qt.QMenu(self)
+
+        menu.addAction(zoomBackAction)
+        menu.addSeparator()
+        menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
+        menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
+
+        handle = plot.getWidgetHandle()
+        menu.exec_(handle.mapToGlobal(pos))
 
     def setModel(self, peakSelectionModel):
         assert self.__peakSelectionModel is None
@@ -488,9 +510,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         holderLayout = qt.QVBoxLayout(holder)
         holderLayout.setContentsMargins(1, 1, 1, 1)
         holderLayout.addWidget(self.__plot)
-
-        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
-        self.__markerManager = MarkerManager(self.__plot, markerModel, pixelBasedPlot=True)
 
         # Insert the peak view on the layout
         holder = self._peakSelectionDummy.parent()

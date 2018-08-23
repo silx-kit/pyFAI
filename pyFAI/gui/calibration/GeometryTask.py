@@ -199,6 +199,10 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
         self.__markerManager = MarkerManager(self, markerModel, pixelBasedPlot=True)
 
+        handle = self.getWidgetHandle()
+        handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        handle.customContextMenuRequested.connect(self.__plotContextMenu)
+
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
 
@@ -207,6 +211,21 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             self.__mouseLeave()
             return True
         return False
+
+    def __plotContextMenu(self, pos):
+        plot = self
+        from silx.gui.plot.actions.control import ZoomBackAction
+        zoomBackAction = ZoomBackAction(plot=plot, parent=plot)
+
+        menu = qt.QMenu(self)
+
+        menu.addAction(zoomBackAction)
+        menu.addSeparator()
+        menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
+        menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
+
+        handle = plot.getWidgetHandle()
+        menu.exec_(handle.mapToGlobal(pos))
 
     def __plotSignalReceived(self, event):
         """Called when old style signals at emmited from the plot."""
