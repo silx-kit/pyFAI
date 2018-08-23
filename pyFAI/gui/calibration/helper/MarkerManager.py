@@ -30,7 +30,10 @@ __license__ = "MIT"
 __date__ = "23/08/2018"
 
 import logging
+import functools
 import numpy
+
+from silx.gui import qt
 
 from ..model import MarkerModel
 from .. import utils
@@ -68,6 +71,68 @@ class MarkerManager(object):
             self.__createMarkerOnPixelBased()
         else:
             self.__createMarkerOnPhysicalBased()
+
+    def createMarkPixelAction(self, parent, mousePos):
+        maskPixelAction = qt.QAction(parent)
+        maskPixelAction.setText("Mark this pixel coord")
+        maskPixelAction.triggered.connect(functools.partial(self.__createPixelMarker, mousePos))
+        if not self.__pixelBasedPlot:
+            maskPixelAction.setEnabled(self.__geometry is not None)
+        return maskPixelAction
+
+    def createMarkGeometryAction(self, parent, mousePos):
+        maskGeometryAction = qt.QAction(parent)
+        maskGeometryAction.setText(u"Mark this χ/2θ coord")
+        maskGeometryAction.triggered.connect(functools.partial(self.__createGeometryMarker, mousePos))
+        maskGeometryAction.setEnabled(self.__geometry is not None)
+        return maskGeometryAction
+
+    def dataToChiTth(self, data):
+        """Returns chi and 2theta angles in radian from data coordinate"""
+        try:
+            tthRad = utils.tthToRad(data[0],
+                                    unit=self.__radialUnit,
+                                    wavelength=self.__wavelength,
+                                    directDist=self.__directDist)
+        except Exception:
+            _logger.debug("Backtrace", exc_info=True)
+            tthRad = None
+
+        chiDeg = data[1]
+        if chiDeg is not None:
+            chiRad = numpy.deg2rad(chiDeg)
+        else:
+            chiRad = None
+
+        return chiRad, tthRad
+
+    def __createPixelMarker(self, pos):
+        pos = self.__plot.pixelToData(pos.x(), pos.y())
+        if self.__pixelBasedPlot:
+            pixel = pos[1], pos[0]
+        else:
+            chiRad, tthRad = self.dataToChiTth(pos)
+            pixel = utils.findPixel(self.__geometry, chiRad, tthRad)
+        name = self.__findUnusedMarkerName()
+        marker = MarkerModel.PixelMarker(name, pixel[1], pixel[0])
+        self.__markerModel.add(marker)
+
+    def __createGeometryMarker(self, pos):
+        pos = self.__plot.pixelToData(pos.x(), pos.y())
+        chiRad, tthRad = self.dataToChiTth(pos)
+        name = self.__findUnusedMarkerName()
+        marker = MarkerModel.PhysicalMarker(name, chiRad, tthRad)
+        self.__markerModel.add(marker)
+
+    def __findUnusedMarkerName(self):
+        template = "mark%d"
+        markerNames = set([m.name() for m in self.__markerModel])
+        for i in range(0, 1000):
+            name = template % i
+            if name not in markerNames:
+                return name
+        # Returns something
+        return "mark"
 
     def __createMarkerOnPixelBased(self):
         for marker in self.__markerModel:

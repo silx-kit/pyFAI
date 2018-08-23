@@ -590,51 +590,14 @@ class IntegrationPlot(qt.QFrame):
         zoomBackAction = ZoomBackAction(plot=self.__plot2d, parent=self.__plot2d)
 
         menu = qt.QMenu(self)
-        maskPixelAction = qt.QAction(menu)
-        maskPixelAction.setText("Mark this pixel coord")
-        maskPixelAction.triggered.connect(functools.partial(self.__createPixelMarker, pos))
-        maskGeometryAction = qt.QAction(menu)
-        maskGeometryAction.setText(u"Mark this χ/2θ coord")
-        maskGeometryAction.triggered.connect(functools.partial(self.__createGeometryMarker, pos))
-
-        maskPixelAction.setEnabled(self.__geometry is not None)
-        maskGeometryAction.setEnabled(self.__geometry is not None)
 
         menu.addAction(zoomBackAction)
         menu.addSeparator()
-        menu.addAction(maskPixelAction)
-        menu.addAction(maskGeometryAction)
+        menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
+        menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
 
         handle = self.__plot2d.getWidgetHandle()
         menu.exec_(handle.mapToGlobal(pos))
-
-    def __findUnusedMarkerName(self):
-        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
-        template = "mark%d"
-        markerNames = set([m.name() for m in markerModel])
-        for i in range(0, 1000):
-            name = template % i
-            if name not in markerNames:
-                return name
-        # Returns something
-        return "mark"
-
-    def __createPixelMarker(self, pos):
-        pos = self.__plot2d.pixelToData(pos.x(), pos.y())
-        chiRad, tthRad = self.dataToChiTth(pos)
-        pixel = utils.findPixel(self.__geometry, chiRad, tthRad)
-        name = self.__findUnusedMarkerName()
-        marker = MarkerModel.PixelMarker(name, pixel[1], pixel[0])
-        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
-        markerModel.add(marker)
-
-    def __createGeometryMarker(self, pos):
-        pos = self.__plot2d.pixelToData(pos.x(), pos.y())
-        chiRad, tthRad = self.dataToChiTth(pos)
-        name = self.__findUnusedMarkerName()
-        marker = MarkerModel.PhysicalMarker(name, chiRad, tthRad)
-        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
-        markerModel.add(marker)
 
     def __clearRings(self):
         """Remove of ring item cached on the plots"""
