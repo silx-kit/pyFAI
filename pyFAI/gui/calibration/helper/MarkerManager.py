@@ -150,6 +150,9 @@ class MarkerManager(object):
             self.__markers.append(item)
 
     def __createMarkerOnPhysicalBased(self):
+        if self.__geometry is None:
+            return
+
         for marker in self.__markerModel:
             if isinstance(marker, MarkerModel.PhysicalMarker):
                 chiRad, tthRad = marker.physicalPosition()
