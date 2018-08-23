@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "22/08/2018"
 __status__ = "stable"
 
 
@@ -119,35 +119,58 @@ class Detector(with_metaclass(DetectorMeta, object)):
         :rtype: pyFAI.detectors.Detector
         """
         if isinstance(name, Detector):
+            # It's already a detector
             return name
+
         if os.path.isfile(name):
+            # It's a filename
             return NexusDetector(name)
-        name = name.lower()
-        names = [name, name.replace(" ", "_")]
-        for name in names:
-            if name in cls.registry:
-                mydet = None
-                if config is not None:
-                    if not isinstance(config, dict):
-                        try:
-                            config = json.loads(config)
-                        except Exception as err:  # IGNORE:W0703:
-                            logger.error("Unable to parse config %s with JSON: %s, %s",
-                                         name, config, err)
-                            raise err
-                    try:
-                        mydet = cls.registry[name](**config)
-                    except Exception as err:  # IGNORE:W0703:
-                            logger.error("Unable to configure detector %s with config: %s\n %s",
-                                         name, config, err)
-                if mydet is None:
-                    mydet = cls.registry[name]()
-                return mydet
-        else:
+
+        # Search for the detector class
+        import pyFAI.detectors
+        detectorClass = None
+        if hasattr(pyFAI.detectors, name):
+            # It's a classname
+            cls = getattr(pyFAI.detectors, name)
+            if issubclass(cls, pyFAI.detectors.Detector):
+                # Avoid code injection
+                detectorClass = cls
+
+        if detectorClass is None:
+            # Search the name using the name database
+            name = name.lower()
+            names = [name, name.replace(" ", "_")]
+            for name in names:
+                if name in cls.registry:
+                    detectorClass = cls.registry[name]
+                    break
+
+        if detectorClass is None:
             msg = ("Detector %s is unknown !, "
                    "please check if the filename exists or select one from %s" % (name, cls.registry.keys()))
             logger.error(msg)
             raise RuntimeError(msg)
+
+        # Create the detector
+        detector = None
+        if config is not None:
+            if not isinstance(config, dict):
+                try:
+                    config = json.loads(config)
+                except Exception as err:  # IGNORE:W0703:
+                    logger.error("Unable to parse config %s with JSON: %s, %s",
+                                 name, config, err)
+                    raise err
+            try:
+                detector = detectorClass(**config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to configure detector %s with config: %s\n %s",
+                             name, config, err)
+                raise err
+        else:
+            detector = detectorClass()
+
+        return detector
 
     def __init__(self, pixel1=None, pixel2=None, splineFile=None, max_shape=None):
         """
@@ -439,12 +462,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         if "detector" in kwarg:
             import pyFAI.detectors
-            self = pyFAI.detectors.detector_factory(kwarg["detector"])
-        for kw in kwarg:
-            if kw in ["pixel1", "pixel2"]:
-                setattr(self, kw, kwarg[kw])
-            elif kw == "splineFile":
-                self.set_splineFile(kwarg[kw])
+            config = {}
+            for key in ("pixel1", "pixel2", 'max_shape', "splineFile"):
+                if key in kwarg:
+                    config[key] = kwarg[key]
+            self = pyFAI.detectors.detector_factory(kwarg["detector"], config)
+        return self
 
     @classmethod
     def from_dict(cls, dico):
