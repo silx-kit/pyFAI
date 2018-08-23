@@ -37,11 +37,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2018"
+__date__ = "10/07/2018"
 __status__ = "production"
 
 
 import numpy
+import json
+from collections import OrderedDict
 from ._common import Detector
 
 import logging
@@ -130,6 +132,14 @@ class Rayonix(Detector):
         self._mask = False
         self._mask_crc = None
         return result
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        return OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2)))
 
 
 class Rayonix133(Rayonix):
@@ -551,6 +561,34 @@ class Mar345(Detector):
         self._mask_crc = None
         return result
 
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict((("pixel1", self.pixel1),
+                            ("pixel2", self.pixel2)))
+        return dico
+
+    def set_config(self, config):
+        """set the config of the detector
+        
+        For Eiger detector, possible keys are: max_shape, module_size 
+        
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+        self.set_pixel1(config.get("pixel1"))
+        self.set_pixel2(config.get("pixel2"))
+        return self
+
 
 class Mar555(Detector):
 
@@ -566,3 +604,30 @@ class Mar555(Detector):
     def __init__(self, pixel1=139e-6, pixel2=139e-6):
         Detector.__init__(self, pixel1, pixel2)
 
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict((("pixel1", self.pixel1),
+                            ("pixel2", self.pixel2)))
+        return dico
+
+    def set_config(self, config):
+        """set the config of the detector
+        
+        For Eiger detector, possible keys are: max_shape, module_size 
+        
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+        self.set_pixel1(config.get("pixel1"))
+        self.set_pixel2(config.get("pixel2"))
+        return self

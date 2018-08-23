@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/04/2018"
+__date__ = "18/07/2018"
 
 
 import unittest
@@ -46,6 +46,8 @@ import time
 import numpy
 import itertools
 import logging
+import os.path
+
 from . import utilstest
 logger = logging.getLogger(__name__)
 
@@ -54,6 +56,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from .. import units
 from ..detectors import detector_factory
 from ..third_party import transformations
+from .utilstest import UtilsTest
 import fabio
 
 if sys.platform == "win32":
@@ -462,6 +465,16 @@ class TestGeometry(utilstest.ParametricTestCase):
                 msg = "delta=%s, geo= \n%s" % (delta, geo)
                 self.assertTrue(numpy.allclose(numpy.vstack(cy_res), numpy.vstack(py_res)), msg)
                 logger.debug(msg)
+
+    def test_ponifile_custom_detector(self):
+        config = {"pixel1": 1, "pixel2": 2}
+        detector = detector_factory("adsc_q315", config)
+        geom = geometry.Geometry(detector=detector)
+        ponifile = os.path.join(UtilsTest.tempdir, "%s.poni" % self.id())
+        geom.save(ponifile)
+        geom = geometry.Geometry()
+        geom.load(ponifile)
+        self.assertEqual(geom.detector.get_config(), config)
 
 
 class TestCalcFrom(unittest.TestCase):

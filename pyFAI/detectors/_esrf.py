@@ -36,14 +36,16 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2018"
+__date__ = "10/07/2018"
 __status__ = "production"
 
 
 import numpy
+import logging
+import json
+from collections import OrderedDict
 from ._common import Detector
 from pyFAI.utils import mathutil
-import logging
 logger = logging.getLogger(__name__)
 
 try:
@@ -94,6 +96,13 @@ class FReLoN(Detector):
         mask = numpy.logical_or(below_min, above_max).astype(numpy.int8)
         return mask
 
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        return {"splineFile": self._splineFile}
+
 
 class Maxipix(Detector):
     """
@@ -136,6 +145,45 @@ class Maxipix(Detector):
                        self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        dico = {}
+        if ((self.max_shape is not None) and
+                ("MAX_SHAPE" in dir(self.__class__)) and
+                (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
+            dico["max_shape"] = self.max_shape
+        if ((self.module_size is not None) and
+                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
+            dico["module_size"] = self.module_size
+        return dico
+
+    def set_config(self, config):
+        """set the config of the detector
+        
+        For Eiger detector, possible keys are: max_shape, module_size 
+        
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+
+        # pixel size is enforced by the detector itself
+        if "max_shape" in config:
+            self.max_shape = tuple(config["max_shape"])
+        module_size = config.get("module_size")
+        if module_size is not None:
+            self.module_size = tuple(module_size)
+        return self
 
 
 class Maxipix2x2(Maxipix):

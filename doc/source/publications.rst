@@ -19,7 +19,7 @@ List of publication about pyFAI
    **PROC. OF THE 7th EUR. CONF. ON PYTHON IN SCIENCE** (EUROSCIPY 2014)
 
 * *The fast azimuthal integration Python library: pyFAI*
-  J. Kieffer,  G. Ashiotis, A. Deschildre, Z. Nawaz, J. P. Wright, D. Karkoulis, F. E. Picca
+  G. Ashiotis, A. Deschildre, Z. Nawaz, J. P. Wright, D. Karkoulis, F. E. Picca and J. Kieffer
   **Journal of Applied Crystallography** (2015) 48 (2), 510-519
 
 The later publication provides a nice overview of the features introduced in version

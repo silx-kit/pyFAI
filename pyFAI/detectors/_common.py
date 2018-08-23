@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2018"
+__date__ = "22/08/2018"
 __status__ = "stable"
 
 
@@ -45,6 +45,7 @@ import os
 import posixpath
 import threading
 from collections import OrderedDict
+import json
 
 from .. import io
 from .. import spline
@@ -118,22 +119,58 @@ class Detector(with_metaclass(DetectorMeta, object)):
         :rtype: pyFAI.detectors.Detector
         """
         if isinstance(name, Detector):
+            # It's already a detector
             return name
+
         if os.path.isfile(name):
+            # It's a filename
             return NexusDetector(name)
-        name = name.lower()
-        names = [name, name.replace(" ", "_")]
-        for name in names:
-            if name in cls.registry:
-                mydet = cls.registry[name]()
-                if config is not None:
-                    mydet.set_config(config)
-                return mydet
-        else:
+
+        # Search for the detector class
+        import pyFAI.detectors
+        detectorClass = None
+        if hasattr(pyFAI.detectors, name):
+            # It's a classname
+            cls = getattr(pyFAI.detectors, name)
+            if issubclass(cls, pyFAI.detectors.Detector):
+                # Avoid code injection
+                detectorClass = cls
+
+        if detectorClass is None:
+            # Search the name using the name database
+            name = name.lower()
+            names = [name, name.replace(" ", "_")]
+            for name in names:
+                if name in cls.registry:
+                    detectorClass = cls.registry[name]
+                    break
+
+        if detectorClass is None:
             msg = ("Detector %s is unknown !, "
                    "please check if the filename exists or select one from %s" % (name, cls.registry.keys()))
             logger.error(msg)
             raise RuntimeError(msg)
+
+        # Create the detector
+        detector = None
+        if config is not None:
+            if not isinstance(config, dict):
+                try:
+                    config = json.loads(config)
+                except Exception as err:  # IGNORE:W0703:
+                    logger.error("Unable to parse config %s with JSON: %s, %s",
+                                 name, config, err)
+                    raise err
+            try:
+                detector = detectorClass(**config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to configure detector %s with config: %s\n %s",
+                             name, config, err)
+                raise err
+        else:
+            detector = detectorClass()
+
+        return detector
 
     def __init__(self, pixel1=None, pixel2=None, splineFile=None, max_shape=None):
         """
@@ -228,32 +265,62 @@ class Detector(with_metaclass(DetectorMeta, object)):
             new.set_splineFile(self._splineFile)
         return new
 
+    def __eq__(self, other):
+        """Equality checker for detector, used in tests
+        
+        Checks for pixel1, pixel2, binning, shape, max_shape,  
+        """
+        res = True
+        for what in ["pixel1", "pixel2", "binning", "shape", "max_shape"]:
+            res &= getattr(self, what) == getattr(other, what)
+        return res
+
     def set_config(self, config):
         """
-        Sets the configuration of the detector. This implies:
-
-        - Orientation: integers
-        - Binning
-        - ROI
-
+        Sets the configuration of the detector.        
+        
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
-        keys in that dictionary are :
-
-        - "orientation": integers from 0 to 7
-        - "binning": integer or 2-tuple of integers. If only one integer is
-            provided,
-        - "offset": coordinate (in pixels) of the start of the detector
+        keys in that dictionary are:  pixel1, pixel2, splineFile, max_shape
+       
+        :param config: string or JSON-serialized dict
+        :retuen: self 
         """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
         if not self.force_pixel:
-            if "pixel1" in config:
-                self.set_pixel1(config["pixel1"])
-            if "pixel2" in config:
-                self.set_pixel2(config["pixel2"])
+            pixel1 = config.get("pixel1")
+            pixel2 = config.get("pixel2")
+            if pixel1:
+                self.set_pixel1(pixel1)
+            if pixel2:
+                self.set_pixel2(pixel2)
             if "splineFile" in config:
-                self.set_splineFile(config["splineFile"])
-        # TODO: complete
+                self.set_splineFile(config.get("splineFile"))
+            if "max_shape" in config:
+                self.max_shape = config.get("max_shape")
+        return self
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        Derivative classes should implement this method 
+        if they change the constructor ! 
+        
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2),
+                            ('max_shape', self.max_shape)))
+        if self._splineFile:
+            dico["splineFile"] = self._splineFile
+        return dico
 
     def get_splineFile(self):
         return self._splineFile
@@ -368,9 +435,11 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         dico = OrderedDict((("detector", self.name),
                             ("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+                            ("pixel2", self._pixel2),
+                            ('max_shape', self.max_shape)))
         if self._splineFile:
             dico["splineFile"] = self._splineFile
+
         return dico
 
     def getFit2D(self):
@@ -393,12 +462,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         if "detector" in kwarg:
             import pyFAI.detectors
-            self = pyFAI.detectors.detector_factory(kwarg["detector"])
-        for kw in kwarg:
-            if kw in ["pixel1", "pixel2"]:
-                setattr(self, kw, kwarg[kw])
-            elif kw == "splineFile":
-                self.set_splineFile(kwarg[kw])
+            config = {}
+            for key in ("pixel1", "pixel2", 'max_shape', "splineFile"):
+                if key in kwarg:
+                    config[key] = kwarg[key]
+            self = pyFAI.detectors.detector_factory(kwarg["detector"], config)
+        return self
 
     @classmethod
     def from_dict(cls, dico):
@@ -969,6 +1038,36 @@ class NexusDetector(Detector):
         obj = cls()
         cls.load(filename)
         return obj
+
+    def set_config(self, config):
+        """set the config of the detector
+        
+        For Nexus detector, the only valid key is "filename"
+        
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+        filename = config.get("filename")
+        if os.path.exists(filename):
+            self.load(filename)
+        else:
+            logger.error("Unable to configure Nexus detector, config: %s",
+                         config)
+        return self
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        
+        :return: dict with param for serialization
+        """
+        return {"filename": self._filename}
 
     def getPyFAI(self):
         """

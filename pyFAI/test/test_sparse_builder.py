@@ -33,7 +33,7 @@ from __future__ import absolute_import, division, print_function
 __author__ = "Valentin Valls"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/07/2018"
+__date__ = "16/07/2018"
 
 
 import unittest
@@ -141,6 +141,28 @@ class TestSparseBuilder(utilstest.ParametricTestCase):
             self.assertTrue(numpy.allclose(a, numpy.array([1.0, 0.6, 0.4])))
             self.assertTrue(numpy.allclose(b, numpy.array([0, 1, 1])))
             self.assertTrue(numpy.allclose(c, numpy.array([0, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3])))
+
+    def test_lut(self):
+        expected_idx = numpy.array([[0, 1],
+                                    [1, 0],
+                                    [0, 0],
+                                    [2, 3],
+                                    [0, 0]])
+        expected_coef = numpy.array([[1.0, 0.6],
+                                     [0.4, 0.0],
+                                     [0.0, 0.0],
+                                     [0.8, 0.2],
+                                     [0.0, 0.0]])
+
+        for builder in self.subtest_each_builders(5):
+            builder.insert(0, 0, 1.0)
+            builder.insert(0, 1, 0.6)
+            builder.insert(1, 1, 0.4)
+            builder.insert(3, 2, 0.8)
+            builder.insert(3, 3, 0.2)
+            lut = builder.to_lut()
+            self.assertTrue(numpy.allclose(lut["idx"], expected_idx))
+            self.assertTrue(numpy.allclose(lut["coef"], expected_coef))
 
     def test_small_tth(self):
         shape = (256, 256)
