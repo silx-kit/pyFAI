@@ -41,14 +41,19 @@ _logger = logging.getLogger(__name__)
 class MarkerManager(object):
     """Synchronize the display of markers from MarkerModel to a plot."""
 
-    def __init__(self, plot, markerModel):
+    _ITEM_TEMPLATE = "__markers__%s"
+
+    def __init__(self, plot, markerModel, pixelBasedPlot=False):
         self.__plot = plot
         self.__markerModel = markerModel
         self.__markerModel.changed.connect(self.__updateMarkers)
         self.__geometry = None
         self.__markers = []
+        self.__pixelBasedPlot = pixelBasedPlot
 
     def updateProjection(self, geometry, radialUnit, wavelength, directDist):
+        if self.__pixelBasedPlot:
+            raise RuntimeError("Invalide operation for this kind of plot")
         self.__geometry = geometry
         self.__radialUnit = radialUnit
         self.__wavelength = wavelength
@@ -59,8 +64,27 @@ class MarkerManager(object):
         for item in self.__markers:
             self.__plot.removeMarker(item.getLegend())
 
-        template = "__markers__%s"
+        if self.__pixelBasedPlot:
+            self.__createMarkerOnPixelBased()
+        else:
+            self.__createMarkerOnPhysicalBased()
 
+    def __createMarkerOnPixelBased(self):
+        for marker in self.__markerModel:
+            if isinstance(marker, MarkerModel.PhysicalMarker):
+                # TODO: implement it
+                continue
+            elif isinstance(marker, MarkerModel.PixelMarker):
+                x, y = marker.pixelPosition()
+            else:
+                _logger.debug("Unsupported logger %s", type(marker))
+                continue
+            legend = self._ITEM_TEMPLATE % marker.name()
+            self.__plot.addMarker(x=x, y=y, color="pink", legend=legend, text=marker.name())
+            item = self.__plot._getMarker(legend)
+            self.__markers.append(item)
+
+    def __createMarkerOnPhysicalBased(self):
         for marker in self.__markerModel:
             if isinstance(marker, MarkerModel.PhysicalMarker):
                 chiRad, tthRad = marker.physicalPosition()
@@ -79,7 +103,7 @@ class MarkerManager(object):
                                    directDist=self.__directDist)
             chi = numpy.rad2deg(chiRad)
 
-            legend = template % marker.name()
+            legend = self._ITEM_TEMPLATE % marker.name()
             self.__plot.addMarker(x=tth, y=chi, color="pink", legend=legend, text=marker.name())
             item = self.__plot._getMarker(legend)
             self.__markers.append(item)
