@@ -66,11 +66,49 @@ class MarkerManager(object):
     def __updateMarkers(self):
         for item in self.__markers:
             self.__plot.removeMarker(item.getLegend())
+        for marker in self.__markerModel:
+            position = self.getMarkerLocation(marker)
+            if position is None:
+                continue
+            legend = self._ITEM_TEMPLATE % marker.name()
+            self.__plot.addMarker(x=position[0], y=position[1], color="pink", legend=legend, text=marker.name())
+            item = self.__plot._getMarker(legend)
+            self.__markers.append(item)
 
+    def getMarkerLocation(self, marker):
+        """
+        Returns the location of the marker in the plot axes
+        """
         if self.__pixelBasedPlot:
-            self.__createMarkerOnPixelBased()
+            if isinstance(marker, MarkerModel.PhysicalMarker):
+                # TODO: implement it
+                return None
+            elif isinstance(marker, MarkerModel.PixelMarker):
+                return marker.pixelPosition()
+            else:
+                _logger.debug("Unsupported logger %s", type(marker))
+                return None
         else:
-            self.__createMarkerOnPhysicalBased()
+            if isinstance(marker, MarkerModel.PhysicalMarker):
+                chiRad, tthRad = marker.physicalPosition()
+            elif isinstance(marker, MarkerModel.PixelMarker):
+                if self.__geometry is None:
+                    return None
+                x, y = marker.pixelPosition()
+                ax, ay = numpy.array([x]), numpy.array([y])
+                chiRad = self.__geometry.chi(ay, ax)[0]
+                tthRad = self.__geometry.tth(ay, ax)[0]
+            else:
+                _logger.debug("Unsupported logger %s", type(marker))
+                return None
+
+            tth = utils.from2ThRad(tthRad,
+                                   unit=self.__radialUnit,
+                                   wavelength=self.__wavelength,
+                                   directDist=self.__directDist)
+            chi = numpy.rad2deg(chiRad)
+            return tth, chi
+
 
     def createMarkPixelAction(self, parent, mousePos):
         maskPixelAction = qt.QAction(parent)
@@ -133,45 +171,3 @@ class MarkerManager(object):
                 return name
         # Returns something
         return "mark"
-
-    def __createMarkerOnPixelBased(self):
-        for marker in self.__markerModel:
-            if isinstance(marker, MarkerModel.PhysicalMarker):
-                # TODO: implement it
-                continue
-            elif isinstance(marker, MarkerModel.PixelMarker):
-                x, y = marker.pixelPosition()
-            else:
-                _logger.debug("Unsupported logger %s", type(marker))
-                continue
-            legend = self._ITEM_TEMPLATE % marker.name()
-            self.__plot.addMarker(x=x, y=y, color="pink", legend=legend, text=marker.name())
-            item = self.__plot._getMarker(legend)
-            self.__markers.append(item)
-
-    def __createMarkerOnPhysicalBased(self):
-        if self.__geometry is None:
-            return
-
-        for marker in self.__markerModel:
-            if isinstance(marker, MarkerModel.PhysicalMarker):
-                chiRad, tthRad = marker.physicalPosition()
-            elif isinstance(marker, MarkerModel.PixelMarker):
-                x, y = marker.pixelPosition()
-                ax, ay = numpy.array([x]), numpy.array([y])
-                chiRad = self.__geometry.chi(ay, ax)[0]
-                tthRad = self.__geometry.tth(ay, ax)[0]
-            else:
-                _logger.debug("Unsupported logger %s", type(marker))
-                continue
-
-            tth = utils.from2ThRad(tthRad,
-                                   unit=self.__radialUnit,
-                                   wavelength=self.__wavelength,
-                                   directDist=self.__directDist)
-            chi = numpy.rad2deg(chiRad)
-
-            legend = self._ITEM_TEMPLATE % marker.name()
-            self.__plot.addMarker(x=tth, y=chi, color="pink", legend=legend, text=marker.name())
-            item = self.__plot._getMarker(legend)
-            self.__markers.append(item)
