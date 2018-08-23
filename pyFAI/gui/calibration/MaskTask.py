@@ -97,6 +97,9 @@ class MaskTask(AbstractCalibrationTask):
         menu.addSeparator()
         menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
         menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
+        action = self.__markerManager.createRemoveClosestMaskerAction(menu, pos)
+        if action is not None:
+            menu.addAction(action)
 
         handle = plot.getWidgetHandle()
         menu.exec_(handle.mapToGlobal(pos))

@@ -109,6 +109,31 @@ class MarkerManager(object):
             chi = numpy.rad2deg(chiRad)
             return tth, chi
 
+    def findClosestMarker(self, mousePos):
+        pos = self.__plot.pixelToData(mousePos.x(), mousePos.y())
+
+        currentMarker = None
+        currentDistance = float("inf")
+        for marker in self.__markerModel:
+            location = self.getMarkerLocation(marker)
+            if location is None:
+                continue
+            distance = (pos[0] - location[0]) ** 2.0 + (pos[1] - location[1]) ** 2.0
+            if distance < currentDistance:
+                currentDistance = distance
+                currentMarker = marker
+        return currentMarker
+
+    def createRemoveClosestMaskerAction(self, parent, mousePos):
+        action = qt.QAction(parent)
+
+        marker = self.findClosestMarker(mousePos)
+        if marker is None:
+            return None
+
+        action.setText("Remove marker '%s'" % marker.name())
+        action.triggered.connect(functools.partial(self.__removeMarker, marker))
+        return action
 
     def createMarkPixelAction(self, parent, mousePos):
         maskPixelAction = qt.QAction(parent)
@@ -143,6 +168,9 @@ class MarkerManager(object):
             chiRad = None
 
         return chiRad, tthRad
+
+    def __removeMarker(self, marker):
+        self.__markerModel.remove(marker)
 
     def __createPixelMarker(self, pos):
         pos = self.__plot.pixelToData(pos.x(), pos.y())
