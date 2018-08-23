@@ -109,17 +109,19 @@ class MarkerManager(object):
             chi = numpy.rad2deg(chiRad)
             return tth, chi
 
-    def findClosestMarker(self, mousePos):
-        pos = self.__plot.pixelToData(mousePos.x(), mousePos.y())
-
+    def findClosestMarker(self, mousePos, delta=20):
+        delta = delta ** 2.0
+        if isinstance(mousePos, qt.QPoint):
+            mousePos = mousePos.x(), mousePos.y()
         currentMarker = None
         currentDistance = float("inf")
         for marker in self.__markerModel:
             location = self.getMarkerLocation(marker)
             if location is None:
                 continue
-            distance = (pos[0] - location[0]) ** 2.0 + (pos[1] - location[1]) ** 2.0
-            if distance < currentDistance:
+            location = self.__plot.dataToPixel(x=location[0], y=location[1])
+            distance = (mousePos[0] - location[0]) ** 2.0 + (mousePos[1] - location[1]) ** 2.0
+            if distance < currentDistance and distance < delta:
                 currentDistance = distance
                 currentMarker = marker
         return currentMarker
