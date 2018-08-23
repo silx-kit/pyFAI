@@ -119,7 +119,7 @@ class MarkerManager(object):
             location = self.getMarkerLocation(marker)
             if location is None:
                 continue
-            location = self.__plot.dataToPixel(x=location[0], y=location[1])
+            location = self.__plot.dataToPixel(x=location[0], y=location[1], check=False)
             distance = (mousePos[0] - location[0]) ** 2.0 + (mousePos[1] - location[1]) ** 2.0
             if distance < currentDistance and distance < delta:
                 currentDistance = distance
