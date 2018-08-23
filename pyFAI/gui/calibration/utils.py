@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/08/2018"
+__date__ = "23/08/2018"
 
 
 import numpy
@@ -103,25 +103,85 @@ def getFreeColorRange(colormap):
     return colors
 
 
+def _extractCoefFromTransformation(xx, yy, coord):
+    """Returns the coefficients and the indices of the used vector for the
+    projection
+
+    This can work for triangle and quadrilater.
+    """
+    size = len(xx)
+
+    # Try some triangles
+    for i in range(size):
+        indexCenter = (i + 1) % size
+        indexU = (i + 0) % size
+        indexV = (i + 2) % size
+        center = numpy.array([xx[indexCenter], yy[indexCenter]])
+        u = numpy.array([xx[indexU], yy[indexU]]) - center
+        v = numpy.array([xx[indexV], yy[indexV]]) - center
+        w = coord - center
+
+        # h(U⋅U) + k(U⋅V) = W⋅U
+        # h(V⋅U) + k(V⋅V) = W⋅V
+        wv = numpy.dot(w, v)
+        wu = numpy.dot(w, u)
+        vu = numpy.dot(v, u)
+        uu = numpy.dot(u, u)
+        vv = numpy.dot(v, v)
+        uv = numpy.dot(u, v)
+
+        k = ((wv / vu) - (wu / uu)) / ((vv / vu) - (uv / uu))
+        h = (wv - k * vv) / vu
+
+        # TODO: Understand why hk canbe outside 0..1
+        # if 0.0 <= k <= 1.0 and 0.0 <= h <= 1.0:
+        #    return h, k, i + 1, i, i + 2
+
+        return h, k, indexCenter, indexU, indexV
+
+    return None
+
+
 def findPixel(geometry, chi, tth):
     """
     Find the approximative pixel location from the resulting chi and 2theta
     value.
 
-    The current implementation returns the center of the closest pixel. This
-    could be improved by triangulation.
+    The current implementation find the closest pixel. And then try to find the
+    best location inside the pixel. This is anyway not accurate.
 
     :param pyFAI.geometry.Geometry geometry: Modelization of the geometry
     :param float chi: Chi angle value in radian
     :param float tth: 2 theta angle in radian
     :rtype: Tuple[float,float]
+    :returns: y, x
     """
+    # Find the right pixel
     chia = geometry.get_chia()
     ttha = geometry.get_ttha()
-    array = (chia - chi) ** 2 + (ttha - tth) ** 2
+    array = (chia - chi) ** 2.0 + (ttha - tth) ** 2.0
     index = numpy.argmin(array)
     coord = numpy.unravel_index(index, array.shape)
-    return coord[0] + 0.5, coord[1] + 0.5
+    coord = numpy.array(coord)
+
+    # Try to improve the location of the point inside the pixel
+    deltaPoints = numpy.array([[0.001, 0.001], [0.001, 0.999], [0.999, 0.999], [0.999, 0.001]])
+    pixelCorners = coord + deltaPoints
+    chiPoints = geometry.chi(pixelCorners[:, 0], pixelCorners[:, 1])
+    tthPoints = geometry.tth(pixelCorners[:, 0], pixelCorners[:, 1])
+
+    result = _extractCoefFromTransformation(chiPoints, tthPoints, (chi, tth))
+    if result is None:
+        return None
+
+    h, k, indexCenter, indexU, indexV = result
+
+    base = deltaPoints[indexCenter]
+    u = deltaPoints[indexU] - base
+    v = deltaPoints[indexV] - base
+    coord = coord + h * u + k * v
+
+    return coord
 
 
 def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
