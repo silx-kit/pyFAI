@@ -212,6 +212,9 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             return True
         return False
 
+    def markerManager(self):
+        return self.__markerManager
+
     def __plotContextMenu(self, pos):
         plot = self
         from silx.gui.plot.actions.control import ZoomBackAction
@@ -686,6 +689,9 @@ class GeometryTask(AbstractCalibrationTask):
             calibration.fromGeometryModel(model, resetResidual=resetResidual)
             self.__updateDisplay()
             self.__formatResidual()
+
+        geometry = calibration.getPyfaiGeometry()
+        self.__plot.markerManager().updatePhysicalMarkerPixels(geometry)
 
     def __updateDisplay(self):
         calibration = self.__getCalibration()

@@ -54,15 +54,17 @@ class MarkerManager(object):
         self.__markers = []
         self.__pixelBasedPlot = pixelBasedPlot
         self.__markerColors = {}
+        self.__radialUnit = None
 
-    def updateProjection(self, geometry, radialUnit, wavelength, directDist):
+    def updateProjection(self, geometry, radialUnit, wavelength, directDist, redraw=True):
         if self.__pixelBasedPlot:
             raise RuntimeError("Invalide operation for this kind of plot")
         self.__geometry = geometry
         self.__radialUnit = radialUnit
         self.__wavelength = wavelength
         self.__directDist = directDist
-        self.__updateMarkers()
+        if redraw:
+            self.__updateMarkers()
 
     def markerColorList(self):
         colormap = self.__plot.getDefaultColormap()
@@ -78,6 +80,35 @@ class MarkerManager(object):
     def createMarkerColors(self):
         colormap = self.__plot.getDefaultColormap()
         return utils.getFreeColorRange(colormap)
+
+    def updatePhysicalMarkerPixels(self, geometry):
+        self.__geometry = geometry
+        if geometry is None:
+            self.__wavelength = None
+            self.__directDist = None
+        else:
+            self.__wavelength = geometry.wavelength
+            try:
+                self.__directDist = geometry.getFit2D()["directDist"]
+            except Exception:
+                # The geometry could not fit this param
+                _logger.debug("Backtrace", exc_info=True)
+                self.__directDist = None
+
+        self.__markerModel.lockSignals()
+        for marker in self.__markerModel:
+            if not isinstance(marker, MarkerModel.PhysicalMarker):
+                continue
+
+            chiRad, tthRad = marker.physicalPosition()
+            if self.__geometry is not None:
+                pixel = utils.findPixel(self.__geometry, chiRad, tthRad)
+                marker.setPixelPosition(pixel[1], pixel[0])
+            else:
+                marker.removePixelPosition()
+        # TODO: should be managed by the model
+        self.__markerModel.wasChanged()
+        self.__markerModel.unlockSignals()
 
     def __updateMarkers(self):
         for item in self.__markers:
@@ -101,8 +132,7 @@ class MarkerManager(object):
         """
         if self.__pixelBasedPlot:
             if isinstance(marker, MarkerModel.PhysicalMarker):
-                # TODO: implement it
-                return None
+                return marker.pixelPosition()
             elif isinstance(marker, MarkerModel.PixelMarker):
                 return marker.pixelPosition()
             else:
@@ -121,6 +151,9 @@ class MarkerManager(object):
             else:
                 _logger.debug("Unsupported logger %s", type(marker))
                 return None
+
+            if self.__radialUnit is None:
+                return
 
             tth = utils.from2ThRad(tthRad,
                                    unit=self.__radialUnit,
@@ -174,22 +207,30 @@ class MarkerManager(object):
 
     def dataToChiTth(self, data):
         """Returns chi and 2theta angles in radian from data coordinate"""
-        try:
-            tthRad = utils.tthToRad(data[0],
-                                    unit=self.__radialUnit,
-                                    wavelength=self.__wavelength,
-                                    directDist=self.__directDist)
-        except Exception:
-            _logger.debug("Backtrace", exc_info=True)
-            tthRad = None
 
-        chiDeg = data[1]
-        if chiDeg is not None:
-            chiRad = numpy.deg2rad(chiDeg)
+        if self.__pixelBasedPlot:
+            x, y = data
+            ax, ay = numpy.array([x]), numpy.array([y])
+            chi = self.__geometry.chi(ay, ax)[0]
+            tth = self.__geometry.tth(ay, ax)[0]
+            return chi, tth
         else:
-            chiRad = None
+            try:
+                tthRad = utils.tthToRad(data[0],
+                                        unit=self.__radialUnit,
+                                        wavelength=self.__wavelength,
+                                        directDist=self.__directDist)
+            except Exception:
+                _logger.debug("Backtrace", exc_info=True)
+                tthRad = None
 
-        return chiRad, tthRad
+            chiDeg = data[1]
+            if chiDeg is not None:
+                chiRad = numpy.deg2rad(chiDeg)
+            else:
+                chiRad = None
+
+            return chiRad, tthRad
 
     def __removeMarker(self, marker):
         self.__markerModel.remove(marker)
@@ -210,6 +251,16 @@ class MarkerManager(object):
         chiRad, tthRad = self.dataToChiTth(pos)
         name = self.__findUnusedMarkerName()
         marker = MarkerModel.PhysicalMarker(name, chiRad, tthRad)
+
+        if self.__pixelBasedPlot:
+            marker.setPixelPosition(pos[0], pos[1])
+        else:
+            if self.__geometry is not None:
+                pixel = utils.findPixel(self.__geometry, chiRad, tthRad)
+                marker.setPixelPosition(pixel[1], pixel[0])
+            else:
+                marker.removePixelPosition()
+
         self.__markerModel.add(marker)
 
     def __findUnusedMarkerName(self):
