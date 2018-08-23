@@ -53,6 +53,7 @@ class MarkerManager(object):
         self.__geometry = None
         self.__markers = []
         self.__pixelBasedPlot = pixelBasedPlot
+        self.__markerColors = {}
 
     def updateProjection(self, geometry, radialUnit, wavelength, directDist):
         if self.__pixelBasedPlot:
@@ -63,15 +64,34 @@ class MarkerManager(object):
         self.__directDist = directDist
         self.__updateMarkers()
 
+    def markerColorList(self):
+        colormap = self.__plot.getDefaultColormap()
+
+        name = colormap['name']
+        if name not in self.__markerColors:
+            colors = self.createMarkerColors()
+            self.__markerColors[name] = colors
+        else:
+            colors = self.__markerColors[name]
+        return colors
+
+    def createMarkerColors(self):
+        colormap = self.__plot.getDefaultColormap()
+        return utils.getFreeColorRange(colormap)
+
     def __updateMarkers(self):
         for item in self.__markers:
             self.__plot.removeMarker(item.getLegend())
+
+        color = self.markerColorList()[0]
+        htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+
         for marker in self.__markerModel:
             position = self.getMarkerLocation(marker)
             if position is None:
                 continue
             legend = self._ITEM_TEMPLATE % marker.name()
-            self.__plot.addMarker(x=position[0], y=position[1], color="pink", legend=legend, text=marker.name())
+            self.__plot.addMarker(x=position[0], y=position[1], color=htmlColor, legend=legend, text=marker.name())
             item = self.__plot._getMarker(legend)
             self.__markers.append(item)
 
