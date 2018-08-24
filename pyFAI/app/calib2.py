@@ -461,7 +461,7 @@ def main():
 
     settings = qt.QSettings(qt.QSettings.IniFormat,
                             qt.QSettings.UserScope,
-                            "esrf",
+                            "pyfai",
                             "pyfai-calib2",
                             None)
 
