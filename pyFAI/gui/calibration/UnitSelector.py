@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/08/2018"
+__date__ = "24/08/2018"
 
 from silx.gui import qt
 from .model.DataModel import DataModel
@@ -47,6 +47,9 @@ class UnitSelector(qt.QComboBox):
         old = self.blockSignals(True)
         # clean up
         self.clear()
+
+        units = sorted(list(units), key=lambda u: u.name)
+
         for unit in units:
             self.addItem(unit.name, unit)
         # try to find the previous unit in the new list
