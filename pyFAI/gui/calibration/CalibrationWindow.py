@@ -31,6 +31,7 @@ __date__ = "24/08/2018"
 
 from silx.gui import qt
 import pyFAI.utils
+from .model import MarkerModel
 
 
 class CalibrationWindow(qt.QMainWindow):
@@ -80,6 +81,11 @@ class CalibrationWindow(qt.QMainWindow):
 
     def setModel(self, model):
         self.__model = model
+
+        if len(self.__model.markerModel()) == 0:
+            origin = MarkerModel.PixelMarker("Origin", 0, 0)
+            self.__model.markerModel().add(origin)
+
         for task in self.__tasks:
             task.setModel(self.__model)
 
