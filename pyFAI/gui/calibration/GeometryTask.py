@@ -532,10 +532,13 @@ class GeometryTask(AbstractCalibrationTask):
             return
 
         geometry = self.__calibration.getPyfaiGeometry()
-        ax, ay = numpy.array([x]), numpy.array([y])
-        chi = geometry.chi(ay, ax)[0]
-        tth = geometry.tth(ay, ax)[0]
-        self.__statusBar.setValues(x, y, value, chi, tth)
+        if geometry is not None:
+            ax, ay = numpy.array([x]), numpy.array([y])
+            chi = geometry.chi(ay, ax)[0]
+            tth = geometry.tth(ay, ax)[0]
+            self.__statusBar.setValues(x, y, value, chi, tth)
+        else:
+            self.__statusBar.setValues(x, y, value, None, None)
 
     def __mouseLeft(self):
         self.__statusBar.clearValues()
@@ -668,18 +671,22 @@ class GeometryTask(AbstractCalibrationTask):
         calibration = self.__getCalibration()
         previousResidual = calibration.getPreviousResidual()
         residual = calibration.getResidual()
-        text = '%.6e' % residual
-        if previousResidual is not None:
-            if residual == previousResidual:
-                diff = "(no changes)"
-            else:
-                diff = '(%+.2e)' % (residual - previousResidual)
-                if residual < previousResidual:
-                    diff = '<font color="green">%s</font>' % diff
+        if residual is not None:
+            text = '%.6e' % residual
+            if previousResidual is not None:
+                if residual == previousResidual:
+                    diff = "(no changes)"
                 else:
-                    diff = '<font color="red">%s</font>' % diff
-            text = '%s %s' % (text, diff)
-        self._currentResidual.setText(text)
+                    diff = '(%+.2e)' % (residual - previousResidual)
+                    if residual < previousResidual:
+                        diff = '<font color="green">%s</font>' % diff
+                    else:
+                        diff = '<font color="red">%s</font>' % diff
+                text = '%s %s' % (text, diff)
+            self._currentResidual.setText(text)
+            self._currentResidual.setVisible(True)
+        else:
+            self._currentResidual.setVisible(False)
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "24/08/2018"
 
 import logging
 import numpy
@@ -56,6 +56,7 @@ class RingCalibration(object):
         fixed.add("wavelength")
         self.__fixed = fixed
         self.__residual = None
+        self.__previousResidual = None
         self.__peakResidual = None
 
     def __initgeoRef(self):
@@ -83,6 +84,11 @@ class RingCalibration(object):
         defaults = self.__initgeoRef()
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
+
+        if len(peaks) == 0:
+            self.__peakPicker = None
+            self.__geoRef = None
+            return
 
         geoRef = GeometryRefinement(data=peaks,
                                     wavelength=self.__wavelength,
@@ -117,6 +123,8 @@ class RingCalibration(object):
         return self.__geoRef
 
     def __computeResidual(self):
+        if self.__geoRef is None:
+            return None
         if "wavelength" in self.__fixed:
             return self.__geoRef.chi2() / self.__geoRef.data.shape[0]
         else:
@@ -229,13 +237,22 @@ class RingCalibration(object):
 
     def toGeometryModel(self, model):
         model.lockSignals()
-        model.wavelength().setValue(self.__geoRef.wavelength)
-        model.distance().setValue(self.__geoRef.dist)
-        model.poni1().setValue(self.__geoRef.poni1)
-        model.poni2().setValue(self.__geoRef.poni2)
-        model.rotation1().setValue(self.__geoRef.rot1)
-        model.rotation2().setValue(self.__geoRef.rot2)
-        model.rotation3().setValue(self.__geoRef.rot3)
+        if self.__geoRef is None:
+            model.wavelength().setValue(None)
+            model.distance().setValue(None)
+            model.poni1().setValue(None)
+            model.poni2().setValue(None)
+            model.rotation1().setValue(None)
+            model.rotation2().setValue(None)
+            model.rotation3().setValue(None)
+        else:
+            model.wavelength().setValue(self.__geoRef.wavelength)
+            model.distance().setValue(self.__geoRef.dist)
+            model.poni1().setValue(self.__geoRef.poni1)
+            model.poni2().setValue(self.__geoRef.poni2)
+            model.rotation1().setValue(self.__geoRef.rot1)
+            model.rotation2().setValue(self.__geoRef.rot2)
+            model.rotation3().setValue(self.__geoRef.rot3)
         model.unlockSignals()
 
     def fromGeometryModel(self, model, resetResidual=True):
