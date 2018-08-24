@@ -55,8 +55,8 @@ class RingCalibration(object):
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
         self.__fixed = fixed
-        self.__residual = None
-        self.__previousResidual = None
+        self.__rms = None
+        self.__previousRms = None
         self.__peakResidual = None
 
     def __initgeoRef(self):
@@ -95,9 +95,9 @@ class RingCalibration(object):
                                     detector=self.__detector,
                                     calibrant=self.__calibrant,
                                     **defaults)
-        self.__residual = geoRef.refine2(1000000, fix=fixed)
-        self.__peakResidual = self.__residual
-        self.__previousResidual = None
+        self.__rms = geoRef.refine2(1000000, fix=fixed)
+        self.__peakResidual = self.__rms
+        self.__previousRms = None
 
         peakPicker = PeakPicker(data=self.__image,
                                 calibrant=self.__calibrant,
@@ -122,13 +122,14 @@ class RingCalibration(object):
     def getPyfaiGeometry(self):
         return self.__geoRef
 
-    def __computeResidual(self):
+    def __computeRms(self):
         if self.__geoRef is None:
             return None
         if "wavelength" in self.__fixed:
-            return self.__geoRef.chi2() / self.__geoRef.data.shape[0]
+            chi2 = self.__geoRef.chi2()
         else:
-            return self.__geoRef.chi2_wavelength() / self.__geoRef.data.shape[0]
+            chi2 = self.__geoRef.chi2_wavelength()
+        return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
 
     def __refine(self, maxiter=1000000, fix=None):
         if "wavelength" in self.__fixed:
@@ -143,7 +144,7 @@ class RingCalibration(object):
         self.__calibrant.set_wavelength(self.__wavelength)
         self.__peakPicker.points.setWavelength_change2th(self.__wavelength)
 
-        self.__previousResidual = self.getResidual()
+        self.__previousRms = self.getRms()
         previous_residual = float("+inf")
 
         print("Initial residual: %s" % previous_residual)
@@ -155,22 +156,28 @@ class RingCalibration(object):
                 break
             previous_residual = residual
 
-        self.__residual = residual
+        self.__rms = residual
         print("Final residual: %s (after %s iterations)" % (residual, count))
 
         self.__geoRef.del_ttha()
         self.__geoRef.del_dssa()
         self.__geoRef.del_chia()
 
-    def getResidual(self):
-        """Returns the residual computed from the current fitting."""
-        if self.__residual is None:
-            self.__residual = self.__computeResidual()
-        return self.__residual
+    def getRms(self):
+        """Returns the RMS (root mean square) computed from the current fitting.
 
-    def getPreviousResidual(self):
-        """Returns the previous residual computed before the last fitting."""
-        return self.__previousResidual
+        The unit is the radian.
+        """
+        if self.__rms is None:
+            self.__rms = self.__computeRms()
+        return self.__rms
+
+    def getPreviousRms(self):
+        """Returns the previous RMS computed before the last fitting.
+
+        The unit is the radian.
+        """
+        return self.__previousRms
 
     def getPeakResidual(self):
         """Returns the residual computed from the peak selection."""
@@ -266,8 +273,8 @@ class RingCalibration(object):
         self.__geoRef.rot2 = model.rotation2().value()
         self.__geoRef.rot3 = model.rotation3().value()
         if resetResidual:
-            self.__previousResidual = None
-            self.__residual = None
+            self.__previousRms = None
+            self.__rms = None
 
     def fromGeometryConstriansModel(self, contraintsModel):
         # FIXME take care of range values
