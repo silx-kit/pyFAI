@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/08/2018"
+__date__ = "24/08/2018"
 
 from .AbstractModel import AbstractModel
 
@@ -59,6 +59,7 @@ class PhysicalMarker(Marker):
     def __init__(self, name, chi, tth):
         super(PhysicalMarker, self).__init__(name)
         self.__physic = chi, tth
+        self.__pixel = None
 
     def physicalPosition(self):
         return self.__physic
