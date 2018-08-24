@@ -27,45 +27,37 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/08/2018"
+__date__ = "24/08/2018"
 
 from silx.gui import qt
-from .model.DetectorModel import DetectorModel
-from .DetectorModel import AllDetectorModel
-from .DetectorModel import DetectorFilter
+import pyFAI.detectors
+from ..calibration.model.DetectorModel import DetectorModel
 
 
-class DetectorSelector(qt.QComboBox):
+class DetectorManufacturer(qt.QComboBox):
 
     def __init__(self, parent=None):
-        super(DetectorSelector, self).__init__(parent)
+        super(DetectorManufacturer, self).__init__(parent)
 
-        # feed the widget with default detectors
-        model = AllDetectorModel(self)
-        self.__filter = DetectorFilter(self)
-        self.__filter.setSourceModel(model)
+        # feed the widget with default manufacturers
+        manufacturers = set([])
+        for detector in pyFAI.detectors.ALL_DETECTORS.values():
+            manufacturers.add(detector.MANUFACTURER)
 
-        super(DetectorSelector, self).setModel(self.__filter)
+        hasOther = None in manufacturers
+        manufacturers.remove(None)
+        manufacturers = sorted(list(manufacturers))
+
+        for manufacturer in manufacturers:
+            self.addItem(manufacturer, manufacturer)
+        if hasOther:
+            self.addItem("Others", None)
+        self.insertItem(0, "Any", "*")
+        self.insertSeparator(1)
 
         self.__model = None
         self.setModel(DetectorModel())
-        self.currentIndexChanged[int].connect(self.__currentIndexChanged)
-
-    def setManufacturerFilter(self, manufacturer):
-        self.__filter.setManufacturerFilter(manufacturer)
-
-    def __currentIndexChanged(self, index):
-        model = self.model()
-        if model is None:
-            return
-        detectorClass = self.itemData(index)
-        if detectorClass is not None:
-            detector = detectorClass()
-        else:
-            detector = None
-        old = self.blockSignals(True)
-        model.setDetector(detector)
-        self.blockSignals(old)
+        self.setCurrentIndex(0)
 
     def setModel(self, model):
         if self.__model is not None:
@@ -75,13 +67,24 @@ class DetectorSelector(qt.QComboBox):
             self.__model.changed.connect(self.__modelChanged)
         self.__modelChanged()
 
-    def findDetectorClass(self, detectorClass):
-        """Returns the first index containing the requested detector.
+    def currentManufacturer(self):
+        index = self.currentIndex()
+        if index == -1:
+            return "*"
+        manufacturer = self.itemData(index)
+        return manufacturer
+
+    def findManufacturer(self, manufacturer):
+        """Returns the first index containing the requested manufacturer.
         Else return -1"""
         for index in range(self.count()):
             item = self.itemData(index)
-            if item is detectorClass:
+            if item == "*":
+                continue
+            if item is manufacturer:
                 return index
+        # TODO we are supposed to return other group
+        # or create a new manufacturer
         return -1
 
     def __modelChanged(self):
@@ -89,12 +92,12 @@ class DetectorSelector(qt.QComboBox):
         if value is None:
             self.setCurrentIndex(-1)
         else:
-            detectorClass = value.__class__
+            manufacturer = value.MANUFACTURER
             index = self.currentIndex()
             item = self.itemData(index)
-            if item != detectorClass:
+            if item != manufacturer:
                 # findData is not working
-                index = self.findDetectorClass(detectorClass)
+                index = self.findManufacturer(manufacturer)
                 self.setCurrentIndex(index)
 
     def model(self):

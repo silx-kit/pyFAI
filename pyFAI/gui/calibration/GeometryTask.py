@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/08/2018"
+__date__ = "24/08/2018"
 
 import logging
 import numpy
@@ -44,9 +44,9 @@ from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from ..widgets.UnitLabel import UnitLabel
 from ..widgets.QuantityLabel import QuantityLabel
+from ..widgets.QuantityEdit import QuantityEdit
 from .model.DataModel import DataModel
-from .QuantityEdit import QuantityEdit
-from . import units
+from ..utils import units
 from .helper.MarkerManager import MarkerManager
 
 _logger = logging.getLogger(__name__)

@@ -408,22 +408,22 @@
   <customwidget>
    <class>QuantityEdit</class>
    <extends>QLineEdit</extends>
-   <header>pyFAI.gui.calibration.QuantityEdit</header>
+   <header>pyFAI.gui.widgets.QuantityEdit</header>
   </customwidget>
   <customwidget>
    <class>FileEdit</class>
    <extends>QLineEdit</extends>
-   <header>pyFAI.gui.calibration.FileEdit</header>
+   <header>pyFAI.gui.widgets.FileEdit</header>
   </customwidget>
   <customwidget>
    <class>CalibrantSelector</class>
    <extends>QComboBox</extends>
-   <header>pyFAI.gui.calibration.CalibrantSelector</header>
+   <header>pyFAI.gui.widgets.CalibrantSelector</header>
   </customwidget>
   <customwidget>
    <class>CalibrantPreview</class>
    <extends>QWidget</extends>
-   <header>pyFAI.gui.calibration.CalibrantPreview</header>
+   <header>pyFAI.gui.widgets.CalibrantPreview</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -434,7 +434,7 @@
   <customwidget>
    <class>DetectorLabel</class>
    <extends>QLabel</extends>
-   <header>pyFAI.gui.calibration.DetectorLabel</header>
+   <header>pyFAI.gui.widgets.DetectorLabel</header>
   </customwidget>
  </customwidgets>
  <resources/>

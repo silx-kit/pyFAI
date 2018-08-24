@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "22/08/2018"
+__date__ = "24/08/2018"
 
 import numpy
 import logging
@@ -33,7 +33,7 @@ import functools
 
 from silx.gui import qt
 
-from ..calibration import units
+from ..utils import units
 
 
 _logger = logging.getLogger(__name__)

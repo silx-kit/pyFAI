@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "24/08/2018"
 
 import fabio
 import numpy
@@ -45,7 +45,7 @@ import pyFAI.detectors
 from .DetectorSelectorDrop import DetectorSelectorDrop
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
-from . import units
+from ..utils import units
 
 _logger = logging.getLogger(__name__)
 

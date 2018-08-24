@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/08/2018"
+__date__ = "24/08/2018"
 __status__ = "production"
 
 import logging
@@ -52,7 +52,7 @@ import silx.gui.plot.matplotlib
 
 from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
 from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
-from pyFAI.gui.calibration import units
+from pyFAI.gui.utils import units
 
 import pyFAI.resources
 import pyFAI.calibrant

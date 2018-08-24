@@ -27,12 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "24/08/2018"
 
 import logging
 from silx.gui import qt
-from . import validators
-from . import units
+from ..utils import validators
+from ..utils import units
 
 _logger = logging.getLogger(__name__)
 

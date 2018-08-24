@@ -30,53 +30,41 @@ __license__ = "MIT"
 __date__ = "24/08/2018"
 
 from silx.gui import qt
-from .model.DataModel import DataModel
+from ..calibration.model.DetectorModel import DetectorModel
+from .DetectorModel import AllDetectorModel
+from .DetectorModel import DetectorFilter
 
 
-class UnitSelector(qt.QComboBox):
+class DetectorSelector(qt.QComboBox):
 
     def __init__(self, parent=None):
-        super(UnitSelector, self).__init__(parent)
+        super(DetectorSelector, self).__init__(parent)
+
+        # feed the widget with default detectors
+        model = AllDetectorModel(self)
+        self.__filter = DetectorFilter(self)
+        self.__filter.setSourceModel(model)
+
+        super(DetectorSelector, self).setModel(self.__filter)
 
         self.__model = None
-        self.setModel(DataModel())
+        self.setModel(DetectorModel())
         self.currentIndexChanged[int].connect(self.__currentIndexChanged)
 
-    def setUnits(self, units):
-        previousUnit = self.__model.value()
-        old = self.blockSignals(True)
-        # clean up
-        self.clear()
-
-        units = sorted(list(units), key=lambda u: u.name)
-
-        for unit in units:
-            self.addItem(unit.name, unit)
-        # try to find the previous unit in the new list
-        if previousUnit is None:
-            currentIndex = self.currentIndex()
-            index = -1
-        else:
-            currentIndex = self.currentIndex()
-            index = self.findUnit(previousUnit)
-        if index == -1:
-            self.blockSignals(old)
-            if currentIndex != index:
-                # the previous selected unit is not anymore available
-                self.setCurrentIndex(index)
-        else:
-            # the previous index is found
-            # we dont have to emit signals
-            self.setCurrentIndex(index)
-            self.blockSignals(old)
+    def setManufacturerFilter(self, manufacturer):
+        self.__filter.setManufacturerFilter(manufacturer)
 
     def __currentIndexChanged(self, index):
         model = self.model()
         if model is None:
             return
-        unit = self.itemData(index)
+        detectorClass = self.itemData(index)
+        if detectorClass is not None:
+            detector = detectorClass()
+        else:
+            detector = None
         old = self.blockSignals(True)
-        model.setValue(unit)
+        model.setDetector(detector)
         self.blockSignals(old)
 
     def setModel(self, model):
@@ -87,26 +75,26 @@ class UnitSelector(qt.QComboBox):
             self.__model.changed.connect(self.__modelChanged)
         self.__modelChanged()
 
-    def findUnit(self, unit):
+    def findDetectorClass(self, detectorClass):
         """Returns the first index containing the requested detector.
         Else return -1"""
         for index in range(self.count()):
             item = self.itemData(index)
-            if item is unit:
+            if item is detectorClass:
                 return index
         return -1
 
     def __modelChanged(self):
-        value = self.__model.value()
+        value = self.__model.detector()
         if value is None:
             self.setCurrentIndex(-1)
         else:
-            unit = value
+            detectorClass = value.__class__
             index = self.currentIndex()
             item = self.itemData(index)
-            if item is not unit:
+            if item != detectorClass:
                 # findData is not working
-                index = self.findUnit(unit)
+                index = self.findDetectorClass(detectorClass)
                 self.setCurrentIndex(index)
 
     def model(self):

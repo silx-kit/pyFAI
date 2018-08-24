@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "24/08/2018"
 
 import os
 import logging
@@ -37,10 +37,10 @@ from silx.gui import qt
 
 import pyFAI.utils
 import pyFAI.detectors
-from .DetectorModel import AllDetectorModel
-from .DetectorModel import DetectorFilter
+from ..widgets.DetectorModel import AllDetectorModel
+from ..widgets.DetectorModel import DetectorFilter
 from .model.DataModel import DataModel
-from . import validators
+from ..utils import validators
 from .CalibrationContext import CalibrationContext
 
 _logger = logging.getLogger(__name__)

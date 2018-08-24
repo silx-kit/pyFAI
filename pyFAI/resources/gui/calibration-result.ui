@@ -207,12 +207,12 @@
   <customwidget>
    <class>QuantityEdit</class>
    <extends>QLineEdit</extends>
-   <header>pyFAI.gui.calibration.QuantityEdit</header>
+   <header>pyFAI.gui.widgets.QuantityEdit</header>
   </customwidget>
   <customwidget>
    <class>UnitSelector</class>
    <extends>QComboBox</extends>
-   <header>pyFAI.gui.calibration.UnitSelector</header>
+   <header>pyFAI.gui.widgets.UnitSelector</header>
   </customwidget>
   <customwidget>
    <class>ThreadPoolPushButton</class>

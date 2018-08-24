@@ -539,12 +539,12 @@ background-color: transparent;
   <customwidget>
    <class>QuantityEdit</class>
    <extends>QLineEdit</extends>
-   <header>pyFAI.gui.calibration.QuantityEdit</header>
+   <header>pyFAI.gui.widgets.QuantityEdit</header>
   </customwidget>
   <customwidget>
    <class>FileEdit</class>
    <extends>QLineEdit</extends>
-   <header>pyFAI.gui.calibration.FileEdit</header>
+   <header>pyFAI.gui.widgets.FileEdit</header>
   </customwidget>
  </customwidgets>
  <tabstops>
