@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/08/2018"
+__date__ = "24/08/2018"
 
 import logging
 from silx.gui import qt
@@ -63,6 +63,8 @@ class MaskTask(AbstractCalibrationTask):
         self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(parent=self._toolHolder, plot=self.__plot)
         self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
         self.__maskPanel.setMultipleMasks("single")
+        layout = self.__maskPanel.layout()
+        layout.setContentsMargins(0, 0, 0, 0)
 
         layout = qt.QVBoxLayout(self._toolHolder)
         layout.addWidget(self.__maskPanel)
