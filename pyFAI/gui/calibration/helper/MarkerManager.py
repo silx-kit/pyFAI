@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/08/2018"
+__date__ = "24/08/2018"
 
 import logging
 import functools
@@ -37,6 +37,7 @@ from silx.gui import qt
 
 from ..model import MarkerModel
 from .. import utils
+from ...utils import eventutils
 
 _logger = logging.getLogger(__name__)
 
@@ -55,6 +56,10 @@ class MarkerManager(object):
         self.__pixelBasedPlot = pixelBasedPlot
         self.__markerColors = {}
         self.__radialUnit = None
+        self.__mustBeUpdated = False
+
+        eventutils.createShowSignal(self.__plot)
+        self.__plot.sigShown.connect(self.__plotIsShown)
 
     def updateProjection(self, geometry, radialUnit, wavelength, directDist, redraw=True):
         if self.__pixelBasedPlot:
@@ -110,7 +115,18 @@ class MarkerManager(object):
         self.__markerModel.wasChanged()
         self.__markerModel.unlockSignals()
 
+    def __plotIsShown(self):
+        if self.__mustBeUpdated:
+            self.__updateMarkers()
+
     def __updateMarkers(self):
+        if not self.__plot.isVisible():
+            # Update the display later
+            self.__mustBeUpdated = True
+            return
+
+        self.__mustBeUpdated = False
+
         for item in self.__markers:
             self.__plot.removeMarker(item.getLegend())
 
