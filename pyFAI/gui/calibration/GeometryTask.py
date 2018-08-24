@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "23/08/2018"
 
 import logging
 import numpy
@@ -47,6 +47,7 @@ from ..widgets.QuantityLabel import QuantityLabel
 from .model.DataModel import DataModel
 from .QuantityEdit import QuantityEdit
 from . import units
+from .helper.MarkerManager import MarkerManager
 
 _logger = logging.getLogger(__name__)
 
@@ -195,6 +196,13 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__displayedAngles = []
         self.__processing = None
 
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self, markerModel, pixelBasedPlot=True)
+
+        handle = self.getWidgetHandle()
+        handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        handle.customContextMenuRequested.connect(self.__plotContextMenu)
+
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
 
@@ -203,6 +211,27 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             self.__mouseLeave()
             return True
         return False
+
+    def markerManager(self):
+        return self.__markerManager
+
+    def __plotContextMenu(self, pos):
+        plot = self
+        from silx.gui.plot.actions.control import ZoomBackAction
+        zoomBackAction = ZoomBackAction(plot=plot, parent=plot)
+
+        menu = qt.QMenu(self)
+
+        menu.addAction(zoomBackAction)
+        menu.addSeparator()
+        menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
+        menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
+        action = self.__markerManager.createRemoveClosestMaskerAction(menu, pos)
+        if action is not None:
+            menu.addAction(action)
+
+        handle = plot.getWidgetHandle()
+        menu.exec_(handle.mapToGlobal(pos))
 
     def __plotSignalReceived(self, event):
         """Called when old style signals at emmited from the plot."""
@@ -660,6 +689,9 @@ class GeometryTask(AbstractCalibrationTask):
             calibration.fromGeometryModel(model, resetResidual=resetResidual)
             self.__updateDisplay()
             self.__formatResidual()
+
+        geometry = calibration.getPyfaiGeometry()
+        self.__plot.markerManager().updatePhysicalMarkerPixels(geometry)
 
     def __updateDisplay(self):
         calibration = self.__getCalibration()

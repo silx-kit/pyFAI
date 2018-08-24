@@ -27,9 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
-
-from silx.gui.colors import Colormap
+__date__ = "22/08/2018"
 
 from .AbstractModel import AbstractModel
 from .PlotViewModel import PlotViewModel
@@ -38,6 +36,7 @@ from .PeakSelectionModel import PeakSelectionModel
 from .GeometryModel import GeometryModel
 from .GeometryConstraintsModel import GeometryConstraintsModel
 from .IntegrationSettingsModel import IntegrationSettingsModel
+from .MarkerModel import MarkerModel
 
 
 class CalibrationModel(AbstractModel):
@@ -50,6 +49,7 @@ class CalibrationModel(AbstractModel):
         self.__peakGeometry = GeometryModel(self)
         self.__geometryConstraintsModel = GeometryConstraintsModel(self)
         self.__integrationSettingsModel = IntegrationSettingsModel(self)
+        self.__markerModel = MarkerModel(self)
         self.__rawPlotView = PlotViewModel(self)
 
     def isValid(self):
@@ -72,6 +72,9 @@ class CalibrationModel(AbstractModel):
 
     def integrationSettingsModel(self):
         return self.__integrationSettingsModel
+
+    def markerModel(self):
+        return self.__markerModel
 
     def rawPlotView(self):
         """Store definition of the RAW data view.

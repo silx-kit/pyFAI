@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "23/08/2018"
 
 import logging
 import numpy
@@ -46,6 +46,7 @@ from .model.DataModel import DataModel
 from ..widgets.QuantityLabel import QuantityLabel
 from .CalibrationContext import CalibrationContext
 from . import units
+from .helper.MarkerManager import MarkerManager
 
 _logger = logging.getLogger(__name__)
 
@@ -182,6 +183,9 @@ class IntegrationProcess(object):
         else:
             rings = []
         self.__ringAngles = rings
+
+        self.__ai = ai
+
         try:
             self.__directDist = ai.getFit2D()["directDist"]
         except Exception:
@@ -206,6 +210,12 @@ class IntegrationProcess(object):
 
     def directDist(self):
         return self.__directDist
+
+    def geometry(self):
+        """
+        :rtype: pyFAI.geometry.Geometry
+        """
+        return self.__ai
 
 
 def createSaveDialog(parent, title, poni=False, json=False, csv=False):
@@ -299,6 +309,10 @@ class IntegrationPlot(qt.QFrame):
         self.__radialUnit = None
         self.__wavelength = None
         self.__directDist = None
+        self.__geometry = None
+
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self.__plot2d, markerModel)
 
         self.__plot2d.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
         self.__plot1d.sigPlotSignal.connect(self.__plot1dSignalReceived)
@@ -375,9 +389,10 @@ class IntegrationPlot(qt.QFrame):
                 iresult = ringId
         return iresult, result
 
-    def __updateStatusBar(self, x, y):
+    def dataToChiTth(self, data):
+        """Returns chi and 2theta angles in radian from data coordinate"""
         try:
-            tthRad = utils.tthToRad(x,
+            tthRad = utils.tthToRad(data[0],
                                     unit=self.__radialUnit,
                                     wavelength=self.__wavelength,
                                     directDist=self.__directDist)
@@ -385,18 +400,22 @@ class IntegrationPlot(qt.QFrame):
             _logger.debug("Backtrace", exc_info=True)
             tthRad = None
 
-        chiDeg = y
+        chiDeg = data[1]
         if chiDeg is not None:
             chiRad = numpy.deg2rad(chiDeg)
         else:
             chiRad = None
 
+        return chiRad, tthRad
+
+    def __updateStatusBar(self, x, y):
+        chiRad, tthRad = self.dataToChiTth((x, y))
         if tthRad is not None and chiRad is not None:
             self.__statusBar.setValues(chiRad, tthRad)
         elif tthRad is not None:
             self.__statusBar.setValue(tthRad)
         else:
-            self.__statusBar.removeValues()
+            self.__statusBar.clearValues()
 
     def __mouseMoved(self, x, y):
         """Called when mouse move over the plot."""
@@ -451,6 +470,9 @@ class IntegrationPlot(qt.QFrame):
         return result
 
     def __updateRings(self):
+        if self.__availableRingAngles is None:
+            return
+
         minTth, maxTth = self.__plot2d.getXAxis().getLimits()
         angles = self.__getAvailableAngles(minTth, maxTth)
 
@@ -523,6 +545,10 @@ class IntegrationPlot(qt.QFrame):
         plot2d.setGraphYLabel("Azimuthal")
         plot2d.sigInteractiveModeChanged.connect(self.__syncModeToPlot1d)
 
+        handle = plot2d.getWidgetHandle()
+        handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        handle.customContextMenuRequested.connect(self.__plot2dContextMenu)
+
         from silx.gui.plot import tools
         toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot2d)
         plot2d.addToolBar(toolBar)
@@ -556,6 +582,23 @@ class IntegrationPlot(qt.QFrame):
         ownToolBar.addAction(action)
 
         return plot1d, plot2d
+
+    def __plot2dContextMenu(self, pos):
+        from silx.gui.plot.actions.control import ZoomBackAction
+        zoomBackAction = ZoomBackAction(plot=self.__plot2d, parent=self.__plot2d)
+
+        menu = qt.QMenu(self)
+
+        menu.addAction(zoomBackAction)
+        menu.addSeparator()
+        menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
+        menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
+        action = self.__markerManager.createRemoveClosestMaskerAction(menu, pos)
+        if action is not None:
+            menu.addAction(action)
+
+        handle = self.__plot2d.getWidgetHandle()
+        menu.exec_(handle.mapToGlobal(pos))
 
     def __clearRings(self):
         """Remove of ring item cached on the plots"""
@@ -598,6 +641,11 @@ class IntegrationPlot(qt.QFrame):
         self.__radialUnit = integrationProcess.radialUnit()
         self.__wavelength = integrationProcess.wavelength()
         self.__directDist = integrationProcess.directDist()
+        self.__geometry = integrationProcess.geometry()
+        self.__markerManager.updateProjection(self.__geometry,
+                                              self.__radialUnit,
+                                              self.__wavelength,
+                                              self.__directDist)
 
     def __setResult(self, result1d):
         self.__result1d = result1d

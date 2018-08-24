@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "23/08/2018"
 
 import logging
 from silx.gui import qt
@@ -38,6 +38,8 @@ import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
+from .helper.MarkerManager import MarkerManager
+
 
 _logger = logging.getLogger(__name__)
 
@@ -50,6 +52,14 @@ class MaskTask(AbstractCalibrationTask):
         self.initNextStep()
 
         self.__plot = self.__createPlot(self._imageHolder)
+
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self.__plot, markerModel, pixelBasedPlot=True)
+
+        handle = self.__plot.getWidgetHandle()
+        handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        handle.customContextMenuRequested.connect(self.__plotContextMenu)
+
         self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(parent=self._toolHolder, plot=self.__plot)
         self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
         self.__maskPanel.setMultipleMasks("single")
@@ -75,6 +85,24 @@ class MaskTask(AbstractCalibrationTask):
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
+
+    def __plotContextMenu(self, pos):
+        plot = self.__plot
+        from silx.gui.plot.actions.control import ZoomBackAction
+        zoomBackAction = ZoomBackAction(plot=plot, parent=plot)
+
+        menu = qt.QMenu(self)
+
+        menu.addAction(zoomBackAction)
+        menu.addSeparator()
+        menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
+        menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
+        action = self.__markerManager.createRemoveClosestMaskerAction(menu, pos)
+        if action is not None:
+            menu.addAction(action)
+
+        handle = plot.getWidgetHandle()
+        menu.exec_(handle.mapToGlobal(pos))
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)

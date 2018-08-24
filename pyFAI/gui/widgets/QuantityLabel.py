@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "22/08/2018"
 
 import numpy
 import logging
@@ -140,10 +140,7 @@ class QuantityLabel(qt.QLabel):
             return
 
         menu = qt.QMenu(self)
-        title = qt.QAction(menu)
-        title.setEnabled(False)
-        title.setText(currentUnit.dimensionality.fullname)
-        menu.addAction(title)
+        menu.addSection("Unit for %s" % currentUnit.dimensionality.fullname.lower())
 
         for unit in unitList:
             action = qt.QAction(menu)

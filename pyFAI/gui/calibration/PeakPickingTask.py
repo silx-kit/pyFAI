@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/08/2018"
+__date__ = "23/08/2018"
 
 import logging
 import numpy
@@ -50,6 +50,7 @@ from pyFAI.gui.utils.ProxyAction import CustomProxyAction
 from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
+from .helper.MarkerManager import MarkerManager
 
 _logger = logging.getLogger(__name__)
 
@@ -294,6 +295,13 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__markerColors = {}
         self.__processing = None
 
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self, markerModel, pixelBasedPlot=True)
+
+        handle = self.getWidgetHandle()
+        handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        handle.customContextMenuRequested.connect(self.__plotContextMenu)
+
         colormap = CalibrationContext.instance().getRawColormap()
         self.setDefaultColormap(colormap)
 
@@ -308,6 +316,24 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             self.unsetCursor()
             return True
         return False
+
+    def __plotContextMenu(self, pos):
+        plot = self
+        from silx.gui.plot.actions.control import ZoomBackAction
+        zoomBackAction = ZoomBackAction(plot=plot, parent=plot)
+
+        menu = qt.QMenu(self)
+
+        menu.addAction(zoomBackAction)
+        menu.addSeparator()
+        menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
+        menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
+        action = self.__markerManager.createRemoveClosestMaskerAction(menu, pos)
+        if action is not None:
+            menu.addAction(action)
+
+        handle = plot.getWidgetHandle()
+        menu.exec_(handle.mapToGlobal(pos))
 
     def setModel(self, peakSelectionModel):
         assert self.__peakSelectionModel is None
