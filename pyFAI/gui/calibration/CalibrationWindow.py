@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "24/08/2018"
 
 from silx.gui import qt
 import pyFAI.utils
@@ -40,18 +40,19 @@ class CalibrationWindow(qt.QMainWindow):
         context.setParent(self)
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-main.ui"), self)
         self.__context = context
-        self.__model = context.getCalibrationModel()
+        model = context.getCalibrationModel()
 
         context.restoreWindowLocationSettings("main-window", self)
 
         self.__tasks = self.createTasks()
         for task in self.__tasks:
-            task.setModel(self.__model)
             task.nextTaskRequested.connect(self.nextTask)
             self._list.addItem(task.windowTitle())
             self._stack.addWidget(task)
         if len(self.__tasks) > 0:
             self._list.setCurrentRow(0)
+
+        self.setModel(model)
 
     def closeEvent(self, event):
         for task in self.__tasks:
