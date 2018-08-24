@@ -90,5 +90,8 @@ class MarkerModel(AbstractModel):
         self.__list.remove(marker)
         self.wasChanged()
 
+    def __len__(self):
+        return len(self.__list)
+
     def __iter__(self):
         return iter(self.__list)
