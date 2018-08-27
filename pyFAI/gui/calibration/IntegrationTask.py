@@ -175,14 +175,15 @@ class IntegrationProcess(object):
         if self.__calibrant:
 
             rings = self.__calibrant.get_2th()
-            rings = filter(lambda x: x <= self.__result1d.radial[-1], rings)
-            rings = list(rings)
             try:
                 rings = utils.from2ThRad(rings, self.__radialUnit, self.__wavelength, ai)
             except ValueError:
                 message = "Convertion to unit %s not supported. Ring marks ignored"
                 _logger.warning(message, self.__radialUnit)
                 rings = []
+            # Filter the rings which are not part of the result
+            rings = filter(lambda x: self.__result1d.radial[0] <= x <= self.__result1d.radial[-1], rings)
+            rings = list(rings)
         else:
             rings = []
         self.__ringAngles = rings
