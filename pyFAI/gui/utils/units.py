@@ -58,7 +58,7 @@ class Unit(enum.Enum):
 
     MILLIMETER = ("Millimeter", u"mm", Dimentionality.LENGTH),
 
-    ANGSTROM = ("Ångström", u"Å", Dimentionality.WAVELENGTH),
+    ANGSTROM = (u"Ångström", u"Å", Dimentionality.WAVELENGTH),
 
     METER_WL = ("Meter", u"m", Dimentionality.WAVELENGTH),
 

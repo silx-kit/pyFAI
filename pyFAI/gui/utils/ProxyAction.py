@@ -27,7 +27,9 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/08/2018"
+__date__ = "27/08/2018"
+
+from distutils.version import LooseVersion
 
 from silx.gui import qt
 
@@ -60,7 +62,8 @@ class ProxyAction(qt.QAction):
         self.setMenuRole(self.__source.menuRole())
         self.setShortcut(self.__source.shortcut())
         self.setShortcutContext(self.__source.shortcutContext())
-        self.setShortcutVisibleInContextMenu(self.__source.isShortcutVisibleInContextMenu())
+        if LooseVersion(qt.qVersion()) >= LooseVersion("5.10"):
+            self.setShortcutVisibleInContextMenu(self.__source.isShortcutVisibleInContextMenu())
         self.setStatusTip(self.__source.statusTip())
         self.setText(self.__source.text())
         self.setToolTip(self.__source.toolTip())

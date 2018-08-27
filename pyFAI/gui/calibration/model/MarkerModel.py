@@ -27,12 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "27/08/2018"
 
 from .AbstractModel import AbstractModel
 
 
-class Marker:
+class Marker(object):
     """Abstract marker"""
 
     def __init__(self, name):

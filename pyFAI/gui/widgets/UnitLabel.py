@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "27/08/2018"
 
 import functools
 
@@ -58,7 +58,7 @@ class UnitLabel(qt.QLabel):
             self.setToolTip("No unit")
         else:
             self.setText(unit.symbol)
-            self.setToolTip("%s (%s)" % (unit.fullname, unit.symbol))
+            self.setToolTip(u"%s (%s)" % (unit.fullname, unit.symbol))
 
     def getUnit(self):
         """
@@ -106,7 +106,7 @@ class UnitLabel(qt.QLabel):
 
         for unit in unitList:
             action = qt.QAction(menu)
-            text = "%s: %s" % (unit.fullname, unit.symbol)
+            text = u"%s: %s" % (unit.fullname, unit.symbol)
             if unit is self.__unit:
                 text += " (current)"
             action.setText(text)

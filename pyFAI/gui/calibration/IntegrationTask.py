@@ -559,7 +559,7 @@ class IntegrationPlot(qt.QFrame):
         colormapDialog = CalibrationContext.instance().getColormapDialog()
         toolBar.getColormapAction().setColorDialog(colormapDialog)
         previousResetZoomAction = toolBar.getResetZoomAction()
-        resetZoomAction = qt.QAction()
+        resetZoomAction = qt.QAction(toolBar)
         resetZoomAction.triggered.connect(self.resetZoom)
         resetZoomAction.setIcon(previousResetZoomAction.icon())
         resetZoomAction.setText(previousResetZoomAction.text())
