@@ -656,19 +656,19 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __formatResidual(self):
         calibration = self.__getCalibration()
-        previousResidual = calibration.getPreviousRms()
-        residual = calibration.getRms()
-        if residual is not None:
+        previousRms = calibration.getPreviousRms()
+        rms = calibration.getRms()
+        if rms is not None:
             angleUnit = CalibrationContext.instance().getAngleUnit().value()
-            units.convert(angleUnit, units.Unit.RADIAN, angleUnit)
-
-            text = '%.6e' % residual
-            if previousResidual is not None:
-                if residual == previousResidual:
+            rms = units.convert(rms, units.Unit.RADIAN, angleUnit)
+            text = '%.6e' % rms
+            if previousRms is not None:
+                previousRms = units.convert(previousRms, units.Unit.RADIAN, angleUnit)
+                if rms == previousRms:
                     diff = "(no changes)"
                 else:
-                    diff = '(%+.2e)' % (residual - previousResidual)
-                    if residual < previousResidual:
+                    diff = '(%+.2e)' % (rms - previousRms)
+                    if rms < previousRms:
                         diff = '<font color="green">%s</font>' % diff
                     else:
                         diff = '<font color="red">%s</font>' % diff
