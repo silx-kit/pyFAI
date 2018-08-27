@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "27/08/2018"
 
 import logging
 import numpy
@@ -223,9 +223,17 @@ class RingCalibration(object):
     def getBeamCenter(self):
         try:
             f2d = self.__geoRef.getFit2D()
-            return f2d["centerY"], f2d["centerX"]
+            x, y = f2d["centerX"], f2d["centerY"]
         except TypeError:
             return None
+
+        # Check if this pixel really contains the beam center
+        # If the detector contains gap, it is not always the case
+        ax, ay = numpy.array([x]), numpy.array([y])
+        tth = self.__geoRef.tth(ay, ax)[0]
+        if tth >= 0.001:
+            return None
+        return y, x
 
     def getPoni(self):
         """"Returns the PONI coord in image coordinate.
