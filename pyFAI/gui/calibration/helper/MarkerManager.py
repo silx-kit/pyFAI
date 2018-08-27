@@ -93,7 +93,17 @@ class MarkerManager(object):
             chiRad, tthRad = marker.physicalPosition()
             if self.__geometry is not None:
                 pixel = utils.findPixel(self.__geometry, chiRad, tthRad)
-                marker.setPixelPosition(pixel[1], pixel[0])
+
+                ax, ay = numpy.array([pixel[1]]), numpy.array([pixel[0]])
+                tth = self.__geometry.tth(ay, ax)[0]
+                chi = self.__geometry.chi(ay, ax)[0]
+
+                error = numpy.sqrt((tthRad - tth) ** 2 + (chiRad - chi) ** 2)
+                if error > 0.05:
+                    # The identified pixel is far from the requested chi/tth. Marker ignored.
+                    marker.removePixelPosition()
+                else:
+                    marker.setPixelPosition(pixel[1], pixel[0])
             else:
                 marker.removePixelPosition()
         # TODO: should be managed by the model
