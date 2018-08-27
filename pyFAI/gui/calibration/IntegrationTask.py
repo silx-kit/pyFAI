@@ -804,8 +804,8 @@ class IntegrationTask(AbstractCalibrationTask):
         self._azimuthalPoints.setModel(integrationSettings.nPointsAzimuthal())
         # connect model
         self.__polarizationModel.changed.connect(self.__polarizationModelChanged)
-        experimentSettings.mask().changed.connect(self.__invalidateIntegration)
-        experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegration)
+        experimentSettings.mask().changed.connect(self.__invalidateIntegrationNoReset)
+        experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegrationNoReset)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
         integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)
         integrationSettings.nPointsRadial().changed.connect(self.__invalidateIntegrationNoReset)
