@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "27/08/2018"
 
 import weakref
 import logging
@@ -68,6 +68,10 @@ class CalibrationContext(object):
         self.__settings = settings
         self.__angleUnit = DataModel()
         self.__angleUnit.setValue(units.Unit.RADIAN)
+        self.__lengthUnit = DataModel()
+        self.__lengthUnit.setValue(units.Unit.METER)
+        self.__wavelengthUnit = DataModel()
+        self.__wavelengthUnit.setValue(units.Unit.ANGSTROM)
         self.__dialogState = None
 
     def __restoreColormap(self, groupName, colormap):
@@ -96,6 +100,19 @@ class CalibrationContext(object):
         settings.setValue("default", colormap.saveState())
         settings.endGroup()
 
+    def __restoreUnit(self, unitModel, settings, fieldName, defaultUnit):
+        unitName = settings.value(fieldName, None)
+        try:
+            unit = getattr(units.Unit, unitName)
+            if not isinstance(unit, units.Unit):
+                unit = None
+        except Exception:
+            _logger.error("Unit name '%s' is not an unit", unitName)
+            unit = None
+        if unit is None:
+            unit = defaultUnit
+        unitModel.setValue(unit)
+
     def restoreSettings(self):
         """Restore the settings of all the application"""
         settings = self.__settings
@@ -105,18 +122,10 @@ class CalibrationContext(object):
         self.__restoreColormap("raw-colormap", self.__rawColormap)
 
         settings.beginGroup("units")
-        angleUnit = settings.value("angle-unit", None)
+        self.__restoreUnit(self.__angleUnit, settings, "angle-unit", units.Unit.RADIAN)
+        self.__restoreUnit(self.__lengthUnit, settings, "length-unit", units.Unit.METER)
+        self.__restoreUnit(self.__wavelengthUnit, settings, "wavelength-unit", units.Unit.ANGSTROM)
         settings.endGroup()
-
-        try:
-            angleUnit = getattr(units.Unit, angleUnit)
-            if not isinstance(angleUnit, units.Unit):
-                angleUnit = None
-        except Exception:
-            angleUnit = None
-        if angleUnit is None:
-            angleUnit = units.Unit.RADIAN
-        self.__angleUnit.setValue(angleUnit)
 
     def saveSettings(self):
         """Save the settings of all the application"""
@@ -128,6 +137,8 @@ class CalibrationContext(object):
 
         settings.beginGroup("units")
         settings.setValue("angle-unit", self.__angleUnit.value().name)
+        settings.setValue("length-unit", self.__lengthUnit.value().name)
+        settings.setValue("wavelength-unit", self.__wavelengthUnit.value().name)
         settings.endGroup()
 
         # Synchronize the file storage
@@ -232,6 +243,12 @@ class CalibrationContext(object):
 
     def getAngleUnit(self):
         return self.__angleUnit
+
+    def getLengthUnit(self):
+        return self.__lengthUnit
+
+    def getWavelengthUnit(self):
+        return self.__wavelengthUnit
 
     def createFileDialog(self, parent, previousFile=None):
         """Create a file dialog configured with a default path.

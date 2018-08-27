@@ -448,16 +448,18 @@ class GeometryTask(AbstractCalibrationTask):
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
 
+        userAngleUnit = CalibrationContext.instance().getAngleUnit()
+        userLengthUnit = CalibrationContext.instance().getLengthUnit()
+        userWavelengthUnit = CalibrationContext.instance().getWavelengthUnit()
+
         layout = qt.QGridLayout(self._settings)
-        self.__wavelength = FitParamView(self, "Wavelength:", units.Unit.METER_WL, units.Unit.ANGSTROM)
+        self.__wavelength = FitParamView(self, "Wavelength:", units.Unit.METER_WL, userWavelengthUnit)
         self.addParameterToLayout(layout, self.__wavelength)
 
         layout = qt.QGridLayout(self._geometry)
-        self.__distance = FitParamView(self, "Distance:", units.Unit.METER)
-        self.__poni1 = FitParamView(self, "PONI1:", units.Unit.METER)
-        self.__poni2 = FitParamView(self, "PONI2:", units.Unit.METER)
-
-        userAngleUnit = CalibrationContext.instance().getAngleUnit()
+        self.__distance = FitParamView(self, "Distance:", units.Unit.METER, userLengthUnit)
+        self.__poni1 = FitParamView(self, "PONI1:", units.Unit.METER, userLengthUnit)
+        self.__poni2 = FitParamView(self, "PONI2:", units.Unit.METER, userLengthUnit)
 
         self.__rotation1 = FitParamView(self, "Rotation 1:", units.Unit.RADIAN, userAngleUnit)
         self.__rotation2 = FitParamView(self, "Rotation 2:", units.Unit.RADIAN, userAngleUnit)
