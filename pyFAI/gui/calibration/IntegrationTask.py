@@ -24,6 +24,7 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
+from test.test_iterlen import NoneLengthHint
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
@@ -94,6 +95,7 @@ class IntegrationProcess(object):
 
     def __init__(self, model):
         self.__isValid = self._init(model)
+        self.__resetZoomPolicy = None
 
     def _init(self, model):
         self.__isValid = True
@@ -140,6 +142,12 @@ class IntegrationProcess(object):
         self.__rotation2 = geometry.rotation2().value()
         self.__rotation3 = geometry.rotation3().value()
         return True
+
+    def setResetZoomPolicy(self, policy):
+        self.__resetZoomPolicy = policy
+
+    def resetZoomPolicy(self):
+        return self.__resetZoomPolicy
 
     def isValid(self):
         return self.__isValid
@@ -597,6 +605,10 @@ class IntegrationPlot(qt.QFrame):
         self.__ringItems = {}
 
     def setIntegrationProcess(self, integrationProcess):
+        """
+        :param IntegrationProcess integrationProcess: Result of the integration
+            process
+        """
         self.__clearRings()
 
         self.__availableRingAngles = integrationProcess.ringAngles()
@@ -609,7 +621,8 @@ class IntegrationPlot(qt.QFrame):
             align="center",
             edges=result1d.radial,
             color="blue",
-            histogram=result1d.intensity)
+            histogram=result1d.intensity,
+            resetzoom=False)
 
         self.__setResult(result1d)
 
@@ -631,7 +644,8 @@ class IntegrationPlot(qt.QFrame):
             data=result2d.intensity,
             origin=origin,
             scale=(scaleX, scaleY),
-            colormap=colormap)
+            colormap=colormap,
+            resetzoom=False)
 
         self.__radialUnit = integrationProcess.radialUnit()
         self.__wavelength = integrationProcess.wavelength()
@@ -641,6 +655,15 @@ class IntegrationPlot(qt.QFrame):
                                               self.__radialUnit,
                                               self.__wavelength,
                                               self.__directDist)
+
+        resetZoomPolicy = integrationProcess.resetZoomPolicy()
+        if resetZoomPolicy is None:
+            # Default behaviour
+            self.resetZoom()
+        elif resetZoomPolicy is False:
+            pass
+        else:
+            raise ValueError("Reset zoom policy not implemented")
 
     def __setResult(self, result1d):
         self.__result1d = result1d
@@ -685,6 +708,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self.initNextStep()
 
         self.__integrationUpToDate = True
+        self.__integrationResetZoomPolicy = None
 
         positiveValidator = validators.IntegerAndEmptyValidator(self)
         positiveValidator.setBottom(1)
@@ -729,12 +753,21 @@ class IntegrationTask(AbstractCalibrationTask):
             # We can process data later
             self.__integrationUpToDate = False
 
+    def __invalidateIntegrationNoReset(self):
+        self.__integrationResetZoomPolicy = False
+        self.__invalidateIntegration()
+
     def __widgetShow(self):
         if not self.__integrationUpToDate:
             self._integrateButton.executeCallable()
 
     def __integrate(self):
         self.__integrationProcess = IntegrationProcess(self.model())
+
+        if self.__integrationResetZoomPolicy is not None:
+            self.__integrationProcess.setResetZoomPolicy(self.__integrationResetZoomPolicy)
+            self.__integrationResetZoomPolicy = None
+
         if not self.__integrationProcess.isValid():
             self.__integrationProcess = None
             return
@@ -775,8 +808,8 @@ class IntegrationTask(AbstractCalibrationTask):
         experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegration)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
         integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)
-        integrationSettings.nPointsRadial().changed.connect(self.__invalidateIntegration)
-        integrationSettings.nPointsAzimuthal().changed.connect(self.__invalidateIntegration)
+        integrationSettings.nPointsRadial().changed.connect(self.__invalidateIntegrationNoReset)
+        integrationSettings.nPointsAzimuthal().changed.connect(self.__invalidateIntegrationNoReset)
 
     def __saveAsPoni(self):
         # FIXME test the validity of the geometry before opening the dialog
