@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "27/08/2018"
 
 import sys
 import unittest
@@ -87,6 +87,7 @@ from . import test_integrate_app
 from . import test_pyfai_api
 from ..opencl import test as test_opencl
 from ..gui import test as test_gui
+from . import test_invert_geometry
 
 
 def suite():
@@ -136,6 +137,7 @@ def suite():
     testsuite.addTest(test_goniometer.suite())
     testsuite.addTest(test_opencl.suite())
     testsuite.addTest(test_pyfai_api.suite())
+    testsuite.addTest(test_invert_geometry.suite())
     return testsuite
 
 

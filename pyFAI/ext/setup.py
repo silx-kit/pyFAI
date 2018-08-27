@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "11/07/2018"
+__date__ = "27/08/2018"
 
 from numpy.distutils.misc_util import Configuration
 import platform
@@ -89,7 +89,8 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('_tree'),
         create_extension_config('sparse_utils'),
         create_extension_config('preproc', can_use_openmp=True),
-        create_extension_config('inpainting')
+        create_extension_config('inpainting'),
+        create_extension_config('invert_geometry')
     ]
     if (os.name == "posix") and ("x86" in platform.machine()):
         extra_sources = [os.path.join("src", "crc32.c")]
