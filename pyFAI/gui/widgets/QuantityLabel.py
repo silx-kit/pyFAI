@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "27/08/2018"
 
 import numpy
 import logging
@@ -50,6 +50,8 @@ class QuantityLabel(qt.QLabel):
         self.__displayedUnit = None
         self.__isUnitEditable = False
         self.__displayedUnitModel = None
+        self.__preferedSize = None
+        self.__elasticSize = False
 
     def setInternalUnit(self, unit):
         self.__internalUnit = unit
@@ -98,6 +100,19 @@ class QuantityLabel(qt.QLabel):
         self.__formatter = formatter
         self.__updateText()
 
+    def setElasticSize(self, useElasticSize):
+        if self.__elasticSize == useElasticSize:
+            return
+        self.__elasticSize = useElasticSize
+        if self.__elasticSize is None:
+            self.__preferedSize = None
+        self.updateGeometry()
+
+    def sizeHint(self):
+        if self.__preferedSize is not None:
+            return self.__preferedSize
+        return qt.QLabel.sizeHint(self)
+
     def setValue(self, value):
         self.__value = value
         self.__updateText()
@@ -128,6 +143,10 @@ class QuantityLabel(qt.QLabel):
 
         text = self.__prefix + text
         self.setText(text)
+        if self.__elasticSize:
+            size = self.size()
+            if self.__preferedSize is None or self.__preferedSize.width() < size.width():
+                self.__preferedSize = size
 
     def __popupUnitSelection(self, pos):
         """Display a popup list to allow to select a new unit"""

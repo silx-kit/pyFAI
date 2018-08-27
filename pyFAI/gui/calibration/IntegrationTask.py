@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "27/08/2018"
 
 import logging
 import numpy
@@ -257,6 +257,7 @@ class _StatusBar(qt.QStatusBar):
         self.__chi.setDisplayedUnit(units.Unit.RADIAN)
         self.__chi.setDisplayedUnitModel(angleUnitModel)
         self.__chi.setUnitEditable(True)
+        self.__chi.setElasticSize(True)
         self.addWidget(self.__chi)
         self.__2theta = QuantityLabel(self)
         self.__2theta.setPrefix(u"<b>2θ</b>: ")
@@ -264,6 +265,7 @@ class _StatusBar(qt.QStatusBar):
         self.__2theta.setInternalUnit(units.Unit.RADIAN)
         self.__2theta.setDisplayedUnitModel(angleUnitModel)
         self.__2theta.setUnitEditable(True)
+        self.__2theta.setElasticSize(True)
         self.addWidget(self.__2theta)
 
         self.clearValues()
