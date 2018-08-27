@@ -29,7 +29,7 @@
 """Re-implementation of numpy histograms without OpenMP"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "07/06/2018"
+__date__ = "23/08/2018"
 __license__ = "MIT"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -248,7 +248,7 @@ def histogram_preproc(numpy.ndarray pos not None,
         position_t epsilon = 1e-10
         int bin = 0, i, j
     
-    if nchan==3:
+    if (nchan == 3):
         out_error = numpy.zeros(bins, dtype=data_d)
     
     if pixelSize_in_Pos:
