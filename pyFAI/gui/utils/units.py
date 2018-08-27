@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/08/2018"
+__date__ = "27/08/2018"
 
 
 import numpy
@@ -53,6 +53,10 @@ class Unit(enum.Enum):
     RADIAN = ("Radian", u"rad", Dimentionality.ANGLE),
 
     METER = ("Meter", u"m", Dimentionality.LENGTH),
+
+    CENTIMETER = ("Centimeter", u"cm", Dimentionality.LENGTH),
+
+    MILLIMETER = ("Millimeter", u"mm", Dimentionality.LENGTH),
 
     ANGSTROM = ("Ångström", u"Å", Dimentionality.WAVELENGTH),
 
@@ -92,12 +96,17 @@ def _initConverters():
 
     _converters[(Unit.ENERGY, Unit.ANGSTROM)] = lambda v: units.hc / v
     _converters[(Unit.ANGSTROM, Unit.ENERGY)] = lambda v: units.hc / v
-
     _converters[(Unit.METER_WL, Unit.ANGSTROM)] = lambda v: v * 1e10
     _converters[(Unit.ANGSTROM, Unit.METER_WL)] = lambda v: v / 1e10
-
     _converters[(Unit.ENERGY, Unit.METER_WL)] = lambda v: (units.hc / v) / 1e10
     _converters[(Unit.METER_WL, Unit.ENERGY)] = lambda v: units.hc / (v * 1e10)
+
+    _converters[(Unit.METER, Unit.CENTIMETER)] = lambda v: v * 1e2
+    _converters[(Unit.METER, Unit.MILLIMETER)] = lambda v: v * 1e3
+    _converters[(Unit.CENTIMETER, Unit.METER)] = lambda v: v * 1e-2
+    _converters[(Unit.CENTIMETER, Unit.MILLIMETER)] = lambda v: v * 1e1
+    _converters[(Unit.MILLIMETER, Unit.METER)] = lambda v: v * 1e-3
+    _converters[(Unit.MILLIMETER, Unit.CENTIMETER)] = lambda v: v * 1e-1
 
 
 def convert(value, inputUnit, outputUnit):
