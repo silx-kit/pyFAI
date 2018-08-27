@@ -31,6 +31,7 @@ import weakref
 import logging
 import functools
 import os
+import numpy
 
 from silx.gui import qt
 from silx.gui.dialog.ColormapDialog import ColormapDialog
@@ -73,6 +74,7 @@ class CalibrationContext(object):
         self.__wavelengthUnit = DataModel()
         self.__wavelengthUnit.setValue(units.Unit.ANGSTROM)
         self.__dialogState = None
+        self.__markerColors = {}
 
     def __restoreColormap(self, groupName, colormap):
         settings = self.__settings
@@ -275,3 +277,34 @@ class CalibrationContext(object):
 
     def __saveDialogState(self, dialog):
         self.__dialogState = dialog.saveState()
+
+    def getMarkerColor(self, index, mode="qt"):
+        colors = self.markerColorList()
+        color = colors[index % len(colors)]
+        if mode == "html":
+            return "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+        elif mode == "numpy":
+            return numpy.array([color.redF(), color.greenF(), color.blueF()])
+        elif mode == "qt":
+            return color
+        else:
+            raise ValueError("Mode '%s' not expected" % mode)
+
+    def getHtmlMarkerColor(self, index):
+        colors = self.markerColorList()
+        color = colors[index % len(colors)]
+        "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+
+    def markerColorList(self):
+        colormap = self.getRawColormap()
+        name = colormap['name']
+        if name not in self.__markerColors:
+            colors = self.createMarkerColors()
+            self.__markerColors[name] = colors
+        else:
+            colors = self.__markerColors[name]
+        return colors
+
+    def createMarkerColors(self):
+        colormap = self.getRawColormap()
+        return utils.getFreeColorRange(colormap)

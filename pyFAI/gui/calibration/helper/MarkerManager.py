@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "27/08/2018"
 
 import logging
 import functools
@@ -38,6 +38,7 @@ from silx.gui import qt
 from ..model import MarkerModel
 from .. import utils
 from ...utils import eventutils
+from ..CalibrationContext import CalibrationContext
 
 _logger = logging.getLogger(__name__)
 
@@ -54,7 +55,6 @@ class MarkerManager(object):
         self.__geometry = None
         self.__markers = []
         self.__pixelBasedPlot = pixelBasedPlot
-        self.__markerColors = {}
         self.__radialUnit = None
         self.__mustBeUpdated = False
 
@@ -70,21 +70,6 @@ class MarkerManager(object):
         self.__directDist = directDist
         if redraw:
             self.__updateMarkers()
-
-    def markerColorList(self):
-        colormap = self.__plot.getDefaultColormap()
-
-        name = colormap['name']
-        if name not in self.__markerColors:
-            colors = self.createMarkerColors()
-            self.__markerColors[name] = colors
-        else:
-            colors = self.__markerColors[name]
-        return colors
-
-    def createMarkerColors(self):
-        colormap = self.__plot.getDefaultColormap()
-        return utils.getFreeColorRange(colormap)
 
     def updatePhysicalMarkerPixels(self, geometry):
         self.__geometry = geometry
@@ -130,15 +115,13 @@ class MarkerManager(object):
         for item in self.__markers:
             self.__plot.removeMarker(item.getLegend())
 
-        color = self.markerColorList()[0]
-        htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
-
+        color = CalibrationContext.instance().getMarkerColor(0, mode="html")
         for marker in self.__markerModel:
             position = self.getMarkerLocation(marker)
             if position is None:
                 continue
             legend = self._ITEM_TEMPLATE % marker.name()
-            self.__plot.addMarker(x=position[0], y=position[1], color=htmlColor, legend=legend, text=marker.name())
+            self.__plot.addMarker(x=position[0], y=position[1], color=color, legend=legend, text=marker.name())
             item = self.__plot._getMarker(legend)
             self.__markers.append(item)
 

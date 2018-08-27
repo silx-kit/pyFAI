@@ -188,7 +188,6 @@ class _RingPlot(silx.gui.plot.PlotWidget):
 
     def __init__(self, parent=None):
         silx.gui.plot.PlotWidget.__init__(self, parent=parent)
-        self.__markerColors = {}
         self.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
         self.getYAxis().sigLimitsChanged.connect(self.__axesChanged)
         self.sigPlotSignal.connect(self.__plotSignalReceived)
@@ -295,21 +294,6 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             for item in items:
                 item.setVisible(True)
 
-    def markerColorList(self):
-        colormap = self.getDefaultColormap()
-
-        name = colormap['name']
-        if name not in self.__markerColors:
-            colors = self.createMarkerColors()
-            self.__markerColors[name] = colors
-        else:
-            colors = self.__markerColors[name]
-        return colors
-
-    def createMarkerColors(self):
-        colormap = self.getDefaultColormap()
-        return utils.getFreeColorRange(colormap)
-
     def __clampOnImage(self, pos):
         x, y = pos
         x, y = int(x), int(y)
@@ -391,11 +375,8 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         if items is not None:
             return items
 
-        colors = self.markerColorList()
-
         polyline = self.__rings[ringId][1]
-        color = colors[ringId % len(colors)]
-        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+        color = CalibrationContext.instance().getMarkerColor(ringId, mode="numpy")
         items = []
         for lineId, line in enumerate(polyline):
             y, x = line[:, 0], line[:, 1]
@@ -406,7 +387,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
                 selectable=False,
                 legend=legend,
                 resetzoom=False,
-                color=numpyColor,
+                color=color,
                 linewidth=1,
                 linestyle=":",
                 copy=False)
@@ -720,28 +701,26 @@ class GeometryTask(AbstractCalibrationTask):
         if center is None:
             self.__plot.removeMarker(legend="center")
         else:
-            color = self.__plot.markerColorList()[0]
-            htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+            color = CalibrationContext.instance().getMarkerColor(0, mode="html")
             self.__plot.addMarker(
                 text="Beam",
                 y=center[0],
                 x=center[1],
                 legend="center",
-                color=htmlColor,
+                color=color,
                 symbol="+")
 
         poni = calibration.getPoni()
         if poni is None:
             self.__plot.removeMarker(legend="poni")
         else:
-            color = self.__plot.markerColorList()[0]
-            htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+            color = CalibrationContext.instance().getMarkerColor(0, mode="html")
             self.__plot.addMarker(
                 text="PONI",
                 y=poni[0],
                 x=poni[1],
                 legend="poni",
-                color=htmlColor,
+                color=color,
                 symbol="+")
 
     def _updateModel(self, model):

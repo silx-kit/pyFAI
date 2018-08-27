@@ -308,7 +308,6 @@ class IntegrationPlot(qt.QFrame):
         self.__processing2d = None
         self.__ringItems = {}
         self.__axisOfCurrentView = None
-        self.__markerColors = {}
         self.__angleUnderMouse = None
         self.__availableRingAngles = None
         self.__radialUnit = None
@@ -450,21 +449,6 @@ class IntegrationPlot(qt.QFrame):
             return
         self.__updateRings()
 
-    def markerColorList(self):
-        colormap = self.getDefaultColormap()
-
-        name = colormap['name']
-        if name not in self.__markerColors:
-            colors = self.createMarkerColors()
-            self.__markerColors[name] = colors
-        else:
-            colors = self.__markerColors[name]
-        return colors
-
-    def createMarkerColors(self):
-        colormap = self.getDefaultColormap()
-        return utils.getFreeColorRange(colormap)
-
     def __getAvailableAngles(self, minTth, maxTth):
         result = []
         for ringId, angle in enumerate(self.__availableRingAngles):
@@ -514,18 +498,16 @@ class IntegrationPlot(qt.QFrame):
         if items is not None:
             return items
 
-        colors = self.markerColorList()
-        color = colors[ringId % len(colors)]
-        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+        color = CalibrationContext.instance().getMarkerColor(ringId, mode="numpy")
         items = []
 
         legend = "ring-%i" % (ringId,)
 
-        self.__plot1d.addXMarker(x=ringAngle, color=numpyColor, legend=legend)
+        self.__plot1d.addXMarker(x=ringAngle, color=color, legend=legend)
         item = self.__plot1d._getMarker(legend)
         items.append(item)
 
-        self.__plot2d.addXMarker(x=ringAngle, color=numpyColor, legend=legend)
+        self.__plot2d.addXMarker(x=ringAngle, color=color, legend=legend)
         item = self.__plot2d._getMarker(legend)
         items.append(item)
 

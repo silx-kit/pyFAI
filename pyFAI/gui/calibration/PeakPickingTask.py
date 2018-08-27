@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/08/2018"
+__date__ = "27/08/2018"
 
 import logging
 import numpy
@@ -292,7 +292,6 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
         self.__peakSelectionModel = None
         self.__callbacks = {}
-        self.__markerColors = {}
         self.__processing = None
 
         markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
@@ -391,21 +390,6 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
     def updatePeak(self, peakModel):
         self.removePeak(peakModel)
         self.addPeak(peakModel)
-
-    def markerColorList(self):
-        colormap = self.getDefaultColormap()
-
-        name = colormap['name']
-        if name not in self.__markerColors:
-            colors = self.createMarkerColors()
-            self.__markerColors[name] = colors
-        else:
-            colors = self.__markerColors[name]
-        return colors
-
-    def createMarkerColors(self):
-        colormap = self.getDefaultColormap()
-        return utils.getFreeColorRange(colormap)
 
     def unsetProcessing(self):
         self.__processing.deleteLater()
@@ -816,9 +800,7 @@ class PeakPickingTask(AbstractCalibrationTask):
                 n = n // 26
                 name = chr(c + ord('a')) + name
 
-        # FIXME improve color list
-        colors = self.__plot.markerColorList()
-        color = colors[number % len(colors)]
+        color = CalibrationContext.instance().getMarkerColor(number)
 
         peakModel = PeakModel(self.model().peakSelectionModel())
         peakModel.setName(name)
