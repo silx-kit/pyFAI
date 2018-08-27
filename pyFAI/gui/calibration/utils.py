@@ -27,11 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/08/2018"
+__date__ = "27/08/2018"
 
 
 import numpy
 import collections
+import scipy
 
 from silx.gui import qt
 from silx.gui.widgets.WaitingPushButton import WaitingPushButton
@@ -103,45 +104,6 @@ def getFreeColorRange(colormap):
     return colors
 
 
-def _extractCoefFromTransformation(xx, yy, coord):
-    """Returns the coefficients and the indices of the used vector for the
-    projection
-
-    This can work for triangle and quadrilater.
-    """
-    size = len(xx)
-
-    # Try some triangles
-    for i in range(size):
-        indexCenter = (i + 1) % size
-        indexU = (i + 0) % size
-        indexV = (i + 2) % size
-        center = numpy.array([xx[indexCenter], yy[indexCenter]])
-        u = numpy.array([xx[indexU], yy[indexU]]) - center
-        v = numpy.array([xx[indexV], yy[indexV]]) - center
-        w = coord - center
-
-        # h(U⋅U) + k(U⋅V) = W⋅U
-        # h(V⋅U) + k(V⋅V) = W⋅V
-        wv = numpy.dot(w, v)
-        wu = numpy.dot(w, u)
-        vu = numpy.dot(v, u)
-        uu = numpy.dot(u, u)
-        vv = numpy.dot(v, v)
-        uv = numpy.dot(u, v)
-
-        k = ((wv / vu) - (wu / uu)) / ((vv / vu) - (uv / uu))
-        h = (wv - k * vv) / vu
-
-        # TODO: Understand why hk canbe outside 0..1
-        # if 0.0 <= k <= 1.0 and 0.0 <= h <= 1.0:
-        #    return h, k, i + 1, i, i + 2
-
-        return h, k, indexCenter, indexU, indexV
-
-    return None
-
-
 def findPixel(geometry, chi, tth):
     """
     Find the approximative pixel location from the resulting chi and 2theta
@@ -173,18 +135,10 @@ def findPixel(geometry, chi, tth):
     chiPoints = geometry.chi(pixelCorners[:, 0], pixelCorners[:, 1])
     tthPoints = geometry.tth(pixelCorners[:, 0], pixelCorners[:, 1])
 
-    result = _extractCoefFromTransformation(chiPoints, tthPoints, (chi, tth))
-    if result is None:
-        return None
-
-    h, k, indexCenter, indexU, indexV = result
-
-    base = deltaPoints[indexCenter]
-    u = deltaPoints[indexU] - base
-    v = deltaPoints[indexV] - base
-    coord = coord + h * u + k * v
-
-    return coord
+    fx = scipy.interpolate.interp2d(chiPoints, tthPoints, pixelCorners[:, 1])
+    fy = scipy.interpolate.interp2d(chiPoints, tthPoints, pixelCorners[:, 0])
+    coord2 = numpy.array([fy(chi, tth)[0], fx(chi, tth)[0]])
+    return coord2
 
 
 def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
