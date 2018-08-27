@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "27/08/2018"
 
 import logging
 from silx.gui import qt
@@ -183,6 +183,8 @@ class QuantityEdit(qt.QLineEdit):
             if validated:
                 value = self.__convertToModel(value)
                 self.__model.setValue(value)
+                # Avoid sending further signals
+                self.__previousText = text
             else:
                 self.__cancelText()
         except ValueError as e:
@@ -200,6 +202,8 @@ class QuantityEdit(qt.QLineEdit):
             text = validator.toText(value)
         old = self.blockSignals(True)
         self.setText(text)
+        # Avoid sending further signals
+        self.__previousText = text
         self.blockSignals(old)
 
     def isApplyedWhenFocusOut(self):
