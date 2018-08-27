@@ -229,6 +229,9 @@ class CalibrationContext(object):
             def dialogShown():
                 dialog = self.__defaultColormapDialog
                 self.restoreWindowLocationSettings("colormap-dialog", dialog)
+                # Sync with the raw image
+                data = self.getCalibrationModel().experimentSettingsModel().image().value()
+                dialog.setData(data)
 
             def dialogHidden():
                 dialog = self.__defaultColormapDialog
