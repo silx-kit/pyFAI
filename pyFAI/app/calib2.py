@@ -177,6 +177,16 @@ def configure_parser_arguments(parser):
     parser.add_argument("--free-rot3", dest="fix_rot3",
                         help="free the rot3 parameter. Default: Activated", default=None, action="store_false")
 
+    parser.add_argument("--npt", dest="npt_1d",
+                        help="Number of point in 1D integrated pattern, Default: 1024", type=int,
+                        default=None)
+    parser.add_argument("--npt-azim", dest="npt_2d_azim",
+                        help="Number of azimuthal sectors in 2D integrated images. Default: 360", type=int,
+                        default=None)
+    parser.add_argument("--npt-rad", dest="npt_2d_rad",
+                        help="Number of radial bins in 2D integrated images. Default: 400", type=int,
+                        default=None)
+
     # Not yet used
     parser.add_argument("--tilt", dest="tilt",
                         help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated", default=None, action="store_true")
@@ -192,18 +202,6 @@ def configure_parser_arguments(parser):
     parser.add_argument("--weighted", dest="weighted",
                         help="weight fit by intensity, by default not.",
                         default=False, action="store_true")
-    # Not yet used
-    parser.add_argument("--npt", dest="nPt_1D",
-                        help="Number of point in 1D integrated pattern, Default: 1024", type=int,
-                        default=None)
-    # Not yet used
-    parser.add_argument("--npt-azim", dest="nPt_2D_azim",
-                        help="Number of azimuthal sectors in 2D integrated images. Default: 360", type=int,
-                        default=None)
-    # Not yet used
-    parser.add_argument("--npt-rad", dest="nPt_2D_rad",
-                        help="Number of radial bins in 2D integrated images. Default: 400", type=int,
-                        default=None)
     # Not yet used
     parser.add_argument("--unit", dest="unit",
                         help="Valid units for radial range: 2th_deg, 2th_rad, q_nm^-1,"
@@ -383,10 +381,29 @@ def setup(model):
     if options.fix_rot3 is not None:
         constraints.rotation3().setFixed(options.fix_rot3)
 
+    integrationSettingsModel = model.integrationSettingsModel()
+    npt = None
+    if options.npt_1d is not None:
+        npt = options.npt_1d
+    if options.npt_2d_rad is not None:
+        if npt is not None:
+            logger.error("Both --npt and --npt-rad defined. The biggest is used.")
+            npt = max(npt, options.npt_2d_rad)
+
+    if npt is not None:
+        integrationSettingsModel.nPointsRadial().setValue(npt)
+    else:
+        integrationSettingsModel.nPointsRadial().setValue(1024)
+
+    if options.npt_2d_azim is not None:
+        integrationSettingsModel.nPointsAzimuthal().setValue(options.npt_2d_azim)
+    else:
+        integrationSettingsModel.nPointsAzimuthal().setValue(360)
+
     # Integration
     if options.unit:
         unit = pyFAI.units.to_unit(options.unit)
-        model.integrationSettingsModel().radialUnit().setValue(unit)
+        integrationSettingsModel.radialUnit().setValue(unit)
 
     if options.outfile:
         logger.error("outfile option not supported")
@@ -411,8 +428,6 @@ def setup(model):
         logger.error("dark option not supported")
     if options.flat:
         logger.error("flat option not supported")
-    if options.npt:
-        logger.error("npt option not supported")
     if options.filter:
         logger.error("filter option not supported")
 
@@ -422,12 +437,6 @@ def setup(model):
         logger.error("saturation option not supported")
     if options.weighted:
         logger.error("weighted option not supported")
-    if options.nPt_1D:
-        logger.error("nPt_1D option not supported")
-    if options.nPt_2D_azim:
-        logger.error("nPt_2D_azim option not supported")
-    if options.nPt_2D_rad:
-        logger.error("nPt_2D_rad option not supported")
 
     if options.gui is not True:
         logger.error("gui option not supported")

@@ -46,6 +46,7 @@ from .model.DataModel import DataModel
 from ..widgets.QuantityLabel import QuantityLabel
 from .CalibrationContext import CalibrationContext
 from ..utils import units
+from ..utils import validators
 from .helper.MarkerManager import MarkerManager
 
 _logger = logging.getLogger(__name__)
@@ -108,6 +109,12 @@ class IntegrationProcess(object):
         geometry = model.fittedGeometry()
         if not geometry.isValid():
             return False
+        self.__nPointsAzimuthal = model.integrationSettingsModel().nPointsAzimuthal().value()
+        if self.__nPointsAzimuthal <= 0:
+            self.__nPointsAzimuthal = 1
+        self.__nPointsRadial = model.integrationSettingsModel().nPointsRadial().value()
+        if self.__nPointsRadial <= 0:
+            self.__nPointsRadial = 1
         self.__radialUnit = model.integrationSettingsModel().radialUnit().value()
         if self.__radialUnit is None:
             return False
@@ -148,23 +155,19 @@ class IntegrationProcess(object):
             detector=self.__detector,
             wavelength=self.__wavelength)
 
-        numberPoint1D = 1024
-        numberPointRadial = 400
-        numberPointAzimuthal = 360
-
         # FIXME error model, method
 
         self.__result1d = ai.integrate1d(
             data=self.__image,
-            npt=numberPoint1D,
+            npt=self.__nPointsRadial,
             unit=self.__radialUnit,
             mask=self.__mask,
             polarization_factor=self.__polarizationFactor)
 
         self.__result2d = ai.integrate2d(
             data=self.__image,
-            npt_rad=numberPointRadial,
-            npt_azim=numberPointAzimuthal,
+            npt_rad=self.__nPointsRadial,
+            npt_azim=self.__nPointsAzimuthal,
             unit=self.__radialUnit,
             mask=self.__mask,
             polarization_factor=self.__polarizationFactor)
@@ -693,6 +696,11 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.__integrationUpToDate = True
 
+        positiveValidator = validators.IntegerAndEmptyValidator(self)
+        positiveValidator.setBottom(1)
+
+        self._radialPoints.setValidator(positiveValidator)
+        self._azimuthalPoints.setValidator(positiveValidator)
         self._radialUnit.setUnits(pyFAI.units.RADIAL_UNITS.values())
         self.__polarizationModel = None
         self._polarizationFactorCheck.clicked[bool].connect(self.__polarizationFactorChecked)
@@ -769,12 +777,16 @@ class IntegrationTask(AbstractCalibrationTask):
         self.__polarizationModelChanged()
         self._polarizationFactor.setModel(self.__polarizationModel)
         self._radialUnit.setModel(integrationSettings.radialUnit())
+        self._radialPoints.setModel(integrationSettings.nPointsRadial())
+        self._azimuthalPoints.setModel(integrationSettings.nPointsAzimuthal())
         # connect model
         self.__polarizationModel.changed.connect(self.__polarizationModelChanged)
         experimentSettings.mask().changed.connect(self.__invalidateIntegration)
         experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegration)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
         integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)
+        integrationSettings.nPointsRadial().changed.connect(self.__invalidateIntegration)
+        integrationSettings.nPointsAzimuthal().changed.connect(self.__invalidateIntegration)
 
     def __saveAsPoni(self):
         # FIXME test the validity of the geometry before opening the dialog
