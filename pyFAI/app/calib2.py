@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2018"
+__date__ = "27/08/2018"
 __status__ = "production"
 
 import logging
@@ -90,10 +90,10 @@ def configure_parser_arguments(parser):
 
     # Settings
     parser.add_argument("-c", "--calibrant", dest="spacing", metavar="FILE",
-                        help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY, case sensitive !)",
+                        help="Calibrant name or file containing d-spacing of the reference sample (case sensitive)",
                         default=None)
     parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
-                        help="wavelength of the X-Ray beam in Angstrom. Mandatory ", default=None)
+                        help="wavelength of the X-Ray beam in Angstrom.", default=None)
     parser.add_argument("-e", "--energy", dest="energy", type=float,
                         help="energy of the X-Ray beam in keV (hc=%skeV.A)." % pyFAI.units.hc, default=None)
     parser.add_argument("-P", "--polarization", dest="polarization_factor",
@@ -109,7 +109,7 @@ def configure_parser_arguments(parser):
 
     # Not yet used
     parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
-                        help="file containing the diffraction parameter (poni-file). MANDATORY for pyFAI-recalib!",
+                        help="file containing the diffraction parameter (poni-file).",
                         default=None)
     # Not yet used
     parser.add_argument("-b", "--background", dest="background",
