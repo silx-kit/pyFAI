@@ -210,7 +210,7 @@ class CalibrationContext(object):
         """Returns the user preference colormap used to display raw data
         images
 
-        :rtype:Colormap
+        :rtype: Colormap
         """
         return self.__rawColormap
 
