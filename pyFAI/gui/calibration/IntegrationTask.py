@@ -623,7 +623,7 @@ class IntegrationPlot(qt.QFrame):
         result1d = integrationProcess.result1d()
         self.__plot1d.addHistogram(
             legend="result1d",
-            align="right",
+            align="center",
             edges=result1d.radial,
             color="blue",
             histogram=result1d.intensity)
@@ -632,9 +632,16 @@ class IntegrationPlot(qt.QFrame):
 
         # Assume that axes are linear
         result2d = integrationProcess.result2d()
-        origin = (result2d.radial[0], result2d.azimuthal[0])
-        scaleX = (result2d.radial[-1] - result2d.radial[0]) / result2d.intensity.shape[1]
-        scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / result2d.intensity.shape[0]
+        if result2d.intensity.shape[1] > 1:
+            scaleX = (result2d.radial[-1] - result2d.radial[0]) / (result2d.intensity.shape[1] - 1)
+        else:
+            scaleX = 1.0
+        if result2d.intensity.shape[0] > 1:
+            scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / (result2d.intensity.shape[0] - 1)
+        else:
+            scaleY = 1.0
+        halfPixel = 0.5 * scaleX, 0.5 * scaleY
+        origin = (result2d.radial[0] - halfPixel[0], result2d.azimuthal[0] - halfPixel[1])
         colormap = self.getDefaultColormap()
         self.__plot2d.addImage(
             legend="result2d",
