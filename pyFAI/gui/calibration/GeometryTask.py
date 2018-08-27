@@ -139,6 +139,7 @@ class _StatusBar(qt.QStatusBar):
         self.__position = QuantityLabel(self)
         self.__position.setPrefix(u"<b>Pos</b>: ")
         self.__position.setFormatter(u"{value[0]: >4.2F}×{value[1]:4.2F} px")
+        # TODO: Could it be done using a custom layout? Instead of setElasticSize
         self.__position.setElasticSize(True)
         self.addWidget(self.__position)
         self.__pixel = QuantityLabel(self)
