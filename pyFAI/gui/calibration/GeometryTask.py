@@ -605,7 +605,7 @@ class GeometryTask(AbstractCalibrationTask):
     def __initGeometryLater(self):
         self.__plot.setProcessing()
         # Wait for Qt repaint first
-        qt.QTimer.singleShot(1, self.__initGeometry)
+        qt.QTimer.singleShot(10, self.__initGeometry)
 
     def __resetGeometryLater(self):
         self.__plot.setProcessing()
