@@ -24,11 +24,10 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
-from test.test_iterlen import NoneLengthHint
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "28/08/2018"
 
 import logging
 import numpy
