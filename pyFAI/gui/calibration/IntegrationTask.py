@@ -48,6 +48,7 @@ from .CalibrationContext import CalibrationContext
 from ..utils import units
 from ..utils import validators
 from .helper.MarkerManager import MarkerManager
+from pyFAI.ext.invert_geometry import InvertGeometry
 
 _logger = logging.getLogger(__name__)
 
@@ -261,6 +262,12 @@ class _StatusBar(qt.QStatusBar):
 
         angleUnitModel = CalibrationContext.instance().getAngleUnit()
 
+        self.__position = QuantityLabel(self)
+        self.__position.setPrefix(u"<b>Pos</b>: ")
+        self.__position.setFormatter(u"{value[0]: >4.2F}×{value[1]:4.2F} px")
+        # TODO: Could it be done using a custom layout? Instead of setElasticSize
+        self.__position.setElasticSize(True)
+        self.addWidget(self.__position)
         self.__chi = QuantityLabel(self)
         self.__chi.setPrefix(u"<b>χ</b>: ")
         self.__chi.setFormatter(u"{value}")
@@ -281,19 +288,31 @@ class _StatusBar(qt.QStatusBar):
 
         self.clearValues()
 
-    def setValue(self, tth):
-        self.__chi.setVisible(False)
-        self.__2theta.setVisible(True)
-        self.__2theta.setValue(tth)
+    def setValues(self, x, y, chi, tth):
+        if x is None:
+            pos = None
+        else:
+            pos = x, y
 
-    def setValues(self, chi, tth):
-        self.__chi.setVisible(True)
-        self.__2theta.setVisible(True)
-        self.__chi.setValue(chi)
-        self.__2theta.setValue(tth)
+        if pos is None:
+            self.__position.setVisible(False)
+        else:
+            self.__position.setVisible(True)
+            self.__position.setValue(pos)
+
+        if chi is None:
+            self.__chi.setVisible(False)
+        else:
+            self.__chi.setVisible(True)
+            self.__chi.setValue(chi)
+
+        if chi is None:
+            self.__2theta.setVisible(False)
+        else:
+            self.__2theta.setVisible(True)
+            self.__2theta.setValue(tth)
 
     def clearValues(self):
-        self.__chi.setVisible(False)
         self.__2theta.setValue(float("nan"))
 
 
@@ -322,6 +341,7 @@ class IntegrationPlot(qt.QFrame):
         self.__wavelength = None
         self.__directDist = None
         self.__geometry = None
+        self.__inverseGeometry = None
 
         markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
         self.__markerManager = MarkerManager(self.__plot2d, markerModel)
@@ -422,12 +442,20 @@ class IntegrationPlot(qt.QFrame):
 
     def __updateStatusBar(self, x, y):
         chiRad, tthRad = self.dataToChiTth((x, y))
-        if tthRad is not None and chiRad is not None:
-            self.__statusBar.setValues(chiRad, tthRad)
-        elif tthRad is not None:
-            self.__statusBar.setValue(tthRad)
+
+        if y is not None and self.__inverseGeometry is not None:
+            pixelY, pixelX = self.__inverseGeometry(x, y, True)
+            ax, ay = numpy.array([pixelX]), numpy.array([pixelY])
+            tthFromPixel = self.__geometry.tth(ay, ax)[0]
+            chiFromPixel = self.__geometry.chi(ay, ax)[0]
+            error = numpy.sqrt((tthRad - tthFromPixel) ** 2 + (chiRad - chiFromPixel) ** 2)
+            if error > 0.05:
+                # The identified pixel is far from the requested chi/tth. Marker ignored.
+                pixelY, pixelX = None, None
         else:
-            self.__statusBar.clearValues()
+            pixelY, pixelX = None, None
+
+        self.__statusBar.setValues(pixelX, pixelY, chiRad, tthRad)
 
     def __mouseMoved(self, x, y):
         """Called when mouse move over the plot."""
@@ -650,6 +678,10 @@ class IntegrationPlot(qt.QFrame):
         self.__wavelength = integrationProcess.wavelength()
         self.__directDist = integrationProcess.directDist()
         self.__geometry = integrationProcess.geometry()
+        self.__inverseGeometry = InvertGeometry(
+            self.__geometry.array_from_unit(typ="center", unit=self.__radialUnit, scale=True),
+            numpy.rad2deg(self.__geometry.chiArray()))
+
         self.__markerManager.updateProjection(self.__geometry,
                                               self.__radialUnit,
                                               self.__wavelength,

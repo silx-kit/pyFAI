@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "28/08/2018"
 
 import logging
 import functools
@@ -39,6 +39,8 @@ from ..model import MarkerModel
 from .. import utils
 from ...utils import eventutils
 from ..CalibrationContext import CalibrationContext
+from pyFAI.ext.invert_geometry import InvertGeometry
+import pyFAI.units
 
 _logger = logging.getLogger(__name__)
 
@@ -66,10 +68,33 @@ class MarkerManager(object):
             raise RuntimeError("Invalide operation for this kind of plot")
         self.__geometry = geometry
         self.__radialUnit = radialUnit
+        self.__invertGeometry = InvertGeometry(
+            self.__geometry.array_from_unit(typ="center", unit=self.__radialUnit, scale=True),
+            numpy.rad2deg(self.__geometry.chiArray()))
         self.__wavelength = wavelength
         self.__directDist = directDist
         if redraw:
             self.__updateMarkers()
+
+    def toPlotUnit(self, tthRad, chiRad):
+        if self.__pixelBasedPlot:
+            raise TypeError("Not supported for pixel based plots")
+
+        try:
+            tth = utils.from2ThRad(tthRad,
+                                   unit=self.__radialUnit,
+                                   wavelength=self.__wavelength,
+                                   directDist=self.__directDist)
+        except Exception:
+            _logger.debug("Backtrace", exc_info=True)
+            tth = None
+
+        if chiRad is not None:
+            chi = numpy.deg2rad(chiRad)
+        else:
+            chi = None
+
+        return chi, tth
 
     def updatePhysicalMarkerPixels(self, geometry):
         self.__geometry = geometry
@@ -85,14 +110,19 @@ class MarkerManager(object):
                 _logger.debug("Backtrace", exc_info=True)
                 self.__directDist = None
 
+        invertGeometry = InvertGeometry(
+            self.__geometry.array_from_unit(typ="center", unit=pyFAI.units.TTH_RAD, scale=False),
+            self.__geometry.chiArray())
+
         self.__markerModel.lockSignals()
         for marker in self.__markerModel:
             if not isinstance(marker, MarkerModel.PhysicalMarker):
                 continue
 
             chiRad, tthRad = marker.physicalPosition()
+            pixel = None
             if self.__geometry is not None:
-                pixel = utils.findPixel(self.__geometry, chiRad, tthRad)
+                pixel = invertGeometry(tthRad, chiRad, True)
 
                 ax, ay = numpy.array([pixel[1]]), numpy.array([pixel[0]])
                 tth = self.__geometry.tth(ay, ax)[0]
@@ -101,9 +131,9 @@ class MarkerManager(object):
                 error = numpy.sqrt((tthRad - tth) ** 2 + (chiRad - chi) ** 2)
                 if error > 0.05:
                     # The identified pixel is far from the requested chi/tth. Marker ignored.
-                    marker.removePixelPosition()
-                else:
-                    marker.setPixelPosition(pixel[1], pixel[0])
+                    pixel = None
+            if pixel is not None:
+                marker.setPixelPosition(pixel[1], pixel[0])
             else:
                 marker.removePixelPosition()
         # TODO: should be managed by the model
@@ -250,7 +280,7 @@ class MarkerManager(object):
             pixel = pos[1], pos[0]
         else:
             chiRad, tthRad = self.dataToChiTth(pos)
-            pixel = utils.findPixel(self.__geometry, chiRad, tthRad)
+            pixel = self.__invertGeometry(pos[0], pos[1], True)
 
             ax, ay = numpy.array([pixel[1]]), numpy.array([pixel[0]])
             tth = self.__geometry.tth(ay, ax)[0]
@@ -275,7 +305,7 @@ class MarkerManager(object):
             marker.setPixelPosition(pos[0], pos[1])
         else:
             if self.__geometry is not None:
-                pixel = utils.findPixel(self.__geometry, chiRad, tthRad)
+                pixel = self.__invertGeometry(pos[0], pos[1], True)
                 marker.setPixelPosition(pixel[1], pixel[0])
             else:
                 marker.removePixelPosition()
