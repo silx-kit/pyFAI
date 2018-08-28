@@ -371,8 +371,8 @@ class IntegrationPlot(qt.QFrame):
         self.__syncAxes = None
 
     def resetZoom(self):
-        self.__plot2d.resetZoom()
         self.__plot1d.resetZoom()
+        self.__plot2d.resetZoom()
 
     def eventFilter(self, widget, event):
         if event.type() == qt.QEvent.Leave:
@@ -650,6 +650,11 @@ class IntegrationPlot(qt.QFrame):
             color="blue",
             histogram=result1d.intensity,
             resetzoom=False)
+
+        if silx.version_info[0:2] == (0, 8):
+            # Invalidate manually the plot datarange on silx 0.8
+            # https://github.com/silx-kit/silx/issues/2079
+            self.__plot1d._invalidateDataRange()
 
         self.__setResult(result1d)
 
