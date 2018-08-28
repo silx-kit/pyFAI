@@ -194,11 +194,15 @@ class MarkerManager(object):
             if self.__radialUnit is None:
                 return
 
-            tth = utils.from2ThRad(tthRad,
-                                   unit=self.__radialUnit,
-                                   wavelength=self.__wavelength,
-                                   directDist=self.__directDist)
-            chi = numpy.rad2deg(chiRad)
+            try:
+                tth = utils.from2ThRad(tthRad,
+                                       unit=self.__radialUnit,
+                                       wavelength=self.__wavelength,
+                                       directDist=self.__directDist)
+                chi = numpy.rad2deg(chiRad)
+            except Exception:
+                _logger.debug("Backtrace", exc_info=True)
+                return None
             return tth, chi
 
     def findClosestMarker(self, mousePos, delta=20):
