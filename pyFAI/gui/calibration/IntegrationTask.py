@@ -443,7 +443,7 @@ class IntegrationPlot(qt.QFrame):
     def __updateStatusBar(self, x, y):
         chiRad, tthRad = self.dataToChiTth((x, y))
 
-        if y is not None and self.__inverseGeometry is not None:
+        if tthRad is not None and y is not None and self.__inverseGeometry is not None:
             pixelY, pixelX = self.__inverseGeometry(x, y, True)
             ax, ay = numpy.array([pixelX]), numpy.array([pixelY])
             tthFromPixel = self.__geometry.tth(ay, ax)[0]
