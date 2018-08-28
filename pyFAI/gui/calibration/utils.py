@@ -27,12 +27,11 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "28/08/2018"
 
 
 import numpy
 import collections
-import scipy
 
 from silx.gui import qt
 from silx.gui.widgets.WaitingPushButton import WaitingPushButton
@@ -102,43 +101,6 @@ def getFreeColorRange(colormap):
         c = qt.QColor.fromHsvF(h % 1.0, 1.0, v)
         colors.append(c)
     return colors
-
-
-def findPixel(geometry, chi, tth):
-    """
-    Find the approximative pixel location from the resulting chi and 2theta
-    value.
-
-    The current implementation find the closest pixel. And then try to find the
-    best location inside the pixel. This is anyway not accurate.
-
-    :param pyFAI.geometry.Geometry geometry: Modelization of the geometry
-    :param float chi: Chi angle value in radian
-    :param float tth: 2 theta angle in radian
-    :rtype: Tuple[float,float]
-    :returns: y, x
-    """
-    # Find the right pixel
-    chia = geometry.get_chia()
-    if chia is None:
-        # get_chia do not compute data if not in the cache
-        chia = geometry.chiArray()
-    ttha = geometry.get_ttha()
-    array = (chia - chi) ** 2.0 + (ttha - tth) ** 2.0
-    index = numpy.argmin(array)
-    coord = numpy.unravel_index(index, array.shape)
-    coord = numpy.array(coord)
-
-    # Try to improve the location of the point inside the pixel
-    deltaPoints = numpy.array([[0.001, 0.001], [0.001, 0.999], [0.999, 0.999], [0.999, 0.001]])
-    pixelCorners = coord + deltaPoints
-    chiPoints = geometry.chi(pixelCorners[:, 0], pixelCorners[:, 1])
-    tthPoints = geometry.tth(pixelCorners[:, 0], pixelCorners[:, 1])
-
-    fx = scipy.interpolate.interp2d(chiPoints, tthPoints, pixelCorners[:, 1])
-    fy = scipy.interpolate.interp2d(chiPoints, tthPoints, pixelCorners[:, 0])
-    coord2 = numpy.array([fy(chi, tth)[0], fx(chi, tth)[0]])
-    return coord2
 
 
 def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
