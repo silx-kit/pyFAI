@@ -175,7 +175,7 @@ class MarkerManager(object):
             elif isinstance(marker, MarkerModel.PixelMarker):
                 return marker.pixelPosition()
             else:
-                _logger.debug("Unsupported logger %s", type(marker))
+                _logger.debug("Unsupported marker %s", type(marker))
                 return None
         else:
             if isinstance(marker, MarkerModel.PhysicalMarker):
@@ -188,7 +188,7 @@ class MarkerManager(object):
                 chiRad = self.__geometry.chi(ay, ax)[0]
                 tthRad = self.__geometry.tth(ay, ax)[0]
             else:
-                _logger.debug("Unsupported logger %s", type(marker))
+                _logger.debug("Unsupported marker %s", type(marker))
                 return None
 
             if self.__radialUnit is None:
