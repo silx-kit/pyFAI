@@ -283,17 +283,20 @@ class MarkerManager(object):
         if self.__pixelBasedPlot:
             pixel = pos[1], pos[0]
         else:
-            chiRad, tthRad = self.dataToChiTth(pos)
             pixel = self.__invertGeometry(pos[0], pos[1], True)
 
-            ax, ay = numpy.array([pixel[1]]), numpy.array([pixel[0]])
-            tth = self.__geometry.tth(ay, ax)[0]
-            chi = self.__geometry.chi(ay, ax)[0]
+            # Check if the result is accurate
+            # TODO: This could be avoided by checking it inside invertGeometry
+            chiRad, tthRad = self.dataToChiTth(pos)
+            if tthRad is not None and chiRad is not None:
+                ax, ay = numpy.array([pixel[1]]), numpy.array([pixel[0]])
+                tth = self.__geometry.tth(ay, ax)[0]
+                chi = self.__geometry.chi(ay, ax)[0]
 
-            error = numpy.sqrt((tthRad - tth) ** 2 + (chiRad - chi) ** 2)
-            if error > 0.05:
-                _logger.error("The identified pixel is far from the requested chi/tth. Marker ignored.")
-                return
+                error = numpy.sqrt((tthRad - tth) ** 2 + (chiRad - chi) ** 2)
+                if error > 0.05:
+                    _logger.error("The identified pixel is far from the requested chi/tth. Marker ignored.")
+                    return
 
         name = self.__findUnusedMarkerName()
         marker = MarkerModel.PixelMarker(name, pixel[1], pixel[0])
