@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "28/08/2018"
 
 import os
 import logging
@@ -369,6 +369,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorFromFile = detector
         # Update the GUI
         self.__setCustomField("FILE")
+        self._customList.setFocus(qt.Qt.NoFocusReason)
 
     def __selectSplineDetector(self, detector):
         """Select and display the detector using zero copy."""
@@ -379,6 +380,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorFromFile = detector
         # Update the GUI
         self.__setCustomField("FILE")
+        self._customList.setFocus(qt.Qt.NoFocusReason)
 
     def __selectCustomDetector(self, detector):
         """Select and display the detector using zero copy."""
@@ -399,6 +401,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
         # Update the GUI
         self.__setCustomField("MANUAL")
+        self._customList.setFocus(qt.Qt.NoFocusReason)
 
     def __selectRegistreredDetector(self, detector):
         self.__setManufacturer(detector.MANUFACTURER)

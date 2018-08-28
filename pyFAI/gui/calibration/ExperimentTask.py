@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "28/08/2018"
 
 import fabio
 import numpy
@@ -130,7 +130,6 @@ class ExperimentTask(AbstractCalibrationTask):
         settings = self.model().experimentSettingsModel()
         detector = settings.detectorModel().detector()
         popup = DetectorSelectorDrop(self)
-        popup.setDetector(detector)
         popupParent = self._customDetector
         pos = popupParent.mapToGlobal(popupParent.rect().bottomRight())
         pos = pos + popup.rect().topLeft() - popup.rect().topRight()
@@ -148,6 +147,8 @@ class ExperimentTask(AbstractCalibrationTask):
         buttonBox.rejected.connect(dialog.reject)
         layout.addWidget(buttonBox)
 
+        # It have to be here to set the focus on the right widget
+        popup.setDetector(detector)
         result = dialog.exec_()
         if result:
             newDetector = popup.detector()
