@@ -306,7 +306,7 @@ class _StatusBar(qt.QStatusBar):
             self.__chi.setVisible(True)
             self.__chi.setValue(chi)
 
-        if chi is None:
+        if tth is None:
             self.__2theta.setVisible(False)
         else:
             self.__2theta.setVisible(True)
