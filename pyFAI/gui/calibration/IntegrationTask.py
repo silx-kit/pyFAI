@@ -180,11 +180,18 @@ class IntegrationProcess(object):
             mask=self.__mask,
             polarization_factor=self.__polarizationFactor)
 
+        try:
+            self.__directDist = ai.getFit2D()["directDist"]
+        except Exception:
+            # The geometry could not fit this param
+            _logger.debug("Backtrace", exc_info=True)
+            self.__directDist = None
+
         if self.__calibrant:
 
             rings = self.__calibrant.get_2th()
             try:
-                rings = utils.from2ThRad(rings, self.__radialUnit, self.__wavelength, ai)
+                rings = utils.from2ThRad(rings, self.__radialUnit, self.__wavelength, self.__directDist)
             except ValueError:
                 message = "Convertion to unit %s not supported. Ring marks ignored"
                 _logger.warning(message, self.__radialUnit)
@@ -197,13 +204,6 @@ class IntegrationProcess(object):
         self.__ringAngles = rings
 
         self.__ai = ai
-
-        try:
-            self.__directDist = ai.getFit2D()["directDist"]
-        except Exception:
-            # The geometry could not fit this param
-            _logger.debug("Backtrace", exc_info=True)
-            self.__directDist = None
 
     def ringAngles(self):
         return self.__ringAngles
