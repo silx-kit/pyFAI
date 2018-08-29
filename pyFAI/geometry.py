@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "29/08/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1165,11 +1165,15 @@ class Geometry(object):
         if "detector" in data:
             self.detector = detectors.detector_factory(data["detector"],
                                                        data.get("detector_config"))
+            if isinstance(self.detector, detectors.NexusDetector):
+                # increment the poni_version for Nexus detector as no further config is needed!
+                version = max(2, version)
         else:
             self.detector = detectors.Detector()
         if version == 1:
             # Handle former version of PONI-file
-            if self.detector.force_pixel and ("pixelsize1" in data) and ("pixelsize2" in data):
+            if self.detector.force_pixel and \
+                    ("pixelsize1" in data) and ("pixelsize2" in data):
                 pixel1 = float(data["pixelsize1"])
                 pixel2 = float(data["pixelsize2"])
                 self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
