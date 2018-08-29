@@ -1167,7 +1167,7 @@ class Geometry(object):
                                                        data.get("detector_config"))
             if isinstance(self.detector, detectors.NexusDetector):
                 # increment the poni_version for Nexus detector as no further config is needed!
-                version += 1
+                version = max(2, version)
         else:
             self.detector = detectors.Detector()
         if version == 1:
