@@ -6,6 +6,6 @@ requires = [
     "scipy",
     "sphinx",
     "nbsphinx",
-    "silx>=0.6",
+    "silx>=0.8",
     "Cython>=0.25"
 ]

@@ -27,11 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/03/2017"
+__date__ = "28/08/2018"
 
 from silx.gui import qt
-import pyFAI.units
-from .model.DataModel import DataModel
+from ..calibration.model.DataModel import DataModel
 
 
 class UnitSelector(qt.QComboBox):
@@ -43,16 +42,29 @@ class UnitSelector(qt.QComboBox):
         self.setModel(DataModel())
         self.currentIndexChanged[int].connect(self.__currentIndexChanged)
 
+    def formatToUnicode(self, label):
+        label = label.replace("$", u"")
+        label = label.replace("^{-2}", u"⁻²")
+        label = label.replace("^{-1}", u"⁻¹")
+        label = label.replace("^.", u"⋅")
+        label = label.replace("2\\theta", u"2θ")
+        label = label.replace("^{o}", u"°")
+        label = label.replace("\\AA", u"Å")
+        label = label.replace("log10", u"log₁₀")
+        label = label.replace("^{*2}", u"d*²")
+        return label
+
     def setUnits(self, units):
         previousUnit = self.__model.value()
         old = self.blockSignals(True)
         # clean up
         self.clear()
-        # feed the widget with default detectors
-        items = pyFAI.detectors.ALL_DETECTORS.items()
-        items = sorted(items)
-        for unit in pyFAI.units.RADIAL_UNITS.values():
-            self.addItem(unit.name, unit)
+
+        units = sorted(list(units), key=lambda u: u.label)
+
+        for unit in units:
+            label = self.formatToUnicode(unit.label)
+            self.addItem(label, unit)
         # try to find the previous unit in the new list
         if previousUnit is None:
             currentIndex = self.currentIndex()

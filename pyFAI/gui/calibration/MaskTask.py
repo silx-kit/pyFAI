@@ -27,15 +27,19 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2018"
+__date__ = "24/08/2018"
 
 import logging
 from silx.gui import qt
+import silx.gui.plot
+from silx.gui.plot.tools import PositionInfo
+
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from .helper.SynchronizeRawView import SynchronizeRawView
+from .CalibrationContext import CalibrationContext
+from .helper.MarkerManager import MarkerManager
 
-import silx.gui.plot
-from silx.gui.plot.PlotTools import PositionInfo
 
 _logger = logging.getLogger(__name__)
 
@@ -47,10 +51,20 @@ class MaskTask(AbstractCalibrationTask):
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-mask.ui"), self)
         self.initNextStep()
 
-        self.__plot = self.__createPlot()
+        self.__plot = self.__createPlot(self._imageHolder)
+
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self.__plot, markerModel, pixelBasedPlot=True)
+
+        handle = self.__plot.getWidgetHandle()
+        handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        handle.customContextMenuRequested.connect(self.__plotContextMenu)
+
         self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(parent=self._toolHolder, plot=self.__plot)
         self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
         self.__maskPanel.setMultipleMasks("single")
+        layout = self.__maskPanel.layout()
+        layout.setContentsMargins(0, 0, 0, 0)
 
         layout = qt.QVBoxLayout(self._toolHolder)
         layout.addWidget(self.__maskPanel)
@@ -70,51 +84,50 @@ class MaskTask(AbstractCalibrationTask):
         self.__plotMaskChanged = False
         self.__modelMaskChanged = False
 
-    def __createPlot(self):
-        plot = silx.gui.plot.PlotWidget(parent=self._imageHolder)
+        self.__synchronizeRawView = SynchronizeRawView()
+        self.__synchronizeRawView.registerTask(self)
+        self.__synchronizeRawView.registerPlot(self.__plot)
+
+    def __plotContextMenu(self, pos):
+        plot = self.__plot
+        from silx.gui.plot.actions.control import ZoomBackAction
+        zoomBackAction = ZoomBackAction(plot=plot, parent=plot)
+
+        menu = qt.QMenu(self)
+
+        menu.addAction(zoomBackAction)
+        menu.addSeparator()
+        menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
+        menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
+        action = self.__markerManager.createRemoveClosestMaskerAction(menu, pos)
+        if action is not None:
+            menu.addAction(action)
+
+        handle = plot.getWidgetHandle()
+        menu.exec_(handle.mapToGlobal(pos))
+
+    def __createPlot(self, parent):
+        plot = silx.gui.plot.PlotWidget(parent=parent)
         plot.setKeepDataAspectRatio(True)
-        toolBar = self.__createPlotToolBar(plot)
-        plot.addToolBar(toolBar)
-        statusBar = self.__createPlotStatusBar(plot)
-        plot.setStatusBar(statusBar)
+        plot.setDataMargins(0.1, 0.1, 0.1, 0.1)
+        plot.setGraphXLabel("Y")
+        plot.setGraphYLabel("X")
+        plot.setAxesDisplayed(False)
 
-        # FIXME Fix using silx 0.5
-        if "BackendMatplotlib" in plot._backend.__class__.__name__:
-            # hide axes and viewbox rect
-            plot._backend.ax.set_axis_off()
-            plot._backend.ax2.set_axis_off()
-            # remove external margins
-            plot._backend.ax.set_position([0, 0, 1, 1])
-            plot._backend.ax2.set_position([0, 0, 1, 1])
-
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
+        colormap = CalibrationContext.instance().getRawColormap()
         plot.setDefaultColormap(colormap)
 
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        colormapDialog = CalibrationContext.instance().getColormapDialog()
+        toolBar.getColormapAction().setColorDialog(colormapDialog)
+        plot.addToolBar(toolBar)
+
+        statusBar = self.__createPlotStatusBar(plot)
+        plot.setStatusBar(statusBar)
         return plot
-
-    def __createPlotToolBar(self, plot):
-        toolBar = qt.QToolBar("Plot tools", plot)
-
-        from silx.gui.plot.actions import control
-        from silx.gui.plot.actions import io
-        from silx.gui.plot.actions import histogram
-
-        toolBar.addAction(control.ResetZoomAction(plot, toolBar))
-        toolBar.addAction(control.ZoomInAction(plot, toolBar))
-        toolBar.addAction(control.ZoomOutAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(control.ColormapAction(plot, toolBar))
-        toolBar.addAction(histogram.PixelIntensitiesHistoAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(io.CopyAction(plot, toolBar))
-        toolBar.addAction(io.SaveAction(plot, toolBar))
-        toolBar.addAction(io.PrintAction(plot, toolBar))
-
-        return toolBar
 
     def __createPlotStatusBar(self, plot):
 
@@ -127,7 +140,7 @@ class MaskTask(AbstractCalibrationTask):
         hbox.setContentsMargins(0, 0, 0, 0)
 
         info = PositionInfo(plot=plot, converters=converters)
-        info.autoSnapToActiveCurve = True
+        info.setSnappingMode(True)
         statusBar = qt.QStatusBar(plot)
         statusBar.setSizeGripEnabled(False)
         statusBar.addWidget(info)
@@ -145,7 +158,7 @@ class MaskTask(AbstractCalibrationTask):
         image = self.__plot.getImage("image")
         if image is None:
             return value
-        data = image.getData()
+        data = image.getData(copy=False)
         ox, oy = image.getOrigin()
         sx, sy = image.getScale()
         row, col = (y - oy) / sy, (x - ox) / sx
@@ -157,6 +170,8 @@ class MaskTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
+        self.__synchronizeRawView.registerModel(model.rawPlotView())
+
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
         settings.mask().changed.connect(self.__maskFromModelChanged)
@@ -173,24 +188,43 @@ class MaskTask(AbstractCalibrationTask):
         else:
             self.__plot.removeImage("image")
 
+    def __widgetShow(self):
+        self.__updateWidgetFromModel()
+
+    def __widgetHide(self):
+        self.__updateModelFromWidget()
+
     def __maskFromPlotChanged(self):
         self.__plotMaskChanged = True
 
     def __maskFromModelChanged(self):
         self.__modelMaskChanged = True
         if self.isVisible():
-            self.__widgetShow()
+            self.__updateWidgetFromModel()
 
-    def __widgetShow(self):
-        if self.__modelMaskChanged:
-            mask = self.model().experimentSettingsModel().mask().value()
-            # FIXME if mask is not, the mask should be cleaned up
-            if mask is not None:
-                self.__maskPanel.setSelectionMask(mask)
-                self.__modelMaskChanged = False
+    def __updateWidgetFromModel(self):
+        """Update the widget using the mask from the model, only if needed"""
+        if not self.__modelMaskChanged:
+            return
 
-    def __widgetHide(self):
-        if self.__plotMaskChanged:
-            mask = self.__maskPanel.getSelectionMask()
-            self.model().experimentSettingsModel().mask().setValue(mask)
-            self.__plotMaskChanged = False
+        mask = self.model().experimentSettingsModel().mask().value()
+        # FIXME if mask is none, the mask should be cleaned up
+        if mask is not None:
+            self.__maskPanel.setSelectionMask(mask)
+        # Everything is synchronized now
+        self.__plotMaskChanged = False
+        self.__modelMaskChanged = False
+
+    def __updateModelFromWidget(self):
+        """Update the model using the mask stored on the widget, only if needed"""
+        if not self.__plotMaskChanged:
+            return
+
+        mask = self.__maskPanel.getSelectionMask()
+        maskModel = self.model().experimentSettingsModel().mask()
+        maskModel.changed.disconnect(self.__maskFromModelChanged)
+        maskModel.setValue(mask)
+        maskModel.changed.connect(self.__maskFromModelChanged)
+        # Everything is synchronized now
+        self.__plotMaskChanged = False
+        self.__modelMaskChanged = False

@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/08/2018"
+__date__ = "29/08/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -600,7 +600,7 @@ class Geometry(object):
 
     @deprecated
     def positionArray(self, *arg, **kwarg):
-        """Derecated version of positionArray, left for compatibility see doc of position_array"""
+        """Deprecated version of :meth:`position_array`, left for compatibility see doc of position_array"""
         return self.position_array(*arg, **kwarg)
 
     def corner_array(self, shape=None, unit=None, use_cython=True, scale=True):
@@ -1130,6 +1130,9 @@ class Geometry(object):
         if "detector" in config:
             self.detector = detectors.detector_factory(config["detector"],
                                                        config.get("detector_config"))
+            if isinstance(self.detector, detectors.NexusDetector):
+                # increment the poni_version for Nexus detector as no further config is needed!
+                version = max(2, version)
         else:
             self.detector = detectors.Detector()
         if version == 1:

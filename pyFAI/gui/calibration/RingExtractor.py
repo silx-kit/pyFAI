@@ -27,14 +27,15 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/03/2018"
+__date__ = "20/08/2018"
 
 import logging
 import numpy
+from silx.image import marchingsquares
+
 import pyFAI.utils
 from pyFAI.geometryRefinement import GeometryRefinement
 from ..peak_picker import PeakPicker
-from ...ext.marchingsquares import isocontour
 
 _logger = logging.getLogger(__name__)
 
@@ -167,6 +168,8 @@ class RingExtractor(object):
         peakPicker.sync_init()
         if maxRings is None:
             maxRings = tth.size
+        ms = marchingsquares.MarchingSquaresMergeImpl(ttha, self.__mask, use_minmax_cache=True)
+
         for i in range(tth.size):
             if rings >= maxRings:
                 break
@@ -190,10 +193,12 @@ class RingExtractor(object):
                     mask2 = numpy.logical_and(peakPicker.data > upper_limit, mask)
                     size2 = mask2.sum()
                 # length of the arc:
-                points = isocontour(ttha, tth[i]).round().astype(int)
-                seeds = set((i[1], i[0]) for i in points if mask2[i[1], i[0]])
+                # Coords in points are y, x
+                points = ms.find_pixels(tth[i])
+
+                seeds = set((i[0], i[1]) for i in points if mask2[i[0], i[1]])
                 # max number of points: 360 points for a full circle
-                azimuthal = chia[points[:, 1].clip(0, peakPicker.data.shape[0]), points[:, 0].clip(0, peakPicker.data.shape[1])]
+                azimuthal = chia[points[:, 0].clip(0, peakPicker.data.shape[0]), points[:, 1].clip(0, peakPicker.data.shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
                 keep = int(nb_deg_azim * pointPerDegree)
                 if keep == 0:
@@ -201,9 +206,9 @@ class RingExtractor(object):
                 dist_min = len(seeds) / 2.0 / keep
                 # why 3.0, why not ?
 
-                _logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "
-                            "searching for %i pts out of %i with I>%.1f, dmin=%.1f" %
-                            (i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min))
+                msg = "Extracting datapoint for ring %s (2theta = %.2f deg); "\
+                    "searching for %i pts out of %i with I>%.1f, dmin=%.1f"
+                _logger.info(msg, i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min)
                 _res = peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
 
         # self.peakPicker.points.save(self.basename + ".npt")
@@ -215,7 +220,7 @@ class RingExtractor(object):
 
     def toGeometryModel(self, model):
         model.lockSignals()
-        model.wavelength().setValue(self.__geoRef.wavelength * 1e10)
+        model.wavelength().setValue(self.__geoRef.wavelength)
         model.distance().setValue(self.__geoRef.dist)
         model.poni1().setValue(self.__geoRef.poni1)
         model.poni2().setValue(self.__geoRef.poni2)
