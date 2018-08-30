@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>713</width>
-    <height>623</height>
+    <width>772</width>
+    <height>640</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="_imageHolder">
+    <widget class="QFrame" name="_plotHolder">
      <property name="frameShape">
       <enum>QFrame::Box</enum>
      </property>
@@ -155,20 +155,10 @@
          <string>Picked rings</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
-         <property name="leftMargin">
-          <number>9</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>9</number>
-         </property>
-         <property name="bottomMargin">
-          <number>9</number>
-         </property>
          <item>
-          <widget class="QWidget" name="_peakSelectionHolder" native="true"/>
+          <widget class="QWidget" name="_peakSelectionDummy" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_2"/>
+          </widget>
          </item>
          <item>
           <widget class="QWidget" name="widget_12" native="true">
@@ -260,7 +250,7 @@
           </widget>
          </item>
          <item row="4" column="0" colspan="3">
-          <widget class="QPushButton" name="_extract">
+          <widget class="WaitingPushButton" name="_extract">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -319,6 +309,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>WaitingPushButton</class>
+   <extends>QPushButton</extends>
+   <header>silx.gui.widgets.WaitingPushButton</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

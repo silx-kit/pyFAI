@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2018"
+__date__ = "06/08/2018"
 
 import unittest
 import logging
@@ -74,13 +74,16 @@ class TestCalibrant(unittest.TestCase):
         lab6 = get_calibrant("LaB6")
         lab6.wavelength = 1.54e-10
         tth = lab6.get_2th()
-        self.assertTrue(len(tth) == 25, "We expect 25 rings for LaB6")
+        self.assertEqual(len(tth), 25, "We expect 25 rings for LaB6")
+
         lab6.setWavelength_change2th(1e-10)
         tth = lab6.get_2th()
-        self.assertTrue(len(tth) == 25, "We still expect 25 rings for LaB6 (some are missing lost)")
+        self.assertEqual(len(tth), 59, "We expect 59 rings for LaB6")
+
         lab6.setWavelength_change2th(2e-10)
         tth = lab6.get_2th()
-        self.assertTrue(len(tth) == 15, "Only 15 remaining out of 25 rings for LaB6 (some additional got lost)")
+        self.assertEqual(len(tth), 15, "We expect 15 rings for LaB6")
+
         self.assertEqual(lab6.get_2th_index(1.0, 0.04), 3, "right index picked")
 
     def test_fake(self):

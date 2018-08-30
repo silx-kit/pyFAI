@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "14/08/2018"
 
 from numpy.distutils.misc_util import Configuration
 
@@ -32,6 +32,7 @@ from numpy.distutils.misc_util import Configuration
 def configuration(parent_package='', top_path=None):
     config = Configuration('calibration', parent_package, top_path)
     config.add_subpackage('model')
+    config.add_subpackage('helper')
     return config
 
 

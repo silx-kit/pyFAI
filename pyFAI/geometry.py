@@ -600,7 +600,7 @@ class Geometry(object):
 
     @deprecated
     def positionArray(self, *arg, **kwarg):
-        """Derecated version of positionArray, left for compatibility see doc of position_array"""
+        """Deprecated version of :meth:`position_array`, left for compatibility see doc of position_array"""
         return self.position_array(*arg, **kwarg)
 
     def corner_array(self, shape=None, unit=None, use_cython=True, scale=True):

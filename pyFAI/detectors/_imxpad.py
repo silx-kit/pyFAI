@@ -36,13 +36,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "07/08/2018"
 __status__ = "production"
 
 import functools
 import numpy
 import json
-from collections import OrderedDict
 from ._common import Detector
 from pyFAI.utils import mathutil
 
@@ -61,6 +60,8 @@ class ImXPadS10(Detector):
     """
     ImXPad detector: ImXPad s10 detector with 1x1modules
     """
+    MANUFACTURER = "ImXPad"
+
     MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
     MAX_SHAPE = (120, 80)  # max size of the detector
     PIXEL_SIZE = (130e-6, 130e-6)
@@ -222,7 +223,7 @@ class ImXPadS10(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         dico = {}
@@ -237,9 +238,9 @@ class ImXPadS10(Detector):
 
     def set_config(self, config):
         """set the config of the detector
-        
-        For Xpad detector, possible keys are: max_shape, module_size 
-        
+
+        For Xpad detector, possible keys are: max_shape, module_size
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """

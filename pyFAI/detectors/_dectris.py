@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "07/08/2018"
 __status__ = "production"
 
 
@@ -58,7 +58,12 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class Eiger(Detector):
+class _Dectris(Detector):
+
+    MANUFACTURER = "Dectris"
+
+
+class Eiger(_Dectris):
     """
     Eiger detector: generic description containing mask algorithm
     """
@@ -161,7 +166,7 @@ class Eiger(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         dico = {}
@@ -176,9 +181,9 @@ class Eiger(Detector):
 
     def set_config(self, config):
         """set the config of the detector
-        
-        For Eiger detector, possible keys are: max_shape, module_size 
-        
+
+        For Eiger detector, possible keys are: max_shape, module_size
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
@@ -239,7 +244,7 @@ class Eiger16M(Eiger):
     aliases = ["Eiger 16M"]
 
 
-class Mythen(Detector):
+class Mythen(_Dectris):
     "Mythen dtrip detector from Dectris"
     aliases = ["Mythen 1280"]
     force_pixel = True
@@ -250,14 +255,14 @@ class Mythen(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
                             ("pixel2", self._pixel2)))
 
 
-class Pilatus(Detector):
+class Pilatus(_Dectris):
     """
     Pilatus detector: generic description containing mask algorithm
 
@@ -416,7 +421,7 @@ class Pilatus(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         dico = OrderedDict()
@@ -435,9 +440,9 @@ class Pilatus(Detector):
 
     def set_config(self, config):
         """set the config of the detector
-        
+
         For Eiger detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file
-        
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
