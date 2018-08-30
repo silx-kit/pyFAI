@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "30/08/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1097,6 +1097,73 @@ class Geometry(object):
         else:
             return dssa
 
+    def get_config(self):
+        """
+        return the configuration as a dictionnary
+        
+        :return: dictionary with the current configuration
+        """
+
+        config = OrderedDict([("poni_version", 2)])
+        with self._sem:
+            config["detector"] = self.detector.__class__.__name__
+            config["detector_config"] = self.detector.get_config()
+            config["dist"] = self._dist
+            config["poni1"] = self._poni1
+            config["poni2"] = self._poni2
+            config["rot1"] = self._rot1
+            config["rot2"] = self._rot2
+            config["rot3"] = self._rot3
+            if self._wavelength:
+                config["wavelength"] = self._wavelength
+        return config
+
+    def set_config(self, config):
+        """
+        Set the config of the geometry and of the underlying detector
+        
+        :param config: dictionary with the configuration
+        :return: itself
+        """
+        version = int(config.get("poni_version", 1))
+
+        if "detector" in config:
+            self.detector = detectors.detector_factory(config["detector"],
+                                                       config.get("detector_config"))
+        else:
+            self.detector = detectors.Detector()
+        if version == 1:
+            # Handle former version of PONI-file
+            if self.detector.force_pixel and ("pixelsize1" in config) and ("pixelsize2" in config):
+                pixel1 = float(config["pixelsize1"])
+                pixel2 = float(config["pixelsize2"])
+                self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
+            else:
+                if "pixelsize1" in config:
+                    self.detector.pixel1 = float(config["pixelsize1"])
+                if "pixelsize2" in config:
+                    self.detector.pixel2 = float(config["pixelsize2"])
+
+        if "distance" in config:
+            self._dist = float(config["distance"])
+        if "poni1" in config:
+            self._poni1 = float(config["poni1"])
+        if "poni2" in config:
+            self._poni2 = float(config["poni2"])
+        if "rot1" in config:
+            self._rot1 = float(config["rot1"])
+        if "rot2" in config:
+            self._rot2 = float(config["rot2"])
+        if "rot3" in config:
+            self._rot3 = float(config["rot3"])
+        if "wavelength" in config:
+            self._wavelength = float(config["wavelength"])
+        if "splinefile" in config:
+            if config["splinefile"].lower() != "none":
+                self.detector.set_splineFile(config["splinefile"])
+        self.reset()
+        return self
+
     def save(self, filename):
         """
         Save the geometry parameters.
@@ -1146,6 +1213,7 @@ class Geometry(object):
 
         :param filename: name of the file to load
         :type filename: string
+        :return: itself with updated parameters
         """
         data = OrderedDict()
         with open(filename) as opened_file:
@@ -1160,43 +1228,7 @@ class Geometry(object):
                 except Exception as error:  # IGNORE:W0703:
                     logger.error("Error %s with line: %s", error, line)
                 data[key] = value
-        version = int(data.get("poni_version", 1))
-
-        if "detector" in data:
-            self.detector = detectors.detector_factory(data["detector"],
-                                                       data.get("detector_config"))
-        else:
-            self.detector = detectors.Detector()
-        if version == 1:
-            # Handle former version of PONI-file
-            if self.detector.force_pixel and ("pixelsize1" in data) and ("pixelsize2" in data):
-                pixel1 = float(data["pixelsize1"])
-                pixel2 = float(data["pixelsize2"])
-                self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
-            else:
-                if "pixelsize1" in data:
-                    self.detector.pixel1 = float(data["pixelsize1"])
-                if "pixelsize2" in data:
-                    self.detector.pixel2 = float(data["pixelsize2"])
-
-        if "distance" in data:
-            self._dist = float(data["distance"])
-        if "poni1" in data:
-            self._poni1 = float(data["poni1"])
-        if "poni2" in data:
-            self._poni2 = float(data["poni2"])
-        if "rot1" in data:
-            self._rot1 = float(data["rot1"])
-        if "rot2" in data:
-            self._rot2 = float(data["rot2"])
-        if "rot3" in data:
-            self._rot3 = float(data["rot3"])
-        if "wavelength" in data:
-            self._wavelength = float(data["wavelength"])
-        if "splinefile" in data:
-            if data["splinefile"].lower() != "none":
-                self.detector.set_splineFile(data["splinefile"])
-        self.reset()
+        return self.set_config(data)
     read = load
 
     def getPyFAI(self):
