@@ -27,13 +27,16 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/05/2017"
+__date__ = "28/08/2018"
 
 
-from silx.gui import qt
-from pyFAI import units
 import numpy
 import collections
+
+from silx.gui import qt
+from silx.gui.widgets.WaitingPushButton import WaitingPushButton
+
+from pyFAI import units
 
 
 def getFreeColorRange(colormap):
@@ -41,13 +44,8 @@ def getFreeColorRange(colormap):
 
     import matplotlib.cm
 
-    try:
-        from silx.gui.plot.matplotlib import Colormap
-        cmap = Colormap.getColormap(name)
-    except ImportError:
-        # Compatibility with silx <= 0.5
-        from silx.gui.plot import Colors
-        cmap = Colors.getMPLColormap(name)
+    from silx.gui.plot.matplotlib import Colormap
+    cmap = Colormap.getColormap(name)
 
     norm = matplotlib.colors.Normalize(0, 255)
     scalarMappable = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -105,7 +103,44 @@ def getFreeColorRange(colormap):
     return colors
 
 
-def from2ThRad(twoTheta, unit, wavelength=None, ai=None):
+def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
+    """
+    Convert a two theta angle from original `unit` to radian.
+
+    `directDist = ai.getFit2D()["directDist"]`
+    """
+    if isinstance(twoTheta, numpy.ndarray):
+        pass
+    elif isinstance(twoTheta, collections.Iterable):
+        twoTheta = numpy.array(twoTheta)
+
+    if unit == units.TTH_RAD:
+        return twoTheta
+    elif unit == units.TTH_DEG:
+        return numpy.deg2rad(twoTheta)
+    elif unit == units.Q_A:
+        if wavelength is None:
+            raise AttributeError("wavelength have to be specified")
+        return numpy.arcsin((twoTheta * wavelength) / (4.e-10 * numpy.pi)) * 2.0
+    elif unit == units.Q_NM:
+        if wavelength is None:
+            raise AttributeError("wavelength have to be specified")
+        return numpy.arcsin((twoTheta * wavelength) / (4.e-9 * numpy.pi)) * 2.0
+    elif unit == units.R_MM:
+        if directDist is None:
+            raise AttributeError("directDist have to be specified")
+        # GF: correct formula?
+        return numpy.arctan(twoTheta / directDist)
+    elif unit == units.R_M:
+        if directDist is None:
+            raise AttributeError("directDist have to be specified")
+        # GF: correct formula?
+        return numpy.arctan(twoTheta / (directDist * 0.001))
+    else:
+        raise ValueError("Converting from 2th to unit %s is not supported", unit)
+
+
+def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
     if isinstance(twoTheta, numpy.ndarray):
         pass
     elif isinstance(twoTheta, collections.Iterable):
@@ -121,11 +156,56 @@ def from2ThRad(twoTheta, unit, wavelength=None, ai=None):
         return (4.e-9 * numpy.pi / wavelength) * numpy.sin(.5 * twoTheta)
     elif unit == units.R_MM:
         # GF: correct formula?
-        beamCentre = ai.getFit2D()["directDist"]  # in mm!!
+        if directDist is not None:
+            beamCentre = directDist
+        else:
+            beamCentre = ai.getFit2D()["directDist"]  # in mm!!
         return beamCentre * numpy.tan(twoTheta)
     elif unit == units.R_M:
         # GF: correct formula?
-        beamCentre = ai.getFit2D()["directDist"]  # in mm!!
+        if directDist is not None:
+            beamCentre = directDist
+        else:
+            beamCentre = ai.getFit2D()["directDist"]  # in mm!!
         return beamCentre * numpy.tan(twoTheta) * 0.001
     else:
         raise ValueError("Converting from 2th to unit %s is not supported", unit)
+
+
+def createProcessingWidgetOverlay(parent):
+    """Create a widget overlay to show that the application is processing data
+    to update the plot.
+
+    :param qt.QWidget widget: Widget containing the overlay
+    :rtype: qt.QWidget
+    """
+    if hasattr(parent, "centralWidget"):
+        parent = parent.centralWidget()
+    button = WaitingPushButton(parent)
+    button.setWaiting(True)
+    button.setText("Processing...")
+    button.setDown(True)
+    position = parent.size()
+    size = button.sizeHint()
+    position = (position - size) / 2
+    rect = qt.QRect(qt.QPoint(position.width(), position.height()), size)
+    button.setGeometry(rect)
+    button.setVisible(True)
+    return button
+
+
+_trueStrings = set(["yes", "true", "1"])
+_falseStrings = set(["no", "false", "0"])
+
+
+def stringToBool(string):
+    """Returns a boolean from a string.
+
+    :raise ValueError: If the string do not contains a boolean information.
+    """
+    lower = string.lower()
+    if lower in _trueStrings:
+        return True
+    if lower in _falseStrings:
+        return False
+    raise ValueError("'%s' is not a valid boolean" % string)

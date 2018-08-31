@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2018"
+__date__ = "07/08/2018"
 __status__ = "production"
 
 
@@ -58,6 +58,8 @@ class Fairchild(Detector):
     """
     Fairchild Condor 486:90 detector
     """
+    MANUFACTURER = "Fairchild Semiconductor"
+
     force_pixel = True
     uniform_pixel = True
     aliases = ["Fairchild", "Condor", "Fairchild Condor 486:90"]
@@ -72,7 +74,7 @@ class Fairchild(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -83,6 +85,8 @@ class Titan(Detector):
     """
     Titan CCD detector from Agilent. Mask not handled
     """
+    MANUFACTURER = "Agilent"
+
     force_pixel = True
     MAX_SHAPE = (2048, 2048)
     aliases = ["Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
@@ -97,7 +101,7 @@ class Titan(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -121,7 +125,7 @@ class Dexela2923(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -133,6 +137,8 @@ class Basler(Detector):
     Basler camera are simple CCD camara over GigaE
 
     """
+    MANUFACTURER = "Basler"
+
     force_pixel = True
     aliases = ["aca1300"]
     MAX_SHAPE = (966, 1296)
@@ -146,21 +152,21 @@ class Basler(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return {"pixel": self._pixel1}
 
     def set_config(self, config):
-        """Sets the configuration of the detector.        
-        
+        """Sets the configuration of the detector.
+
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
         keys in that dictionary are:  pixel
-       
+
         :param config: string or JSON-serialized dict
-        :retuen: self 
+        :return: self
         """
         if not isinstance(config, dict):
             try:
@@ -181,6 +187,8 @@ class Perkin(Detector):
     Perkin detector
 
     """
+    MANUFACTURER = "Perkin Elmer"
+
     aliases = ["Perkin detector", "Perkin Elmer"]
     force_pixel = True
     MAX_SHAPE = (4096, 4096)
@@ -201,7 +209,7 @@ class Perkin(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -228,6 +236,8 @@ class Aarhus(Detector):
     TODO: update cython code for 3d detectors
     use expand2d instead of outer product with ones
     """
+    MANUFACTURER = "Aarhus University"
+
     MAX_SHAPE = (1000, 16000)
     IS_FLAT = False
     force_pixel = True
@@ -239,7 +249,7 @@ class Aarhus(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -247,15 +257,15 @@ class Aarhus(Detector):
                             ("radius", self.radius)))
 
     def set_config(self, config):
-        """Sets the configuration of the detector.        
-        
+        """Sets the configuration of the detector.
+
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
         keys in that dictionary are:  pixel1, pixel2, radius
-       
+
         :param config: string or JSON-serialized dict
-        :retuen: self 
+        :return: self
         """
         if not isinstance(config, dict):
             try:
@@ -417,6 +427,8 @@ class Pixium(Detector):
     High energy X ray diffraction using the Pixium 4700 flat panel detector
     J E Daniels, M Drakopoulos, et al.; Journal of Synchrotron Radiation 16(Pt 4):463-8 · August 2009
     """
+    MANUFACTURER = "Thales Electronics"
+
     aliases = ["Pixium 4700 detector", "Thales Electronics"]
     force_pixel = True
     MAX_SHAPE = (1910, 2480)
@@ -437,7 +449,7 @@ class Pixium(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -449,6 +461,8 @@ class Apex2(Detector):
 
     Actually a derivative from the Fairchild detector with higher binning
     """
+    MANUFACTURER = "Bruker"
+
     aliases = ["ApexII", "Bruker"]
     force_pixel = True
     MAX_SHAPE = (1024, 1024)
@@ -469,7 +483,7 @@ class Apex2(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -489,7 +503,7 @@ class RaspberryPi5M(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),
@@ -509,7 +523,7 @@ class RaspberryPi8M(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-        
+
         :return: dict with param for serialization
         """
         return OrderedDict((("pixel1", self._pixel1),

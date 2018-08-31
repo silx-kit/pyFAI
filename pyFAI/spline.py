@@ -36,7 +36,7 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "03/07/2018"
+__date__ = "13/08/2018"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -254,11 +254,8 @@ class Spline(object):
         """
         Compares the current spline distortion with a reference
 
-        :param ref: another spline file
-        :type ref: Spline instance
-        :param verbose: print or not pylab plots
-        :type verbose: bool
-
+        :param Spline ref: another spline file
+        :param bool verbose: print or not pylab plots
         :return: True or False depending if the splines are the same or not
         :rtype: bool
         """
@@ -290,8 +287,10 @@ class Spline(object):
             pylab.plot(histYdr, histY[0], label="error in Y")
             pylab.legend()
             pylab.show()
-        return (fFWHM_X < 0.05) and (fFWHM_Y < 0.05) and (maxErrX < 0.5) and (maxErrY < 0.5) \
-                and (deltax.mean() < 0.01) and(deltay.mean() < 0.01) and (histXmax < 0.01) and (histYmax < 0.01)
+        return ((fFWHM_X < 0.05) and (fFWHM_Y < 0.05) and
+                (maxErrX < 0.5) and (maxErrY < 0.5) and
+                (deltax.mean() < 0.01) and(deltay.mean() < 0.01) and
+                (histXmax < 0.01) and (histYmax < 0.01))
 
     def spline2array(self, timing=False):
         """
@@ -641,6 +640,14 @@ class Spline(object):
             logger.info("Time for the generation of the distorted spline: %.3f sec", time.time() - startTime)
         return tiltedSpline
 
+    def getDetectorSize(self):
+        """Returns the size of the detector.
+
+        :rtype: Tuple[int,int]
+        :return: Size y then x
+        """
+        return int(self.ymax - self.ymin), int(self.xmax - self.xmin)
+
     def setPixelSize(self, pixelSize):
         """
         Sets the size of the pixel from a 2-tuple of floats expressed
@@ -705,9 +712,9 @@ class Spline(object):
 
     def flipud(self, fit=True):
         """Flip the spline upside-down
-        
-        :param fit: set to False to disable fitting of the coef, 
-                    or provide a value for the smoothing factor 
+
+        :param bool fit: set to False to disable fitting of the coef,
+                    or provide a value for the smoothing factor
         :return: new spline object
         """
         self.spline2array()
@@ -729,9 +736,9 @@ class Spline(object):
 
     def fliplr(self, fit=True):
         """Flip the spline horizontally
-        
-        :param fit: set to False to disable fitting of the coef, 
-            or provide a value for the smoothing factor 
+
+        :param bool fit: set to False to disable fitting of the coef,
+            or provide a value for the smoothing factor
         :return: new spline object
         """
         self.spline2array()
@@ -753,9 +760,9 @@ class Spline(object):
 
     def fliplrud(self, fit=True):
         """Flip the spline upside-down and horizontally
-        
-        :param fit: set to False to disable fitting of the coef, 
-            or provide a value for the smoothing factor         
+
+        :param bool fit: set to False to disable fitting of the coef,
+            or provide a value for the smoothing factor
         :return: new spline object
         """
         self.spline2array()

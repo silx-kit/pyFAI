@@ -27,36 +27,37 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/03/2017"
+__date__ = "24/08/2018"
 
 from silx.gui import qt
-import pyFAI.calibrant
-from .model.CalibrantModel import CalibrantModel
+import pyFAI.detectors
+from ..calibration.model.DetectorModel import DetectorModel
 
 
-class CalibrantSelector(qt.QComboBox):
+class DetectorManufacturer(qt.QComboBox):
 
     def __init__(self, parent=None):
-        super(CalibrantSelector, self).__init__(parent)
+        super(DetectorManufacturer, self).__init__(parent)
 
-        # feed the widget with default calibrants
-        items = pyFAI.calibrant.CALIBRANT_FACTORY.items()
-        items = sorted(items)
-        for calibrantName, calibrant in items:
-            self.addItem(calibrantName, calibrant)
+        # feed the widget with default manufacturers
+        manufacturers = set([])
+        for detector in pyFAI.detectors.ALL_DETECTORS.values():
+            manufacturers.add(detector.MANUFACTURER)
+
+        hasOther = None in manufacturers
+        manufacturers.remove(None)
+        manufacturers = sorted(list(manufacturers))
+
+        for manufacturer in manufacturers:
+            self.addItem(manufacturer, manufacturer)
+        if hasOther:
+            self.addItem("Others", None)
+        self.insertItem(0, "Any", "*")
+        self.insertSeparator(1)
 
         self.__model = None
-        self.setModel(CalibrantModel())
-        self.currentIndexChanged[int].connect(self.__currentIndexChanged)
-
-    def __currentIndexChanged(self, index):
-        model = self.model()
-        if model is None:
-            return
-        item = self.itemData(index)
-        old = self.blockSignals(True)
-        model.setCalibrant(item)
-        self.blockSignals(old)
+        self.setModel(DetectorModel())
+        self.setCurrentIndex(0)
 
     def setModel(self, model):
         if self.__model is not None:
@@ -66,25 +67,37 @@ class CalibrantSelector(qt.QComboBox):
             self.__model.changed.connect(self.__modelChanged)
         self.__modelChanged()
 
-    def findCalibrant(self, calibrant):
-        """Returns the first index containing the requested calibrant.
+    def currentManufacturer(self):
+        index = self.currentIndex()
+        if index == -1:
+            return "*"
+        manufacturer = self.itemData(index)
+        return manufacturer
+
+    def findManufacturer(self, manufacturer):
+        """Returns the first index containing the requested manufacturer.
         Else return -1"""
         for index in range(self.count()):
             item = self.itemData(index)
-            if item == calibrant:
+            if item == "*":
+                continue
+            if item is manufacturer:
                 return index
+        # TODO we are supposed to return other group
+        # or create a new manufacturer
         return -1
 
     def __modelChanged(self):
-        value = self.__model.calibrant()
+        value = self.__model.detector()
         if value is None:
             self.setCurrentIndex(-1)
         else:
+            manufacturer = value.MANUFACTURER
             index = self.currentIndex()
             item = self.itemData(index)
-            if item != value:
+            if item != manufacturer:
                 # findData is not working
-                index = self.findCalibrant(value)
+                index = self.findManufacturer(manufacturer)
                 self.setCurrentIndex(index)
 
     def model(self):

@@ -22,28 +22,8 @@
 # THE SOFTWARE.
 #
 # ###########################################################################*/
+"""Module containing generic widgets"""
 
-from __future__ import absolute_import
-
-__authors__ = ["V. Valls"]
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "18/09/2017"
-
-from .DataModelAdaptor import DataModelAdaptor
-from pyFAI import units
-
-
-class WavelengthToEnergyAdaptor(DataModelAdaptor):
-    """Adapte a wavelength in angstrom to energy in KeV ."""
-
-    def fromModel(self, value):
-        """Returns energy in KeV from wavelength in angstrom"""
-        if value is None:
-            return None
-        return units.hc / value
-
-    def toModel(self, value):
-        """Returns wavelength in angstrom from energy in KeV"""
-        if value is None:
-            return None
-        return units.hc / value
+__date__ = "13/08/2018"

@@ -27,10 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/03/2018"
+__date__ = "27/08/2018"
 
 import logging
 import numpy
+import collections
+
+from silx.image import marchingsquares
 import pyFAI.utils
 from ...geometryRefinement import GeometryRefinement
 from ..peak_picker import PeakPicker
@@ -52,7 +55,8 @@ class RingCalibration(object):
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
         self.__fixed = fixed
-        self.__residual = None
+        self.__rms = None
+        self.__previousRms = None
         self.__peakResidual = None
 
     def __initgeoRef(self):
@@ -81,14 +85,19 @@ class RingCalibration(object):
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
 
+        if len(peaks) == 0:
+            self.__peakPicker = None
+            self.__geoRef = None
+            return
+
         geoRef = GeometryRefinement(data=peaks,
                                     wavelength=self.__wavelength,
                                     detector=self.__detector,
                                     calibrant=self.__calibrant,
                                     **defaults)
-        self.__residual = geoRef.refine2(1000000, fix=fixed)
-        self.__peakResidual = self.__residual
-        self.__previousResidual = None
+        self.__rms = geoRef.refine2(1000000, fix=fixed)
+        self.__peakResidual = self.__rms
+        self.__previousRms = None
 
         peakPicker = PeakPicker(data=self.__image,
                                 calibrant=self.__calibrant,
@@ -110,11 +119,17 @@ class RingCalibration(object):
         if wavelength is not None:
             self.__wavelength = wavelength
 
-    def __computeResidual(self):
+    def getPyfaiGeometry(self):
+        return self.__geoRef
+
+    def __computeRms(self):
+        if self.__geoRef is None:
+            return None
         if "wavelength" in self.__fixed:
-            return self.__geoRef.chi2() / self.__geoRef.data.shape[0]
+            chi2 = self.__geoRef.chi2()
         else:
-            return self.__geoRef.chi2_wavelength() / self.__geoRef.data.shape[0]
+            chi2 = self.__geoRef.chi2_wavelength()
+        return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
 
     def __refine(self, maxiter=1000000, fix=None):
         if "wavelength" in self.__fixed:
@@ -129,7 +144,7 @@ class RingCalibration(object):
         self.__calibrant.set_wavelength(self.__wavelength)
         self.__peakPicker.points.setWavelength_change2th(self.__wavelength)
 
-        self.__previousResidual = self.getResidual()
+        self.__previousRms = self.getRms()
         previous_residual = float("+inf")
 
         print("Initial residual: %s" % previous_residual)
@@ -141,63 +156,84 @@ class RingCalibration(object):
                 break
             previous_residual = residual
 
-        self.__residual = residual
+        self.__rms = residual
         print("Final residual: %s (after %s iterations)" % (residual, count))
 
         self.__geoRef.del_ttha()
         self.__geoRef.del_dssa()
         self.__geoRef.del_chia()
 
-    def getResidual(self):
-        """Returns the residual computed from the current fitting."""
-        if self.__residual is None:
-            self.__residual = self.__computeResidual()
-        return self.__residual
+    def getRms(self):
+        """Returns the RMS (root mean square) computed from the current fitting.
 
-    def getPreviousResidual(self):
-        """Returns the previous residual computed before the last fitting."""
-        return self.__previousResidual
+        The unit is the radian.
+        """
+        if self.__rms is None:
+            self.__rms = self.__computeRms()
+        return self.__rms
+
+    def getPreviousRms(self):
+        """Returns the previous RMS computed before the last fitting.
+
+        The unit is the radian.
+        """
+        return self.__previousRms
 
     def getPeakResidual(self):
         """Returns the residual computed from the peak selection."""
         return self.__peakResidual
 
+    def getTwoThetaArray(self):
+        """
+        Returns the 2th array corresponding to the calibrated image
+        """
+        # 2th array is cached insided
+        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+        return tth
+
     def getRings(self):
         """
-        Overlay a contour-plot
+        Returns polygons of rings
+
+        :returns: List of ring angle with the associated polygon
+        :rtype: List[Tuple[float,List[numpy.ndarray]]]
         """
         tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
 
+        result = collections.OrderedDict()
+
         tth_max = tth.max()
         tth_min = tth.min()
-        if self.__calibrant:
-            angles = [i for i in self.__calibrant.get_2th()
-                      if (i is not None) and (i >= tth_min) and (i <= tth_max)]
-            if len(angles) == 0:
-                return []
-        else:
-            return []
+        if not self.__calibrant:
+            return result
 
-        # FIXME use documentaed function
-        import matplotlib._cntr
-        x, y = numpy.mgrid[:tth.shape[0], :tth.shape[1]]
-        contour = matplotlib._cntr.Cntr(x, y, tth)
+        angles = [i for i in self.__calibrant.get_2th()
+                  if (i is not None) and (i >= tth_min) and (i <= tth_max)]
+        if len(angles) == 0:
+            return result
 
+        ms = marchingsquares.MarchingSquaresMergeImpl(tth, self.__mask, use_minmax_cache=True)
         rings = []
         for angle in angles:
-            res = contour.trace(angle)
-            nseg = len(res) // 2
-            segments, _codes = res[:nseg], res[nseg:]
-            rings.append(segments)
+            polygons = ms.find_contours(angle)
+            rings.append((angle, polygons))
 
         return rings
 
     def getBeamCenter(self):
         try:
             f2d = self.__geoRef.getFit2D()
-            return f2d["centerY"], f2d["centerX"]
+            x, y = f2d["centerX"], f2d["centerY"]
         except TypeError:
             return None
+
+        # Check if this pixel really contains the beam center
+        # If the detector contains gap, it is not always the case
+        ax, ay = numpy.array([x]), numpy.array([y])
+        tth = self.__geoRef.tth(ay, ax)[0]
+        if tth >= 0.001:
+            return None
+        return y, x
 
     def getPoni(self):
         """"Returns the PONI coord in image coordinate.
@@ -216,17 +252,26 @@ class RingCalibration(object):
 
     def toGeometryModel(self, model):
         model.lockSignals()
-        model.wavelength().setValue(self.__geoRef.wavelength * 1e10)
-        model.distance().setValue(self.__geoRef.dist)
-        model.poni1().setValue(self.__geoRef.poni1)
-        model.poni2().setValue(self.__geoRef.poni2)
-        model.rotation1().setValue(self.__geoRef.rot1)
-        model.rotation2().setValue(self.__geoRef.rot2)
-        model.rotation3().setValue(self.__geoRef.rot3)
+        if self.__geoRef is None:
+            model.wavelength().setValue(None)
+            model.distance().setValue(None)
+            model.poni1().setValue(None)
+            model.poni2().setValue(None)
+            model.rotation1().setValue(None)
+            model.rotation2().setValue(None)
+            model.rotation3().setValue(None)
+        else:
+            model.wavelength().setValue(self.__geoRef.wavelength)
+            model.distance().setValue(self.__geoRef.dist)
+            model.poni1().setValue(self.__geoRef.poni1)
+            model.poni2().setValue(self.__geoRef.poni2)
+            model.rotation1().setValue(self.__geoRef.rot1)
+            model.rotation2().setValue(self.__geoRef.rot2)
+            model.rotation3().setValue(self.__geoRef.rot3)
         model.unlockSignals()
 
     def fromGeometryModel(self, model, resetResidual=True):
-        wavelength = model.wavelength().value() * 1e-10
+        wavelength = model.wavelength().value()
         self.__calibrant.setWavelength_change2th(wavelength)
         self.__geoRef.wavelength = wavelength
         self.__geoRef.dist = model.distance().value()
@@ -236,8 +281,8 @@ class RingCalibration(object):
         self.__geoRef.rot2 = model.rotation2().value()
         self.__geoRef.rot3 = model.rotation3().value()
         if resetResidual:
-            self.__previousResidual = None
-            self.__residual = None
+            self.__previousRms = None
+            self.__rms = None
 
     def fromGeometryConstriansModel(self, contraintsModel):
         # FIXME take care of range values
