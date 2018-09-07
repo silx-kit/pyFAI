@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/02/2018"
+__date__ = "07/09/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -844,11 +844,19 @@ class Nexus(object):
         if not h5py:
             logger.error("h5py module missing: NeXus not supported")
             raise RuntimeError("H5py module is missing")
-        if os.path.exists(self.filename) and self.mode == "r":
+        pre_existing = os.path.exists(self.filename)
+        if pre_existing and self.mode == "r":
             self.h5 = h5py.File(self.filename, mode=self.mode)
         else:
             self.h5 = h5py.File(self.filename)
         self.to_close = []
+
+        if not pre_existing:
+            self.h5.attrs["NX_class"] = "NXroot"
+            self.h5.attrs["file_time"] = get_isotime()
+            self.h5.attrs["file_name"] = self.filename
+            self.h5.attrs["HDF5_Version"] = h5py.version.hdf5_version
+            self.h5.attrs["creator"] = self.__class__.__name__
 
     def close(self):
         """
@@ -857,6 +865,7 @@ class Nexus(object):
         end_time = get_isotime()
         for entry in self.to_close:
             entry["end_time"] = end_time
+        self.h5.attrs["file_update_time"] = get_isotime()
         self.h5.close()
 
     # Context manager for "with" statement compatibility
@@ -929,6 +938,7 @@ class Nexus(object):
             nb_entries = len(self.get_entries())
             entry = "%s_%04i" % (entry, nb_entries)
         entry_grp = self.h5.require_group(entry)
+        self.h5.attrs["default"] = entry
         entry_grp.attrs["NX_class"] = numpy.string_("NXentry")
         entry_grp["title"] = numpy.string_(title)
         entry_grp["program_name"] = numpy.string_(program_name)
