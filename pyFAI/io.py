@@ -862,10 +862,11 @@ class Nexus(object):
         """
         close the filename and update all entries
         """
-        end_time = get_isotime()
-        for entry in self.to_close:
-            entry["end_time"] = end_time
-        self.h5.attrs["file_update_time"] = get_isotime()
+        if self.mode!="r":
+            end_time = get_isotime()
+            for entry in self.to_close:
+                entry["end_time"] = end_time
+            self.h5.attrs["file_update_time"] = get_isotime()
         self.h5.close()
 
     # Context manager for "with" statement compatibility
