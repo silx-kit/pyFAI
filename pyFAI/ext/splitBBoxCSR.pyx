@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/04/2018"
+__date__ = "07/09/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -490,7 +490,8 @@ class HistoBBox1d(object):
                   flat=None,
                   solidAngle=None,
                   polarization=None,
-                  double normalization_factor=1.0):
+                  double normalization_factor=1.0,
+                  int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -509,6 +510,7 @@ class HistoBBox1d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
+        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: 4-tuple of ndarrays
 
@@ -609,7 +611,7 @@ class HistoBBox1d(object):
                 data = cdata[idx]
                 if do_dummy and data == cdummy:
                     continue
-                acc_data = acc_data +coef * data
+                acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
             sum_data[i] += acc_data
             sum_count[i] += acc_count
@@ -1213,7 +1215,8 @@ class HistoBBox2d(object):
                   dark=None, flat=None,
                   solidAngle=None,
                   polarization=None,
-                  double normalization_factor=1.0):
+                  double normalization_factor=1.0,
+                  int coef_power=1):
         """
         Actually perform the 2D integration which in this case looks more like a matrix-vector product
 
@@ -1232,6 +1235,7 @@ class HistoBBox2d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
+        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
         :return:  I(2d), bin_centers0(1d), bin_centers1(1d), weighted histogram(2d), unweighted histogram (2d)
         :rtype: 5-tuple of ndarrays
 
@@ -1332,7 +1336,7 @@ class HistoBBox2d(object):
                 if do_dummy and (data == cdummy):
                     continue
 
-                acc_data = acc_data + coef * data
+                acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
             sum_data[i] += acc_data
             sum_count[i] += acc_count
