@@ -1,8 +1,7 @@
 {
-  "content": "Goniometer calibration v1.1",
+  "content": "Goniometer calibration v2",
   "detector": "Pilatus 6M",
-  "pixel1": 0.000172,
-  "pixel2": 0.000172,
+  "detector_config": {},
   "wavelength": 9.72386e-11,
   "param": [
     -0.0011879346168350165,

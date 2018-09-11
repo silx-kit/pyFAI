@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/04/2018"
+__date__ = "22/08/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -47,6 +47,7 @@ import json
 import numpy
 from collections import OrderedDict, namedtuple
 from scipy.optimize import minimize
+from silx.image import marchingsquares
 from .massif import Massif
 from .control_points import ControlPoints
 from .detectors import detector_factory, Detector
@@ -55,7 +56,6 @@ from .geometryRefinement import GeometryRefinement
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .utils import StringTypes
 from .multi_geometry import MultiGeometry
-from .ext.marchingsquares import isocontour
 from .units import CONST_hc, CONST_q
 
 logger = logging.getLogger(__name__)
@@ -70,19 +70,18 @@ except ImportError:
 PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])
 
 
-
 class BaseTransformation(object):
     """This class, once instanciated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it
     into a set of parameters compatible with pyFAI, i.e. a tuple with:
     (dist, poni1, poni2, rot1, rot2, rot3)
-    
+
     This class relies on a user provided function which does the work.
     """
     def __init__(self, funct, param_names, pos_names=None):
         """Constructor of the class
-        
-        :param funct: function which takes as parameter the param_names and the pos_name 
+
+        :param funct: function which takes as parameter the param_names and the pos_name
         :param param_names: list of names of the parameters used in the model
         :param pos_names: list of motor names for gonio with >1 degree of freedom
         """
@@ -142,7 +141,7 @@ class GeometryTransformation(object):
                  param_names, pos_names=None, constants=None,
                  content=None):
         """Constructor of the class
-        
+
         :param dist_expr: formula (as string) providing with the dist
         :param poni1_expr: formula (as string) providing with the poni1
         :param poni2_expr: formula (as string) providing with the poni2
@@ -367,7 +366,9 @@ class Goniometer(object):
     it may include translation in addition to rotations
     """
 
-    file_version = "Goniometer calibration v1.1"
+    _file_version_1_1 = "Goniometer calibration v1.1"
+
+    file_version = "Goniometer calibration v2"
 
     def __init__(self, param, trans_function, detector="Detector",
                  wavelength=None, param_names=None, pos_names=None):
@@ -435,7 +436,10 @@ class Goniometer(object):
         :return: Ordered dictionary
         """
         dico = OrderedDict([("content", self.file_version)])
-        dico.update(self.detector.getPyFAI())
+
+        dico["detector"] = self.detector.name
+        dico["detector_config"] = self.detector.get_config()
+
         if self.wavelength:
             dico["wavelength"] = self.wavelength
         dico["param"] = tuple(self.param)
@@ -463,6 +467,26 @@ class Goniometer(object):
     write = save
 
     @classmethod
+    def _get_detector_from_dict(cls, dico):
+        file_version = dico["content"]
+        if file_version == cls._file_version_1_1:
+            # v1.1
+            # Try to extract useful keys
+            detector = Detector.factory(dico["detector"])
+            # This is not accurate, some keys could be missing
+            keys = detector.get_config().keys()
+            config = {}
+            for k in keys:
+                if k in dico:
+                    config[k] = dico[k]
+                    del dico[k]
+            detector = Detector.factory(dico["detector"], config)
+        else:
+            # v2
+            detector = Detector.factory(dico["detector"], dico.get("detector_config", None))
+        return detector
+
+    @classmethod
     def sload(cls, filename):
         """Class method for instanciating a Goniometer object from a JSON file
 
@@ -472,9 +496,10 @@ class Goniometer(object):
 
         with open(filename) as f:
             dico = json.load(f)
-        assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
         assert "trans_function" in dico, "No translation function defined in JSON file"
-        detector = Detector.from_dict(dico)
+        file_version = dico["content"]
+        assert file_version in [cls.file_version, cls._file_version_1_1], "JSON file contains a goniometer calibration"
+        detector = cls._get_detector_from_dict(dico)
         tansfun = dico.get("trans_function", {})
         if "content" in tansfun:
             content = tansfun.pop("content")
@@ -544,6 +569,9 @@ class SingleGeometry(object):
             dict_geo["data"] = self.control_points.getList()
         if self.calibrant is not None:
             dict_geo["calibrant"] = self.calibrant
+        if "max_shape" in dict_geo:
+            # not used in constructor
+            dict_geo.pop("max_shape")
         self.geometry_refinement = GeometryRefinement(**dict_geo)
         if self.detector is None:
             self.detector = self.geometry_refinement.detector
@@ -581,6 +609,10 @@ class SingleGeometry(object):
         cp = ControlPoints(calibrant=self.calibrant)
         if max_rings is None:
             max_rings = tth.size
+
+        ms = marchingsquares.MarchingSquaresMergeImpl(ttha,
+                                                      mask=self.geometry_refinement.detector.mask,
+                                                      use_minmax_cache=True)
         for i in range(tth.size):
             if rings >= max_rings:
                 break
@@ -601,10 +633,10 @@ class SingleGeometry(object):
                     mask2 = numpy.logical_and(self.image > upper_limit, mask)
                     size2 = mask2.sum()
                 # length of the arc:
-                points = isocontour(ttha, tth[i]).round().astype(int)
-                seeds = set((i[1], i[0]) for i in points if mask2[i[1], i[0]])
+                points = ms.find_pixels(tth[i])
+                seeds = set((i[0], i[1]) for i in points if mask2[i[0], i[1]])
                 # max number of points: 360 points for a full circle
-                azimuthal = chia[points[:, 1].clip(0, shape[0]), points[:, 0].clip(0, shape[1])]
+                azimuthal = chia[points[:, 0].clip(0, shape[0]), points[:, 1].clip(0, shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
                 keep = int(nb_deg_azim * pts_per_deg)
                 if keep == 0:
@@ -797,7 +829,7 @@ class GoniometerRefinement(Goniometer):
             dico = json.load(f)
         assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
         assert "trans_function" in dico, "No translation function defined in JSON file"
-        detector = Detector.from_dict(dico)
+        detector = cls._get_detector_from_dict(dico)
         tansfun = dico.get("trans_function", {})
         if "content" in tansfun:
             content = tansfun.pop("content")

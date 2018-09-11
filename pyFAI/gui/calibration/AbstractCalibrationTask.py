@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/03/2017"
+__date__ = "14/08/2018"
 
 from silx.gui import qt
 
@@ -57,6 +57,9 @@ class AbstractCalibrationTask(qt.QWidget):
 
     def model(self):
         return self.__model
+
+    def aboutToClose(self):
+        pass
 
     def setModel(self, model):
         self.__model = model

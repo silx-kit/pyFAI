@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2018"
+__date__ = "13/08/2018"
 __status__ = "production"
 
 import os
@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 import math
 import numpy
+from silx.image import marchingsquares
 from scipy.stats import linregress
 import fabio
 
@@ -85,8 +86,6 @@ except ImportError:
     logger.debug("Backtrace", exc_info=True)
     from scipy.ndimage import morphology
     pyFAI_morphology = False
-
-from ..ext.marchingsquares import isocontour
 
 
 def get_detector(detector, datafiles=None):
@@ -660,6 +659,9 @@ class AbstractCalibration(object):
         self.peakPicker.sync_init()
         if self.max_rings is None:
             self.max_rings = tth.size
+
+        ms = marchingsquares.MarchingSquaresMergeImpl(ttha, self.mask, use_minmax_cache=True)
+
         for i in range(tth.size):
             if rings >= self.max_rings:
                 break
@@ -683,10 +685,10 @@ class AbstractCalibration(object):
                     mask2 = numpy.logical_and(self.peakPicker.data > upper_limit, mask)
                     size2 = mask2.sum()
                 # length of the arc:
-                points = isocontour(ttha, tth[i]).round().astype(int)
-                seeds = set((i[1], i[0]) for i in points if mask2[i[1], i[0]])
+                points = ms.find_pixels(tth[i])
+                seeds = set((i[0], i[1]) for i in points if mask2[i[0], i[1]])
                 # max number of points: 360 points for a full circle
-                azimuthal = chia[points[:, 1].clip(0, self.peakPicker.data.shape[0]), points[:, 0].clip(0, self.peakPicker.data.shape[1])]
+                azimuthal = chia[points[:, 0].clip(0, self.peakPicker.data.shape[0]), points[:, 1].clip(0, self.peakPicker.data.shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
                 keep = int(nb_deg_azim * pts_per_deg)
                 if keep == 0:

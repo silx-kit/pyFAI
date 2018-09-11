@@ -1,8 +1,8 @@
 numpy
 cython
 fabio
-scipy      
-matplotlib 
+scipy
+matplotlib
 numexpr
 h5py
 silx

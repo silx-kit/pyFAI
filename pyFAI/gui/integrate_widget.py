@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "07/08/2018"
 __status__ = "development"
 
 import logging
@@ -640,7 +640,10 @@ class AIWidget(qt.QWidget):
         self.rot3.setText(str_(ai.rot3))
         self.splineFile.setText(str_(ai.detector.splineFile))
         self.wavelength.setText(str_(ai._wavelength))
-        name = ai.detector.name.lower()
+
+        name = ai.detector.name.lower().replace(" ", "_")
+        if name not in self.all_detectors:
+            name = ai.detector.name.lower().replace(" ", "")
         if name in self.all_detectors:
             self.detector.setCurrentIndex(self.all_detectors.index(name))
         else:

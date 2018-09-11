@@ -36,11 +36,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "07/08/2018"
 __status__ = "production"
 
 import functools
 import numpy
+import json
 from ._common import Detector
 from pyFAI.utils import mathutil
 
@@ -59,6 +60,8 @@ class ImXPadS10(Detector):
     """
     ImXPad detector: ImXPad s10 detector with 1x1modules
     """
+    MANUFACTURER = "ImXPad"
+
     MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
     MAX_SHAPE = (120, 80)  # max size of the detector
     PIXEL_SIZE = (130e-6, 130e-6)
@@ -217,6 +220,45 @@ class ImXPadS10(Detector):
             p1 = numpy.interp(d1, numpy.arange(self.max_shape[0] + 1), edges1, edges1[0], edges1[-1])
             p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+
+        :return: dict with param for serialization
+        """
+        dico = {}
+        if ((self.max_shape is not None) and
+                ("MAX_SHAPE" in dir(self.__class__)) and
+                (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
+            dico["max_shape"] = self.max_shape
+        if ((self.module_size is not None) and
+                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
+            dico["module_size"] = self.module_size
+        return dico
+
+    def set_config(self, config):
+        """set the config of the detector
+
+        For Xpad detector, possible keys are: max_shape, module_size
+
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+
+        # pixel size is enforced by the detector itself
+        if "max_shape" in config:
+            self.max_shape = tuple(config["max_shape"])
+        module_size = config.get("module_size")
+        if module_size is not None:
+            self.module_size = tuple(module_size)
+        return self
 
 
 class ImXPadS70(ImXPadS10):
