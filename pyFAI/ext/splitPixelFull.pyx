@@ -33,7 +33,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/04/2018"
+__date__ = "19/09/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -247,9 +247,9 @@ def fullSplit1D(numpy.ndarray pos not None,
     # pos1_max = pos1_maxin * 1.00001
     dpos = (pos0_max - pos0_min) / (<double> (bins))
 
-    outPos = numpy.linspace(pos0_min + 0.5 * dpos, 
-                            pos0_max - 0.5 * dpos, 
-                            bins)
+    bin_centers = numpy.linspace(pos0_min + 0.5 * dpos, 
+                                 pos0_max - 0.5 * dpos, 
+                                 bins)
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
@@ -381,7 +381,7 @@ def fullSplit1D(numpy.ndarray pos not None,
             else:
                 outMerge[i] = cdummy
 
-    return outPos, outMerge, outData, outCount
+    return bin_centers, outMerge, outData, outCount
 
 
 @cython.cdivision(True)

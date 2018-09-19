@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/04/2018"
+__date__ = "19/09/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -48,7 +48,7 @@ from libc.stdio cimport printf, fflush, stdout
 include "regrid_common.pxi"
 
 from ..utils import crc32
-
+from ..utils.decorators import deprecated
 
 cdef struct Function:
     float slope
@@ -222,9 +222,9 @@ class FullSplitCSR_1d(object):
         self.pos1Range = pos1Range
 
         self.calc_lut()
-        self.outPos = numpy.linspace(self.pos0_min + 0.5 * self.delta, 
-                                     self.pos0_max - 0.5 * self.delta, 
-                                     self.bins)
+        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta, 
+                                          self.pos0_max - 0.5 * self.delta, 
+                                          self.bins)
         self.lut_checksum = crc32(self.data)
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
@@ -566,8 +566,12 @@ class FullSplitCSR_1d(object):
                 outMerge[i] += <float> (sum_data / sum_count / normalization_factor)
             else:
                 outMerge[i] += cdummy
-        return self.outPos, outMerge, outData, outCount
+        return self.bin_centers, outMerge, outData, outCount
 
+    @property
+    @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
+    def outPos(self):
+        return self.bin_centers
 
 ################################################################################
 # Bidimensionnal regrouping
@@ -634,7 +638,12 @@ class FullSplitCSR_2d(object):
         self.pos1Range = pos1Range
 
         self.calc_lut()
-        # self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
+        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
+                                           self.pos0_max - 0.5 * self.delta0, 
+                                           bins0)
+        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
+                                           self.pos1_max - 0.5 * self.delta1, 
+                                           bins1)
         self.lut_checksum = crc32(self.data)
 
         self.unit = unit
@@ -1202,3 +1211,14 @@ class FullSplitCSR_2d(object):
                 outMerge[i] += cdummy
 
         return outMerge, outData, outCount
+    
+    @property
+    @deprecated(replacement="bin_centers0", since_version="0.16", only_once=True)
+    def outPos0(self):
+        return self.bin_centers0
+
+    @property
+    @deprecated(replacement="bin_centers1", since_version="0.16", only_once=True)
+    def outPos1(self):
+        return self.bin_centers1
+    
