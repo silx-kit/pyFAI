@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2017"
+__date__ = "27/09/2018"
 __status__ = "development"
 
 
@@ -44,8 +44,11 @@ class IntegrateResult(tuple):
     def __init__(self):
         self._method_called = None
         self._compute_engine = None
-        self._sum = None
-        self._count = None
+        self._sum_signal = None  # sum of signal
+        self._sum_variance = None  # sum of variance
+        self._sum_normalization = None  # sum of all normalization SA, pol, ...
+        self._count = None  # sum of counts, from signal/norm
+        self._count2 = None  # sum of counts squared, from variance
         self._unit = None
         self._has_mask_applied = None
         self._has_dark_correction = None
@@ -74,18 +77,63 @@ class IntegrateResult(tuple):
 
     @property
     def sum(self):
-        """Sum information
+        """Sum of all signal
 
         :rtype: numpy.ndarray
         """
-        return self._sum
+        return self._sum_signal
 
     def _set_sum(self, sum_):
-        """Set the sum information
+        """Set the sum_signal information
 
         :type count: numpy.ndarray
         """
-        self._sum = sum_
+        self._sum_signal = sum_
+
+    @property
+    def sum_signal(self):
+        """Sum_signal information
+
+        :rtype: numpy.ndarray
+        """
+        return self._sum_signal
+
+    def _set_sum_signal(self, sum_):
+        """Set the sum_signal information
+
+        :type count: numpy.ndarray
+        """
+        self._sum_signal = sum_
+
+    @property
+    def sum_variance(self):
+        """Sum of all variances information
+
+        :rtype: numpy.ndarray
+        """
+        return self._sum_variance
+
+    def _set_sum_variance(self, sum_):
+        """Set the sum of all variance information
+
+        :type count: numpy.ndarray
+        """
+        self._sum_variance = sum_
+
+    @property
+    def sum_normalization(self):
+        """Sum of all normalization information
+
+        :rtype: numpy.ndarray
+        """
+        return self._sum_normalization
+
+    def _set_sum_normalization(self, sum_):
+        """Set the sum of all normalization information
+
+        :type count: numpy.ndarray
+        """
+        self._sum_normalization = sum_
 
     @property
     def count(self):
