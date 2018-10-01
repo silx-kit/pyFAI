@@ -31,7 +31,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/04/2018"
+__date__ = "07/09/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -60,7 +60,8 @@ def histoBBox1d(numpy.ndarray weights not None,
                 solidangle=None,
                 polarization=None,
                 empty=None,
-                double normalization_factor=1.0):
+                double normalization_factor=1.0,
+                int coef_power=1):
 
     """
     Calculates histogram of pos0 (tth) weighted by weights
@@ -84,6 +85,7 @@ def histoBBox1d(numpy.ndarray weights not None,
     :param polarization: array (of float32) with polarization corrections
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
+    :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
 
     :return: 2theta, I, weighted histogram, unweighted histogram
     """
@@ -110,9 +112,9 @@ def histoBBox1d(numpy.ndarray weights not None,
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
     dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
     cdef:
-        numpy.ndarray[numpy.float64_t, ndim=1] sum_data = numpy.zeros(bins, dtype=numpy.float64)
-        numpy.ndarray[numpy.float64_t, ndim=1] sum_count = numpy.zeros(bins, dtype=numpy.float64)
-        numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
+        acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
+        acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
+        data_t[::1] out_merge = numpy.zeros(bins, dtype=data_d)
 
     if mask is not None:
         assert mask.size == size, "mask size"
@@ -229,32 +231,32 @@ def histoBBox1d(numpy.ndarray weights not None,
                 sum_data[bin0_min] += data
 
             else:
-                # we have pixel spliting.
+                # we have pixel splitting.
                 inv_area = 1.0 / (fbin0_max - fbin0_min)
 
                 delta_left = < float > (bin0_min + 1) - fbin0_min
                 delta_right = fbin0_max - (<float> bin0_max)
 
                 sum_count[bin0_min] += (inv_area * delta_left)
-                sum_data[bin0_min] += (data * inv_area * delta_left)
+                sum_data[bin0_min] += (data * (inv_area * delta_left) ** coef_power)
 
                 sum_count[bin0_max] += (inv_area * delta_right)
-                sum_data[bin0_max] += (data * inv_area * delta_right)
+                sum_data[bin0_max] += (data * (inv_area * delta_right) ** coef_power)
 
                 if bin0_min + 1 < bin0_max:
                     for idx in range(bin0_min + 1, bin0_max):
                         sum_count[idx] += inv_area
-                        sum_data[idx] += (data * inv_area)
+                        sum_data[idx] += data * (inv_area ** coef_power)
 
         for idx in range(bins):
                 if sum_count[idx] > epsilon:
-                    outMerge[idx] = sum_data[idx] / sum_count[idx] / normalization_factor
+                    out_merge[idx] = sum_data[idx] / sum_count[idx] / normalization_factor
                 else:
-                    outMerge[idx] = cdummy
+                    out_merge[idx] = cdummy
 
     bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
 
-    return bin_centers, outMerge, sum_data, sum_count
+    return bin_centers, numpy.asarray(out_merge), numpy.asarray(sum_data), numpy.asarray(sum_count)
 
 
 @cython.cdivision(True)
@@ -278,7 +280,8 @@ def histoBBox2d(weights not None,
                 bint allow_pos0_neg=0,
                 bint chiDiscAtPi=1,
                 empty=0.0,
-                double normalization_factor=1.0):
+                double normalization_factor=1.0,
+                int coef_power=1):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
@@ -303,6 +306,7 @@ def histoBBox2d(weights not None,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
+    :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
 
 
     :return: I, bin_centers0, bin_centers1, weighted histogram(2D), unweighted histogram (2D)
@@ -339,7 +343,7 @@ def histoBBox2d(weights not None,
         position_t[::1] cpos1_lower = numpy.empty(size, dtype=position_d)
         acc_t[:, ::1] sum_data = numpy.zeros((bins0, bins1), dtype=acc_d)
         acc_t[:, ::1] sum_count = numpy.zeros((bins0, bins1), dtype=acc_d)
-        data_t[:, ::1] outMerge = numpy.zeros((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_merge = numpy.zeros((bins0, bins1), dtype=data_d)
         mask_t[::1] cmask
 
         position_t c0, c1, d0, d1
@@ -501,13 +505,13 @@ def histoBBox2d(weights not None,
                     inv_area = 1.0 / (fbin1_max - fbin1_min)
 
                     sum_count[bin0_min, bin1_min] += inv_area * delta_down
-                    sum_data[bin0_min, bin1_min] += data * inv_area * delta_down
+                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_down) ** coef_power
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_up
-                    sum_data[bin0_min, bin1_max] += data * inv_area * delta_up
+                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_up) ** coef_power
                     for j in range(bin1_min + 1, bin1_max):
                         sum_count[bin0_min, j] += inv_area
-                        sum_data[bin0_min, j] += data * inv_area
+                        sum_data[bin0_min, j] += data * (inv_area) ** coef_power
 
             else:
                 # spread on 2 or more bins in dim 0
@@ -517,13 +521,13 @@ def histoBBox2d(weights not None,
                     
                     delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left
-                    sum_data[bin0_min, bin1_min] += data * inv_area * delta_left
+                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left) ** coef_power
                     delta_right = fbin0_max - (<acc_t> bin0_max)
                     sum_count[bin0_max, bin1_min] += inv_area * delta_right
-                    sum_data[bin0_max, bin1_min] += data * inv_area * delta_right
+                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right) ** coef_power
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area
-                            sum_data[i, bin1_min] += data * inv_area
+                            sum_data[i, bin1_min] += data * (inv_area) ** coef_power
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
                     inv_area = 1.0 / (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
@@ -534,41 +538,41 @@ def histoBBox2d(weights not None,
                     delta_up = fbin1_max - (<acc_t> bin1_max)
                                         
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
-                    sum_data[bin0_min, bin1_min] += data * inv_area * delta_left * delta_down
+                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left * delta_down) ** coef_power
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_left * delta_up
-                    sum_data[bin0_min, bin1_max] += data * inv_area * delta_left * delta_up
+                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_left * delta_up) ** coef_power
 
                     sum_count[bin0_max, bin1_min] += inv_area * delta_right * delta_down
-                    sum_data[bin0_max, bin1_min] += data * inv_area * delta_right * delta_down
+                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right * delta_down) ** coef_power
 
                     sum_count[bin0_max, bin1_max] += inv_area * delta_right * delta_up
-                    sum_data[bin0_max, bin1_max] += data * inv_area * delta_right * delta_up
+                    sum_data[bin0_max, bin1_max] += data * (inv_area * delta_right * delta_up) ** coef_power
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area * delta_down
-                            sum_data[i, bin1_min] += data * inv_area * delta_down
+                            sum_data[i, bin1_min] += data * (inv_area * delta_down) ** coef_power
                             for j in range(bin1_min + 1, bin1_max):
                                 sum_count[i, j] += inv_area
-                                sum_data[i, j] += data * inv_area
+                                sum_data[i, j] += data * (inv_area) ** coef_power
                             sum_count[i, bin1_max] += inv_area * delta_up
-                            sum_data[i, bin1_max] += data * inv_area * delta_up
+                            sum_data[i, bin1_max] += data * (inv_area * delta_up) ** coef_power
                     for j in range(bin1_min + 1, bin1_max):
                             sum_count[bin0_min, j] += inv_area * delta_left
-                            sum_data[bin0_min, j] += data * inv_area * delta_left
+                            sum_data[bin0_min, j] += data * (inv_area * delta_left) ** coef_power
 
                             sum_count[bin0_max, j] += inv_area * delta_right
-                            sum_data[bin0_max, j] += data * inv_area * delta_right
+                            sum_data[bin0_max, j] += data * (inv_area * delta_right) ** coef_power
 
         for i in range(bins0):
             for j in range(bins1):
                 if sum_count[i, j] > epsilon:
-                    outMerge[i, j] = sum_data[i, j] / sum_count[i, j] / normalization_factor
+                    out_merge[i, j] = sum_data[i, j] / sum_count[i, j] / normalization_factor
                 else:
-                    outMerge[i, j] = cdummy
+                    out_merge[i, j] = cdummy
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-    return (numpy.asarray(outMerge).T,
+    return (numpy.asarray(out_merge).T,
             bin_centers0,
             bin_centers1,
             numpy.asarray(sum_data).T, 

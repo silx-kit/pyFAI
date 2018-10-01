@@ -33,7 +33,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/04/2018"
+__date__ = "28/09/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -117,7 +117,8 @@ def fullSplit1D(numpy.ndarray pos not None,
                 solidangle=None,
                 polarization=None,
                 float empty=0.0,
-                double normalization_factor=1.0
+                double normalization_factor=1.0,
+                int coef_power=1
                 ):
     """
     Calculates histogram of pos weighted by weights
@@ -140,6 +141,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     :param solidangle: array (of float64) with flat image
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
+    :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
 
     :return: 2theta, I, weighted histogram, unweighted histogram
     """
@@ -162,7 +164,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         acc_t[::1] buffer = numpy.zeros(bins, dtype=acc_d)
 
         data_t cdummy = 0, cddummy = 0, data = 0
-        position_t deltaR = 0, deltaL = 0, one_over_area = 0
+        position_t delta_right = 0, delta_left = 0, inv_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
         position_t area_pixel = 0, sum_area = 0, sub_area = 0, dpos = 0, fbin0_min = 0, fbin0_max = 0
         position_t a0 = 0, b0 = 0, c0 = 0, d0 = 0, max0 = 0, min0 = 0, a1 = 0, b1 = 0, c1 = 0, d1 = 0, max1 = 0, min1 = 0
@@ -309,7 +311,7 @@ def fullSplit1D(numpy.ndarray pos not None,
                 bin0_min = max(0, bin0_min)
                 bin0_max = min(bins, bin0_max + 1)
                 area_pixel = area4(a0, a1, b0, b1, c0, c1, d0, d1)
-                one_over_area = 1.0 / area_pixel
+                inv_area = 1.0 / area_pixel
 
                 integrate(buffer, bins, a0, a1, b0, b1)  # A-B
                 integrate(buffer, bins, b0, b1, c0, c1)  # B-C
@@ -321,9 +323,9 @@ def fullSplit1D(numpy.ndarray pos not None,
                 for i in range(bin0_min, bin0_max):
                     sub_area = fabs(buffer[i])
                     sum_area += sub_area
-                    sub_area = sub_area * one_over_area
+                    sub_area = sub_area * inv_area
                     sum_count[i] += sub_area
-                    sum_data[i] += sub_area * data
+                    sum_data[i] += (sub_area ** coef_power) * data
 
                 # Check the total area:
                 if fabs(sum_area - area_pixel) / area_pixel > 1e-6 and bin0_min != 0 and bin0_max != bins:
@@ -361,7 +363,8 @@ def fullSplit2D(numpy.ndarray pos not None,
                 bint allow_pos0_neg=0,
                 bint chiDiscAtPi=1,
                 float empty=0.0,
-                double normalization_factor=1.0
+                double normalization_factor=1.0,
+                int coef_power=1
                 ):
     """
     Calculate 2D histogram of pos weighted by weights
@@ -385,6 +388,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
+    :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
 
     :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
@@ -415,7 +419,7 @@ def fullSplit2D(numpy.ndarray pos not None,
         data_t[:] cflat, cdark, cpolarization, csolidangle
         bint check_mask = False, do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
         data_t cdummy = 0, cddummy = 0, data = 0
-        position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, deltaR = 0, deltaL = 0, deltaU = 0, deltaD = 0, one_over_area = 0
+        position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, delta_right = 0, delta_left = 0, delta_up = 0, delta_down = 0, inv_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
         position_t area_pixel = 0, fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
         position_t a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
@@ -563,71 +567,71 @@ def fullSplit2D(numpy.ndarray pos not None,
                 else:
                     # spread on more than 2 bins
                     area_pixel = fbin1_max - fbin1_min
-                    deltaD = (<acc_t> (bin1_min + 1)) - fbin1_min
-                    deltaU = fbin1_max - (<acc_t> bin1_max)
-                    one_over_area = 1.0 / area_pixel
+                    delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
+                    delta_up = fbin1_max - (<acc_t> bin1_max)
+                    inv_area = 1.0 / area_pixel
 
-                    sum_count[bin0_min, bin1_min] += one_over_area * deltaD
-                    sum_data[bin0_min, bin1_min] += data * one_over_area * deltaD
+                    sum_count[bin0_min, bin1_min] += inv_area * delta_down
+                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_down) ** coef_power
 
-                    sum_count[bin0_min, bin1_max] += one_over_area * deltaU
-                    sum_data[bin0_min, bin1_max] += data * one_over_area * deltaU
+                    sum_count[bin0_min, bin1_max] += inv_area * delta_up
+                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_up) ** coef_power
                     # if bin1_min + 1 < bin1_max:
                     for j in range(bin1_min + 1, bin1_max):
-                            sum_count[bin0_min, j] += one_over_area
-                            sum_data[bin0_min, j] += data * one_over_area
+                            sum_count[bin0_min, j] += inv_area
+                            sum_data[bin0_min, j] += data * inv_area ** coef_power
 
             else:
                 # spread on more than 2 bins in dim 0
                 if bin1_min == bin1_max:
                     # All pixel fall on 1 bins in dim 1
                     area_pixel = fbin0_max - fbin0_min
-                    deltaL = (<acc_t> (bin0_min + 1)) - fbin0_min
-                    one_over_area = deltaL / area_pixel
-                    sum_count[bin0_min, bin1_min] += one_over_area
-                    sum_data[bin0_min, bin1_min] += data * one_over_area
-                    deltaR = fbin0_max - (<acc_t> bin0_max)
-                    one_over_area = deltaR / area_pixel
-                    sum_count[bin0_max, bin1_min] += one_over_area
-                    sum_data[bin0_max, bin1_min] += data * one_over_area
-                    one_over_area = 1.0 / area_pixel
+                    delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
+                    inv_area = delta_left / area_pixel
+                    sum_count[bin0_min, bin1_min] += inv_area
+                    sum_data[bin0_min, bin1_min] += data * inv_area ** coef_power
+                    delta_right = fbin0_max - (<acc_t> bin0_max)
+                    inv_area = delta_right / area_pixel
+                    sum_count[bin0_max, bin1_min] += inv_area
+                    sum_data[bin0_max, bin1_min] += data * inv_area ** coef_power
+                    inv_area = 1.0 / area_pixel
                     for i in range(bin0_min + 1, bin0_max):
-                            sum_count[i, bin1_min] += one_over_area
-                            sum_data[i, bin1_min] += data * one_over_area
+                            sum_count[i, bin1_min] += inv_area
+                            sum_data[i, bin1_min] += data * inv_area ** coef_power
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
                     area_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
-                    deltaL = (<acc_t> (bin0_min + 1.0)) - fbin0_min
-                    deltaR = fbin0_max - (<double> bin0_max)
-                    deltaD = (<acc_t> (bin1_min + 1.0)) - fbin1_min
-                    deltaU = fbin1_max - (<acc_t> bin1_max)
-                    one_over_area = 1.0 / area_pixel
+                    delta_left = (<acc_t> (bin0_min + 1.0)) - fbin0_min
+                    delta_right = fbin0_max - (<double> bin0_max)
+                    delta_down = (<acc_t> (bin1_min + 1.0)) - fbin1_min
+                    delta_up = fbin1_max - (<acc_t> bin1_max)
+                    inv_area = 1.0 / area_pixel
 
-                    sum_count[bin0_min, bin1_min] += one_over_area * deltaL * deltaD
-                    sum_data[bin0_min, bin1_min] += data * one_over_area * deltaL * deltaD
+                    sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
+                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left * delta_down) ** coef_power
 
-                    sum_count[bin0_min, bin1_max] += one_over_area * deltaL * deltaU
-                    sum_data[bin0_min, bin1_max] += data * one_over_area * deltaL * deltaU
+                    sum_count[bin0_min, bin1_max] += inv_area * delta_left * delta_up
+                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_left * delta_up) ** coef_power
 
-                    sum_count[bin0_max, bin1_min] += one_over_area * deltaR * deltaD
-                    sum_data[bin0_max, bin1_min] += data * one_over_area * deltaR * deltaD
+                    sum_count[bin0_max, bin1_min] += inv_area * delta_right * delta_down
+                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right * delta_down) ** coef_power
 
-                    sum_count[bin0_max, bin1_max] += one_over_area * deltaR * deltaU
-                    sum_data[bin0_max, bin1_max] += data * one_over_area * deltaR * deltaU
+                    sum_count[bin0_max, bin1_max] += inv_area * delta_right * delta_up
+                    sum_data[bin0_max, bin1_max] += data * (inv_area * delta_right * delta_up) ** coef_power
                     for i in range(bin0_min + 1, bin0_max):
-                            sum_count[i, bin1_min] += one_over_area * deltaD
-                            sum_data[i, bin1_min] += data * one_over_area * deltaD
+                            sum_count[i, bin1_min] += inv_area * delta_down
+                            sum_data[i, bin1_min] += data * (inv_area * delta_down) ** coef_power
                             for j in range(bin1_min + 1, bin1_max):
-                                sum_count[i, j] += one_over_area
-                                sum_data[i, j] += data * one_over_area
-                            sum_count[i, bin1_max] += one_over_area * deltaU
-                            sum_data[i, bin1_max] += data * one_over_area * deltaU
+                                sum_count[i, j] += inv_area
+                                sum_data[i, j] += data * inv_area ** coef_power
+                            sum_count[i, bin1_max] += inv_area * delta_up
+                            sum_data[i, bin1_max] += data * (inv_area * delta_up) ** coef_power
                     for j in range(bin1_min + 1, bin1_max):
-                            sum_count[bin0_min, j] += one_over_area * deltaL
-                            sum_data[bin0_min, j] += data * one_over_area * deltaL
+                            sum_count[bin0_min, j] += inv_area * delta_left
+                            sum_data[bin0_min, j] += data * (inv_area * delta_left) ** coef_power
 
-                            sum_count[bin0_max, j] += one_over_area * deltaR
-                            sum_data[bin0_max, j] += data * one_over_area * deltaR
+                            sum_count[bin0_max, j] += inv_area * delta_right
+                            sum_data[bin0_max, j] += data * (inv_area * delta_right) ** coef_power
 
     # with nogil:
         for i in range(bins0):
