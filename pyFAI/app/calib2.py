@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/08/2018"
+__date__ = "02/10/2018"
 __status__ = "production"
 
 import logging
@@ -46,19 +46,10 @@ logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI-calib2")
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 
-from silx.gui import qt
-# Make sure matplotlib is loaded first by silx
-import silx.gui.plot.matplotlib
-
-from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
-from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
-from pyFAI.gui.utils import units
-
 import pyFAI.resources
 import pyFAI.calibrant
 import pyFAI.detectors
-# TODO: This should be removed
-import pyFAI.gui.cli_calibration
+
 import fabio
 
 from pyFAI.third_party.argparse import ArgumentParser
@@ -273,7 +264,12 @@ def parse_pixel_size(pixel_size):
     return result
 
 
-def setup(model):
+def parse_options():
+    """
+    Returns parsed command line argument as an `options` object.
+
+    :raises ExitException: In case of the use of `--help` in the comman line
+    """
     usage = "pyFAI-calib2 [options] input_image.edf"
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     version = "calibration from pyFAI  version %s: %s" % (pyFAI.version, pyFAI.date)
@@ -282,7 +278,19 @@ def setup(model):
 
     # Analyse aruments and options
     options = parser.parse_args()
+    return options
+
+
+def setup_model(model, options):
+    """
+    Setup the model using options from the command line.
+    """
     args = options.args
+
+    # The module must not import the GUI
+    from pyFAI.gui.utils import units
+    # TODO: This should be removed
+    import pyFAI.gui.cli_calibration
 
     if options.debug:
         logging.root.setLevel(logging.DEBUG)
@@ -464,6 +472,17 @@ def logUncaughtExceptions(exceptionClass, exception, stack):
 
 
 def main():
+    # It have to be done before loading Qt
+    # --help must also work without Qt
+    options = parse_options()
+
+    # Then we can load Qt
+    from silx.gui import qt
+    # Make sure matplotlib is loaded first by silx
+    import silx.gui.plot.matplotlib
+    from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
+    from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
+
     sys.excepthook = logUncaughtExceptions
     app = qt.QApplication([])
     pyFAI.resources.silx_integration()
@@ -477,7 +496,7 @@ def main():
     context = CalibrationContext(settings)
     context.restoreSettings()
 
-    setup(context.getCalibrationModel())
+    setup_model(context.getCalibrationModel(), options)
     window = CalibrationWindow(context)
     window.setVisible(True)
     window.setAttribute(qt.Qt.WA_DeleteOnClose, True)

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/08/2018"
+__date__ = "02/10/2018"
 
 import logging
 import numpy
@@ -756,11 +756,13 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
-        self.__plot.addImage(image, legend="image")
         if image is not None:
+            self.__plot.addImage(image, legend="image", copy=False)
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
             self.__plot.resetZoom()
+        else:
+            self.__plot.removeImage("image")
 
     def __widgetShow(self):
         if self.__peaksInvalidated:
