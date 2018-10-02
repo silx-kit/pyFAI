@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "09/04/2018"
+__date__ = "01/10/2018"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -280,7 +280,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                   dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
-                  preprocess_only=False, safe=True, normalization_factor=1.0,
+                  preprocess_only=False, safe=True,
+                  normalization_factor=1.0, coef_power=1,
                   out_merged=None, out_sum_data=None, out_sum_count=None):
         """
         Before performing azimuthal integration, the preprocessing is:
@@ -302,6 +303,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
         :param out_merged: destination array or pyopencl array for averaged data
         :param out_sum_data: destination array or pyopencl array for sum of all data
         :param out_sum_count: destination array or pyopencl array for sum of the number of pixels
