@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2018"
+__date__ = "02/10/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2778,7 +2778,7 @@ class AzimuthalIntegrator(Geometry):
                 if dark is None:
                     variance = numpy.ascontiguousarray(data, numpy.float32)
                 else:
-                    variance = data + dark
+                    variance = abs(data) + abs(dark)
 
         kwargs = {"npt": npt,
                   "error_model": None,
