@@ -72,13 +72,15 @@ csr_integrate(  const   global  float   *weights,
                         global  float   *merged
              )
 {
+    // each workgroup (ideal size: warp) is assigned to 1 bin
+    int bin_num = get_group_id(0);
     int thread_id_loc = get_local_id(0);
-    int bin_num = get_group_id(0); // each workgroup (ideal size: 1warp) is assigned to 1 bin
     int active_threads = get_local_size(0);
-    int2 bin_bounds = (int2) (col_ptr[bin_num], col_ptr[bin_num + 1])
+    int2 bin_bounds = (int2) (col_ptr[bin_num], col_ptr[bin_num + 1]);
     int bin_size = bin_bounds.y - bin_bounds.x;
-    float2 sum_data = (float2)(0.0f, 0.0f);
-    float2 sum_count = (float2)(0.0f, 0.0f);
+    // we use _K suffix to highlight it is float2 used for Kahan summation
+    float2 sum_data_K = (float2)(0.0f, 0.0f);
+    float2 sum_count_K = (float2)(0.0f, 0.0f);
     const float epsilon = 1e-10f;
     float coef, coefp, data;
     int idx, k, j;
@@ -101,8 +103,8 @@ csr_integrate(  const   global  float   *weights,
                    //Kahan summation allows single precision arithmetics with error compensation
                    //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
                    // defined in kahan.cl
-                   sum_data = kahan_sum(sum_data, pown(coef, coef_power) * data);
-                   sum_count = kahan_sum(sum_count, coef);
+                   sum_data_K = kahan_sum(sum_data_K, pown(coef, coef_power) * data);
+                   sum_count_K = kahan_sum(sum_count_K, coef);
                };//end if dummy
        } //end if k < bin_bounds.y
        };//for j
@@ -120,8 +122,8 @@ csr_integrate(  const   global  float   *weights,
     {
         if (thread_id_loc < bin_size)
         {
-            super_sum_data[thread_id_loc] = sum_data;
-            super_sum_count[thread_id_loc] = sum_count;
+            super_sum_data[thread_id_loc] = sum_data_K;
+            super_sum_count[thread_id_loc] = sum_count_K;
         }
         else
         {
@@ -131,8 +133,8 @@ csr_integrate(  const   global  float   *weights,
     }
     else
     {
-        super_sum_data[thread_id_loc] = sum_data;
-        super_sum_count[thread_id_loc] = sum_count;
+        super_sum_data[thread_id_loc] = sum_data_K;
+        super_sum_count[thread_id_loc] = sum_count_K;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -188,9 +190,11 @@ csr_integrate_single(  const   global  float   *weights,
                                global  float   *sum_count,
                                global  float   *merged)
 {
-    int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
-    float2 sum_data = (float2)(0.0f, 0.0f);
-    float2 sum_count = (float2)(0.0f, 0.0f);
+    // each workgroup of size=warp is assinged to 1 bin
+    int bin_num = get_group_id(0);
+    // we use _K suffix to highlight it is float2 used for Kahan summation
+    float2 sum_data_K = (float2)(0.0f, 0.0f);
+    float2 sum_count_K = (float2)(0.0f, 0.0f);
     const float epsilon = 1e-10f;
     float coef, data;
     int idx, j;
@@ -209,14 +213,14 @@ csr_integrate_single(  const   global  float   *weights,
             //Kahan summation allows single precision arithmetics with error compensation
             //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
             // defined in kahan.cl
-            sum_data = kahan_sum(sum_data, pown(coef, coef_power) * data);
-            sum_count = kahan_sum(sum_count, coef);
+            sum_data_K = kahan_sum(sum_data_K, pown(coef, coef_power) * data);
+            sum_count_K = kahan_sum(sum_count_K, coef);
         };//end if dummy
     };//for j
-    sum_data[bin_num] = sum_data.s0;
-    sum_count[bin_num] = sum_count.s0;
-    if (sum_count.s0 > epsilon)
-        merged[bin_num] =  sum_data.s0 / sum_count.s0;
+    sum_data[bin_num] = sum_data_K.s0;
+    sum_count[bin_num] = sum_count_K.s0;
+    if (sum_count_K.s0 > epsilon)
+        merged[bin_num] =  sum_data_K.s0 / sum_count_K.s0;
     else
         merged[bin_num] = dummy;
 };//end kernel

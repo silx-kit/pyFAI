@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "01/10/2018"
+__date__ = "02/10/2018"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -226,6 +226,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("indptr", self.cl_mem["indptr"]),
                                                             ("do_dummy", numpy.int8(0)),
                                                             ("dummy", numpy.float32(0)),
+                                                            ("coef_power", numpy.int32(1)),
                                                             ("sum_data", self.cl_mem["sum_data"]),
                                                             ("sum_count", self.cl_mem["sum_count"]),
                                                             ("merged", self.cl_mem["merged"])))
@@ -337,6 +338,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw1["normalization_factor"] = numpy.float32(normalization_factor)
             kw2["do_dummy"] = do_dummy
             kw2["dummy"] = dummy
+            kw2["coef_power"] = numpy.int32(coef_power)
 
             if dark is not None:
                 do_dark = numpy.int8(1)
