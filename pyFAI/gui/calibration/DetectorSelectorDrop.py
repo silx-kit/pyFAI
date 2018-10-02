@@ -95,6 +95,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self._fileLoader.clicked.connect(self.__loadDetectorFormFile)
         self._fileResult.setVisible(False)
         self._fileError.setVisible(False)
+        self._splinePanel.setVisible(False)
 
         validator = validators.IntegerAndEmptyValidator()
         validator.setBottom(0)
