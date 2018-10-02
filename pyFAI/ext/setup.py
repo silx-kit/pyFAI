@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "02/10/2018"
 
 from numpy.distutils.misc_util import Configuration
 import platform
@@ -84,7 +84,6 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('_convolution', can_use_openmp=True),
         create_extension_config('_blob'),
         create_extension_config('morphology'),
-        create_extension_config('marchingsquares'),
         create_extension_config('watershed'),
         create_extension_config('_tree'),
         create_extension_config('sparse_utils'),
