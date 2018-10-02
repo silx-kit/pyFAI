@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 20/01/2017
+ *   Last revision: 02/10/2018
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,9 +53,9 @@
  * @param col_ptr     Integer pointer to global memory holding the pointers to the coefs and row_ind for the CSR matrix
  * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
  * @param dummy       Float: value for bad pixels
- * @param outData     Float pointer to the output 1D array with the weighted histogram
- * @param outCount    Float pointer to the output 1D array with the unweighted histogram
- * @param outMerged   Float pointer to the output 1D array with the diffractogram
+ * @param sum_data     Float pointer to the output 1D array with the weighted histogram
+ * @param sum_count    Float pointer to the output 1D array with the unweighted histogram
+ * @param merged   Float pointer to the output 1D array with the diffractogram
  *
  */
 kernel void
@@ -65,9 +65,9 @@ csr_integrate(  const   global  float   *weights,
                 const   global  int     *col_ptr,
                 const           char     do_dummy,
                 const           float    dummy,
-                        global  float   *outData,
-                        global  float   *outCount,
-                        global  float   *outMerge
+                        global  float   *sum_data,
+                        global  float   *sum_count,
+                        global  float   *merged
              )
 {
     int thread_id_loc = get_local_id(0);
@@ -151,12 +151,12 @@ csr_integrate(  const   global  float   *weights,
 
     if (thread_id_loc == 0)
     {
-        outData[bin_num] = super_sum_data[0].s0;
-        outCount[bin_num] = super_sum_count[0].s0;
-        if (outCount[bin_num] > epsilon)
-            outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
+        sum_data[bin_num] = super_sum_data[0].s0;
+        sum_count[bin_num] = super_sum_count[0].s0;
+        if (sum_count[bin_num] > epsilon)
+            merged[bin_num] =  sum_data[bin_num] / sum_count[bin_num];
         else
-            outMerge[bin_num] = dummy;
+            merged[bin_num] = dummy;
     }
 };//end kernel
 
@@ -172,9 +172,9 @@ csr_integrate_single(  const   global  float   *weights,
                        const   global  int     *col_ptr,
                        const           char     do_dummy,
                        const           float    dummy,
-                               global  float   *outData,
-                               global  float   *outCount,
-                               global  float   *outMerge)
+                               global  float   *sum_data,
+                               global  float   *sum_count,
+                               global  float   *merged)
 {
     int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
     float2 sum_data = (float2)(0.0f, 0.0f);
@@ -201,12 +201,12 @@ csr_integrate_single(  const   global  float   *weights,
             sum_count = kahan_sum(sum_count, coef);
         };//end if dummy
     };//for j
-    outData[bin_num] = sum_data.s0;
-    outCount[bin_num] = sum_count.s0;
+    sum_data[bin_num] = sum_data.s0;
+    sum_count[bin_num] = sum_count.s0;
     if (sum_count.s0 > epsilon)
-        outMerge[bin_num] =  sum_data.s0 / sum_count.s0;
+        merged[bin_num] =  sum_data.s0 / sum_count.s0;
     else
-        outMerge[bin_num] = dummy;
+        merged[bin_num] = dummy;
 };//end kernel
 
 
@@ -226,9 +226,9 @@ csr_integrate_single(  const   global  float   *weights,
  * @param col_ptr     Integer pointer to global memory holding the pointers to the coefs and row_ind for the CSR matrix
  * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
  * @param dummy       Float: value for bad pixels
- * @param outData     Float pointer to the output 1D array with the weighted histogram
- * @param outCount    Float pointer to the output 1D array with the unweighted histogram
- * @param outMerged   Float pointer to the output 1D array with the diffractogram
+ * @param sum_data     Float pointer to the output 1D array with the weighted histogram
+ * @param sum_count    Float pointer to the output 1D array with the unweighted histogram
+ * @param mergedd   Float pointer to the output 1D array with the diffractogram
  *
  */
 kernel void
@@ -238,9 +238,9 @@ csr_integrate_padded(   const   global    float   *weights,
                         const   global    int     *col_ptr,
                         const             char     do_dummy,
                         const             float    dummy,
-                                global    float   *outData,
-                                global    float   *outCount,
-                                global    float   *outMerge
+                                global    float   *sum_data,
+                                global    float   *sum_count,
+                                global    float   *merged
                     )
 {
     int thread_id_loc = get_local_id(0);
@@ -326,12 +326,12 @@ csr_integrate_padded(   const   global    float   *weights,
 
     if (thread_id_loc == 0)
     {
-        outData[bin_num] = super_sum_data[0];
-        outCount[bin_num] = super_sum_count[0];
-        if (outCount[bin_num] > epsilon)
-            outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
+        sum_data[bin_num] = super_sum_data[0];
+        sum_count[bin_num] = super_sum_count[0];
+        if (sum_count[bin_num] > epsilon)
+            merged[bin_num] =  sum_data[bin_num] / sum_count[bin_num];
         else
-            outMerge[bin_num] = dummy;
+            merged[bin_num] = dummy;
     }
 };//end kernel
 
@@ -343,7 +343,7 @@ csr_integrate_padded(   const   global    float   *weights,
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
  * @param row_ind     Integer pointer to global memory holding the corresponding index of the coeficient
  * @param col_ptr     Integer pointer to global memory holding the pointers to the coefs and row_ind for the CSR matrix
- * @param outData     Float pointer to the output 1D array with the corrected image
+ * @param sum_data     Float pointer to the output 1D array with the corrected image
  *
  */
 
@@ -354,7 +354,7 @@ csr_integrate_dis(  const   global    float   *weights,
                     const   global    int     *col_ptr,
                     const               int     do_dummy,
                     const               float   dummy,
-                            global    float   *outData
+                            global    float   *sum_data
                  )
 {
     int thread_id_loc = get_local_id(0);
@@ -444,7 +444,7 @@ csr_integrate_dis(  const   global    float   *weights,
 
     if (thread_id_loc == 0)
     {
-        outData[bin_num] = super_sum_data[0];
+        sum_data[bin_num] = super_sum_data[0];
     }
 
 
