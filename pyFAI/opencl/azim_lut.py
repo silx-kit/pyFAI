@@ -30,7 +30,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/01/2018"
+__date__ = "02/10/2018"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -67,7 +67,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["preprocess.cl", "memset.cl", "ocl_azim_LUT.cl"]
+    kernel_files = ["kahan.cl", "preprocess.cl", "memset.cl", "ocl_azim_LUT.cl"]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
