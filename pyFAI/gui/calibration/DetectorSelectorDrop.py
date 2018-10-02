@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/08/2018"
+__date__ = "02/10/2018"
 
 import os
 import logging
@@ -179,8 +179,8 @@ class DetectorSelectorDrop(qt.QWidget):
         self._customResult.setVisible(True)
         self._customResult.setText("Detector configured")
 
-    def createSplineDialog(self, title):
-        dialog = CalibrationContext.instance().createFileDialog(self)
+    def createSplineDialog(self, title, previousFile):
+        dialog = CalibrationContext.instance().createFileDialog(self, previousFile=previousFile)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
