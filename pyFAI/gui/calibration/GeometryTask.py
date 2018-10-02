@@ -757,7 +757,7 @@ class GeometryTask(AbstractCalibrationTask):
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
         if image is not None:
-            self.__plot.addImage(image, legend="image")
+            self.__plot.addImage(image, legend="image", copy=False)
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
             self.__plot.resetZoom()

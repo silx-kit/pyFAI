@@ -270,7 +270,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._imageSizeLabel.setVisible(image is not None)
         self._imageSizeUnit.setVisible(image is not None)
         if image is not None:
-            self.__plot.addImage(image, legend="image", z=-1, replace=False)
+            self.__plot.addImage(image, legend="image", z=-1, replace=False, copy=False)
             text = [str(s) for s in image.shape]
             text = u" × ".join(text)
             self._imageSize.setText(text)
