@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/08/2018"
+__date__ = "02/10/2018"
 
 import fabio
 import numpy
@@ -270,12 +270,14 @@ class ExperimentTask(AbstractCalibrationTask):
         self._imageSizeLabel.setVisible(image is not None)
         self._imageSizeUnit.setVisible(image is not None)
         if image is not None:
+            self.__plot.addImage(image, legend="image", z=-1, replace=False, copy=False)
             text = [str(s) for s in image.shape]
             text = u" × ".join(text)
             self._imageSize.setText(text)
+        else:
+            self.__plot.removeImage("image")
+            self._imageSize.setText("")
 
-        image = self.model().experimentSettingsModel().image().value()
-        self.__plot.addImage(image, legend="image", z=-1, replace=False)
         self.__plot.resetZoom()
         self.__updateDetector()
 

@@ -385,18 +385,6 @@ Deprecated, will be replaced by silx.math.histogramnd
     :undoc-members:
     :show-inheritance:
 
-:mod:`ext.marchingsquares` Module
-.................................
-
-The marchingsquares algorithm is used for calculating an iso-contour curve (displayed
-on the screen while calibrating) but also to seed the points for the "massif" algoritm
-during recalib.
-
-.. automodule:: pyFAI.ext.marchingsquares
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ext.morphology` Module
 ............................
 
