@@ -27,11 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/10/2018"
+__date__ = "03/10/2018"
 
 import logging
 from silx.gui import qt
 import silx.gui.plot
+import silx.gui.icons
 from silx.gui.plot.tools import PositionInfo
 
 import pyFAI.utils
@@ -49,6 +50,9 @@ class MaskTask(AbstractCalibrationTask):
     def __init__(self):
         super(MaskTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-mask.ui"), self)
+        icon = silx.gui.icons.getQIcon("pyfai:gui/icons/task-mask")
+        self.setWindowIcon(icon)
+
         self.initNextStep()
 
         self.__plot = self.__createPlot(self._imageHolder)

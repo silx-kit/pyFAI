@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/08/2018"
+__date__ = "03/10/2018"
 
 import logging
 import numpy
@@ -743,6 +743,9 @@ class IntegrationTask(AbstractCalibrationTask):
     def __init__(self):
         super(IntegrationTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-result.ui"), self)
+        icon = silx.gui.icons.getQIcon("pyfai:gui/icons/task-cake")
+        self.setWindowIcon(icon)
+
         self.initNextStep()
 
         self.__integrationUpToDate = True

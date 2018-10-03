@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "03/10/2018"
 
 from silx.gui import qt
 import pyFAI.utils
@@ -48,7 +48,9 @@ class CalibrationWindow(qt.QMainWindow):
         self.__tasks = self.createTasks()
         for task in self.__tasks:
             task.nextTaskRequested.connect(self.nextTask)
-            self._list.addItem(task.windowTitle())
+            item = qt.QListWidgetItem(self._list)
+            item.setText(task.windowTitle())
+            item.setIcon(task.windowIcon())
             self._stack.addWidget(task)
         if len(self.__tasks) > 0:
             self._list.setCurrentRow(0)

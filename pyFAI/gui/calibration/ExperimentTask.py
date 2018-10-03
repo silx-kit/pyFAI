@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/10/2018"
+__date__ = "03/10/2018"
 
 import fabio
 import numpy
@@ -37,6 +37,7 @@ from collections import OrderedDict
 
 import silx.gui.plot
 from silx.gui import qt
+from silx.gui import icons
 
 import pyFAI.utils
 from pyFAI.calibrant import Calibrant
@@ -55,6 +56,9 @@ class ExperimentTask(AbstractCalibrationTask):
     def __init__(self):
         super(ExperimentTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-experiment.ui"), self)
+        icon = icons.getQIcon("pyfai:gui/icons/task-settings")
+        self.setWindowIcon(icon)
+
         self.initNextStep()
 
         self._imageLoader.clicked.connect(self.loadImage)

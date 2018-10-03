@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/10/2018"
+__date__ = "03/10/2018"
 
 import logging
 import numpy
@@ -489,6 +489,9 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __init__(self):
         super(PeakPickingTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-peakpicking.ui"), self)
+        icon = silx.gui.icons.getQIcon("pyfai:gui/icons/task-identify-rings")
+        self.setWindowIcon(icon)
+
         self.initNextStep()
 
         # Insert the plot on the layout
