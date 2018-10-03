@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/08/2018"
+__date__ = "02/10/2018"
 
 import sys
 import unittest
@@ -63,7 +63,6 @@ from . import test_convolution
 from . import test_sparse
 from . import test_csr
 from . import test_blob_detection
-from . import test_marchingsquares
 from . import test_io
 from . import test_calibrant
 from . import test_polarization
@@ -115,7 +114,6 @@ def suite():
     testsuite.addTest(test_sparse.suite())
     testsuite.addTest(test_csr.suite())
     testsuite.addTest(test_blob_detection.suite())
-    testsuite.addTest(test_marchingsquares.suite())
     testsuite.addTest(test_io.suite())
     testsuite.addTest(test_calibrant.suite())
     testsuite.addTest(test_polarization.suite())
