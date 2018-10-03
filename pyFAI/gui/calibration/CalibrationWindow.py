@@ -45,11 +45,14 @@ class CalibrationWindow(qt.QMainWindow):
 
         context.restoreWindowLocationSettings("main-window", self)
 
+        self.__listMode = "text"
+
         self.__tasks = self.createTasks()
         for task in self.__tasks:
             task.nextTaskRequested.connect(self.nextTask)
             item = qt.QListWidgetItem(self._list)
             item.setText(task.windowTitle())
+            item._text = task.windowTitle()
             item.setIcon(task.windowIcon())
             self._stack.addWidget(task)
 
@@ -62,16 +65,50 @@ class CalibrationWindow(qt.QMainWindow):
             self._list.setCurrentRow(0)
 
         self._list.sizeHint = self._listSizeHint
+        self._list.minimumSizeHint = self._listMinimumSizeHint
         self.setModel(model)
 
+    def _listMinimumSizeHint(self):
+        return qt.QSize(self._list.iconSize().width() + 7, 10)
+
     def _listSizeHint(self):
-        maxWidth = 0
-        for row in range(self._list.count()):
-            item = self._list.item(row)
-            width = item.sizeHint().width()
-            if maxWidth < width:
-                maxWidth = width
-        return qt.QSize(maxWidth, 0)
+        if self.__listMode == "icon":
+            return self._listMinimumSizeHint()
+        else:
+            maxWidth = 0
+            for row in range(self._list.count()):
+                item = self._list.item(row)
+                width = item.sizeHint().width()
+                if maxWidth < width:
+                    maxWidth = width
+        return qt.QSize(maxWidth, 10)
+
+    def _setListMode(self, mode):
+        if self.__listMode == mode:
+            return
+        self.__listMode = mode
+        if mode == "text":
+            for row in range(self._list.count()):
+                item = self._list.item(row)
+                item.setText(item._text)
+                item.setToolTip("")
+        else:
+            for row in range(self._list.count()):
+                item = self._list.item(row)
+                item.setText(None)
+                item.setToolTip(item._text)
+        self._list.adjustSize()
+        self._list.updateGeometry()
+
+    def resizeEvent(self, event):
+        width = event.size().width()
+        oldWidth = event.oldSize().width()
+        delta = width - oldWidth
+        if (delta < 0 or oldWidth == -1) and width < 1100:
+            self._setListMode("icon")
+        elif (delta > 0 or oldWidth == -1) and width > 1500:
+            self._setListMode("text")
+        return qt.QMainWindow.resizeEvent(self, event)
 
     def closeEvent(self, event):
         for task in self.__tasks:
