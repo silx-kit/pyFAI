@@ -52,10 +52,26 @@ class CalibrationWindow(qt.QMainWindow):
             item.setText(task.windowTitle())
             item.setIcon(task.windowIcon())
             self._stack.addWidget(task)
+
+            fontMetrics = qt.QFontMetrics(item.font())
+            width = fontMetrics.width(item.text())
+            width += self._list.iconSize().width() + 20
+            item.setSizeHint(qt.QSize(width, 60))
+
         if len(self.__tasks) > 0:
             self._list.setCurrentRow(0)
 
+        self._list.sizeHint = self._listSizeHint
         self.setModel(model)
+
+    def _listSizeHint(self):
+        maxWidth = 0
+        for row in range(self._list.count()):
+            item = self._list.item(row)
+            width = item.sizeHint().width()
+            if maxWidth < width:
+                maxWidth = width
+        return qt.QSize(maxWidth, 0)
 
     def closeEvent(self, event):
         for task in self.__tasks:

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>524</width>
+    <width>567</width>
     <height>312</height>
    </rect>
   </property>
@@ -37,7 +37,7 @@ QListWidget::item {
 	height: 40px;
 	font: 0 16pt;
 	color:black;
-	margin: 10px;
+	margin-bottom: 20px;
 }
 
 QListWidget::item:selected {
@@ -45,6 +45,24 @@ QListWidget::item:selected {
 	background-color: grey;
 }
 </string>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>24</width>
+        <height>24</height>
+       </size>
+      </property>
+      <property name="uniformItemSizes">
+       <bool>true</bool>
       </property>
       <property name="currentRow">
        <number>-1</number>
