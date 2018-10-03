@@ -144,6 +144,7 @@ class _StatusBar(qt.QStatusBar):
         self.__pixel = QuantityLabel(self)
         self.__pixel.setPrefix(u"<b>Pixel</b>: ")
         self.__pixel.setFormatter(u"{value}")
+        self.__pixel.setFloatFormatter(u"{value: >4.3F}")
         self.__pixel.setElasticSize(True)
         self.addWidget(self.__pixel)
         self.__chi = QuantityLabel(self)
