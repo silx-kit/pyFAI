@@ -234,6 +234,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("indptr", self.cl_mem["indptr"]),
                                                             ("do_dummy", numpy.int8(0)),
                                                             ("dummy", numpy.float32(0)),
+                                                            ("coef_power", numpy.int32(1)),
                                                             ("sum_data", self.cl_mem["sum_data"]),
                                                             ("sum_count", self.cl_mem["sum_count"]),
                                                             ("merged", self.cl_mem["merged"])))
@@ -288,7 +289,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                   dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
-                  preprocess_only=False, safe=True, normalization_factor=1.0,
+                  preprocess_only=False, safe=True,
+                  normalization_factor=1.0, coef_power=1,
                   out_merged=None, out_sum_data=None, out_sum_count=None):
         """
         Before performing azimuthal integration, the preprocessing is:
@@ -310,6 +312,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
         :param out_merged: destination array or pyopencl array for averaged data
         :param out_sum_data: destination array or pyopencl array for sum of all data
         :param out_sum_count: destination array or pyopencl array for sum of the number of pixels
@@ -343,6 +346,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw1["normalization_factor"] = numpy.float32(normalization_factor)
             kw2["do_dummy"] = do_dummy
             kw2["dummy"] = dummy
+            kw2["coef_power"] = numpy.int32(coef_power)
 
             if dark is not None:
                 do_dark = numpy.int8(1)

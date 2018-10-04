@@ -2152,15 +2152,15 @@ class AzimuthalIntegrator(Geometry):
 
     xrpd2 = xrpd2_splitBBox
 
-    def integrate1d(self, data, npt, filename=None,
-                    correctSolidAngle=True,
-                    variance=None, error_model=None,
-                    radial_range=None, azimuth_range=None,
-                    mask=None, dummy=None, delta_dummy=None,
-                    polarization_factor=None, dark=None, flat=None,
-                    method="csr", unit=units.Q, safe=True,
-                    normalization_factor=1.0,
-                    block_size=32, profile=False, all=False, metadata=None):
+    def _integrate1d_legacy(self, data, npt, filename=None,
+                            correctSolidAngle=True,
+                            variance=None, error_model=None,
+                            radial_range=None, azimuth_range=None,
+                            mask=None, dummy=None, delta_dummy=None,
+                            polarization_factor=None, dark=None, flat=None,
+                            method="csr", unit=units.Q, safe=True,
+                            normalization_factor=1.0,
+                            block_size=32, profile=False, all=False, metadata=None):
         """Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
@@ -2751,6 +2751,73 @@ class AzimuthalIntegrator(Geometry):
                 res["sigma"] = result.sigma
             return res
 
+        return result
+
+    integrate1d = _integrate1d_legacy
+
+    def _integrate1d_ng(self, data, npt, filename=None,
+                        correctSolidAngle=True,
+                        variance=None, error_model=None,
+                        radial_range=None, azimuth_range=None,
+                        mask=None, dummy=None, delta_dummy=None,
+                        polarization_factor=None, dark=None, flat=None,
+                        method="csr", unit=units.Q, safe=True,
+                        normalization_factor=1.0,
+                        metadata=None):
+        """Demonstrator for the new azimuthal integrator taking care of the normalization,
+        
+        Early stage prototype, 
+         
+        """
+
+        if variance is not None:
+            assert variance.size == data.size
+        elif error_model:
+            error_model = error_model.lower()
+            if error_model == "poisson":
+                if dark is None:
+                    variance = numpy.ascontiguousarray(abs(data), numpy.float32)
+                else:
+                    variance = abs(data) + abs(dark)
+
+        kwargs = {"npt": npt,
+                  "error_model": None,
+                  "variance": None,
+                  "correctSolidAngle": False,
+                  "polarization_factor": None,
+                  "flat": None,
+                  "radial_range": radial_range,
+                  "azimuth_range": azimuth_range,
+                  "mask": mask,
+                  "dummy": dummy,
+                  "delta_dummy": delta_dummy,
+                  "method": method,
+                  "unit": unit,
+                  }
+
+        normalization_image = numpy.ones(data.shape) * normalization_factor
+        if correctSolidAngle:
+            normalization_image *= self.solidAngleArray(self.detector.shape)
+
+        if polarization_factor:
+            normalization_image *= self.polarization(self.detector.shape, factor=polarization_factor)
+
+        if flat is not None:
+            normalization_image *= flat
+
+        norm = self.integrate1d(normalization_image, **kwargs)
+        signal = self.integrate1d(data, dark=dark, ** kwargs)
+        sigma2 = self.integrate1d(variance, **kwargs)
+        result = Integrate1dResult(norm.radial,
+                                   signal.sum / norm.sum,
+                                   numpy.sqrt(sigma2.sum) / norm.sum)
+        result._set_method_called("integrate1d_ng")
+        result._set_compute_engine(norm.compute_engine)
+        result._set_unit(signal.unit)
+        result._set_sum_signal(signal.sum)
+        result._set_sum_normalization(norm.sum)
+        result._set_sum_variance(sigma2.sum)
+        result._set_count(signal.count)
         return result
 
     def integrate_radial(self, data, npt, npt_rad=100,

@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/04/2018"
+__date__ = "07/09/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -389,7 +389,8 @@ class HistoBBox1d(object):
                   flat=None,
                   solidAngle=None,
                   polarization=None,
-                  double normalization_factor=1.0):
+                  double normalization_factor=1.0,
+                  int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -408,6 +409,7 @@ class HistoBBox1d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
+        :param coef_power: put coef to a given power, 2 for variance, 1 for mean
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: 4-tuple of ndarrays
@@ -516,7 +518,7 @@ class HistoBBox1d(object):
                 if do_dummy and (data == cdummy):
                     continue
 
-                acc_data = acc_data + coef * data
+                acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
             sum_data[i] += acc_data
             sum_count[i] += acc_count
@@ -545,7 +547,8 @@ class HistoBBox1d(object):
                         flat=None,
                         solidAngle=None,
                         polarization=None,
-                        double normalization_factor=1.0):
+                        double normalization_factor=1.0,
+                        int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
         Single precision implementation using Kahan summation
@@ -565,6 +568,7 @@ class HistoBBox1d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
+        :param coef_power: set to1 for mean and 2 for variance propagation
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: 4-tuple of ndarrays
@@ -689,7 +693,7 @@ class HistoBBox1d(object):
 #     return sum
 
                 # acc_data = acc_data + coef * data
-                y_data = coef * data - c_data
+                y_data = coef**coef_power * data - c_data
                 t_data = acc_data + y_data
                 c_data = (t_data - acc_data) - y_data
                 acc_data = t_data
@@ -1166,7 +1170,8 @@ class HistoBBox2d(object):
                   flat=None,
                   solidAngle=None,
                   polarization=None,
-                  double normalization_factor=1.0):
+                  double normalization_factor=1.0,
+                  int coef_power=1):
         """
         Actually perform the 2D integration which in this case looks more like a matrix-vector product
 
@@ -1185,7 +1190,7 @@ class HistoBBox2d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
-
+        :param coef_power: set to 1 for mean en to 2 for variance propagation
         :return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
         :rtype: 5-tuple of ndarrays
 
@@ -1291,7 +1296,7 @@ class HistoBBox2d(object):
                     if do_dummy and data == cdummy:
                         continue
 
-                    acc_data = acc_data + coef * data
+                    acc_data = acc_data + coef ** coef_power * data
                     acc_count = acc_count + coef
                 sum_data[i0, i1] += acc_data
                 sum_count[i0, i1] += acc_count
