@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "10/01/2018"
+__date__ = "04/10/2018"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -239,7 +239,7 @@ class Integrator1d(object):
 
         :param kernel_file: filename of the kernel (to test other kernels)
         """
-        kernel_file = kernel_file or "ocl_azim_kernel_2.cl"
+        kernel_file = kernel_file or "pyfai:openCL/ocl_azim_kernel_2.cl"
         kernel_src = concatenate_cl_kernel([kernel_file])
 
         template_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i"

@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "15/03/2018"
+__date__ = "04/10/2018"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -160,7 +160,7 @@ class OCLFullSplit1d(object):
             if os.path.isfile(kernel_name):
                 kernel_file = os.path.abspath(kernel_name)
             else:
-                kernel_file = utils.get_cl_file(kernel_name)
+                kernel_file = utils.get_cl_file("pyfai:openCL/" + kernel_name)
         else:
             kernel_file = str(kernel_file)
         kernel_src = utils.read_cl_file(kernel_file)

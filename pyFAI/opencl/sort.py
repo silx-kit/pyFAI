@@ -35,7 +35,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "18/06/2018"
+__date__ = "04/10/2018"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -57,7 +57,10 @@ class Separator(OpenclProcessing):
     Implementation of sort, median filter and trimmed-mean in  pyopencl
     """
     DUMMY = numpy.finfo(numpy.float32).min
-    kernel_files = ["kahan.cl", "bitonic.cl", "separate.cl", "sigma_clip.cl"]
+    kernel_files = ["pyfai:openCL/kahan.cl",
+                    "pyfai:openCL/bitonic.cl",
+                    "pyfai:openCL/separate.cl",
+                    "pyfai:openCL/sigma_clip.cl"]
 
     def __init__(self, npt_height=512, npt_width=1024, ctx=None, devicetype="all",
                  platformid=None, deviceid=None,

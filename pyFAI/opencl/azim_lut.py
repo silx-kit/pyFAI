@@ -30,7 +30,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/01/2018"
+__date__ = "04/10/2018"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -67,13 +67,17 @@ class OCL_LUT_Integrator(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["preprocess.cl", "memset.cl", "ocl_azim_LUT.cl"]
+    kernel_files = ["pyfai:openCL/preprocess.cl",
+                    "pyfai:openCL/memset.cl",
+                    "pyfai:openCL/ocl_azim_LUT.cl"
+                    ]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
                numpy.uint16: "u16_to_float",
                numpy.uint32: "u32_to_float",
-               numpy.int32: "s32_to_float"}
+               numpy.int32: "s32_to_float"
+               }
 
     def __init__(self, lut, image_size, checksum=None, empty=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
@@ -173,7 +177,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
-        kernels = ("preprocess.cl", "memset.cl", kernel_file)
+        kernels = self.kernel_files[:-1] + [kernel_file]
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
                           (self.bins, self.size, self.lut_size, int(self.device.type == "CPU"))
