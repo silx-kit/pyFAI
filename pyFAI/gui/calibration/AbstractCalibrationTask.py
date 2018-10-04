@@ -41,6 +41,8 @@ class AbstractCalibrationTask(qt.QWidget):
 
     _cacheWarningIcon = None
 
+    warningUpdated = qt.Signal()
+
     def __init__(self):
         super(AbstractCalibrationTask, self).__init__()
         self._initGui()
@@ -80,6 +82,7 @@ class AbstractCalibrationTask(qt.QWidget):
             self._nextStep.setIcon(self._warningIcon())
             self._nextStep.setToolTip(warning)
             self._nextStep.setEnabled(False)
+        self.warningUpdated.emit()
 
     def nextStepWarning(self):
         return None
