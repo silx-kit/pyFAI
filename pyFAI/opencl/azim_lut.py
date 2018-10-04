@@ -70,7 +70,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["pyfai:openCL/preprocess.cl",
+    kernel_files = ["pyfai:openCL/kahan.cl",
+                    "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_LUT.cl"
                     ]
