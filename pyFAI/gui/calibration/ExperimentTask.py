@@ -143,8 +143,6 @@ class ExperimentTask(AbstractCalibrationTask):
 
         warnings = []
 
-        print("__settingsChanged")
-
         if image is None:
             warnings.append("An image have to be specified")
         if detectorModel is None:
@@ -157,11 +155,9 @@ class ExperimentTask(AbstractCalibrationTask):
             try:
                 detector = settings.detector()
                 binning = detector.guess_binning(image)
-                print("__settingsChanged", binning)
                 if not binning:
                     raise Exception("inconsistancy")
-            except Exception as e:
-                print(e)
+            except Exception:
                 warnings.append("Inconsistancy between sizes of image and detector")
 
         self._globalWarnings = warnings
