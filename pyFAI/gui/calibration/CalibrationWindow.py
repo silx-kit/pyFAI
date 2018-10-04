@@ -38,53 +38,57 @@ import pyFAI.utils
 from .model import MarkerModel
 
 
-class CalibrationWindow(qt.QMainWindow):
+class MenuItem(qt.QListWidgetItem):
 
-    def __init__(self, context):
-        super(CalibrationWindow, self).__init__()
-        context.setParent(self)
-        qt.loadUi(pyFAI.utils.get_ui_file("calibration-main.ui"), self)
-        self.__context = context
-        model = context.getCalibrationModel()
+    TextMode = 0
+    IconMode = 1
 
-        context.restoreWindowLocationSettings("main-window", self)
+    def __init__(self, parent):
+        super(MenuItem, self).__init__(parent)
+        self.__text = None
+        self.__icon = qt.QIcon()
+        self.__warningIcon = None
+        self.__warnings = None
+        self.__mode = self.TextMode
 
-        self.__iconCache = {}
-        self.__listMode = "text"
+    def setText(self, text):
+        self.__text = text
+        self.__updateItem()
 
-        self.__tasks = self.createTasks()
-        for task in self.__tasks:
-            task.nextTaskRequested.connect(self.nextTask)
-            item = qt.QListWidgetItem(self._list)
-            item.setText(task.windowTitle())
-            item._text = task.windowTitle()
-            item.setIcon(task.windowIcon())
-            item._icon = task.windowIcon()
-            self._stack.addWidget(task)
+    def setIcon(self, icon):
+        self.__icon = icon
+        self.__updateItem()
 
-            fontMetrics = qt.QFontMetrics(item.font())
-            width = fontMetrics.width(item.text())
-            width += self._list.iconSize().width() + 20
-            item.setSizeHint(qt.QSize(width, 60))
+    def setWarnings(self, warnings):
+        self.__warnings = warnings
+        self.__updateItem()
 
-            task.warningUpdated.connect(functools.partial(self.__updateTaskState, task, item))
+    def setDisplayMode(self, mode):
+        self.__mode = mode
+        self.__updateItem()
 
-        if len(self.__tasks) > 0:
-            self._list.setCurrentRow(0)
-            # Hide the nextStep button of the last task
-            task.setNextStepVisible(False)
-
-        self._list.sizeHint = self._listSizeHint
-        self._list.minimumSizeHint = self._listMinimumSizeHint
-        self.setModel(model)
-
-    def __updateTaskState(self, task, item):
-        warnings = task.nextStepWarning()
-        if warnings is None:
-            item.setIcon(item._icon)
+    def __updateItem(self):
+        superSelf = super(MenuItem, self)
+        if self.__mode == self.TextMode:
+            superSelf.setText(self.__text)
+            fontMetrics = qt.QFontMetrics(self.font())
+            width = fontMetrics.width(self.text())
+            width += self.listWidget().iconSize().width() + 20
+            superSelf.setSizeHint(qt.QSize(width, 60))
+        elif self.__mode == self.IconMode:
+            superSelf.setText(None)
+            width = self.listWidget().iconSize().width() + 7
+            superSelf.setSizeHint(qt.QSize(width, 60))
         else:
-            warningIcon = self.__getWarningIcon(item._icon)
-            item.setIcon(warningIcon)
+            assert(False)
+
+        if self.__warnings is None:
+            superSelf.setIcon(self.__icon)
+        else:
+            if self.__warningIcon is None:
+                icon = self.__createWarningIcon(self.__icon)
+                self.__warningIcon = icon
+            superSelf.setIcon(self.__warningIcon)
 
     def __createCompoundIcon(self, backgroundIcon, foregroundIcon):
         icon = qt.QIcon()
@@ -110,14 +114,47 @@ class CalibrationWindow(qt.QMainWindow):
 
         return icon
 
-    def __getWarningIcon(self, baseIcon):
-        iconHash = baseIcon.cacheKey()
-        icon = self.__iconCache.get(iconHash, None)
-        if icon is None:
-            nxIcon = icons.getQIcon("pyfai:gui/icons/layer-warning")
-            icon = self.__createCompoundIcon(baseIcon, nxIcon)
-            self.__iconCache[iconHash] = icon
+    def __createWarningIcon(self, baseIcon):
+        nxIcon = icons.getQIcon("pyfai:gui/icons/layer-warning")
+        icon = self.__createCompoundIcon(baseIcon, nxIcon)
         return icon
+
+
+class CalibrationWindow(qt.QMainWindow):
+
+    def __init__(self, context):
+        super(CalibrationWindow, self).__init__()
+        context.setParent(self)
+        qt.loadUi(pyFAI.utils.get_ui_file("calibration-main.ui"), self)
+        self.__context = context
+        model = context.getCalibrationModel()
+
+        context.restoreWindowLocationSettings("main-window", self)
+
+        self.__listMode = MenuItem.TextMode
+
+        self.__tasks = self.createTasks()
+        for task in self.__tasks:
+            task.nextTaskRequested.connect(self.nextTask)
+            item = MenuItem(self._list)
+            item.setText(task.windowTitle())
+            item.setIcon(task.windowIcon())
+            self._stack.addWidget(task)
+
+            task.warningUpdated.connect(functools.partial(self.__updateTaskState, task, item))
+
+        if len(self.__tasks) > 0:
+            self._list.setCurrentRow(0)
+            # Hide the nextStep button of the last task
+            task.setNextStepVisible(False)
+
+        self._list.sizeHint = self._listSizeHint
+        self._list.minimumSizeHint = self._listMinimumSizeHint
+        self.setModel(model)
+
+    def __updateTaskState(self, task, item):
+        warnings = task.nextStepWarning()
+        item.setWarnings(warnings)
 
     def _listMinimumSizeHint(self):
         return qt.QSize(self._list.iconSize().width() + 7, 10)
@@ -138,16 +175,9 @@ class CalibrationWindow(qt.QMainWindow):
         if self.__listMode == mode:
             return
         self.__listMode = mode
-        if mode == "text":
-            for row in range(self._list.count()):
-                item = self._list.item(row)
-                item.setText(item._text)
-                item.setToolTip("")
-        else:
-            for row in range(self._list.count()):
-                item = self._list.item(row)
-                item.setText(None)
-                item.setToolTip(item._text)
+        for row in range(self._list.count()):
+            item = self._list.item(row)
+            item.setDisplayMode(mode)
         self._list.adjustSize()
         self._list.updateGeometry()
 
@@ -156,9 +186,9 @@ class CalibrationWindow(qt.QMainWindow):
         oldWidth = event.oldSize().width()
         delta = width - oldWidth
         if (delta < 0 or oldWidth == -1) and width < 1100:
-            self._setListMode("icon")
+            self._setListMode(MenuItem.IconMode)
         elif (delta > 0 or oldWidth == -1) and width > 1500:
-            self._setListMode("text")
+            self._setListMode(MenuItem.TextMode)
         return qt.QMainWindow.resizeEvent(self, event)
 
     def closeEvent(self, event):
