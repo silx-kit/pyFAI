@@ -124,10 +124,59 @@ class ExperimentTask(AbstractCalibrationTask):
         settings.detectorModel().changed.connect(self.__detectorModelUpdated)
         settings.wavelength().changed.connect(self.__waveLengthChanged)
 
+        settings.changed.connect(self.__settingsChanged)
+
         self.__imageUpdated()
         self.__waveLengthChanged()
         self.__calibrantChanged()
         self.__detectorModelUpdated()
+        self.__settingsChanged()
+
+    def __settingsChanged(self):
+        settings = self.model().experimentSettingsModel()
+        settings.detectorModel().changed.connect(self.__detectorModelUpdated)
+
+        image = settings.image().value()
+        detectorModel = settings.detectorModel().detector()
+        calibrantModel = settings.calibrantModel().calibrant()
+        wavelength = settings.wavelength().value()
+
+        warnings = []
+
+        print("__settingsChanged")
+
+        if image is None:
+            warnings.append("An image have to be specified")
+        if detectorModel is None:
+            warnings.append("A detector have to be specified")
+        if calibrantModel is None:
+            warnings.append("A calibrant have to be specified")
+        if wavelength is None:
+            warnings.append("An energy have to be specified")
+        if image is not None and calibrantModel is not None:
+            try:
+                detector = settings.detector()
+                binning = detector.guess_binning(image)
+                print("__settingsChanged", binning)
+                if not binning:
+                    raise Exception("inconsistancy")
+            except Exception as e:
+                print(e)
+                warnings.append("Inconsistancy between sizes of image and detector")
+
+        self._globalWarnings = warnings
+        self.updateNextStepStatus()
+
+    def nextStepWarning(self):
+        if len(self._globalWarnings) == 0:
+            return None
+        else:
+            warning = ""
+            for w in self._globalWarnings:
+                warning += "<li>%s</li>" % w
+            warning = "<ul>%s</ul>" % warning
+            warning = "<html>%s</html>" % warning
+            return warning
 
     def __customDetector(self):
         settings = self.model().experimentSettingsModel()
