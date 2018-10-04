@@ -2776,7 +2776,7 @@ class AzimuthalIntegrator(Geometry):
             error_model = error_model.lower()
             if error_model == "poisson":
                 if dark is None:
-                    variance = numpy.ascontiguousarray(data, numpy.float32)
+                    variance = numpy.ascontiguousarray(abs(data), numpy.float32)
                 else:
                     variance = abs(data) + abs(dark)
 
