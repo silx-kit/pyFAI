@@ -27,13 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/10/2018"
+__date__ = "04/10/2018"
 
 import fabio
 import numpy
 import logging
 from contextlib import contextmanager
-from collections import OrderedDict
+import collections
 
 import silx.gui.plot
 from silx.gui import qt
@@ -290,7 +290,7 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
-        extensions = OrderedDict()
+        extensions = collections.OrderedDict()
         extensions["EDF image files"] = "*.edf"
         extensions["TIFF image files"] = "*.tif *.tiff"
         extensions["NumPy binary files"] = "*.npy"
@@ -335,7 +335,7 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
-        extensions = OrderedDict()
+        extensions = collections.OrderedDict()
         extensions["Calibrant files"] = "*.D"
 
         filters = []
