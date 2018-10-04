@@ -55,5 +55,5 @@ else:
     resources.silx_integration()
 
     from silx.opencl import utils
-    from silx.opencl.utils import get_opencl_code, concatenate_cl_kernel
+    from silx.opencl.utils import get_opencl_code, concatenate_cl_kernel, read_cl_file
     from silx.opencl import processing

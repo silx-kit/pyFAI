@@ -38,12 +38,14 @@ __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
+logger = logging.getLogger(__name__)
+
 from collections import OrderedDict
 import numpy
-from .common import pyopencl, mf
-from .processing import OpenclProcessing, BufferDescription, EventDescription
-
-logger = logging.getLogger(__name__)
+from . import pyopencl, mf, processing
+EventDescription = processing.EventDescription
+OpenclProcessing = processing.OpenclProcessing
+BufferDescription = processing.BufferDescription
 
 
 class OCL_Preproc(OpenclProcessing):

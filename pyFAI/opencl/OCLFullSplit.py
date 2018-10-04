@@ -38,7 +38,7 @@ import os
 import logging
 import threading
 import numpy
-from .common import ocl, pyopencl
+from . import ocl, pyopencl
 from ..ext.splitBBoxLUT import HistoBBox1d
 from . import utils
 if pyopencl:

@@ -41,15 +41,18 @@ __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
 import logging
+logger = logging.getLogger(__name__)
 from collections import OrderedDict
 import numpy
-from .common import ocl, release_cl_buffers, kernel_workgroup_size
+from . import ocl, release_cl_buffers, kernel_workgroup_size
 if ocl:
     import pyopencl.array
+    from . import processing
+    EventDescription = processing.EventDescription
+    OpenclProcessing = processing.OpenclProcessing
+    BufferDescription = processing.BufferDescription
 else:
     raise ImportError("pyopencl is not installed or no device is available")
-from .processing import OpenclProcessing, EventDescription
-logger = logging.getLogger(__name__)
 
 
 class Separator(OpenclProcessing):

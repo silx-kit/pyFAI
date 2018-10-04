@@ -56,14 +56,13 @@ except ImportError as error:
 
 from ..opencl import ocl
 if ocl is not None:
-    from ..opencl import pyopencl
+    from ..opencl import pyopencl, read_cl_file
     import pyopencl.array
 from .. import load
-from ..opencl.utils import read_cl_file
 from . import utilstest
 from .utilstest import UtilsTest
 from ..utils import mathutil
-from pyFAI.utils.decorators import depreclog
+from ..utils.decorators import depreclog
 
 
 class TestMask(unittest.TestCase):

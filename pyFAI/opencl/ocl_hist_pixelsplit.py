@@ -40,7 +40,7 @@ import threading
 import numpy
 from . import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from ..ext.splitBBoxLUT import HistoBBox1d
-from .utils import concatenate_cl_kernel
+from . import utils
 from ..utils import crc32
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -201,7 +201,7 @@ class OCL_Hist_Pixelsplit(object):
         :param kernel_file: path tothe
         """
         kernel_file = kernel_file or "ocl_hist_pixelsplit.cl"
-        kernel_src = concatenate_cl_kernel([kernel_file])
+        kernel_src = utils.concatenate_cl_kernel([kernel_file])
 
         template_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%f"
         compile_options = template_options % (self.bins, self.size, self.BLOCK_SIZE, numpy.finfo(numpy.float32).eps)

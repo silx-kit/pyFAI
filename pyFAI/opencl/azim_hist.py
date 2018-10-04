@@ -50,8 +50,8 @@ import os
 import logging
 import threading
 import numpy
-from .utils import concatenate_cl_kernel
-from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
+from . import concatenate_cl_kernel
+from . import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 if pyopencl:
     mf = pyopencl.mem_flags
 else:

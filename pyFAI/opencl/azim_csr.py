@@ -36,7 +36,7 @@ __contact__ = "jerome.kieffer@esrf.fr"
 import logging
 from collections import OrderedDict
 import numpy
-from .common import pyopencl, kernel_workgroup_size
+from . import pyopencl, kernel_workgroup_size
 from ..utils import calc_checksum
 
 if pyopencl:
@@ -44,7 +44,10 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 
-from .processing import EventDescription, OpenclProcessing, BufferDescription
+from . import processing
+EventDescription = processing.EventDescription
+OpenclProcessing = processing.OpenclProcessing
+BufferDescription = processing.BufferDescription
 
 
 logger = logging.getLogger(__name__)

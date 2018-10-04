@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "15/03/2018"
+__date__ = "04/10/2018"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,8 +37,8 @@ import logging
 import threading
 import numpy
 
-from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
-from .utils import concatenate_cl_kernel
+from . import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers, utils
+
 from ..utils import crc32
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -184,7 +184,7 @@ class OCL_CSR_Integrator(object):
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or "ocl_azim_CSR.cl"
-        kernel_src = concatenate_cl_kernel(["preprocess.cl", kernel_file])
+        kernel_src = utils.concatenate_cl_kernel(["preprocess.cl", kernel_file])
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D ON_CPU=%i" % \
                           (self.bins, self.size, self.BLOCK_SIZE, int(self.device_type == "CPU"))  # noqa

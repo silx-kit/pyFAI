@@ -37,14 +37,17 @@ __contact__ = "jerome.kieffer@esrf.fr"
 import logging
 import numpy
 from collections import OrderedDict
-from .common import pyopencl
+from . import pyopencl
 from ..utils import calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
 
-from .processing import EventDescription, OpenclProcessing, BufferDescription
+from . import processing
+EventDescription = processing.EventDescription
+OpenclProcessing = processing.OpenclProcessing
+BufferDescription = processing.BufferDescription
 
 logger = logging.getLogger(__name__)
 
