@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2018"
+__date__ = "02/10/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2776,9 +2776,9 @@ class AzimuthalIntegrator(Geometry):
             error_model = error_model.lower()
             if error_model == "poisson":
                 if dark is None:
-                    variance = numpy.ascontiguousarray(data, numpy.float32)
+                    variance = numpy.ascontiguousarray(abs(data), numpy.float32)
                 else:
-                    variance = data + dark
+                    variance = abs(data) + abs(dark)
 
         kwargs = {"npt": npt,
                   "error_model": None,
