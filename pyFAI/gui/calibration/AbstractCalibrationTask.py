@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "04/10/2018"
 
 from silx.gui import qt
 
@@ -46,6 +46,10 @@ class AbstractCalibrationTask(qt.QWidget):
     def initNextStep(self):
         if hasattr(self, "_nextStep"):
             self._nextStep.clicked.connect(self.nextTask)
+
+    def setNextStepVisible(self, isVisible):
+        if hasattr(self, "_nextStep"):
+            self._nextStep.setVisible(isVisible)
 
     def eventFilter(self, widget, event):
         result = super(AbstractCalibrationTask, self).eventFilter(widget, event)

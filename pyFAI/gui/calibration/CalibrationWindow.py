@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/10/2018"
+__date__ = "04/10/2018"
 
 from silx.gui import qt
 import pyFAI.utils
@@ -63,6 +63,8 @@ class CalibrationWindow(qt.QMainWindow):
 
         if len(self.__tasks) > 0:
             self._list.setCurrentRow(0)
+            # Hide the nextStep button of the last task
+            task.setNextStepVisible(False)
 
         self._list.sizeHint = self._listSizeHint
         self._list.minimumSizeHint = self._listMinimumSizeHint
