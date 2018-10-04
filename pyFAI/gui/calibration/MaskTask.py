@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/10/2018"
+__date__ = "04/10/2018"
 
 import logging
 from silx.gui import qt
@@ -47,8 +47,7 @@ _logger = logging.getLogger(__name__)
 
 class MaskTask(AbstractCalibrationTask):
 
-    def __init__(self):
-        super(MaskTask, self).__init__()
+    def _initGui(self):
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-mask.ui"), self)
         icon = silx.gui.icons.getQIcon("pyfai:gui/icons/task-mask")
         self.setWindowIcon(icon)

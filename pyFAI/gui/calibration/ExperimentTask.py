@@ -53,8 +53,7 @@ _logger = logging.getLogger(__name__)
 
 class ExperimentTask(AbstractCalibrationTask):
 
-    def __init__(self):
-        super(ExperimentTask, self).__init__()
+    def _initGui(self):
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-experiment.ui"), self)
         icon = icons.getQIcon("pyfai:gui/icons/task-settings")
         self.setWindowIcon(icon)

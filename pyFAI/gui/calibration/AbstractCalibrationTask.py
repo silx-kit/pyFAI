@@ -40,8 +40,15 @@ class AbstractCalibrationTask(qt.QWidget):
 
     def __init__(self):
         super(AbstractCalibrationTask, self).__init__()
+        self._initGui()
         self.__model = None
         self.installEventFilter(self)
+        if hasattr(self, "_nextStep"):
+            self._nextStep.setIconSize(qt.QSize(32, 32))
+
+    def _initGui(self):
+        """Inherite this method to custom the widget"""
+        pass
 
     def initNextStep(self):
         if hasattr(self, "_nextStep"):
