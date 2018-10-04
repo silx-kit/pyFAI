@@ -29,7 +29,11 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "04/10/2018"
 
+import functools
+
 from silx.gui import qt
+from silx.gui import icons
+
 import pyFAI.utils
 from .model import MarkerModel
 
@@ -45,6 +49,7 @@ class CalibrationWindow(qt.QMainWindow):
 
         context.restoreWindowLocationSettings("main-window", self)
 
+        self.__iconCache = {}
         self.__listMode = "text"
 
         self.__tasks = self.createTasks()
@@ -54,12 +59,15 @@ class CalibrationWindow(qt.QMainWindow):
             item.setText(task.windowTitle())
             item._text = task.windowTitle()
             item.setIcon(task.windowIcon())
+            item._icon = task.windowIcon()
             self._stack.addWidget(task)
 
             fontMetrics = qt.QFontMetrics(item.font())
             width = fontMetrics.width(item.text())
             width += self._list.iconSize().width() + 20
             item.setSizeHint(qt.QSize(width, 60))
+
+            task.warningUpdated.connect(functools.partial(self.__updateTaskState, task, item))
 
         if len(self.__tasks) > 0:
             self._list.setCurrentRow(0)
@@ -69,6 +77,47 @@ class CalibrationWindow(qt.QMainWindow):
         self._list.sizeHint = self._listSizeHint
         self._list.minimumSizeHint = self._listMinimumSizeHint
         self.setModel(model)
+
+    def __updateTaskState(self, task, item):
+        warnings = task.nextStepWarning()
+        if warnings is None:
+            item.setIcon(item._icon)
+        else:
+            warningIcon = self.__getWarningIcon(item._icon)
+            item.setIcon(warningIcon)
+
+    def __createCompoundIcon(self, backgroundIcon, foregroundIcon):
+        icon = qt.QIcon()
+
+        sizes = backgroundIcon.availableSizes()
+        sizes = sorted(sizes, key=lambda s: s.height())
+        sizes = filter(lambda s: s.height() < 100, sizes)
+        sizes = list(sizes)
+        if len(sizes) > 0:
+            baseSize = sizes[-1]
+        else:
+            baseSize = qt.QSize(32, 32)
+
+        modes = [qt.QIcon.Normal, qt.QIcon.Disabled]
+        for mode in modes:
+            pixmap = qt.QPixmap(baseSize)
+            pixmap.fill(qt.Qt.transparent)
+            painter = qt.QPainter(pixmap)
+            painter.drawPixmap(0, 0, backgroundIcon.pixmap(baseSize, mode=mode))
+            painter.drawPixmap(0, 0, foregroundIcon.pixmap(baseSize, mode=mode))
+            painter.end()
+            icon.addPixmap(pixmap, mode=mode)
+
+        return icon
+
+    def __getWarningIcon(self, baseIcon):
+        iconHash = baseIcon.cacheKey()
+        icon = self.__iconCache.get(iconHash, None)
+        if icon is None:
+            nxIcon = icons.getQIcon("pyfai:gui/icons/layer-warning")
+            icon = self.__createCompoundIcon(baseIcon, nxIcon)
+            self.__iconCache[iconHash] = icon
+        return icon
 
     def _listMinimumSizeHint(self):
         return qt.QSize(self._list.iconSize().width() + 7, 10)
