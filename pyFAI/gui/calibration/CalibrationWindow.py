@@ -90,6 +90,20 @@ class MenuItem(qt.QListWidgetItem):
                 self.__warningIcon = icon
             superSelf.setIcon(self.__warningIcon)
 
+        if self.__warnings is None and self.__mode == self.TextMode:
+            superSelf.setToolTip("")
+        else:
+            toolTip = self.__text
+
+            toolTip = ""
+            if self.__mode == self.IconMode:
+                toolTip += self.__text
+            if self.__warnings is not None:
+                if toolTip != "":
+                    toolTip += "<br/>"
+                toolTip += self.__warnings
+            superSelf.setToolTip(toolTip)
+
     def __createCompoundIcon(self, backgroundIcon, foregroundIcon):
         icon = qt.QIcon()
 
