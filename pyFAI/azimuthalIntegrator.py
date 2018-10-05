@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2018"
+__date__ = "04/10/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -113,22 +113,22 @@ if ocl:
     try:
         from .opencl import azim_hist as ocl_azim  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
-        logger.error("Unable to import pyFAI.ocl_azim: %s", error)
+        logger.error("Unable to import pyFAI.opencl.azim_hist: %s", error)
         ocl_azim = None
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
     except ImportError as error:
-        logger.error("Unable to import pyFAI.ocl_azim_csr: %s", error)
+        logger.error("Unable to import pyFAI.opencl.azim_csr: %s", error)
         ocl_azim_csr = None
     try:
         from .opencl import azim_lut as ocl_azim_lut  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
-        logger.error("Unable to import pyFAI.ocl_azim_lut for: %s", error)
+        logger.error("Unable to import pyFAI.opencl.azim_lut: %s", error)
         ocl_azim_lut = None
     try:
         from .opencl import sort as ocl_sort
     except ImportError as error:  # IGNORE:W0703
-        logger.error("Unable to import pyFAI.ocl_sort for: %s", error)
+        logger.error("Unable to import pyFAI.opencl.sort: %s", error)
         ocl_sort = None
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None

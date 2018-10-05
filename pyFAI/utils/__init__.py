@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "04/10/2018"
 __status__ = "production"
 
 import logging
@@ -52,7 +52,7 @@ else:
     from os.path import exists
 
 logger = logging.getLogger(__name__)
-
+from .. import resources
 from ..third_party import six
 try:
     from ..directories import data_dir
@@ -189,14 +189,25 @@ def get_calibration_dir():
     return _get_data_path("calibration")
 
 
-def get_cl_file(filename):
-    """get the full path of a openCL file
+def get_cl_file(resource):
+    """get the full path of a openCL resource file
 
+    The resource name can be prefixed by the name of a resource directory. For
+    example "silx:foo.png" identify the resource "foo.png" from the resource
+    directory "silx".
+    See also :func:`silx.resources.register_resource_directory`.
+
+    :param str resource: Resource name. File name contained if the `opencl`
+        directory of the resources.
     :return: the full path of the openCL source file
     """
-    if not filename.endswith(".cl"):
-        filename += ".cl"
-    return _get_data_path(os.path.join("openCL", filename))
+    if not resource.endswith(".cl"):
+        resource += ".cl"
+    s = resource.split(":")
+    if (len(s) == 1):
+        resource = "pyfai:" + resource
+    return resources._resource_filename(resource,
+                                        default_directory="opencl")
 
 
 def get_ui_file(filename):

@@ -35,17 +35,18 @@ __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "04/10/2018"
 
 import logging
 import numpy
 
 import unittest
-from ..common import ocl, _measure_workgroup_size
+from .. import ocl, get_opencl_code
 if ocl:
     import pyopencl.array
-from ..utils import get_opencl_code
 from ...test.utilstest import UtilsTest
+from silx.opencl.common import _measure_workgroup_size
+
 logger = logging.getLogger(__name__)
 
 
