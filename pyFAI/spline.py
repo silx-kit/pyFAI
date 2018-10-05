@@ -36,7 +36,7 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "13/08/2018"
+__date__ = "05/10/2018"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -313,21 +313,21 @@ class Spline(object):
             x_1d_array = numpy.arange(self.xmin, self.xmax + 1)
             y_1d_array = numpy.arange(self.ymin, self.ymax + 1)
             startTime = time.time()
-            self.xDispArray = fitpack.bisplev(
-                x_1d_array, y_1d_array, [self.xSplineKnotsX,
-                                         self.xSplineKnotsY,
-                                         self.xSplineCoeff,
-                                         self.splineOrder,
-                                         self.splineOrder],
-                dx=0, dy=0).transpose()
+            self.xDispArray = fitpack.bisplev(x_1d_array, y_1d_array,
+                                              [self.xSplineKnotsX,
+                                               self.xSplineKnotsY,
+                                               self.xSplineCoeff,
+                                               self.splineOrder,
+                                               self.splineOrder],
+                                              dx=0, dy=0).transpose()
             intermediateTime = time.time()
-            self.yDispArray = fitpack.bisplev(
-                x_1d_array, y_1d_array, [self.ySplineKnotsX,
-                                         self.ySplineKnotsY,
-                                         self.ySplineCoeff,
-                                         self.splineOrder,
-                                         self.splineOrder],
-                dx=0, dy=0).transpose()
+            self.yDispArray = fitpack.bisplev(x_1d_array, y_1d_array,
+                                              [self.ySplineKnotsX,
+                                               self.ySplineKnotsY,
+                                               self.ySplineCoeff,
+                                               self.splineOrder,
+                                               self.splineOrder],
+                                              dx=0, dy=0).transpose()
             if timing:
                 logger.info("Timing for: X-Displacement spline evaluation: %.3f sec,"
                             " Y-Displacement Spline evaluation:  %.3f sec." %
@@ -356,26 +356,30 @@ class Spline(object):
                 x = x[:, 0]
                 y = y[0]
         if list_of_points and x.ndim == 1 and len(x) == len(y):
-            lx = ly = len(x)
-            x_order = x.argsort()
-            y_order = y.argsort()
-            x = x[x_order]
-            y = y[y_order]
-            x_unordered = numpy.zeros(lx, dtype=int)
-            y_unordered = numpy.zeros(ly, dtype=int)
-            x_unordered[x_order] = numpy.arange(lx)
-            y_unordered[y_order] = numpy.arange(ly)
-        xDispArray = fitpack.bisplev(
-            x, y, [self.xSplineKnotsX,
-                   self.xSplineKnotsY,
-                   self.xSplineCoeff,
-                   self.splineOrder,
-                   self.splineOrder],
-            dx=0, dy=0)
+            size = len(x)
+            if size > 1:
+                x_order = x.argsort()
+                y_order = y.argsort()
+                x = x[x_order]
+                y = y[y_order]
+                x_unordered = numpy.zeros(size, dtype=numpy.int32)
+                y_unordered = numpy.zeros(size, dtype=numpy.int32)
+                x_unordered[x_order] = numpy.arange(size)
+                y_unordered[y_order] = numpy.arange(size)
+        x_disp_array = fitpack.bisplev(x, y,
+                                       [self.xSplineKnotsX,
+                                        self.xSplineKnotsY,
+                                        self.xSplineCoeff,
+                                        self.splineOrder,
+                                        self.splineOrder],
+                                       dx=0, dy=0)
         if list_of_points and x.ndim == 1:
-            return xDispArray[x_unordered, y_unordered]
+            if size > 1:
+                return x_disp_array[x_unordered, y_unordered]
+            else:
+                return numpy.array([x_disp_array])
         else:
-            return xDispArray.T
+            return x_disp_array.T
 
     def splineFuncY(self, x, y, list_of_points=False):
         """
@@ -399,27 +403,31 @@ class Spline(object):
                 y = y[0]
 
         if list_of_points and x.ndim == 1 and len(x) == len(y):
-            lx = ly = len(x)
-            x_order = x.argsort()
-            y_order = y.argsort()
-            x = x[x_order]
-            y = y[y_order]
-            x_unordered = numpy.zeros(lx, dtype=int)
-            y_unordered = numpy.zeros(ly, dtype=int)
-            x_unordered[x_order] = numpy.arange(lx)
-            y_unordered[y_order] = numpy.arange(ly)
+            size = len(x)
+            if size > 1:
+                x_order = x.argsort()
+                y_order = y.argsort()
+                x = x[x_order]
+                y = y[y_order]
+                x_unordered = numpy.zeros(size, dtype=numpy.int32)
+                y_unordered = numpy.zeros(size, dtype=numpy.int32)
+                x_unordered[x_order] = numpy.arange(size)
+                y_unordered[y_order] = numpy.arange(size)
 
-        yDispArray = fitpack.bisplev(
-            x, y, [self.ySplineKnotsX,
-                   self.ySplineKnotsY,
-                   self.ySplineCoeff,
-                   self.splineOrder,
-                   self.splineOrder],
-            dx=0, dy=0)
+        y_disp_array = fitpack.bisplev(x, y,
+                                     [self.ySplineKnotsX,
+                                      self.ySplineKnotsY,
+                                      self.ySplineCoeff,
+                                      self.splineOrder,
+                                      self.splineOrder],
+                                     dx=0, dy=0)
         if list_of_points and x.ndim == 1:
-            return yDispArray[x_unordered, y_unordered]
+            if size > 1:
+                return y_disp_array[x_unordered, y_unordered]
+            else:
+                return numpy.array([y_disp_array])
         else:
-            return yDispArray.T
+            return y_disp_array.T
 
     def array2spline(self, smoothing=1000, timing=False):
         """
