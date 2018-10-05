@@ -27,9 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "04/10/2018"
 
 from silx.gui import qt
+from silx.gui import icons
 
 
 class AbstractCalibrationTask(qt.QWidget):
@@ -38,14 +39,57 @@ class AbstractCalibrationTask(qt.QWidget):
     widgetHide = qt.Signal()
     nextTaskRequested = qt.Signal()
 
+    _cacheWarningIcon = None
+
+    warningUpdated = qt.Signal()
+
     def __init__(self):
         super(AbstractCalibrationTask, self).__init__()
+        self._initGui()
         self.__model = None
         self.installEventFilter(self)
+        if hasattr(self, "_nextStep"):
+            self._nextStep.setIconSize(qt.QSize(32, 32))
+
+    def _initGui(self):
+        """Inherite this method to custom the widget"""
+        pass
 
     def initNextStep(self):
         if hasattr(self, "_nextStep"):
             self._nextStep.clicked.connect(self.nextTask)
+
+    def _warningIcon(self):
+        if self._cacheWarningIcon is None:
+            icon = icons.getQIcon("pyfai:gui/icons/warning")
+            pixmap = icon.pixmap(64)
+            coloredIcon = qt.QIcon()
+            coloredIcon.addPixmap(pixmap, qt.QIcon.Normal)
+            coloredIcon.addPixmap(pixmap, qt.QIcon.Disabled)
+            self._cacheWarningIcon = coloredIcon
+        return self._cacheWarningIcon
+
+    def updateNextStepStatus(self):
+        if not hasattr(self, "_nextStep"):
+            return
+        warning = self.nextStepWarning()
+        if warning is None:
+            icon = qt.QIcon()
+            self._nextStep.setIcon(icon)
+            self._nextStep.setToolTip(None)
+            self._nextStep.setEnabled(True)
+        else:
+            self._nextStep.setIcon(self._warningIcon())
+            self._nextStep.setToolTip(warning)
+            self._nextStep.setEnabled(False)
+        self.warningUpdated.emit()
+
+    def nextStepWarning(self):
+        return None
+
+    def setNextStepVisible(self, isVisible):
+        if hasattr(self, "_nextStep"):
+            self._nextStep.setVisible(isVisible)
 
     def eventFilter(self, widget, event):
         result = super(AbstractCalibrationTask, self).eventFilter(widget, event)
