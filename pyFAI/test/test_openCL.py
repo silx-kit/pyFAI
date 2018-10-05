@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/06/2018"
+__date__ = "04/10/2018"
 
 
 import unittest
@@ -56,14 +56,13 @@ except ImportError as error:
 
 from ..opencl import ocl
 if ocl is not None:
-    from ..opencl import pyopencl
+    from ..opencl import pyopencl, read_cl_file
     import pyopencl.array
 from .. import load
-from ..opencl.utils import read_cl_file
 from . import utilstest
 from .utilstest import UtilsTest
 from ..utils import mathutil
-from pyFAI.utils.decorators import depreclog
+from ..utils.decorators import depreclog
 
 
 class TestMask(unittest.TestCase):
@@ -228,7 +227,7 @@ class TestSort(unittest.TestCase):
         self.ws = min(workgroup, self.ws)
         self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
         self.local_mem = pyopencl.LocalMemory(self.ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
-        src = read_cl_file("bitonic.cl")
+        src = read_cl_file("pyfai:openCL/bitonic.cl")
         self.prg = pyopencl.Program(self.ctx, src).build()
 
     def tearDown(self):
@@ -367,7 +366,7 @@ class TestKahan(unittest.TestCase):
             result[1] = acc.s1;
         }
         """
-        prg = pyopencl.Program(self.ctx, read_cl_file("kahan.cl") + src).build()
+        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build()
         ones_d = pyopencl.array.to_device(self.queue, data)
         res_d = pyopencl.array.zeros(self.queue, 2, numpy.float32)
         evt = prg.summation(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
@@ -448,7 +447,7 @@ class TestKahan(unittest.TestCase):
         }
 
         """
-        prg = pyopencl.Program(self.ctx, read_cl_file("kahan.cl") + src).build()
+        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build()
         ones_d = pyopencl.array.to_device(self.queue, data)
         res_d = pyopencl.array.zeros(self.queue, 2, numpy.float32)
         evt = prg.test_dot16(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)

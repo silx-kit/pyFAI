@@ -29,14 +29,14 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "02/10/2018"
+__date__ = "04/10/2018"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from .common import pyopencl, kernel_workgroup_size
+from . import pyopencl, kernel_workgroup_size
 from ..utils import calc_checksum
 
 if pyopencl:
@@ -44,7 +44,10 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 
-from .processing import EventDescription, OpenclProcessing, BufferDescription
+from . import processing
+EventDescription = processing.EventDescription
+OpenclProcessing = processing.OpenclProcessing
+BufferDescription = processing.BufferDescription
 
 
 logger = logging.getLogger(__name__)
@@ -56,7 +59,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
     It also performs the preprocessing using the preproc kernel
     """
-    BLOCK_SIZE = 32
+    BLOCK_SIZE = 64
     buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
@@ -69,13 +72,18 @@ class OCL_CSR_Integrator(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["kahan.cl", "preprocess.cl", "memset.cl", "ocl_azim_CSR.cl"]
+    kernel_files = ["pyfai:openCL/kahan.cl",
+                    "pyfai:openCL/preprocess.cl",
+                    "pyfai:openCL/memset.cl",
+                    "pyfai:openCL/ocl_azim_CSR.cl"
+                    ]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
                numpy.uint16: "u16_to_float",
                numpy.uint32: "u32_to_float",
-               numpy.int32: "s32_to_float"}
+               numpy.int32: "s32_to_float"
+               }
 
     def __init__(self, lut, image_size, checksum=None, empty=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
