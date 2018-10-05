@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2018"
+__date__ = "05/10/2018"
 
 import unittest
 import logging
@@ -43,6 +43,9 @@ from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from .. import utils
 from .. import _version
+
+# to increase test coverage of missing files:
+from .. import directories
 
 
 class TestUtils(unittest.TestCase):
