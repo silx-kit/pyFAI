@@ -25,9 +25,10 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "03/10/2018"
 
 import numpy
+import numbers
 import logging
 import functools
 
@@ -45,6 +46,7 @@ class QuantityLabel(qt.QLabel):
         qt.QLabel.__init__(self, parent)
         self.__prefix = ""
         self.__formatter = "{value}"
+        self.__floatFormatter = None
         self.__value = None
         self.__internalUnit = None
         self.__displayedUnit = None
@@ -100,6 +102,15 @@ class QuantityLabel(qt.QLabel):
         self.__formatter = formatter
         self.__updateText()
 
+    def setFloatFormatter(self, formatter):
+        """Set a specific formatter for float.
+
+        If this formatter is None (default value) or the value is not a
+        floatting point, the default formatter is used.
+        """
+        self.__floatFormatter = formatter
+        self.__updateText()
+
     def setElasticSize(self, useElasticSize):
         if self.__elasticSize == useElasticSize:
             return
@@ -133,7 +144,11 @@ class QuantityLabel(qt.QLabel):
 
                 try:
                     value = units.convert(value, self.__internalUnit, currentUnit)
-                    text = self.__formatter.format(value=value)
+                    if isinstance(value, numbers.Real) and self.__floatFormatter is not None:
+                        formatter = self.__floatFormatter
+                    else:
+                        formatter = self.__formatter
+                    text = formatter.format(value=value)
                     if symbol is not None:
                         text = text + " " + symbol
                 except Exception as e:

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/10/2018"
+__date__ = "04/10/2018"
 
 import logging
 import numpy
@@ -51,12 +51,12 @@ from .helper.MarkerManager import MarkerManager
 
 _logger = logging.getLogger(__name__)
 
-_iconVariableFixed = None
-_iconVariableConstrained = None
-_iconVariableConstrainedOut = None
-
 
 class FitParamView(qt.QObject):
+
+    _iconVariableFixed = None
+    _iconVariableConstrained = None
+    _iconVariableConstrainedOut = None
 
     def __init__(self, parent, label, internalUnit, displayedUnit=None):
         qt.QObject.__init__(self, parent=parent)
@@ -89,13 +89,12 @@ class FitParamView(qt.QObject):
         self.__model = None
         self.__constraintsModel = None
 
-        global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
-        if _iconVariableFixed is None:
-            _iconVariableFixed = icons.getQIcon("pyfai:gui/icons/variable-fixed")
-        if _iconVariableConstrained is None:
-            _iconVariableConstrained = icons.getQIcon("pyfai:gui/icons/variable-constrained")
-        if _iconVariableConstrainedOut is None:
-            _iconVariableConstrainedOut = icons.getQIcon("pyfai:gui/icons/variable-constrained-out")
+        if self._iconVariableFixed is None:
+            self._iconVariableFixed = icons.getQIcon("pyfai:gui/icons/variable-fixed")
+        if self._iconVariableConstrained is None:
+            self._iconVariableConstrained = icons.getQIcon("pyfai:gui/icons/variable-constrained")
+        if self._iconVariableConstrainedOut is None:
+            self._iconVariableConstrainedOut = icons.getQIcon("pyfai:gui/icons/variable-constrained-out")
 
     def model(self):
         return self.__model
@@ -115,9 +114,9 @@ class FitParamView(qt.QObject):
     def __constraintsModelChanged(self):
         constraint = self.__constraintsModel
         if constraint.isFixed():
-            icon = _iconVariableFixed
+            icon = self._iconVariableFixed
         else:
-            icon = _iconVariableConstrained
+            icon = self._iconVariableConstrained
         self.__constraints.setIcon(icon)
 
     def __constraintsClicked(self):
@@ -145,6 +144,7 @@ class _StatusBar(qt.QStatusBar):
         self.__pixel = QuantityLabel(self)
         self.__pixel.setPrefix(u"<b>Pixel</b>: ")
         self.__pixel.setFormatter(u"{value}")
+        self.__pixel.setFloatFormatter(u"{value: >4.3F}")
         self.__pixel.setElasticSize(True)
         self.addWidget(self.__pixel)
         self.__chi = QuantityLabel(self)
@@ -415,9 +415,11 @@ class _RingPlot(silx.gui.plot.PlotWidget):
 
 class GeometryTask(AbstractCalibrationTask):
 
-    def __init__(self):
-        super(GeometryTask, self).__init__()
+    def _initGui(self):
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-geometry.ui"), self)
+        icon = icons.getQIcon("pyfai:gui/icons/task-fit-geometry")
+        self.setWindowIcon(icon)
+
         self.initNextStep()
         self.widgetShow.connect(self.__widgetShow)
 
