@@ -28,19 +28,13 @@
 #  THE SOFTWARE.
 
 
-"""
-eiger-mask
-
-A tool for extracting the mask from an Eiger master file.
-
-$ eiger-mask master.h5
-"""
+"""extracts the mask from an Eiger master file."""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "08/10/2018"
 __satus__ = "development"
 
 

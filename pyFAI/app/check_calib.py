@@ -27,19 +27,13 @@
 #  THE SOFTWARE.
 
 from __future__ import absolute_import, print_function, with_statement, division
-"""
-check_calib
-
-This is a very simple tool that checks a calibratation at the sub-pixel level.
-
-This software is deprecated, you should use `pyFAI-calib`.
-"""
+"""DEPRECATED tool that checks a calibratation at the sub-pixel level"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2018"
+__date__ = "08/10/2018"
 __satus__ = "production"
 
 import logging

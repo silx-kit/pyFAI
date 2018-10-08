@@ -27,23 +27,13 @@
 #  THE SOFTWARE.
 
 
-"""
-
-MX-calibrate is a tool to calibrate the distance of a detector from a set of powder diffraction patterns
-
-Idea:
-
-MX-calibrate -e 12 --spacing dSpacing.D file1.edf file2.edf file3.edf
-
-calibrate the by hand the most distant frame then calibrate subsequently all frames
-
-"""
+"""calibrate the distance of a detector from a set of powder diffraction patterns"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2018"
+__date__ = "08/10/2018"
 __satus__ = "development"
 
 import logging

@@ -27,15 +27,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""
-pyFAI-average is a small utility that averages out a serie of files,
-for example for dark, or flat or calibration images
-"""
+"""small utility that averages out a serie of files"""
+
 __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "08/10/2018"
 __status__ = "production"
 
 import os

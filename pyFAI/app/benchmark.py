@@ -27,15 +27,12 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""
-pyFAI-benchmark is a small utility that runs the benchmark for azimuthal
-integration on images of various sizes
-"""
+"""utility to run the benchmark for azimuthal integration on images of various sizes"""
 __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "08/10/2018"
 __status__ = "development"
 
 import logging
