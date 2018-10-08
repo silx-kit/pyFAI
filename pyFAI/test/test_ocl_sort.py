@@ -105,11 +105,7 @@ class TestOclSort(unittest.TestCase):
     def test_sort_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.sort_vertical(self.ary).get()
-        platform = s.ctx.devices[0].platform.name
-        if platform in self.KNOWN_INVALID_RESULTS:
-            logger.warning("Broken platform: %s", platform)
-        else:
-            self.assertTrue(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
+        self.assertTrue(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -117,11 +113,7 @@ class TestOclSort(unittest.TestCase):
     def test_filter_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.filter_vertical(self.ary).get()
-        platform = s.ctx.devices[0].platform.name
-        if platform in self.KNOWN_INVALID_RESULTS:
-            logger.warning("Broken platform: %s", platform)
-        else:
-            self.assertTrue(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
+        self.assertTrue(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -129,11 +121,7 @@ class TestOclSort(unittest.TestCase):
     def test_sort_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.sort_horizontal(self.ary).get()
-        platform = s.ctx.devices[0].platform.name
-        if platform in self.KNOWN_INVALID_RESULTS:
-            logger.warning("Broken platform: %s", platform)
-        else:
-            self.assertTrue(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
+        self.assertTrue(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -141,11 +129,7 @@ class TestOclSort(unittest.TestCase):
     def test_filter_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.filter_horizontal(self.ary).get()
-        platform = s.ctx.devices[0].platform.name
-        if 0:  # platform in self.KNOWN_INVALID_RESULTS:
-            logger.warning("Broken platform: %s", platform)
-        else:
-            self.assertTrue(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
+        self.assertTrue(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -155,12 +139,8 @@ class TestOclSort(unittest.TestCase):
         res = s.mean_std_vertical(self.ary)
         m = res[0].get()
         d = res[1].get()
-        platform = s.ctx.devices[0].platform.name
-        if 0:  # platform in self.KNOWN_INVALID_RESULTS:
-            logger.warning("Broken platform: %s", platform)
-        else:
-            self.assertTrue(numpy.allclose(self.ary.mean(axis=0, dtype="float64"), m,), "vertical mean is OK")
-            self.assertTrue(numpy.allclose(self.ary.std(axis=0, dtype="float64"), d), "vertical std is OK")
+        self.assertTrue(numpy.allclose(self.ary.mean(axis=0, dtype="float64"), m,), "vertical mean is OK")
+        self.assertTrue(numpy.allclose(self.ary.std(axis=0, dtype="float64"), d), "vertical std is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -170,12 +150,8 @@ class TestOclSort(unittest.TestCase):
         res = s.mean_std_horizontal(self.ary)
         m = res[0].get()
         d = res[1].get()
-        platform = s.ctx.devices[0].platform.name
-        if 0:  # platform in self.KNOWN_INVALID_RESULTS:
-            logger.warning("Broken platform: %s", platform)
-        else:
-            self.assertTrue(numpy.allclose(self.ary.mean(axis=1, dtype="float64"), m,), "horizontal mean is OK")
-            self.assertTrue(numpy.allclose(self.ary.std(axis=1, dtype="float64"), d), "horizontal std is OK")
+        self.assertTrue(numpy.allclose(self.ary.mean(axis=1, dtype="float64"), m,), "horizontal mean is OK")
+        self.assertTrue(numpy.allclose(self.ary.std(axis=1, dtype="float64"), d), "horizontal std is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
