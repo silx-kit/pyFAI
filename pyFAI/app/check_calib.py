@@ -26,14 +26,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-from __future__ import absolute_import, print_function, with_statement, division
 """DEPRECATED tool that checks a calibratation at the sub-pixel level"""
+
+from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2018"
+__date__ = "09/10/2018"
 __satus__ = "production"
 
 import logging
