@@ -33,11 +33,12 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2018"
+__date__ = "09/10/2018"
 __status__ = "production"
 
 import os
 import logging
+from argparse import ArgumentParser
 
 logger = logging.getLogger("average")
 logging.basicConfig(level=logging.INFO)
@@ -46,7 +47,6 @@ logging.captureWarnings(True)
 import pyFAI.utils.shell
 import pyFAI.utils.stringutil
 from pyFAI import average
-from pyFAI.third_party.argparse import ArgumentParser
 
 
 class PreEmitStreamHandler(logging.Handler):

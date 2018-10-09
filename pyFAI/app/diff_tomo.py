@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2018"
+__date__ = "09/10/2018"
 __satus__ = "Production"
 
 import logging
@@ -46,7 +46,7 @@ logger = logging.getLogger("diff_tomo")
 from pyFAI import version as PyFAI_VERSION
 from pyFAI import date as PyFAI_DATE
 from pyFAI.diffmap import DiffMap
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 
 from pyFAI.third_party import six
 urlparse = six.moves.urllib.parse.urlparse

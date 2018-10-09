@@ -28,12 +28,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2018"
+__date__ = "09/10/2018"
 __status__ = "production"
 
 import logging
 import os
 import sys
+from argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -46,7 +47,7 @@ import pyFAI.detectors
 
 import fabio
 
-from pyFAI.third_party.argparse import ArgumentParser
+
 
 try:
     from rfoo.utils import rconsole

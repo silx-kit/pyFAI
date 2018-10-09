@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2018"
+__date__ = "09/10/2018"
 __status__ = "development"
 
 import sys
@@ -40,7 +40,7 @@ import logging
 import numpy
 import fabio
 import pyFAI
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
