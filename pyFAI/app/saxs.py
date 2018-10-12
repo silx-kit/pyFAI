@@ -27,15 +27,12 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 #
-"""
-pyFAI-saxs is the Saxs script of pyFAI that allows data reduction
-for Small Angle Scattering and PDF.
-"""
+"""Integrate 2D images into SAXS patterns. Also used in PDF measurements"""
 __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2018"
+__date__ = "09/10/2018"
 __status__ = "production"
 
 import os
@@ -50,7 +47,7 @@ logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger("PyFAI")
 
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 
 
 def main():
