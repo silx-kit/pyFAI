@@ -30,6 +30,8 @@ __license__ = "MIT"
 __date__ = "15/10/2018"
 
 import logging
+import os.path
+
 from silx.gui import qt
 import silx.gui.plot
 import silx.gui.icons
@@ -43,6 +45,64 @@ from .helper.MarkerManager import MarkerManager
 
 
 _logger = logging.getLogger(__name__)
+
+
+class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
+    """Inherite the silx mask to be able to save and restore internally
+    imported/exported masks to the application model."""
+
+    def __extractDirectory(self, filename):
+        if filename is not None and filename != "":
+            if os.path.exists(filename):
+                if os.path.isdir(filename):
+                    return filename
+                else:
+                    return os.path.dirname(filename)
+        return None
+
+    @property
+    def maskFileDir(self):
+        """The directory from which to load/save mask from/to files."""
+        model = CalibrationContext.instance().getCalibrationModel()
+        experimentSettings = model.experimentSettingsModel()
+
+        # Reach from the previous mask
+        previousFile = experimentSettings.maskFile().value()
+        directory = self.__extractDirectory(previousFile)
+        if directory is None:
+            previousFile = experimentSettings.imageFile().value()
+            directory = self.__extractDirectory(previousFile)
+        if directory is None:
+            directory = os.getcwd()
+        return directory
+
+    @maskFileDir.setter
+    def maskFileDir(self, maskFileDir):
+        # We dont need to store it
+        pass
+
+    def save(self, filename, kind):
+        try:
+            result = silx.gui.plot.MaskToolsWidget.MaskToolsWidget.save(self, filename, kind)
+            self.__maskFilenameUpdated(filename)
+        finally:
+            pass
+        return result
+
+    def load(self, filename):
+        """Override the fuction importing a new mask."""
+        try:
+            result = silx.gui.plot.MaskToolsWidget.MaskToolsWidget.load(self, filename)
+            self.__maskFilenameUpdated(filename)
+        finally:
+            pass
+        return result
+
+    def __maskFilenameUpdated(self, filename):
+        model = CalibrationContext.instance().getCalibrationModel()
+        experimentSettings = model.experimentSettingsModel()
+        maskModel = experimentSettings.maskFile()
+        maskModel.setValue(filename)
 
 
 class MaskTask(AbstractCalibrationTask):
@@ -63,7 +123,7 @@ class MaskTask(AbstractCalibrationTask):
         handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
         handle.customContextMenuRequested.connect(self.__plotContextMenu)
 
-        self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(parent=self._toolHolder, plot=self.__plot)
+        self.__maskPanel = _MaskToolsWidget(parent=self._toolHolder, plot=self.__plot)
         self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
         self.__maskPanel.setMultipleMasks("single")
         layout = self.__maskPanel.layout()
