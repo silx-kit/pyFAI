@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "15/10/2018"
 
 import logging
 from silx.gui import qt
@@ -36,7 +36,7 @@ import silx.gui.icons
 from silx.gui.plot.tools import PositionInfo
 
 import pyFAI.utils
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from .AbstractCalibrationTask import AbstractCalibrationTask
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from .helper.MarkerManager import MarkerManager
