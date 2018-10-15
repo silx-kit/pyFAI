@@ -606,23 +606,27 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __initGeometryLater(self):
         self.__plot.setProcessing()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
         # Wait for Qt repaint first
         qt.QTimer.singleShot(10, self.__initGeometry)
 
     def __resetGeometryLater(self):
         self.__plot.setProcessing()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
         self._resetButton.setWaiting(True)
         # Wait for Qt repaint first
         qt.QTimer.singleShot(1, self.__resetGeometry)
 
     def __fitGeometryLater(self):
         self.__plot.setProcessing()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
         self._fitButton.setWaiting(True)
         # Wait for Qt repaint first
         qt.QTimer.singleShot(1, self.__fitGeometry)
 
     def __unsetProcessing(self):
         self.__plot.unsetProcessing()
+        qt.QApplication.restoreOverrideCursor()
         self._resetButton.setWaiting(False)
         self._fitButton.setWaiting(False)
 

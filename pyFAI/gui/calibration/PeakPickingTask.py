@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "15/10/2018"
 
 import logging
 import numpy
@@ -393,6 +393,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     def unsetProcessing(self):
         self.__processing.deleteLater()
+        self.__processing = None
 
     def setProcessing(self):
         self.__processing = utils.createProcessingWidgetOverlay(self)
@@ -814,6 +815,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
     def __autoExtractRingsLater(self):
         self.__plot.setProcessing()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
         self._extract.setWaiting(True)
         # Wait for Qt repaint first
         qt.QTimer.singleShot(1, self.__autoExtractRings)
@@ -867,6 +869,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
         self.__plot.unsetProcessing()
+        qt.QApplication.restoreOverrideCursor()
         self._extract.setWaiting(False)
 
     def __getImageValue(self, x, y):

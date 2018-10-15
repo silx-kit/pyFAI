@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "15/10/2018"
 
 import logging
 import numpy
@@ -817,6 +817,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
     def __integratingFinished(self):
         self._plot.unsetProcessing()
+        qt.QApplication.restoreOverrideCursor()
 
         self.__updateGUIWithIntegrationResult(self.__integrationProcess)
         self.__integrationProcess = None
@@ -826,6 +827,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
     def __updateGUIWhileIntegrating(self):
         self._plot.setProcessing()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
 
     def __updateGUIWithIntegrationResult(self, integrationProcess):
         self._plot.setIntegrationProcess(integrationProcess)
