@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "15/10/2018"
 __status__ = "production"
 
 import logging
@@ -46,7 +46,6 @@ import pyFAI.calibrant
 import pyFAI.detectors
 
 import fabio
-
 
 
 try:
