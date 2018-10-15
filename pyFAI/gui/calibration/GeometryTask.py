@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "15/10/2018"
 
 import logging
 import numpy
@@ -647,7 +647,7 @@ class GeometryTask(AbstractCalibrationTask):
         if self.__peaksInvalidated:
             self.__initGeometryFromPeaks()
         else:
-            calibration.fromGeometryModel(self.model().fittedGeometry())
+            calibration.fromGeometryModel(self.model().fittedGeometry(), resetResidual=False)
         calibration.fromGeometryConstriansModel(self.model().geometryConstraintsModel())
         calibration.refine()
         # write result to the fitted model
@@ -667,7 +667,7 @@ class GeometryTask(AbstractCalibrationTask):
             text = '%.6e' % rms
             if previousRms is not None:
                 previousRms = units.convert(previousRms, units.Unit.RADIAN, angleUnit)
-                if rms == previousRms:
+                if numpy.isclose(rms, previousRms):
                     diff = "(no changes)"
                 else:
                     diff = '(%+.2e)' % (rms - previousRms)
