@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/10/2018"
+__date__ = "16/10/2018"
 
 import logging
 import numpy
@@ -507,6 +507,12 @@ class PeakPickingTask(AbstractCalibrationTask):
         holderLayout = holder.layout()
         holderLayout.replaceWidget(self._peakSelectionDummy, self.__peakSelectionView)
 
+        layout = qt.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self._ringStatusBarHolder.setLayout(layout)
+        toolBar = self.__createRingToolBar()
+        layout.addWidget(toolBar)
+
         self.__createPlotToolBar(self.__plot)
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
@@ -626,17 +632,18 @@ class PeakPickingTask(AbstractCalibrationTask):
         except KeyboardInterrupt:
             raise
 
-    def __createOptionsWidget(self):
-        menu = qt.QMenu(self)
+    def __createRingToolBar(self):
+        toolBar = qt.QToolBar(self)
 
         # Load peak selection as file
         loadPeaksFromFile = qt.QAction(self)
         icon = icons.getQIcon('document-open')
+        self.__icon = icon
         loadPeaksFromFile.setIcon(icon)
         loadPeaksFromFile.setText("Load peak selection from file")
         loadPeaksFromFile.triggered.connect(self.__loadPeaksFromFile)
         loadPeaksFromFile.setIconVisibleInMenu(True)
-        menu.addAction(loadPeaksFromFile)
+        toolBar.addAction(loadPeaksFromFile)
 
         # Save peak selection as file
         savePeaksAsFile = qt.QAction(self)
@@ -645,14 +652,9 @@ class PeakPickingTask(AbstractCalibrationTask):
         savePeaksAsFile.setText("Save peak selection as file")
         savePeaksAsFile.triggered.connect(self.__savePeaksAsFile)
         savePeaksAsFile.setIconVisibleInMenu(True)
-        menu.addAction(savePeaksAsFile)
+        toolBar.addAction(savePeaksAsFile)
 
-        options = qt.QToolButton(self)
-        icon = icons.getQIcon('pyfai:gui/icons/options')
-        options.setIcon(icon)
-        options.setPopupMode(qt.QToolButton.InstantPopup)
-        options.setMenu(menu)
-        return options
+        return toolBar
 
     def __createPlotToolBar(self, plot):
         from silx.gui.plot import tools
@@ -661,11 +663,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         toolBar = tools.ImageToolBar(parent=self, plot=plot)
         colormapDialog = CalibrationContext.instance().getColormapDialog()
         toolBar.getColormapAction().setColorDialog(colormapDialog)
-        plot.addToolBar(toolBar)
-
-        toolBar = qt.QToolBar("Plot tools", plot)
-        self.__options = self.__createOptionsWidget()
-        toolBar.addWidget(self.__options)
         plot.addToolBar(toolBar)
 
     def __createPlotStatusBar(self, plot):
