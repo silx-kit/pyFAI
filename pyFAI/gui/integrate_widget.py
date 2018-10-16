@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2018"
+__date__ = "10/10/2018"
 __status__ = "development"
 
 import logging
@@ -51,6 +51,7 @@ import numpy
 logger = logging.getLogger(__name__)
 from silx.gui import qt
 import fabio
+from .. import _version
 from .. import worker
 from ..detectors import ALL_DETECTORS, detector_factory
 from ..opencl import ocl
@@ -62,12 +63,21 @@ from ..third_party import six
 
 
 UIC = get_ui_file("integration.ui")
+LOCAL_DOC = "/usr/share/doc/pyfai-doc/html/man/pyFAI-integrate.html"
+if _version.version_info.releaselevel == "final":
+    version_tuple = ".".join(str(i) for i in _version.version_info[:3])
+    REMOTE_DOC = "http://silx.org/doc/pyFAI/" + version_tuple + "/man/pyFAI-integrate.html"
+else:
+    REMOTE_DOC = "http://silx.org/doc/pyFAI/dev/man/pyFAI-integrate.html"
 
 
 class AIWidget(qt.QWidget):
     """
     """
-    URL = "http://pyfai.readthedocs.org/en/latest/man/pyFAI-integrate.html"
+    if os.path.exists(LOCAL_DOC):
+        URL = "file://" + LOCAL_DOC
+    else:
+        URL = REMOTE_DOC
 
     def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
         self.units = {}

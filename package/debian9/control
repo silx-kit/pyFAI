@@ -36,7 +36,8 @@ Build-Depends: cython,
                python3-sphinxcontrib.programoutput,
                python3-nbconvert,
                python3-nbsphinx,
-               help2man
+               help2man,
+               devscripts
 Standards-Version: 3.9.6
 Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/pyfai.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/pyfai.git
@@ -140,7 +141,7 @@ Description: Fast Azimuthal Integration scripts - Python3
  .
  This is the Python 3 version of the package.
 
-Package: python-pyfai-doc
+Package: pyfai-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
