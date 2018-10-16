@@ -28,17 +28,12 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 #
-"""
-pyFAI-waxs is the Waxs script of pyFAI that allows data reduction for
-Wide Angle Scattering, producing output in 2-theta range output in
-radial dimension (and in degrees).
-"""
-
+"""Integrate 2D images into powder diffraction patterns"""
 __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2018"
+__date__ = "09/10/2018"
 __status__ = "production"
 
 import os
@@ -53,7 +48,7 @@ logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger("PyFAI")
 
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 
 
 def main():

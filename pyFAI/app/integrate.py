@@ -28,19 +28,13 @@
 #  THE SOFTWARE.
 
 
-"""
-pyFAI-integrate
-
-A graphical tool for performing azimuthal integration on series of files.
-
-
-"""
+"""GUI tool for configuring azimuthal integration on series of files."""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2018"
+__date__ = "09/10/2018"
 __satus__ = "production"
 import sys
 import logging
@@ -57,7 +51,7 @@ from pyFAI.io import HDF5Writer
 from pyFAI.utils.shell import ProgressBar
 from pyFAI import average
 
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 
 try:
     from rfoo.utils import rconsole

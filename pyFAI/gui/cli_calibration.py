@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/08/2018"
+__date__ = "09/10/2018"
 __status__ = "production"
 
 import os
@@ -52,7 +52,7 @@ from silx.image import marchingsquares
 from scipy.stats import linregress
 import fabio
 
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 from pyFAI.third_party import six
 
 urlparse = six.moves.urllib.parse.urlparse

@@ -27,19 +27,13 @@
 #  THE SOFTWARE.
 
 
-"""
-pyFAI-calib
-
-A tool for determining the geometry of a detector using a reference sample.
-
-
-"""
+"""CLI tool for determining the geometry of a detector using a reference sample."""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2018"
+__date__ = "08/10/2018"
 __satus__ = "development"
 
 import logging

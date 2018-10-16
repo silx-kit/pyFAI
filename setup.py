@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/07/2018"
+__date__ = "09/10/2018"
 __status__ = "stable"
 
 
@@ -239,6 +239,55 @@ class BuildMan(Command):
         succeeded = succeeded and status == 0
         return succeeded
 
+    @staticmethod
+    def _write_script(target_name, lst_lines=None):
+        """Write a script to a temporary file and return its name
+        :paran target_name: base of the script name
+        :param lst_lines: list of lines to be written in the script
+        :return: the actual filename of the script (for execution or removal)
+        """
+        import tempfile
+        import stat
+        script_fid, script_name = tempfile.mkstemp(prefix="%s_" % target_name, text=True)
+        with os.fdopen(script_fid, 'wt') as script:
+            for line in lst_lines:
+                if not line.endswith("\n"):
+                    line += "\n"
+                script.write(line)
+        # make it executable
+        mode = os.stat(script_name).st_mode
+        os.chmod(script_name, mode + stat.S_IEXEC)
+        return script_name
+
+    def get_synopsis(self, module_name, env, log_output=False):
+        """Execute a script to retrieve the synopsis for help2man
+        :return: synopsis 
+        :rtype: single line string
+        """
+        import subprocess
+        script_name = None
+        synopsis = None
+        script = ["#!%s\n" % sys.executable,
+                  "import logging",
+                  "logging.basicConfig(level=logging.ERROR)",
+                  "import %s as app" % module_name,
+                  "print(app.__doc__)"]
+        try:
+            script_name = self._write_script(module_name, script)
+            command_line = [sys.executable, script_name]
+            p = subprocess.Popen(command_line, env=env, stdout=subprocess.PIPE)
+            status = p.wait()
+            if status != 0:
+                logger.warning("Error while getting synopsis for module '%s'.", module_name)
+            synopsis = p.stdout.read().decode("utf-8").strip()
+            if synopsis == 'None':
+                synopsis = None
+        finally:
+            # clean up the script
+            if script_name is not None:
+                os.remove(script_name)
+        return synopsis
+
     def run(self):
         build = self.get_finalized_command('build')
         path = sys.path
@@ -249,10 +298,7 @@ class BuildMan(Command):
         if not os.path.isdir("build/man"):
             os.makedirs("build/man")
         import subprocess
-        import tempfile
-        import stat
         script_name = None
-
         entry_points = self.entry_points_iterator()
         for target_name, module_name, function_name in entry_points:
             logger.info("Build man for entry-point target '%s'" % target_name)
@@ -260,21 +306,22 @@ class BuildMan(Command):
             # we create it, execute it, and delete it at the end
 
             py3 = sys.version_info >= (3, 0)
+
             try:
-                # create a launcher using the right python interpreter
-                script_fid, script_name = tempfile.mkstemp(prefix="%s_" % target_name, text=True)
-                script = os.fdopen(script_fid, 'wt')
-                script.write("#!%s\n" % sys.executable)
-                script.write("import %s as app\n" % module_name)
-                script.write("app.%s()\n" % function_name)
-                script.close()
-                # make it executable
-                mode = os.stat(script_name).st_mode
-                os.chmod(script_name, mode + stat.S_IEXEC)
+                script = ["#!%s" % sys.executable,
+                          "import logging",
+                          "logging.basicConfig(level=logging.ERROR)",
+                          "import %s as app" % module_name,
+                          "app.%s()" % function_name]
+                script_name = self._write_script(target_name, script)
 
                 # execute help2man
                 man_file = "build/man/%s.1" % target_name
-                command_line = ["help2man", script_name, "-o", man_file]
+                command_line = ["help2man", "-N", script_name, "-o", man_file]
+
+                synopsis = self.get_synopsis(module_name, env)
+                if synopsis:
+                    command_line += ["-n", synopsis]
                 if not py3:
                     # Before Python 3.4, ArgParser --version was using
                     # stderr to print the version
