@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2018"
+__date__ = "16/10/2018"
 __status__ = "production"
 
 import logging
@@ -171,6 +171,10 @@ def configure_parser_arguments(parser):
     parser.add_argument("--npt-rad", dest="npt_2d_rad",
                         help="Number of radial bins in 2D integrated images. Default: 400", type=int,
                         default=None)
+
+    # Customization
+    parser.add_argument("--qtargs", dest="qtargs", type=str,
+                        help="Arguments propagated to Qt", default=None)
 
     # Not yet used
     parser.add_argument("--tilt", dest="tilt",
@@ -530,7 +534,11 @@ def main():
     from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
 
     sys.excepthook = logUncaughtExceptions
-    app = qt.QApplication([])
+    if options.qtargs is None:
+        qtArgs = []
+    else:
+        qtArgs = options.qtargs.split()
+    app = qt.QApplication(qtArgs)
     pyFAI.resources.silx_integration()
 
     settings = qt.QSettings(qt.QSettings.IniFormat,
