@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2018"
+__date__ = "16/10/2018"
 __status__ = "production"
 
 
@@ -85,11 +85,11 @@ class Titan(Detector):
     """
     Titan CCD detector from Agilent. Mask not handled
     """
-    MANUFACTURER = "Agilent"
+    MANUFACTURER = ["Agilent", "Oxford Diffraction"]
 
     force_pixel = True
     MAX_SHAPE = (2048, 2048)
-    aliases = ["Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
+    aliases = ["Titan 2k x 2k", "Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
     uniform_pixel = True
 
     def __init__(self, pixel1=60e-6, pixel2=60e-6):
@@ -429,7 +429,7 @@ class Pixium(Detector):
     """
     MANUFACTURER = "Thales Electronics"
 
-    aliases = ["Pixium 4700 detector", "Thales Electronics"]
+    aliases = ["Pixium 4700", "Pixium 4700 detector", "Thales Electronics"]
     force_pixel = True
     MAX_SHAPE = (1910, 2480)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 154e-6

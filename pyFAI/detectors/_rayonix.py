@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2018"
+__date__ = "16/10/2018"
 __status__ = "production"
 
 
@@ -162,7 +162,10 @@ class Rayonix133(_Rayonix):
                          8: 256e-6,
                          }
     MAX_SHAPE = (4096, 4096)
-    aliases = ["MAR133"]
+
+    MANUFACTURER = ["Rayonix", "Mar Research"]
+
+    aliases = ["Rayonix133", "MAR 133", "MAR133"]
 
     def __init__(self, pixel1=64e-6, pixel2=64e-6):
         _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -188,7 +191,8 @@ class RayonixSx165(_Rayonix):
                          8: 316e-6,
                          }
     MAX_SHAPE = (4096, 4096)
-    aliases = ["MAR165", "Rayonix Sx165"]
+    MANUFACTURER = ["Rayonix", "Mar Research"]
+    aliases = ["Rayonix SX165", "MAR 165", "MAR165"]
     force_pixel = True
 
     def __init__(self, pixel1=39.5e-6, pixel2=39.5e-6):
@@ -215,7 +219,7 @@ class RayonixSx200(_Rayonix):
                          8: 384e-6,
                          }
     MAX_SHAPE = (4096, 4096)
-    aliases = ["Rayonix sx200"]
+    aliases = ["Rayonix SX200"]
 
     def __init__(self, pixel1=48e-6, pixel2=48e-6):
         _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -303,7 +307,8 @@ class RayonixMx225(_Rayonix):
                          8: 292.969e-6
                          }
     MAX_SHAPE = (6144, 6144)
-    aliases = ["Rayonix MX225", "MAR225"]
+    MANUFACTURER = ["Rayonix", "Mar Research"]
+    aliases = ["Rayonix MX225", "MAR 225", "MAR225"]
 
     def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6):
         _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -346,7 +351,8 @@ class RayonixMx300(_Rayonix):
                          8: 292.969e-6
                          }
     MAX_SHAPE = (8192, 8192)
-    aliases = ["Rayonix mx300", "MAR300"]
+    MANUFACTURER = ["Rayonix", "Mar Research"]
+    aliases = ["Rayonix MX300", "MAR 300", "MAR300"]
 
     def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6):
         _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -497,7 +503,7 @@ class Mar345(Detector):
     In this detector, pixels are always square
     The valid image size are 2300, 2000, 1600, 1200, 3450, 3000, 2400, 1800
     """
-    MANUFACTURER = "Rayonix"
+    MANUFACTURER = "Mar Research"
 
     force_pixel = True
     MAX_SHAPE = (3450, 3450)
@@ -602,7 +608,7 @@ class Mar555(Detector):
     The detector specifications are adapted from
     http://xds.mpimf-heidelberg.mpg.de/html_doc/detectors.html
     """
-    MANUFACTURER = "Rayonix"
+    MANUFACTURER = "Mar Research"
 
     force_pixel = True
     MAX_SHAPE = (3072, 2560)

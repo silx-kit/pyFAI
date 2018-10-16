@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2018"
+__date__ = "16/10/2018"
 __status__ = "production"
 
 import functools
@@ -476,7 +476,7 @@ class Cirpad(ImXPadS10):
     IS_CONTIGUOUS = False
     force_pixel = True
     uniform_pixel = False
-    aliases = ["XCirpad"]
+    aliases = ["CirPAD", "XCirpad"]
     MEDIUM_MODULE_SIZE = (560, 120)
     MODULE_SIZE = (80, 120)  # number of pixels per module (y, x)
     PIXEL_SIZE = (130e-6, 130e-6)
