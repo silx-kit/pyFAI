@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/10/2018"
+__date__ = "16/10/2018"
 
 import logging
 import numpy
@@ -373,6 +373,9 @@ class IntegrationPlot(qt.QFrame):
     def resetZoom(self):
         self.__plot1d.resetZoom()
         self.__plot2d.resetZoom()
+
+    def hasData(self):
+        return self.__result1d is not None
 
     def eventFilter(self, widget, event):
         if event.type() == qt.QEvent.Leave:
@@ -794,8 +797,13 @@ class IntegrationTask(AbstractCalibrationTask):
             self.__integrationUpToDate = False
 
     def __invalidateIntegrationNoReset(self):
-        self.__integrationResetZoomPolicy = False
-        self.__invalidateIntegration()
+        if self._plot.hasData():
+            self.__integrationResetZoomPolicy = False
+            self.__invalidateIntegration()
+        else:
+            # If there is not yet data, it is not needed to constrain the
+            # current range
+            pass
 
     def __widgetShow(self):
         if not self.__integrationUpToDate:
