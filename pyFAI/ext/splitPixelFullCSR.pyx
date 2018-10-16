@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/09/2018"
+__date__ = "16/10/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -39,7 +39,6 @@ import cython
 import os
 import sys
 from cython.parallel import prange
-from libc.string cimport memset
 import numpy
 cimport numpy
 from libc.math cimport fabs, floor, sqrt
@@ -209,7 +208,7 @@ class FullSplitCSR_1d(object):
         if mask is not None:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
             if mask_checksum:
                 self.mask_checksum = mask_checksum
             else:
@@ -235,10 +234,10 @@ class FullSplitCSR_1d(object):
     @cython.wraparound(False)
     def calc_lut(self):
         cdef:
-            numpy.ndarray[numpy.float64_t, ndim=3] cpos = numpy.ascontiguousarray(self.pos, dtype=numpy.float64)
-            numpy.int8_t[:] cmask
-            numpy.ndarray[numpy.int32_t, ndim=1] outMax = numpy.zeros(self.bins, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim=1] indptr = numpy.zeros(self.bins + 1, dtype=numpy.int32)
+            position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
+            mask_t[::1] cmask
+            numpy.int32_t[::1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
+            numpy.int32_t[::1] indptr = numpy.zeros(self.bins + 1, dtype=numpy.int32)
             float pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
             float max0, min0
             float areaPixel = 0, delta = 0, areaPixel2 = 0
@@ -306,17 +305,17 @@ class FullSplitCSR_1d(object):
                 bin0_max = < int > floor(max0)
 
                 for bin in range(bin0_min, bin0_max + 1):
-                    outMax[bin] += 1
+                    outmax[bin] += 1
 
-        indptr[1:] = outMax.cumsum()
+        indptr[1:] = outmax.cumsum()
         self.indptr = indptr
 
         cdef:
-            numpy.ndarray[numpy.int32_t, ndim=1] indices = numpy.zeros(indptr[bins], dtype=numpy.int32)
-            numpy.ndarray[numpy.float32_t, ndim=1] data = numpy.zeros(indptr[bins], dtype=numpy.float32)
+            numpy.int32_t[::1] indices = numpy.zeros(indptr[bins], dtype=numpy.int32)
+            data_t[::1] data = numpy.zeros(indptr[bins], dtype=data_d)
 
-        # just recycle the outMax array
-        outMax[:] = 0
+        # just recycle the outmax array
+        outmax[:] = 0
 
         with nogil:
             for idx in range(size):
@@ -347,10 +346,10 @@ class FullSplitCSR_1d(object):
 
                 if bin0_min == bin0_max:
                     # All pixel is within a single bin
-                    k = outMax[bin0_min]
+                    k = outmax[bin0_min]
                     indices[indptr[bin0_min] + k] = idx
                     data[indptr[bin0_min] + k] = 1.0
-                    outMax[bin0_min] += 1  # k+1
+                    outmax[bin0_min] += 1  # k+1
                 else:
                     # else we have pixel spliting.
                     # offseting the min bin of the pixel to be zero to avoid percision problems
@@ -419,14 +418,14 @@ class FullSplitCSR_1d(object):
                         partialArea += integrate(C_lim, D_lim, CD)
                         partialArea += integrate(D_lim, A_lim, DA)
 
-                        k = outMax[bin]
+                        k = outmax[bin]
                         indices[indptr[bin] + k] = idx
                         data[indptr[bin] + k] = fabs(partialArea) * oneOverPixelArea
-                        outMax[bin] += 1  # k+1
+                        outmax[bin] += 1  # k+1
 
         self.data = data
         self.indices = indices
-        self.outMax = outMax
+        self.outmax = outmax
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -439,7 +438,8 @@ class FullSplitCSR_1d(object):
                   flat=None,
                   solidAngle=None,
                   polarization=None,
-                  double normalization_factor=1.0):
+                  double normalization_factor=1.0,
+                  int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -458,6 +458,7 @@ class FullSplitCSR_1d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
+        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: 4-tuple of ndarrays
@@ -465,15 +466,16 @@ class FullSplitCSR_1d(object):
         """
         cdef:
             numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
-            float sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
-            float data = 0, coef = 0, cdummy = 0, cddummy = 0
+            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10
+            data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            numpy.ndarray[numpy.float64_t, ndim=1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float64_t, ndim=1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-            float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-
+            acc_t[::1] sum_data = numpy.zeros(self.bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.zeros(self.bins, dtype=acc_d)
+            data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
+            data_t[::1] ccoef = self.data 
+            data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
+            
         assert weights.size == size, "weights size"
 
         if dummy is not None:
@@ -548,8 +550,8 @@ class FullSplitCSR_1d(object):
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
 
         for i in prange(bins, nogil=True, schedule="guided"):
-            sum_data = 0.0
-            sum_count = 0.0
+            acc_data = 0.0
+            acc_data = 0.0
             for j in range(indptr[i], indptr[i + 1]):
                 idx = indices[j]
                 coef = ccoef[j]
@@ -558,15 +560,19 @@ class FullSplitCSR_1d(object):
                 data = cdata[idx]
                 if do_dummy and (data == cdummy):
                     continue
-                sum_data = sum_data + coef * data
-                sum_count = sum_count + coef
-            outData[i] += sum_data
-            outCount[i] += sum_count
-            if sum_count > epsilon:
-                outMerge[i] += <float> (sum_data / sum_count / normalization_factor)
+                acc_data = acc_data + (coef ** coef_power) * data
+                acc_count = acc_count + coef
+
+            sum_data[i] += acc_data
+            sum_count[i] += acc_count
+            if acc_count > epsilon:
+                merged[i] += acc_data / acc_count / normalization_factor
             else:
-                outMerge[i] += cdummy
-        return self.bin_centers, outMerge, outData, outCount
+                merged[i] += cdummy
+        return (self.bin_centers, 
+                numpy.asarray(merged), 
+                numpy.asarray(sum_data), 
+                numpy.asarray(sum_count))
 
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
@@ -656,10 +662,10 @@ class FullSplitCSR_2d(object):
     @cython.wraparound(False)
     def calc_lut(self):
         cdef:
-            numpy.ndarray[numpy.float64_t, ndim=3] cpos = numpy.ascontiguousarray(self.pos, dtype=numpy.float64)
-            numpy.int8_t[:] cmask
-            numpy.ndarray[numpy.int32_t, ndim=2] outMax = numpy.zeros(self.bins, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim=1] indptr = numpy.zeros((self.bins[0] * self.bins[1]) + 1, dtype=numpy.int32)
+            position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
+            mask_t[:] cmask
+            numpy.int32_t[:, ::1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
+            numpy.int32_t[::1] indptr = numpy.zeros((self.bins[0] * self.bins[1]) + 1, dtype=numpy.int32)
             float pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
             float max0, min0, min1, max1
             float areaPixel = 0, delta0 = 0, delta1 = 0, areaPixel2 = 0
@@ -705,7 +711,8 @@ class FullSplitCSR_2d(object):
         if check_mask:
             cmask = self.cmask
 
-        cdef numpy.ndarray[numpy.int8_t, ndim=2] is_inside = numpy.zeros((<int> (1.5 * sqrt(size) / all_bins0) ,<int> (1.5 * sqrt(size) / all_bins1)), dtype=numpy.int8)
+        cdef mask_t[:, ::1] is_inside = numpy.zeros((<int> (1.5 * sqrt(size) / all_bins0) ,<int> (1.5 * sqrt(size) / all_bins1)), 
+                                                    dtype=mask_d)
 
         with nogil:
             for idx in range(size):
@@ -738,13 +745,13 @@ class FullSplitCSR_2d(object):
 
                 if bin0_min == bin0_max:
                     if bin1_min == bin1_max:
-                        outMax[bin0_min, bin1_min] += 1
+                        outmax[bin0_min, bin1_min] += 1
                     else:
                         for bin in range(bin1_min, bin1_max + 1):
-                            outMax[bin0_min, bin] += 1
+                            outmax[bin0_min, bin] += 1
                 elif bin1_min == bin1_max:
                     for bin in range(bin0_min, bin0_max + 1):
-                        outMax[bin, bin1_min] += 1
+                        outmax[bin, bin1_min] += 1
                 else:
                     bins0 = bin0_max - bin0_min + 1
                     bins1 = bin1_max - bin1_min + 1
@@ -774,16 +781,16 @@ class FullSplitCSR_2d(object):
                             tmp_i += is_inside[i + 1, j]
                             tmp_i += is_inside[i + 1, j + 1]
                             if tmp_i is not 0:
-                                outMax[i + bin0_min, j + bin1_min] += 1
+                                outmax[i + bin0_min, j + bin1_min] += 1
 
-        indptr[1:] = outMax.ravel().cumsum()
-        self.indptr = indptr
+        indptr[1:] = outmax.ravel().cumsum()
+        self.indptr = numpy.asarray(indptr)
 
-        cdef numpy.ndarray[numpy.int32_t, ndim=1] indices = numpy.zeros(indptr[all_bins], dtype=numpy.int32)
-        cdef numpy.ndarray[numpy.float32_t, ndim=1] data = numpy.zeros(indptr[all_bins], dtype=numpy.float32)
+        cdef numpy.int32_t[::1] indices = numpy.zeros(indptr[all_bins], dtype=numpy.int32)
+        cdef data_t[::1] data = numpy.zeros(indptr[all_bins], dtype=data_d)
 
-        # just recycle the outMax array
-        outMax[:] = 0
+        # just recycle the outmax array
+        outmax[:] = 0
 
         with nogil:
             for idx in range(size):
@@ -817,7 +824,7 @@ class FullSplitCSR_2d(object):
                 if bin0_min == bin0_max:
                     if bin1_min == bin1_max:
                         # Whole pixel is within a single bin
-                        k = outMax[bin0_min, bin1_min]
+                        k = outmax[bin0_min, bin1_min]
                         index = bin0_min * all_bins1 + bin1_min
                         if index > all_bins:
                             printf("0 index = %d > %d!! \n", index, all_bins)
@@ -827,7 +834,7 @@ class FullSplitCSR_2d(object):
                             fflush(stdout)
                         indices[indptr[index] + k] = idx
                         data[indptr[index] + k] = 1.0
-                        outMax[bin0_min, bin1_min] += 1  # k+1
+                        outmax[bin0_min, bin1_min] += 1  # k+1
                     else:
                         # printf("  1 %d  %d \n",bin1_min,bin1_max)
                         # fflush(stdout)
@@ -866,7 +873,7 @@ class FullSplitCSR_2d(object):
                             partialArea += integrate(C_lim, D_lim, CD)
                             partialArea += integrate(D_lim, A_lim, DA)
 
-                            k = outMax[bin0_min, bin1_min + bin1]
+                            k = outmax[bin0_min, bin1_min + bin1]
                             index = bin0_min * all_bins1 + bin1_min + bin1
                             if index > all_bins:
                                 printf("1 index = %d > %d!! \n", index, all_bins)
@@ -876,7 +883,7 @@ class FullSplitCSR_2d(object):
                                 fflush(stdout)
                             indices[indptr[index] + k] = idx
                             data[indptr[index] + k] = fabs(partialArea) * oneOverPixelArea
-                            outMax[bin0_min, bin1_min + bin1] += 1  # k+1
+                            outmax[bin0_min, bin1_min + bin1] += 1  # k+1
 
                 elif bin1_min == bin1_max:
                     A0 -= bin0_min
@@ -913,7 +920,7 @@ class FullSplitCSR_2d(object):
                         partialArea += integrate(C_lim, D_lim, CD)
                         partialArea += integrate(D_lim, A_lim, DA)
 
-                        k = outMax[bin0_min + bin0, bin1_min]
+                        k = outmax[bin0_min + bin0, bin1_min]
                         index = (bin0_min + bin0) * all_bins1 + bin1_min
                         if index > all_bins:
                             printf("2 index = %d > %d!! \n", index, all_bins)
@@ -923,7 +930,7 @@ class FullSplitCSR_2d(object):
                             fflush(stdout)
                         indices[indptr[index] + k] = idx
                         data[indptr[index] + k] = fabs(partialArea) * oneOverPixelArea
-                        outMax[bin0_min + bin0, bin1_min] += 1  # k+1
+                        outmax[bin0_min + bin0, bin1_min] += 1  # k+1
 
                 else:
                     bins0 = bin0_max - bin0_min + 1
@@ -957,7 +964,7 @@ class FullSplitCSR_2d(object):
                             tmp_i += is_inside[i + 1, j]
                             tmp_i += is_inside[i + 1, j + 1]
                             if tmp_i is 4:
-                                k = outMax[bin0_min + i, bin1_min + j]
+                                k = outmax[bin0_min + i, bin1_min + j]
                                 index = (i + bin0_min) * all_bins1 + j + bin1_min
                                 if index > all_bins:
                                     printf("3 index = %d > %d!! \n", index, all_bins)
@@ -967,7 +974,7 @@ class FullSplitCSR_2d(object):
                                     fflush(stdout)
                                 indices[indptr[index] + k] = idx
                                 data[indptr[index] + k] = oneOverPixelArea
-                                outMax[bin0_min + i, bin1_min + j] += 1  # k+1
+                                outmax[bin0_min + i, bin1_min + j] += 1  # k+1
 
                             elif tmp_i is 1 or tmp_i is 2 or tmp_i is 3:
                                 ###################################################
@@ -1054,7 +1061,7 @@ class FullSplitCSR_2d(object):
 
                                 partialArea = area_n(list1)
 
-                                k = outMax[bin0_min + i, bin1_min + j]
+                                k = outmax[bin0_min + i, bin1_min + j]
                                 index = (i + bin0_min) * all_bins1 + j + bin1_min
                                 if index > all_bins:
                                     printf("3.1 index = %d > %d!! \n", index, all_bins)
@@ -1064,11 +1071,11 @@ class FullSplitCSR_2d(object):
                                     fflush(stdout)
                                 indices[indptr[index] + k] = idx
                                 data[indptr[index] + k] = partialArea * oneOverPixelArea
-                                outMax[bin0_min + i, bin1_min + j] += 1  # k+1
+                                outmax[bin0_min + i, bin1_min + j] += 1  # k+1
 
-        self.data = data
-        self.indices = indices
-        self.outMax = outMax
+        self.data = numpy.asarray(data)
+        self.indices = numpy.asarray(indices)
+        self.outmax = numpy.asarray(outmax)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -1080,7 +1087,8 @@ class FullSplitCSR_2d(object):
                   flat=None,
                   solidAngle=None,
                   polarization=None,
-                  double normalization_factor=1.0
+                  double normalization_factor=1.0,
+                  int coef_power=1
                   ):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
@@ -1100,6 +1108,7 @@ class FullSplitCSR_2d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
+        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: 4-tuple of ndarrays
@@ -1107,14 +1116,13 @@ class FullSplitCSR_2d(object):
         """
         cdef:
             numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
-            float sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
-            float data = 0, coef = 0, cdummy = 0, cddummy = 0
+            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10
+            data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            numpy.ndarray[numpy.float64_t, ndim=1] outData = numpy.zeros(bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float64_t, ndim=1] outCount = numpy.zeros(bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
-            float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-
+            acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
+            data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
+            data_t[::1] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
         assert weights.size == size, "weights size"
 
@@ -1191,8 +1199,8 @@ class FullSplitCSR_2d(object):
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
 
         for i in prange(bins, nogil=True, schedule="guided"):
-            sum_data = 0.0
-            sum_count = 0.0
+            acc_data = 0.0
+            acc_count = 0.0
             for j in range(indptr[i], indptr[i + 1]):
                 idx = indices[j]
                 coef = ccoef[j]
@@ -1201,16 +1209,19 @@ class FullSplitCSR_2d(object):
                 data = cdata[idx]
                 if do_dummy and (data == cdummy):
                     continue
-                sum_data = sum_data + coef * data
-                sum_count = sum_count + coef
-            outData[i] += sum_data
-            outCount[i] += sum_count
-            if sum_count > epsilon:
-                outMerge[i] += <float> (sum_data / sum_count / normalization_factor)
+                acc_data = acc_data + data * coef**coef_power
+                acc_count = acc_count + coef
+            sum_data[i] += acc_data
+            sum_count[i] += acc_count
+            if acc_count > epsilon:
+                merged[i] += acc_data / acc_count / normalization_factor
             else:
-                outMerge[i] += cdummy
+                merged[i] += cdummy
 
-        return outMerge, outData, outCount
+        return (self.bin_centers, 
+                numpy.asarray(merged), 
+                numpy.asarray(sum_data), 
+                numpy.asarray(sum_count))
     
     @property
     @deprecated(replacement="bin_centers0", since_version="0.16", only_once=True)

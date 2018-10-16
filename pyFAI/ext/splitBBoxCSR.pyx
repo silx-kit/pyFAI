@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/09/2018"
+__date__ = "16/10/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -97,7 +97,7 @@ class HistoBBox1d(object):
         if mask is not None:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
             if mask_checksum:
                 self.mask_checksum = mask_checksum
             else:
@@ -156,7 +156,7 @@ class HistoBBox1d(object):
         cdef:
             int size = self.cpos0.size
             bint check_mask = self.check_mask
-            char[::1] cmask
+            mask_t[::1] cmask
             double[::1] cpos0, dpos0, cpos0_sup, cpos0_inf,
             double upper, lower, pos0_max, pos0_min, c, d
             bint allow_pos0_neg = self.allow_pos0_neg
@@ -208,7 +208,7 @@ class HistoBBox1d(object):
         cdef:
             int size = self.cpos0.size
             bint check_mask = self.check_mask
-            char[::1] cmask
+            mask_t[::1] cmask
             position_t[::1] cpos0
             position_t upper, lower, pos0_max, pos0_min, c, d
             bint allow_pos0_neg = self.allow_pos0_neg
@@ -260,7 +260,7 @@ class HistoBBox1d(object):
             numpy.int32_t[::1] indptr, indices
             float[::1] data
             position_t[::1] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
-            char[::1] cmask
+            mask_t[::1] cmask
             acc_t inv_area, delta_left, delta_right
 
         size = self.size
@@ -402,7 +402,7 @@ class HistoBBox1d(object):
             numpy.int32_t[::1] indptr, indices
             float[::1] data
             position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
-            char[::1] cmask
+            mask_t[::1] cmask
 
         size = self.size
         if self.check_mask:
@@ -619,8 +619,10 @@ class HistoBBox1d(object):
                 merged[i] += acc_data / acc_count / normalization_factor
             else:
                 merged[i] += cdummy
-        return (self.bin_centers, numpy.asarray(merged), 
-                numpy.asarray(sum_data), numpy.asarray(sum_count))
+        return (self.bin_centers, 
+                numpy.asarray(merged), 
+                numpy.asarray(sum_data), 
+                numpy.asarray(sum_count))
 
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
@@ -749,7 +751,7 @@ class HistoBBox2d(object):
         cdef:
             int size = self.cpos0.size
             bint check_mask = self.check_mask
-            char[::1] cmask
+            mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
             position_t[::1] cpos1, dpos1, cpos1_sup, cpos1_inf
             position_t upper0, lower0, pos0_max, pos0_min, c0, d0
@@ -836,7 +838,7 @@ class HistoBBox2d(object):
         cdef:
             int size = self.cpos0.size
             bint check_mask = self.check_mask
-            char[::1] cmask
+            mask_t[::1] cmask
             double[::1] cpos0
             double[::1] cpos1
             double upper0, lower0, pos0_max, pos0_min, c0, d0
@@ -1138,7 +1140,7 @@ class HistoBBox2d(object):
             numpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
             numpy.int32_t[::1] indptr, indices
             float[::1] data
-            char[::1] cmask
+            mask_t[::1] cmask
 
         if self.check_mask:
             cmask = self.cmask
@@ -1248,7 +1250,7 @@ class HistoBBox2d(object):
             acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
             acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
             data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
-            float[::1] ccoef = self.data, 
+            data_t[::1] ccoef = self.data, 
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[::1] indices = self.indices, indptr = self.indptr
 
@@ -1332,10 +1334,11 @@ class HistoBBox2d(object):
             for j in range(indptr[i], indptr[i + 1]):
                 idx = indices[j]
                 coef = ccoef[j]
+                if coef == 0.0:
+                    continue
                 data = cdata[idx]
                 if do_dummy and (data == cdummy):
                     continue
-
                 acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
             sum_data[i] += acc_data
