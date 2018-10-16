@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/04/2018"
+__date__ = "05/10/2018"
 
 import sys
 import os
@@ -311,6 +311,20 @@ class TestBugRegression(unittest.TestCase):
             self.assertAlmostEquals(dmin(chi_0_corner.min()), 0, msg="chi_0_corner.min", delta=0.1)
             self.assertAlmostEquals(dmax(chi_0_center.max()), 0, msg="chi_0_center.max", delta=0.1)
             self.assertAlmostEquals(dmax(chi_0_corner.max()), 0, msg="chi_0_corner.max", delta=0.1)
+
+    def test_bug_924(self):
+        "Regression on spline calculation for single pixel coordinate"
+        dp = detectors.detector_factory("Pilatus100k")
+        aip = AzimuthalIntegrator(detector=dp)
+        aip.chi(numpy.array([1, 2]), numpy.array([3, 4]))
+        aip.chi(numpy.array([1]), numpy.array([3]))
+        # so far, so good
+        df = detectors.detector_factory("Frelon",
+                                        {"splineFile": UtilsTest.getimage("frelon.spline")})
+        print(df.spline.splineFuncX(numpy.array([1, 2]), numpy.array([3, 4]), True))
+        aif = AzimuthalIntegrator(detector=df)
+        aif.chi(numpy.array([1, 2]), numpy.array([3, 4]))
+        aif.chi(numpy.array([1]), numpy.array([3]))
 
 
 def suite():

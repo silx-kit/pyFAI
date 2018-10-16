@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "09/10/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -54,7 +54,7 @@ from .units import to_unit
 from .third_party import six
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime
-from .third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 urlparse = six.moves.urllib.parse.urlparse
 
 DIGITS = [str(i) for i in range(10)]

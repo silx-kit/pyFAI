@@ -29,7 +29,7 @@
 
 from __future__ import absolute_import, print_function, division
 __license__ = "MIT"
-__date__ = "10/01/2018"
+__date__ = "08/10/2018"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -82,6 +82,10 @@ def sigma_clip(image, sigma_lo=3, sigma_hi=3, max_iter=5, axis=0):
 @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
 @unittest.skipIf(ocl is None, "OpenCL is not available")
 class TestOclSort(unittest.TestCase):
+    KNOWN_INVALID_RESULTS = ["Portable Computing Language"]
+    # This platform is known to process properly but giving wrong results.
+    # See https://github.com/pocl/pocl/issues/617
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.shape = (128, 256)
@@ -109,12 +113,6 @@ class TestOclSort(unittest.TestCase):
     def test_filter_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.filter_vertical(self.ary).get()
-#         import pylab
-#         pylab.plot(self.vector_vert, label="ref")
-#         pylab.plot(res, label="obt")
-#         pylab.legend()
-#         pylab.show()
-#         six.moves.input()
         self.assertTrue(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
         if self.PROFILE:
             s.log_profile()
@@ -131,12 +129,6 @@ class TestOclSort(unittest.TestCase):
     def test_filter_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.filter_horizontal(self.ary).get()
-#         import pylab
-#         pylab.plot(self.vector_hor, label="ref")
-#         pylab.plot(res, label="obt")
-#         pylab.legend()
-#         pylab.show()
-#         six.moves.input()
         self.assertTrue(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
         if self.PROFILE:
             s.log_profile()
@@ -147,15 +139,6 @@ class TestOclSort(unittest.TestCase):
         res = s.mean_std_vertical(self.ary)
         m = res[0].get()
         d = res[1].get()
-#         import pylab
-#         pylab.plot(self.ary.mean(axis=0, dtype="float64"), label="m ref")
-#         pylab.plot(m, label="m obt")
-#         pylab.plot(self.ary.std(axis=0, dtype="float64"), label="d ref")
-#         pylab.plot(d, label="d obt")
-#         pylab.legend()
-#         pylab.show()
-#         six.moves.input()
-#         print(abs(self.ary.mean(axis=0, dtype="float64") - m).max())
         self.assertTrue(numpy.allclose(self.ary.mean(axis=0, dtype="float64"), m,), "vertical mean is OK")
         self.assertTrue(numpy.allclose(self.ary.std(axis=0, dtype="float64"), d), "vertical std is OK")
         if self.PROFILE:
@@ -167,15 +150,6 @@ class TestOclSort(unittest.TestCase):
         res = s.mean_std_horizontal(self.ary)
         m = res[0].get()
         d = res[1].get()
-#         import pylab
-#         pylab.plot(self.ary.mean(axis=1, dtype="float64"), label="m ref")
-#         pylab.plot(m, label="m obt")
-#         pylab.plot(self.ary.std(axis=1, dtype="float64"), label="d ref")
-#         pylab.plot(d, label="d obt")
-#         pylab.legend()
-#         pylab.show()
-#         six.moves.input()
-#         print(abs(self.ary.mean(axis=1, dtype="float64") - m).max())
         self.assertTrue(numpy.allclose(self.ary.mean(axis=1, dtype="float64"), m,), "horizontal mean is OK")
         self.assertTrue(numpy.allclose(self.ary.std(axis=1, dtype="float64"), d), "horizontal std is OK")
         if self.PROFILE:
@@ -188,18 +162,12 @@ class TestOclSort(unittest.TestCase):
         m = res[0].get()
         d = res[1].get()
         mn, dn = sigma_clip(self.ary, sigma_lo=3, sigma_hi=3, max_iter=5, axis=0)
-
-#         import pylab
-#         pylab.plot(self.ary.mean(axis=0, dtype="float64"), label="m ref")
-#         pylab.plot(m, label="m obt")
-#         pylab.plot(self.ary.std(axis=0, dtype="float64"), label="d ref")
-#         pylab.plot(d, label="d obt")
-#         pylab.legend()
-#         pylab.show()
-#         six.moves.input()
-#         print(abs(self.ary.mean(axis=0, dtype="float64") - m).max())
-        self.assertTrue(numpy.allclose(mn, m), "sigma_clipvertical mean is OK")
-        self.assertTrue(numpy.allclose(dn, d), "sigma_clipvertical std is OK")
+        platform = s.ctx.devices[0].platform.name
+        if platform in self.KNOWN_INVALID_RESULTS:
+            logger.warning("Broken platform: %s", platform)
+        else:
+            self.assertTrue(numpy.allclose(mn, m), "sigma_clipvertical mean is OK")
+            self.assertTrue(numpy.allclose(dn, d), "sigma_clipvertical std is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -210,18 +178,12 @@ class TestOclSort(unittest.TestCase):
         m = res[0].get()
         d = res[1].get()
         mn, dn = sigma_clip(self.ary, sigma_lo=3, sigma_hi=3, max_iter=5, axis=1)
-#         import pylab
-#         pylab.plot(self.ary.mean(axis=1, dtype="float64"), label="m ref")
-#         pylab.plot(m, label="m obt")
-#         pylab.plot(self.ary.std(axis=1, dtype="float64"), label="d ref")
-#         pylab.plot(d, label="d obt")
-#         pylab.legend()
-#         pylab.show()
-#         six.moves.input()
-#         print(abs(self.ary.mean(axis=1, dtype="float64") - m).max())
-
-        self.assertTrue(numpy.allclose(mn, m,), "sigma_clip horizontal mean is OK")
-        self.assertTrue(numpy.allclose(dn, d), "sigma_clip horizontal std is OK")
+        platform = s.ctx.devices[0].platform.name
+        if platform in self.KNOWN_INVALID_RESULTS:
+            logger.warning("Broken platform: %s", platform)
+        else:
+            self.assertTrue(numpy.allclose(mn, m,), "sigma_clip horizontal mean is OK")
+            self.assertTrue(numpy.allclose(dn, d), "sigma_clip horizontal std is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()

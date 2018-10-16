@@ -224,6 +224,8 @@ def report_uncovered_files(cov, build_dir, inject_xml=None):
     :param str build_dir: Build directory
     :return: Text report
     """
+    if build_dir.endswith("pyFAI"):
+        build_dir = os.path.dirname(build_dir)
     import fnmatch
 
     existing_files = []
@@ -558,6 +560,6 @@ if options.coverage:
         fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH))
     print(cov.report())
     print("")
-    print(report_uncovered_files(cov, build_dir))
+    print(report_uncovered_files(cov, PROJECT_PATH))
 
 sys.exit(exit_status)

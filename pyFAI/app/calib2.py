@@ -22,24 +22,19 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""
-pyFAI-calib2
-
-A tool for determining the geometry of a detector using a reference sample.
-
-
-"""
+"""GUI tool for determining the geometry of a detector using a reference sample."""
 
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2018"
+__date__ = "09/10/2018"
 __status__ = "production"
 
 import logging
 import os
 import sys
+from argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -52,7 +47,7 @@ import pyFAI.detectors
 
 import fabio
 
-from pyFAI.third_party.argparse import ArgumentParser
+
 
 try:
     from rfoo.utils import rconsole

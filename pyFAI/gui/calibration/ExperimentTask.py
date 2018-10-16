@@ -27,16 +27,17 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/10/2018"
+__date__ = "04/10/2018"
 
 import fabio
 import numpy
 import logging
 from contextlib import contextmanager
-from collections import OrderedDict
+import collections
 
 import silx.gui.plot
 from silx.gui import qt
+from silx.gui import icons
 
 import pyFAI.utils
 from pyFAI.calibrant import Calibrant
@@ -52,9 +53,11 @@ _logger = logging.getLogger(__name__)
 
 class ExperimentTask(AbstractCalibrationTask):
 
-    def __init__(self):
-        super(ExperimentTask, self).__init__()
+    def _initGui(self):
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-experiment.ui"), self)
+        icon = icons.getQIcon("pyfai:gui/icons/task-settings")
+        self.setWindowIcon(icon)
+
         self.initNextStep()
 
         self._imageLoader.clicked.connect(self.loadImage)
@@ -121,10 +124,55 @@ class ExperimentTask(AbstractCalibrationTask):
         settings.detectorModel().changed.connect(self.__detectorModelUpdated)
         settings.wavelength().changed.connect(self.__waveLengthChanged)
 
+        settings.changed.connect(self.__settingsChanged)
+
         self.__imageUpdated()
         self.__waveLengthChanged()
         self.__calibrantChanged()
         self.__detectorModelUpdated()
+        self.__settingsChanged()
+
+    def __settingsChanged(self):
+        settings = self.model().experimentSettingsModel()
+        settings.detectorModel().changed.connect(self.__detectorModelUpdated)
+
+        image = settings.image().value()
+        detectorModel = settings.detectorModel().detector()
+        calibrantModel = settings.calibrantModel().calibrant()
+        wavelength = settings.wavelength().value()
+
+        warnings = []
+
+        if image is None:
+            warnings.append("An image have to be specified")
+        if detectorModel is None:
+            warnings.append("A detector have to be specified")
+        if calibrantModel is None:
+            warnings.append("A calibrant have to be specified")
+        if wavelength is None:
+            warnings.append("An energy have to be specified")
+        if image is not None and calibrantModel is not None:
+            try:
+                detector = settings.detector()
+                binning = detector.guess_binning(image)
+                if not binning:
+                    raise Exception("inconsistancy")
+            except Exception:
+                warnings.append("Inconsistancy between sizes of image and detector")
+
+        self._globalWarnings = warnings
+        self.updateNextStepStatus()
+
+    def nextStepWarning(self):
+        if len(self._globalWarnings) == 0:
+            return None
+        else:
+            warning = ""
+            for w in self._globalWarnings:
+                warning += "<li>%s</li>" % w
+            warning = "<ul>%s</ul>" % warning
+            warning = "<html>%s</html>" % warning
+            return warning
 
     def __customDetector(self):
         settings = self.model().experimentSettingsModel()
@@ -286,7 +334,7 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
-        extensions = OrderedDict()
+        extensions = collections.OrderedDict()
         extensions["EDF image files"] = "*.edf"
         extensions["TIFF image files"] = "*.tif *.tiff"
         extensions["NumPy binary files"] = "*.npy"
@@ -331,7 +379,7 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
-        extensions = OrderedDict()
+        extensions = collections.OrderedDict()
         extensions["Calibrant files"] = "*.D"
 
         filters = []
