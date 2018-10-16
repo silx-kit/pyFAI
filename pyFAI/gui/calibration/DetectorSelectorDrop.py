@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/10/2018"
+__date__ = "16/10/2018"
 
 import os
 import logging
@@ -325,7 +325,14 @@ class DetectorSelectorDrop(qt.QWidget):
     def __createManufacturerModel(self):
         manufacturers = set([])
         for detector in pyFAI.detectors.ALL_DETECTORS.values():
-            manufacturers.add(detector.MANUFACTURER)
+            manufacturer = detector.MANUFACTURER
+            if isinstance(manufacturer, list):
+                manufacturer = set(manufacturer)
+                if None in manufacturer:
+                    manufacturer.remove(None)
+                manufacturers |= manufacturer
+            else:
+                manufacturers.add(detector.MANUFACTURER)
 
         hasOther = None in manufacturers
         manufacturers.remove(None)
@@ -405,12 +412,15 @@ class DetectorSelectorDrop(qt.QWidget):
         self._customList.setFocus(qt.Qt.NoFocusReason)
 
     def __selectRegistreredDetector(self, detector):
-        self.__setManufacturer(detector.MANUFACTURER)
+        manufacturer = detector.MANUFACTURER
+        if isinstance(manufacturer, list):
+            manufacturer = manufacturer[0]
+        self.__setManufacturer(manufacturer)
         model = self._modelList.model()
-        index = model.indexFromDetector(detector.__class__)
+        index = model.indexFromDetector(detector.__class__, manufacturer)
         selection = self._modelList.selectionModel()
         selection.select(index, qt.QItemSelectionModel.ClearAndSelect)
-        self._modelList.scrollTo(index)
+        self._modelList.scrollTo(index, qt.QAbstractItemView.PositionAtCenter)
 
         splineFile = detector.get_splineFile()
         if splineFile is not None:
@@ -424,7 +434,7 @@ class DetectorSelectorDrop(qt.QWidget):
             if manufacturer == storedManufacturer:
                 selection = self._manufacturerList.selectionModel()
                 selection.select(index, qt.QItemSelectionModel.ClearAndSelect)
-                self._manufacturerList.scrollTo(index)
+                self._manufacturerList.scrollTo(index, qt.QAbstractItemView.PositionAtCenter)
                 return
 
     def __setCustomField(self, field):
