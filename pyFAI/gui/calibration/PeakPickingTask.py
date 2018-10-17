@@ -827,6 +827,26 @@ class PeakPickingTask(AbstractCalibrationTask):
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
+
+        if detector is None:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", "No detector defined")
+            return
+        if calibrant is None:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", "No calibrant defined")
+            return
+        if wavelength is None:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", "No wavelength defined")
+            return
+
         extractor = RingExtractor(image, mask, calibrant, detector, wavelength)
 
         # FIXME numpy array can be allocated first
