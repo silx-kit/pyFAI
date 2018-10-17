@@ -83,6 +83,7 @@ class Massif(object):
         self._number_massif = None
         self._valley_size = None
         self._binned_data = None
+        self._reconstruct_used = None
         self.binning = None  # Binning is 2-list usually
         self._sem = threading.Semaphore()
         self._sem_label = threading.Semaphore()
@@ -102,7 +103,10 @@ class Massif(object):
         else:
             res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx]]
         if (len(res) != 2) or not((0 <= out[0] < self.data.shape[0]) and (0 <= res[1] < self.data.shape[1])):
-            logger.error("in nearest_peak %s -> %s", x, out)
+            logger.warning("in nearest_peak %s -> %s", x, out)
+            return
+        elif (self.mask is not None) and self.mask[int(res[0]), int(res[1])]:
+            logger.info("Masked pixel %s -> %s", x, out)
             return
         else:
             return res
@@ -148,8 +152,9 @@ class Massif(object):
                     logger.error("Error in annotate %i: %i %i. %s", len(listpeaks), xinit[0], xinit[1], error)
 
         listpeaks.append(xinit)
-        mean = self.data[region].mean(dtype=numpy.float64)
-        region2 = region * (self.data > mean)
+        cleaned_data = self.cleaned_data
+        mean = cleaned_data[region].mean(dtype=numpy.float64)
+        region2 = region * (cleaned_data > mean)
         idx = numpy.vstack(numpy.where(region2)).T
         numpy.random.shuffle(idx)
         nmax = min(nmax, int(ceil(sqrt(idx.shape[0]))))
@@ -174,7 +179,8 @@ class Massif(object):
                 break
         return listpeaks
 
-    def peaks_from_area(self, mask, Imin=None, keep=1000, dmin=0.0, seed=None, **kwarg):
+    def peaks_from_area(self, mask, Imin=numpy.finfo(numpy.float64).min,
+                        keep=1000, dmin=0.0, seed=None, **kwarg):
         """
         Return the list of peaks within an area
 
@@ -312,6 +318,7 @@ class Massif(object):
                     if (self.mask is not None) and (not reconstruct):
                             binned_mask = binning(self.mask.astype(int), self.binning, norm=False)
                             massif_binarization = numpy.logical_and(massif_binarization, binned_mask == 0)
+                    self._reconstruct_used = reconstruct
                     labeled_massif, self._number_massif = label(massif_binarization,
                                                                 pattern)
                     # TODO: investigate why relabel fails
