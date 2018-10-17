@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "16/10/2018"
 
 import os.path
 
@@ -86,7 +86,10 @@ class CalibrantSelector(qt.QComboBox):
 
         if isFileLoadable:
             self.insertSeparator(self.count())
-            self.addItem("Load calibrant from file...")
+            self.addItem("Load calibrant file...")
+            icon = icons.getQIcon('document-open')
+            index = self.count() - 1
+            self.setItemIcon(index, icon)
         else:
             self.removeItem(self.count())
             self.removeItem(self.count())

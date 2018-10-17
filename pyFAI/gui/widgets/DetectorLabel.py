@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/08/2018"
+__date__ = "16/10/2018"
 
 from silx.gui import qt
 from silx.utils import html
@@ -84,6 +84,8 @@ class DetectorLabel(qt.QLabel):
 
         else:
             manufacturer = detector.MANUFACTURER
+            if isinstance(manufacturer, list):
+                manufacturer = manufacturer[0]
             model = self.__getModelName(detector.__class__)
             description = self._MODEL_TEMPLATE % html.escape(model)
             if manufacturer is not None:

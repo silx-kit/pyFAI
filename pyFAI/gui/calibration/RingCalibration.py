@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "15/10/2018"
 
 import logging
 import numpy
@@ -37,6 +37,7 @@ from silx.image import marchingsquares
 import pyFAI.utils
 from ...geometryRefinement import GeometryRefinement
 from ..peak_picker import PeakPicker
+from ..utils import timeutils
 
 _logger = logging.getLogger(__name__)
 
@@ -137,24 +138,27 @@ class RingCalibration(object):
         else:
             return self.__geoRef.refine2_wavelength(maxiter, fix)
 
-    def refine(self, max_iter=500):
+    def refine(self, max_iter=500, seconds=10):
         """
         Contains the common geometry refinement part
         """
         self.__calibrant.set_wavelength(self.__wavelength)
         self.__peakPicker.points.setWavelength_change2th(self.__wavelength)
 
-        self.__previousRms = self.getRms()
+        self.__previousRms = self.__rms
         previous_residual = float("+inf")
 
         print("Initial residual: %s" % previous_residual)
 
-        for count in range(max_iter):
+        count = 0
+        timeout = timeutils.Timeout(seconds=10)
+
+        while count < max_iter and not timeout:
             residual = self.__refine(10000, fix=self.__fixed)
-            print("Residual: %s" % residual)
             if residual >= previous_residual:
                 break
             previous_residual = residual
+            count += 1
 
         self.__rms = residual
         print("Final residual: %s (after %s iterations)" % (residual, count))
