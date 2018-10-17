@@ -237,7 +237,7 @@ class FullSplitCSR_1d(object):
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
             mask_t[::1] cmask
             numpy.int32_t[::1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
-            numpy.int32_t[::1] indptr = numpy.zeros(self.bins + 1, dtype=numpy.int32)
+            numpy.int32_t[::1] indptr
             float pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
             float max0, min0
             float areaPixel = 0, delta = 0, areaPixel2 = 0
@@ -307,7 +307,9 @@ class FullSplitCSR_1d(object):
                 for bin in range(bin0_min, bin0_max + 1):
                     outmax[bin] += 1
 
-        indptr[1:] = outmax.cumsum()
+        indptr = numpy.concatenate(([numpy.int32(0)], 
+                                    numpy.asarray(outmax).cumsum(dtype=numpy.int32)))
+
         self.indptr = indptr
 
         cdef:
@@ -423,9 +425,9 @@ class FullSplitCSR_1d(object):
                         data[indptr[bin] + k] = fabs(partialArea) * oneOverPixelArea
                         outmax[bin] += 1  # k+1
 
-        self.data = data
-        self.indices = indices
-        self.outmax = outmax
+        self.data = numpy.asarray(data)
+        self.indices = numpy.asarray(indices)
+        self.outmax = numpy.asarray(outmax)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
