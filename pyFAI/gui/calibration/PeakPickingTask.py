@@ -756,7 +756,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         # filter peaks from the mask
         mask = self.model().experimentSettingsModel().mask().value()
         if mask is not None:
-            points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] != 1, points)
+            points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] == 0, points)
             points = list(points)
 
         if len(points) > 0:
