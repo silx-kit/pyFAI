@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "15/10/2018"
 
 import fabio
 import numpy
@@ -380,7 +380,7 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setModal(True)
 
         extensions = collections.OrderedDict()
-        extensions["Calibrant files"] = "*.D"
+        extensions["Calibrant files"] = "*.D *.d *.DS *.ds"
 
         filters = []
         filters.append("All supported files (%s)" % " ".join(extensions.values()))

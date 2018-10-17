@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "16/10/2018"
 
 import weakref
 import logging
@@ -104,13 +104,15 @@ class CalibrationContext(object):
 
     def __restoreUnit(self, unitModel, settings, fieldName, defaultUnit):
         unitName = settings.value(fieldName, None)
-        try:
-            unit = getattr(units.Unit, unitName)
-            if not isinstance(unit, units.Unit):
+        unit = None
+        if unitName is not None:
+            try:
+                unit = getattr(units.Unit, unitName)
+                if not isinstance(unit, units.Unit):
+                    unit = None
+            except Exception:
+                _logger.error("Unit name '%s' is not an unit", unitName)
                 unit = None
-        except Exception:
-            _logger.error("Unit name '%s' is not an unit", unitName)
-            unit = None
         if unit is None:
             unit = defaultUnit
         unitModel.setValue(unit)

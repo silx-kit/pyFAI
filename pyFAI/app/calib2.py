@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "16/10/2018"
 __status__ = "production"
 
 import logging
@@ -46,7 +46,6 @@ import pyFAI.calibrant
 import pyFAI.detectors
 
 import fabio
-
 
 
 try:
@@ -173,6 +172,10 @@ def configure_parser_arguments(parser):
                         help="Number of radial bins in 2D integrated images. Default: 400", type=int,
                         default=None)
 
+    # Customization
+    parser.add_argument("--qtargs", dest="qtargs", type=str,
+                        help="Arguments propagated to Qt", default=None)
+
     # Not yet used
     parser.add_argument("--tilt", dest="tilt",
                         help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated", default=None, action="store_true")
@@ -276,6 +279,41 @@ def parse_options():
     return options
 
 
+def displayExceptionBox(message, exc_info):
+    """
+    Display an exception as a MessageBox
+
+    :param str message: A context message
+    :param Union[tuple,Exception] exc_info: An exception or the output of
+        exc_info.
+    """
+    logger.error(message, exc_info=True)
+
+    if isinstance(exc_info, BaseException):
+        exc_info = (type(exc_info), exc_info, exc_info.__traceback__)
+    elif not isinstance(exc_info, tuple):
+        exc_info = sys.exc_info()
+
+    if exc_info[2] is not None:
+        # Mimic the syntax of the default Python exception
+        import traceback
+        detailed = (''.join(traceback.format_tb(exc_info[2])))
+        detailed = '{1}\nTraceback (most recent call last):\n{2}{0}: {1}'.format(exc_info[0].__name__, exc_info[1], detailed)
+    else:
+        # There is no backtrace
+        detailed = '{0}: {1}'.format(exc_info[0].__name__, exc_info[1])
+
+    from silx.gui import qt
+    msg = qt.QMessageBox()
+    msg.setWindowTitle(message)
+    msg.setIcon(qt.QMessageBox.Critical)
+    msg.setInformativeText("%s" % exc_info[1])
+    msg.setDetailedText(detailed)
+
+    msg.raise_()
+    msg.exec_()
+
+
 def setup_model(model, options):
     """
     Setup the model using options from the command line.
@@ -294,12 +332,16 @@ def setup_model(model, options):
     settings = model.experimentSettingsModel()
     if options.spacing:
         calibrant = None
-        if options.spacing in pyFAI.calibrant.CALIBRANT_FACTORY:
-            calibrant = pyFAI.calibrant.CALIBRANT_FACTORY(options.spacing)
-        elif os.path.isfile(options.spacing):
-            calibrant = pyFAI.calibrant.Calibrant(options.spacing)
-        else:
-            logger.error("No such Calibrant / d-Spacing file: %s", options.spacing)
+        try:
+            if options.spacing in pyFAI.calibrant.CALIBRANT_FACTORY:
+                calibrant = pyFAI.calibrant.CALIBRANT_FACTORY(options.spacing)
+            elif os.path.isfile(options.spacing):
+                calibrant = pyFAI.calibrant.Calibrant(options.spacing)
+            else:
+                logger.error("No such Calibrant / d-Spacing file: %s", options.spacing)
+        except Exception as e:
+            calibrant = None
+            displayExceptionBox("Error while loading the calibrant", e)
         if calibrant:
             settings.calibrantModel().setCalibrant(calibrant)
 
@@ -315,9 +357,13 @@ def setup_model(model, options):
         settings.polarizationFactor(options.polarization_factor)
 
     if options.detector_name:
-        detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name, args)
-        if options.pixel:
-            logger.warning("Detector model already specified. Pixel size argument ignored.")
+        try:
+            detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name, args)
+            if options.pixel:
+                logger.warning("Detector model already specified. Pixel size argument ignored.")
+        except Exception as e:
+            detector = None
+            displayExceptionBox("Error while loading the detector", e)
     elif options.pixel:
         pixel_size = parse_pixel_size(options.pixel)
         detector = pyFAI.detectors.Detector(pixel1=pixel_size[0], pixel2=pixel_size[0])
@@ -325,27 +371,36 @@ def setup_model(model, options):
         detector = None
 
     if options.spline:
-        if detector is None:
-            detector = pyFAI.detectors.Detector(splineFile=options.spline)
-        elif detector.__class__ is pyFAI.detectors.Detector or detector.HAVE_TAPER:
-            detector.set_splineFile(options.spline)
-        else:
-            logger.warning("Spline file not supported with this kind of detector. Argument ignored.")
+        try:
+            if detector is None:
+                detector = pyFAI.detectors.Detector(splineFile=options.spline)
+            elif detector.__class__ is pyFAI.detectors.Detector or detector.HAVE_TAPER:
+                detector.set_splineFile(options.spline)
+            else:
+                logger.warning("Spline file not supported with this kind of detector. Argument ignored.")
+        except Exception as e:
+            displayExceptionBox("Error while loading the spline file", e)
 
     settings.detectorModel().setDetector(detector)
 
     if options.mask:
-        settings.maskFile().setValue(options.mask)
-        with fabio.open(options.mask) as mask:
-            settings.mask().setValue(mask.data)
+        try:
+            settings.maskFile().setValue(options.mask)
+            with fabio.open(options.mask) as mask:
+                settings.mask().setValue(mask.data)
+        except Exception as e:
+            displayExceptionBox("Error while loading the mask", e)
 
     if len(args) == 0:
         pass
     elif len(args) == 1:
         image_file = args[0]
-        settings.imageFile().setValue(image_file)
-        with fabio.open(image_file) as image:
-            settings.image().setValue(image.data)
+        try:
+            settings.imageFile().setValue(image_file)
+            with fabio.open(image_file) as image:
+                settings.image().setValue(image.data)
+        except Exception as e:
+            displayExceptionBox("Error while loading the image", e)
     else:
         logger.error("Too much images provided. Only one is expected")
 
@@ -479,7 +534,11 @@ def main():
     from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
 
     sys.excepthook = logUncaughtExceptions
-    app = qt.QApplication([])
+    if options.qtargs is None:
+        qtArgs = []
+    else:
+        qtArgs = options.qtargs.split()
+    app = qt.QApplication(qtArgs)
     pyFAI.resources.silx_integration()
 
     settings = qt.QSettings(qt.QSettings.IniFormat,

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/08/2018"
+__date__ = "16/10/2018"
 
 from silx.gui import qt
 import pyFAI.detectors
@@ -36,36 +36,61 @@ import pyFAI.detectors
 class AllDetectorModel(qt.QStandardItemModel):
 
     CLASS_ROLE = qt.Qt.UserRole
+    MODEL_ROLE = qt.Qt.UserRole + 1
+    MANUFACTURER_ROLE = qt.Qt.UserRole + 2
 
     def __init__(self, parent):
         qt.QStandardItemModel.__init__(self, parent)
 
         detectorClasses = set(pyFAI.detectors.ALL_DETECTORS.values())
 
-        def getClassModel(detectorClass):
+        def getNameAndManufacturer(detectorClass):
             modelName = None
-            if hasattr(detectorClass, "aliases"):
-                if len(detectorClass.aliases) > 0:
-                    modelName = detectorClass.aliases[0]
-            if modelName is None:
-                modelName = detectorClass.__name__
-            return modelName
+            result = []
 
-        items = [(getClassModel(c), c) for c in detectorClasses]
+            if hasattr(detectorClass, "MANUFACTURER"):
+                manufacturer = detectorClass.MANUFACTURER
+            else:
+                manufacturer = None
+
+            if isinstance(manufacturer, list):
+                for index, m in enumerate(manufacturer):
+                    if m is None:
+                        continue
+                    modelName = detectorClass.aliases[index]
+                    result.append((modelName, m, detectorClass))
+            else:
+                if hasattr(detectorClass, "aliases"):
+                    if len(detectorClass.aliases) > 0:
+                        modelName = detectorClass.aliases[0]
+                if modelName is None:
+                    modelName = detectorClass.__name__
+                result.append((modelName, manufacturer, detectorClass))
+            return result
+
+        items = []
+        for c in detectorClasses:
+            items.extend(getNameAndManufacturer(c))
         items = sorted(items)
-        for detectorName, detector in items:
+        for modelName, manufacturerName, detector in items:
             if detector is pyFAI.detectors.Detector:
                 continue
-            item = qt.QStandardItem(detectorName)
+            item = qt.QStandardItem(modelName)
             item.setData(detector, role=self.CLASS_ROLE)
+            item.setData(modelName, role=self.MODEL_ROLE)
+            item.setData(manufacturerName, role=self.MANUFACTURER_ROLE)
             self.appendRow(item)
 
-    def indexFromDetector(self, detector):
+    def indexFromDetector(self, detector, manufacturer):
         for row in range(self.rowCount()):
             index = self.index(row, 0)
+            manufacturerName = self.data(index, role=self.MANUFACTURER_ROLE)
+            if manufacturerName != manufacturer:
+                continue
             detectorClass = self.data(index, role=self.CLASS_ROLE)
-            if detectorClass == detector:
-                return index
+            if detectorClass != detector:
+                continue
+            return index
         return qt.QModelIndex()
 
 
@@ -86,11 +111,11 @@ class DetectorFilter(qt.QSortFilterProxyModel):
             return True
         sourceModel = self.sourceModel()
         index = sourceModel.index(sourceRow, 0, sourceParent)
-        detectorClass = index.data(AllDetectorModel.CLASS_ROLE)
-        return detectorClass.MANUFACTURER == self.__manufacturerFilter
+        manufacturer = index.data(AllDetectorModel.MANUFACTURER_ROLE)
+        return manufacturer == self.__manufacturerFilter
 
-    def indexFromDetector(self, detector):
+    def indexFromDetector(self, detector, manufacturer):
         sourceModel = self.sourceModel()
-        index = sourceModel.indexFromDetector(detector)
+        index = sourceModel.indexFromDetector(detector, manufacturer)
         index = self.mapFromSource(index)
         return index
