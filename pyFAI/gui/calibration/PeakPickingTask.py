@@ -517,7 +517,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
 
-        self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
+        self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-full-ring"))
+        self._arcSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
         self._peakSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
@@ -533,9 +534,10 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         self.__mode = qt.QButtonGroup()
         self.__mode.setExclusive(True)
-        self.__mode.addButton(self._peakSelectionMode)
         self.__mode.addButton(self._ringSelectionMode)
-        self._ringSelectionMode.setChecked(True)
+        self.__mode.addButton(self._arcSelectionMode)
+        self.__mode.addButton(self._peakSelectionMode)
+        self._arcSelectionMode.setChecked(True)
 
         self._extract.clicked.connect(self.__autoExtractRingsLater)
 
@@ -544,6 +546,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerPlot(self.__plot)
 
         self.__massif = None
+        self.__massifReconstructed = None
 
     def __createSavePeakDialog(self):
         dialog = CalibrationContext.instance().createFileDialog(self)
@@ -692,30 +695,36 @@ class PeakPickingTask(AbstractCalibrationTask):
 
     def __invalidateMassif(self):
         self.__massif = None
-        self.__massifReconstruct = None
+        self.__massifReconstructed = None
 
     def __widgetShow(self):
         pass
 
-    def __getMassif(self):
-        if self.__massif is None:
-            qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
-            experimentSettings = self.model().experimentSettingsModel()
-            image = experimentSettings.image().value()
-            mask = experimentSettings.mask().value()
-            if image is None:
-                return None
+    def __createMassif(self, reconstruct=False):
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        experimentSettings = self.model().experimentSettingsModel()
+        image = experimentSettings.image().value()
+        mask = experimentSettings.mask().value()
+        if image is None:
+            return None
+        massif = pyFAI.massif.Massif(image, mask)
+        foo = massif.get_labeled_massif(reconstruct=reconstruct)
+        import fabio
+        fabio.edfimage.EdfImage(data=foo).save("foo_r.edf" if reconstruct else "foo.edf")
+        qt.QApplication.restoreOverrideCursor()
+        return massif
 
-            if mask is not None:
-                data = image.copy()
-                data[mask != 0] = 0
-            else:
-                data = image
-            massif = pyFAI.massif.Massif(data)
-            massif.getLabeledMassif()
-            self.__massif = massif
-            qt.QApplication.restoreOverrideCursor()
-        return self.__massif
+    def __getMassif(self):
+        if self._ringSelectionMode.isChecked():
+            if self.__massifReconstructed is None:
+                self.__massifReconstructed = self.__createMassif(reconstruct=True)
+            return self.__massifReconstructed
+        elif self._arcSelectionMode.isChecked():
+            if self.__massif is None:
+                self.__massif = self.__createMassif()
+            return self.__massif
+        else:
+            assert(False)
 
     def __plotClicked(self, x, y):
         image = self.model().experimentSettingsModel().image().value()
@@ -759,7 +768,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             else:
                 lastRingNumber = max(ringNumbers)
 
-            if self._ringSelectionMode.isChecked():
+            if self._ringSelectionMode.isChecked() or self._arcSelectionMode.isChecked():
                 ringNumber = lastRingNumber + 1
             elif self._peakSelectionMode.isChecked():
                 ringNumber = lastRingNumber
