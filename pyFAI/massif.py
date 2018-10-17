@@ -46,7 +46,7 @@ from scipy.ndimage import label, distance_transform_edt
 from scipy.ndimage.filters import median_filter
 from .utils.decorators import deprecated
 from .ext.bilinear import Bilinear
-from .utils import gaussian_filter, binning, unbinning, relabel, is_far_from_group
+from .utils import gaussian_filter, binning, unbinning, is_far_from_group
 from .third_party import six
 
 if os.name != "nt":
@@ -112,7 +112,7 @@ class Massif(object):
         defines a map of the massif around x and returns the mask
         """
         labeled = self.get_labeled_massif()
-        if labeled[x[0], x[1]] != labeled.max():
+        if labeled[x[0], x[1]] > 0:  # without relabeled the background is 0 labeled.max():
             return (labeled == labeled[x[0], x[1]])
 
     def find_peaks(self, x, nmax=200, annotate=None, massif_contour=None, stdout=sys.stdout):
@@ -309,12 +309,14 @@ class Massif(object):
                         pattern = numpy.ones((3, 3), dtype=numpy.int8)
                     logger.debug("Labeling all massifs. This takes some time !!!")
                     massif_binarization = (self.get_binned_data() > self.get_blurred_data())
-                    if not (reconstruct or (self.mask is None)):
-                        binned_mask = binning(self.mask, self.binning, norm=False)
-                        massif_binarization = numpy.logical_and(massif_binarization, binned_mask == 0)
+                    if (self.mask is not None) and (not reconstruct):
+                            binned_mask = binning(self.mask.astype(int), self.binning, norm=False)
+                            massif_binarization = numpy.logical_and(massif_binarization, binned_mask == 0)
                     labeled_massif, self._number_massif = label(massif_binarization,
                                                                 pattern)
-                    relabeled = relabel(labeled_massif, self.get_binned_data(), self.get_blurred_data())
+                    # TODO: investigate why relabel fails
+                    # relabeled = relabel(labeled_massif, self.get_binned_data(), self.get_blurred_data())
+                    relabeled = labeled_massif
                     self._labeled_massif = unbinning(relabeled, self.binning, False)
                     logger.info("Labeling found %s massifs.", self._number_massif)
         return self._labeled_massif
