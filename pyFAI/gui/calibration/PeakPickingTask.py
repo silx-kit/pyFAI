@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2018"
+__date__ = "17/10/2018"
 
 import logging
 import numpy
@@ -543,6 +543,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
 
+        self.__massif = None
+
     def __createSavePeakDialog(self):
         dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
@@ -688,9 +690,39 @@ class PeakPickingTask(AbstractCalibrationTask):
             if button == "left":
                 self.__plotClicked(x, y)
 
+    def __invalidateMassif(self):
+        self.__massif = None
+        self.__massifReconstruct = None
+
+    def __widgetShow(self):
+        pass
+
+    def __getMassif(self):
+        if self.__massif is None:
+            qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+            experimentSettings = self.model().experimentSettingsModel()
+            image = experimentSettings.image().value()
+            mask = experimentSettings.mask().value()
+            if image is None:
+                return None
+
+            if mask is not None:
+                data = image.copy()
+                data[mask != 0] = 0
+            else:
+                data = image
+            massif = pyFAI.massif.Massif(data)
+            massif.getLabeledMassif()
+            self.__massif = massif
+            qt.QApplication.restoreOverrideCursor()
+        return self.__massif
+
     def __plotClicked(self, x, y):
         image = self.model().experimentSettingsModel().image().value()
-        massif = pyFAI.massif.Massif(image)
+        massif = self.__getMassif()
+        if massif is None:
+            # Nothing to pick
+            return
         points = massif.find_peaks([y, x], stdout=_DummyStdOut())
         if len(points) == 0:
             # toleration
@@ -917,6 +949,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
         settings.mask().changed.connect(self.__maskUpdated)
+        settings.image().changed.connect(self.__invalidateMassif)
+        settings.mask().changed.connect(self.__invalidateMassif)
         self.__plot.setModel(model.peakSelectionModel())
         self.__initPeakSelectionView(model)
         self.__undoStack.clear()
