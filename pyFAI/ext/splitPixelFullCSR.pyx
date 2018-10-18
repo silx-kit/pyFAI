@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-#    Project: Fast Azimuthal integration
+#    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -38,6 +38,8 @@ __license__ = "MIT"
 import cython
 import os
 import sys
+import logging
+logger = logging.getLogger(__name__)
 from cython.parallel import prange
 import numpy
 cimport numpy
@@ -476,40 +478,41 @@ class FullSplitCSR_1d(object):
             data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
             data_t[::1] ccoef = self.data
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            numpy.int32_t[:] indices = self.indices, indptr = self.indptr
-            
+            numpy.int32_t[::1] indices = self.indices, indptr = self.indptr
         assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True
-            cdummy =  <float> float(dummy)
+            cdummy = <data_t> float(dummy)
+
             if delta_dummy is None:
-                cddummy = <float> 0.0
+                cddummy = <data_t> 0.0
             else:
-                cddummy = <float> float(delta_dummy)
+                cddummy = <data_t> float(delta_dummy)
         else:
             do_dummy = False
-            cdummy =  <float> float(self.empty)
+            cdummy = <data_t> self.empty
+
         if flat is not None:
             do_flat = True
             assert flat.size == size, "flat-field array size"
-            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
+            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=data_d)
         if dark is not None:
             do_dark = True
             assert dark.size == size, "dark current array size"
-            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
+            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=data_d)
         if solidAngle is not None:
             do_solidAngle = True
             assert solidAngle.size == size, "Solid angle array size"
-            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
+            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=data_d)
         if polarization is not None:
             do_polarization = True
             assert polarization.size == size, "polarization array size"
-            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=data_d)
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
-            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-            cdata = numpy.zeros(size, dtype=numpy.float32)
+            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+            cdata = numpy.zeros(size, dtype=data_d)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -540,8 +543,8 @@ class FullSplitCSR_1d(object):
                     cdata[i] += data
         else:
             if do_dummy:
-                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-                cdata = numpy.zeros(size, dtype=numpy.float32)
+                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+                cdata = numpy.zeros(size, dtype=data_d)
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
@@ -549,7 +552,7 @@ class FullSplitCSR_1d(object):
                     else:
                         cdata[i] += cdummy
             else:
-                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
 
         for i in prange(bins, nogil=True, schedule="guided"):
             acc_data = 0.0
@@ -568,7 +571,7 @@ class FullSplitCSR_1d(object):
             sum_data[i] += acc_data
             sum_count[i] += acc_count
             if acc_count > epsilon:
-                merged[i] += <float> (acc_data / acc_count / normalization_factor)
+                merged[i] += acc_data / acc_count / normalization_factor
             else:
                 merged[i] += cdummy
         return (self.bin_centers, 
@@ -580,6 +583,7 @@ class FullSplitCSR_1d(object):
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
     def outPos(self):
         return self.bin_centers
+
 
 ################################################################################
 # Bidimensionnal regrouping
@@ -1094,7 +1098,7 @@ class FullSplitCSR_2d(object):
                   int coef_power=1
                   ):
         """
-        Actually perform the integration which in this case looks more like a matrix-vector product
+        Actually perform the 2D integration which in this case looks more like a matrix-vector product
 
         :param weights: input image
         :type weights: ndarray
@@ -1112,9 +1116,8 @@ class FullSplitCSR_2d(object):
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
         :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-
-        :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: 4-tuple of ndarrays
+        :return:  I(2d), bin_centers0(1d), bin_centers1(1d), weighted histogram(2d), unweighted histogram (2d)
+        :rtype: 5-tuple of ndarrays
 
         """
         cdef:
@@ -1125,20 +1128,22 @@ class FullSplitCSR_2d(object):
             acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
             acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
             data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
-            data_t[::1] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            numpy.int32_t[:] indices = self.indices, indptr = self.indptr
+            data_t[::1] ccoef = self.data, 
+            data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+            numpy.int32_t[::1] indices = self.indices, indptr = self.indptr
+
         assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True
-            cdummy = <float> float(dummy)
+            cdummy = <data_t> float(dummy)
             if delta_dummy is None:
-                cddummy = <float> 0.0
+                cddummy = <data_t> 0.0
             else:
-                cddummy = <float> float(delta_dummy)
+                cddummy = <data_t> float(delta_dummy)
         else:
             do_dummy = False
-            cdummy = <float> float(self.empty)
+            cdummy = <data_t> float(self.empty)
 
         if flat is not None:
             do_flat = True
@@ -1158,8 +1163,8 @@ class FullSplitCSR_2d(object):
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
-            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-            cdata = numpy.zeros(size, dtype=numpy.float32)
+            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+            cdata = numpy.zeros(size, dtype=data_d)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -1174,7 +1179,8 @@ class FullSplitCSR_2d(object):
                         if do_solidAngle:
                             data = data / csolidAngle[i]
                         cdata[i] += data
-                    else:  # set all dummy_like values to cdummy. simplifies further processing
+                    else:
+                        # set all dummy_like values to cdummy. simplifies further processing
                         cdata[i] += cdummy
             else:
                 for i in prange(size, nogil=True, schedule="static"):
@@ -1190,8 +1196,8 @@ class FullSplitCSR_2d(object):
                     cdata[i] += data
         else:
             if do_dummy:
-                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-                cdata = numpy.zeros(size, dtype=numpy.float32)
+                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+                cdata = numpy.zeros(size, dtype=data_d)
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
@@ -1199,7 +1205,7 @@ class FullSplitCSR_2d(object):
                     else:
                         cdata[i] += cdummy
             else:
-                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
 
         for i in prange(bins, nogil=True, schedule="guided"):
             acc_data = 0.0
@@ -1212,7 +1218,7 @@ class FullSplitCSR_2d(object):
                 data = cdata[idx]
                 if do_dummy and (data == cdummy):
                     continue
-                acc_data = acc_data + data * coef**coef_power
+                acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
             sum_data[i] += acc_data
             sum_count[i] += acc_count
@@ -1220,12 +1226,12 @@ class FullSplitCSR_2d(object):
                 merged[i] += acc_data / acc_count / normalization_factor
             else:
                 merged[i] += cdummy
+        return (numpy.asarray(merged).reshape(self.bins).T, 
+                self.bin_centers0, 
+                self.bin_centers1, 
+                numpy.asarray(sum_data).reshape(self.bins).T, 
+                numpy.asarray(sum_count).reshape(self.bins).T)
 
-        return (self.bin_centers, 
-                numpy.asarray(merged), 
-                numpy.asarray(sum_data), 
-                numpy.asarray(sum_count))
-    
     @property
     @deprecated(replacement="bin_centers0", since_version="0.16", only_once=True)
     def outPos0(self):

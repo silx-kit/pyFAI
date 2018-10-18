@@ -32,9 +32,10 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "16/10/2018"
+__date__ = "18/10/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
 import cython
 import os
 import sys
@@ -483,7 +484,8 @@ class HistoBBox1d(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate(self, weights,
+    def integrate(self,
+                  weights,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -511,19 +513,20 @@ class HistoBBox1d(object):
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
         :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
+
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: 4-tuple of ndarrays
 
         """
         cdef:
             numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
-            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10
-            data_t data = 0.0, coef = 0.0, cdummy = 0.0, cddummy = 0.0
+            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
+            data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
             acc_t[::1] sum_data = numpy.zeros(self.bins, dtype=acc_d)
             acc_t[::1] sum_count = numpy.zeros(self.bins, dtype=acc_d)
             data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
-            float[::1] ccoef = self.data, 
+            data_t[::1] ccoef = self.data
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[::1] indices = self.indices, indptr = self.indptr
         assert weights.size == size, "weights size"
@@ -537,6 +540,7 @@ class HistoBBox1d(object):
             else:
                 cddummy = <data_t> float(delta_dummy)
         else:
+            do_dummy = False
             cdummy = <data_t> self.empty
 
         if flat is not None:
@@ -609,10 +613,11 @@ class HistoBBox1d(object):
                 if coef == 0.0:
                     continue
                 data = cdata[idx]
-                if do_dummy and data == cdummy:
+                if do_dummy and (data == cdummy):
                     continue
                 acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
+
             sum_data[i] += acc_data
             sum_count[i] += acc_count
             if acc_count > epsilon:
@@ -1214,11 +1219,13 @@ class HistoBBox2d(object):
     def integrate(self, weights,
                   dummy=None,
                   delta_dummy=None,
-                  dark=None, flat=None,
+                  dark=None,
+                  flat=None,
                   solidAngle=None,
                   polarization=None,
                   double normalization_factor=1.0,
-                  int coef_power=1):
+                  int coef_power=1
+                  ):
         """
         Actually perform the 2D integration which in this case looks more like a matrix-vector product
 
@@ -1243,9 +1250,9 @@ class HistoBBox2d(object):
 
         """
         cdef:
-            int i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, size = self.size
-            double acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10
-            data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
+            numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
+            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
+            data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
             acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
             acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
@@ -1264,6 +1271,7 @@ class HistoBBox2d(object):
             else:
                 cddummy = <data_t> float(delta_dummy)
         else:
+            do_dummy = False
             cdummy = <data_t> float(self.empty)
 
         if flat is not None:
@@ -1362,3 +1370,4 @@ class HistoBBox2d(object):
     @deprecated(replacement="bin_centers1", since_version="0.16", only_once=True)
     def outPos1(self):
         return self.bin_centers1
+
