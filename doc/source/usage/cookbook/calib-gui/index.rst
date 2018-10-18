@@ -21,7 +21,7 @@ which looks like this:
 The windows is divided in 3 vertical tiles containing:
 * On the left side, a list of tasks to be performed: setting-up, masking,
   peak-picking, ring-fitting and caking.
-* A large central panel is left free to display the image
+* A large central panel to display the image
 * The right side contains a pannel with a set of tools to perform each task and
   finishes with the "Next" button to switch to the next task.
 
@@ -89,7 +89,7 @@ you to select the first group on the inner-most ring and a couple of other rings
 
 .. figure:: 3_picking.png
    :align: center
-   :alt: Draw a mask on the image
+   :alt: Select peaks and assign them to rings 
 
 
 Double check the ring-number assignment: "pyFAI-calib2" uses 1-based numbers,
