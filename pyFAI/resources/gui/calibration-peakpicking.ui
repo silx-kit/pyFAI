@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>772</width>
+    <width>778</width>
     <height>640</height>
    </rect>
   </property>
@@ -103,6 +103,9 @@
             </property>
             <item>
              <widget class="QToolButton" name="_ringSelectionMode">
+              <property name="toolTip">
+               <string>Extract peaks in a full ring, trying to jumping over the mask</string>
+              </property>
               <property name="text">
                <string>Ring</string>
               </property>
@@ -118,9 +121,31 @@
              </widget>
             </item>
             <item>
-             <widget class="QToolButton" name="_peakSelectionMode">
+             <widget class="QToolButton" name="_arcSelectionMode">
+              <property name="toolTip">
+               <string>Extract contiguous peaks in an arc</string>
+              </property>
               <property name="text">
-               <string>Single pick</string>
+               <string>Arc</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextBesideIcon</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="_peakSelectionMode">
+              <property name="toolTip">
+               <string>Extract a single peak</string>
+              </property>
+              <property name="text">
+               <string>Single peak</string>
               </property>
               <property name="checkable">
                <bool>true</bool>

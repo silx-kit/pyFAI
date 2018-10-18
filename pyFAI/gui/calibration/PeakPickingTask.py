@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2018"
+__date__ = "18/10/2018"
 
 import logging
 import numpy
@@ -517,7 +517,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
 
-        self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
+        self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-full-ring"))
+        self._arcSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
         self._peakSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
@@ -533,15 +534,19 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         self.__mode = qt.QButtonGroup()
         self.__mode.setExclusive(True)
-        self.__mode.addButton(self._peakSelectionMode)
         self.__mode.addButton(self._ringSelectionMode)
-        self._ringSelectionMode.setChecked(True)
+        self.__mode.addButton(self._arcSelectionMode)
+        self.__mode.addButton(self._peakSelectionMode)
+        self._arcSelectionMode.setChecked(True)
 
         self._extract.clicked.connect(self.__autoExtractRingsLater)
 
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
+
+        self.__massif = None
+        self.__massifReconstructed = None
 
     def __createSavePeakDialog(self):
         dialog = CalibrationContext.instance().createFileDialog(self)
@@ -688,9 +693,45 @@ class PeakPickingTask(AbstractCalibrationTask):
             if button == "left":
                 self.__plotClicked(x, y)
 
+    def __invalidateMassif(self):
+        self.__massif = None
+        self.__massifReconstructed = None
+
+    def __widgetShow(self):
+        pass
+
+    def __createMassif(self, reconstruct=False):
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        experimentSettings = self.model().experimentSettingsModel()
+        image = experimentSettings.image().value()
+        mask = experimentSettings.mask().value()
+        if image is None:
+            return None
+        massif = pyFAI.massif.Massif(image, mask)
+        foo = massif.get_labeled_massif(reconstruct=reconstruct)
+        import fabio
+        fabio.edfimage.EdfImage(data=foo).save("foo_r.edf" if reconstruct else "foo.edf")
+        qt.QApplication.restoreOverrideCursor()
+        return massif
+
+    def __getMassif(self):
+        if self._ringSelectionMode.isChecked():
+            if self.__massifReconstructed is None:
+                self.__massifReconstructed = self.__createMassif(reconstruct=True)
+            return self.__massifReconstructed
+        elif self._arcSelectionMode.isChecked() or self._peakSelectionMode.isChecked():
+            if self.__massif is None:
+                self.__massif = self.__createMassif()
+            return self.__massif
+        else:
+            assert(False)
+
     def __plotClicked(self, x, y):
         image = self.model().experimentSettingsModel().image().value()
-        massif = pyFAI.massif.Massif(image)
+        massif = self.__getMassif()
+        if massif is None:
+            # Nothing to pick
+            return
         points = massif.find_peaks([y, x], stdout=_DummyStdOut())
         if len(points) == 0:
             # toleration
@@ -715,7 +756,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         # filter peaks from the mask
         mask = self.model().experimentSettingsModel().mask().value()
         if mask is not None:
-            points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] != 1, points)
+            points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] == 0, points)
             points = list(points)
 
         if len(points) > 0:
@@ -727,7 +768,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             else:
                 lastRingNumber = max(ringNumbers)
 
-            if self._ringSelectionMode.isChecked():
+            if self._ringSelectionMode.isChecked() or self._arcSelectionMode.isChecked():
                 ringNumber = lastRingNumber + 1
             elif self._peakSelectionMode.isChecked():
                 ringNumber = lastRingNumber
@@ -827,6 +868,26 @@ class PeakPickingTask(AbstractCalibrationTask):
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
+
+        if detector is None:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", "No detector defined")
+            return
+        if calibrant is None:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", "No calibrant defined")
+            return
+        if wavelength is None:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", "No wavelength defined")
+            return
+
         extractor = RingExtractor(image, mask, calibrant, detector, wavelength)
 
         # FIXME numpy array can be allocated first
@@ -897,6 +958,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
         settings.mask().changed.connect(self.__maskUpdated)
+        settings.image().changed.connect(self.__invalidateMassif)
+        settings.mask().changed.connect(self.__invalidateMassif)
         self.__plot.setModel(model.peakSelectionModel())
         self.__initPeakSelectionView(model)
         self.__undoStack.clear()
