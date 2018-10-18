@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/10/2018"
+__date__ = "18/10/2018"
 
 import logging
 import numpy
@@ -146,7 +146,7 @@ class RingCalibration(object):
         self.__peakPicker.points.setWavelength_change2th(self.__wavelength)
 
         self.__previousRms = self.__rms
-        previous_residual = float("+inf")
+        residual = previous_residual = float("+inf")
 
         print("Initial residual: %s" % previous_residual)
 
