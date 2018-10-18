@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/10/2018"
+__date__ = "17/10/2018"
 
 import logging
 import numpy
@@ -544,6 +544,12 @@ class GeometryTask(AbstractCalibrationTask):
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
+        if calibrant is None:
+            return None
+        if detector is None:
+            return None
+        if wavelength is None:
+            return None
 
         peaks = []
         for peakModel in self.model().peakSelectionModel():
@@ -568,6 +574,8 @@ class GeometryTask(AbstractCalibrationTask):
     def __getCalibration(self):
         if self.__calibration is None:
             self.__calibration = self.__createCalibration()
+        if self.__calibration is None:
+            return None
 
         # It have to be updated only if it changes
         image = self.model().experimentSettingsModel().image().value()
@@ -598,6 +606,8 @@ class GeometryTask(AbstractCalibrationTask):
             peaks = numpy.array(peaks)
 
             calibration = self.__getCalibration()
+            if calibration is None:
+                return
             calibration.init(peaks, "massif")
             calibration.toGeometryModel(self.model().peakGeometry())
             self.__peaksInvalidated = False
@@ -637,6 +647,9 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __resetGeometry(self):
         calibration = self.__getCalibration()
+        if calibration is None:
+            self.__unsetProcessing()
+            return
         self.__initGeometryFromPeaks()
         # write result to the fitted model
         model = self.model().fittedGeometry()
@@ -648,6 +661,10 @@ class GeometryTask(AbstractCalibrationTask):
         self.__fitting = True
         self._fitButton.setWaiting(True)
         calibration = self.__getCalibration()
+        if calibration is None:
+            self.__unsetProcessing()
+            self._fitButton.setWaiting(False)
+            return
         if self.__peaksInvalidated:
             self.__initGeometryFromPeaks()
         else:
@@ -663,30 +680,35 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __formatResidual(self):
         calibration = self.__getCalibration()
-        previousRms = calibration.getPreviousRms()
-        rms = calibration.getRms()
-        if rms is not None:
-            angleUnit = CalibrationContext.instance().getAngleUnit().value()
-            rms = units.convert(rms, units.Unit.RADIAN, angleUnit)
-            text = '%.6e' % rms
-            if previousRms is not None:
-                previousRms = units.convert(previousRms, units.Unit.RADIAN, angleUnit)
-                if numpy.isclose(rms, previousRms):
-                    diff = "(no changes)"
-                else:
-                    diff = '(%+.2e)' % (rms - previousRms)
-                    if rms < previousRms:
-                        diff = '<font color="green">%s</font>' % diff
-                    else:
-                        diff = '<font color="red">%s</font>' % diff
-                text = '%s %s' % (text, diff)
-            text = "%s %s" % (text, angleUnit.symbol)
-        else:
+        if calibration is None:
             text = ""
+        else:
+            previousRms = calibration.getPreviousRms()
+            rms = calibration.getRms()
+            if rms is not None:
+                angleUnit = CalibrationContext.instance().getAngleUnit().value()
+                rms = units.convert(rms, units.Unit.RADIAN, angleUnit)
+                text = '%.6e' % rms
+                if previousRms is not None:
+                    previousRms = units.convert(previousRms, units.Unit.RADIAN, angleUnit)
+                    if numpy.isclose(rms, previousRms):
+                        diff = "(no changes)"
+                    else:
+                        diff = '(%+.2e)' % (rms - previousRms)
+                        if rms < previousRms:
+                            diff = '<font color="green">%s</font>' % diff
+                        else:
+                            diff = '<font color="red">%s</font>' % diff
+                    text = '%s %s' % (text, diff)
+                text = "%s %s" % (text, angleUnit.symbol)
+            else:
+                text = ""
         self._currentResidual.setText(text)
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
+        if calibration is None:
+            return
         model = self.model().fittedGeometry()
         if model.isValid():
             resetResidual = self.__fitting is not True
@@ -699,6 +721,8 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __updateDisplay(self):
         calibration = self.__getCalibration()
+        if calibration is None:
+            return
 
         rings = calibration.getRings()
         tth = calibration.getTwoThetaArray()
