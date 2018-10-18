@@ -27,11 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2018"
+__date__ = "18/10/2018"
 
 import os
 import logging
-import collections
 
 from silx.gui import qt
 
@@ -42,6 +41,8 @@ from ..widgets.DetectorModel import DetectorFilter
 from .model.DataModel import DataModel
 from ..utils import validators
 from .CalibrationContext import CalibrationContext
+from ..utils import FilterBuilder
+
 
 _logger = logging.getLogger(__name__)
 
@@ -185,16 +186,10 @@ class DetectorSelectorDrop(qt.QWidget):
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
-        extensions = collections.OrderedDict()
-        extensions["Spline files"] = "*.spline"
+        builder = FilterBuilder.FilterBuilder()
+        builder.addFileFormat("Spline files", "spline")
 
-        filters = []
-        filters.append("All supported files (%s)" % " ".join(extensions.values()))
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-        filters.append("All files (*)")
-
-        dialog.setNameFilters(filters)
+        dialog.setNameFilters(builder.getFilters())
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
         return dialog
 
@@ -268,19 +263,13 @@ class DetectorSelectorDrop(qt.QWidget):
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
-        extensions = collections.OrderedDict()
+        builder = FilterBuilder.FilterBuilder()
         if h5file:
-            extensions["HDF5 files"] = "*.h5"
+            builder.addFileFormat("HDF5 files", "h5")
         if splineFile:
-            extensions["Spline files"] = "*.spline"
+            builder.addFileFormat("Spline files", "spline")
 
-        filters = []
-        filters.append("All supported files (%s)" % " ".join(extensions.values()))
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-        filters.append("All files (*)")
-
-        dialog.setNameFilters(filters)
+        dialog.setNameFilters(builder.getFilters())
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
         return dialog
 
