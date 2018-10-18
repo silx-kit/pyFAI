@@ -27,13 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/10/2018"
+__date__ = "18/10/2018"
 
 import fabio
 import numpy
 import logging
 from contextlib import contextmanager
-import collections
 
 import silx.gui.plot
 from silx.gui import qt
@@ -47,6 +46,7 @@ from .DetectorSelectorDrop import DetectorSelectorDrop
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from ..utils import units
+from ..utils import FilterBuilder
 
 _logger = logging.getLogger(__name__)
 
@@ -334,22 +334,15 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
-        extensions = collections.OrderedDict()
-        extensions["EDF image files"] = "*.edf"
-        extensions["TIFF image files"] = "*.tif *.tiff"
-        extensions["NumPy binary files"] = "*.npy"
-        extensions["CBF files"] = "*.cbf"
-        extensions["MarCCD image files"] = "*.mccd"
+        builder = FilterBuilder.FilterBuilder()
+        builder.addImageFormat("EDF image files", "edf")
+        builder.addImageFormat("TIFF image files", "tif tiff")
+        builder.addImageFormat("NumPy binary files", "npy")
+        builder.addImageFormat("CBF files", "cbf")
+        builder.addImageFormat("MarCCD image files", "mccd")
         if forMask:
-            extensions["Fit2D mask files"] = "*.msk"
-
-        filters = []
-        filters.append("All supported files (%s)" % " ".join(extensions.values()))
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-        filters.append("All files (*)")
-
-        dialog.setNameFilters(filters)
+            builder.addImageFormat("Fit2D mask files", "msk")
+        dialog.setNameFilters(builder.getFilters())
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
         return dialog
 
@@ -379,16 +372,10 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
-        extensions = collections.OrderedDict()
-        extensions["Calibrant files"] = "*.D *.d *.DS *.ds"
+        builder = FilterBuilder.FilterBuilder()
+        builder.addFileFormat("Calibrant files", "D d DS ds")
 
-        filters = []
-        filters.append("All supported files (%s)" % " ".join(extensions.values()))
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-        filters.append("All files (*)")
-
-        dialog.setNameFilters(filters)
+        dialog.setNameFilters(builder.getFilters())
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
         return dialog
 
