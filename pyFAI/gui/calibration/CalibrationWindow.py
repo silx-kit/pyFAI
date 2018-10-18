@@ -207,14 +207,25 @@ class CalibrationWindow(qt.QMainWindow):
         self._list.adjustSize()
         self._list.updateGeometry()
 
+    def __minimizeMenu(self):
+        self._setListMode(MenuItem.IconMode)
+        icon = icons.getQIcon("pyfai:gui/icons/menu-help")
+        self._help.setIcon(icon)
+        self._help.setText("")
+
+    def __maximizeMenu(self):
+        self._setListMode(MenuItem.TextMode)
+        self._help.setIcon(qt.QIcon())
+        self._help.setText(self._helpText)
+
     def resizeEvent(self, event):
         width = event.size().width()
         oldWidth = event.oldSize().width()
         delta = width - oldWidth
         if (delta < 0 or oldWidth == -1) and width < 1100:
-            self._setListMode(MenuItem.IconMode)
+            self.__minimizeMenu()
         elif (delta > 0 or oldWidth == -1) and width > 1500:
-            self._setListMode(MenuItem.TextMode)
+            self.__maximizeMenu()
         return qt.QMainWindow.resizeEvent(self, event)
 
     def closeEvent(self, event):
