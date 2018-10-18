@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "16/10/2018"
+__date__ = "18/10/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -468,13 +468,13 @@ class FullSplitCSR_1d(object):
         """
         cdef:
             numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
-            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10
-            data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
+            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
+            data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
             acc_t[::1] sum_data = numpy.zeros(self.bins, dtype=acc_d)
             acc_t[::1] sum_count = numpy.zeros(self.bins, dtype=acc_d)
             data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
-            data_t[::1] ccoef = self.data 
+            data_t[::1] ccoef = self.data
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
             
@@ -553,7 +553,7 @@ class FullSplitCSR_1d(object):
 
         for i in prange(bins, nogil=True, schedule="guided"):
             acc_data = 0.0
-            acc_data = 0.0
+            acc_count = 0.0
             for j in range(indptr[i], indptr[i + 1]):
                 idx = indices[j]
                 coef = ccoef[j]
@@ -568,7 +568,7 @@ class FullSplitCSR_1d(object):
             sum_data[i] += acc_data
             sum_count[i] += acc_count
             if acc_count > epsilon:
-                merged[i] += acc_data / acc_count / normalization_factor
+                merged[i] += <float> (acc_data / acc_count / normalization_factor)
             else:
                 merged[i] += cdummy
         return (self.bin_centers, 
@@ -667,7 +667,7 @@ class FullSplitCSR_2d(object):
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
             mask_t[:] cmask
             numpy.int32_t[:, ::1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
-            numpy.int32_t[::1] indptr = numpy.zeros((self.bins[0] * self.bins[1]) + 1, dtype=numpy.int32)
+            numpy.int32_t[::1] indptr
             float pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
             float max0, min0, min1, max1
             float areaPixel = 0, delta0 = 0, delta1 = 0, areaPixel2 = 0
@@ -785,7 +785,8 @@ class FullSplitCSR_2d(object):
                             if tmp_i is not 0:
                                 outmax[i + bin0_min, j + bin1_min] += 1
 
-        indptr[1:] = outmax.ravel().cumsum()
+        indptr = numpy.concatenate([numpy.int32(0)],
+                                   numpy.asarray(outmax.ravel()).cumsum())
         self.indptr = numpy.asarray(indptr)
 
         cdef numpy.int32_t[::1] indices = numpy.zeros(indptr[all_bins], dtype=numpy.int32)
@@ -1118,8 +1119,8 @@ class FullSplitCSR_2d(object):
         """
         cdef:
             numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
-            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10
-            data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
+            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
+            data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
             acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
             acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
@@ -1234,4 +1235,4 @@ class FullSplitCSR_2d(object):
     @deprecated(replacement="bin_centers1", since_version="0.16", only_once=True)
     def outPos1(self):
         return self.bin_centers1
-    
+
