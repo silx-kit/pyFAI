@@ -19,6 +19,7 @@ which looks like this:
    :alt: startup of calib2
 
 The windows is divided in 3 vertical tiles containing:
+
 * On the left side, a list of tasks to be performed: setting-up, masking,
   peak-picking, ring-fitting and caking.
 * A large central panel to display the image
@@ -95,4 +96,49 @@ you to select the first group on the inner-most ring and a couple of other rings
 Double check the ring-number assignment: "pyFAI-calib2" uses 1-based numbers,
 unlike the command line tool.
 
+We will skip the "recalibrate" tool for now and go directly to the
+geometry fitting by clicking on "Next"
 
+Geometry fitting
+----------------
+
+When arriving on this task, the geometry is immediately fitted and you can see
+the values of the 3 translation and 3 rotation.
+
+.. figure:: 4_geometry.png
+   :align: center
+   :alt: Geometry optimization 
+
+
+Values can be modified and fixed by clicking on the lock.
+Click on the "Fit" button to re-fit the geometry.
+
+Results may be displayed in various units by right-clicking on the unit.
+
+Depending on the result, you may want to come back on the "peak-picking" task to
+re-assign the ring number.
+Or if it looks good, you can extract many ring for an even better fit like in this figure:
+
+.. figure:: 3_extract.png
+   :align: center
+   :alt: Extract many more rings for geometry refinement 
+ 
+Cake and Integration
+--------------------
+
+The last task displays the 1D and 2D integrated image with the ring position
+overlaid to validate the quality of the calibration.
+
+The radial unit can be customized and the images can be saved.
+
+.. figure:: 5_cake.png
+   :align: center
+   :alt: Azimuthal integration 
+
+Last but not least, do not forget to save the geometry as a PONI-file.
+
+Conclusion
+----------
+
+This tutorial explained the 5 steps needed to perform the calibration of the
+detector position prior to any diffraction experiment on a synchrotron.
