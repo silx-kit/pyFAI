@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/10/2018"
+__date__ = "18/10/2018"
 
 import logging
 import numpy
@@ -719,7 +719,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             if self.__massifReconstructed is None:
                 self.__massifReconstructed = self.__createMassif(reconstruct=True)
             return self.__massifReconstructed
-        elif self._arcSelectionMode.isChecked():
+        elif self._arcSelectionMode.isChecked() or self._peakSelectionMode.isChecked():
             if self.__massif is None:
                 self.__massif = self.__createMassif()
             return self.__massif
