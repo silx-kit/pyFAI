@@ -40,7 +40,9 @@ __docformat__ = 'restructuredtext'
 
 from ... import _version as version
 
-BASE_DOC_URL = "http://www.silx.org/pub/doc/pyFAI/{silx_doc_version}/{subpath}"
+BASE_DOC_URL = None
+
+_DEFAULT_BASE_DOC_URL = "http://www.silx.org/pub/doc/pyFAI/{silx_doc_version}/{subpath}"
 """Identify the base URL of the project documentation.
 
 It supportes string replacement:
@@ -72,4 +74,7 @@ def get_documentation_url(subpath):
         "micro": version.MICRO,
         "relev": version.RELEV,
         "subpath": subpath}
-    return BASE_DOC_URL.format(**keyworks)
+    template = BASE_DOC_URL
+    if template is None:
+        template = _DEFAULT_BASE_DOC_URL
+    return template.format(**keyworks)
