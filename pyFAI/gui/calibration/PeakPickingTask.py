@@ -708,9 +708,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         if image is None:
             return None
         massif = pyFAI.massif.Massif(image, mask)
-        foo = massif.get_labeled_massif(reconstruct=reconstruct)
-        import fabio
-        fabio.edfimage.EdfImage(data=foo).save("foo_r.edf" if reconstruct else "foo.edf")
+        massif.get_labeled_massif(reconstruct=reconstruct)
         qt.QApplication.restoreOverrideCursor()
         return massif
 
