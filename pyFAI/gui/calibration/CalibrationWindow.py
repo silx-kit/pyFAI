@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "18/10/2018"
 
 import functools
 
@@ -36,6 +36,7 @@ from silx.gui import icons
 
 import pyFAI.utils
 from .model import MarkerModel
+from ..utils import projecturl
 
 
 class MenuItem(qt.QListWidgetItem):
@@ -165,6 +166,17 @@ class CalibrationWindow(qt.QMainWindow):
         self._list.sizeHint = self._listSizeHint
         self._list.minimumSizeHint = self._listMinimumSizeHint
         self.setModel(model)
+
+        url = projecturl.get_documentation_url("")
+        if url.startswith("http"):
+            self._help.setText("Online help...")
+        self._helpText = self._help.text()
+        self._help.clicked.connect(self.__displayHelp)
+
+    def __displayHelp(self):
+        subpath = "usage/cookbook/calib-gui/index.html"
+        url = projecturl.get_documentation_url(subpath)
+        qt.QDesktopServices.openUrl(qt.QUrl(url))
 
     def __updateTaskState(self, task, item):
         warnings = task.nextStepWarning()
