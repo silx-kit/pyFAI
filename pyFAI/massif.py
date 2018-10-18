@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2018"
+__date__ = "17/10/2018"
 __status__ = "production"
 
 import sys
@@ -42,11 +42,11 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy
 import fabio
-from scipy.ndimage import label
+from scipy.ndimage import label, distance_transform_edt
 from scipy.ndimage.filters import median_filter
-
+from .utils.decorators import deprecated
 from .ext.bilinear import Bilinear
-from .utils import gaussian_filter, binning, unbinning, relabel, is_far_from_group
+from .utils import gaussian_filter, binning, unbinning, is_far_from_group
 from .third_party import six
 
 if os.name != "nt":
@@ -59,9 +59,11 @@ class Massif(object):
     """
     TARGET_SIZE = 1024
 
-    def __init__(self, data=None):
-        """
-
+    def __init__(self, data=None, mask=None):
+        """Constructor of the class...
+        
+        :param data: 2D array or filename (discouraged)
+        :param mask: array with non zero for invalid data 
         """
         if isinstance(data, six.string_types) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
@@ -72,13 +74,16 @@ class Massif(object):
                 self.data = data.astype("float32")
             except Exception as error:
                 logger.error("Unable to understand this type of data %s: %s", data, error)
+        self.mask = mask
+        self._cleaned_data = None
         self._bilin = Bilinear(self.data)
-        self._blured_data = None
+        self._blurred_data = None
         self._median_data = None
         self._labeled_massif = None
         self._number_massif = None
         self._valley_size = None
         self._binned_data = None
+        self._reconstruct_used = None
         self.binning = None  # Binning is 2-list usually
         self._sem = threading.Semaphore()
         self._sem_label = threading.Semaphore()
@@ -98,7 +103,10 @@ class Massif(object):
         else:
             res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx]]
         if (len(res) != 2) or not((0 <= out[0] < self.data.shape[0]) and (0 <= res[1] < self.data.shape[1])):
-            logger.error("in nearest_peak %s -> %s", x, out)
+            logger.warning("in nearest_peak %s -> %s", x, out)
+            return
+        elif (self.mask is not None) and self.mask[int(res[0]), int(res[1])]:
+            logger.info("Masked pixel %s -> %s", x, out)
             return
         else:
             return res
@@ -107,8 +115,8 @@ class Massif(object):
         """
         defines a map of the massif around x and returns the mask
         """
-        labeled = self.getLabeledMassif()
-        if labeled[x[0], x[1]] != labeled.max():
+        labeled = self.get_labeled_massif()
+        if labeled[x[0], x[1]] > 0:  # without relabeled the background is 0 labeled.max():
             return (labeled == labeled[x[0], x[1]])
 
     def find_peaks(self, x, nmax=200, annotate=None, massif_contour=None, stdout=sys.stdout):
@@ -144,8 +152,9 @@ class Massif(object):
                     logger.error("Error in annotate %i: %i %i. %s", len(listpeaks), xinit[0], xinit[1], error)
 
         listpeaks.append(xinit)
-        mean = self.data[region].mean(dtype=numpy.float64)
-        region2 = region * (self.data > mean)
+        cleaned_data = self.cleaned_data
+        mean = cleaned_data[region].mean(dtype=numpy.float64)
+        region2 = region * (cleaned_data > mean)
         idx = numpy.vstack(numpy.where(region2)).T
         numpy.random.shuffle(idx)
         nmax = min(nmax, int(ceil(sqrt(idx.shape[0]))))
@@ -170,7 +179,8 @@ class Massif(object):
                 break
         return listpeaks
 
-    def peaks_from_area(self, mask, Imin=None, keep=1000, dmin=0.0, seed=None, **kwarg):
+    def peaks_from_area(self, mask, Imin=numpy.finfo(numpy.float64).min,
+                        keep=1000, dmin=0.0, seed=None, **kwarg):
         """
         Return the list of peaks within an area
 
@@ -209,29 +219,43 @@ class Massif(object):
                 cnt += 1
         return res
 
-    def initValleySize(self):
+    def init_valley_size(self):
         if self._valley_size is None:
             self.valley_size = max(5., max(self.data.shape) / 50.)
 
-    def getValleySize(self):
+    @property
+    def valley_size(self):
+        "Defines the minimum distance between two massifs"
         if self._valley_size is None:
-            self.initValleySize()
+            self.init_valley_size()
         return self._valley_size
 
-    def setValleySize(self, size):
+    @valley_size.setter
+    def valley_size(self, size):
         new_size = float(size)
         if self._valley_size != new_size:
             self._valley_size = new_size
-            # self.getLabeledMassif()
-            t = threading.Thread(target=self.getLabeledMassif)
+            t = threading.Thread(target=self.get_labeled_massif)
             t.start()
 
-    def delValleySize(self):
+    @valley_size.deleter
+    def valley_size(self):
         self._valley_size = None
-        self._blured_data = None
-    valley_size = property(getValleySize, setValleySize, delValleySize, "Defines the minimum distance between two massifs")
+        self._blurred_data = None
 
-    def getBinnedData(self):
+    @property
+    def cleaned_data(self):
+        if self.mask is None:
+            return self.data
+        else:
+            if self._cleaned_data is None:
+                idx = distance_transform_edt(self.mask,
+                                             return_distances=False,
+                                             return_indices=True)
+                self._cleaned_data = self.data[tuple(idx)]
+            return self._cleaned_data
+
+    def get_binned_data(self):
         """
         :return: binned data
         """
@@ -252,56 +276,74 @@ class Massif(object):
                                 self.binning.append(1)
 #                    self.binning = max([max(1, i // self.TARGET_SIZE) for i in self.data.shape])
                     logger.info("Binning size is %s", self.binning)
-                    self._binned_data = binning(self.data, self.binning)
+                    self._binned_data = binning(self.cleaned_data, self.binning)
         return self._binned_data
 
-    def getMedianData(self):
+    def get_median_data(self):
         """
-        :return: a spacial median filtered image
+        :return: a spatial median filtered image 3x3
         """
         if self._median_data is None:
             with self._sem_median:
                 if self._median_data is None:
-                    self._median_data = median_filter(self.data, 3)
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                        with open("median_data.npy", "wb") as f:
-                            numpy.save(f, self._median_data)
-                        # fabio.edfimage.edfimage(data=self._median_data).write("median_data.edf")
+                    self._median_data = median_filter(self.cleaned_data, 3)
         return self._median_data
 
-    def getBluredData(self):
+    def get_blurred_data(self):
         """
         :return: a blurred image
         """
-
-        if self._blured_data is None:
+        if self._blurred_data is None:
             with self._sem:
-                if self._blured_data is None:
+                if self._blurred_data is None:
                     logger.debug("Blurring image with kernel size: %s", self.valley_size)
-                    self._blured_data = gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in self.binning], mode="reflect")
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                        fabio.edfimage.edfimage(data=self._blured_data).write("blured_data.edf")
-        return self._blured_data
+                    self._blurred_data = gaussian_filter(self.get_binned_data(),
+                                                         [self.valley_size / i for i in self.binning],
+                                                         mode="reflect")
+        return self._blurred_data
 
-    def getLabeledMassif(self, pattern=None):
+    def get_labeled_massif(self, pattern=None, reconstruct=True):
         """
+        :param pattern: 3x3 matrix 
+        :param reconstruct: if False, split massif at masked position, else reconstruct missing part.
         :return: an image composed of int with a different value for each massif
         """
         if self._labeled_massif is None:
             with self._sem_label:
                 if self._labeled_massif is None:
                     if pattern is None:
-                        pattern = [[1] * 3] * 3  # [[0, 1, 0], [1, 1, 1], [0, 1, 0]]#[[1] * 3] * 3
+                        pattern = numpy.ones((3, 3), dtype=numpy.int8)
                     logger.debug("Labeling all massifs. This takes some time !!!")
-                    labeled_massif, self._number_massif = label((self.getBinnedData() > self.getBluredData()), pattern)
-                    logger.info("Labeling found %s massifs.", self._number_massif)
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                        fabio.edfimage.edfimage(data=labeled_massif).write("labeled_massif_small.edf")
-                    relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                        fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
+                    massif_binarization = (self.get_binned_data() > self.get_blurred_data())
+                    if (self.mask is not None) and (not reconstruct):
+                            binned_mask = binning(self.mask.astype(int), self.binning, norm=False)
+                            massif_binarization = numpy.logical_and(massif_binarization, binned_mask == 0)
+                    self._reconstruct_used = reconstruct
+                    labeled_massif, self._number_massif = label(massif_binarization,
+                                                                pattern)
+                    # TODO: investigate why relabel fails
+                    # relabeled = relabel(labeled_massif, self.get_binned_data(), self.get_blurred_data())
+                    relabeled = labeled_massif
                     self._labeled_massif = unbinning(relabeled, self.binning, False)
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                        fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
                     logger.info("Labeling found %s massifs.", self._number_massif)
         return self._labeled_massif
+
+    @deprecated(reason="switch to pep8 style", replacement="init_valley_size", since_version="0.16.0")
+    def initValleySize(self):
+        self.init_valley_size()
+
+    @deprecated(reason="switch to PEP8 style", replacement="get_median_data", since_version="0.16.0")
+    def getMedianData(self):
+        return self.get_median_data()
+
+    @deprecated(reason="switch to PEP8 style", replacement="get_binned_data", since_version="0.16.0")
+    def getBinnedData(self):
+        return self.get_binned_data()
+
+    @deprecated(reason="switch to PEP8 style", replacement="get_blurred_data", since_version="0.16.0")
+    def getBluredData(self):
+        return self.get_blurred_data()
+
+    @deprecated(reason="switch to PEP8 style", replacement="get_labeled_massif", since_version="0.16.0")
+    def getLabeledMassif(self, pattern=None):
+        return self.get_labeled_massif(pattern)
