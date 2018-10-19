@@ -64,7 +64,7 @@
       <item>
        <widget class="QGroupBox" name="groupBox_4">
         <property name="title">
-         <string>Pick peaking</string>
+         <string>Peak picking</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,0,0,0">
          <item row="1" column="0">
