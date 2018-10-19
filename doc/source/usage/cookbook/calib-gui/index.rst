@@ -3,6 +3,8 @@
 :Keywords: Tutorials
 :Target: Scientists
 
+.. _cookbook_calibration_gui:
+
 Calibration of a diffraction setup using the Graphical User Interface (GUI)
 ===========================================================================
 

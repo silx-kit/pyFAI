@@ -37,6 +37,7 @@ Azimuthal integration tools:
    pyFAI-average
    pyFAI-drawmask
    detector2nexus
+   pyFAI-calib2
    pyFAI-calib
    pyFAI-recalib
    check_calib
