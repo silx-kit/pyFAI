@@ -3,8 +3,8 @@
 :Keywords: Tutorials
 :Target: Scientists
 
-Calibration of a diffraction setup using the Graphical User Interface
-=====================================================================
+Calibration of a diffraction setup using the Graphical User Interface (GUI)
+===========================================================================
 
 The graphical tool for geometry calibration is called **pyFAI-calib2**,
 just open a terminal and type its name plus return to startup the application
