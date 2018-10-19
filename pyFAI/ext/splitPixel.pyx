@@ -33,7 +33,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "28/09/2018"
+__date__ = "18/10/2018"
 __status__ = "stable"
 __license__ = "MIT"
 

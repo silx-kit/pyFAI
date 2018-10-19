@@ -51,6 +51,7 @@ import numpy
 logger = logging.getLogger(__name__)
 from silx.gui import qt
 import fabio
+from .. import _version
 from .. import worker
 from ..detectors import ALL_DETECTORS, detector_factory
 from ..opencl import ocl
@@ -63,6 +64,12 @@ from .utils import projecturl
 
 
 UIC = get_ui_file("integration.ui")
+LOCAL_DOC = "/usr/share/doc/pyfai-doc/html/man/pyFAI-integrate.html"
+if _version.version_info.releaselevel == "final":
+    version_tuple = ".".join(str(i) for i in _version.version_info[:3])
+    REMOTE_DOC = "http://silx.org/doc/pyFAI/" + version_tuple + "/man/pyFAI-integrate.html"
+else:
+    REMOTE_DOC = "http://silx.org/doc/pyFAI/dev/man/pyFAI-integrate.html"
 
 
 class AIWidget(qt.QWidget):
@@ -162,7 +169,7 @@ class AIWidget(qt.QWidget):
         self.rot2.setValidator(angle_validator)
         self.rot3.setValidator(angle_validator)
         # done at widget level
-#        self.polarization_factor.setValidator(qt.QDoubleValidator(-1, 1, 3))
+        # self.polarization_factor.setValidator(qt.QDoubleValidator(-1, 1, 3))
 
     def __get_unit(self):
         for unit, widget in self.units.items():

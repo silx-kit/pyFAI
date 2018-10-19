@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "18/10/2018"
 
 import unittest
 import numpy
@@ -51,22 +51,24 @@ from ..utils import mathutil
 
 class TestSplitPixel(unittest.TestCase):
 
-    def setUp(self):
-        unittest.TestCase.setUp(self)
+    @classmethod
+    def setUpClass(cls):
+        super(TestSplitPixel, cls).setUpClass()
         img = numpy.zeros((512, 512))
         for i in range(1, 6):
             img[i * 100, i * 100] = 1
         det = Detector(1e-4, 1e-4)
         det.shape = (512, 512)
         ai = AzimuthalIntegrator(1, detector=det)
-        self.results = {}
+        cls.results = {}
         for i, meth in enumerate(["numpy", "cython", "splitbbox", "splitpixel", "csr_no", "csr_bbox", "csr_full"]):
-            self.results[meth] = ai.integrate1d(img, 10000, method=meth, unit="2th_deg")
+            cls.results[meth] = ai.integrate1d(img, 10000, method=meth, unit="2th_deg")
             ai.reset()
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.results = None
+    @classmethod
+    def tearDownClass(cls):
+        super(TestSplitPixel, cls).tearDownClass()
+        cls.results = None
 
     def test_no_split(self):
         """
