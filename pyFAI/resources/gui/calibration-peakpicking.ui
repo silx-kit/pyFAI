@@ -104,7 +104,7 @@
             <item>
              <widget class="QToolButton" name="_ringSelectionMode">
               <property name="toolTip">
-               <string>Extract peaks in a full ring, trying to jumping over the mask</string>
+               <string>Extract peaks, beyond masked values</string>
               </property>
               <property name="text">
                <string>Ring</string>
@@ -123,7 +123,7 @@
             <item>
              <widget class="QToolButton" name="_arcSelectionMode">
               <property name="toolTip">
-               <string>Extract contiguous peaks in an arc</string>
+               <string>Extract contiguous peaks</string>
               </property>
               <property name="text">
                <string>Arc</string>
