@@ -27,11 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2018"
+__date__ = "18/10/2018"
 
 import logging
 import numpy
-import collections
 
 from silx.gui import qt
 import silx.gui.plot
@@ -49,6 +48,7 @@ from ..utils import units
 from ..utils import validators
 from .helper.MarkerManager import MarkerManager
 from pyFAI.ext.invert_geometry import InvertGeometry
+from ..utils import FilterBuilder
 
 _logger = logging.getLogger(__name__)
 
@@ -237,21 +237,17 @@ def createSaveDialog(parent, title, poni=False, json=False, csv=False):
     dialog.setModal(True)
     dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
 
-    extensions = collections.OrderedDict()
+    builder = FilterBuilder.FilterBuilder()
+    builder.addFileFormat("EDF image files", "edf")
+
     if poni:
-        extensions["PONI files"] = "*.poni"
+        builder.addFileFormat("PONI files", "poni")
     if json:
-        extensions["JSON files"] = "*.json"
+        builder.addFileFormat("JSON files", "json")
     if csv:
-        extensions["CSV files"] = "*.csv"
+        builder.addFileFormat("CSV files", "csv")
 
-    filters = []
-    filters.append("All supported files (%s)" % " ".join(extensions.values()))
-    for name, extension in extensions.items():
-        filters.append("%s (%s)" % (name, extension))
-    filters.append("All files (*)")
-
-    dialog.setNameFilters(filters)
+    dialog.setNameFilters(builder.getFilters())
     return dialog
 
 

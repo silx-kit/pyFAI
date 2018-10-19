@@ -96,6 +96,23 @@ QListWidget::item:selected {
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="_help">
+         <property name="toolTip">
+          <string>Open a web browser containing a cookbook for calibration</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+	color: white;
+	border: 0;
+	margin: 5px;
+}</string>
+         </property>
+         <property name="text">
+          <string>Help...</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>

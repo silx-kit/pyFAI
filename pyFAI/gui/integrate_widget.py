@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2018"
+__date__ = "18/10/2018"
 __status__ = "development"
 
 import logging
@@ -60,6 +60,7 @@ from ..io import HDF5Writer
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..units import RADIAL_UNITS
 from ..third_party import six
+from .utils import projecturl
 
 
 UIC = get_ui_file("integration.ui")
@@ -74,11 +75,6 @@ else:
 class AIWidget(qt.QWidget):
     """
     """
-    if os.path.exists(LOCAL_DOC):
-        URL = "file://" + LOCAL_DOC
-    else:
-        URL = REMOTE_DOC
-
     def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
         self.units = {}
         self.input_data = input_data
@@ -173,7 +169,7 @@ class AIWidget(qt.QWidget):
         self.rot2.setValidator(angle_validator)
         self.rot3.setValidator(angle_validator)
         # done at widget level
-#        self.polarization_factor.setValidator(qt.QDoubleValidator(-1, 1, 3))
+        # self.polarization_factor.setValidator(qt.QDoubleValidator(-1, 1, 3))
 
     def __get_unit(self):
         for unit, widget in self.units.items():
@@ -418,7 +414,8 @@ class AIWidget(qt.QWidget):
 
     def help(self):
         logger.debug("Please, help")
-        qt.QDesktopServices.openUrl(qt.QUrl(self.URL))
+        url = projecturl.get_documentation_url("man/pyFAI-integrate.html")
+        qt.QDesktopServices.openUrl(qt.QUrl(url))
 
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary

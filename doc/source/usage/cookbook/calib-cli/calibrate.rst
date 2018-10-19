@@ -3,8 +3,8 @@
 :Keywords: Tutorials
 :Target: Scientists
 
-Calibration of a diffraction setup
-==================================
+Calibration of a diffraction setup using the Command Line Interface (CLI)
+=========================================================================
 
 The files needed for this cookbook can be downloaded on:
 http://www.silx.org/pub/pyFAI/cookbook/calibration/

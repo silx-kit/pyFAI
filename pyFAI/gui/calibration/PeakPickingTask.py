@@ -51,6 +51,7 @@ from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from .helper.MarkerManager import MarkerManager
+from ..utils import FilterBuilder
 
 _logger = logging.getLogger(__name__)
 
@@ -553,30 +554,18 @@ class PeakPickingTask(AbstractCalibrationTask):
         dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
         dialog.setWindowTitle("Save selected peaks")
         dialog.setModal(True)
-
-        extensions = OrderedDict()
-        extensions["Control point files"] = "*.npt"
-
-        filters = []
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-
-        dialog.setNameFilters(filters)
+        builder = FilterBuilder.FilterBuilder()
+        builder.addFileFormat("Control point files", "npt")
+        dialog.setNameFilters(builder.getFilters())
         return dialog
 
     def __createLoadPeakDialog(self):
         dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setWindowTitle("Load peaks")
         dialog.setModal(True)
-
-        extensions = OrderedDict()
-        extensions["Control point files"] = "*.npt"
-
-        filters = []
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-
-        dialog.setNameFilters(filters)
+        builder = FilterBuilder.FilterBuilder()
+        builder.addFileFormat("Control point files", "npt")
+        dialog.setNameFilters(builder.getFilters())
         return dialog
 
     def __loadPeaksFromFile(self):
@@ -708,9 +697,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         if image is None:
             return None
         massif = pyFAI.massif.Massif(image, mask)
-        foo = massif.get_labeled_massif(reconstruct=reconstruct)
-        import fabio
-        fabio.edfimage.EdfImage(data=foo).save("foo_r.edf" if reconstruct else "foo.edf")
+        massif.get_labeled_massif(reconstruct=reconstruct)
         qt.QApplication.restoreOverrideCursor()
         return massif
 
