@@ -3,6 +3,8 @@
 :Keywords: Tutorials
 :Target: Scientists
 
+.. _cookbook_calibration_gui:
+
 Calibration of a diffraction setup using the Graphical User Interface (GUI)
 ===========================================================================
 
@@ -99,8 +101,8 @@ positions on ring number.
 This task consists in selecting groups of peaks by left-clicking on them in the
 image, and to assign the proper ring number to each group.
 
-You will need to pick least two rings.
-Selecting the inner-most (2 or 3 ) rings is advised as they are the most intense
+You will need to pick at least two rings.
+Selecting the inner-most (2 or 3) rings is advised as they are the most intense
 and miss assignment is unlikely.
 
 .. figure:: 3_picking.png
