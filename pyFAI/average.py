@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "22/10/2018"
 __status__ = "production"
 
 import logging
@@ -253,8 +253,8 @@ _FILTERS = [
 ]
 
 _FILTER_NAME_MAPPING = {}
-for f in _FILTERS:
-    _FILTER_NAME_MAPPING[f.name] = f
+for _f in _FILTERS:
+    _FILTER_NAME_MAPPING[_f.name] = _f
 
 _AVERAGE_DARK_FILTERS = set(["min", "max", "sum", "mean", "std", "quantiles", "median"])
 
