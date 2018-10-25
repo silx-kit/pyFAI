@@ -539,6 +539,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
+        self._extract.setEnabled(False)
         self._extract.clicked.connect(self.__autoExtractRingsLater)
 
         validator = validators.DoubleValidator(self)
@@ -997,12 +998,23 @@ class PeakPickingTask(AbstractCalibrationTask):
         settings.mask().changed.connect(self.__maskUpdated)
         settings.image().changed.connect(self.__invalidateMassif)
         settings.mask().changed.connect(self.__invalidateMassif)
+        model.peakSelectionModel().changed.connect(self.__peakSelectionChanged)
         self.__plot.setModel(model.peakSelectionModel())
         self.__initPeakSelectionView(model)
         self.__undoStack.clear()
 
         self.__imageUpdated()
         self.__maskUpdated()
+        self.__peakSelectionChanged()
+
+    def __peakSelectionChanged(self):
+        peakCount = self.model().peakSelectionModel().peakCount()
+        if peakCount < 3:
+            self._extract.setEnabled(False)
+            self.setToolTip("Select manually more peaks to auto extract peaks")
+        else:
+            self._extract.setEnabled(True)
+            self.setToolTip("")
 
     def __initPeakSelectionView(self, model):
         tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())
