@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/08/2018"
+__date__ = "25/10/2018"
 
 import logging
 from silx.gui import qt
@@ -81,7 +81,7 @@ class DoubleValidator(qt.QDoubleValidator):
         """
         locale = self.locale()
         if locale.numberOptions() == qt.QLocale.RejectGroupSeparator:
-            inputText = input.replace(locale.groupSeparator(), "")
+            inputText = inputText.replace(locale.groupSeparator(), "")
         return inputText
 
     def toValue(self, text):
