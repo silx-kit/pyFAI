@@ -93,7 +93,12 @@ class _PeakSelectionTableView(qt.QTableView):
 
     def __init__(self, parent):
         super(_PeakSelectionTableView, self).__init__(parent=parent)
+
         ringDelegate = _SpinBoxItemDelegate(self)
+        palette = qt.QPalette(self.palette())
+        # make sure this value is not edited
+        palette.setColor(qt.QPalette.Base, palette.base().color())
+        ringDelegate.setPalette(palette)
         toolDelegate = _PeakToolItemDelegate(self)
         self.setItemDelegateForColumn(2, ringDelegate)
         self.setItemDelegateForColumn(3, toolDelegate)
@@ -108,7 +113,11 @@ class _PeakSelectionTableView(qt.QTableView):
 
         self.horizontalHeader().setHighlightSections(False)
         self.verticalHeader().setVisible(False)
-        self.setStyleSheet("QTableView {background: transparent;}")
+
+        palette = qt.QPalette(self.palette())
+        palette.setColor(qt.QPalette.Base, qt.QColor(0, 0, 0, 0))
+        self.setPalette(palette)
+        self.setFrameShape(qt.QFrame.Panel)
 
     def setModel(self, model):
         if self.model() is not None:
@@ -400,11 +409,20 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
 class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
 
+    def __init__(self, *args, **kwargs):
+        qt.QStyledItemDelegate.__init__(self, *args, **kwargs)
+        self.__palette = None
+
+    def setPalette(self, palette):
+        self.__palette = qt.QPalette(palette)
+
     def createEditor(self, parent, option, index):
         if not index.isValid():
             return super(_SpinBoxItemDelegate, self).createEditor(parent, option, index)
 
         editor = qt.QSpinBox(parent=parent)
+        if self.__palette is not None:
+            editor.setPalette(self.__palette)
         editor.setMinimum(1)
         editor.setMaximum(999)
         editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
