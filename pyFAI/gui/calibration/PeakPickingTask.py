@@ -50,6 +50,7 @@ from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from .helper.MarkerManager import MarkerManager
 from ..utils import FilterBuilder
+from ..utils import validators
 
 _logger = logging.getLogger(__name__)
 
@@ -539,6 +540,11 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
         self._extract.clicked.connect(self.__autoExtractRingsLater)
+
+        validator = validators.DoubleValidator(self)
+        self._numberOfPeakPerDegree.lineEdit().setValidator(validator)
+        locale = qt.QLocale(qt.QLocale.C)
+        self._numberOfPeakPerDegree.setLocale(locale)
 
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
