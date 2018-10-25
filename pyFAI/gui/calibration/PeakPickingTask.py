@@ -45,7 +45,6 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.gui.calibration.model.PeakModel import PeakModel
 from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
-from pyFAI.gui.utils.ProxyAction import CustomProxyAction
 from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
@@ -507,9 +506,11 @@ class PeakPickingTask(AbstractCalibrationTask):
         holderLayout = holder.layout()
         holderLayout.replaceWidget(self._peakSelectionDummy, self.__peakSelectionView)
 
+        self.__undoStack = qt.QUndoStack(self)
+
         layout = qt.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        self._ringStatusBarHolder.setLayout(layout)
+        self._ringToolBarHolder.setLayout(layout)
         toolBar = self.__createRingToolBar()
         layout.addWidget(toolBar)
 
@@ -517,27 +518,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
 
-        self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-full-ring"))
-        self._arcSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
-        self._peakSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
-
-        self.__undoStack = qt.QUndoStack(self)
-        undoAction = CustomProxyAction(self, self.__undoStack.createUndoAction(self, "Undo"))
-        undoAction.forceText("Undo")
-        undoAction.forceIconText("Undo")
-        redoAction = CustomProxyAction(self, self.__undoStack.createRedoAction(self, "Redo"))
-        redoAction.forceText("Redo")
-        redoAction.forceIconText("Redo")
-        self._undoButton.setDefaultAction(undoAction)
-        self._redoButton.setDefaultAction(redoAction)
-
-        self.__mode = qt.QButtonGroup()
-        self.__mode.setExclusive(True)
-        self.__mode.addButton(self._ringSelectionMode)
-        self.__mode.addButton(self._arcSelectionMode)
-        self.__mode.addButton(self._peakSelectionMode)
-        self._arcSelectionMode.setChecked(True)
 
         self._extract.clicked.connect(self.__autoExtractRingsLater)
 
@@ -628,6 +609,39 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __createRingToolBar(self):
         toolBar = qt.QToolBar(self)
 
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-full-ring"))
+        action.setText("Ring")
+        action.setCheckable(True)
+        action.setToolTip("Extract peaks, beyond masked values")
+        toolBar.addAction(action)
+        self.__ringSelectionMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
+        action.setText("Arc")
+        action.setCheckable(True)
+        action.setToolTip("Extract contiguous peaks")
+        toolBar.addAction(action)
+        self.__arcSelectionMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
+        action.setText("Arc")
+        action.setCheckable(True)
+        action.setToolTip("Extract contiguous peaks")
+        toolBar.addAction(action)
+        self.__peakSelectionMode = action
+
+        mode = qt.QActionGroup(self)
+        mode.setExclusive(True)
+        mode.addAction(self.__ringSelectionMode)
+        mode.addAction(self.__arcSelectionMode)
+        mode.addAction(self.__peakSelectionMode)
+        self.__arcSelectionMode.setChecked(True)
+
+        toolBar.addSeparator()
+
         # Load peak selection as file
         loadPeaksFromFile = qt.QAction(self)
         icon = icons.getQIcon('document-open')
@@ -646,6 +660,19 @@ class PeakPickingTask(AbstractCalibrationTask):
         savePeaksAsFile.triggered.connect(self.__savePeaksAsFile)
         savePeaksAsFile.setIconVisibleInMenu(True)
         toolBar.addAction(savePeaksAsFile)
+
+        toolBar.addSeparator()
+        style = qt.QApplication.style()
+
+        action = self.__undoStack.createUndoAction(self, "Undo")
+        icon = style.standardIcon(qt.QStyle.SP_ArrowBack)
+        action.setIcon(icon)
+        toolBar.addAction(action)
+
+        action = self.__undoStack.createRedoAction(self, "Redo")
+        icon = style.standardIcon(qt.QStyle.SP_ArrowForward)
+        action.setIcon(icon)
+        toolBar.addAction(action)
 
         return toolBar
 
@@ -701,11 +728,11 @@ class PeakPickingTask(AbstractCalibrationTask):
         return massif
 
     def __getMassif(self):
-        if self._ringSelectionMode.isChecked():
+        if self.__ringSelectionMode.isChecked():
             if self.__massifReconstructed is None:
                 self.__massifReconstructed = self.__createMassif(reconstruct=True)
             return self.__massifReconstructed
-        elif self._arcSelectionMode.isChecked() or self._peakSelectionMode.isChecked():
+        elif self.__arcSelectionMode.isChecked() or self.__peakSelectionMode.isChecked():
             if self.__massif is None:
                 self.__massif = self.__createMassif()
             return self.__massif
@@ -754,9 +781,9 @@ class PeakPickingTask(AbstractCalibrationTask):
             else:
                 lastRingNumber = max(ringNumbers)
 
-            if self._ringSelectionMode.isChecked() or self._arcSelectionMode.isChecked():
+            if self.__ringSelectionMode.isChecked() or self.__arcSelectionMode.isChecked():
                 ringNumber = lastRingNumber + 1
-            elif self._peakSelectionMode.isChecked():
+            elif self.__peakSelectionMode.isChecked():
                 ringNumber = lastRingNumber
                 points = points[0:1]
             else:
