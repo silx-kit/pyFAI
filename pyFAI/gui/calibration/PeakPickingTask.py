@@ -27,13 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/10/2018"
+__date__ = "25/10/2018"
 
 import logging
 import numpy
 import functools
 import os
-from collections import OrderedDict
 
 from silx.gui import qt
 from silx.gui import icons
