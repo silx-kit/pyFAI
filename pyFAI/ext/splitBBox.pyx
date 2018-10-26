@@ -31,7 +31,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/09/2018"
+__date__ = "26/10/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -180,8 +180,8 @@ def histoBBox1d(numpy.ndarray weights not None,
         assert pos1.size == size, "pos1.size == size"
         assert delta_pos1.size == size, "delta_pos1.size == size"
         check_pos1 = 1
-        cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float32)
-        dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=numpy.float32)
+        cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
+        dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
         pos1_min = min(pos1Range)
         pos1_maxin = max(pos1Range)
         pos1_max = calc_upper_bound(pos1_maxin)

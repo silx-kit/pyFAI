@@ -33,12 +33,12 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/10/2018"
+__date__ = "26/10/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
-import cython
-from cython import floating
+cimport cython
+from cython cimport floating
 cimport numpy
 import numpy
 from libc.math cimport fabs, ceil, floor
