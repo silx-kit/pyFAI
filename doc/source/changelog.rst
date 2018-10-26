@@ -1,14 +1,33 @@
 :Author: Jérôme Kieffer
-:Date: 01/02/2018
+:Date: 26/10/2018
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
 
+0.16.0: 26/10/2018
+------------------
+* Almost 800 commits since 0.15 !
+* Huge improvements on the graphical application for calibration
+* New detector definition (with manufacturers)
+* Improved tests: the GUI is now tested
+* Preparation for changing all rebinning engines (see variance tutorials)
+* Azimuthal integrators (and most other objects) are now serializable with Pickle
+* New distortion correction using the SparseBuilder C++ code
+* New PONI-file format (detector definition changed)
+* Isocontour is now provided by *silx*
+* Peak-picker clean up (better peak selection near gaps)
+* new Goniometer refinement with enhanced rotation using Euler angles
+* Updated documentation: new cookbooks and tutorials about:
+  - The use of the calibration application (cookbook)
+  - log-scale integration of SAXS data (notebook)
+  - Variance propagation (notebook)
+
+
 0.15.0: 01/02/2018
 ------------------
 * 150 commits since last revision
-* New tutorials on image inpainting, sensor thickness correction, ... 
+* New tutorials on image inpainting, sensor thickness correction, ...
 * Improve scripts
 * Improve the new calibration GUI (pyFAI-calib2)
 * Use scipy physical constants instead of hard-coded values
