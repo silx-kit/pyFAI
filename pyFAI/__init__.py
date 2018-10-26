@@ -32,7 +32,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "29/03/2018"
+__date__ = "22/10/2018"
 
 import sys
 import logging
@@ -40,12 +40,13 @@ if "ps1" in dir(sys):
     logging.basicConfig()
 
 import os
-project = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
+
 try:
     from ._version import __date__ as date
     from ._version import version, version_info, hexversion, strictversion
     from ._version import citation, calc_hexversion
 except ImportError:
+    project = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
     raise RuntimeError("Do NOT use %s from its sources: build it and use the built version" % project)
 
 if sys.version_info < (2, 6):

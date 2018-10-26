@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/08/2018"
+__date__ = "25/10/2018"
 
 import logging
 from silx.gui import qt
@@ -62,13 +62,21 @@ class DoubleValidator(qt.QDoubleValidator):
         :param str inputText: Text to validate
         :param int pos: Position of the cursor
         """
-        locale = self.locale()
-        if locale.numberOptions() == qt.QLocale.RejectGroupSeparator:
-            if pos > 0:
-                if inputText[pos - 1] == locale.groupSeparator():
-                    # filter the group separator
-                    inputText = inputText[pos - 1:] + inputText[pos:]
-                    pos = pos - 1
+        if pos > 0:
+            locale = self.locale()
+
+            # If the typed character is a dot, move the dot instead of ignoring it
+            if inputText[pos - 1] == locale.decimalPoint():
+                beforeDot = inputText[0:pos].count(locale.decimalPoint())
+                pos -= beforeDot
+                inputText = inputText.replace(locale.decimalPoint(), "")
+                inputText = inputText[0:pos] + locale.decimalPoint() + inputText[pos:]
+
+            if locale.numberOptions() == qt.QLocale.RejectGroupSeparator:
+                    if inputText[pos - 1] == locale.groupSeparator():
+                        # filter the group separator
+                        inputText = inputText[pos - 1:] + inputText[pos:]
+                        pos = pos - 1
 
         return super(DoubleValidator, self).validate(inputText, pos)
 
@@ -81,7 +89,7 @@ class DoubleValidator(qt.QDoubleValidator):
         """
         locale = self.locale()
         if locale.numberOptions() == qt.QLocale.RejectGroupSeparator:
-            inputText = input.replace(locale.groupSeparator(), "")
+            inputText = inputText.replace(locale.groupSeparator(), "")
         return inputText
 
     def toValue(self, text):

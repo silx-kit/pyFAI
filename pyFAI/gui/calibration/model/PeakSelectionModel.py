@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/06/2017"
+__date__ = "25/10/2018"
 
 from .AbstractModel import AbstractModel
 
@@ -46,6 +46,13 @@ class PeakSelectionModel(AbstractModel):
 
     def __len__(self):
         return len(self.__peaks)
+
+    def peakCount(self):
+        """Returns the amout of peak selected throug all the groups"""
+        count = 0
+        for peaks in self:
+            count += len(peaks)
+        return count
 
     def __iter__(self):
         for p in self.__peaks:
