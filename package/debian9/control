@@ -144,6 +144,7 @@ Description: Fast Azimuthal Integration scripts - Python3
 Package: pyfai-doc
 Architecture: all
 Section: doc
+Replaces: python-pyfai-doc
 Depends: ${misc:Depends},
          ${sphinxdoc:Depends}
 Description: Fast Azimuthal Integration scripts - Documentation
