@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/10/2018"
+__date__ = "30/10/2018"
 
 import logging
 import numpy
@@ -47,9 +47,62 @@ from ..widgets.QuantityLabel import QuantityLabel
 from ..widgets.QuantityEdit import QuantityEdit
 from .model.DataModel import DataModel
 from ..utils import units
+from ..utils import eventutils
+from ..utils import validators
 from .helper.MarkerManager import MarkerManager
 
 _logger = logging.getLogger(__name__)
+
+
+class ConstraintsPopup(qt.QWidget):
+
+    def __init__(self, parent=None):
+        super(ConstraintsPopup, self).__init__(parent=parent)
+        qt.loadUi(pyFAI.utils.get_ui_file("constraint-drop.ui"), self)
+        validator = validators.DoubleAndEmptyValidator(self)
+        self._min.setValidator(validator)
+        self._max.setValidator(validator)
+
+    def setLabel(self, text):
+        self._quantity.setText(text)
+
+    def labelCenter(self):
+        pos = self._quantity.rect().center()
+        pos = self._quantity.mapToParent(pos)
+        return pos
+
+    def fromConstaints(self, constraint):
+        """Update the widget using a constraint model"""
+        range_ = constraint.range()
+        if range_ is None:
+            minValue, maxValue = None, None
+        else:
+            minValue, maxValue = range_
+        if minValue is None:
+            minValue = ""
+        else:
+            minValue = str(minValue)
+        if maxValue is None:
+            maxValue = ""
+        else:
+            maxValue = str(maxValue)
+        self._min.setText(minValue)
+        self._max.setText(maxValue)
+
+    def toConstraint(self, constraint):
+        """UUpdate a constrain tmodel using the content of this widget"""
+        minValue = self._min.text()
+        if minValue == "":
+            minValue = None
+        else:
+            minValue = float(minValue)
+        maxValue = self._max.text()
+        if maxValue == "":
+            maxValue = None
+        else:
+            maxValue = float(maxValue)
+
+        constraint.setRangeConstraint(minValue, maxValue)
 
 
 class FitParamView(qt.QObject):
@@ -66,6 +119,12 @@ class FitParamView(qt.QObject):
         self.__quantity.setAlignment(qt.Qt.AlignRight)
         self.__unit = UnitLabel(parent)
         self.__unit.setUnitEditable(True)
+        self.__min = qt.QToolButton(parent)
+        self.__min.setText("[")
+        self.__min.clicked.connect(self.__dropContraints)
+        self.__max = qt.QToolButton(parent)
+        self.__max.setText("]")
+        self.__max.clicked.connect(self.__dropContraints)
 
         if displayedUnit is None:
             displayedUnit = internalUnit
@@ -96,6 +155,30 @@ class FitParamView(qt.QObject):
         if self._iconVariableConstrainedOut is None:
             self._iconVariableConstrainedOut = icons.getQIcon("pyfai:gui/icons/variable-constrained-out")
 
+    def __dropContraints(self):
+        popup = ConstraintsPopup(self.__quantity)
+        popup.setWindowFlags(qt.Qt.Popup)
+        popup.setAttribute(qt.Qt.WA_DeleteOnClose)
+        eventutils.createCloseSignal(popup)
+        popup.sigClosed.connect(self.__constraintsPopupClosed)
+        self.__constraintPopup = popup
+
+        popup.setLabel(self.__label.text())
+        popup.fromConstaints(self.__constraintsModel)
+        popup.updateGeometry()
+        # force the update of the geometry
+        popup.show()
+
+        popupParent = self.__quantity
+        pos = popupParent.mapToGlobal(popupParent.rect().center())
+        pos = pos - popup.labelCenter()
+        popup.move(pos)
+        popup.show()
+
+    def __constraintsPopupClosed(self):
+        self.__constraintPopup.toConstraint(self.__constraintsModel)
+        self.__constraintPopup = None
+
     def model(self):
         return self.__model
 
@@ -125,7 +208,7 @@ class FitParamView(qt.QObject):
         constraint.setFixed(not constraint.isFixed())
 
     def widgets(self):
-        return [self.__label, self.__quantity, self.__unit, self.__constraints]
+        return [self.__label, self.__min, self.__quantity, self.__max, self.__unit, self.__constraints]
 
 
 class _StatusBar(qt.QStatusBar):
