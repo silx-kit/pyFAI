@@ -89,6 +89,12 @@ class ConstraintsPopup(qt.QWidget):
         self._min.setText(minValue)
         self._max.setText(maxValue)
 
+    def setMinFocus(self):
+        self._min.setFocus()
+
+    def setMaxFocus(self):
+        self._max.setFocus()
+
     def toConstraint(self, constraint):
         """UUpdate a constrain tmodel using the content of this widget"""
         minValue = self._min.text()
@@ -121,10 +127,10 @@ class FitParamView(qt.QObject):
         self.__unit.setUnitEditable(True)
         self.__min = qt.QToolButton(parent)
         self.__min.setText("[")
-        self.__min.clicked.connect(self.__dropContraints)
+        self.__min.clicked.connect(self.__dropContraintsOnMin)
         self.__max = qt.QToolButton(parent)
         self.__max.setText("]")
-        self.__max.clicked.connect(self.__dropContraints)
+        self.__max.clicked.connect(self.__dropContraintsOnMax)
 
         if displayedUnit is None:
             displayedUnit = internalUnit
@@ -155,7 +161,7 @@ class FitParamView(qt.QObject):
         if self._iconVariableConstrainedOut is None:
             self._iconVariableConstrainedOut = icons.getQIcon("pyfai:gui/icons/variable-constrained-out")
 
-    def __dropContraints(self):
+    def __createDropConstraint(self):
         popup = ConstraintsPopup(self.__quantity)
         popup.setWindowFlags(qt.Qt.Popup)
         popup.setAttribute(qt.Qt.WA_DeleteOnClose)
@@ -174,6 +180,15 @@ class FitParamView(qt.QObject):
         pos = pos - popup.labelCenter()
         popup.move(pos)
         popup.show()
+        return popup
+
+    def __dropContraintsOnMin(self):
+        popup = self.__createDropConstraint()
+        popup.setMinFocus()
+
+    def __dropContraintsOnMax(self):
+        popup = self.__createDropConstraint()
+        popup.setMaxFocus()
 
     def __constraintsPopupClosed(self):
         self.__constraintPopup.toConstraint(self.__constraintsModel)
