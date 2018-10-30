@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/03/2017"
+__date__ = "30/10/2018"
 
 from .AbstractModel import AbstractModel
 
@@ -39,7 +39,7 @@ class ConstraintModel(AbstractModel):
         self.__fixed = None
         self.__range = None
 
-    def isValid(self):
+    def hasConstraint(self):
         return self.__fixed is True or self.__range is not None
 
     def setFixed(self, fixed=True):
