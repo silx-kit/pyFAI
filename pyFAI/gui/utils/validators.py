@@ -48,6 +48,10 @@ class DoubleValidator(qt.QDoubleValidator):
     case the locale rejected it. This implementation reject the group character
     from the validation, and remove it from the fixup. Only if the locale is
     defined to reject it.
+
+    This validator also allow to type a dot anywhere in the text. The last dot
+    replace the previous one. In this way, it became convenient to fix the
+    location of the dot, without complex manual manipulation of the text.
     """
     def __init__(self, parent=None):
         qt.QDoubleValidator.__init__(self, parent)
