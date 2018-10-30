@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/10/2018"
+__date__ = "30/10/2018"
 
 import logging
 from silx.gui import qt
@@ -49,7 +49,7 @@ class DoubleValidator(qt.QDoubleValidator):
     from the validation, and remove it from the fixup. Only if the locale is
     defined to reject it.
     """
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         qt.QDoubleValidator.__init__(self, parent)
         locale = qt.QLocale(qt.QLocale.C)
         locale.setNumberOptions(qt.QLocale.RejectGroupSeparator)
