@@ -50,7 +50,13 @@ class ConstraintModel(AbstractModel):
         self.wasChanged()
 
     def setRangeConstraint(self, minValue, maxValue):
-        self.__range = (minValue, maxValue)
+        if minValue is None and maxValue is None:
+            range_ = None
+        else:
+            range_ = (minValue, maxValue)
+        if self.__range == range_:
+            return
+        self.__range = range_
         self.wasChanged()
 
     def isFixed(self):
@@ -59,7 +65,7 @@ class ConstraintModel(AbstractModel):
     def isRangeConstrained(self):
         if self.__fixed:
             return False
-        return True
+        return self.__range is not None
 
     def range(self):
         return self.__range
