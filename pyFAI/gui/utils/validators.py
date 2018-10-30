@@ -75,6 +75,7 @@ class DoubleValidator(qt.QDoubleValidator):
                 pos -= beforeDot
                 inputText = inputText.replace(locale.decimalPoint(), "")
                 inputText = inputText[0:pos] + locale.decimalPoint() + inputText[pos:]
+                pos = pos + 1
 
             if locale.numberOptions() == qt.QLocale.RejectGroupSeparator:
                     if inputText[pos - 1] == locale.groupSeparator():
