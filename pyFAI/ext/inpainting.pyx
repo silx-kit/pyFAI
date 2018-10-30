@@ -29,11 +29,11 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "18/12/2017"
+__date__ = "26/10/2018"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
-import cython
+from cython cimport floating 
 cimport numpy
 import numpy
 from libc.math cimport floor, ceil
@@ -69,11 +69,11 @@ def largest_width(numpy.int8_t[:, :]image):
 
 def polar_interpolate(data,
                       numpy.int8_t[:, ::1] mask,
-                      cython.floating[:, ::1] radial,
-                      cython.floating[:, ::1] azimuthal,
+                      floating[:, ::1] radial,
+                      floating[:, ::1] azimuthal,
                       polar,
-                      cython.floating[::1] rad_pos,
-                      cython.floating[::1] azim_pos
+                      floating[::1] rad_pos,
+                      floating[::1] azim_pos
                       ):
     """Perform the bilinear interpolation from polar data into the initial array
     data
@@ -125,7 +125,7 @@ def polar_interpolate(data,
     return numpy.asarray(cdata)
 
 
-def polar_inpaint(cython.floating[:, :] img not None,
+def polar_inpaint(floating[:, :] img not None,
                   numpy.int8_t[:, :] topaint not None,
                   numpy.int8_t[:, :] mask=None,
                   empty=None):

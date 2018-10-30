@@ -118,7 +118,7 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 2.7, 3.4, 3.5 and 3.6 are well tested.
+Python 2.7, 3.4, 3.5, 3.6 and 3.7 are well tested.
 Python 2.6, 3.2 and 3.3 are no more supported since pyFAI 0.12
 For full functionality of pyFAI the following modules need to be installed.
 

@@ -28,12 +28,12 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "05/04/2018"
+__date__ = "26/10/2018"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 
-import cython
+cimport cython
 cimport numpy
 import numpy
 from cython.parallel cimport prange
