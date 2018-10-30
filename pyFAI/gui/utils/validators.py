@@ -183,6 +183,8 @@ class IntegerAndEmptyValidator(qt.QIntValidator):
         :returns: A tuple containing the resulting object and True if the
             string is valid
         """
+        if text.strip() == "":
+            return None, True
         value, validated = self.locale().toInt(text)
         return value, validated
 
