@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "16/07/2018"
+__date__ = "30/10/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -1413,16 +1413,18 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
 @cython.initializedcheck(False)
 def correct_LUT_preproc_double(image, shape_out,
                                lut_point[:, ::1] LUT not None,
-                               dummy=None, delta_dummy=None):
+                               dummy=None, delta_dummy=None,
+                               empty=numpy.NaN):
     """Correct an image based on the look-up table calculated ...
     implementation using double precision accumulator
 
-    :param image: 2D-array with the image
+    :param image: 2D-array with the image (signal, variance, normalization)
     :param shape_in: shape of input image
     :param shape_out: shape of output image
     :param LUT: Look up table, here a 2D-array of struct
     :param dummy: value for invalid pixels
     :param delta_dummy: precision for invalid pixels
+    :param empty: numerical value for empty pixels (if dummy is not provided)
     :param method: integration method: can be "kahan" using single precision
             compensated for error or "double" in double precision (64 bits)
 
@@ -1442,7 +1444,7 @@ def correct_LUT_preproc_double(image, shape_out,
         if delta_dummy is None:
             cdelta_dummy = 0.0
     else:
-        dummy = numpy.NaN
+        cdummy = empty
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
@@ -1483,22 +1485,28 @@ def correct_LUT_preproc_double(image, shape_out,
                 # case (signal, variance,  normalization)
                 sum_var = coef * coef * lin[idx, 1] + sum_var
                 sum_norm = coef * lin[idx, 2] + sum_norm
+            else:
+                sum_norm = sum_norm + coef
 
-        if do_dummy and (sum_norm == 0.0):
+        if sum_norm == 0.0:  # No contribution to this output pixel
             lout[i] += cdummy  # this += is for Cython's reduction
             if nchan == 3:
                 lerr[i] += cdummy
         else:
-            lout[i] += sum_sig
             lprop[i, 0] += sum_sig
             if nchan == 2:
                 # case (signal, norm)
                 lprop[i, 1] += sum_norm
+                lout[i] += sum_sig / sum_norm
             elif nchan == 3:
                 # case (signal, variance,  normalization)
                 lprop[i, 1] += sum_var
                 lprop[i, 2] += sum_norm
-                lerr[i] += sqrt(sum_var)
+                lout[i] += sum_sig / sum_norm 
+                lerr[i] += sqrt(sum_var) / sum_norm
+            else:
+                # Case signal only. No normalization to behave like FIT2D does
+                lout[i] += sum_sig
 
     if nchan == 3:
         return out, err, prop
@@ -1512,16 +1520,18 @@ def correct_LUT_preproc_double(image, shape_out,
 @cython.initializedcheck(False)
 def correct_CSR_preproc_double(image, shape_out,
                                LUT not None,
-                               dummy=None, delta_dummy=None):
+                               dummy=None, delta_dummy=None,
+                               empty=numpy.NaN):
     """Correct an image based on the look-up table calculated ...
     implementation using double precision accumulator
 
-    :param image: 2D-array with the image
+    :param image: 2D-array with the image (signal, variance, normalization)
     :param shape_in: shape of input image
     :param shape_out: shape of output image
     :param LUT: Look up table, here a 3-tuple array of ndarray
     :param dummy: value for invalid pixels
     :param delta_dummy: precision for invalid pixels
+    :param empty: numerical value for empty pixels (if dummy is not provided)
     :param method: integration method: can be "kahan" using single precision
             compensated for error or "double" in double precision (64 bits)
 
@@ -1586,22 +1596,28 @@ def correct_CSR_preproc_double(image, shape_out,
                 # case (signal, variance,  normalization)
                 sum_var = coef * coef * lin[idx, 1] + sum_var
                 sum_norm = coef * lin[idx, 2] + sum_norm
+            else:
+                sum_norm = sum_norm + coef
 
-        if do_dummy and (sum_norm == 0.0):  # No contribution to this output pixel
+        if sum_norm == 0.0:  # No contribution to this output pixel
             lout[i] += cdummy  # this += is for Cython's reduction
             if nchan == 3:
                 lerr[i] += cdummy
         else:
-            lout[i] += sum_sig
             lprop[i, 0] += sum_sig
             if nchan == 2:
                 # case (signal, norm)
+                lout[i] += sum_sig / sum_norm
                 lprop[i, 1] += sum_norm
             elif nchan == 3:
                 # case (signal, variance,  normalization)
                 lprop[i, 1] += sum_var
                 lprop[i, 2] += sum_norm
-                lerr[i] += sqrt(sum_var)
+                lout[i] += sum_sig / sum_norm 
+                lerr[i] += sqrt(sum_var) / sum_norm
+            else:
+                # Case signal only. No normalization to behave like FIT2D does
+                lout[i] += sum_sig
 
     if nchan == 3:
         return out, err, prop

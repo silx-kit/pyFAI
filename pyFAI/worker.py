@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/05/2018"
+__date__ = "30/10/2018"
 __status__ = "development"
 
 import threading
@@ -101,12 +101,12 @@ from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
+from .preproc import preproc as preproc_numpy
 try:
     from .ext.preproc import preproc
-    USE_CYTHON = True
 except ImportError as err:
-    logger.warning("Unable to import preproc: %s", err)
-    preproc = None
+    logger.warning("Unable to import Cython version of preproc: %s", err)
+    preproc = preproc_numpy
     USE_CYTHON = False
 else:
     USE_CYTHON = True
@@ -273,7 +273,7 @@ class Worker(object):
         self.ai.reset()
         self.warmup(sync)
 
-    def process(self, data, normalization_factor=1.0, writer=None, metadata=None):
+    def process(self, data, variance=None, normalization_factor=1.0, writer=None, metadata=None):
         """
         Process a frame
         #TODO:
@@ -294,7 +294,8 @@ class Worker(object):
                  "safe": self.safe,
                  "data": data,
                  "correctSolidAngle": self.correct_solid_angle,
-                 "safe": self.safe
+                 "safe": self.safe,
+                 "variance": variance
                  }
 
         if metadata is not None:
@@ -620,7 +621,8 @@ class PixelwiseWorker(object):
         self.empty = float(empty) if empty else 0.0
         self.dtype = numpy.dtype(dtype).type
 
-    def process(self, data, variance=None, normalization_factor=None):
+    def process(self, data, variance=None, normalization_factor=None,
+                use_cython=USE_CYTHON):
         """
         Process the data and apply a normalization factor
         :param data: input data
@@ -629,71 +631,33 @@ class PixelwiseWorker(object):
         :return: processed data, optionally with the assiciated error if variance is provided
         """
         propagate_error = (variance is not None)
-        if (preproc is not None) and USE_CYTHON:
-            temp_data = preproc(data,
-                                variance=variance,
-                                dark=self.dark,
-                                flat=self.flat,
-                                solidangle=self.solidangle,
-                                polarization=self.polarization,
-                                absorption=None,
-                                mask=self.mask,
-                                dummy=self.dummy,
-                                delta_dummy=self.delta_dummy,
-                                normalization_factor=normalization_factor,
-                                empty=self.empty,
-                                poissonian=0,
-                                dtype=self.dtype)
-            if propagate_error:
-                proc_data = temp_data[..., 0]
-                proc_variance = temp_data[..., 1]
-                proc_norm = temp_data[..., 2]
-                proc_data /= proc_norm
-                proc_error = numpy.sqrt(proc_variance) / proc_norm
-            else:
-                proc_data = temp_data
+        if use_cython:
+            method = preproc
         else:
-            if self.dummy is not None:
-                if self.delta_dummy is None:
-                    self.mask = numpy.logical_or((data == self.dummy), self.mask)
-                else:
-                    self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
-                                                 self.mask)
-                do_mask = True
-            else:
-                do_mask = (self.mask is not False)
-            # Explicitly make an copy !
-            proc_data = numpy.array(data, dtype=numpy.float32)
-            if self.dark is not None:
-                proc_data -= self.dark
-            if self.flat is not None:
-                proc_data /= self.flat
-            if self.solidangle is not None:
-                proc_data /= self.solidangle
-            if self.polarization is not None:
-                proc_data /= self.polarization
-            if normalization_factor is not None:
-                proc_data /= normalization_factor
-            if do_mask:
-                proc_data[self.mask] = self.dummy or self.empty
-
-            if variance is not None:
-                proc_error = numpy.sqrt(variance)
-
-                if self.flat is not None:
-                    proc_error /= self.flat
-                if self.solidangle is not None:
-                    proc_error /= self.solidangle
-                if self.polarization is not None:
-                    proc_error /= self.polarization
-                if normalization_factor is not None:
-                    proc_error /= normalization_factor
-                if do_mask:
-                    proc_error[self.mask] = self.dummy or self.empty
-
+            method = preproc_numpy
+        temp_data = method(data,
+                           variance=variance,
+                           dark=self.dark,
+                           flat=self.flat,
+                           solidangle=self.solidangle,
+                           polarization=self.polarization,
+                           absorption=None,
+                           mask=self.mask,
+                           dummy=self.dummy,
+                           delta_dummy=self.delta_dummy,
+                           normalization_factor=normalization_factor,
+                           empty=self.empty,
+                           poissonian=0,
+                           dtype=self.dtype)
         if propagate_error:
+            proc_data = temp_data[..., 0]
+            proc_variance = temp_data[..., 1]
+            proc_norm = temp_data[..., 2]
+            proc_data /= proc_norm
+            proc_error = numpy.sqrt(proc_variance) / proc_norm
             return proc_data, proc_error
         else:
+            proc_data = temp_data
             return proc_data
 
     __call__ = process
@@ -759,44 +723,19 @@ class DistortionWorker(object):
         :param normalization: normalization factor
         :return: processed data
         
-        TODO: manage variance in distortion correction
         """
-        if preproc is not None:
-            proc_data = preproc(data,
-                                dark=self.dark,
-                                flat=self.flat,
-                                solidangle=self.solidangle,
-                                polarization=self.polarization,
-                                absorption=None,
-                                mask=self.mask,
-                                dummy=self.dummy,
-                                delta_dummy=self.delta_dummy,
-                                normalization_factor=normalization_factor,
-                                empty=None)
-        else:
-            if self.dummy is not None:
-                if self.delta_dummy is None:
-                    self.mask = numpy.logical_or((data == self.dummy), self.mask)
-                else:
-                    self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
-                                                 self.mask)
-                do_mask = True
-            else:
-                do_mask = (self.mask is not False)
-            # Explicitly make an copy !
-            proc_data = numpy.array(data, dtype=numpy.float32)
-            if self.dark is not None:
-                proc_data -= self.dark
-            if self.flat is not None:
-                proc_data /= self.flat
-            if self.solidangle is not None:
-                proc_data /= self.solidangle
-            if self.polarization is not None:
-                proc_data /= self.polarization
-            if normalization_factor is not None:
-                proc_data /= normalization_factor
-            if do_mask:
-                proc_data[self.mask] = self.dummy or 0
+        proc_data = preproc(data,
+                            variance=variance,
+                            dark=self.dark,
+                            flat=self.flat,
+                            solidangle=self.solidangle,
+                            polarization=self.polarization,
+                            absorption=None,
+                            mask=self.mask,
+                            dummy=self.dummy,
+                            delta_dummy=self.delta_dummy,
+                            normalization_factor=normalization_factor,
+                            empty=None)
 
         if self.distortion is not None:
             return self.distortion.correct(proc_data, self.dummy, self.delta_dummy)
