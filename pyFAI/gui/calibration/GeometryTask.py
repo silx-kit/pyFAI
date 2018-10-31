@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/10/2018"
+__date__ = "31/10/2018"
 
 import logging
 import numpy
@@ -46,6 +46,7 @@ from ..widgets.UnitLabel import UnitLabel
 from ..widgets.QuantityLabel import QuantityLabel
 from ..widgets.QuantityEdit import QuantityEdit
 from .model.DataModel import DataModel
+from .model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..utils import units
 from ..utils import eventutils
 from ..utils import validators
@@ -62,6 +63,19 @@ class ConstraintsPopup(qt.QWidget):
         validator = validators.DoubleAndEmptyValidator(self)
         self._min.setValidator(validator)
         self._max.setValidator(validator)
+        self.__defaultConstraints = None
+        self._resetMin.clicked.connect(self.__resetMin)
+        self._resetMax.clicked.connect(self.__resetMax)
+
+    def __resetMin(self):
+        value = self.__defaultConstraints.range()[0]
+        text = str(value)
+        self._min.setText(text)
+
+    def __resetMax(self):
+        value = self.__defaultConstraints.range()[1]
+        text = str(value)
+        self._max.setText(text)
 
     def setLabel(self, text):
         self._quantity.setText(text)
@@ -110,6 +124,9 @@ class ConstraintsPopup(qt.QWidget):
 
         constraint.setRangeConstraint(minValue, maxValue)
 
+    def setDefaultConstraints(self, model):
+        self.__defaultConstraints = model
+
 
 class FitParamView(qt.QObject):
 
@@ -131,6 +148,7 @@ class FitParamView(qt.QObject):
         self.__max = qt.QToolButton(parent)
         self.__max.setText("]")
         self.__max.clicked.connect(self.__dropContraintsOnMax)
+        self.__defaultConstraintsModel = None
 
         if displayedUnit is None:
             displayedUnit = internalUnit
@@ -171,6 +189,8 @@ class FitParamView(qt.QObject):
 
         popup.setLabel(self.__label.text())
         popup.fromConstaints(self.__constraintsModel)
+        popup.setDefaultConstraints(self.__defaultConstraintsModel)
+
         popup.updateGeometry()
         # force the update of the geometry
         popup.show()
@@ -208,6 +228,9 @@ class FitParamView(qt.QObject):
         if self.__constraintsModel is not None:
             self.__constraintsModel.changed.connect(self.__constraintsModelChanged)
             self.__constraintsModelChanged()
+
+    def setDefaultConstraintsModel(self, model):
+        self.__defaultConstraintsModel = model
 
     def __constraintsModelChanged(self):
         constraint = self.__constraintsModel
@@ -529,6 +552,7 @@ class GeometryTask(AbstractCalibrationTask):
         layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
+        self.__defaultConstraints = GeometryConstraintsModel()
 
         userAngleUnit = CalibrationContext.instance().getAngleUnit()
         userLengthUnit = CalibrationContext.instance().getLengthUnit()
@@ -546,6 +570,15 @@ class GeometryTask(AbstractCalibrationTask):
         self.__rotation1 = FitParamView(self, "Rotation 1:", units.Unit.RADIAN, userAngleUnit)
         self.__rotation2 = FitParamView(self, "Rotation 2:", units.Unit.RADIAN, userAngleUnit)
         self.__rotation3 = FitParamView(self, "Rotation 3:", units.Unit.RADIAN, userAngleUnit)
+
+        self.__distance.setDefaultConstraintsModel(self.__defaultConstraints.distance())
+        self.__wavelength.setDefaultConstraintsModel(self.__defaultConstraints.wavelength())
+        self.__poni1.setDefaultConstraintsModel(self.__defaultConstraints.poni1())
+        self.__poni2.setDefaultConstraintsModel(self.__defaultConstraints.poni2())
+        self.__rotation1.setDefaultConstraintsModel(self.__defaultConstraints.rotation1())
+        self.__rotation2.setDefaultConstraintsModel(self.__defaultConstraints.rotation2())
+        self.__rotation3.setDefaultConstraintsModel(self.__defaultConstraints.rotation3())
+
         self.addParameterToLayout(layout, self.__distance)
         self.addParameterToLayout(layout, self.__poni1)
         self.addParameterToLayout(layout, self.__poni2)
@@ -663,7 +696,7 @@ class GeometryTask(AbstractCalibrationTask):
                                       wavelength,
                                       peaks=peaks,
                                       method="massif")
-
+        calibration.toGeometryConstriansModel(self.__defaultConstraints)
         return calibration
 
     def __invalidateWavelength(self):
@@ -708,6 +741,7 @@ class GeometryTask(AbstractCalibrationTask):
                 return
             calibration.init(peaks, "massif")
             calibration.toGeometryModel(self.model().peakGeometry())
+            calibration.toGeometryConstriansModel(self.__defaultConstraints)
             self.__peaksInvalidated = False
 
         self.model().fittedGeometry().setFrom(self.model().peakGeometry())
@@ -767,7 +801,11 @@ class GeometryTask(AbstractCalibrationTask):
             self.__initGeometryFromPeaks()
         else:
             calibration.fromGeometryModel(self.model().fittedGeometry(), resetResidual=False)
-        calibration.fromGeometryConstriansModel(self.model().geometryConstraintsModel())
+
+        constraints = self.model().geometryConstraintsModel().copy(self)
+        constraints.overrideWith(self.__defaultConstraints)
+        calibration.fromGeometryConstriansModel(constraints)
+
         calibration.refine()
         # write result to the fitted model
         model = self.model().fittedGeometry()
