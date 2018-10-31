@@ -61,6 +61,8 @@ class ConstraintsPopup(qt.QFrame):
         super(ConstraintsPopup, self).__init__(parent=parent)
         qt.loadUi(pyFAI.utils.get_ui_file("constraint-drop.ui"), self)
         validator = validators.DoubleAndEmptyValidator(self)
+        self.__useDefaultMin = False
+        self.__useDefaultMax = False
         self.__min = DataModel(self)
         self.__max = DataModel(self)
         self._minEdit.setValidator(validator)
@@ -78,6 +80,8 @@ class ConstraintsPopup(qt.QFrame):
         else:
             value = range_[0]
         self.__min.setValue(value)
+        self.__useDefaultMin = True
+        self.__updateData()
 
     def __resetMax(self):
         range_ = self.__defaultConstraints.range()
@@ -86,6 +90,8 @@ class ConstraintsPopup(qt.QFrame):
         else:
             value = range_[1]
         self.__max.setValue(value)
+        self.__useDefaultMax = True
+        self.__updateData()
 
     def setLabel(self, text):
         self._quantity.setText(text)
@@ -99,9 +105,19 @@ class ConstraintsPopup(qt.QFrame):
             displayedUnit = model
         self._minEdit.setModelUnit(internalUnit)
         self._minEdit.setDisplayedUnitModel(displayedUnit)
+        self._minEdit.sigValueAccepted.connect(self.__validateMinConstraint)
         self._maxEdit.setModelUnit(internalUnit)
         self._maxEdit.setDisplayedUnitModel(displayedUnit)
+        self._maxEdit.sigValueAccepted.connect(self.__validateMaxConstraint)
         self._unit.setUnit(displayedUnit.value())
+
+    def __validateMinConstraint(self):
+        self.__useDefaultMin = False
+        self.__updateData()
+
+    def __validateMaxConstraint(self):
+        self.__useDefaultMax = False
+        self.__updateData()
 
     def labelCenter(self):
         pos = self._quantity.rect().center()
@@ -116,7 +132,10 @@ class ConstraintsPopup(qt.QFrame):
         else:
             minValue, maxValue = range_
         self.__min.setValue(minValue)
+        self.__useDefaultMin = minValue is None
         self.__max.setValue(maxValue)
+        self.__useDefaultMax = maxValue is None
+        self.__updateData()
 
     def setMinFocus(self):
         self._minEdit.setFocus()
@@ -128,10 +147,36 @@ class ConstraintsPopup(qt.QFrame):
         """UUpdate a constrain tmodel using the content of this widget"""
         minValue = self.__min.value()
         maxValue = self.__max.value()
+        if self.__useDefaultMin:
+            minValue = None
+        if self.__useDefaultMax:
+            maxValue = None
         constraint.setRangeConstraint(minValue, maxValue)
 
     def setDefaultConstraints(self, model):
         self.__defaultConstraints = model
+        self.__updateData()
+
+    _DEFAULT_CONSTRAINT_STYLE = ".QuantityEdit { color: #BBBBBB; qproperty-toolTip: 'Default constraint'}"
+    _CUSTOM_CONSTRAINT_STYLE = ".QuantityEdit { color: #000000; qproperty-toolTip: 'Custom constraint'}"
+
+    def __updateData(self):
+        if self.__defaultConstraints is None:
+            return
+        if self.__useDefaultMin:
+            value = self.__defaultConstraints.range()[0]
+            self.__min.setValue(value)
+            minStyle = self._DEFAULT_CONSTRAINT_STYLE
+        else:
+            minStyle = self._CUSTOM_CONSTRAINT_STYLE
+        if self.__useDefaultMax:
+            value = self.__defaultConstraints.range()[1]
+            self.__max.setValue(value)
+            maxStyle = self._DEFAULT_CONSTRAINT_STYLE
+        else:
+            maxStyle = self._CUSTOM_CONSTRAINT_STYLE
+        self._minEdit.setStyleSheet(minStyle)
+        self._maxEdit.setStyleSheet(maxStyle)
 
 
 class FitParamView(qt.QObject):
