@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "31/10/2018"
 
 import logging
 from silx.gui import qt
@@ -170,6 +170,10 @@ class QuantityEdit(qt.QLineEdit):
     def __convertToDisplay(self, value):
         internalUnit, displayedUnit = self.__getUnits()
         if internalUnit is displayedUnit:
+            return value
+        if internalUnit is None:
+            return value
+        if displayedUnit is None:
             return value
         return units.convert(value, internalUnit, displayedUnit)
 
