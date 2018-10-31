@@ -55,7 +55,7 @@ from .helper.MarkerManager import MarkerManager
 _logger = logging.getLogger(__name__)
 
 
-class ConstraintsPopup(qt.QWidget):
+class ConstraintsPopup(qt.QFrame):
 
     def __init__(self, parent=None):
         super(ConstraintsPopup, self).__init__(parent=parent)
