@@ -56,6 +56,7 @@ class QuantityEdit(qt.QLineEdit):
         validator = validators.DoubleAndEmptyValidator(self)
         self.setValidator(validator)
 
+        self.__wasModified = False
         self.__model = None
         self.__applyedWhenFocusOut = True
         self.__modelUnit = None
@@ -68,6 +69,7 @@ class QuantityEdit(qt.QLineEdit):
 
     def focusInEvent(self, event):
         self.__previousText = self.text()
+        self.__wasModified = False
         super(QuantityEdit, self).focusInEvent(event)
 
     def setModel(self, model):
@@ -149,13 +151,18 @@ class QuantityEdit(qt.QLineEdit):
             self.__cancelText()
             event.accept()
         else:
-            return super(QuantityEdit, self).keyPressEvent(event)
+            result = super(QuantityEdit, self).keyPressEvent(event)
+            if event.isAccepted():
+                self.__wasModified = True
+            return result
 
     def __modelChanged(self):
         self.__cancelText()
 
     def __editingFinished(self):
-        if self.__applyedWhenFocusOut:
+        if not self.__wasModified:
+            self.__cancelText()
+        elif self.__applyedWhenFocusOut:
             self.__applyText()
         else:
             self.__cancelText()
