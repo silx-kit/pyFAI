@@ -45,6 +45,12 @@ class QuantityEdit(qt.QLineEdit):
     empty string).
     """
 
+    sigValueAccepted = qt.Signal()
+    """Emitted when a quantity was accepted.
+
+    In case the value is still the same, no signal is sent from the DataModel,
+    but this signal is emitted."""
+
     def __init__(self, parent=None):
         super(QuantityEdit, self).__init__(parent)
         validator = validators.DoubleAndEmptyValidator(self)
@@ -180,6 +186,7 @@ class QuantityEdit(qt.QLineEdit):
     def __applyText(self):
         text = self.text()
         if text == self.__previousText:
+            self.sigValueAccepted.emit()
             return
         validator = self.validator()
         value, validated = validator.toValue(text)
@@ -189,6 +196,7 @@ class QuantityEdit(qt.QLineEdit):
                 self.__model.setValue(value)
                 # Avoid sending further signals
                 self.__previousText = text
+                self.sigValueAccepted.emit()
             else:
                 self.__cancelText()
         except ValueError as e:
