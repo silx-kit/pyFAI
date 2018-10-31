@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/10/2018"
+__date__ = "31/10/2018"
 
 import logging
 import numpy
@@ -303,6 +303,26 @@ class RingCalibration(object):
             self.__previousRms = None
             self.__rms = None
 
+    def toGeometryConstriansModel(self, contraintsModel, reachFromGeoRef=True):
+        if reachFromGeoRef is False:
+            raise NotImplementedError("Not implemented")
+        attrs = [
+            ("wavelength", contraintsModel.wavelength()),
+            ("dist", contraintsModel.distance()),
+            ("poni1", contraintsModel.poni1()),
+            ("poni2", contraintsModel.poni2()),
+            ("rot1", contraintsModel.rotation1()),
+            ("rot2", contraintsModel.rotation2()),
+            ("rot3", contraintsModel.rotation3()),
+        ]
+        for name, constraint in attrs:
+            min_getter = getattr(self.__geoRef, "get_%s_min" % name)
+            max_getter = getattr(self.__geoRef, "get_%s_max" % name)
+            minValue, maxValue = min_getter(), max_getter()
+            constraint.setRangeConstraint(minValue, maxValue)
+            if name in self.__fixed:
+                constraint.setFixed()
+
     def fromGeometryConstriansModel(self, contraintsModel):
         attrs = [
             ("wavelength", contraintsModel.wavelength()),
@@ -326,4 +346,6 @@ class RingCalibration(object):
                     maxValue = +float("inf")
                 bounds[name] = minValue, maxValue
         self.__fixed = fixed
+        # FIXME: Return should not be stored inside __bounds but inside geoRef
+        # cause it create an indermediat cache, which could be unsynchronized
         self.__bounds = bounds
