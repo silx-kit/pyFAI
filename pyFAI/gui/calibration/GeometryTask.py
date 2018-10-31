@@ -191,8 +191,9 @@ class FitParamView(qt.QObject):
 
     def __init__(self, parent, label, internalUnit, displayedUnit=None):
         qt.QObject.__init__(self, parent=parent)
-        self.__label = qt.QLabel(parent)
-        self.__label.setText(label)
+        self.__label = label
+        self.__labelWidget = qt.QLabel(parent)
+        self.__labelWidget.setText("%s:" % label)
         self.__quantity = QuantityEdit(parent)
         self.__quantity.setAlignment(qt.Qt.AlignRight)
         self.__unit = UnitLabel(parent)
@@ -260,7 +261,7 @@ class FitParamView(qt.QObject):
         popup.sigClosed.connect(self.__constraintsPopupClosed)
         self.__constraintPopup = popup
 
-        popup.setLabel(self.__label.text())
+        popup.setLabel(self.__label)
         popup.fromConstaints(self.__constraintsModel)
         popup.setDefaultConstraints(self.__defaultConstraintsModel)
         popup.setUnits(*self.__units)
@@ -353,7 +354,7 @@ class FitParamView(qt.QObject):
         constraint.setFixed(not constraint.isFixed())
 
     def widgets(self):
-        return [self.__label, self.__subLayout, self.__unit, self.__constraints]
+        return [self.__labelWidget, self.__subLayout, self.__unit, self.__constraints]
 
 
 class _StatusBar(qt.QStatusBar):
@@ -666,17 +667,17 @@ class GeometryTask(AbstractCalibrationTask):
         userWavelengthUnit = CalibrationContext.instance().getWavelengthUnit()
 
         layout = qt.QGridLayout(self._settings)
-        self.__wavelength = FitParamView(self, "Wavelength:", units.Unit.METER_WL, userWavelengthUnit)
+        self.__wavelength = FitParamView(self, "Wavelength", units.Unit.METER_WL, userWavelengthUnit)
         self.addParameterToLayout(layout, self.__wavelength)
 
         layout = qt.QGridLayout(self._geometry)
-        self.__distance = FitParamView(self, "Distance:", units.Unit.METER, userLengthUnit)
-        self.__poni1 = FitParamView(self, "PONI1:", units.Unit.METER, userLengthUnit)
-        self.__poni2 = FitParamView(self, "PONI2:", units.Unit.METER, userLengthUnit)
+        self.__distance = FitParamView(self, "Distance", units.Unit.METER, userLengthUnit)
+        self.__poni1 = FitParamView(self, "PONI1", units.Unit.METER, userLengthUnit)
+        self.__poni2 = FitParamView(self, "PONI2", units.Unit.METER, userLengthUnit)
 
-        self.__rotation1 = FitParamView(self, "Rotation 1:", units.Unit.RADIAN, userAngleUnit)
-        self.__rotation2 = FitParamView(self, "Rotation 2:", units.Unit.RADIAN, userAngleUnit)
-        self.__rotation3 = FitParamView(self, "Rotation 3:", units.Unit.RADIAN, userAngleUnit)
+        self.__rotation1 = FitParamView(self, "Rotation 1", units.Unit.RADIAN, userAngleUnit)
+        self.__rotation2 = FitParamView(self, "Rotation 2", units.Unit.RADIAN, userAngleUnit)
+        self.__rotation3 = FitParamView(self, "Rotation 3", units.Unit.RADIAN, userAngleUnit)
 
         self.__distance.setDefaultConstraintsModel(self.__defaultConstraints.distance())
         self.__wavelength.setDefaultConstraintsModel(self.__defaultConstraints.wavelength())
