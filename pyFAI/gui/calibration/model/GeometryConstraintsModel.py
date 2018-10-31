@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/03/2017"
+__date__ = "31/10/2018"
 
 from .AbstractModel import AbstractModel
 from .ConstraintModel import ConstraintModel
@@ -37,13 +37,13 @@ class GeometryConstraintsModel(AbstractModel):
 
     def __init__(self, parent=None):
         super(GeometryConstraintsModel, self).__init__(parent)
-        self.__distance = ConstraintModel()
-        self.__wavelength = ConstraintModel()
-        self.__poni1 = ConstraintModel()
-        self.__poni2 = ConstraintModel()
-        self.__rotation1 = ConstraintModel()
-        self.__rotation2 = ConstraintModel()
-        self.__rotation3 = ConstraintModel()
+        self.__distance = ConstraintModel(self)
+        self.__wavelength = ConstraintModel(self)
+        self.__poni1 = ConstraintModel(self)
+        self.__poni2 = ConstraintModel(self)
+        self.__rotation1 = ConstraintModel(self)
+        self.__rotation2 = ConstraintModel(self)
+        self.__rotation3 = ConstraintModel(self)
 
         self.__distance.changed.connect(self.wasChanged)
         self.__wavelength.changed.connect(self.wasChanged)
