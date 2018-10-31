@@ -61,24 +61,47 @@ class ConstraintsPopup(qt.QFrame):
         super(ConstraintsPopup, self).__init__(parent=parent)
         qt.loadUi(pyFAI.utils.get_ui_file("constraint-drop.ui"), self)
         validator = validators.DoubleAndEmptyValidator(self)
-        self._min.setValidator(validator)
-        self._max.setValidator(validator)
+        self.__min = DataModel(self)
+        self.__max = DataModel(self)
+        self._minEdit.setValidator(validator)
+        self._minEdit.setModel(self.__min)
+        self._maxEdit.setValidator(validator)
+        self._maxEdit.setModel(self.__max)
         self.__defaultConstraints = None
         self._resetMin.clicked.connect(self.__resetMin)
         self._resetMax.clicked.connect(self.__resetMax)
 
     def __resetMin(self):
-        value = self.__defaultConstraints.range()[0]
-        text = str(value)
-        self._min.setText(text)
+        range_ = self.__defaultConstraints.range()
+        if range_ is None:
+            value = None
+        else:
+            value = range_[0]
+        self.__min.setValue(value)
 
     def __resetMax(self):
-        value = self.__defaultConstraints.range()[1]
-        text = str(value)
-        self._max.setText(text)
+        range_ = self.__defaultConstraints.range()
+        if range_ is None:
+            value = None
+        else:
+            value = range_[1]
+        self.__max.setValue(value)
 
     def setLabel(self, text):
         self._quantity.setText(text)
+
+    def setUnits(self, internalUnit, displayedUnit):
+        if isinstance(internalUnit, DataModel):
+            internalUnit = internalUnit.value()
+        if isinstance(displayedUnit, units.Unit):
+            model = DataModel()
+            model.setValue(displayedUnit)
+            displayedUnit = model
+        self._minEdit.setModelUnit(internalUnit)
+        self._minEdit.setDisplayedUnitModel(displayedUnit)
+        self._maxEdit.setModelUnit(internalUnit)
+        self._maxEdit.setDisplayedUnitModel(displayedUnit)
+        self._unit.setUnit(displayedUnit.value())
 
     def labelCenter(self):
         pos = self._quantity.rect().center()
@@ -92,36 +115,19 @@ class ConstraintsPopup(qt.QFrame):
             minValue, maxValue = None, None
         else:
             minValue, maxValue = range_
-        if minValue is None:
-            minValue = ""
-        else:
-            minValue = str(minValue)
-        if maxValue is None:
-            maxValue = ""
-        else:
-            maxValue = str(maxValue)
-        self._min.setText(minValue)
-        self._max.setText(maxValue)
+        self.__min.setValue(minValue)
+        self.__max.setValue(maxValue)
 
     def setMinFocus(self):
-        self._min.setFocus()
+        self._minEdit.setFocus()
 
     def setMaxFocus(self):
-        self._max.setFocus()
+        self._maxEdit.setFocus()
 
     def toConstraint(self, constraint):
         """UUpdate a constrain tmodel using the content of this widget"""
-        minValue = self._min.text()
-        if minValue == "":
-            minValue = None
-        else:
-            minValue = float(minValue)
-        maxValue = self._max.text()
-        if maxValue == "":
-            maxValue = None
-        else:
-            maxValue = float(maxValue)
-
+        minValue = self.__min.value()
+        maxValue = self.__max.value()
         constraint.setRangeConstraint(minValue, maxValue)
 
     def setDefaultConstraints(self, model):
@@ -163,6 +169,7 @@ class FitParamView(qt.QObject):
             pass
         else:
             raise TypeError("Unsupported type %s" % type(displayedUnit))
+        self.__units = internalUnit, displayedUnit
         self.__unit.setUnitModel(displayedUnit)
         self.__quantity.setDisplayedUnitModel(displayedUnit)
 
@@ -190,6 +197,7 @@ class FitParamView(qt.QObject):
         popup.setLabel(self.__label.text())
         popup.fromConstaints(self.__constraintsModel)
         popup.setDefaultConstraints(self.__defaultConstraintsModel)
+        popup.setUnits(*self.__units)
 
         popup.updateGeometry()
         # force the update of the geometry

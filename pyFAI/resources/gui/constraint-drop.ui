@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>385</width>
-    <height>87</height>
+    <width>387</width>
+    <height>89</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,13 +44,21 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLineEdit" name="_min"/>
+    <widget class="QuantityEdit" name="_minEdit">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
    </item>
    <item row="0" column="5">
-    <widget class="QLineEdit" name="_max"/>
+    <widget class="QuantityEdit" name="_maxEdit">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
    </item>
    <item row="0" column="6">
-    <widget class="QLabel" name="_unit">
+    <widget class="UnitLabel" name="_unit">
      <property name="text">
       <string>unit</string>
      </property>
@@ -72,6 +80,18 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QuantityEdit</class>
+   <extends>QLineEdit</extends>
+   <header>pyFAI.gui.widgets.QuantityEdit</header>
+  </customwidget>
+  <customwidget>
+   <class>UnitLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.UnitLabel</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
