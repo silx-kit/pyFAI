@@ -198,6 +198,18 @@ class FitParamView(qt.QObject):
         popupParent = self.__quantity
         pos = popupParent.mapToGlobal(popupParent.rect().center())
         pos = pos - popup.labelCenter()
+
+        # Make sure the popup is fully inside the screen
+        # FIXME: It have to be tested with multi screen
+        wid = self.__quantity.winId()
+        window = qt.QWindow.fromWinId(wid)
+        screen = window.screen()
+        screen = screen.virtualGeometry()
+        rect = popup.rect()
+        rect.moveTopLeft(pos)
+        if not screen.contains(rect):
+            pos -= qt.QPoint(rect.right() - screen.right(), 0)
+
         popup.move(pos)
         popup.show()
         return popup
