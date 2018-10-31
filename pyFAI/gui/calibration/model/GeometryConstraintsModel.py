@@ -89,3 +89,35 @@ class GeometryConstraintsModel(AbstractModel):
 
     def rotation3(self):
         return self.__rotation3
+
+    def copy(self, parent=None):
+        """
+        Copy this model to a new model
+
+        :param qt.QObject parent: Parent of the copyed model
+        :rtype: GeometryConstraintsModel
+        """
+        model = GeometryConstraintsModel(parent=parent)
+        model.distance().set(self.__distance)
+        model.wavelength().set(self.__wavelength)
+        model.poni1().set(self.__poni1)
+        model.poni2().set(self.__poni2)
+        model.rotation1().set(self.__rotation1)
+        model.rotation2().set(self.__rotation2)
+        model.rotation3().set(self.__rotation3)
+        return model
+
+    def overrideWith(self, other):
+        """Override unset values of this model with the other model
+
+        :param GeometryConstraintsModel other:
+        """
+        self.lockSignals()
+        self.distance().overrideWith(other.distance())
+        self.wavelength().overrideWith(other.wavelength())
+        self.poni1().overrideWith(other.poni1())
+        self.poni2().overrideWith(other.poni2())
+        self.rotation1().overrideWith(other.rotation1())
+        self.rotation2().overrideWith(other.rotation2())
+        self.rotation3().overrideWith(other.rotation3())
+        self.unlockSignals()

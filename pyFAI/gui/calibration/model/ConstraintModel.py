@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/10/2018"
+__date__ = "31/10/2018"
 
 from .AbstractModel import AbstractModel
 
@@ -68,4 +68,35 @@ class ConstraintModel(AbstractModel):
         return self.__range is not None
 
     def range(self):
+        # FIXME: It should not returns a single None
+        # It makes the result difficult to manage
         return self.__range
+
+    def set(self, other):
+        self.lockSignals()
+        self.setFixed(self.isFixed())
+        otherRange = other.range()
+        if otherRange is None:
+            otherRange = None, None
+        self.setRangeConstraint(*otherRange)
+        self.unlockSignals()
+
+    def overrideWith(self, other):
+        """Override unset values of this model with the other model
+
+        :param GeometryConstraintsModel other:
+        """
+        self.lockSignals()
+        if self.__range is None:
+            self.setRangeConstraint(*other.range())
+        else:
+            otherRange = other.range()
+            if otherRange is not None:
+                if self.__range[0] is None or self.__range[1] is None:
+                    newRange = list(self.__range)
+                    if newRange[0] is None:
+                        newRange[0] = otherRange[0]
+                    if newRange[1] is None:
+                        newRange[1] = otherRange[1]
+                    self.setRangeConstraint(*newRange)
+        self.unlockSignals()
