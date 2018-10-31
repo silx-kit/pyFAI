@@ -184,6 +184,10 @@ class FitParamView(qt.QObject):
     _iconVariableFixed = None
     _iconVariableConstrained = None
     _iconVariableConstrainedOut = None
+    _iconConstraintMin = None
+    _iconConstraintNoMin = None
+    _iconConstraintMax = None
+    _iconConstraintNoMax = None
 
     def __init__(self, parent, label, internalUnit, displayedUnit=None):
         qt.QObject.__init__(self, parent=parent)
@@ -194,12 +198,21 @@ class FitParamView(qt.QObject):
         self.__unit = UnitLabel(parent)
         self.__unit.setUnitEditable(True)
         self.__min = qt.QToolButton(parent)
-        self.__min.setText("[")
+        self.__min.setFixedWidth(12)
+        self.__min.setAutoRaise(True)
         self.__min.clicked.connect(self.__dropContraintsOnMin)
         self.__max = qt.QToolButton(parent)
-        self.__max.setText("]")
+        self.__max.setAutoRaise(True)
+        self.__max.setFixedWidth(12)
         self.__max.clicked.connect(self.__dropContraintsOnMax)
         self.__defaultConstraintsModel = None
+
+        self.__subLayout = qt.QHBoxLayout()
+        self.__subLayout.setSpacing(0)
+        self.__subLayout.setContentsMargins(0, 0, 0, 0)
+        self.__subLayout.addWidget(self.__min)
+        self.__subLayout.addWidget(self.__quantity)
+        self.__subLayout.addWidget(self.__max)
 
         if displayedUnit is None:
             displayedUnit = internalUnit
@@ -230,6 +243,14 @@ class FitParamView(qt.QObject):
             self._iconVariableConstrained = icons.getQIcon("pyfai:gui/icons/variable-constrained")
         if self._iconVariableConstrainedOut is None:
             self._iconVariableConstrainedOut = icons.getQIcon("pyfai:gui/icons/variable-constrained-out")
+        if self._iconConstraintMin is None:
+            self._iconConstraintMin = icons.getQIcon("pyfai:gui/icons/constraint-min")
+        if self._iconConstraintNoMin is None:
+            self._iconConstraintNoMin = icons.getQIcon("pyfai:gui/icons/constraint-no-min")
+        if self._iconConstraintMax is None:
+            self._iconConstraintMax = icons.getQIcon("pyfai:gui/icons/constraint-max")
+        if self._iconConstraintNoMax is None:
+            self._iconConstraintNoMax = icons.getQIcon("pyfai:gui/icons/constraint-no-max")
 
     def __createDropConstraint(self):
         popup = ConstraintsPopup(self.__quantity)
@@ -293,17 +314,38 @@ class FitParamView(qt.QObject):
         if self.__constraintsModel is not None:
             self.__constraintsModel.changed.connect(self.__constraintsModelChanged)
             self.__constraintsModelChanged()
+        self.__updateConstraintsLookAndFeel()
 
     def setDefaultConstraintsModel(self, model):
         self.__defaultConstraintsModel = model
 
     def __constraintsModelChanged(self):
+        self.__updateConstraintsLookAndFeel()
+
+    def __updateConstraintsLookAndFeel(self):
         constraint = self.__constraintsModel
         if constraint.isFixed():
             icon = self._iconVariableFixed
+            minIcon = self._iconConstraintNoMin
+            maxIcon = self._iconConstraintNoMax
         else:
             icon = self._iconVariableConstrained
+            if constraint.isRangeConstrained():
+                minValue, maxValue = constraint.range()
+            else:
+                minValue, maxValue = None, None
+            if minValue is not None:
+                minIcon = self._iconConstraintMin
+            else:
+                minIcon = self._iconConstraintNoMin
+            if maxValue is not None:
+                maxIcon = self._iconConstraintMax
+            else:
+                maxIcon = self._iconConstraintNoMax
+
         self.__constraints.setIcon(icon)
+        self.__min.setIcon(minIcon)
+        self.__max.setIcon(maxIcon)
 
     def __constraintsClicked(self):
         constraint = self.__constraintsModel
@@ -311,7 +353,7 @@ class FitParamView(qt.QObject):
         constraint.setFixed(not constraint.isFixed())
 
     def widgets(self):
-        return [self.__label, self.__min, self.__quantity, self.__max, self.__unit, self.__constraints]
+        return [self.__label, self.__subLayout, self.__unit, self.__constraints]
 
 
 class _StatusBar(qt.QStatusBar):
@@ -668,7 +710,10 @@ class GeometryTask(AbstractCalibrationTask):
         row = layout.rowCount()
         widgets = param.widgets()
         for i, widget in enumerate(widgets):
-            layout.addWidget(widget, row, i)
+            if isinstance(widget, qt.QWidget):
+                layout.addWidget(widget, row, i)
+            else:
+                layout.addLayout(widget, row, i)
 
     def __createPlot(self):
         plot = _RingPlot(parent=self._imageHolder)
