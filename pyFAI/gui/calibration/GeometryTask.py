@@ -164,17 +164,25 @@ class ConstraintsPopup(qt.QFrame):
         if self.__defaultConstraints is None:
             return
         if self.__useDefaultMin:
-            value = self.__defaultConstraints.range()[0]
+            value = self.__defaultConstraints.range()
+            if value is not None:
+                value = value[0]
             self.__min.setValue(value)
             minStyle = self._DEFAULT_CONSTRAINT_STYLE
+            self._resetMin.setEnabled(False)
         else:
             minStyle = self._CUSTOM_CONSTRAINT_STYLE
+            self._resetMin.setEnabled(True)
         if self.__useDefaultMax:
-            value = self.__defaultConstraints.range()[1]
+            value = self.__defaultConstraints.range()
+            if value is not None:
+                value = value[1]
             self.__max.setValue(value)
             maxStyle = self._DEFAULT_CONSTRAINT_STYLE
+            self._resetMax.setEnabled(False)
         else:
             maxStyle = self._CUSTOM_CONSTRAINT_STYLE
+            self._resetMax.setEnabled(True)
         self._minEdit.setStyleSheet(minStyle)
         self._maxEdit.setStyleSheet(maxStyle)
 
