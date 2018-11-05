@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/10/2018"
+__date__ = "05/11/2018"
 
 import logging
 import numpy
@@ -922,7 +922,7 @@ class GeometryTask(AbstractCalibrationTask):
             calibration.fromGeometryModel(self.model().fittedGeometry(), resetResidual=False)
 
         constraints = self.model().geometryConstraintsModel().copy(self)
-        constraints.overrideWith(self.__defaultConstraints)
+        constraints.fillDefault(self.__defaultConstraints)
         calibration.fromGeometryConstriansModel(constraints)
 
         calibration.refine()

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/10/2018"
+__date__ = "05/11/2018"
 
 from .AbstractModel import AbstractModel
 from .ConstraintModel import ConstraintModel
@@ -107,17 +107,17 @@ class GeometryConstraintsModel(AbstractModel):
         model.rotation3().set(self.__rotation3)
         return model
 
-    def overrideWith(self, other):
-        """Override unset values of this model with the other model
+    def fillDefault(self, other):
+        """Fill unset values of this model with the other model
 
         :param GeometryConstraintsModel other:
         """
         self.lockSignals()
-        self.distance().overrideWith(other.distance())
-        self.wavelength().overrideWith(other.wavelength())
-        self.poni1().overrideWith(other.poni1())
-        self.poni2().overrideWith(other.poni2())
-        self.rotation1().overrideWith(other.rotation1())
-        self.rotation2().overrideWith(other.rotation2())
-        self.rotation3().overrideWith(other.rotation3())
+        self.distance().fillDefault(other.distance())
+        self.wavelength().fillDefault(other.wavelength())
+        self.poni1().fillDefault(other.poni1())
+        self.poni2().fillDefault(other.poni2())
+        self.rotation1().fillDefault(other.rotation1())
+        self.rotation2().fillDefault(other.rotation2())
+        self.rotation3().fillDefault(other.rotation3())
         self.unlockSignals()

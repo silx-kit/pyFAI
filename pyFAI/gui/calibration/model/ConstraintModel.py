@@ -81,8 +81,8 @@ class ConstraintModel(AbstractModel):
         self.setRangeConstraint(*otherRange)
         self.unlockSignals()
 
-    def overrideWith(self, other):
-        """Override unset values of this model with the other model
+    def fillDefault(self, other):
+        """Fill unset values of this model with the other model
 
         :param GeometryConstraintsModel other:
         """
