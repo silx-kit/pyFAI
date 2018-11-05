@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "31/10/2018"
 
 import logging
 from silx.gui import qt
@@ -45,11 +45,18 @@ class QuantityEdit(qt.QLineEdit):
     empty string).
     """
 
+    sigValueAccepted = qt.Signal()
+    """Emitted when a quantity was accepted.
+
+    In case the value is still the same, no signal is sent from the DataModel,
+    but this signal is emitted."""
+
     def __init__(self, parent=None):
         super(QuantityEdit, self).__init__(parent)
         validator = validators.DoubleAndEmptyValidator(self)
         self.setValidator(validator)
 
+        self.__wasModified = False
         self.__model = None
         self.__applyedWhenFocusOut = True
         self.__modelUnit = None
@@ -62,6 +69,7 @@ class QuantityEdit(qt.QLineEdit):
 
     def focusInEvent(self, event):
         self.__previousText = self.text()
+        self.__wasModified = False
         super(QuantityEdit, self).focusInEvent(event)
 
     def setModel(self, model):
@@ -143,13 +151,18 @@ class QuantityEdit(qt.QLineEdit):
             self.__cancelText()
             event.accept()
         else:
-            return super(QuantityEdit, self).keyPressEvent(event)
+            result = super(QuantityEdit, self).keyPressEvent(event)
+            if event.isAccepted():
+                self.__wasModified = True
+            return result
 
     def __modelChanged(self):
         self.__cancelText()
 
     def __editingFinished(self):
-        if self.__applyedWhenFocusOut:
+        if not self.__wasModified:
+            self.__cancelText()
+        elif self.__applyedWhenFocusOut:
             self.__applyText()
         else:
             self.__cancelText()
@@ -171,11 +184,16 @@ class QuantityEdit(qt.QLineEdit):
         internalUnit, displayedUnit = self.__getUnits()
         if internalUnit is displayedUnit:
             return value
+        if internalUnit is None:
+            return value
+        if displayedUnit is None:
+            return value
         return units.convert(value, internalUnit, displayedUnit)
 
     def __applyText(self):
         text = self.text()
         if text == self.__previousText:
+            self.sigValueAccepted.emit()
             return
         validator = self.validator()
         value, validated = validator.toValue(text)
@@ -185,6 +203,7 @@ class QuantityEdit(qt.QLineEdit):
                 self.__model.setValue(value)
                 # Avoid sending further signals
                 self.__previousText = text
+                self.sigValueAccepted.emit()
             else:
                 self.__cancelText()
         except ValueError as e:
