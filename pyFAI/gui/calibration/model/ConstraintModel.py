@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/10/2018"
+__date__ = "05/11/2018"
 
 from .AbstractModel import AbstractModel
 
@@ -74,7 +74,7 @@ class ConstraintModel(AbstractModel):
 
     def set(self, other):
         self.lockSignals()
-        self.setFixed(self.isFixed())
+        self.setFixed(other.isFixed())
         otherRange = other.range()
         if otherRange is None:
             otherRange = None, None
