@@ -330,12 +330,15 @@ class Worker(object):
         if self.azimuth_range is not None:
             kwarg["azimuth_range"] = self.azimuth_range
 
+        error = None
         try:
             if self.do_2D():
                 integrated_result = self.ai.integrate2d(**kwarg)
                 self.radial = integrated_result.radial
                 self.azimuthal = integrated_result.azimuthal
                 result = integrated_result.intensity
+                if variance is not None:
+                    error = integrated_result.sigma
             else:
                 integrated_result = self.ai.integrate1d(**kwarg)
                 self.radial = integrated_result.radial
@@ -362,7 +365,10 @@ class Worker(object):
             writer.write(integrated_result)
 
         if self.output == "numpy":
-            return result
+            if (variance is not  None) and (error is not None):
+                return result, error
+            else:
+                return result
 
     def setSubdir(self, path):
         """
