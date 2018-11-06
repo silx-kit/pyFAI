@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/10/2018"
+__date__ = "05/11/2018"
 
 import logging
 import numpy
@@ -166,9 +166,9 @@ class RingCalibration(object):
         print("Initial residual: %s" % previous_residual)
 
         count = 0
-        timeout = timeutils.Timeout(seconds=10)
+        timer = timeutils.Timer(seconds=10)
 
-        while count < max_iter and not timeout:
+        while count < max_iter and not timer.isTimeout():
             residual = self.__refine(10000, fix=self.__fixed)
             if residual >= previous_residual:
                 break
