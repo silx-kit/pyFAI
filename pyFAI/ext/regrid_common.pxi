@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/07/2018"
+__date__ = "07/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -56,13 +56,25 @@ acc_d = numpy.float64
 ctypedef numpy.int8_t mask_t
 mask_d = numpy.int8
 
-
+# Type used for propagating variance
+prop_d = numpy.dtype([('sig', acc_d),
+                      ('var', acc_d),
+                      ('norm', acc_d),
+                      ('count', acc_d),
+                      ])
 cdef:
     float pi = <float> M_PI
     float piover2 = <float> (pi * 0.5)
     float onef = <float> 1.0
     float zerof = <float> 1.0
     double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+
+from collections import namedtuple
+
+Integrate1dResult = namedtuple("Integrate1dResult", ["bins", "signal", "propagated"])
+Integrate2dResult = namedtuple("Integrate2dResult", ["signal", "bins0", "bins1", "propagated"])
+Integrate1dWithErrorResult = namedtuple("Integrate1dWithErrorResult", ["bins", "signal", "error", "propagated"])
+Integrate2dWithErrorResult = namedtuple("Integrate2dWithErrorResult", ["signal", "error", "bins0", "bins1", "propagated"])
 
 
 @cython.cdivision(True)
