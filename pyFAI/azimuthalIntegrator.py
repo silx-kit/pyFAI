@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2018"
+__date__ = "06/11/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -54,6 +54,14 @@ from .containers import Integrate1dResult, Integrate2dResult
 from .io import DefaultAiWriter
 error = None
 
+from .preproc import preproc as preproc_np
+try:
+    from .ext.preproc import preproc as preproc_cy
+except ImportError as err:
+    logger.warning("ImportError pyFAI.ext.preproc %s", err)
+    preproc = preproc_np
+else:
+    preproc = preproc_cy
 
 try:
     from .ext import splitBBoxLUT
@@ -3007,6 +3015,9 @@ class AzimuthalIntegrator(Geometry):
         sigma = None
         sum_ = None
         count = None
+        signal2d = None
+        norm2d = None
+        var2d = None
 
         if (I is None) and ("lut" in method):
             if EXT_LUT_ENGINE not in self.engines:
@@ -3277,38 +3288,41 @@ class AzimuthalIntegrator(Geometry):
             logger.debug("integrate2d uses cython implementation")
             data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
             mask = self.create_mask(data, mask, dummy, delta_dummy,
-                                    mode="numpy")
+                                    mode="normal")
             pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             pos1 = self.chiArray(shape)
 
             if radial_range is not None:
-                mask *= (pos0 >= min(radial_range)) * (pos0 <= max(radial_range))
+                mask_radial = numpy.logical_or(pos0 < min(radial_range), pos0 > max(radial_range))
+                mask = numpy.logical_or(mask, mask_radial)
             else:
                 radial_range = [pos0.min(), pos0.max() * EPS32]
 
             if azimuth_range is not None:
-                mask *= (pos1 >= min(azimuth_range)) * (pos1 <= max(azimuth_range))
+                # mask *= (pos1 >= min(azimuth_range)) * (pos1 <= max(azimuth_range))
+                mask_azim = numpy.logical_or(pos1 < min(azimuth_range), pos1 > max(azimuth_range))
+                mask = numpy.logical_or(mask, mask_azim)
             else:
                 azimuth_range = [pos1.min(), pos1.max() * EPS32]
 
-            if variance is not None:
-                variance = variance[mask]
+            prep = preproc(data,
+                           dark=dark,
+                           flat=flat,
+                           solidangle=solidangle,
+                           polarization=polarization,
+                           absorption=None,
+                           mask=mask,
+                           dummy=dummy,
+                           delta_dummy=delta_dummy,
+                           normalization_factor=normalization_factor,
+                           empty=self._empty,
+                           split_result=True,
+                           variance=variance,
+                           # dark_variance=None,
+                           # poissonian=False,
+                           dtype=numpy.float32)
+            print(prep.shape)
 
-            if dark is not None:
-                data -= dark
-
-            if flat is not None:
-                data /= flat
-
-            if polarization is not None:
-                data /= polarization
-
-            if solidangle is not None:
-                data /= solidangle
-
-            data = data[mask]
-            pos0 = pos0[mask]
-            pos1 = pos1[mask]
             if ("cython" in method):
                 if histogram is None:
                     logger.warning("Cython histogram is not available;"
@@ -3325,14 +3339,30 @@ class AzimuthalIntegrator(Geometry):
 
         if I is None:
             logger.debug("integrate2d uses Numpy implementation")
-            count, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad), range=[azimuth_range, radial_range])
+            signal = prep[:, :, 0]
+            norm = prep[:, :, -1]
+            norm2d, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
+                                             weights=norm,
+                                             range=[azimuth_range, radial_range])
             bins_azim = (b[1:] + b[:-1]) / 2.0
             bins_rad = (c[1:] + c[:-1]) / 2.0
-            count1 = numpy.maximum(1, count)
-            sum_, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
-                                           weights=data, range=[azimuth_range, radial_range])
-            I = sum_ / count1 / normalization_factor
-            I[count == 0] = dummy if dummy is not None else self._empty
+            valid = norm2d > 0
+
+            signal2d, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
+                                               weights=signal,
+                                               range=[azimuth_range, radial_range])
+            I = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float32)
+            I += dummy if (dummy is not None) else self._empty
+            I[valid] = signal2d[valid] / norm2d[valid]
+
+            if prep.shape[-1] == 3:
+                var2d, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
+                                                weights=prep[:, :, 1],
+                                                range=[azimuth_range, radial_range])
+                sigma = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float32)
+                sigma += dummy if (dummy is not None) else self._empty
+                sigma[valid] = numpy.sqrt(var2d[valid]) / norm2d[valid]
+
         # I know I make copies ....
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
@@ -3349,6 +3379,10 @@ class AzimuthalIntegrator(Geometry):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         result._set_metadata(metadata)
+
+        result._set_sum_signal(signal2d)
+        result._set_sum_normalization(norm2d)
+        result._set_sum_variance(var2d)
 
         if filename is not None:
             writer = DefaultAiWriter(filename, self)
