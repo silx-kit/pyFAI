@@ -275,7 +275,7 @@ def histogram_preproc(numpy.ndarray pos not None,
             for j in range(nchan):
                 out_prop[bin, j] = cdata[i, j]
             if nchan < 4:
-                out_data[bin, 4] += 1
+                out_prop[bin, 4] += 1.0
 
         for bin in range(bins):
             if out_prop[bin, nchan] > epsilon:
@@ -295,9 +295,9 @@ def histogram_preproc(numpy.ndarray pos not None,
                                           numpy.asarray(out_error), 
                                           numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop))  
     else:
-        return Integrate1d(out_pos, 
-                           numpy.asarray(out_signal), 
-                           numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop))
+        return Integrate1dResult(out_pos, 
+                                 numpy.asarray(out_signal), 
+                                 numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop))
 
 
 # @cython.cdivision(True)
@@ -332,7 +332,7 @@ def histogram2d_preproc(numpy.ndarray pos0 not None,
         int size = pos0.size
         int nchan = weights.shape[-1]
     
-    assert len(weights.shape) == 3, "Weights have been preprocessed" 
+    assert weights.ndim == 3, "Weights have been preprocessed" 
     assert pos0.size == (weights.size // nchan), "Weights have the right size"
     assert nchan <= 4, "Maximum of 4 chanels"
     
@@ -348,7 +348,7 @@ def histogram2d_preproc(numpy.ndarray pos0 not None,
     cdef:
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         position_t[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
-        data_t[:, :1] data = numpy.ascontiguousarray(weights.reshape((-1, nchan)), dtype=data_d)
+        data_t[:, ::1] data = numpy.ascontiguousarray(weights.reshape((-1, nchan)), dtype=data_d)
         acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
         data_t[:, ::1] out_signal = numpy.zeros((bins0, bins1), dtype=data_d)
         data_t[:, ::1] out_error
@@ -382,7 +382,7 @@ def histogram2d_preproc(numpy.ndarray pos0 not None,
             for c in range(nchan):
                 out_data[bin0, bin1, c] += data[i, c]
             if nchan < 4:
-                out_data[bin0, bin1, 4] += 1
+                out_data[bin0, bin1, 4] += 1.0
         for i in range(bins0):
             for j in range(bins1):
                 if nchan >= 3:
@@ -409,9 +409,9 @@ def histogram2d_preproc(numpy.ndarray pos0 not None,
                                             bin_centers1,
                                             numpy.recarray(shape=(bins0, bins1), dtype=prop_d, buf=out_data))
     else:
-        result = Integrate2d(numpy.asarray(out_signal),
-                             bin_centers0, 
-                             bin_centers1,
-                             out_data, 
-                             numpy.recarray(shape=(bins0, bins1), dtype=prop_d, buf=out_data))
+        result = Integrate2dResult(numpy.asarray(out_signal),
+                                   bin_centers0, 
+                                   bin_centers1,
+                                   out_data, 
+                                   numpy.recarray(shape=(bins0, bins1), dtype=prop_d, buf=out_data))
 
