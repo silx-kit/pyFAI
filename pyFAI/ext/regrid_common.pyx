@@ -36,12 +36,8 @@ __date__ = "08/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
-include "numpy_common.pxi"
 import cython
-cimport numpy
 import numpy
-from cython cimport floating
-from libc.math cimport fabs, M_PI
 
 # How position are stored
 #ctypedef numpy.float64_t position_t

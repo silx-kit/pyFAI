@@ -39,12 +39,12 @@ __license__ = "MIT"
 
 cimport cython
 from cython cimport floating
-cimport numpy
 import numpy
+cimport numpy as cnp
 from libc.math cimport fabs, ceil, floor
 
 from .regrid_common import *
-from .regrid_common cimport *
+from .regrid_common cimport get_bin_number, acc_t, position_t, data_t, mask_t, pi
 
 cdef inline floating area4(floating a0,
                            floating a1,
@@ -105,8 +105,8 @@ cdef inline void integrate(acc_t[::1] buffer, int buffer_size, position_t start0
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def fullSplit1D(numpy.ndarray pos not None,
-                numpy.ndarray weights not None,
+def fullSplit1D(cnp.ndarray pos not None,
+                cnp.ndarray weights not None,
                 int bins=100,
                 pos0Range=None,
                 pos1Range=None,
@@ -349,8 +349,8 @@ def fullSplit1D(numpy.ndarray pos not None,
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def fullSplit2D(numpy.ndarray pos not None,
-                numpy.ndarray weights not None,
+def fullSplit2D(cnp.ndarray pos not None,
+                cnp.ndarray weights not None,
                 bins not None,
                 pos0Range=None,
                 pos1Range=None,
