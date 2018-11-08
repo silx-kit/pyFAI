@@ -29,7 +29,7 @@
 """Re-implementation of numpy histograms without OpenMP"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "07/11/2018"
+__date__ = "08/11/2018"
 __license__ = "MIY"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -300,9 +300,9 @@ def histogram_preproc(numpy.ndarray pos not None,
                                  numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop))
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def histogram2d_preproc(numpy.ndarray pos0 not None,
                         numpy.ndarray pos1 not None,
                         bins not None,
@@ -323,16 +323,16 @@ def histogram2d_preproc(numpy.ndarray pos0 not None,
     :param nthread: OpenMP is disabled. unused here
     :param empty: value given to empty bins
 
-    :return: named tuple
+    :return: named tuple with ("sig",["var"], "norm", "count")
     """
     assert pos0.size == pos1.size, "Positions array have the same size"
     
     cdef:
         int bins0, bins1, i, j, bin0, bin1, c
         int size = pos0.size
-        int nchan = weights.shape[-1]
-    
-    assert weights.ndim == 3, "Weights have been preprocessed" 
+        int nchan = weights.shape[weights.ndim - 1]
+    print(size, nchan, weights.size, weights.size//nchan, weights.ndim) 
+    assert weights.ndim > 1, "Weights have been preprocessed" 
     assert pos0.size == (weights.size // nchan), "Weights have the right size"
     assert nchan <= 4, "Maximum of 4 chanels"
     
@@ -382,7 +382,7 @@ def histogram2d_preproc(numpy.ndarray pos0 not None,
             for c in range(nchan):
                 out_data[bin0, bin1, c] += data[i, c]
             if nchan < 4:
-                out_data[bin0, bin1, 4] += 1.0
+                out_data[bin0, bin1, 3] += 1.0
         for i in range(bins0):
             for j in range(bins1):
                 if nchan >= 3:
@@ -412,6 +412,5 @@ def histogram2d_preproc(numpy.ndarray pos0 not None,
         result = Integrate2dResult(numpy.asarray(out_signal),
                                    bin_centers0, 
                                    bin_centers1,
-                                   out_data, 
                                    numpy.recarray(shape=(bins0, bins1), dtype=prop_d, buf=out_data))
-
+    return result

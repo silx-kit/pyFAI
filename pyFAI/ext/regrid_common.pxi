@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/11/2018"
+__date__ = "08/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -57,11 +57,11 @@ ctypedef numpy.int8_t mask_t
 mask_d = numpy.int8
 
 # Type used for propagating variance
-prop_d = numpy.dtype([('sig', acc_d),
-                      ('var', acc_d),
+prop_d = numpy.dtype([('signal', acc_d),
+                      ('variance', acc_d),
                       ('norm', acc_d),
-                      ('count', acc_d),
-                      ])
+                      ('count', acc_d)])
+
 cdef:
     float pi = <float> M_PI
     float piover2 = <float> (pi * 0.5)

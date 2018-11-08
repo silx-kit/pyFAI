@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/11/2018"
+__date__ = "08/11/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2890,8 +2890,6 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
-    integrate2d = _integrate2d_legacy
-
     @deprecated(since_version="0.17", only_once=0.20)
     def _integrate2d_legacy(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True, variance=None,
@@ -3380,6 +3378,8 @@ class AzimuthalIntegrator(Geometry):
 
         return result
 
+    integrate2d = _integrate2d_legacy
+
     def _integrate2d_ng(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True, variance=None,
                     error_model=None, radial_range=None, azimuth_range=None,
@@ -3833,12 +3833,12 @@ class AzimuthalIntegrator(Geometry):
                     bins_azim = res.bins0
                     bins_rad = res.bins1
                     prop2d = res.propagated
-                    signal2d = prop2d[..., "sig"]
+                    signal2d = prop2d[..., "signal"]
                     norm2d = prop2d[..., "norm"]
                     count = prop2d[..., "count"]
                     if variance is not None:
                         sigma = res.error
-                        var2d = prop2d[..., "var"]
+                        var2d = prop2d[..., "variance"]
 
         if I is None:
             logger.debug("integrate2d uses Numpy implementation")
