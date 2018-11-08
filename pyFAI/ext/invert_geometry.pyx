@@ -27,11 +27,12 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "08/11/2018"
 __copyright__ = "2018-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-include "regrid_common.pxi"
+from regrid_common import *
+from regrid_common cimport *
 import logging
 logger = logging.getLogger("pyFAI.ext.invert_geometry")
 

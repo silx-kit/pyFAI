@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/09/2018"
+__date__ = "08/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -49,9 +49,8 @@ import numpy
 cimport numpy
 from ..utils import crc32
 from ..utils.decorators import deprecated
-
-
-include "regrid_common.pxi"
+from .regrid_common import *
+from .regrid_common cimport *
 include "sparse_common.pxi"
 
 
@@ -216,7 +215,7 @@ class HistoBBox1d(object):
             acc_t delta_left, delta_right, inv_area
             int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
             bint check_mask, check_pos1
-            numpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            cnp.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             position_t[:] cpos0_sup = self.cpos0_sup
             position_t[:] cpos0_inf = self.cpos0_inf
             position_t[:] cpos1_min, cpos1_max
@@ -575,7 +574,7 @@ class HistoBBox1d(object):
 
         """
         cdef:
-            numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, lut_size = self.lut_size, size = self.size
+            cnp.int32_t i = 0, j = 0, idx = 0, bins = self.bins, lut_size = self.lut_size, size = self.size
             float acc_data = 0, acc_count = 0, epsilon = 1e-10
             float data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
@@ -765,7 +764,7 @@ class HistoBBox2d(object):
         :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
         :param unit: can be 2th_deg or r_nm^-1 ...
         """
-        cdef numpy.int32_t i, size, bin0, bin1
+        cdef cnp.int32_t i, size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
         assert pos1.size == self.size, "pos1 size"
@@ -829,7 +828,7 @@ class HistoBBox2d(object):
         Called by constructor to calculate the boundaries and the bin position
         """
         cdef:
-            numpy.int32_t size = self.cpos0.size
+            cnp.int32_t size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
@@ -923,7 +922,7 @@ class HistoBBox2d(object):
             position_t[::1] cpos0_inf = self.cpos0_inf
             position_t[::1] cpos1_inf = self.cpos1_inf
             position_t[::1] cpos1_sup = self.cpos1_sup
-            numpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            cnp.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
             lut_point[:, :, ::1] lut
             mask_t[:] cmask
             acc_t inv_area, delta_down, delta_up, delta_right, delta_left
@@ -1196,7 +1195,7 @@ class HistoBBox2d(object):
 
         """
         cdef:
-            numpy.int32_t i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, lut_size = self.lut_size, size = self.size, i0 = 0, i1 = 0
+            cnp.int32_t i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, lut_size = self.lut_size, size = self.size, i0 = 0, i1 = 0
             acc_t acc_data = 0, acc_count = 0, epsilon = 1e-10
             data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False

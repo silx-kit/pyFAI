@@ -1,10 +1,9 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,18 +25,48 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""Selector for OpenMP enabled or not histogram functions"""
 
-__author__ = "Jerome Kieffer"
-__date__ = "08/11/2018"
-__license__ = "MIT"
-__copyright__ = "2011-2016, ESRF"
-__contact__ = "jerome.kieffer@esrf.fr"
+from cython cimport floating
+from libc.math cimport fabs, M_PI
+cimport numpy as cnp
+# How position are stored
+ctypedef cnp.float64_t position_t
 
-from .regrid_common import *
-from .regrid_common cimport *
+# How weights or data are stored 
+ctypedef cnp.float32_t data_t
 
-IF HAVE_OPENMP:
-    include "histogram_omp.pxi"
-ELSE:
-    include "histogram_nomp.pxi"
+# how data are accumulated 
+ctypedef cnp.float64_t acc_t
+
+# type of the mask:
+ctypedef cnp.int8_t mask_t
+
+cdef:
+    struct preproc_t:
+        data_t signal
+        data_t variance
+        data_t norm
+        
+    float pi = <float> M_PI
+    float piover2 = <float> (pi * 0.5)
+    float onef = <float> 1.0
+    float zerof = <float> 1.0
+    #double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+    double EPS32 = (1.0 + 1.0 / (1<<23))
+
+ctypedef fused any_int_t:
+    cnp.uint8_t
+    cnp.uint16_t
+    cnp.uint32_t
+    cnp.uint64_t
+    cnp.int8_t
+    cnp.int16_t
+    cnp.int32_t
+    cnp.int64_t
+    
+################################################################################
+# Function prtotypes:
+################################################################################
+cdef floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil
+cdef floating calc_upper_bound(floating maximum_value) nogil
+ 

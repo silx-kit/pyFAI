@@ -33,7 +33,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/09/2018"
+__date__ = "08/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -44,7 +44,8 @@ from libc.math cimport floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
 from cython.view cimport array as cvarray
 
-include "regrid_common.pxi"
+from .regrid_common import *
+from .regrid_common cimport *
 
 cdef inline position_t area4(position_t a0, position_t a1, position_t b0, position_t b1, position_t c0, position_t c1, position_t d0, position_t d1) nogil:
     """

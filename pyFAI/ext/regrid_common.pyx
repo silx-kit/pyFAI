@@ -25,7 +25,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Common cdef constants and functions for preprocessing"""
+"""Common cdef constants and functions for preprocessing
+
+Some are defined in the associated header file .pxd 
+"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
@@ -41,19 +44,19 @@ from cython cimport floating
 from libc.math cimport fabs, M_PI
 
 # How position are stored
-ctypedef numpy.float64_t position_t
+#ctypedef numpy.float64_t position_t
 position_d = numpy.float64
 
 # How weights or data are stored 
-ctypedef numpy.float32_t data_t
+#ctypedef numpy.float32_t data_t
 data_d = numpy.float32
 
 # how data are accumulated 
-ctypedef numpy.float64_t acc_t
+#ctypedef numpy.float64_t acc_t
 acc_d = numpy.float64
 
 # type of the mask:
-ctypedef numpy.int8_t mask_t
+#ctypedef numpy.int8_t mask_t
 mask_d = numpy.int8
 
 # Type used for propagating variance
@@ -62,12 +65,17 @@ prop_d = numpy.dtype([('signal', acc_d),
                       ('norm', acc_d),
                       ('count', acc_d)])
 
-cdef:
-    float pi = <float> M_PI
-    float piover2 = <float> (pi * 0.5)
-    float onef = <float> 1.0
-    float zerof = <float> 1.0
-    double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+# cdef:
+#     struct preproc_t:
+#         data_t signal
+#         data_t variance
+#         data_t norm
+# 
+#     float pi = <float> M_PI
+#     float piover2 = <float> (pi * 0.5)
+#     float onef = <float> 1.0
+#     float zerof = <float> 1.0
+#     double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 from collections import namedtuple
 
@@ -78,7 +86,7 @@ Integrate2dWithErrorResult = namedtuple("Integrate2dWithErrorResult", ["signal",
 
 
 @cython.cdivision(True)
-cdef inline floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil:
+cdef floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil:
     """
     calculate the bin number for any point (as floating)
 
@@ -91,7 +99,7 @@ cdef inline floating  get_bin_number(floating x0, floating pos0_min, floating de
 
 
 @cython.cdivision(True)
-cdef inline floating calc_upper_bound(floating maximum_value) nogil:
+cdef floating calc_upper_bound(floating maximum_value) nogil:
     """Calculate the upper_bound for an histogram, 
     given the maximum value of all the data.
     

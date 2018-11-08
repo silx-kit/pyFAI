@@ -1,10 +1,9 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2011-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,18 +25,21 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""Selector for OpenMP enabled or not histogram functions"""
-
-__author__ = "Jerome Kieffer"
-__date__ = "08/11/2018"
-__license__ = "MIT"
-__copyright__ = "2011-2016, ESRF"
-__contact__ = "jerome.kieffer@esrf.fr"
-
-from .regrid_common import *
+from libc.math cimport fabs
+from isnan cimport isnan
+from cython cimport floating
 from .regrid_common cimport *
 
-IF HAVE_OPENMP:
-    include "histogram_omp.pxi"
-ELSE:
-    include "histogram_nomp.pxi"
+cdef preproc_t preproc_value(floating data,
+                             floating variance=*,
+                             floating dark=*,
+                             floating flat=*,
+                             floating solidangle=*,
+                             floating polarization=*,
+                             floating absorption=*,
+                             any_int_t mask=*,
+                             floating dummy=*,
+                             floating delta_dummy=*,
+                             bint check_dummy=*,
+                             floating normalization_factor=*,
+                             floating dark_variance=*) nogil

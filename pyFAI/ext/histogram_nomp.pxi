@@ -42,8 +42,8 @@ logger = logging.getLogger(__name__ + "_nomp")
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def histogram(numpy.ndarray pos not None,
-              numpy.ndarray weights not None,
+def histogram(numpy.ndarray pos,
+              numpy.ndarray weights,
               int bins=100,
               bin_range=None,
               pixelSize_in_Pos=None,
@@ -121,10 +121,10 @@ def histogram(numpy.ndarray pos not None,
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def histogram2d(numpy.ndarray pos0 not None,
-                numpy.ndarray pos1 not None,
-                bins not None,
-                numpy.ndarray weights not None,
+def histogram2d(numpy.ndarray pos0,
+                numpy.ndarray pos1,
+                bins,
+                numpy.ndarray weights,
                 split=False,
                 nthread=None,
                 double empty=0.0,
@@ -208,8 +208,8 @@ def histogram2d(numpy.ndarray pos0 not None,
 # @cython.cdivision(True)
 # @cython.boundscheck(False)
 # @cython.wraparound(False)
-def histogram_preproc(numpy.ndarray pos not None,
-                      numpy.ndarray weights not None,
+def histogram_preproc(pos,
+                      weights,
                       int bins=100,
                       bin_range=None,
                       pixelSize_in_Pos=None,
@@ -303,10 +303,10 @@ def histogram_preproc(numpy.ndarray pos not None,
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def histogram2d_preproc(numpy.ndarray pos0 not None,
-                        numpy.ndarray pos1 not None,
-                        bins not None,
-                        numpy.ndarray weights not None,
+def histogram2d_preproc(pos0,
+                        pos1,
+                        bins,
+                        weights,
                         split=False,
                         nthread=None,
                         double empty=0.0,

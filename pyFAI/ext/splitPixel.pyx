@@ -33,7 +33,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/10/2018"
+__date__ = "08/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -43,7 +43,8 @@ cimport numpy
 import numpy
 from libc.math cimport fabs, ceil, floor
 
-include "regrid_common.pxi"
+from .regrid_common import *
+from .regrid_common cimport *
 
 cdef inline floating area4(floating a0,
                            floating a1,

@@ -25,31 +25,72 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "04/05/2018"
+__date__ = "08/11/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
 import numpy
-cimport numpy as cnp
-from cython cimport floating
 from cython.parallel import prange
-from libc.math cimport fabs
-from isnan cimport isnan
+from .regrid_common import *
 
-ctypedef fused any_int_t:
-    cnp.uint8_t
-    cnp.uint16_t
-    cnp.uint32_t
-    cnp.uint64_t
-    cnp.int8_t
-    cnp.int16_t
-    cnp.int32_t
-    cnp.int64_t
+cdef preproc_t preproc_value(floating data,
+                             floating variance=0.0,
+                             floating dark=0.0,
+                             floating flat=1.0,
+                             floating solidangle=1.0,
+                             floating polarization=1.0,
+                             floating absorption=1.0,
+                             any_int_t mask=0,
+                             floating dummy=0.0,
+                             floating delta_dummy=0.0,
+                             bint check_dummy=False,
+                             floating normalization_factor=1.0,
+                             floating dark_variance=0.0) nogil:
+    """This is a Function in the C-space, please mind to update the pxd file 
+    accordingly
+    """
+    cdef:
+        floating signal, norm
+        preproc_t result
+        bint is_valid
+    signal = data
 
+    is_valid = (not isnan(signal)) and (mask == 0) 
+    if is_valid and check_dummy:
+        if delta_dummy == 0.0:
+            is_valid = (signal != dummy)
+        else:
+            is_valid = fabs(signal - dummy) > delta_dummy
+
+    if is_valid:
+        if delta_dummy == 0.0:
+            is_valid = (flat != dummy)
+        else:
+            is_valid = fabs(flat - dummy) > delta_dummy
+
+    if is_valid:
+        # Do not use "/=" as they mean reduction for cython
+        if dark:
+            signal = signal - dark
+            if dark_variance:
+                variance = variance + dark_variance
+        norm = normalization_factor * flat * polarization * solidangle * absorption
+        if (isnan(signal) or isnan(norm) or isnan(variance) or (norm == 0)):
+            signal = 0.0
+            variance = 0.0
+            norm = 0.0
+    else:
+        signal = 0.0
+        variance = 0.0
+        norm = 0.0
+    result.signal = signal
+    result.variance = variance
+    result.norm = norm
+    return result
+         
 
 @cython.boundscheck(False)
 @cython.cdivision(True)
@@ -565,7 +606,6 @@ def preproc(raw,
 
     shape = raw.shape
     size = raw.size
-    dtype = numpy.dtype(dtype).type
     raw = numpy.ascontiguousarray(raw.ravel(), dtype=dtype)
     if dark is not None:
         assert dark.size == size, "Dark array size is correct"
