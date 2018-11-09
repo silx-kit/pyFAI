@@ -32,15 +32,14 @@ Created on Nov 4, 2013
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/01/2018"
+__date__ = "09/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
 import numpy
-cimport numpy
+cimport numpy as cnp
 import cython
 cimport cython
-from cython cimport view
 from cython.parallel import prange
 
 
@@ -148,7 +147,7 @@ cdef void fpbspl(float[:]t,
 
 
 @cython.boundscheck(False)
-cdef void init_w(float[:] t, int k, float[:] x, numpy.int32_t[:] lx, float[:, :] w) nogil:
+cdef void init_w(float[:] t, int k, float[:] x, cnp.int32_t[:] lx, float[:, :] w) nogil:
     """
     Initialize w array for a 1D array
 
@@ -166,8 +165,8 @@ cdef void init_w(float[:] t, int k, float[:] x, numpy.int32_t[:] lx, float[:, :]
     with gil:
         n = t.size
         m = x.size
-        h = view.array(shape=(6,), itemsize=sizeof(float), format="f")
-        hh = view.array(shape=(5,), itemsize=sizeof(float), format="f")
+        h = numpy.empty(6, dtype=numpy.float32)
+        hh = numpy.empty(5, dtype=numpy.float32)
 
     te = t[n - k - 1]
     l1 = k + 1
@@ -217,17 +216,17 @@ cdef cy_bispev(float[:] tx,
         int nky1 = ny - ky1
 
         # initializing scratch space
-        float[:, :] wx = view.array(shape=(mx, kx1), itemsize=sizeof(float), format="f")
-        float[:, :] wy = view.array(shape=(my, ky1), itemsize=sizeof(float), format="f")
+        float[:, ::1] wx = numpy.empty((mx, kx1), dtype=numpy.float32)
+        float[:, ::1] wy = numpy.empty((my, ky1), dtype=numpy.float32)
 
-        numpy.int32_t[:] lx = view.array(shape=(mx,), itemsize=sizeof(numpy.int32_t), format="i")
-        numpy.int32_t[:] ly = view.array(shape=(my,), itemsize=sizeof(numpy.int32_t), format="i")
+        cnp.int32_t[::1] lx = numpy.empty(mx, dtype=numpy.int32)
+        cnp.int32_t[::1] ly = numpy.empty(my, dtype=numpy.int32)
 
         int i, j, m, i1, l2, j1
         int size_z = mx * my
 
         # initializing z and h
-        numpy.ndarray[numpy.float32_t, ndim=1] z = numpy.zeros(size_z, numpy.float32)
+        float[::1] z = numpy.zeros(size_z, dtype=numpy.float32)
         float arg, sp, err, tmp, a
 
     with nogil:
@@ -248,4 +247,4 @@ cdef cy_bispev(float[:] tx,
                         err = (tmp - sp) - a
                         sp = tmp
                 z[j * mx + i] += sp
-    return z
+    return numpy.asarray(z)
