@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/10/2018"
+__date__ = "09/11/2018"
 
 import unittest
 import numpy
@@ -126,10 +126,36 @@ class TestSplitPixel(unittest.TestCase):
         self.assertTrue(mathutil.rwp(self.results["csr_bbox"], self.results["csr_full"]) > thres, "csr_full/csr_full")
 
 
+class TestSplitBBoxNg(unittest.TestCase):
+    """Test the equivalence of the historical SplitBBox with the one propagating 
+    the variance"""
+    @classmethod
+    def setUpClass(cls):
+        super(TestSplitPixel, cls).setUpClass()
+        det = Detector.factory("Pilatus 100k)")
+        shape = det.shape
+        img = numpy.random.randint(0, 6500, det.size).reshape(shape)
+        ai = AzimuthalIntegrator(1, detector=det)
+#         tth = ai.twoThetaArray(shape)
+#         dtth = ai.delta_array(shape, "2th_rad")
+#         chi = ai.
+        cls.results = {}
+
+    @classmethod
+    def tearDownClass(cls):
+        super(TestSplitPixel, cls).tearDownClass()
+        cls.results = None
+
+    def test_split_bbox(self):
+        # TODO
+        pass
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestSplitPixel))
+    testsuite.addTest(loader(TestSplitBBoxNg))
     return testsuite
 
 

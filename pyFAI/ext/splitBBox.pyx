@@ -593,13 +593,14 @@ def histoBBox2d_ng(weights,
                    dummy=None,
                    delta_dummy=None,
                    mask=None,
+                   variance=None,
                    dark=None,
                    flat=None,
                    solidangle=None,
                    polarization=None,
                    bint allow_pos0_neg=0,
                    bint chiDiscAtPi=1,
-                   empty=0.0,
+                   float empty=0.0,
                    double normalization_factor=1.0,
                    int coef_power=1):
     """
@@ -619,6 +620,7 @@ def histoBBox2d_ng(weights,
     :param dummy: value for bins without pixels & value of "no good" pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    :param variance: variance associated with the weights
     :param dark: array (of float32) with dark noise to be subtracted (or None)
     :param flat: array (of float32) with flat-field image
     :param solidangle: array (of float32) with solid angle corrections
@@ -647,12 +649,12 @@ def histoBBox2d_ng(weights,
     if bins1 <= 0:
         bins1 = 1
     cdef:
-        #Related to data: single precision
+        # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        data_t[::1] cflat, cdark, cpolarization, csolidangle
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
         data_t cdummy, ddummy
         
-        #related to positions: double precision
+        # Related to positions: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
         position_t[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
@@ -661,21 +663,28 @@ def histoBBox2d_ng(weights,
         position_t[::1] cpos0_lower = numpy.empty(size, dtype=position_d)
         position_t[::1] cpos1_upper = numpy.empty(size, dtype=position_d)
         position_t[::1] cpos1_lower = numpy.empty(size, dtype=position_d)
-        acc_t[:, ::1] sum_data = numpy.zeros((bins0, bins1), dtype=acc_d)
-        acc_t[:, ::1] sum_count = numpy.zeros((bins0, bins1), dtype=acc_d)
-        data_t[:, ::1] out_merge = numpy.zeros((bins0, bins1), dtype=data_d)
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
+        data_t[:, ::1] out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_error
         mask_t[::1] cmask
 
         position_t c0, c1, d0, d1
         position_t min0, max0, min1, max1, delta0, delta1
         position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
         position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max, 
-        acc_t data, epsilon = 1e-10
+        acc_t data, norm
         acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
         ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
-        bint check_mask = False, check_dummy = False
+        bint check_mask = False, check_dummy = False, do_variance = False
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
+        preproc_t value
 
+    if variance is not None:
+        assert variance.size == size, "variance size"
+        do_varance = True
+        cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
+        out_error = numpy.zeros((bins0, bins1), dtype=data_d)
+        
     if mask is not None:
         assert mask.size == size, "mask size"
         check_mask = True
@@ -772,18 +781,22 @@ def histoBBox2d_ng(weights,
             if (check_mask) and cmask[idx]:
                 continue
 
-            data = cdata[idx]
-            if (check_dummy) and (fabs(data - cdummy) <= ddummy):
-                continue
+            value = preproc_value(cdata[idx],
+                                  variance=cvariance[idx] if do_variance else 0.0,
+                                  dark=cdark[idx] if do_dark else 0.0,
+                                  flat=cflat[idx] if do_flat else 1.0,
+                                  solidangle=csolidangle[idx] if do_solidangle else 1.0,
+                                  polarization=cpolarization[idx] if do_polarization else 1.0,
+                                  absorption=1.0,
+                                  mask=cmask[idx] if check_mask else 0,
+                                  dummy=cdummy,
+                                  delta_dummy=ddummy,
+                                  check_dummy=check_dummy,
+                                  normalization_factor=normalization_factor,
+                                  dark_variance=0.0)
 
-            if do_dark:
-                data -= cdark[idx]
-            if do_flat:
-                data /= cflat[idx]
-            if do_polarization:
-                data /= cpolarization[idx]
-            if do_solidangle:
-                data /= csolidangle[idx]
+            if value.norm == 0.0:
+                continue
 
             min0 = cpos0_lower[idx]
             max0 = cpos0_upper[idx]
@@ -816,22 +829,17 @@ def histoBBox2d_ng(weights,
                 # No spread along dim0
                 if bin1_min == bin1_max:
                     # All pixel is within a single bin
-                    sum_count[bin0_min, bin1_min] += 1.0
-                    sum_data[bin0_min, bin1_min] += data
+                    update_2d_accumulator(out_data, bin0_min, bin1_min, value, 1.0)
                 else:
                     # spread on 2 or more bins in dim1 
                     delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
                     delta_up = fbin1_max - (bin1_max)
                     inv_area = 1.0 / (fbin1_max - fbin1_min)
 
-                    sum_count[bin0_min, bin1_min] += inv_area * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_down) ** coef_power
-
-                    sum_count[bin0_min, bin1_max] += inv_area * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                    update_2d_accumulator(out_data, bin0_min, bin1_min, value, inv_area * delta_down)
+                    update_2d_accumulator(out_data, bin0_min, bin1_max, value, inv_area * delta_up)
                     for j in range(bin1_min + 1, bin1_max):
-                        sum_count[bin0_min, j] += inv_area
-                        sum_data[bin0_min, j] += data * (inv_area) ** coef_power
+                        update_2d_accumulator(out_data, bin0_min, j, value, inv_area)
 
             else:
                 # spread on 2 or more bins in dim 0
@@ -840,14 +848,12 @@ def histoBBox2d_ng(weights,
                     inv_area = 1.0 / (fbin0_max - fbin0_min)
                     
                     delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
-                    sum_count[bin0_min, bin1_min] += inv_area * delta_left
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left) ** coef_power
+                    update_2d_accumulator(out_data, bin0_min, bin1_min, value, inv_area * delta_left)
+
                     delta_right = fbin0_max - (<acc_t> bin0_max)
-                    sum_count[bin0_max, bin1_min] += inv_area * delta_right
-                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right) ** coef_power
+                    update_2d_accumulator(out_data, bin0_max, bin1_min, value, inv_area * delta_right)
                     for i in range(bin0_min + 1, bin0_max):
-                            sum_count[i, bin1_min] += inv_area
-                            sum_data[i, bin1_min] += data * (inv_area) ** coef_power
+                            update_2d_accumulator(out_data, i, bin1_min, value, inv_area)
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
                     inv_area = 1.0 / (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
@@ -856,45 +862,44 @@ def histoBBox2d_ng(weights,
                     delta_right = fbin0_max - (<acc_t> bin0_max)
                     delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
                     delta_up = fbin1_max - (<acc_t> bin1_max)
-                                        
-                    sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left * delta_down) ** coef_power
-
-                    sum_count[bin0_min, bin1_max] += inv_area * delta_left * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_left * delta_up) ** coef_power
-
-                    sum_count[bin0_max, bin1_min] += inv_area * delta_right * delta_down
-                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right * delta_down) ** coef_power
-
-                    sum_count[bin0_max, bin1_max] += inv_area * delta_right * delta_up
-                    sum_data[bin0_max, bin1_max] += data * (inv_area * delta_right * delta_up) ** coef_power
+                    
+                    update_2d_accumulator(out_data, bin0_min, bin1_min, value,  inv_area * delta_left * delta_down)                    
+                    update_2d_accumulator(out_data, bin0_min, bin1_max, value, inv_area * delta_left * delta_up)
+                    update_2d_accumulator(out_data, bin0_max, bin1_min, value, inv_area * delta_right * delta_down)
+                    update_2d_accumulator(out_data, bin0_max, bin1_max, value, inv_area * delta_right * delta_up)
                     for i in range(bin0_min + 1, bin0_max):
-                            sum_count[i, bin1_min] += inv_area * delta_down
-                            sum_data[i, bin1_min] += data * (inv_area * delta_down) ** coef_power
-                            for j in range(bin1_min + 1, bin1_max):
-                                sum_count[i, j] += inv_area
-                                sum_data[i, j] += data * (inv_area) ** coef_power
-                            sum_count[i, bin1_max] += inv_area * delta_up
-                            sum_data[i, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                        update_2d_accumulator(out_data, i, bin1_min, value, inv_area * delta_down)
+                        for j in range(bin1_min + 1, bin1_max):
+                            update_2d_accumulator(out_data, i, j, value, inv_area)
+                        update_2d_accumulator(out_data, i, bin1_max, value, inv_area * delta_up)
                     for j in range(bin1_min + 1, bin1_max):
-                            sum_count[bin0_min, j] += inv_area * delta_left
-                            sum_data[bin0_min, j] += data * (inv_area * delta_left) ** coef_power
-
-                            sum_count[bin0_max, j] += inv_area * delta_right
-                            sum_data[bin0_max, j] += data * (inv_area * delta_right) ** coef_power
-
+                        update_2d_accumulator(out_data, bin0_min, j, value, inv_area * delta_left)
+                        update_2d_accumulator(out_data, bin0_max, j, value, inv_area * delta_right)
+                        
         for i in range(bins0):
             for j in range(bins1):
-                if sum_count[i, j] > epsilon:
-                    out_merge[i, j] = sum_data[i, j] / sum_count[i, j] / normalization_factor
+                norm = out_data[i, j, 2]
+                if norm > 0.0:
+                    out_intensity[i, j] = out_data[i, j, 0] / norm
+                    if do_variance:
+                        out_error[i, j] = sqrt(out_data[i, j, 1]) / norm
                 else:
-                    out_merge[i, j] = cdummy
+                    out_intensity[i, j] = empty
+                    if do_variance:
+                        out_error[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-    return (numpy.asarray(out_merge).T,
-            bin_centers0,
-            bin_centers1,
-            numpy.asarray(sum_data).T, 
-            numpy.asarray(sum_count).T)
+    if do_variance:
+        result = Integrate2dWithErrorResult(numpy.asarray(out_intensity).T,
+                                            numpy.asarray(out_error).T,
+                                            bin_centers0, 
+                                            bin_centers1,
+                                            numpy.asarray(out_data).view(dtype=prop_d).T)
+    else:
+        result = Integrate2dResult(numpy.asarray(out_intensity).T,
+                                   bin_centers0, 
+                                   bin_centers1,
+                                   numpy.asarray(out_data).view(dtype=prop_d).T)
 
+    return result 

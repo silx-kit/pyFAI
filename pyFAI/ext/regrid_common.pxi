@@ -46,7 +46,7 @@ import numpy
 # Imports at the C level
 from isnan cimport isnan
 from cython cimport floating
-from libc.math cimport fabs, M_PI
+from libc.math cimport fabs, M_PI, sqrt
 cimport numpy as cnp
 
 # How position are stored
@@ -196,3 +196,20 @@ cdef inline preproc_t preproc_value(floating data,
     result.variance = variance
     result.norm = norm
     return result
+
+
+cdef void update_2d_accumulator(acc_t[:, :, ::1] out_data,
+                                int bin0,
+                                int bin1,
+                                preproc_t value,
+                                double weight=1.0) nogil:
+    """Update a 2D array at given position with the proper values 
+    
+    :param out_data: 2D+1 accululator
+    :param bin0, bin1: where to assign data 
+    :return: Nothing
+    """
+    out_data[bin0, bin1, 0] += value.signal * weight
+    out_data[bin0, bin1, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin0, bin1, 2] += value.norm * weight
+    out_data[bin0, bin1, 3] += weight
