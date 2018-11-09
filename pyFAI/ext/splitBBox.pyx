@@ -24,12 +24,12 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
+include "regrid_common.pxi"
 
 """Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done on the pixel's bounding box similar to fit2D
 """
-include "regrid_common.pxi"
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"

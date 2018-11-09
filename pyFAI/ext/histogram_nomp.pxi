@@ -29,7 +29,7 @@
 """Re-implementation of numpy histograms without OpenMP"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "08/11/2018"
+__date__ = "09/11/2018"
 __license__ = "MIY"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -42,8 +42,8 @@ logger = logging.getLogger(__name__ + "_nomp")
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def histogram(numpy.ndarray pos,
-              numpy.ndarray weights,
+def histogram(cnp.ndarray pos,
+              cnp.ndarray weights,
               int bins=100,
               bin_range=None,
               pixelSize_in_Pos=None,
@@ -121,10 +121,10 @@ def histogram(numpy.ndarray pos,
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def histogram2d(numpy.ndarray pos0,
-                numpy.ndarray pos1,
+def histogram2d(cnp.ndarray pos0,
+                cnp.ndarray pos1,
                 bins,
-                numpy.ndarray weights,
+                cnp.ndarray weights,
                 split=False,
                 nthread=None,
                 double empty=0.0,
@@ -208,8 +208,8 @@ def histogram2d(numpy.ndarray pos0,
 # @cython.cdivision(True)
 # @cython.boundscheck(False)
 # @cython.wraparound(False)
-def histogram_preproc(pos,
-                      weights,
+def histogram_preproc(cnp.ndarray pos,
+                      cnp.ndarray weights,
                       int bins=100,
                       bin_range=None,
                       pixelSize_in_Pos=None,
@@ -303,10 +303,10 @@ def histogram_preproc(pos,
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def histogram2d_preproc(pos0,
-                        pos1,
+def histogram2d_preproc(cnp.ndarray pos0 not None,
+                        cnp.ndarray pos1 not None,
                         bins,
-                        weights,
+                        cnp.ndarray weights not None,
                         split=False,
                         nthread=None,
                         double empty=0.0,
@@ -407,10 +407,10 @@ def histogram2d_preproc(pos0,
                                             numpy.asarray(out_error),
                                             bin_centers0, 
                                             bin_centers1,
-                                            numpy.recarray(shape=(bins0, bins1), dtype=prop_d, buf=out_data))
+                                            numpy.asarray(out_data).view(dtype=prop_d))
     else:
         result = Integrate2dResult(numpy.asarray(out_signal),
                                    bin_centers0, 
                                    bin_centers1,
-                                   numpy.recarray(shape=(bins0, bins1), dtype=prop_d, buf=out_data))
+                                   numpy.asarray(out_data).view(dtype=prop_d))
     return result

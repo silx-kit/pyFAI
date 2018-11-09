@@ -320,7 +320,7 @@ class HistoBBox1d(object):
         # just recycle the outmax array
         outmax[:] = 0
 
-        lut_nbytes = nnz * (sizeof(cnp.int32_t) + sizeof(numpy.float32_t))
+        lut_nbytes = nnz * (sizeof(cnp.int32_t) + sizeof(cnp.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -445,7 +445,7 @@ class HistoBBox1d(object):
         # just recycle the outmax array
         outmax[:] = 0
 
-        lut_nbytes = nnz * (sizeof(cnp.int32_t) + sizeof(numpy.float32_t))
+        lut_nbytes = nnz * (sizeof(cnp.int32_t) + sizeof(cnp.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
