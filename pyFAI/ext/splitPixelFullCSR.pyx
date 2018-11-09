@@ -24,14 +24,15 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-
+include "regrid_common.pxi"
 
 """Full pixel Splitting implemented using Sparse-matrix Dense-Vector multiplication,
 Sparse matrix represented using the CompressedSparseRow.
 """
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/11/2018"
+__date__ = "09/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -45,9 +46,6 @@ import numpy
 cimport numpy
 from libc.math cimport fabs, floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
-
-from regrid_common import *
-from regrid_common cimport *
 
 from ..utils import crc32
 from ..utils.decorators import deprecated

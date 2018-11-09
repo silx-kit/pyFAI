@@ -29,13 +29,13 @@
 """Selector for OpenMP enabled or not histogram functions"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "08/11/2018"
+__date__ = "09/11/2018"
 __license__ = "MIT"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-from .regrid_common import *
-from .regrid_common cimport *
+
+include "regrid_common.pxi"
 
 IF HAVE_OPENMP:
     include "histogram_omp.pxi"

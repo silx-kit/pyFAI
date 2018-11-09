@@ -29,10 +29,11 @@
 multiplication.
 Sparse matrix represented using the CompressedSparseRow.
 """
+include "regrid_common.pxi"
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/11/2018"
+__date__ = "09/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -46,8 +47,6 @@ cimport numpy
 from libc.math cimport fabs, floor
 from libc.stdio cimport printf
 
-from .regrid_common import *
-from .regrid_common cimport *
 
 from ..utils import crc32
 from ..utils.decorators import deprecated

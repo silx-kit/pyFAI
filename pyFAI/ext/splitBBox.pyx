@@ -29,15 +29,13 @@
 
 Splitting is done on the pixel's bounding box similar to fit2D
 """
+include "regrid_common.pxi"
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/11/2018"
+__date__ = "09/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
-
-from .preproc cimport preproc_value
-from .regrid_common import *
-from .regrid_common cimport *
 
 import logging
 logger = logging.getLogger(__name__)

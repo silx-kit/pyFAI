@@ -30,9 +30,11 @@
 Splitting is done on the pixel's bounding box like fit2D,
 reverse implementation based on a sparse matrix multiplication
 """
+include "regrid_common.pxi"
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/11/2018"
+__date__ = "09/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -43,8 +45,6 @@ import logging
 logger = logging.getLogger(__name__)
 from cython.parallel import prange
 import numpy
-from .regrid_common import *
-from .regrid_common cimport *
 from ..utils import crc32
 from ..utils.decorators import deprecated
 

@@ -24,6 +24,8 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
+include "regrid_common.pxi"
+include "sparse_common.pxi"
 
 """Calculates histograms of pos0 (tth) weighted by Intensity
 
@@ -33,18 +35,15 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/11/2018"
+__date__ = "09/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
 cimport cython
 from cython cimport floating
 import numpy
-cimport numpy as cnp
 from libc.math cimport fabs, ceil, floor
 
-from .regrid_common import *
-from .regrid_common cimport get_bin_number, acc_t, position_t, data_t, mask_t, pi
 
 cdef inline floating area4(floating a0,
                            floating a1,
