@@ -33,7 +33,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/11/2018"
+__date__ = "12/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -602,12 +602,12 @@ def histoBBox2d_ng(weights,
                    bint chiDiscAtPi=1,
                    float empty=0.0,
                    double normalization_factor=1.0,
-                   int coef_power=1):
+                   ):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
-    Splitting is done on the pixel's bounding box like fit2D
-
+    Splitting is done on the pixel's bounding box, similar to fit2D
+    New implementation with variance propagation
 
     :param weights: array with intensities
     :param pos0: 1D array with pos0: tth or q_vect
@@ -628,10 +628,9 @@ def histoBBox2d_ng(weights,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
-    :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
 
 
-    :return: I, bin_centers0, bin_centers1, weighted histogram(2D), unweighted histogram (2D)
+    :return: named tuple with "signal", ["error"], "bins0", "bins1", "propagated"
     """
 
     cdef ssize_t bins0, bins1, i, j, idx
@@ -681,7 +680,7 @@ def histoBBox2d_ng(weights,
 
     if variance is not None:
         assert variance.size == size, "variance size"
-        do_varance = True
+        do_variance = True
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
         out_error = numpy.zeros((bins0, bins1), dtype=data_d)
         

@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/11/2018"
+__date__ = "12/11/2018"
 
 import unittest
 import numpy
@@ -47,6 +47,7 @@ logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
 from ..utils import mathutil
+from ..ext import splitBBox
 
 
 class TestSplitPixel(unittest.TestCase):
@@ -131,24 +132,65 @@ class TestSplitBBoxNg(unittest.TestCase):
     the variance"""
     @classmethod
     def setUpClass(cls):
-        super(TestSplitPixel, cls).setUpClass()
-        det = Detector.factory("Pilatus 100k)")
+        super(TestSplitBBoxNg, cls).setUpClass()
+        det = Detector.factory("Pilatus 100k")
         shape = det.shape
-        img = numpy.random.randint(0, 6500, det.size).reshape(shape)
+        img = numpy.random.randint(0, 65000, numpy.prod(shape))
         ai = AzimuthalIntegrator(1, detector=det)
-#         tth = ai.twoThetaArray(shape)
-#         dtth = ai.delta_array(shape, "2th_rad")
-#         chi = ai.
+        ai.wavelength = 1e-10
+        tth = chi = ai.center_array(shape, unit="2th_rad", scale=False).ravel()
+        dtth = ai.delta_array(shape, unit="2th_rad").ravel()
+        chi = ai.chiArray(shape).ravel()
+        dchi = ai.deltaChi(shape).ravel()
+
         cls.results = {}
+        # Legacy implementation:
+        cls.results["histoBBox2d_legacy"] = splitBBox.histoBBox2d(img,
+                                                                  tth,
+                                                                  dtth,
+                                                                  chi,
+                                                                  dchi,
+                                                                  )
+        cls.results["histoBBox2d_ng"] = splitBBox.histoBBox2d_ng(img,
+                                                                 tth,
+                                                                 dtth,
+                                                                 chi,
+                                                                 dchi,
+                                                                 variance=img)
 
     @classmethod
     def tearDownClass(cls):
-        super(TestSplitPixel, cls).tearDownClass()
+        super(TestSplitBBoxNg, cls).tearDownClass()
         cls.results = None
 
-    def test_split_bbox(self):
-        # TODO
-        pass
+    def test_split_bbox_2d(self):
+        # radial position:
+        tth_legacy = self.results["histoBBox2d_legacy"][1]
+        tth_ng = self.results["histoBBox2d_legacy"][1]
+        self.assertEqual(abs(tth_legacy - tth_ng).max(), 0, "radial position is the same")
+
+        # azimuthal position:
+        chi_legacy = self.results["histoBBox2d_legacy"][2]
+        chi_ng = self.results["histoBBox2d_legacy"][2]
+        self.assertEqual(abs(chi_legacy - chi_ng).max(), 0, "azimuthal position is the same")
+
+        # pixel count:
+        count_legacy = self.results["histoBBox2d_legacy"][4]
+        count_ng = self.results["histoBBox2d_ng"][4]["count"]
+        self.assertEqual(abs(count_legacy - count_ng).max(), 0, "count is the same")
+        # same for normalisation ... in this case
+        count_ng = self.results["histoBBox2d_ng"][4]["norm"]
+        self.assertEqual(abs(count_legacy - count_ng).max(), 0, "norm is old-count")
+
+        # Weighted signal:
+        weighted_legacy = self.results["histoBBox2d_legacy"][3]
+        signal = self.results["histoBBox2d_ng"][4]["signal"]
+        self.assertEqual(abs(signal - weighted_legacy).max(), 0, "Weighted is the same")
+
+        # resulting intensity validation
+        int_legacy = self.results["histoBBox2d_legacy"][0]
+        int_ng = self.results["histoBBox2d_ng"][0]
+        self.assertEqual(abs(int_legacy - int_ng).max(), 0, "intensity is the same")
 
 
 def suite():
