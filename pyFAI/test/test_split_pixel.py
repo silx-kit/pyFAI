@@ -138,7 +138,7 @@ class TestSplitBBoxNg(unittest.TestCase):
         img = numpy.random.randint(0, 65000, numpy.prod(shape))
         ai = AzimuthalIntegrator(1, detector=det)
         ai.wavelength = 1e-10
-        tth = chi = ai.center_array(shape, unit="2th_rad", scale=False).ravel()
+        tth = ai.center_array(shape, unit="2th_rad", scale=False).ravel()
         dtth = ai.delta_array(shape, unit="2th_rad").ravel()
         chi = ai.chiArray(shape).ravel()
         dchi = ai.deltaChi(shape).ravel()
