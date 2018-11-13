@@ -29,7 +29,7 @@
 """Re-implementation of numpy histograms without OpenMP"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "09/11/2018"
+__date__ = "13/11/2018"
 __license__ = "MIY"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -407,10 +407,10 @@ def histogram2d_preproc(cnp.ndarray pos0 not None,
                                             numpy.asarray(out_error),
                                             bin_centers0, 
                                             bin_centers1,
-                                            numpy.asarray(out_data).view(dtype=prop_d))
+                                            numpy.asarray(out_data).view(dtype=prop_d).reshape(bins0, bins1))
     else:
         result = Integrate2dResult(numpy.asarray(out_signal),
                                    bin_centers0, 
                                    bin_centers1,
-                                   numpy.asarray(out_data).view(dtype=prop_d))
+                                   numpy.asarray(out_data).view(dtype=prop_d).reshape(bins0, bins1))
     return result

@@ -33,7 +33,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/11/2018"
+__date__ = "13/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -894,11 +894,11 @@ def histoBBox2d_ng(weights,
                                             numpy.asarray(out_error).T,
                                             bin_centers0, 
                                             bin_centers1,
-                                            numpy.asarray(out_data).view(dtype=prop_d).T)
+                                            numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
     else:
         result = Integrate2dResult(numpy.asarray(out_intensity).T,
                                    bin_centers0, 
                                    bin_centers1,
-                                   numpy.asarray(out_data).view(dtype=prop_d).T)
+                                   numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
 
     return result 

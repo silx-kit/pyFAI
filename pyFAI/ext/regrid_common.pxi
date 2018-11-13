@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/11/2018"
+__date__ = "13/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -198,6 +198,7 @@ cdef inline preproc_t preproc_value(floating data,
     return result
 
 
+@cython.boundscheck(False)
 cdef void update_2d_accumulator(acc_t[:, :, ::1] out_data,
                                 int bin0,
                                 int bin1,

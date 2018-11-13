@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2018"
+__date__ = "13/11/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3755,24 +3755,35 @@ class AzimuthalIntegrator(Geometry):
                 dchi = self.deltaChi(shape)
                 pos0 = self.array_from_unit(shape, "center", unit, scale=False)
                 dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
-                I, bins_rad, bins_azim, sum_, count = splitBBox.histoBBox2d(weights=data,
-                                                                            pos0=pos0,
-                                                                            delta_pos0=dpos0,
-                                                                            pos1=chi,
-                                                                            delta_pos1=dchi,
-                                                                            bins=(npt_rad, npt_azim),
-                                                                            pos0Range=radial_range,
-                                                                            pos1Range=azimuth_range,
-                                                                            dummy=dummy,
-                                                                            delta_dummy=delta_dummy,
-                                                                            mask=mask,
-                                                                            dark=dark,
-                                                                            flat=flat,
-                                                                            solidangle=solidangle,
-                                                                            polarization=polarization,
-                                                                            normalization_factor=normalization_factor,
-                                                                            chiDiscAtPi=self.chiDiscAtPi,
-                                                                            empty=dummy if dummy is not None else self._empty)
+                res = splitBBox.histoBBox2d_ng(weights=data,
+                                               pos0=pos0,
+                                               delta_pos0=dpos0,
+                                               pos1=chi,
+                                               delta_pos1=dchi,
+                                               bins=(npt_rad, npt_azim),
+                                               pos0Range=radial_range,
+                                               pos1Range=azimuth_range,
+                                               dummy=dummy,
+                                               delta_dummy=delta_dummy,
+                                               mask=mask,
+                                               dark=dark,
+                                               flat=flat,
+                                               solidangle=solidangle,
+                                               polarization=polarization,
+                                               normalization_factor=normalization_factor,
+                                               chiDiscAtPi=self.chiDiscAtPi,
+                                               empty=dummy if dummy is not None else self._empty,
+                                               variance=variance)
+                I = res.signal
+                bins_azim = res.bins0
+                bins_rad = res.bins1
+                prop2d = res.propagated
+                signal2d = prop2d["signal"]
+                norm2d = prop2d["norm"]
+                count = prop2d["count"]
+                if variance is not None:
+                    sigma = res.error
+                    var2d = prop2d["variance"]
 
         if (I is None):
             logger.debug("integrate2d uses cython implementation")
@@ -3814,8 +3825,6 @@ class AzimuthalIntegrator(Geometry):
                            # dark_variance=None,
                            # poissonian=False,
                            dtype=numpy.float32)
-            print(prep.shape)
-
             if ("cython" in method):
                 if histogram is None:
                     logger.warning("Cython histogram is not available;"
@@ -3833,12 +3842,12 @@ class AzimuthalIntegrator(Geometry):
                     bins_azim = res.bins0
                     bins_rad = res.bins1
                     prop2d = res.propagated
-                    signal2d = prop2d[..., "signal"]
-                    norm2d = prop2d[..., "norm"]
-                    count = prop2d[..., "count"]
+                    signal2d = prop2d["signal"]
+                    norm2d = prop2d["norm"]
+                    count = prop2d["count"]
                     if variance is not None:
                         sigma = res.error
-                        var2d = prop2d[..., "variance"]
+                        var2d = prop2d["variance"]
 
         if I is None:
             logger.debug("integrate2d uses Numpy implementation")
