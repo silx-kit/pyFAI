@@ -106,7 +106,7 @@ def histoBBox1d(weights,
         data_t[::1] cdata, cflat, cdark, cpolarization, csolidangle
         position_t[::1] cpos0, dpos0, cpos1, dpos1, cpos0_lower, cpos0_upper
         mask_t[::1] cmask
-        acc_t inv_area, delta_right, delta_left, delta_up, delta_down 
+        acc_t inv_area, delta_right, delta_left 
         
     cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
@@ -579,9 +579,9 @@ def histoBBox2d(weights,
             numpy.asarray(sum_count).T)
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def histoBBox2d_ng(weights,
                    pos0,
                    delta_pos0,
@@ -671,7 +671,7 @@ def histoBBox2d_ng(weights,
         position_t min0, max0, min1, max1, delta0, delta1
         position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
         position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max, 
-        acc_t data, norm
+        acc_t norm
         acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
         ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
         bint check_mask = False, check_dummy = False, do_variance = False

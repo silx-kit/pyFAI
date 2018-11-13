@@ -3729,21 +3729,33 @@ class AzimuthalIntegrator(Geometry):
             else:
                 logger.debug("integrate2d uses SplitPixel implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
-                I, bins_rad, bins_azim, sum_, count = splitPixel.fullSplit2D(pos=pos,
-                                                                             weights=data,
-                                                                             bins=(npt_rad, npt_azim),
-                                                                             pos0Range=radial_range,
-                                                                             pos1Range=azimuth_range,
-                                                                             dummy=dummy,
-                                                                             delta_dummy=delta_dummy,
-                                                                             mask=mask,
-                                                                             dark=dark,
-                                                                             flat=flat,
-                                                                             solidangle=solidangle,
-                                                                             polarization=polarization,
-                                                                             normalization_factor=normalization_factor,
-                                                                             chiDiscAtPi=self.chiDiscAtPi,
-                                                                             empty=dummy if dummy is not None else self._empty)
+                res = splitPixel.pseudoSplit2D_ng(pos=pos,
+                                                  weights=data,
+                                                  bins=(npt_rad, npt_azim),
+                                                  pos0Range=radial_range,
+                                                  pos1Range=azimuth_range,
+                                                  dummy=dummy,
+                                                  delta_dummy=delta_dummy,
+                                                  mask=mask,
+                                                  dark=dark,
+                                                  flat=flat,
+                                                  solidangle=solidangle,
+                                                  polarization=polarization,
+                                                  normalization_factor=normalization_factor,
+                                                  chiDiscAtPi=self.chiDiscAtPi,
+                                                  empty=dummy if dummy is not None else self._empty,
+                                                  variance=variance)
+                I = res.signal
+                bins_azim = res.bins0
+                bins_rad = res.bins1
+                prop2d = res.propagated
+                signal2d = prop2d["signal"]
+                norm2d = prop2d["norm"]
+                count = prop2d["count"]
+                if variance is not None:
+                    sigma = res.error
+                    var2d = prop2d["variance"]
+
         if (I is None) and ("bbox" in method):
             if splitBBox is None:
                 logger.warning("splitBBox is not available;"
