@@ -862,7 +862,7 @@ def histoBBox2d_ng(weights,
                     delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
                     delta_up = fbin1_max - (<acc_t> bin1_max)
                     
-                    update_2d_accumulator(out_data, bin0_min, bin1_min, value,  inv_area * delta_left * delta_down)                    
+                    update_2d_accumulator(out_data, bin0_min, bin1_min, value, inv_area * delta_left * delta_down)
                     update_2d_accumulator(out_data, bin0_min, bin1_max, value, inv_area * delta_left * delta_up)
                     update_2d_accumulator(out_data, bin0_max, bin1_min, value, inv_area * delta_right * delta_down)
                     update_2d_accumulator(out_data, bin0_max, bin1_max, value, inv_area * delta_right * delta_up)

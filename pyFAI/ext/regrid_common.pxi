@@ -87,6 +87,7 @@ cdef:
         data_t signal
         data_t variance
         data_t norm
+        data_t count
  
     float pi = <float> M_PI
     float piover2 = <float> (pi * 0.5)
@@ -159,7 +160,7 @@ cdef inline preproc_t preproc_value(floating data,
 
     """
     cdef:
-        floating signal, norm
+        floating signal, norm, count
         preproc_t result
         bint is_valid
     signal = data
@@ -184,17 +185,23 @@ cdef inline preproc_t preproc_value(floating data,
             if dark_variance:
                 variance = variance + dark_variance
         norm = normalization_factor * flat * polarization * solidangle * absorption
+        
         if (isnan(signal) or isnan(norm) or isnan(variance) or (norm == 0)):
             signal = 0.0
             variance = 0.0
             norm = 0.0
+            count = 0.0
+        else:
+            count = 1.0
     else:
         signal = 0.0
         variance = 0.0
         norm = 0.0
+        count = 0.0
     result.signal = signal
     result.variance = variance
     result.norm = norm
+    result.count = count
     return result
 
 
@@ -213,4 +220,4 @@ cdef void update_2d_accumulator(acc_t[:, :, ::1] out_data,
     out_data[bin0, bin1, 0] += value.signal * weight
     out_data[bin0, bin1, 1] += value.variance * weight * weight  # Important for variance propagation
     out_data[bin0, bin1, 2] += value.norm * weight
-    out_data[bin0, bin1, 3] += weight
+    out_data[bin0, bin1, 3] += value.count * weight

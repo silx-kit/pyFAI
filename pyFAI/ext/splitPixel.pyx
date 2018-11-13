@@ -164,14 +164,14 @@ def fullSplit1D(cnp.ndarray pos not None,
         acc_t[::1] buffer = numpy.zeros(bins, dtype=acc_d)
 
         data_t cdummy = 0, cddummy = 0, data = 0
-        position_t delta_right = 0, delta_left = 0, inv_area = 0
+        position_t inv_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
-        position_t area_pixel = 0, sum_area = 0, sub_area = 0, dpos = 0, fbin0_min = 0, fbin0_max = 0
+        position_t area_pixel = 0, sum_area = 0, sub_area = 0, dpos = 0
         position_t a0 = 0, b0 = 0, c0 = 0, d0 = 0, max0 = 0, min0 = 0, a1 = 0, b1 = 0, c1 = 0, d1 = 0, max1 = 0, min1 = 0
         double epsilon = 1e-10
 
-        bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
-        int i = 0, b = 0, idx = 0, bin = 0, bin0_max = 0, bin0_min = 0
+        bint check_pos1=False, check_mask=False, check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
+        int i = 0, idx = 0, bin0_max = 0, bin0_min = 0
 
     if mask is not None:
         check_mask = True
@@ -417,7 +417,7 @@ def fullSplit2D(cnp.ndarray pos not None,
         data_t[:, ::1] merged = numpy.zeros((bins0, bins1), dtype=data_d)
         mask_t[:] cmask
         data_t[:] cflat, cdark, cpolarization, csolidangle
-        bint check_mask = False, do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
+        bint check_mask = False, check_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
         data_t cdummy = 0, cddummy = 0, data = 0
         position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, delta_right = 0, delta_left = 0, delta_up = 0, delta_down = 0, inv_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
@@ -724,20 +724,20 @@ def pseudoSplit2D_ng(pos not None,
     cdef:
         position_t[:, :, ::1] cpos = numpy.ascontiguousarray(pos, dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        acc_t[:, ::1] sum_data = numpy.zeros((bins0, bins1), dtype=acc_d)
-        acc_t[:, ::1] sum_count = numpy.zeros((bins0, bins1), dtype=acc_d)
-        data_t[:, ::1] merged = numpy.zeros((bins0, bins1), dtype=data_d)
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
+        data_t[:, ::1] out_error, out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
         mask_t[:] cmask
-        data_t[:] cflat, cdark, cpolarization, csolidangle
-        bint check_mask = False, do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
-        data_t cdummy = 0, cddummy = 0, data = 0
+        data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
+        bint check_mask = False, check_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_variance = False
+        data_t cdummy = 0, cddummy = 0, scale = 1
         position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, delta_right = 0, delta_left = 0, delta_up = 0, delta_down = 0, inv_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
-        position_t area_pixel = 0, fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
+        position_t fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
         position_t a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
-        position_t epsilon = 1e-10
-        position_t delta0, delta1
+        position_t center0 = 0.0, center1 = 0.0, area, width, height,   
+        position_t delta0, delta1, new_width, new_height, new_min0, new_max0, new_min1, new_max1
         int bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
+        acc_t norm
 
     if pos0Range is not None and len(pos0Range) == 2:
         pos0_min = min(pos0Range)
@@ -770,6 +770,12 @@ def pseudoSplit2D_ng(pos not None,
         check_dummy = False
         cdummy = <data_t> float(empty)
         cddummy = 0.0
+
+    if variance is not None:
+        assert variance.size == size, "variance size"
+        do_variance = True
+        cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
+        out_error = numpy.zeros((bins0, bins1), dtype=data_d)
 
     if mask is not None:
         check_mask = True
@@ -811,12 +817,36 @@ def pseudoSplit2D_ng(pos not None,
             max0 = max(a0, b0, c0, d0)
             min1 = min(a1, b1, c1, d1)
             max1 = max(a1, b1, c1, d1)
-
-            # Recalculate here min0, max0, min1, max1 based on the actual area of ABCD and the width/height ratio
-
+            
             if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):
                     continue
 
+            # Recalculate here min0, max0, min1, max1 based on the actual area of ABCD and the width/height ratio
+            center0 = (a0 + b0 + c0 + d0) / 4.0
+            center1 = (a1 + b1 + c1 + d1) / 4.0
+            area = fabs(area4(a0, a1, b0, b1, c0, c1, d0, d1))
+            width = (max1 - min1)
+            height = (max0 - min0)
+            if (width != 0) and (height != 0):
+                new_height = sqrt(area * height / width)
+                new_width = new_height * width / height
+                
+                new_min0 = center0 - new_width / 2.0
+                new_max0 = center0 + new_width / 2.0
+                new_min1 = center1 - new_height / 2.0
+                new_max1 = center1 + new_height / 2.0
+            if (new_min0 < min0) or (new_max0 > max0) or (new_min0 < min0) or (new_max0 > max0):
+                with gil:
+                    print(min0, "->", new_min0, ";", 
+                          max0, "->", new_max0, ";",
+                          max1, "->", new_min1, ";",
+                          max1, "->", new_max1,)
+            else:
+                min0 = new_min0
+                max0 = new_max0
+                min1 = new_min1
+                max1 = new_max1
+                
             if not allow_pos0_neg:
                 if min0 < 0.0:
                     min0 = 0.0
@@ -837,28 +867,34 @@ def pseudoSplit2D_ng(pos not None,
                                   absorption=1.0,
                                   mask=cmask[idx] if check_mask else 0,
                                   dummy=cdummy,
-                                  delta_dummy=ddummy,
+                                  delta_dummy=cddummy,
                                   check_dummy=check_dummy,
                                   normalization_factor=normalization_factor,
                                   dark_variance=0.0)
 
-            if value.norm == 0.0:
+            if value.count == 0.0:
                 continue
 
-
+            scale = 1.0
             if min0 < pos0_min:
-                data = data * (pos0_min - min0) / (max0 - min0)
+                scale = scale * (pos0_min - min0) / (max0 - min0)
                 min0 = pos0_min
             if min1 < pos1_min:
-                data = data * (pos1_min - min1) / (max1 - min1)
+                scale = scale * (pos1_min - min1) / (max1 - min1)
                 min1 = pos1_min
             if max0 > pos0_maxin:
-                data = data * (max0 - pos0_maxin) / (max0 - min0)
+                scale = scale * (max0 - pos0_maxin) / (max0 - min0)
                 max0 = pos0_maxin
             if max1 > pos1_maxin:
-                data = data * (max1 - pos1_maxin) / (max1 - min1)
+                scale = scale * (max1 - pos1_maxin) / (max1 - min1)
                 max1 = pos1_maxin
 
+            if scale != 1.0:
+                value.signal *= scale
+                value.norm *= scale
+                value.variance *= scale * scale
+                value.count *= scale
+                
             # Treat data for pixel on chi discontinuity
             if ((max1 - min1) / delta1) > (bins1 / 2.0):
                 if pos1_maxin - max1 > min1 - pos1_min:
@@ -878,97 +914,91 @@ def pseudoSplit2D_ng(pos not None,
             bin1_min = < int > fbin1_min
             bin1_max = < int > fbin1_max
 
+            fbin0_min = get_bin_number(min0, pos0_min, delta0)
+            fbin0_max = get_bin_number(max0, pos0_min, delta0)
+            fbin1_min = get_bin_number(min1, pos1_min, delta1)
+            fbin1_max = get_bin_number(max1, pos1_min, delta1)
+
+            bin0_min = <ssize_t> fbin0_min
+            bin0_max = <ssize_t> fbin0_max
+            bin1_min = <ssize_t> fbin1_min
+            bin1_max = <ssize_t> fbin1_max
+
             if bin0_min == bin0_max:
+                # No spread along dim0
                 if bin1_min == bin1_max:
                     # All pixel is within a single bin
-                    sum_count[bin0_min, bin1_min] += 1.0
-                    sum_data[bin0_min, bin1_min] += data
+                    update_2d_accumulator(out_data, bin0_min, bin1_min, value, 1.0)
                 else:
-                    # spread on more than 2 bins
-                    area_pixel = fbin1_max - fbin1_min
+                    # spread on 2 or more bins in dim1 
                     delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
-                    delta_up = fbin1_max - (<acc_t> bin1_max)
-                    inv_area = 1.0 / area_pixel
+                    delta_up = fbin1_max - (bin1_max)
+                    inv_area = 1.0 / (fbin1_max - fbin1_min)
 
-                    sum_count[bin0_min, bin1_min] += inv_area * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_down) ** coef_power
-
-                    sum_count[bin0_min, bin1_max] += inv_area * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_up) ** coef_power
-                    # if bin1_min + 1 < bin1_max:
+                    update_2d_accumulator(out_data, bin0_min, bin1_min, value, inv_area * delta_down)
+                    update_2d_accumulator(out_data, bin0_min, bin1_max, value, inv_area * delta_up)
                     for j in range(bin1_min + 1, bin1_max):
-                            sum_count[bin0_min, j] += inv_area
-                            sum_data[bin0_min, j] += data * inv_area ** coef_power
+                        update_2d_accumulator(out_data, bin0_min, j, value, inv_area)
 
             else:
-                # spread on more than 2 bins in dim 0
+                # spread on 2 or more bins in dim 0
                 if bin1_min == bin1_max:
-                    # All pixel fall on 1 bins in dim 1
-                    area_pixel = fbin0_max - fbin0_min
+                    # All pixel fall inside the same bins in dim 1
+                    inv_area = 1.0 / (fbin0_max - fbin0_min)
+                    
                     delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
-                    inv_area = delta_left / area_pixel
-                    sum_count[bin0_min, bin1_min] += inv_area
-                    sum_data[bin0_min, bin1_min] += data * inv_area ** coef_power
+                    update_2d_accumulator(out_data, bin0_min, bin1_min, value, inv_area * delta_left)
+
                     delta_right = fbin0_max - (<acc_t> bin0_max)
-                    inv_area = delta_right / area_pixel
-                    sum_count[bin0_max, bin1_min] += inv_area
-                    sum_data[bin0_max, bin1_min] += data * inv_area ** coef_power
-                    inv_area = 1.0 / area_pixel
+                    update_2d_accumulator(out_data, bin0_max, bin1_min, value, inv_area * delta_right)
                     for i in range(bin0_min + 1, bin0_max):
-                            sum_count[i, bin1_min] += inv_area
-                            sum_data[i, bin1_min] += data * inv_area ** coef_power
+                            update_2d_accumulator(out_data, i, bin1_min, value, inv_area)
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
-                    area_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
-                    delta_left = (<acc_t> (bin0_min + 1.0)) - fbin0_min
-                    delta_right = fbin0_max - (<double> bin0_max)
-                    delta_down = (<acc_t> (bin1_min + 1.0)) - fbin1_min
+                    inv_area = 1.0 / (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
+
+                    delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
+                    delta_right = fbin0_max - (<acc_t> bin0_max)
+                    delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
                     delta_up = fbin1_max - (<acc_t> bin1_max)
-                    inv_area = 1.0 / area_pixel
-
-                    sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left * delta_down) ** coef_power
-
-                    sum_count[bin0_min, bin1_max] += inv_area * delta_left * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_left * delta_up) ** coef_power
-
-                    sum_count[bin0_max, bin1_min] += inv_area * delta_right * delta_down
-                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right * delta_down) ** coef_power
-
-                    sum_count[bin0_max, bin1_max] += inv_area * delta_right * delta_up
-                    sum_data[bin0_max, bin1_max] += data * (inv_area * delta_right * delta_up) ** coef_power
+                    
+                    update_2d_accumulator(out_data, bin0_min, bin1_min, value, inv_area * delta_left * delta_down)
+                    update_2d_accumulator(out_data, bin0_min, bin1_max, value, inv_area * delta_left * delta_up)
+                    update_2d_accumulator(out_data, bin0_max, bin1_min, value, inv_area * delta_right * delta_down)
+                    update_2d_accumulator(out_data, bin0_max, bin1_max, value, inv_area * delta_right * delta_up)
                     for i in range(bin0_min + 1, bin0_max):
-                            sum_count[i, bin1_min] += inv_area * delta_down
-                            sum_data[i, bin1_min] += data * (inv_area * delta_down) ** coef_power
-                            for j in range(bin1_min + 1, bin1_max):
-                                sum_count[i, j] += inv_area
-                                sum_data[i, j] += data * inv_area ** coef_power
-                            sum_count[i, bin1_max] += inv_area * delta_up
-                            sum_data[i, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                        update_2d_accumulator(out_data, i, bin1_min, value, inv_area * delta_down)
+                        for j in range(bin1_min + 1, bin1_max):
+                            update_2d_accumulator(out_data, i, j, value, inv_area)
+                        update_2d_accumulator(out_data, i, bin1_max, value, inv_area * delta_up)
                     for j in range(bin1_min + 1, bin1_max):
-                            sum_count[bin0_min, j] += inv_area * delta_left
-                            sum_data[bin0_min, j] += data * (inv_area * delta_left) ** coef_power
-
-                            sum_count[bin0_max, j] += inv_area * delta_right
-                            sum_data[bin0_max, j] += data * (inv_area * delta_right) ** coef_power
-
-    # with nogil:
+                        update_2d_accumulator(out_data, bin0_min, j, value, inv_area * delta_left)
+                        update_2d_accumulator(out_data, bin0_max, j, value, inv_area * delta_right)
+                        
         for i in range(bins0):
             for j in range(bins1):
-                if sum_count[i, j] > epsilon:
-                    merged[i, j] = sum_data[i, j] / sum_count[i, j] / normalization_factor
+                norm = out_data[i, j, 2]
+                if norm > 0.0:
+                    out_intensity[i, j] = out_data[i, j, 0] / norm
+                    if do_variance:
+                        out_error[i, j] = sqrt(out_data[i, j, 1]) / norm
                 else:
-                    merged[i, j] = cdummy
+                    out_intensity[i, j] = empty
+                    if do_variance:
+                        out_error[i, j] = empty
 
-    bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0,
-                                  pos0_max - 0.5 * delta0,
-                                  bins0)
-    bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1,
-                                  pos1_max - 0.5 * delta1,
-                                  bins1)
+    bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
+    bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
+    if do_variance:
+        result = Integrate2dWithErrorResult(numpy.asarray(out_intensity).T,
+                                            numpy.asarray(out_error).T,
+                                            bin_centers0, 
+                                            bin_centers1,
+                                            numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
+    else:
+        result = Integrate2dResult(numpy.asarray(out_intensity).T,
+                                   bin_centers0, 
+                                   bin_centers1,
+                                   numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
 
-    return (numpy.asarray(merged).T,
-            bin_centers0,
-            bin_centers1,
-            numpy.asarray(sum_data).T,
-            numpy.asarray(sum_count).T)
+    return result 
