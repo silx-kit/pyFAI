@@ -3746,8 +3746,8 @@ class AzimuthalIntegrator(Geometry):
                                                   empty=dummy if dummy is not None else self._empty,
                                                   variance=variance)
                 I = res.signal
-                bins_azim = res.bins0
-                bins_rad = res.bins1
+                bins_azim = res.bins1
+                bins_rad = res.bins0
                 prop2d = res.propagated
                 signal2d = prop2d["signal"]
                 norm2d = prop2d["norm"]
@@ -3787,8 +3787,8 @@ class AzimuthalIntegrator(Geometry):
                                                empty=dummy if dummy is not None else self._empty,
                                                variance=variance)
                 I = res.signal
-                bins_azim = res.bins0
-                bins_rad = res.bins1
+                bins_azim = res.bins1
+                bins_rad = res.bins0
                 prop2d = res.propagated
                 signal2d = prop2d["signal"]
                 norm2d = prop2d["norm"]
@@ -3837,7 +3837,7 @@ class AzimuthalIntegrator(Geometry):
                            # dark_variance=None,
                            # poissonian=False,
                            dtype=numpy.float32)
-            if ("cython" in method):
+            if ("cython" in method) or ("histogram" in method):
                 if histogram is None:
                     logger.warning("Cython histogram is not available;"
                                    " falling back on numpy histogram")
