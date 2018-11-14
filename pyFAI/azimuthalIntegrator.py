@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/11/2018"
+__date__ = "14/11/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3817,7 +3817,7 @@ class AzimuthalIntegrator(Geometry):
             if azimuth_range is not None:
                 # mask *= (pos1 >= min(azimuth_range)) * (pos1 <= max(azimuth_range))
                 mask_azim = numpy.logical_or(pos1 < min(azimuth_range), pos1 > max(azimuth_range))
-                mask = numpy.logical_or(mask, mask_azim)
+                mask = numpy.logical_or(mask.ravel(), mask_azim)
             else:
                 azimuth_range = [pos1.min(), pos1.max() * EPS32]
 
