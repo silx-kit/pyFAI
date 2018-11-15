@@ -256,10 +256,10 @@ class HistoBBox1d(object):
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, 
             position_t min0, max0, fbin0_min, fbin0_max
-            cnp.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0_min, bin0_max, bins = self.bins, size, nnz
+            cnumpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0_min, bin0_max, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            cnp.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
-            cnp.int32_t[::1] indptr, indices
+            cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            cnumpy.int32_t[::1] indptr, indices
             float[::1] data
             position_t[::1] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
             mask_t[::1] cmask
@@ -320,7 +320,7 @@ class HistoBBox1d(object):
         # just recycle the outmax array
         outmax[:] = 0
 
-        lut_nbytes = nnz * (sizeof(cnp.int32_t) + sizeof(cnp.float32_t))
+        lut_nbytes = nnz * (sizeof(cnumpy.int32_t) + sizeof(cnumpy.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -398,10 +398,10 @@ class HistoBBox1d(object):
         '''
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
-            cnp.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0, bins = self.bins, size, nnz
+            cnumpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            cnp.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
-            cnp.int32_t[::1] indptr, indices
+            cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            cnumpy.int32_t[::1] indptr, indices
             float[::1] data
             position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
             mask_t[::1] cmask
@@ -445,7 +445,7 @@ class HistoBBox1d(object):
         # just recycle the outmax array
         outmax[:] = 0
 
-        lut_nbytes = nnz * (sizeof(cnp.int32_t) + sizeof(cnp.float32_t))
+        lut_nbytes = nnz * (sizeof(cnumpy.int32_t) + sizeof(cnumpy.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -520,7 +520,7 @@ class HistoBBox1d(object):
 
         """
         cdef:
-            cnp.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
+            cnumpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
             acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
             data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
@@ -529,7 +529,7 @@ class HistoBBox1d(object):
             data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
             data_t[::1] ccoef = self.data
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            cnp.int32_t[::1] indices = self.indices, indptr = self.indptr
+            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
         assert weights.size == size, "weights size"
 
         if dummy is not None:
@@ -915,9 +915,9 @@ class HistoBBox2d(object):
             position_t[::1] cpos0_inf = self.cpos0_inf
             position_t[::1] cpos1_inf = self.cpos1_inf
             position_t[::1] cpos1_sup = self.cpos1_sup
-            cnp.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            cnp.int32_t[::1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
-            cnp.int32_t[::1] indices
+            cnumpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            cnumpy.int32_t[::1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
+            cnumpy.int32_t[::1] indices
             data_t[::1] data
             mask_t[::1] cmask
             acc_t inv_area, delta_left, delta_right, delta_down, delta_up
@@ -966,7 +966,7 @@ class HistoBBox2d(object):
         self.indptr = numpy.asarray(indptr)
         # Just recycle the outmax array
         outmax[:, :] = 0
-        lut_nbytes = nnz * (sizeof(float) + sizeof(cnp.int32_t)) + bins0 * bins1 * sizeof(cnp.int32_t)
+        lut_nbytes = nnz * (sizeof(float) + sizeof(cnumpy.int32_t)) + bins0 * bins1 * sizeof(cnumpy.int32_t)
 
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
@@ -1139,12 +1139,12 @@ class HistoBBox2d(object):
             float delta1 = self.delta1, pos1_min = self.pos1_min, c1, fbin1, fbin1_max
             int bin0, bins0 = self.bins[0]
             int bin1, bins1 = self.bins[1]
-            cnp.int32_t k, idx, lut_size, i, j, size = self.size, nnz
+            cnumpy.int32_t k, idx, lut_size, i, j, size = self.size, nnz
             bint check_mask
             double[::1] cpos0 = self.cpos0
             double[::1] cpos1 = self.cpos1
-            cnp.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            cnp.int32_t[::1] indptr, indices
+            cnumpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            cnumpy.int32_t[::1] indptr, indices
             float[::1] data
             mask_t[::1] cmask
 
@@ -1176,7 +1176,7 @@ class HistoBBox2d(object):
         self.indptr = numpy.asarray(indptr)
         # Just recycle the outmax array
         outmax[:, :] = 0
-        lut_nbytes = nnz * (sizeof(float) + sizeof(cnp.int32_t)) + bins0 * bins1 * sizeof(cnp.int32_t)
+        lut_nbytes = nnz * (sizeof(float) + sizeof(cnumpy.int32_t)) + bins0 * bins1 * sizeof(cnumpy.int32_t)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -1251,7 +1251,7 @@ class HistoBBox2d(object):
 
         """
         cdef:
-            cnp.int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
+            cnumpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
             acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
             data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
@@ -1260,7 +1260,7 @@ class HistoBBox2d(object):
             data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
             data_t[::1] ccoef = self.data, 
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            cnp.int32_t[::1] indices = self.indices, indptr = self.indptr
+            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
 
         assert weights.size == size, "weights size"
 

@@ -29,14 +29,14 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/11/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
 
 import cython
 import numpy
-cimport numpy as cnp
+cimport numpy as cnumpy
 from libc.math cimport sqrt, fabs
 from cython.parallel import prange
 
@@ -51,7 +51,7 @@ cdef float invert_distance(size_t i0, size_t i1, size_t p0, size_t p1) nogil:
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 cdef inline float processPoint(float[:, ::1] data,
-                               cnp.int8_t[:, ::1] mask,
+                               cnumpy.int8_t[:, ::1] mask,
                                size_t p0,
                                size_t p1,
                                size_t d0,
@@ -106,8 +106,8 @@ cdef inline float processPoint(float[:, ::1] data,
 @cython.cdivision(True)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def reconstruct(cnp.ndarray data not None, 
-                cnp.ndarray mask=None, 
+def reconstruct(cnumpy.ndarray data not None, 
+                cnumpy.ndarray mask=None, 
                 dummy=None, 
                 delta_dummy=None):
     """
@@ -126,7 +126,7 @@ def reconstruct(cnp.ndarray data not None,
         ssize_t d1 = data.shape[1]
         ssize_t p0, p1, i, l
         float[:, ::1] cdata
-        cnp.int8_t[:, ::1] cmask 
+        cnumpy.int8_t[:, ::1] cmask 
         bint is_masked, do_dummy
         float cdummy, cddummy, value
         float[:, ::1] out = numpy.zeros_like(data)

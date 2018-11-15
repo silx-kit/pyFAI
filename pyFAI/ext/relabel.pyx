@@ -30,22 +30,22 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/11/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
 import cython
 import numpy
-cimport numpy as cnp
+cimport numpy as cnumpy
 
 
 @cython.boundscheck(False)
 @cython.cdivision(True)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def countThem(cnp.ndarray label not None,
-              cnp.ndarray data not None,
-              cnp.ndarray blured not None):
+def countThem(cnumpy.ndarray label not None,
+              cnumpy.ndarray data not None,
+              cnumpy.ndarray blured not None):
     """Count
 
     :param label: 2D array containing labeled zones
@@ -59,14 +59,14 @@ def countThem(cnp.ndarray label not None,
         * data-blurred where data is max.
     """
     cdef:
-        cnp.uint32_t[::1] clabel = numpy.ascontiguousarray(label.ravel(), dtype=numpy.uint32)
+        cnumpy.uint32_t[::1] clabel = numpy.ascontiguousarray(label.ravel(), dtype=numpy.uint32)
         float[::1] cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
         float[::1] cblured = numpy.ascontiguousarray(blured.ravel(), dtype=numpy.float32)
         size_t maxLabel = label.max()
-        cnp.uint_t[::1] count = numpy.zeros(maxLabel + 1, dtype=numpy.uint)
-        cnp.float32_t[::1] maxData = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
-        cnp.float32_t[::1] maxBlured = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
-        cnp.float32_t[::1] maxDelta = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
+        cnumpy.uint_t[::1] count = numpy.zeros(maxLabel + 1, dtype=numpy.uint)
+        cnumpy.float32_t[::1] maxData = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
+        cnumpy.float32_t[::1] maxBlured = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
+        cnumpy.float32_t[::1] maxDelta = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
         int s, i, idx
         float d, b
     s = label.size

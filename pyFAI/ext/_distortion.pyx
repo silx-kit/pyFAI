@@ -28,12 +28,12 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "16/07/2018"
+__date__ = "15/11/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
-cimport numpy as cnp
+cimport numpy as cnumpy
 import numpy
 from cython cimport view, floating
 from cython.parallel import prange
@@ -105,7 +105,7 @@ cdef inline float _ceil_max4(float a, float b, float c, float d) nogil:
 @cython.wraparound(False)
 @cython.boundscheck(False)
 @cython.cdivision(True)
-cdef inline void integrate(cnp.float32_t[:, ::1] box, float start, float stop, float slope, float intercept) nogil:
+cdef inline void integrate(cnumpy.float32_t[:, ::1] box, float start, float stop, float slope, float intercept) nogil:
     """Integrate in a box a line between start and stop, line defined by its slope & intercept
 
     :param box: buffer
@@ -255,7 +255,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
     :return: pos, delta1, delta2, shape_out, offset
     """
     cdef:
-        cnp.float32_t[:, :, :, ::1] pos
+        cnumpy.float32_t[:, :, :, ::1] pos
         int i, j, k, dim0, dim1, nb_corners
         bint do_shape = (shape_out is None)
         float BIG = numpy.finfo(numpy.float32).max
@@ -312,7 +312,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
 @cython.initializedcheck(False)
 def calc_size(floating[:, :, :, ::1] pos not None,
               shape,
-              cnp.int8_t[:, ::1] mask=None,
+              cnumpy.int8_t[:, ::1] mask=None,
               offset=None):
     """Calculate the number of items per output pixel
 
@@ -324,10 +324,10 @@ def calc_size(floating[:, :, :, ::1] pos not None,
     """
     cdef:
         int i, j, k, l, shape_out0, shape_out1, shape_in0, shape_in1, min0, min1, max0, max1
-        cnp.int32_t[:, ::1] lut_size = numpy.zeros(shape, dtype=numpy.int32)
+        cnumpy.int32_t[:, ::1] lut_size = numpy.zeros(shape, dtype=numpy.int32)
         float A0, A1, B0, B1, C0, C1, D0, D1, offset0, offset1
         bint do_mask = mask is not None
-        cnp.int8_t[:, ::1] cmask
+        cnumpy.int8_t[:, ::1] cmask
     shape_in0, shape_in1 = pos.shape[0], pos.shape[1]
     shape_out0, shape_out1 = shape
 
@@ -370,8 +370,8 @@ def calc_size(floating[:, :, :, ::1] pos not None,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def calc_LUT(cnp.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
-             cnp.int8_t[:, :] mask=None):
+def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
+             cnumpy.int8_t[:, :] mask=None):
     """
     :param pos: 4D position array
     :param shape: output shape
@@ -383,13 +383,13 @@ def calc_LUT(cnp.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixe
     cdef:
         int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1
         int offset0, offset1, box_size0, box_size1, size, k
-        cnp.int32_t idx = 0
+        cnumpy.int32_t idx = 0
         int err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
         lut_point[:, :, :] lut
         bint do_mask = mask is not None
-        cnp.float32_t[:, ::1] buffer
+        cnumpy.float32_t[:, ::1] buffer
     size = bin_size.max()
     shape0, shape1 = shape
     if do_mask:
@@ -502,7 +502,7 @@ def calc_LUT(cnp.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixe
                 idx += 1
 
     # Hack to prevent memory leak !!!
-    cdef cnp.ndarray[cnp.float64_t, ndim = 2] tmp_ary = numpy.empty(shape=(shape0 * shape1, size), dtype=numpy.float64)
+    cdef cnumpy.ndarray[cnumpy.float64_t, ndim = 2] tmp_ary = numpy.empty(shape=(shape0 * shape1, size), dtype=numpy.float64)
     memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], tmp_ary.nbytes)
     return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
                                     shape=(shape0 * shape1, size), dtype=dtype_lut,
@@ -513,8 +513,8 @@ def calc_LUT(cnp.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixe
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def calc_CSR(cnp.float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
-             cnp.int8_t[:, ::1] mask=None):
+def calc_CSR(cnumpy.float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
+             cnumpy.int8_t[:, ::1] mask=None):
     """Calculate the Look-up table as CSR format
 
     :param pos: 4D position array
@@ -532,10 +532,10 @@ def calc_CSR(cnp.float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_
         int lut_size, offset0, offset1, box_size0, box_size1
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        cnp.int32_t[::1] indptr, indices
-        cnp.float32_t[::1] data
+        cnumpy.int32_t[::1] indptr, indices
+        cnumpy.float32_t[::1] data
         int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
-        cnp.float32_t[:, ::1] buffer
+        cnumpy.float32_t[:, ::1] buffer
         bint do_mask = mask is not None
     if do_mask:
         assert shape0 == mask.shape[0], "mask shape dim0"
@@ -647,10 +647,10 @@ def calc_CSR(cnp.float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_
 @cython.boundscheck(False)
 @cython.boundscheck(False)
 @cython.cdivision(True)
-def calc_sparse(cnp.float32_t[:, :, :, ::1] pos not None,
+def calc_sparse(cnumpy.float32_t[:, :, :, ::1] pos not None,
                 shape,
                 max_pixel_size=(8, 8),
-                cnp.int8_t[:, ::1] mask=None,
+                cnumpy.int8_t[:, ::1] mask=None,
                 format="csr",
                 int bins_per_pixel=8):
     """Calculate the look-up table (or CSR) using OpenMP
@@ -679,9 +679,9 @@ def calc_sparse(cnp.float32_t[:, :, :, ::1] pos not None,
         int idx, err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        cnp.int32_t[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
-        cnp.float32_t[::1] data, large_data
-        cnp.float32_t[:, ::1] buffer
+        cnumpy.int32_t[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
+        cnumpy.float32_t[::1] data, large_data
+        cnumpy.float32_t[:, ::1] buffer
         bint do_mask = mask is not None
         lut_point[:, :] lut
     if do_mask:
@@ -843,10 +843,10 @@ def calc_sparse(cnp.float32_t[:, :, :, ::1] pos not None,
 @cython.boundscheck(False)
 @cython.boundscheck(False)
 @cython.cdivision(True)
-def calc_sparse_v2(cnp.float32_t[:, :, :, ::1] pos not None,
+def calc_sparse_v2(cnumpy.float32_t[:, :, :, ::1] pos not None,
                    shape,
                    max_pixel_size=(8, 8),
-                   cnp.int8_t[:, ::1] mask=None,
+                   cnumpy.int8_t[:, ::1] mask=None,
                    format="csr",
                    int bins_per_pixel=8,
                    builder_config=None):
@@ -875,9 +875,9 @@ def calc_sparse_v2(cnp.float32_t[:, :, :, ::1] pos not None,
         int idx, err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        cnp.int32_t[::1] indptr, indices, idx_bin, idx_pixel
-        cnp.float32_t[::1] data, large_data
-        cnp.float32_t[:, ::1] buffer
+        cnumpy.int32_t[::1] indptr, indices, idx_bin, idx_pixel
+        cnumpy.float32_t[::1] data, large_data
+        cnumpy.float32_t[:, ::1] buffer
         bint do_mask = mask is not None
         lut_point[:, :] lut
     if do_mask:
@@ -1162,7 +1162,7 @@ def correct_LUT_kahan(image, shape_out, lut_point[:, ::1] LUT not None,
         int i, j, lshape0, lshape1, idx, size
         int shape_in0, shape_in1, shape_out0, shape_out1, shape_img0, shape_img1
         float coef, sum, error, t, y, value, cdummy, cdelta_dummy
-        cnp.float32_t[::1] lout, lin
+        cnumpy.float32_t[::1] lout, lin
         bint do_dummy = dummy is not None
     if do_dummy:
         cdummy = dummy
@@ -1222,7 +1222,7 @@ def correct_LUT_double(image, shape_out, lut_point[:, ::1] LUT not None,
         int i, j, lshape0, lshape1, idx, size
         float value, cdummy, cdelta_dummy
         double sum, coef
-        cnp.float32_t[::1] lout, lin
+        cnumpy.float32_t[::1] lout, lin
         bint do_dummy = dummy is not None
     if do_dummy:
         cdummy = dummy
@@ -1306,7 +1306,7 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
     cdef:
         int i, j, idx, size, bins
         float coef, tmp, error, sum, y, t, value, cdummy, cdelta_dummy
-        cnp.float32_t[::1] lout, lin, data
+        cnumpy.float32_t[::1] lout, lin, data
         int[::1] indices, indptr
         bint do_dummy = dummy is not None
 
@@ -1369,7 +1369,7 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
         int i, j, idx, size, bins
         float value, cdummy, cdelta_dummy
         double coef, sum
-        cnp.float32_t[::1] lout, lin, data
+        cnumpy.float32_t[::1] lout, lin, data
         int[::1] indices, indptr
         bint do_dummy = dummy is not None
 
@@ -1433,8 +1433,8 @@ def correct_LUT_preproc_double(image, shape_out,
         int i, j, lshape0, lshape1, idx, size, nchan
         float value, cdummy, cdelta_dummy
         double sum_sig, sum_var, sum_norm, coef
-        cnp.float32_t[::1]  lout, lerr
-        cnp.float32_t[:, ::1] lin, lprop
+        cnumpy.float32_t[::1]  lout, lerr
+        cnumpy.float32_t[:, ::1] lin, lprop
         bint do_dummy = dummy is not None
 
     if do_dummy:
@@ -1532,8 +1532,8 @@ def correct_CSR_preproc_double(image, shape_out,
         int i, j, lshape0, lshape1, idx, size, bins, nchan
         float value, cdummy, cdelta_dummy
         double sum_sig, sum_var, sum_norm, coef
-        cnp.float32_t[::1]  lout, lerr, data
-        cnp.float32_t[:, ::1] lin, lprop
+        cnumpy.float32_t[::1]  lout, lerr, data
+        cnumpy.float32_t[:, ::1] lin, lprop
         int[::1] indices, indptr
         bint do_dummy = dummy is not None
 
@@ -1625,8 +1625,8 @@ def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     cdef:
         int idx, j
         float total, coef
-        cnp.int8_t[::1] lmask
-        cnp.float32_t[::1] lout, lin
+        cnumpy.int8_t[::1] lmask
+        cnumpy.float32_t[::1] lout, lin
 
     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
     out = numpy.zeros(shape, dtype=numpy.float32)
@@ -1665,10 +1665,10 @@ def uncorrect_CSR(image, shape, LUT):
     cdef:
         int idx, j, nbins
         float total, coef
-        cnp.int8_t[:] lmask
-        cnp.float32_t[::1] lout, lin, data
-        cnp.int32_t[::1] indices = LUT[1]
-        cnp.int32_t[::1] indptr = LUT[2]
+        cnumpy.int8_t[:] lmask
+        cnumpy.float32_t[::1] lout, lin, data
+        cnumpy.int32_t[::1] indices = LUT[1]
+        cnumpy.int32_t[::1] indptr = LUT[2]
     out = numpy.zeros(shape, dtype=numpy.float32)
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
@@ -1765,9 +1765,9 @@ class Distortion(object):
 
         """
         cdef int i, j, k, l, shape0, shape1
-        cdef cnp.ndarray[cnp.float32_t, ndim=4] pos
+        cdef cnumpy.ndarray[cnumpy.float32_t, ndim=4] pos
         cdef int[:, ::1] pos0min, pos1min, pos0max, pos1max
-        cdef cnp.ndarray[cnp.int32_t, ndim=2] lut_size
+        cdef cnumpy.ndarray[cnumpy.int32_t, ndim=2] lut_size
         if self.pos is None:
             pos = self.calc_pos()
         else:
@@ -1797,12 +1797,12 @@ class Distortion(object):
         cdef:
             int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
             int offset0, offset1, box_size0, box_size1
-            cnp.int32_t k, idx = 0
+            cnumpy.int32_t k, idx = 0
             float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
-            cnp.float32_t[:, :, :, ::1] pos
-            cnp.ndarray[lut_point, ndim=3] lut
-            cnp.ndarray[cnp.int32_t, ndim=2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
-            cnp.float32_t[:, ::1] buffer
+            cnumpy.float32_t[:, :, :, ::1] pos
+            cnumpy.ndarray[lut_point, ndim=3] lut
+            cnumpy.ndarray[cnumpy.int32_t, ndim=2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
+            cnumpy.float32_t[:, ::1] buffer
         shape0, shape1 = self.shape
 
         if self.lut_size is None:
@@ -1914,7 +1914,7 @@ class Distortion(object):
             int i, j, lshape0, lshape1, idx, size
             float coef
             lut_point[:, ::1] LUT
-            cnp.float32_t[::1] lout, lin
+            cnumpy.float32_t[::1] lout, lin
         if self.LUT is None:
             self.calc_LUT()
         LUT = self.LUT

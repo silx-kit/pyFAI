@@ -32,12 +32,12 @@ Created on Nov 4, 2013
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/11/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
 import numpy
-cimport numpy as cnp
+cimport numpy as cnumpy
 import cython
 cimport cython
 from cython.parallel import prange
@@ -147,7 +147,7 @@ cdef void fpbspl(float[:]t,
 
 
 @cython.boundscheck(False)
-cdef void init_w(float[:] t, int k, float[:] x, cnp.int32_t[:] lx, float[:, :] w) nogil:
+cdef void init_w(float[:] t, int k, float[:] x, cnumpy.int32_t[:] lx, float[:, :] w) nogil:
     """
     Initialize w array for a 1D array
 
@@ -219,8 +219,8 @@ cdef cy_bispev(float[:] tx,
         float[:, ::1] wx = numpy.empty((mx, kx1), dtype=numpy.float32)
         float[:, ::1] wy = numpy.empty((my, ky1), dtype=numpy.float32)
 
-        cnp.int32_t[::1] lx = numpy.empty(mx, dtype=numpy.int32)
-        cnp.int32_t[::1] ly = numpy.empty(my, dtype=numpy.int32)
+        cnumpy.int32_t[::1] lx = numpy.empty(mx, dtype=numpy.int32)
+        cnumpy.int32_t[::1] ly = numpy.empty(my, dtype=numpy.int32)
 
         int i, j, m, i1, l2, j1
         int size_z = mx * my

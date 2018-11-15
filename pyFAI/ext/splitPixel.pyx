@@ -104,8 +104,8 @@ cdef inline void integrate(acc_t[::1] buffer, int buffer_size, position_t start0
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def fullSplit1D(cnp.ndarray pos not None,
-                cnp.ndarray weights not None,
+def fullSplit1D(cnumpy.ndarray pos not None,
+                cnumpy.ndarray weights not None,
                 int bins=100,
                 pos0Range=None,
                 pos1Range=None,
@@ -348,8 +348,8 @@ def fullSplit1D(cnp.ndarray pos not None,
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def fullSplit2D(cnp.ndarray pos not None,
-                cnp.ndarray weights not None,
+def fullSplit2D(cnumpy.ndarray pos not None,
+                cnumpy.ndarray weights not None,
                 bins not None,
                 pos0Range=None,
                 pos1Range=None,
