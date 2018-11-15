@@ -27,13 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/10/2018"
+__date__ = "25/10/2018"
 
 import logging
 import numpy
 import functools
 import os
-from collections import OrderedDict
 
 from silx.gui import qt
 from silx.gui import icons
@@ -46,12 +45,12 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.gui.calibration.model.PeakModel import PeakModel
 from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
-from pyFAI.gui.utils.ProxyAction import CustomProxyAction
 from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from .helper.MarkerManager import MarkerManager
 from ..utils import FilterBuilder
+from ..utils import validators
 
 _logger = logging.getLogger(__name__)
 
@@ -95,7 +94,12 @@ class _PeakSelectionTableView(qt.QTableView):
 
     def __init__(self, parent):
         super(_PeakSelectionTableView, self).__init__(parent=parent)
+
         ringDelegate = _SpinBoxItemDelegate(self)
+        palette = qt.QPalette(self.palette())
+        # make sure this value is not edited
+        palette.setColor(qt.QPalette.Base, palette.base().color())
+        ringDelegate.setPalette(palette)
         toolDelegate = _PeakToolItemDelegate(self)
         self.setItemDelegateForColumn(2, ringDelegate)
         self.setItemDelegateForColumn(3, toolDelegate)
@@ -110,7 +114,11 @@ class _PeakSelectionTableView(qt.QTableView):
 
         self.horizontalHeader().setHighlightSections(False)
         self.verticalHeader().setVisible(False)
-        self.setStyleSheet("QTableView {background: transparent;}")
+
+        palette = qt.QPalette(self.palette())
+        palette.setColor(qt.QPalette.Base, qt.QColor(0, 0, 0, 0))
+        self.setPalette(palette)
+        self.setFrameShape(qt.QFrame.Panel)
 
     def setModel(self, model):
         if self.model() is not None:
@@ -402,11 +410,20 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
 class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
 
+    def __init__(self, *args, **kwargs):
+        qt.QStyledItemDelegate.__init__(self, *args, **kwargs)
+        self.__palette = None
+
+    def setPalette(self, palette):
+        self.__palette = qt.QPalette(palette)
+
     def createEditor(self, parent, option, index):
         if not index.isValid():
             return super(_SpinBoxItemDelegate, self).createEditor(parent, option, index)
 
         editor = qt.QSpinBox(parent=parent)
+        if self.__palette is not None:
+            editor.setPalette(self.__palette)
         editor.setMinimum(1)
         editor.setMaximum(999)
         editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
@@ -508,9 +525,11 @@ class PeakPickingTask(AbstractCalibrationTask):
         holderLayout = holder.layout()
         holderLayout.replaceWidget(self._peakSelectionDummy, self.__peakSelectionView)
 
+        self.__undoStack = qt.QUndoStack(self)
+
         layout = qt.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        self._ringStatusBarHolder.setLayout(layout)
+        self._ringToolBarHolder.setLayout(layout)
         toolBar = self.__createRingToolBar()
         layout.addWidget(toolBar)
 
@@ -518,29 +537,15 @@ class PeakPickingTask(AbstractCalibrationTask):
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
 
-        self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-full-ring"))
-        self._arcSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
-        self._peakSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
-        self.__undoStack = qt.QUndoStack(self)
-        undoAction = CustomProxyAction(self, self.__undoStack.createUndoAction(self, "Undo"))
-        undoAction.forceText("Undo")
-        undoAction.forceIconText("Undo")
-        redoAction = CustomProxyAction(self, self.__undoStack.createRedoAction(self, "Redo"))
-        redoAction.forceText("Redo")
-        redoAction.forceIconText("Redo")
-        self._undoButton.setDefaultAction(undoAction)
-        self._redoButton.setDefaultAction(redoAction)
-
-        self.__mode = qt.QButtonGroup()
-        self.__mode.setExclusive(True)
-        self.__mode.addButton(self._ringSelectionMode)
-        self.__mode.addButton(self._arcSelectionMode)
-        self.__mode.addButton(self._peakSelectionMode)
-        self._arcSelectionMode.setChecked(True)
-
+        self._extract.setEnabled(False)
         self._extract.clicked.connect(self.__autoExtractRingsLater)
+
+        validator = validators.DoubleValidator(self)
+        self._numberOfPeakPerDegree.lineEdit().setValidator(validator)
+        locale = qt.QLocale(qt.QLocale.C)
+        self._numberOfPeakPerDegree.setLocale(locale)
 
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
@@ -629,6 +634,39 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __createRingToolBar(self):
         toolBar = qt.QToolBar(self)
 
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-full-ring"))
+        action.setText("Ring")
+        action.setCheckable(True)
+        action.setToolTip("Extract peaks, beyond masked values")
+        toolBar.addAction(action)
+        self.__ringSelectionMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
+        action.setText("Arc")
+        action.setCheckable(True)
+        action.setToolTip("Extract contiguous peaks")
+        toolBar.addAction(action)
+        self.__arcSelectionMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
+        action.setText("Arc")
+        action.setCheckable(True)
+        action.setToolTip("Extract contiguous peaks")
+        toolBar.addAction(action)
+        self.__peakSelectionMode = action
+
+        mode = qt.QActionGroup(self)
+        mode.setExclusive(True)
+        mode.addAction(self.__ringSelectionMode)
+        mode.addAction(self.__arcSelectionMode)
+        mode.addAction(self.__peakSelectionMode)
+        self.__arcSelectionMode.setChecked(True)
+
+        toolBar.addSeparator()
+
         # Load peak selection as file
         loadPeaksFromFile = qt.QAction(self)
         icon = icons.getQIcon('document-open')
@@ -647,6 +685,19 @@ class PeakPickingTask(AbstractCalibrationTask):
         savePeaksAsFile.triggered.connect(self.__savePeaksAsFile)
         savePeaksAsFile.setIconVisibleInMenu(True)
         toolBar.addAction(savePeaksAsFile)
+
+        toolBar.addSeparator()
+        style = qt.QApplication.style()
+
+        action = self.__undoStack.createUndoAction(self, "Undo")
+        icon = style.standardIcon(qt.QStyle.SP_ArrowBack)
+        action.setIcon(icon)
+        toolBar.addAction(action)
+
+        action = self.__undoStack.createRedoAction(self, "Redo")
+        icon = style.standardIcon(qt.QStyle.SP_ArrowForward)
+        action.setIcon(icon)
+        toolBar.addAction(action)
 
         return toolBar
 
@@ -702,11 +753,11 @@ class PeakPickingTask(AbstractCalibrationTask):
         return massif
 
     def __getMassif(self):
-        if self._ringSelectionMode.isChecked():
+        if self.__ringSelectionMode.isChecked():
             if self.__massifReconstructed is None:
                 self.__massifReconstructed = self.__createMassif(reconstruct=True)
             return self.__massifReconstructed
-        elif self._arcSelectionMode.isChecked() or self._peakSelectionMode.isChecked():
+        elif self.__arcSelectionMode.isChecked() or self.__peakSelectionMode.isChecked():
             if self.__massif is None:
                 self.__massif = self.__createMassif()
             return self.__massif
@@ -755,9 +806,9 @@ class PeakPickingTask(AbstractCalibrationTask):
             else:
                 lastRingNumber = max(ringNumbers)
 
-            if self._ringSelectionMode.isChecked() or self._arcSelectionMode.isChecked():
+            if self.__ringSelectionMode.isChecked() or self.__arcSelectionMode.isChecked():
                 ringNumber = lastRingNumber + 1
-            elif self._peakSelectionMode.isChecked():
+            elif self.__peakSelectionMode.isChecked():
                 ringNumber = lastRingNumber
                 points = points[0:1]
             else:
@@ -947,12 +998,23 @@ class PeakPickingTask(AbstractCalibrationTask):
         settings.mask().changed.connect(self.__maskUpdated)
         settings.image().changed.connect(self.__invalidateMassif)
         settings.mask().changed.connect(self.__invalidateMassif)
+        model.peakSelectionModel().changed.connect(self.__peakSelectionChanged)
         self.__plot.setModel(model.peakSelectionModel())
         self.__initPeakSelectionView(model)
         self.__undoStack.clear()
 
         self.__imageUpdated()
         self.__maskUpdated()
+        self.__peakSelectionChanged()
+
+    def __peakSelectionChanged(self):
+        peakCount = self.model().peakSelectionModel().peakCount()
+        if peakCount < 3:
+            self._extract.setEnabled(False)
+            self.setToolTip("Select manually more peaks to auto extract peaks")
+        else:
+            self._extract.setEnabled(True)
+            self.setToolTip("")
 
     def __initPeakSelectionView(self, model):
         tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())

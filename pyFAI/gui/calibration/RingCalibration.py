@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/10/2018"
+__date__ = "05/11/2018"
 
 import logging
 import numpy
@@ -56,6 +56,7 @@ class RingCalibration(object):
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
         self.__fixed = fixed
+        self.__bounds = {}
         self.__rms = None
         self.__previousRms = None
         self.__peakResidual = None
@@ -133,6 +134,20 @@ class RingCalibration(object):
         return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
 
     def __refine(self, maxiter=1000000, fix=None):
+
+        attrs = ["wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
+        for name in attrs:
+            if name in self.__fixed:
+                continue
+            min_setter = getattr(self.__geoRef, "set_%s_min" % name)
+            max_setter = getattr(self.__geoRef, "set_%s_max" % name)
+            if name in self.__bounds:
+                minValue, maxValue = self.__bounds[name]
+            else:
+                minValue, maxValue = -float("inf"), float("inf")
+            min_setter(minValue)
+            max_setter(maxValue)
+
         if "wavelength" in self.__fixed:
             return self.__geoRef.refine2(maxiter, fix)
         else:
@@ -151,9 +166,9 @@ class RingCalibration(object):
         print("Initial residual: %s" % previous_residual)
 
         count = 0
-        timeout = timeutils.Timeout(seconds=10)
+        timer = timeutils.Timer(seconds=10)
 
-        while count < max_iter and not timeout:
+        while count < max_iter and not timer.isTimeout():
             residual = self.__refine(10000, fix=self.__fixed)
             if residual >= previous_residual:
                 break
@@ -288,21 +303,49 @@ class RingCalibration(object):
             self.__previousRms = None
             self.__rms = None
 
+    def toGeometryConstriansModel(self, contraintsModel, reachFromGeoRef=True):
+        if reachFromGeoRef is False:
+            raise NotImplementedError("Not implemented")
+        attrs = [
+            ("wavelength", contraintsModel.wavelength()),
+            ("dist", contraintsModel.distance()),
+            ("poni1", contraintsModel.poni1()),
+            ("poni2", contraintsModel.poni2()),
+            ("rot1", contraintsModel.rotation1()),
+            ("rot2", contraintsModel.rotation2()),
+            ("rot3", contraintsModel.rotation3()),
+        ]
+        for name, constraint in attrs:
+            min_getter = getattr(self.__geoRef, "get_%s_min" % name)
+            max_getter = getattr(self.__geoRef, "get_%s_max" % name)
+            minValue, maxValue = min_getter(), max_getter()
+            constraint.setRangeConstraint(minValue, maxValue)
+            if name in self.__fixed:
+                constraint.setFixed()
+
     def fromGeometryConstriansModel(self, contraintsModel):
-        # FIXME take care of range values
+        attrs = [
+            ("wavelength", contraintsModel.wavelength()),
+            ("dist", contraintsModel.distance()),
+            ("poni1", contraintsModel.poni1()),
+            ("poni2", contraintsModel.poni2()),
+            ("rot1", contraintsModel.rotation1()),
+            ("rot2", contraintsModel.rotation2()),
+            ("rot3", contraintsModel.rotation3()),
+        ]
         fixed = pyFAI.utils.FixedParameters()
-        if contraintsModel.wavelength().isFixed():
-            fixed.add("wavelength")
-        if contraintsModel.distance().isFixed():
-            fixed.add("dist")
-        if contraintsModel.poni1().isFixed():
-            fixed.add("poni1")
-        if contraintsModel.poni2().isFixed():
-            fixed.add("poni2")
-        if contraintsModel.rotation1().isFixed():
-            fixed.add("rot1")
-        if contraintsModel.rotation2().isFixed():
-            fixed.add("rot2")
-        if contraintsModel.rotation3().isFixed():
-            fixed.add("rot3")
+        bounds = {}
+        for name, constraint in attrs:
+            if constraint.isFixed():
+                fixed.add(name)
+            elif constraint.isRangeConstrained():
+                minValue, maxValue = constraint.range()
+                if minValue is None:
+                    minValue = -float("inf")
+                if maxValue is None:
+                    maxValue = +float("inf")
+                bounds[name] = minValue, maxValue
         self.__fixed = fixed
+        # FIXME: Return should not be stored inside __bounds but inside geoRef
+        # cause it create an indermediat cache, which could be unsynchronized
+        self.__bounds = bounds

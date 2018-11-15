@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/03/2017"
+__date__ = "05/11/2018"
 
 from .AbstractModel import AbstractModel
 from .ConstraintModel import ConstraintModel
@@ -37,13 +37,13 @@ class GeometryConstraintsModel(AbstractModel):
 
     def __init__(self, parent=None):
         super(GeometryConstraintsModel, self).__init__(parent)
-        self.__distance = ConstraintModel()
-        self.__wavelength = ConstraintModel()
-        self.__poni1 = ConstraintModel()
-        self.__poni2 = ConstraintModel()
-        self.__rotation1 = ConstraintModel()
-        self.__rotation2 = ConstraintModel()
-        self.__rotation3 = ConstraintModel()
+        self.__distance = ConstraintModel(self)
+        self.__wavelength = ConstraintModel(self)
+        self.__poni1 = ConstraintModel(self)
+        self.__poni2 = ConstraintModel(self)
+        self.__rotation1 = ConstraintModel(self)
+        self.__rotation2 = ConstraintModel(self)
+        self.__rotation3 = ConstraintModel(self)
 
         self.__distance.changed.connect(self.wasChanged)
         self.__wavelength.changed.connect(self.wasChanged)
@@ -89,3 +89,35 @@ class GeometryConstraintsModel(AbstractModel):
 
     def rotation3(self):
         return self.__rotation3
+
+    def copy(self, parent=None):
+        """
+        Copy this model to a new model
+
+        :param qt.QObject parent: Parent of the copyed model
+        :rtype: GeometryConstraintsModel
+        """
+        model = GeometryConstraintsModel(parent=parent)
+        model.distance().set(self.__distance)
+        model.wavelength().set(self.__wavelength)
+        model.poni1().set(self.__poni1)
+        model.poni2().set(self.__poni2)
+        model.rotation1().set(self.__rotation1)
+        model.rotation2().set(self.__rotation2)
+        model.rotation3().set(self.__rotation3)
+        return model
+
+    def fillDefault(self, other):
+        """Fill unset values of this model with the other model
+
+        :param GeometryConstraintsModel other:
+        """
+        self.lockSignals()
+        self.distance().fillDefault(other.distance())
+        self.wavelength().fillDefault(other.wavelength())
+        self.poni1().fillDefault(other.poni1())
+        self.poni2().fillDefault(other.poni2())
+        self.rotation1().fillDefault(other.rotation1())
+        self.rotation2().fillDefault(other.rotation2())
+        self.rotation3().fillDefault(other.rotation3())
+        self.unlockSignals()

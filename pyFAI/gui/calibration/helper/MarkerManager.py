@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/08/2018"
+__date__ = "25/10/2018"
 
 import logging
 import functools
@@ -75,26 +75,6 @@ class MarkerManager(object):
         self.__directDist = directDist
         if redraw:
             self.__updateMarkers()
-
-    def toPlotUnit(self, tthRad, chiRad):
-        if self.__pixelBasedPlot:
-            raise TypeError("Not supported for pixel based plots")
-
-        try:
-            tth = utils.from2ThRad(tthRad,
-                                   unit=self.__radialUnit,
-                                   wavelength=self.__wavelength,
-                                   directDist=self.__directDist)
-        except Exception:
-            _logger.debug("Backtrace", exc_info=True)
-            tth = None
-
-        if chiRad is not None:
-            chi = numpy.deg2rad(chiRad)
-        else:
-            chi = None
-
-        return chi, tth
 
     def updatePhysicalMarkerPixels(self, geometry):
         self.__geometry = geometry

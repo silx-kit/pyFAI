@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/08/2018"
+__date__ = "30/10/2018"
 
 import logging
 from silx.gui import qt
@@ -48,8 +48,12 @@ class DoubleValidator(qt.QDoubleValidator):
     case the locale rejected it. This implementation reject the group character
     from the validation, and remove it from the fixup. Only if the locale is
     defined to reject it.
+
+    This validator also allow to type a dot anywhere in the text. The last dot
+    replace the previous one. In this way, it became convenient to fix the
+    location of the dot, without complex manual manipulation of the text.
     """
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         qt.QDoubleValidator.__init__(self, parent)
         locale = qt.QLocale(qt.QLocale.C)
         locale.setNumberOptions(qt.QLocale.RejectGroupSeparator)
@@ -62,13 +66,22 @@ class DoubleValidator(qt.QDoubleValidator):
         :param str inputText: Text to validate
         :param int pos: Position of the cursor
         """
-        locale = self.locale()
-        if locale.numberOptions() == qt.QLocale.RejectGroupSeparator:
-            if pos > 0:
-                if inputText[pos - 1] == locale.groupSeparator():
-                    # filter the group separator
-                    inputText = inputText[pos - 1:] + inputText[pos:]
-                    pos = pos - 1
+        if pos > 0:
+            locale = self.locale()
+
+            # If the typed character is a dot, move the dot instead of ignoring it
+            if inputText[pos - 1] == locale.decimalPoint():
+                beforeDot = inputText[0:pos].count(locale.decimalPoint())
+                pos -= beforeDot
+                inputText = inputText.replace(locale.decimalPoint(), "")
+                inputText = inputText[0:pos] + locale.decimalPoint() + inputText[pos:]
+                pos = pos + 1
+
+            if locale.numberOptions() == qt.QLocale.RejectGroupSeparator:
+                    if inputText[pos - 1] == locale.groupSeparator():
+                        # filter the group separator
+                        inputText = inputText[pos - 1:] + inputText[pos:]
+                        pos = pos - 1
 
         return super(DoubleValidator, self).validate(inputText, pos)
 
@@ -81,7 +94,7 @@ class DoubleValidator(qt.QDoubleValidator):
         """
         locale = self.locale()
         if locale.numberOptions() == qt.QLocale.RejectGroupSeparator:
-            inputText = input.replace(locale.groupSeparator(), "")
+            inputText = inputText.replace(locale.groupSeparator(), "")
         return inputText
 
     def toValue(self, text):
@@ -175,6 +188,8 @@ class IntegerAndEmptyValidator(qt.QIntValidator):
         :returns: A tuple containing the resulting object and True if the
             string is valid
         """
+        if text.strip() == "":
+            return None, True
         value, validated = self.locale().toInt(text)
         return value, validated
 
