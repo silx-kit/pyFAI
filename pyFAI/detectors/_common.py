@@ -666,18 +666,23 @@ class Detector(with_metaclass(DetectorMeta, object)):
                                                     corner index, 
                                                     position in space Z, Y, X
         """
-        # Validation for the array
-        assert ary.ndim == 4
-        assert ary.shape[3] == 3
-        assert ary.shape[3] >= 3
+        if ary is None:
+            # Leave as it is ... just reset the array
+            self._pixel_corners = None
+        else:
+            ary = numpy.ascontiguousarray(ary, dtype=numpy.float32)
+            # Validation for the array
+            assert ary.ndim == 4
+            assert ary.shape[3] == 3  # 3 coordinates in Z Y X
+            assert ary.shape[2] >= 3  # at least 3 corners per pixel
 
-        z = ary[..., 0]
-        is_flat = (z.max() == z.min() == 0.0)
-        with self._sem:
-            self.IS_CONTIGUOUS = False
-            self.IS_FLAT = is_flat
-            self.uniform_pixel = False  # This enforces the usage of pixel_corners
-            self._pixel_corners = ary
+            z = ary[..., 0]
+            is_flat = (z.max() == z.min() == 0.0)
+            with self._sem:
+                self.IS_CONTIGUOUS = False
+                self.IS_FLAT = is_flat
+                self.uniform_pixel = False  # This enforces the usage of pixel_corners
+                self._pixel_corners = ary
 
     def save(self, filename):
         """
