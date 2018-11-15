@@ -30,7 +30,7 @@
 Some are defined in the associated header file .pxd 
 """
 
-__author__ = "Jerome Kieffer regrid"
+__author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __date__ = "15/11/2018"
 __status__ = "stable"
