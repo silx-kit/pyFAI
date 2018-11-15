@@ -24,8 +24,6 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-include "regrid_common.pxi"
-include "sparse_common.pxi"
 
 """Calculates histograms of pos0 (tth) weighted by Intensity
 
@@ -35,14 +33,19 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/11/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
+include "regrid_common.pxi"
+include "sparse_common.pxi"
 
 cimport cython
 from cython cimport floating
 import numpy
 from libc.math cimport fabs, ceil, floor
+import logging
+logger = logging.getLogger(__name__)
 
 
 cdef inline floating area4(floating a0,
@@ -654,9 +657,10 @@ def fullSplit2D(cnumpy.ndarray pos not None,
             numpy.asarray(sum_data).T,
             numpy.asarray(sum_count).T)
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
+
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def pseudoSplit2D_ng(pos not None,
                      weights not None,
                      bins not None,
@@ -835,12 +839,14 @@ def pseudoSplit2D_ng(pos not None,
                 new_max0 = center0 + new_width / 2.0
                 new_min1 = center1 - new_height / 2.0
                 new_max1 = center1 + new_height / 2.0
-            if (new_min0 < min0) or (new_max0 > max0) or (new_min0 < min0) or (new_max0 > max0):
+            if (new_min0 < min0) or (new_max0 > max0) or (new_min1 < min1) or (new_max1 > max1):
+                # This is a pathological pixel laying on the Chi discontinuity
+                 
                 with gil:
-                    print(min0, "->", new_min0, ";", 
-                          max0, "->", new_max0, ";",
-                          max1, "->", new_min1, ";",
-                          max1, "->", new_max1,)
+                    
+                    logger.debug("%s -> %s; %s -> %s; %s -> %s; %s -> %s", 
+                                 min0, new_min0, max0, new_max0, min1, new_min1, 
+                                 max1, new_max1)
             else:
                 min0 = new_min0
                 max0 = new_max0

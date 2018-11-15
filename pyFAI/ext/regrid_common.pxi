@@ -30,9 +30,9 @@
 Some are defined in the associated header file .pxd 
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jerome Kieffer regrid"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/11/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -47,22 +47,22 @@ import numpy
 from isnan cimport isnan
 from cython cimport floating
 from libc.math cimport fabs, M_PI, sqrt
-cimport numpy as cnp
+cimport numpy as cnumpy
 
 # How position are stored
-ctypedef cnp.float64_t position_t
+ctypedef cnumpy.float64_t position_t
 position_d = numpy.float64
 
 # How weights or data are stored 
-ctypedef cnp.float32_t data_t
+ctypedef cnumpy.float32_t data_t
 data_d = numpy.float32
 
 # how data are accumulated 
-ctypedef cnp.float64_t acc_t
+ctypedef cnumpy.float64_t acc_t
 acc_d = numpy.float64
 
 # type of the mask:
-ctypedef cnp.int8_t mask_t
+ctypedef cnumpy.int8_t mask_t
 mask_d = numpy.int8
 
 # Type used for propagating variance
@@ -72,14 +72,14 @@ prop_d = numpy.dtype([('signal', acc_d),
                       ('count', acc_d)])
 
 ctypedef fused any_int_t:
-    cnp.uint8_t
-    cnp.uint16_t
-    cnp.uint32_t
-    cnp.uint64_t
-    cnp.int8_t
-    cnp.int16_t
-    cnp.int32_t
-    cnp.int64_t
+    cnumpy.uint8_t
+    cnumpy.uint16_t
+    cnumpy.uint32_t
+    cnumpy.uint64_t
+    cnumpy.int8_t
+    cnumpy.int16_t
+    cnumpy.int32_t
+    cnumpy.int64_t
 
 
 cdef:

@@ -24,13 +24,14 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-include "regrid_common.pxi"
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "09/11/2018"
+__date__ = "15/11/2018"
 __copyright__ = "2018-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
+
+include "regrid_common.pxi"
 
 import logging
 logger = logging.getLogger("pyFAI.ext.invert_geometry")

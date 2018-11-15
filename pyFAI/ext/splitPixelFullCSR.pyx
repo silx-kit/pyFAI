@@ -24,7 +24,6 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-include "regrid_common.pxi"
 
 """Full pixel Splitting implemented using Sparse-matrix Dense-Vector multiplication,
 Sparse matrix represented using the CompressedSparseRow.
@@ -32,9 +31,11 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/11/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
+include "regrid_common.pxi"
 
 import cython
 import os

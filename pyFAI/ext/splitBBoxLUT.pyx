@@ -30,14 +30,15 @@
 Splitting is done on the pixel's bounding box like fit2D,
 reverse implementation based on a sparse matrix multiplication
 """
-include "regrid_common.pxi"
-include "sparse_common.pxi"
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/11/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
+include "regrid_common.pxi"
+include "sparse_common.pxi"
 
 import cython
 import os
