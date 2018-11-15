@@ -25,15 +25,17 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """Full pixel Splitting implemented using Sparse-matrix Dense-Vector multiplication,
 Sparse matrix represented using the CompressedSparseRow.
 """
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/10/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
+include "regrid_common.pxi"
 
 import cython
 import os
@@ -45,8 +47,6 @@ import numpy
 cimport numpy
 from libc.math cimport fabs, floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
-
-include "regrid_common.pxi"
 
 from ..utils import crc32
 from ..utils.decorators import deprecated

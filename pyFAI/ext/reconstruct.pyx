@@ -29,15 +29,15 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/01/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
 
 import cython
 import numpy
-cimport numpy
-from libc.math cimport sqrt
+cimport numpy as cnumpy
+from libc.math cimport sqrt, fabs
 from cython.parallel import prange
 
 
@@ -51,7 +51,7 @@ cdef float invert_distance(size_t i0, size_t i1, size_t p0, size_t p1) nogil:
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 cdef inline float processPoint(float[:, ::1] data,
-                               numpy.int8_t[:, ::1] mask,
+                               cnumpy.int8_t[:, ::1] mask,
                                size_t p0,
                                size_t p1,
                                size_t d0,
@@ -106,7 +106,10 @@ cdef inline float processPoint(float[:, ::1] data,
 @cython.cdivision(True)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None, delta_dummy=None):
+def reconstruct(cnumpy.ndarray data not None, 
+                cnumpy.ndarray mask=None, 
+                dummy=None, 
+                delta_dummy=None):
     """
     reconstruct missing part of an image (tries to be continuous)
 
@@ -121,29 +124,44 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
     cdef:
         ssize_t d0 = data.shape[0]
         ssize_t d1 = data.shape[1]
+        ssize_t p0, p1, i, l
         float[:, ::1] cdata
-    data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-    cdata = data
+        cnumpy.int8_t[:, ::1] cmask 
+        bint is_masked, do_dummy
+        float cdummy, cddummy, value
+        float[:, ::1] out = numpy.zeros_like(data)
+        
+    cdata = numpy.ascontiguousarray(data, dtype=numpy.float32)
     if mask is not None:
-        mask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
+        cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
     else:
-        mask = numpy.zeros((d0, d1), dtype=numpy.int8)
-    if dummy is not None:
-        if delta_dummy is None:
-            mask += (data == dummy)
-        else:
-            mask += (abs(data - dummy) <= delta_dummy)
-    cdef:
-        numpy.int8_t[:, ::1] cmask = mask.astype(numpy.int8)
+        cmask = numpy.zeros((d0, d1), dtype=numpy.int8)
     assert d0 == mask.shape[0], "mask.shape[0]"
     assert d1 == mask.shape[1], "mask.shape[1]"
-    cdef numpy.ndarray[numpy.float32_t, ndim=2] out = numpy.zeros_like(data)
-    out += data
-    out[mask.astype(bool)] = 0
 
-    cdef ssize_t p0, p1, i, l
+    if dummy is not None:
+        do_dummy = True
+        cdummy = <float> dummy
+        if delta_dummy is None:
+            cddummy = 0.0
+        else:
+            cddummy = <float> delta_dummy
+
+    #  Nota: this has to go in 2 passes, one to mark, one to reconstruct  
+    for p0 in prange(d0, nogil=True, schedule="guided"):
+        for p1 in range(d1):
+            is_masked = cmask[p0, p1]
+            if not is_masked and do_dummy:
+                value = cdata[p0, p1]
+                if cddummy == 0.0:
+                    cmask[p0, p1] += (value == cdummy)
+                elif (fabs(value - cdummy) <= cddummy):
+                    cmask[p0, p1] += 1
+    # Reconstruction phase         
     for p0 in prange(d0, nogil=True, schedule="guided"):
         for p1 in range(d1):
             if cmask[p0, p1]:
                 out[p0, p1] += processPoint(cdata, cmask, p0, p1, d0, d1)
-    return out
+            else:
+                out[p0, p1] += cdata[p0, p1]
+    return numpy.asarray(out)

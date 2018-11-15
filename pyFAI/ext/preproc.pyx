@@ -28,28 +28,20 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "04/05/2018"
+__date__ = "15/11/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
+include "regrid_common.pxi"
+
 import cython
-import numpy
-cimport numpy as cnp
-from cython cimport floating
 from cython.parallel import prange
+
+
 from libc.math cimport fabs
 from isnan cimport isnan
-
-ctypedef fused any_int_t:
-    cnp.uint8_t
-    cnp.uint16_t
-    cnp.uint32_t
-    cnp.uint64_t
-    cnp.int8_t
-    cnp.int16_t
-    cnp.int32_t
-    cnp.int64_t
-
+from cython cimport floating
+         
 
 @cython.boundscheck(False)
 @cython.cdivision(True)
@@ -565,7 +557,6 @@ def preproc(raw,
 
     shape = raw.shape
     size = raw.size
-    dtype = numpy.dtype(dtype).type
     raw = numpy.ascontiguousarray(raw.ravel(), dtype=dtype)
     if dark is not None:
         assert dark.size == size, "Dark array size is correct"

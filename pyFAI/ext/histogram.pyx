@@ -29,7 +29,7 @@
 """Selector for OpenMP enabled or not histogram functions"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "09/01/2018"
+__date__ = "09/11/2018"
 __license__ = "MIT"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"

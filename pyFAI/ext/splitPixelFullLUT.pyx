@@ -24,11 +24,16 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/09/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
+include "regrid_common.pxi"
+
+
 import cython
 import os
 import sys
@@ -39,7 +44,6 @@ cimport numpy
 from libc.math cimport fabs, floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
 
-include "regrid_common.pxi"
 
 from ..utils import crc32
 from ..utils.decorators import deprecated
