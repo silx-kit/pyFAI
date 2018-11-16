@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/08/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 
 
@@ -657,6 +657,32 @@ class Detector(with_metaclass(DetectorMeta, object)):
                         self._pixel_corners[:, :, 2, 0] = p3[1:, 1:]
                         self._pixel_corners[:, :, 3, 0] = p3[:-1, 1:]
         return self._pixel_corners
+
+    def set_pixel_corners(self, ary):
+        """Sets the position of pixel corners with some additional validation
+        
+        :param ary: This a 4D array which contains: number of lines, 
+                                                    number of columns, 
+                                                    corner index, 
+                                                    position in space Z, Y, X
+        """
+        if ary is None:
+            # Leave as it is ... just reset the array
+            self._pixel_corners = None
+        else:
+            ary = numpy.ascontiguousarray(ary, dtype=numpy.float32)
+            # Validation for the array
+            assert ary.ndim == 4
+            assert ary.shape[3] == 3  # 3 coordinates in Z Y X
+            assert ary.shape[2] >= 3  # at least 3 corners per pixel
+
+            z = ary[..., 0]
+            is_flat = (z.max() == z.min() == 0.0)
+            with self._sem:
+                self.IS_CONTIGUOUS = False
+                self.IS_FLAT = is_flat
+                self.uniform_pixel = False  # This enforces the usage of pixel_corners
+                self._pixel_corners = ary
 
     def save(self, filename):
         """
