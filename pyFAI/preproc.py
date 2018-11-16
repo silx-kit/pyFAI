@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2017"
+__date__ = "16/11/2018"
 __status__ = "development"
 
 import warnings
@@ -195,11 +195,11 @@ def preproc(raw,
             result = numpy.zeros(out_shape, dtype=dtype)
             numerator[mask] = 0.0
             denominator[mask] = 0.0
-            variance[mask] = 0.0
             result[..., 0] = numerator.reshape(shape)
             if variance is None:
                 result[:, :, 1] = denominator.reshape(shape)
             else:
+                variance[mask] = 0.0
                 result[..., 1] = variance.reshape(shape)
                 result[..., 2] = denominator.reshape(shape)
         else:
