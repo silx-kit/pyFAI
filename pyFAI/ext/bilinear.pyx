@@ -28,13 +28,13 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "11/01/2018"
+__date__ = "15/11/2018"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
 import numpy
-cimport numpy
+cimport numpy as cnumpy
 from cython cimport floating
 from cython.parallel import prange
 
@@ -61,9 +61,9 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
     cdef:
         int i, p1, p2, dim1, dim2, size = d1.size
         float delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2
-        numpy.ndarray[numpy.float32_t, ndim=1] out1 = numpy.zeros(size, dtype=numpy.float32)
-        numpy.ndarray[numpy.float32_t, ndim=1] out2 = numpy.zeros(size, dtype=numpy.float32)
-        numpy.ndarray[numpy.float32_t, ndim=1] out3
+        cnumpy.float32_t[::1] out1 = numpy.zeros(size, dtype=numpy.float32)
+        cnumpy.float32_t[::1] out2 = numpy.zeros(size, dtype=numpy.float32)
+        cnumpy.float32_t[::1] out3
     if not is_flat:
         out3 = numpy.zeros(size, dtype=numpy.float32)
     dim1 = pos.shape[0]
@@ -132,9 +132,9 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
             + C2 * delta1 * delta2 \
             + D2 * (1.0 - delta1) * delta2
     if is_flat:
-        return out1, out2, None
+        return numpy.asarray(out1), numpy.asarray(out2), None
     else:
-        return out1, out2, out3
+        return numpy.asarray(out1), numpy.asarray(out2), numpy.asarray(out3)
 
 
 @cython.boundscheck(False)
@@ -159,7 +159,8 @@ def convert_corner_2D_to_4D(int ndim,
     shape1 = d2.shape[1] - 1
     assert d1.shape[0] == d2.shape[0], "d1.shape[0] == d2.shape[0]"
     assert d1.shape[1] == d2.shape[1], "d1.shape[1] == d2.shape[1]"
-    cdef numpy.ndarray[numpy.float32_t, ndim=4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
+    cdef cnumpy.float32_t[:, :, :, ::1] pos = numpy.zeros((shape0, shape1, 4, ndim), 
+                                                       dtype=numpy.float32)
     for i in prange(shape0, nogil=True, schedule="static"):
         for j in range(shape1):
             pos[i, j, 0, ndim - 2] += d1[i, j]
@@ -179,7 +180,6 @@ def convert_corner_2D_to_4D(int ndim,
                 pos[i, j, 1, 0] += d3[i + 1, j]
                 pos[i, j, 2, 0] += d3[i + 1, j + 1]
                 pos[i, j, 3, 0] += d3[i, j + 1]
-    return pos
-
+    return numpy.asarray(pos)
 
 include "bilinear.pxi"
