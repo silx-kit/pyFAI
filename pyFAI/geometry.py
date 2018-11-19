@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/08/2018"
+__date__ = "19/11/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1181,7 +1181,7 @@ class Geometry(object):
                 f.write("# Calibration done at %s\n" % time.ctime())
                 f.write("poni_version: 2\n")
                 detector = self.detector
-                f.write("Detector: %s\n" % detector.name)
+                f.write("Detector: %s\n" % detector.__class__.__name__)
                 f.write("Detector_config: %s\n" % json.dumps(detector.get_config()))
 
                 f.write("Distance: %s\n" % self._dist)

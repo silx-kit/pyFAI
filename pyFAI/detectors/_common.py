@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/11/2018"
+__date__ = "19/11/2018"
 __status__ = "stable"
 
 
@@ -559,14 +559,14 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 delta1 = d1 - i1
                 delta2 = d2 - i2
                 pixels = self._pixel_corners[i1, i2]
-                A1 = pixels[:, :, 0, 1]
-                A2 = pixels[:, :, 0, 2]
-                B1 = pixels[:, :, 1, 1]
-                B2 = pixels[:, :, 1, 2]
-                C1 = pixels[:, :, 2, 1]
-                C2 = pixels[:, :, 2, 2]
-                D1 = pixels[:, :, 3, 1]
-                D2 = pixels[:, :, 3, 2]
+                A1 = pixels[..., 0, 1]
+                A2 = pixels[..., 0, 2]
+                B1 = pixels[..., 1, 1]
+                B2 = pixels[..., 1, 2]
+                C1 = pixels[..., 2, 1]
+                C2 = pixels[..., 2, 2]
+                D1 = pixels[..., 3, 1]
+                D2 = pixels[..., 3, 2]
                 # points A and D are on the same dim1 (Y), they differ in dim2 (X)
                 # points B and C are on the same dim1 (Y), they differ in dim2 (X)
                 # points A and B are on the same dim2 (X), they differ in dim1 (Y)
@@ -581,10 +581,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
                     + C2 * delta1 * delta2 \
                     + D2 * (1.0 - delta1) * delta2
                 if not self.IS_FLAT:
-                    A0 = pixels[:, :, 0, 0]
-                    B0 = pixels[:, :, 1, 0]
-                    C0 = pixels[:, :, 2, 0]
-                    D0 = pixels[:, :, 3, 0]
+                    A0 = pixels[..., 0, 0]
+                    B0 = pixels[..., 1, 0]
+                    C0 = pixels[..., 2, 0]
+                    D0 = pixels[..., 3, 0]
                     p3 = A0 * (1.0 - delta1) * (1.0 - delta2) \
                         + B0 * delta1 * (1.0 - delta2) \
                         + C0 * delta1 * delta2 \
