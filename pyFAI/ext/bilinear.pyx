@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "15/11/2018"
+__date__ = "19/11/2018"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -48,8 +48,7 @@ logger = logging.getLogger("pyFAI.ext.bilinear")
 def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
                              float[:, :, :, ::1] pos,
                              bint is_flat=True):
-    """
-    Calculate the Cartesian position for array of position (d1, d2)
+    """Calculate the Cartesian position for array of position (d1, d2)
     with pixel coordinated stored in array pos.
     This is bilinear interpolation.
 
@@ -82,11 +81,17 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
 
         if p1 < 0:
             with gil:
-                print("f1= %s" % f1)
+                logger.warning("negative index along dim1: f1= %s", f1)
+            p1 = 0
+            f1 = 0.0
+            delta1 = d1[i]
 
-        if p1 < 0:
+        if p2 < 0:
             with gil:
-                print("f2= %s" % f2)
+                logger.warning("negative index along dim2: f2= %s", f2)
+            p2 = 0
+            f2 = 0.0
+            delta2 = d2[i]
 
         if p1 >= dim1:
             if p1 > dim1:
