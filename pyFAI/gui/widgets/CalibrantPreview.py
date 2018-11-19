@@ -115,13 +115,13 @@ class CalibrantPreview(qt.QFrame):
         toolTip = []
         for f in fileds:
             field_name, field_value, suffix = f
-            field = "<li><b>%s</b>: %s</li>" % (field_name, field_value)
+            field = u"<li><b>%s</b>: %s</li>" % (field_name, field_value)
             if suffix is not None:
-                field = "%s (%s)" % (field, suffix)
+                field = u"%s (%s)" % (field, suffix)
             toolTip.append(field)
 
-        toolTip = "\n".join(toolTip)
-        toolTip = "<html><ul>%s</ul></html>" % toolTip
+        toolTip = u"\n".join(toolTip)
+        toolTip = u"<html><ul>%s</ul></html>" % toolTip
         self.setToolTip(toolTip)
 
     def __getPixmap(self):
