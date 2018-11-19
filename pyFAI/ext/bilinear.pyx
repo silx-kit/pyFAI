@@ -42,9 +42,9 @@ import logging
 logger = logging.getLogger("pyFAI.ext.bilinear")
 
 
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
 def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
                              float[:, :, :, ::1] pos,
                              bint is_flat=True):
