@@ -33,12 +33,12 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "19/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
-include "sparse_common.pxi"
+
 
 cimport cython
 from cython cimport floating

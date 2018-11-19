@@ -29,9 +29,11 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "16/11/2018"
+__date__ = "19/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
+include "regrid_common.pxi"
 
 import cython
 import numpy
@@ -56,13 +58,13 @@ class CsrIntegrator2d(object):
     Nota: nnz = indptr[-1]
     """
     def __init__(self, 
-                 int bins,
                  int size,
-                 cnumpy.float32_t[::1] data=None
-                 cnumpy.int32_t[::1] indices=None
-                 cnumpy.int32_t[::1] indptr=None
-                 data_t empty=0.0
-                 bin_center=None):
+                 cnumpy.float32_t[::1] data=None,
+                 cnumpy.int32_t[::1] indices=None,
+                 cnumpy.int32_t[::1] indptr=None,
+                 data_t empty=0.0,
+                 bin_centers0=None,
+                 bin_centers1=None):
 
         """Constructor of the abstract class
         
@@ -72,12 +74,12 @@ class CsrIntegrator2d(object):
         :param indices: indices of the CSR matrix
         :param indptr: indices of the start of line in the CSR matrix
         :param empty: value for empty pixels
-        :param bin_center: position of the bin center
+        :param bin_centers0: position of the bin center along dim0
+        :param bin_centers0: position of the bin center along dim1
         """
         self.empty = empty
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
-        self.bins = None
         self.size = size
         self._csr = None
         self.lut_size = 0  # actually nnz
@@ -88,12 +90,17 @@ class CsrIntegrator2d(object):
             self.set_matrix(data, indices, indptr)
             
     def set_matrix(self, 
-                   cnumpy.float32_t[::1] data=None, 
-                   indices, indptr):
+                   cnumpy.float32_t[::1] data not None, 
+                   cnumpy.int_t[::1] indices not None, 
+                   cnumpy.int_t[::1] indptr not None):
+        """Actually create the CSR_matrix"""
+        from scipy.sparse import csr_matrix
+
         self.data = data
         self.indices = indices
         self.indptr = indptr
         self.lut_size = len(indices)
+        
         self._csr = csr_matrix((data, indices, indptr))
         if (self.bin_centers0 is not None) and (self.bin_centers1 is not None):
             assert len(self.bin_centers0) * len(self.bin_centers1) == len(indptr) - 1
@@ -137,7 +144,7 @@ class CsrIntegrator2d(object):
 
         """
         cdef:
-            numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
+            cnumpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
             acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
             data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
@@ -146,7 +153,7 @@ class CsrIntegrator2d(object):
             data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
             data_t[::1] ccoef = self.data
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            numpy.int32_t[::1] indices = self.indices, indptr = self.indptr
+            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
         assert weights.size == size, "weights size"
 
         if dummy is not None:
