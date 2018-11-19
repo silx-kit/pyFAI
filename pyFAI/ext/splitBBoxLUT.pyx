@@ -220,7 +220,7 @@ class HistoBBox1d(object):
             position_t[:] cpos0_sup = self.cpos0_sup
             position_t[:] cpos0_inf = self.cpos0_inf
             position_t[:] cpos1_min, cpos1_max
-            lut_point[:, :] lut
+            lut_t[:, :] lut
             mask_t[:] cmask
 
         size = self.size
@@ -276,7 +276,7 @@ class HistoBBox1d(object):
 
         self.lut_size = lut_size
 
-        lut_nbytes = bins * lut_size * sizeof(lut_point)
+        lut_nbytes = bins * lut_size * sizeof(lut_t)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -293,7 +293,7 @@ class HistoBBox1d(object):
             msg = "The look-up table has dimension (%s,%s) which is a non-sense." +\
                   "Did you mask out all pixel or is your image out of the geometry range?"
             raise RuntimeError(msg % (bins, lut_size))
-        lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_point), format="if")
+        lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_t), format="if")
         memset(&lut[0,0], 0, lut_nbytes)
 
         with nogil:
@@ -358,7 +358,7 @@ class HistoBBox1d(object):
         there is an issue with python2.6 and ref counting"""
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :] lut = self._lut
+        cdef lut_t[:, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
@@ -369,8 +369,8 @@ class HistoBBox1d(object):
         if need_decref and (sys.getrefcount(self._lut) >= rc_before + 2):
             logger.warning("Decref needed")
             Py_XDECREF(<PyObject *> self._lut)
-        return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
-                                        shape=self._lut.shape, dtype=dtype_lut,
+        return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
+                                        shape=self._lut.shape, dtype=lut_d,
                                         copy=True)
 
     @property
@@ -428,7 +428,7 @@ class HistoBBox1d(object):
             # Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
             int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :] lut = self._lut
+        cdef lut_t[:, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF & ((rc_after - rc_before) >= 2)
 
@@ -589,7 +589,7 @@ class HistoBBox1d(object):
         # Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :] lut = self._lut
+        cdef lut_t[:, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF & ((rc_after - rc_before) >= 2)
 
@@ -924,7 +924,7 @@ class HistoBBox2d(object):
             position_t[::1] cpos1_inf = self.cpos1_inf
             position_t[::1] cpos1_sup = self.cpos1_sup
             cnumpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            lut_point[:, :, ::1] lut
+            lut_t[:, :, ::1] lut
             mask_t[:] cmask
             acc_t inv_area, delta_down, delta_up, delta_right, delta_left
         if self.check_mask:
@@ -969,7 +969,7 @@ class HistoBBox2d(object):
         # just recycle the outmax array
         outmax[:, :] = 0
 
-        lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_point)
+        lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_t)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -980,7 +980,7 @@ class HistoBBox2d(object):
                     raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
                                       (bins0, bins1, lut_size, lut_nbytes, memsize))
         # else hope we have enough memory
-        lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_point), format="if")
+        lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_t), format="if")
         memset(&lut[0, 0, 0], 0, lut_nbytes)
 
         # NOGIL
@@ -1137,7 +1137,7 @@ class HistoBBox2d(object):
         """
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :, :] lut = self._lut
+        cdef lut_t[:, :, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         shape = (self._lut.shape[0] * self._lut.shape[1], self._lut.shape[2])
@@ -1150,8 +1150,8 @@ class HistoBBox2d(object):
             print("Warning: Decref needed")
             Py_XDECREF(<PyObject *> self._lut)
 
-        return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
-                                        shape=shape, dtype=dtype_lut,
+        return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
+                                        shape=shape, dtype=lut_d,
                                         copy=True)
 
     @property
@@ -1207,7 +1207,7 @@ class HistoBBox2d(object):
         # Ugly hack against bug #89
             int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :, ::1] lut = self._lut
+        cdef lut_t[:, :, ::1] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
 

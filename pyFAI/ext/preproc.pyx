@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "15/11/2018"
+__date__ = "16/11/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -426,12 +426,127 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
                 one_den = 0.0
         else:
             one_num = 0.0
-            one_num = 0.0
+            one_var = 0.0
             one_den = 0.0
 
         result[i, 0] += one_num
         result[i, 1] += one_var
         result[i, 2] += one_den
+    return result
+
+
+@cython.boundscheck(False)
+@cython.cdivision(True)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+cdef floating[:, ::1]c4_preproc(floating[::1] data,
+                                floating[::1] dark=None,
+                                floating[::1] flat=None,
+                                floating[::1] solidangle=None,
+                                floating[::1] polarization=None,
+                                floating[::1] absorption=None,
+                                any_int_t[::1] mask=None,
+                                floating dummy=0.0,
+                                floating delta_dummy=0.0,
+                                bint check_dummy=False,
+                                floating normalization_factor=1.0,
+                                floating[::1] variance=None,
+                                floating[::1] dark_variance=None,
+                                ) nogil:
+    """Common preprocessing step for all routines: C-implementation
+    with split_result to return (signal, variance, normalization, count)
+
+    :param data: raw value, as a numpy array, 1D or 2D
+    :param dark: array containing the value of the dark noise, to be subtracted
+    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
+    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility
+    :param polarization: Correction for polarization of the incident beam
+    :param absorption: Correction for absorption in the sensor volume
+    :param mask: array non null  where data should be ignored
+    :param dummy: value of invalid data
+    :param delta_dummy: precision for invalid data
+    :param normalization_factor: final value is divided by this, settles on the denominator
+    :param variance: variance of the data
+    :param dark_variance: variance of the dark
+    NaN are always considered as invalid
+
+    Empty pixels are 0.0 for both signal, variance, normalization and count 
+    """
+    cdef:
+        int size, i
+        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,
+        bint is_valid, do_polarization, do_variance, do_dark_variance
+        floating[:, ::1] result
+        floating one_num, one_result, one_flat, one_den, one_var
+
+    with gil:
+        size = data.size
+        do_dark = dark is not None
+        do_flat = flat is not None
+        do_solidangle = solidangle is not None
+        do_absorption = absorption is not None
+        do_polarization = polarization is not None
+        check_mask = mask is not None
+        do_variance = variance is not None
+        do_dark_variance = dark_variance is not None
+        result = numpy.zeros((size, 4), dtype=numpy.asarray(data).dtype)
+
+    for i in prange(size, nogil=True, schedule="static"):
+        one_num = data[i]
+        one_den = normalization_factor
+        if do_variance:
+            one_var = variance[i]
+        else:
+            one_var = 0.0
+
+        is_valid = not isnan(one_num)
+        if is_valid and check_mask:
+            is_valid = (mask[i] == 0)
+        if is_valid and check_dummy:
+            if delta_dummy == 0:
+                is_valid = (one_num != dummy)
+            else:
+                is_valid = fabs(one_num - dummy) > delta_dummy
+
+        if is_valid and do_flat:
+            one_flat = flat[i]
+            if delta_dummy == 0:
+                is_valid = (one_flat != dummy)
+            else:
+                is_valid = fabs(one_flat - dummy) > delta_dummy
+
+        if is_valid:
+            # Do not use "/=" as they mean reduction for cython
+            if do_dark:
+                one_num = one_num - dark[i]
+                if do_dark_variance:
+                    one_var = one_var + dark_variance[i]
+            if do_flat:
+                one_den = one_den * flat[i]
+            if do_polarization:
+                one_den = one_den * polarization[i]
+            if do_solidangle:
+                one_den = one_den * solidangle[i]
+            if do_absorption:
+                one_den = one_den * absorption[i]
+            if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
+                one_num = 0.0
+                one_var = 0.0
+                one_den = 0.0
+                one_count = 0.0
+            else:
+                one_count = 1.0
+        else:
+            one_num = 0.0
+            one_var = 0.0
+            one_den = 0.0
+            one_count = 0.0
+
+        result[i, 0] += one_num
+        result[i, 1] += one_var
+        result[i, 2] += one_den
+        result[i, 3] += one_count
+        
     return result
 
 
@@ -451,7 +566,7 @@ def _preproc(floating[::1] raw,
              floating[::1] polarization=None,
              floating[::1] absorption=None,
              any_int_t[::1] mask=None,
-             bint split_result=False,
+             int split_result=0,
              floating[::1] variance=None,
              floating[::1] dark_variance=None,
              bint poissonian=False,
@@ -487,8 +602,14 @@ def _preproc(floating[::1] raw,
 
     if split_result or (variance is not None) or poissonian:
         out_shape = list(shape)
-        split_result = True
-        if (variance is not None):
+        if split_result == 4:
+            out_shape += [4]
+            if poisssonian:
+                variance = raw
+            res2d = c4_preproc(raw, dark, flat, solidangle, polarization, absorption,
+                               mask, dummy, delta_dummy, check_dummy, normalization_factor, 
+                               variance, dark_variance)
+        elif (variance is not None):
             out_shape += [3]
             res2d = c3_preproc(raw, dark, flat, solidangle, polarization, absorption,
                                mask, dummy, delta_dummy, check_dummy, normalization_factor, 
@@ -522,7 +643,7 @@ def preproc(raw,
             delta_dummy=None,
             normalization_factor=None,
             empty=None,
-            bint split_result=False,
+            split_result=False,
             variance=None,
             dark_variance=None,
             bint poissonian=False,

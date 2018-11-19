@@ -73,9 +73,12 @@ def preproc(raw,
     :param absorption: Correction for absorption in the sensor volume
     :param normalization_factor: final value is divided by this
     :param empty: value to be given for empty bins
-    :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
-    :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
-    :param dark_variance: provide an estimation of the variance of the dark_current, enforce split_result=True and return an float3 array with variance in second position.
+    :param split_result: set to true to separate signal from normalization and 
+            return an array of float2, float3 (with variance) ot float4 (including counts)
+    :param variance: provide an estimation of the variance, enforce 
+            split_result=True and return an float3 array with variance in second position.
+    :param dark_variance: provide an estimation of the variance of the dark_current, 
+            enforce split_result=True and return an float3 array with variance in second position.
     :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
     :param dtype: dtype for all processing
 
@@ -104,11 +107,13 @@ def preproc(raw,
     shape = raw.shape
     out_shape = list(shape)
     if split_result or (variance is not None) or poissonian:
-        split_result = True
-        if (variance is not None) or poissonian:
+        if split_result == 4:
+            out_shape += [4]
+        elif (variance is not None) or poissonian:
             out_shape += [3]
         else:
             out_shape += [2]
+        split_result = True
     size = raw.size
     if (mask is None) or (mask is False):
         mask = numpy.zeros(size, dtype=bool)
@@ -129,12 +134,12 @@ def preproc(raw,
         cdummy = dtype(empty or 0.0)
         ddummy = 0.0
 
-    numerator = numpy.ascontiguousarray(raw.ravel(), dtype=dtype)
-    denominator = numpy.zeros_like(numerator) + normalization_factor
+    signal = numpy.ascontiguousarray(raw.ravel(), dtype=dtype)
+    normalization = numpy.zeros_like(signal) + normalization_factor
     if variance is not None:
         variance = numpy.ascontiguousarray(variance.ravel(), dtype=dtype)
     elif poissonian:
-        variance = numerator.copy()
+        variance = signal.copy()
 
     # runtime warning here
     with warnings.catch_warnings():
@@ -143,9 +148,9 @@ def preproc(raw,
         if check_dummy:
             # runtime warning here
             if ddummy == 0:
-                mask |= (numerator == cdummy)
+                mask |= (signal == cdummy)
             else:
-                mask |= (abs(numerator - cdummy) <= ddummy)
+                mask |= (abs(signal - cdummy) <= ddummy)
 
         if dark is not None:
             assert dark.size == size, "Dark array size is correct"
@@ -156,7 +161,7 @@ def preproc(raw,
                     mask |= (dark == cdummy)
                 else:
                     mask |= abs(dark - cdummy) < ddummy
-            numerator -= dark
+            signal -= dark
             if poissonian:
                 variance += dark
             elif dark_variance is not None:
@@ -171,39 +176,41 @@ def preproc(raw,
                     mask |= (flat == cdummy)
                 else:
                     mask |= abs(flat - cdummy) <= ddummy
-            denominator *= flat
+            normalization *= flat
 
         if polarization is not None:
             assert polarization.size == size, "Polarization array size is correct"
-            denominator *= numpy.ascontiguousarray(polarization.ravel(), dtype=dtype)
+            normalization *= numpy.ascontiguousarray(polarization.ravel(), dtype=dtype)
 
         if solidangle is not None:
             assert solidangle.size == size, "Solid angle array size is correct"
-            denominator *= numpy.ascontiguousarray(solidangle.ravel(), dtype=dtype)
+            normalization *= numpy.ascontiguousarray(solidangle.ravel(), dtype=dtype)
 
         if absorption is not None:
             assert absorption.size == size, "Absorption array size is correct"
-            denominator *= numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
+            normalization *= numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
 
-        mask |= numpy.logical_not(numpy.isfinite(numerator))
-        mask |= numpy.logical_not(numpy.isfinite(denominator))
-        mask |= (denominator == 0)
+        mask |= numpy.logical_not(numpy.isfinite(signal))
+        mask |= numpy.logical_not(numpy.isfinite(normalization))
+        mask |= (normalization == 0)
         if variance is not None:
             mask |= numpy.logical_not(numpy.isfinite(variance))
 
         if split_result:
             result = numpy.zeros(out_shape, dtype=dtype)
-            numerator[mask] = 0.0
-            denominator[mask] = 0.0
-            result[..., 0] = numerator.reshape(shape)
+            if out_shape[-1] == 4:
+                result[..., 3] = 1.0 - mask.reshape(shape)
+            signal[mask] = 0.0
+            normalization[mask] = 0.0
+            result[..., 0] = signal.reshape(shape)
             if variance is None:
-                result[:, :, 1] = denominator.reshape(shape)
+                result[:, :, 1] = normalization.reshape(shape)
             else:
                 variance[mask] = 0.0
                 result[..., 1] = variance.reshape(shape)
-                result[..., 2] = denominator.reshape(shape)
+                result[..., 2] = normalization.reshape(shape)
         else:
-            result = numerator / denominator
+            result = signal / normalization
             result[mask] = cdummy
             result.shape = shape
     return result

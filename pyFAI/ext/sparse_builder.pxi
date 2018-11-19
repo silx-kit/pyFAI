@@ -45,7 +45,7 @@ from cython.operator cimport dereference
 from cython.operator cimport preincrement
 cimport cython
 
-from .sparse_utils import dtype_lut
+from .sparse_utils import lut_d
 
 
 cdef packed struct pixel_t:
@@ -912,7 +912,7 @@ cdef class SparseBuilder(object):
                 max_size = size
 
         # Alloc a very big array
-        lut = numpy.zeros((self._nbin, max_size), dtype=dtype_lut)
+        lut = numpy.zeros((self._nbin, max_size), dtype=lut_d)
 
         # Feed the array
         current_bin_pos = numpy.zeros(self._nbin, dtype=numpy.int32)
@@ -932,7 +932,7 @@ cdef class SparseBuilder(object):
 
             preincrement(it_packed)
 
-        return numpy.asarray(lut, dtype=dtype_lut)
+        return numpy.asarray(lut, dtype=lut_d)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -975,11 +975,11 @@ cdef class SparseBuilder(object):
                 max_size = size
 
         # Alloc a very big array
-        lut = numpy.zeros((self._nbin, max_size), dtype=dtype_lut)
+        lut = numpy.zeros((self._nbin, max_size), dtype=lut_d)
 
         # Feed the array
         for bin_id in range(self._nbin):
             data_ptr = &lut[bin_id, 0]
             self._copy_bin_data_to(bin_id, data_ptr)
 
-        return numpy.asarray(lut, dtype=dtype_lut)
+        return numpy.asarray(lut, dtype=lut_d)

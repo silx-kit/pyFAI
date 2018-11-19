@@ -51,12 +51,12 @@ def LUT_to_CSR(lut):
     nrow = lut.shape[0]
 
     cdef:
-        lut_point[:, ::1] lut_ = numpy.ascontiguousarray(lut, dtype_lut)
+        lut_t[:, ::1] lut_ = numpy.ascontiguousarray(lut, lut_d)
         float[::1] data = numpy.zeros(nrow * ncol, numpy.float32)
         int[::1]  indices = numpy.zeros(nrow * ncol, numpy.int32)
         int[::1] indptr = numpy.zeros(nrow + 1, numpy.int32)
         int i, j, nelt
-        lut_point point
+        lut_t point
     with nogil:
         nelt = 0
         for i in range(nrow):
@@ -95,8 +95,8 @@ def CSR_to_LUT(data, indices, indptr):
         float[::1] data_ = numpy.ascontiguousarray(data, dtype=numpy.float32)
         int[::1]  indices_ = numpy.ascontiguousarray(indices, dtype=numpy.int32)
         int[::1] indptr_ = numpy.ascontiguousarray(indptr, dtype=numpy.int32)
-        lut_point[:, ::1] lut = numpy.zeros((nrow, ncol), dtype=dtype_lut)
-        lut_point point
+        lut_t[:, ::1] lut = numpy.zeros((nrow, ncol), dtype=lut_d)
+        lut_t point
         int i, j, nelt
         float coef
     with nogil:
@@ -226,25 +226,25 @@ cdef class ArrayBuilder:
             int i, max_size = 0
             int[:] local_idx
             float[:] local_coef
-            lut_point[:, :] lut
+            lut_t[:, :] lut
             Vector vector
         for i in range(len(self.lines)):
             if len(self.lines[i]) > max_size:
                 max_size = len(self.lines[i])
-        lut = numpy.zeros((len(self.lines), max_size), dtype=dtype_lut)
+        lut = numpy.zeros((len(self.lines), max_size), dtype=lut_d)
         for i in range(len(self.lines)):
             vector = self.lines[i]
             local_idx, local_coef = vector.get_data()
             for j in range(len(vector)):
-                lut[i, j] = lut_point(local_idx[j], local_coef[j])
-        return numpy.asarray(lut, dtype=dtype_lut)
+                lut[i, j] = lut_t(local_idx[j], local_coef[j])
+        return numpy.asarray(lut, dtype=lut_d)
 
     def as_CSR(self):
         cdef:
             int i, val, start, end, total_size = 0
             Vector vector
-            lut_point[:, :] lut
-            lut_point[:] data
+            lut_t[:, :] lut
+            lut_t[:] data
             int[:] idptr, idx, local_idx
             float[:] coef, local_coef
         idptr = numpy.zeros(len(self.lines) + 1, dtype=numpy.int32)

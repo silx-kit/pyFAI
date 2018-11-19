@@ -53,8 +53,8 @@ from ..third_party import six
 import fabio
 
 from sparse_builder cimport SparseBuilder
-from sparse_utils cimport ArrayBuilder, lut_point
-from sparse_utils import ArrayBuilder, dtype_lut
+from sparse_utils cimport ArrayBuilder, lut_t
+from sparse_utils import ArrayBuilder, lut_d
 
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
@@ -387,7 +387,7 @@ def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_p
         int err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        lut_point[:, :, :] lut
+        lut_t[:, :, :] lut
         bint do_mask = mask is not None
         cnumpy.float32_t[:, ::1] buffer
     size = bin_size.max()
@@ -403,8 +403,8 @@ def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_p
     if (size == 0):  # fix 271
         raise RuntimeError("The look-up table has dimension 0 which is a non-sense." +
                            " Did you mask out all pixel or is your image out of the geometry range?")
-    lut = view.array(shape=(shape0, shape1, size), itemsize=sizeof(lut_point), format="if")
-    lut_total_size = shape0 * shape1 * size * sizeof(lut_point)
+    lut = view.array(shape=(shape0, shape1, size), itemsize=sizeof(lut_t), format="if")
+    lut_total_size = shape0 * shape1 * size * sizeof(lut_t)
     memset(&lut[0, 0, 0], 0, lut_total_size)
     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], lut_total_size / 1.0e6))
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (delta1, delta0, size))
@@ -504,8 +504,8 @@ def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_p
     # Hack to prevent memory leak !!!
     cdef cnumpy.ndarray[cnumpy.float64_t, ndim = 2] tmp_ary = numpy.empty(shape=(shape0 * shape1, size), dtype=numpy.float64)
     memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], tmp_ary.nbytes)
-    return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
-                                    shape=(shape0 * shape1, size), dtype=dtype_lut,
+    return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
+                                    shape=(shape0 * shape1, size), dtype=lut_d,
                                     copy=True)
 
 
@@ -683,7 +683,7 @@ def calc_sparse(cnumpy.float32_t[:, :, :, ::1] pos not None,
         cnumpy.float32_t[::1] data, large_data
         cnumpy.float32_t[:, ::1] buffer
         bint do_mask = mask is not None
-        lut_point[:, :] lut
+        lut_t[:, :] lut
     if do_mask:
         assert shape_in0 == mask.shape[0], "shape_in0 == mask.shape[0]"
         assert shape_in1 == mask.shape[1], "shape_in1 == mask.shape[1]"
@@ -824,7 +824,7 @@ def calc_sparse(cnumpy.float32_t[:, :, :, ::1] pos not None,
         res = (numpy.asarray(data), numpy.asarray(indices), numpy.asarray(indptr))
     elif format == "lut":
         lut_size = numpy.asarray(pixel_count).max()
-        lut = numpy.zeros(shape=(bins, lut_size), dtype=dtype_lut)
+        lut = numpy.zeros(shape=(bins, lut_size), dtype=lut_d)
         pixel_count[:] = 0
         logger.info("LUT matrix: %.3f MByte; Max source pixel in target: %i, average splitting: %.2f",
                     (lut.nbytes) / 1.0e6, lut_size, (1.0 * counter / bins))
@@ -879,7 +879,7 @@ def calc_sparse_v2(cnumpy.float32_t[:, :, :, ::1] pos not None,
         cnumpy.float32_t[::1] data, large_data
         cnumpy.float32_t[:, ::1] buffer
         bint do_mask = mask is not None
-        lut_point[:, :] lut
+        lut_t[:, :] lut
     if do_mask:
         assert shape_in0 == mask.shape[0], "shape_in0 == mask.shape[0]"
         assert shape_in1 == mask.shape[1], "shape_in1 == mask.shape[1]"
@@ -1115,7 +1115,7 @@ def correct(image, shape_in, shape_out, LUT not None, dummy=None, delta_dummy=No
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None,
+def correct_LUT(image, shape_in, shape_out, lut_t[:, ::1] LUT not None,
                 dummy=None, delta_dummy=None, method="double"):
     """Correct an image based on the look-up table calculated ...
     dispatch between kahan and double
@@ -1146,7 +1146,7 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def correct_LUT_kahan(image, shape_out, lut_point[:, ::1] LUT not None,
+def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
                       dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
 
@@ -1205,7 +1205,7 @@ def correct_LUT_kahan(image, shape_out, lut_point[:, ::1] LUT not None,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def correct_LUT_double(image, shape_out, lut_point[:, ::1] LUT not None,
+def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
                        dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
     double precision accumulated
@@ -1412,7 +1412,7 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 def correct_LUT_preproc_double(image, shape_out,
-                               lut_point[:, ::1] LUT not None,
+                               lut_t[:, ::1] LUT not None,
                                dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
     implementation using double precision accumulator
@@ -1613,7 +1613,7 @@ def correct_CSR_preproc_double(image, shape_out,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
+def uncorrect_LUT(image, shape, lut_t[:, :]LUT):
     """
     Take an image which has been corrected and transform it into it's raw (with loss of information)
 
@@ -1800,7 +1800,7 @@ class Distortion(object):
             cnumpy.int32_t k, idx = 0
             float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
             cnumpy.float32_t[:, :, :, ::1] pos
-            cnumpy.ndarray[lut_point, ndim=3] lut
+            cnumpy.ndarray[lut_t, ndim=3] lut
             cnumpy.ndarray[cnumpy.int32_t, ndim=2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
             cnumpy.float32_t[:, ::1] buffer
         shape0, shape1 = self.shape
@@ -1812,7 +1812,7 @@ class Distortion(object):
                 if self.LUT is None:
                     pos = self.pos
                     lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.lut_size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
-                    size = self.shape[0] * self.shape[1] * self.lut_size * sizeof(lut_point)
+                    size = self.shape[0] * self.shape[1] * self.lut_size * sizeof(lut_t)
                     memset(&lut[0, 0, 0], 0, size)
                     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], size / 1.0e6))
                     buffer = numpy.empty((self.delta0, self.delta1), dtype=numpy.float32)
@@ -1913,7 +1913,7 @@ class Distortion(object):
         cdef:
             int i, j, lshape0, lshape1, idx, size
             float coef
-            lut_point[:, ::1] LUT
+            lut_t[:, ::1] LUT
             cnumpy.float32_t[::1] lout, lin
         if self.LUT is None:
             self.calc_LUT()
