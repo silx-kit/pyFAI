@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "15/11/2018"
+__date__ = "20/11/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -1442,7 +1442,7 @@ def correct_LUT_preproc_double(image, shape_out,
         if delta_dummy is None:
             cdelta_dummy = 0.0
     else:
-        dummy = numpy.NaN
+        cdummy = numpy.NaN
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
