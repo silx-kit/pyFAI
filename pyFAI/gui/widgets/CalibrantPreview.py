@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "20/11/2018"
 
 import logging
 import numpy
@@ -100,17 +100,17 @@ class CalibrantPreview(qt.QFrame):
 
         fileds = []
         if name is not None:
-            fileds.append(("Name", name, None))
-        fileds.append(("Nb registered rays", calibrant.count_registered_dSpacing(), None))
+            fileds.append((u"Name", name, None))
+        fileds.append((u"Nb registered rays", calibrant.count_registered_dSpacing(), None))
         dSpacing = calibrant.get_dSpacing()
-        fileds.append(("Nb visible rays", len(dSpacing), "between 0 and π"))
+        fileds.append((u"Nb visible rays", len(dSpacing), u"between 0 and π"))
         if len(dSpacing) > 0:
             ray = calibrant.get_dSpacing()[0]
             angle = calibrant.get_2th()[0]
-            fileds.append(("First visible ray", "%f (%f rad)" % (ray, angle), None))
+            fileds.append((u"First visible ray", u"%f (%f rad)" % (ray, angle), None))
             ray = calibrant.get_dSpacing()[-1]
             angle = calibrant.get_2th()[-1]
-            fileds.append(("Last visible ray", "%f (%f rad)" % (ray, angle), None))
+            fileds.append((u"Last visible ray", u"%f (%f rad)" % (ray, angle), None))
 
         toolTip = []
         for f in fileds:
