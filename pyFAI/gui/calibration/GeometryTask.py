@@ -72,6 +72,7 @@ class ConstraintsPopup(qt.QFrame):
         self.__defaultConstraints = None
         self._resetMin.clicked.connect(self.__resetMin)
         self._resetMax.clicked.connect(self.__resetMax)
+        self._slider.sigValueChanged.connect(self.__sliderValuesChanged)
 
     def __resetMin(self):
         range_ = self.__defaultConstraints.range()
@@ -127,6 +128,15 @@ class ConstraintsPopup(qt.QFrame):
             self.__max.setValue(self.__min.value())
         self.__updateData()
 
+    def __sliderValuesChanged(self, first, second):
+        self.__min.setValue(first)
+        self.__max.setValue(second)
+        if self.__defaultConstraints is not None:
+            vRange = self.__defaultConstraints.range()
+            self.__useDefaultMin = first == vRange[0]
+            self.__useDefaultMax = second == vRange[1]
+        self.__updateData()
+
     def labelCenter(self):
         pos = self._quantity.rect().center()
         pos = self._quantity.mapToParent(pos)
@@ -165,10 +175,16 @@ class ConstraintsPopup(qt.QFrame):
         self.__defaultConstraints = model
         self.__updateData()
 
+        vRange = model.range()
+        if vRange is not None:
+            self._slider.setRange(vRange[0], vRange[1])
+
     _DEFAULT_CONSTRAINT_STYLE = ".QuantityEdit { color: #BBBBBB; qproperty-toolTip: 'Default constraint'}"
     _CUSTOM_CONSTRAINT_STYLE = ".QuantityEdit { color: #000000; qproperty-toolTip: 'Custom constraint'}"
 
     def __updateData(self):
+
+        # Update values
         if self.__defaultConstraints is None:
             return
         if self.__useDefaultMin:
@@ -193,6 +209,26 @@ class ConstraintsPopup(qt.QFrame):
             self._resetMax.setEnabled(True)
         self._minEdit.setStyleSheet(minStyle)
         self._maxEdit.setStyleSheet(maxStyle)
+
+        # Update slider
+        vMin, vMax = self.__min.value(), self.__max.value()
+        if vMin is not None and vMax is not None:
+            old = self._slider.blockSignals(True)
+            if self.__defaultConstraints is not None:
+                vRange = self._slider.getRange()
+                if vRange is not None:
+                    updated = False
+                    vRange = list(vRange)
+                    if vMin < vRange[0]:
+                        vRange[0] = vMin
+                        updated = True
+                    if vMax > vRange[1]:
+                        vRange[1] = vMax
+                        updated = True
+                    if updated:
+                        self._slider.setRange(vRange[0], vRange[1])
+            self._slider.setValues(vMin, vMax)
+            self._slider.blockSignals(old)
 
 
 class FitParamView(qt.QObject):
