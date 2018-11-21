@@ -29,61 +29,75 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "21/11/2018"
 
+import numpy
 from .DataModel import DataModel
-from silx.gui.plot.items.axis import XAxis, YAxis
 
 
 class PlotViewModel(DataModel):
+    """This model allow to store and restitute a plot view.
 
-    def __getAxisRangeInPixel(self, axis):
+    Stored data can be applyed to another plot in order to synchronize
+    location of the data coords.
+    """
+
+    def __getRangeInPixel(self, plot):
         """Returns the size of the axis in pixel"""
-        bounds = axis._getPlot().getPlotBoundsInPixels()
+        bounds = plot.getPlotBoundsInPixels()
         # bounds: left, top, width, height
-        if isinstance(axis, XAxis):
-            return bounds[2]
-        elif isinstance(axis, YAxis):
-            return bounds[3]
-        else:
-            assert(False)
+        return numpy.array([bounds[2], bounds[3]])
 
-    def __getAxisInfo(self, axis):
+    def __getMinMaxPixelCoord(self, plot):
+        """Returns the size of the axis in pixel"""
+        bounds = plot.getPlotBoundsInPixels()
+        # bounds: left, top, width, height
+        coord1 = numpy.array([bounds[0], bounds[1]])
+        coord2 = coord1 + numpy.array([bounds[2], bounds[3]])
+        return coord1, coord2
+
+    def __getAxisDataRange(self, axis):
         limits = axis.getLimits()
-        valueRange = limits[1] - limits[0]
-        middle = (limits[0] + limits[1]) * 0.5
-        pixelRange = self.__getAxisRangeInPixel(axis)
-        pixelSize = valueRange / pixelRange
-        return middle, pixelSize
+        dataRange = limits[1] - limits[0]
+        dataRange = abs(dataRange)
+        return dataRange
 
-    def __getLimitsFromMiddle(self, axis, pos, pixelSize):
-        """Returns the limits to apply to this axis to move the `pos` into the
-        center of this axis.
-        :param Axis axis:
-        :param float pos: Position in the center of the computed limits
-        :param Union[None,float] pixelSize: Pixel size to apply to compute the
-            limits. If `None` the current pixel size is applyed.
-        """
-        pixelRange = self.__getAxisRangeInPixel(axis)
-        a = pos - pixelRange * 0.5 * pixelSize
-        b = pos + pixelRange * 0.5 * pixelSize
-        if a > b:
-            return b, a
-        return a, b
+    def __getDataRange(self, plot):
+        return numpy.array([self.__getAxisDataRange(plot.getXAxis()),
+                            self.__getAxisDataRange(plot.getYAxis())])
 
-    def __setAxisInfo(self, axis, info):
-        middle, pixelSize = info
-        limits = self.__getLimitsFromMiddle(axis, middle, pixelSize)
-        axis.setLimits(*limits)
+    def __getPixelSize(self, plot):
+        dataRange = self.__getDataRange(plot)
+        pixelRange = self.__getRangeInPixel(plot)
+        return dataRange / pixelRange
 
     def setFromPlot(self, plot):
+        pixelSize = self.__getPixelSize(plot)
+        dataCoordAtPixelCoordZero = numpy.array(plot.pixelToData(x=0, y=0))
+        direction = plot.getYAxis().isInverted()
+        value = dataCoordAtPixelCoordZero, pixelSize, direction
+        self.setValue(value)
+
+    def __setViewLocation(self, plot, coord1, coord2):
+        xLimits = coord1[0], coord2[0]
+        yLimits = coord1[1], coord2[1]
+        if xLimits[0] > xLimits[1]:
+            xLimits = xLimits[1], xLimits[0]
+        if yLimits[0] > yLimits[1]:
+            yLimits = yLimits[1], yLimits[0]
         xAxis = plot.getXAxis()
         yAxis = plot.getYAxis()
-        value = self.__getAxisInfo(xAxis), self.__getAxisInfo(yAxis)
-        self.setValue(value)
+        xAxis.setLimits(*xLimits)
+        yAxis.setLimits(*yLimits)
 
     def synchronizePlot(self, plot):
         value = self.value()
-        xInfo, yInfo = value
-        xAxis = plot.getXAxis()
-        yAxis = plot.getYAxis()
-        self.__setAxisInfo(yAxis, yInfo)
-        self.__setAxisInfo(xAxis, xInfo)
+        dataCoordAtPixelCoordZero, pixelSize, direction = value
+        if not direction:
+            # Coord of pixel and data are switched sometimes
+            pixelSize = numpy.array([pixelSize[0], -pixelSize[1]])
+
+        # Pixel coords
+        coord1, coord2 = self.__getMinMaxPixelCoord(plot)
+        # Data coords
+        coord1 = dataCoordAtPixelCoordZero + coord1 * pixelSize
+        coord2 = dataCoordAtPixelCoordZero + coord2 * pixelSize
+        self.__setViewLocation(plot, coord1, coord2)
