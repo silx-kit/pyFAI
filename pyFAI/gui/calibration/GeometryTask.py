@@ -80,6 +80,8 @@ class ConstraintsPopup(qt.QFrame):
         else:
             value = range_[0]
         self.__min.setValue(value)
+        if value > self.__max.value():
+            self.__max.setValue(value)
         self.__useDefaultMin = True
         self.__updateData()
 
@@ -90,6 +92,8 @@ class ConstraintsPopup(qt.QFrame):
         else:
             value = range_[1]
         self.__max.setValue(value)
+        if self.__min.value() > value:
+            self.__min.setValue(value)
         self.__useDefaultMax = True
         self.__updateData()
 
@@ -113,10 +117,14 @@ class ConstraintsPopup(qt.QFrame):
 
     def __validateMinConstraint(self):
         self.__useDefaultMin = False
+        if self.__min.value() > self.__max.value():
+            self.__min.setValue(self.__max.value())
         self.__updateData()
 
     def __validateMaxConstraint(self):
         self.__useDefaultMax = False
+        if self.__min.value() > self.__max.value():
+            self.__max.setValue(self.__min.value())
         self.__updateData()
 
     def labelCenter(self):
