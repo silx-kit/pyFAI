@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/10/2018"
+__date__ = "21/11/2018"
 
 import fabio
 import numpy
@@ -66,6 +66,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._customDetector.clicked.connect(self.__customDetector)
 
         self.__plot = self.__createPlot(parent=self._imageHolder)
+        self.__plot.setObjectName("plot-experiment")
         layout = qt.QVBoxLayout(self._imageHolder)
         layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)

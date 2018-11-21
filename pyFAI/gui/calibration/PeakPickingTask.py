@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/10/2018"
+__date__ = "21/11/2018"
 
 import logging
 import numpy
@@ -515,6 +515,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         # Insert the plot on the layout
         holder = self._plotHolder
         self.__plot = _PeakPickingPlot(parent=holder)
+        self.__plot.setObjectName("plot-picking")
         holderLayout = qt.QVBoxLayout(holder)
         holderLayout.setContentsMargins(1, 1, 1, 1)
         holderLayout.addWidget(self.__plot)

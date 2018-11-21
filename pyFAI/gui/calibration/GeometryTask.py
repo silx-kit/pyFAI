@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/11/2018"
+__date__ = "21/11/2018"
 
 import logging
 import numpy
@@ -661,6 +661,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.widgetShow.connect(self.__widgetShow)
 
         self.__plot = self.__createPlot()
+        self.__plot.setObjectName("plot-fit")
         self.__plot.sigMouseMove.connect(self.__mouseMoved)
         self.__plot.sigMouseLeave.connect(self.__mouseLeft)
 
