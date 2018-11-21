@@ -30,7 +30,7 @@ from __future__ import division
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/10/2018"
+__date__ = "21/11/2018"
 
 import functools
 import collections
@@ -50,7 +50,7 @@ class FilterBuilder(object):
 
     def __normalizeExtensions(self, extensions):
         if isinstance(extensions, list):
-            list(extensions)
+            extensions = list(extensions)
         else:
             extensions = extensions.split(" ")
         return extensions
@@ -93,8 +93,8 @@ class FilterBuilder(object):
             allExtensions = " ".join(allExtensions)
             filters.append("All supported files (%s)" % allExtensions)
         for description, extensions in self.__formats.items():
-            extensions = ["*.%s" % ext for ext in allExtensions]
-            extensions = " ".join(allExtensions)
+            extensions = ["*.%s" % ext for ext in extensions]
+            extensions = " ".join(extensions)
             filters.append("%s (%s)" % (description, extensions))
         if self.__any:
             filters.append("All files (*)")
