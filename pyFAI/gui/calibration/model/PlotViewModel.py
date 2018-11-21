@@ -72,8 +72,13 @@ class PlotViewModel(DataModel):
     def setFromPlot(self, plot):
         pixelSize = self.__getPixelSize(plot)
         dataCoordAtPixelCoordZero = numpy.array(plot.pixelToData(x=0, y=0))
-        direction = plot.getYAxis().isInverted()
-        value = dataCoordAtPixelCoordZero, pixelSize, direction
+        isYaxisInverted = plot.getYAxis().isInverted()
+        isKeepAspectRatio = plot.isKeepDataAspectRatio()
+        interactionMode = plot.getInteractiveMode()["mode"]
+        if interactionMode not in set(['pan', 'zoom']):
+            interactionMode = 'pan'
+        plotConfig = isYaxisInverted, isKeepAspectRatio, interactionMode
+        value = dataCoordAtPixelCoordZero, pixelSize, plotConfig
         self.setValue(value)
 
     def __setViewLocation(self, plot, coord1, coord2):
@@ -88,10 +93,19 @@ class PlotViewModel(DataModel):
         xAxis.setLimits(*xLimits)
         yAxis.setLimits(*yLimits)
 
-    def synchronizePlot(self, plot):
+    def synchronizePlotConfig(self, plot):
         value = self.value()
-        dataCoordAtPixelCoordZero, pixelSize, direction = value
-        if not direction:
+        plotConfig = value[2]
+        isYaxisInverted, isKeepAspectRatio, interactionMode = plotConfig
+        plot.setKeepDataAspectRatio(isKeepAspectRatio)
+        plot.getYAxis().setInverted(isYaxisInverted)
+        plot.setInteractiveMode(interactionMode)
+
+    def synchronizePlotView(self, plot):
+        value = self.value()
+        dataCoordAtPixelCoordZero, pixelSize, plotConfig = value
+        isYaxisInverted = plotConfig[0]
+        if not isYaxisInverted:
             # Coord of pixel and data are switched sometimes
             pixelSize = numpy.array([pixelSize[0], -pixelSize[1]])
 

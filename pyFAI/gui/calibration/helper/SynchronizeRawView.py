@@ -56,14 +56,17 @@ class SynchronizeRawView(object):
         task.widgetShow.connect(self.__widgetShown)
 
     def __widgetShown(self):
-        # Uses a timer to fix matplotlib issue at the very first redisplay
-        # When using keep aspect ratio
-        qt.QTimer.singleShot(10, self.__synchronizePlot)
+        if self.__synchronizePlot:
+            self.__synchronizePlot = False
+            self.__synchronizePlotConfig()
+            # Uses a timer to fix matplotlib issue at the very first redisplay
+            # When using keep aspect ratio
+            qt.QTimer.singleShot(1, self.__synchronizePlotView)
 
     def registerPlot(self, plot):
         assert(self.__plot is None)
         self.__plot = weakref.ref(plot)
-        self.__synchronizePlotView = False
+        self.__synchronizePlot = False
         if hasattr(plot, "sigVisibilityChanged"):
             # At least silx 0.10
             plot.sigVisibilityChanged.connect(self.__plotVisibilityChanged)
@@ -72,7 +75,7 @@ class SynchronizeRawView(object):
             plot.getYAxis().sigLimitsChanged.connect(self.__plotViewChanged)
 
     def __rawPlotViewChanged(self):
-        self.__synchronizePlotView = True
+        self.__synchronizePlot = True
 
     def __plotViewChanged(self):
         if self.__model is None:
@@ -89,12 +92,18 @@ class SynchronizeRawView(object):
             plot = self.__plot()
             model.setFromPlot(plot)
 
-    def __synchronizePlot(self):
+    def __synchronizePlotConfig(self):
         if self.__model is None:
             return
-        if self.__synchronizePlotView:
-            self.__synchronizePlotView = False
-            model = self.__model
-            plot = self.__plot()
-            if plot is not None:
-                model.synchronizePlot(plot)
+        model = self.__model
+        plot = self.__plot()
+        if plot is not None:
+            model.synchronizePlotConfig(plot)
+
+    def __synchronizePlotView(self):
+        if self.__model is None:
+            return
+        model = self.__model
+        plot = self.__plot()
+        if plot is not None:
+            model.synchronizePlotView(plot)
