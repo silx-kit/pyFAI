@@ -27,21 +27,63 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "21/11/2018"
 
 from .DataModel import DataModel
+from silx.gui.plot.items.axis import XAxis, YAxis
 
 
 class PlotViewModel(DataModel):
 
+    def __getAxisRangeInPixel(self, axis):
+        """Returns the size of the axis in pixel"""
+        bounds = axis._getPlot().getPlotBoundsInPixels()
+        # bounds: left, top, width, height
+        if isinstance(axis, XAxis):
+            return bounds[2]
+        elif isinstance(axis, YAxis):
+            return bounds[3]
+        else:
+            assert(False)
+
+    def __getAxisInfo(self, axis):
+        limits = axis.getLimits()
+        valueRange = limits[1] - limits[0]
+        middle = (limits[0] + limits[1]) * 0.5
+        pixelRange = self.__getAxisRangeInPixel(axis)
+        pixelSize = valueRange / pixelRange
+        return middle, pixelSize
+
+    def __getLimitsFromMiddle(self, axis, pos, pixelSize):
+        """Returns the limits to apply to this axis to move the `pos` into the
+        center of this axis.
+        :param Axis axis:
+        :param float pos: Position in the center of the computed limits
+        :param Union[None,float] pixelSize: Pixel size to apply to compute the
+            limits. If `None` the current pixel size is applyed.
+        """
+        pixelRange = self.__getAxisRangeInPixel(axis)
+        a = pos - pixelRange * 0.5 * pixelSize
+        b = pos + pixelRange * 0.5 * pixelSize
+        if a > b:
+            return b, a
+        return a, b
+
+    def __setAxisInfo(self, axis, info):
+        middle, pixelSize = info
+        limits = self.__getLimitsFromMiddle(axis, middle, pixelSize)
+        axis.setLimits(*limits)
+
     def setFromPlot(self, plot):
-        xLimits = plot.getXAxis().getLimits()
-        yLimits = plot.getYAxis().getLimits()
-        value = xLimits, yLimits
+        xAxis = plot.getXAxis()
+        yAxis = plot.getYAxis()
+        value = self.__getAxisInfo(xAxis), self.__getAxisInfo(yAxis)
         self.setValue(value)
 
     def synchronizePlot(self, plot):
         value = self.value()
-        xLimits, yLimits = value
-        plot.getXAxis().setLimits(*xLimits)
-        plot.getYAxis().setLimits(*yLimits)
+        xInfo, yInfo = value
+        xAxis = plot.getXAxis()
+        yAxis = plot.getYAxis()
+        self.__setAxisInfo(yAxis, yInfo)
+        self.__setAxisInfo(xAxis, xInfo)

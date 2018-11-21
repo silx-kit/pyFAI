@@ -27,9 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/08/2018"
+__date__ = "21/11/2018"
 
 import weakref
+from silx.gui import qt
 
 
 class SynchronizeRawView(object):
@@ -52,14 +53,23 @@ class SynchronizeRawView(object):
         self.__model.changed.connect(self.__rawPlotViewChanged)
 
     def registerTask(self, task):
-        task.widgetShow.connect(self.__synchronizePlot)
+        task.widgetShow.connect(self.__widgetShown)
+
+    def __widgetShown(self):
+        # Uses a timer to fix matplotlib issue at the very first redisplay
+        # When using keep aspect ratio
+        qt.QTimer.singleShot(10, self.__synchronizePlot)
 
     def registerPlot(self, plot):
         assert(self.__plot is None)
         self.__plot = weakref.ref(plot)
         self.__synchronizePlotView = False
-        plot.getXAxis().sigLimitsChanged.connect(self.__plotViewChanged)
-        plot.getYAxis().sigLimitsChanged.connect(self.__plotViewChanged)
+        if hasattr(plot, "sigVisibilityChanged"):
+            # At least silx 0.10
+            plot.sigVisibilityChanged.connect(self.__plotVisibilityChanged)
+        else:
+            plot.getXAxis().sigLimitsChanged.connect(self.__plotViewChanged)
+            plot.getYAxis().sigLimitsChanged.connect(self.__plotViewChanged)
 
     def __rawPlotViewChanged(self):
         self.__synchronizePlotView = True
@@ -67,17 +77,24 @@ class SynchronizeRawView(object):
     def __plotViewChanged(self):
         if self.__model is None:
             return
-        view = self.__model
+        model = self.__model
         plot = self.__plot()
         if plot is not None:
-            view.setFromPlot(plot)
+            model.setFromPlot(plot)
+
+    def __plotVisibilityChanged(self, isVisible):
+        if not isVisible:
+            # Save the state when it is hidden
+            model = self.__model
+            plot = self.__plot()
+            model.setFromPlot(plot)
 
     def __synchronizePlot(self):
         if self.__model is None:
             return
         if self.__synchronizePlotView:
             self.__synchronizePlotView = False
-            view = self.__model
+            model = self.__model
             plot = self.__plot()
             if plot is not None:
-                view.synchronizePlot(plot)
+                model.synchronizePlot(plot)
