@@ -328,6 +328,14 @@ class RingCalibration(object):
             if name in self.__fixed:
                 constraint.setFixed()
 
+    def defaultGeometryConstraintsModel(self):
+        """Returns the default constraints
+
+        Not the one used, but the one initially set to the refinement engine.
+        """
+        assert(self.__defaultConstraints is not None)
+        return self.__defaultConstraints
+
     def fromGeometryConstraintsModel(self, contraintsModel):
         attrs = [
             ("wavelength", contraintsModel.wavelength()),

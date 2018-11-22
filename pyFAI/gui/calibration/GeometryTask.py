@@ -860,7 +860,8 @@ class GeometryTask(AbstractCalibrationTask):
                                       wavelength,
                                       peaks=peaks,
                                       method="massif")
-        calibration.toGeometryConstraintsModel(self.__defaultConstraints)
+        # Copy the default values
+        self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
         return calibration
 
     def __invalidateWavelength(self):
@@ -905,7 +906,7 @@ class GeometryTask(AbstractCalibrationTask):
                 return
             calibration.init(peaks, "massif")
             calibration.toGeometryModel(self.model().peakGeometry())
-            calibration.toGeometryConstraintsModel(self.__defaultConstraints)
+            self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
             self.__peaksInvalidated = False
 
         self.model().fittedGeometry().setFrom(self.model().peakGeometry())
