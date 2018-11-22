@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/11/2018"
+__date__ = "22/11/2018"
 
 import logging
 import numpy
@@ -303,7 +303,7 @@ class RingCalibration(object):
             self.__previousRms = None
             self.__rms = None
 
-    def toGeometryConstriansModel(self, contraintsModel, reachFromGeoRef=True):
+    def toGeometryConstraintsModel(self, contraintsModel, reachFromGeoRef=True):
         if reachFromGeoRef is False:
             raise NotImplementedError("Not implemented")
         attrs = [
@@ -323,7 +323,7 @@ class RingCalibration(object):
             if name in self.__fixed:
                 constraint.setFixed()
 
-    def fromGeometryConstriansModel(self, contraintsModel):
+    def fromGeometryConstraintsModel(self, contraintsModel):
         attrs = [
             ("wavelength", contraintsModel.wavelength()),
             ("dist", contraintsModel.distance()),

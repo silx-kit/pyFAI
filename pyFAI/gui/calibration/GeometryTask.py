@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/11/2018"
+__date__ = "22/11/2018"
 
 import logging
 import numpy
@@ -860,7 +860,7 @@ class GeometryTask(AbstractCalibrationTask):
                                       wavelength,
                                       peaks=peaks,
                                       method="massif")
-        calibration.toGeometryConstriansModel(self.__defaultConstraints)
+        calibration.toGeometryConstraintsModel(self.__defaultConstraints)
         return calibration
 
     def __invalidateWavelength(self):
@@ -905,7 +905,7 @@ class GeometryTask(AbstractCalibrationTask):
                 return
             calibration.init(peaks, "massif")
             calibration.toGeometryModel(self.model().peakGeometry())
-            calibration.toGeometryConstriansModel(self.__defaultConstraints)
+            calibration.toGeometryConstraintsModel(self.__defaultConstraints)
             self.__peaksInvalidated = False
 
         self.model().fittedGeometry().setFrom(self.model().peakGeometry())
@@ -968,7 +968,7 @@ class GeometryTask(AbstractCalibrationTask):
 
         constraints = self.model().geometryConstraintsModel().copy(self)
         constraints.fillDefault(self.__defaultConstraints)
-        calibration.fromGeometryConstriansModel(constraints)
+        calibration.fromGeometryConstraintsModel(constraints)
 
         calibration.refine()
         # write result to the fitted model
