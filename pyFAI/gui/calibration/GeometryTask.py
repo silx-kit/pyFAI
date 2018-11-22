@@ -904,7 +904,12 @@ class GeometryTask(AbstractCalibrationTask):
             calibration = self.__getCalibration()
             if calibration is None:
                 return
-            calibration.init(peaks, "massif")
+
+            # Constraints defined by the GUI
+            constraints = self.model().geometryConstraintsModel().copy(self)
+            constraints.fillDefault(calibration.defaultGeometryConstraintsModel())
+
+            calibration.init(peaks, "massif", constraints)
             calibration.toGeometryModel(self.model().peakGeometry())
             self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
             self.__peaksInvalidated = False

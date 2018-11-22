@@ -52,7 +52,6 @@ class RingCalibration(object):
         self.__calibrant.set_wavelength(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
-        self.__init(peaks, method)
 
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
@@ -62,6 +61,8 @@ class RingCalibration(object):
         self.__previousRms = None
         self.__peakResidual = None
         self.__defaultConstraints = None
+
+        self.__init(peaks, method)
 
     def __initgeoRef(self):
         """
@@ -84,10 +85,8 @@ class RingCalibration(object):
         #            defaults[key] = val
         return defaults
 
-    def __init(self, peaks, method):
+    def __init(self, peaks, method, constraintsModel=None):
         defaults = self.__initgeoRef()
-        fixed = pyFAI.utils.FixedParameters()
-        fixed.add("wavelength")
 
         if len(peaks) == 0:
             self.__peakPicker = None
@@ -99,7 +98,22 @@ class RingCalibration(object):
                                     detector=self.__detector,
                                     calibrant=self.__calibrant,
                                     **defaults)
-        self.__rms = geoRef.refine2(1000000, fix=fixed)
+
+        self.__geoRef = geoRef
+        # Default fixed constraints
+        self.__fixed = pyFAI.utils.FixedParameters()
+        self.__fixed.add("wavelength")
+
+        # Store the default constraints
+        self.__defaultConstraints = GeometryConstraintsModel()
+        self.toGeometryConstraintsModel(self.__defaultConstraints)
+
+        # Update the constraints
+        if constraintsModel is not None:
+            assert(constraintsModel.isValid())
+            self.fromGeometryConstraintsModel(constraintsModel)
+
+        self.__rms = self.__refine(1000000)
         self.__peakResidual = self.__rms
         self.__previousRms = None
 
@@ -111,12 +125,9 @@ class RingCalibration(object):
 
         self.__peakPicker = peakPicker
         self.__geoRef = geoRef
-        # Store the default constraints
-        self.__defaultConstraints = GeometryConstraintsModel()
-        self.toGeometryConstraintsModel(self.__defaultConstraints)
 
-    def init(self, peaks, method):
-        self.__init(peaks, method)
+    def init(self, peaks, method, constraintsModel):
+        self.__init(peaks, method, constraintsModel=constraintsModel)
 
     def update(self, image, mask, calibrant, detector, wavelength=None):
         self.__image = image
@@ -138,7 +149,7 @@ class RingCalibration(object):
             chi2 = self.__geoRef.chi2_wavelength()
         return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
 
-    def __refine(self, maxiter=1000000, fix=None):
+    def __refine(self, maxiter=1000000):
 
         attrs = ["wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
         for name in attrs:
@@ -154,9 +165,9 @@ class RingCalibration(object):
             max_setter(maxValue)
 
         if "wavelength" in self.__fixed:
-            return self.__geoRef.refine2(maxiter, fix)
+            return self.__geoRef.refine2(maxiter, self.__fixed)
         else:
-            return self.__geoRef.refine2_wavelength(maxiter, fix)
+            return self.__geoRef.refine2_wavelength(maxiter, self.__fixed)
 
     def refine(self, max_iter=500, seconds=10):
         """
@@ -174,7 +185,7 @@ class RingCalibration(object):
         timer = timeutils.Timer(seconds=10)
 
         while count < max_iter and not timer.isTimeout():
-            residual = self.__refine(10000, fix=self.__fixed)
+            residual = self.__refine(10000)
             if residual >= previous_residual:
                 break
             previous_residual = residual
