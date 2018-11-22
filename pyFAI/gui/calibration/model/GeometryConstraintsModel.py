@@ -68,6 +68,7 @@ class GeometryConstraintsModel(AbstractModel):
             return False
         if not self.__rotation3.isValid():
             return False
+        return True
 
     def distance(self):
         return self.__distance
