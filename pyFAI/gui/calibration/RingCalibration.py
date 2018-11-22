@@ -336,15 +336,15 @@ class RingCalibration(object):
         assert(self.__defaultConstraints is not None)
         return self.__defaultConstraints
 
-    def fromGeometryConstraintsModel(self, contraintsModel):
+    def fromGeometryConstraintsModel(self, constraintsModel):
         attrs = [
-            ("wavelength", contraintsModel.wavelength()),
-            ("dist", contraintsModel.distance()),
-            ("poni1", contraintsModel.poni1()),
-            ("poni2", contraintsModel.poni2()),
-            ("rot1", contraintsModel.rotation1()),
-            ("rot2", contraintsModel.rotation2()),
-            ("rot3", contraintsModel.rotation3()),
+            ("wavelength", constraintsModel.wavelength()),
+            ("dist", constraintsModel.distance()),
+            ("poni1", constraintsModel.poni1()),
+            ("poni2", constraintsModel.poni2()),
+            ("rot1", constraintsModel.rotation1()),
+            ("rot2", constraintsModel.rotation2()),
+            ("rot3", constraintsModel.rotation3()),
         ]
         fixed = pyFAI.utils.FixedParameters()
         bounds = {}
