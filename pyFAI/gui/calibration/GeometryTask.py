@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/11/2018"
+__date__ = "22/11/2018"
 
 import logging
 import numpy
@@ -72,6 +72,7 @@ class ConstraintsPopup(qt.QFrame):
         self.__defaultConstraints = None
         self._resetMin.clicked.connect(self.__resetMin)
         self._resetMax.clicked.connect(self.__resetMax)
+        self._slider.sigValueChanged.connect(self.__sliderValuesChanged)
 
     def __resetMin(self):
         range_ = self.__defaultConstraints.range()
@@ -80,6 +81,8 @@ class ConstraintsPopup(qt.QFrame):
         else:
             value = range_[0]
         self.__min.setValue(value)
+        if value > self.__max.value():
+            self.__max.setValue(value)
         self.__useDefaultMin = True
         self.__updateData()
 
@@ -90,6 +93,8 @@ class ConstraintsPopup(qt.QFrame):
         else:
             value = range_[1]
         self.__max.setValue(value)
+        if self.__min.value() > value:
+            self.__min.setValue(value)
         self.__useDefaultMax = True
         self.__updateData()
 
@@ -113,10 +118,23 @@ class ConstraintsPopup(qt.QFrame):
 
     def __validateMinConstraint(self):
         self.__useDefaultMin = False
+        if self.__min.value() > self.__max.value():
+            self.__min.setValue(self.__max.value())
         self.__updateData()
 
     def __validateMaxConstraint(self):
         self.__useDefaultMax = False
+        if self.__min.value() > self.__max.value():
+            self.__max.setValue(self.__min.value())
+        self.__updateData()
+
+    def __sliderValuesChanged(self, first, second):
+        self.__min.setValue(first)
+        self.__max.setValue(second)
+        if self.__defaultConstraints is not None:
+            vRange = self.__defaultConstraints.range()
+            self.__useDefaultMin = first == vRange[0]
+            self.__useDefaultMax = second == vRange[1]
         self.__updateData()
 
     def labelCenter(self):
@@ -157,10 +175,16 @@ class ConstraintsPopup(qt.QFrame):
         self.__defaultConstraints = model
         self.__updateData()
 
+        vRange = model.range()
+        if vRange is not None:
+            self._slider.setRange(vRange[0], vRange[1])
+
     _DEFAULT_CONSTRAINT_STYLE = ".QuantityEdit { color: #BBBBBB; qproperty-toolTip: 'Default constraint'}"
     _CUSTOM_CONSTRAINT_STYLE = ".QuantityEdit { color: #000000; qproperty-toolTip: 'Custom constraint'}"
 
     def __updateData(self):
+
+        # Update values
         if self.__defaultConstraints is None:
             return
         if self.__useDefaultMin:
@@ -185,6 +209,26 @@ class ConstraintsPopup(qt.QFrame):
             self._resetMax.setEnabled(True)
         self._minEdit.setStyleSheet(minStyle)
         self._maxEdit.setStyleSheet(maxStyle)
+
+        # Update slider
+        vMin, vMax = self.__min.value(), self.__max.value()
+        if vMin is not None and vMax is not None:
+            old = self._slider.blockSignals(True)
+            if self.__defaultConstraints is not None:
+                vRange = self._slider.getRange()
+                if vRange is not None:
+                    updated = False
+                    vRange = list(vRange)
+                    if vMin < vRange[0]:
+                        vRange[0] = vMin
+                        updated = True
+                    if vMax > vRange[1]:
+                        vRange[1] = vMax
+                        updated = True
+                    if updated:
+                        self._slider.setRange(vRange[0], vRange[1])
+            self._slider.setValues(vMin, vMax)
+            self._slider.blockSignals(old)
 
 
 class FitParamView(qt.QObject):
@@ -661,6 +705,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.widgetShow.connect(self.__widgetShow)
 
         self.__plot = self.__createPlot()
+        self.__plot.setObjectName("plot-fit")
         self.__plot.sigMouseMove.connect(self.__mouseMoved)
         self.__plot.sigMouseLeave.connect(self.__mouseLeft)
 
@@ -815,7 +860,8 @@ class GeometryTask(AbstractCalibrationTask):
                                       wavelength,
                                       peaks=peaks,
                                       method="massif")
-        calibration.toGeometryConstriansModel(self.__defaultConstraints)
+        # Copy the default values
+        self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
         return calibration
 
     def __invalidateWavelength(self):
@@ -858,9 +904,14 @@ class GeometryTask(AbstractCalibrationTask):
             calibration = self.__getCalibration()
             if calibration is None:
                 return
-            calibration.init(peaks, "massif")
+
+            # Constraints defined by the GUI
+            constraints = self.model().geometryConstraintsModel().copy(self)
+            constraints.fillDefault(calibration.defaultGeometryConstraintsModel())
+
+            calibration.init(peaks, "massif", constraints)
             calibration.toGeometryModel(self.model().peakGeometry())
-            calibration.toGeometryConstriansModel(self.__defaultConstraints)
+            self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
             self.__peaksInvalidated = False
 
         self.model().fittedGeometry().setFrom(self.model().peakGeometry())
@@ -923,7 +974,7 @@ class GeometryTask(AbstractCalibrationTask):
 
         constraints = self.model().geometryConstraintsModel().copy(self)
         constraints.fillDefault(self.__defaultConstraints)
-        calibration.fromGeometryConstriansModel(constraints)
+        calibration.fromGeometryConstraintsModel(constraints)
 
         calibration.refine()
         # write result to the fitted model

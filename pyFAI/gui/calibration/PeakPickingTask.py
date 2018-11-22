@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/10/2018"
+__date__ = "22/11/2018"
 
 import logging
 import numpy
@@ -515,6 +515,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         # Insert the plot on the layout
         holder = self._plotHolder
         self.__plot = _PeakPickingPlot(parent=holder)
+        self.__plot.setObjectName("plot-picking")
         holderLayout = qt.QVBoxLayout(holder)
         holderLayout.setContentsMargins(1, 1, 1, 1)
         holderLayout.addWidget(self.__plot)
@@ -897,6 +898,14 @@ class PeakPickingTask(AbstractCalibrationTask):
         qt.QTimer.singleShot(1, self.__autoExtractRings)
 
     def __autoExtractRings(self):
+        try:
+            self.__autoExtractRingsCompute()
+        finally:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+
+    def __autoExtractRingsCompute(self):
         maxRings = self._maxRingToExtract.value()
         pointPerDegree = self._numberOfPeakPerDegree.value()
 
@@ -928,15 +937,31 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         extractor = RingExtractor(image, mask, calibrant, detector, wavelength)
 
-        # FIXME numpy array can be allocated first
-        peaks = []
-        for peakModel in self.model().peakSelectionModel():
-            ringNumber = peakModel.ringNumber()
-            for coord in peakModel.coords():
-                peaks.append([coord[0], coord[1], ringNumber - 1])
-        peaks = numpy.array(peaks)
+        # Constant dependant of the ui file
+        FROM_PEAKS = 0
+        FROM_FIT = 1
+
+        geometrySourceIndex = self._geometrySource.currentIndex()
+        if geometrySourceIndex == FROM_PEAKS:
+            # FIXME numpy array can be allocated first
+            peaks = []
+            for peakModel in self.model().peakSelectionModel():
+                ringNumber = peakModel.ringNumber()
+                for coord in peakModel.coords():
+                    peaks.append([coord[0], coord[1], ringNumber - 1])
+            peaks = numpy.array(peaks)
+            geometryModel = None
+        elif geometrySourceIndex == FROM_FIT:
+            peaks = None
+            geometryModel = self.model().fittedGeometry()
+            if not geometryModel.isValid():
+                _logger.error("The fitted model is not valid. Extraction cancelled.")
+                return
+        else:
+            assert(False)
 
         newPeaksRaw = extractor.extract(peaks=peaks,
+                                        geometryModel=geometryModel,
                                         method="massif",
                                         maxRings=maxRings,
                                         pointPerDegree=pointPerDegree)
@@ -964,9 +989,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
-        self.__plot.unsetProcessing()
-        qt.QApplication.restoreOverrideCursor()
-        self._extract.setWaiting(False)
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).

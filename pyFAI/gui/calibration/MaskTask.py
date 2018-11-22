@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/10/2018"
+__date__ = "21/11/2018"
 
 import logging
 import os.path
@@ -115,6 +115,7 @@ class MaskTask(AbstractCalibrationTask):
         self.initNextStep()
 
         self.__plot = self.__createPlot(self._imageHolder)
+        self.__plot.setObjectName("plot-mask")
 
         markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
         self.__markerManager = MarkerManager(self.__plot, markerModel, pixelBasedPlot=True)
