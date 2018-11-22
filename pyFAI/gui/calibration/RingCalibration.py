@@ -36,6 +36,7 @@ import collections
 from silx.image import marchingsquares
 import pyFAI.utils
 from ...geometryRefinement import GeometryRefinement
+from .model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..peak_picker import PeakPicker
 from ..utils import timeutils
 
@@ -60,6 +61,7 @@ class RingCalibration(object):
         self.__rms = None
         self.__previousRms = None
         self.__peakResidual = None
+        self.__defaultConstraints = None
 
     def __initgeoRef(self):
         """
@@ -109,6 +111,9 @@ class RingCalibration(object):
 
         self.__peakPicker = peakPicker
         self.__geoRef = geoRef
+        # Store the default constraints
+        self.__defaultConstraints = GeometryConstraintsModel()
+        self.toGeometryConstraintsModel(self.__defaultConstraints)
 
     def init(self, peaks, method):
         self.__init(peaks, method)
