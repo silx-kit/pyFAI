@@ -54,7 +54,7 @@ class GeometryRefinementContext(object):
         self.__geoRef = GeometryRefinement(*args, **kwargs)
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
-        self.__fixed = []
+        self.__fixed = fixed
 
         self.__bounds = {}
         attrs = ("wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3")
