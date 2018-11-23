@@ -587,11 +587,11 @@ class Cirpad(ImXPadS10):
     def get_pixel_corners(self):
         if self._pixel_corners is None:
             with self._sem:
-                if self._pixel_corners is None:  # Pourquoi refaire le check ?
+                if self._pixel_corners is None:  
                     self._pixel_corners = self._get_pixel_corners()
         return self._pixel_corners
 
-    # Pas fait encore
+    # TODO !!!
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         if (d1 is None) or d2 is None:
             d1 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[0]).astype(numpy.float32), self.MAX_SHAPE[1], False)
