@@ -32,7 +32,7 @@ __date__ = "26/11/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-include "sparse_utils.pyx"
+include "sparse_common.pxi"
 
 import cython
 cimport numpy as cnumpy
@@ -1890,16 +1890,20 @@ class Distortion(object):
                     self.LUT = lut.reshape(self.shape[0] * self.shape[1], self.lut_size)
         return self.LUT
 
-    def demo_ArrayBuilder(self, int n=10):
-        "this just ensures the shared C-library works"
-        cdef:
-            ArrayBuilder ab
-            int i
+################################################################################
+# TODO: profile for select between ArrayBuilder and SparseBuilder
+################################################################################
 
-        ab = ArrayBuilder(n)
-        for i in range(n):
-            ab._append(i, i, 1.0)
-        return ab
+#     def demo_ArrayBuilder(self, int n=10):
+#         "this just ensures the shared C-library works"
+#         cdef:
+#             ArrayBuilder ab
+#             int i
+#
+#         ab = ArrayBuilder(n)
+#         for i in range(n):
+#             ab._append(i, i, 1.0)
+#         return ab
 
     @cython.wraparound(False)
     @cython.boundscheck(False)
