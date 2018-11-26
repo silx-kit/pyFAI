@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/11/2018"
+__date__ = "23/11/2018"
 
 import logging
 import numpy
@@ -54,7 +54,7 @@ class GeometryRefinementContext(object):
         self.__geoRef = GeometryRefinement(*args, **kwargs)
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
-        self.__fixed = []
+        self.__fixed = fixed
 
         self.__bounds = {}
         attrs = ("wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3")
@@ -66,6 +66,11 @@ class GeometryRefinementContext(object):
 
     def __getattr__(self, name):
         return object.__getattribute__(self.__geoRef, name)
+
+    def __setattr__(self, name, value):
+        if "__" in name:
+            return super(GeometryRefinementContext, self).__setattr__(name, value)
+        return object.__setattr__(self.__geoRef, name, value)
 
     def bounds(self):
         return self.__bounds
