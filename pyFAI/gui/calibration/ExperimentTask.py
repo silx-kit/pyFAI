@@ -47,6 +47,7 @@ from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from ..utils import units
 from ..utils import FilterBuilder
+from .helper.SynchronizePlotBackground import SynchronizePlotBackground
 
 _logger = logging.getLogger(__name__)
 
@@ -67,6 +68,8 @@ class ExperimentTask(AbstractCalibrationTask):
 
         self.__plot = self.__createPlot(parent=self._imageHolder)
         self.__plot.setObjectName("plot-experiment")
+        self.__plotBackground = SynchronizePlotBackground(self.__plot)
+
         layout = qt.QVBoxLayout(self._imageHolder)
         layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)

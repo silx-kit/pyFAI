@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/10/2018"
+__date__ = "26/11/2018"
 
 import logging
 import numpy
@@ -47,6 +47,7 @@ from .CalibrationContext import CalibrationContext
 from ..utils import units
 from ..utils import validators
 from .helper.MarkerManager import MarkerManager
+from .helper.SynchronizePlotBackground import SynchronizePlotBackground
 from pyFAI.ext.invert_geometry import InvertGeometry
 from ..utils import FilterBuilder
 
@@ -345,6 +346,8 @@ class IntegrationPlot(qt.QFrame):
         self.__plot2d.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
         self.__plot1d.sigPlotSignal.connect(self.__plot1dSignalReceived)
         self.__plot2d.sigPlotSignal.connect(self.__plot2dSignalReceived)
+
+        self.__plotBackground = SynchronizePlotBackground(self.__plot2d)
 
         widget = self.__plot1d
         if hasattr(widget, "centralWidget"):

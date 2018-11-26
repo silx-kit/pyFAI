@@ -41,6 +41,7 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
 from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
+from .helper.SynchronizePlotBackground import SynchronizePlotBackground
 from .CalibrationContext import CalibrationContext
 from ..widgets.UnitLabel import UnitLabel
 from ..widgets.QuantityLabel import QuantityLabel
@@ -487,6 +488,8 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         handle = self.getWidgetHandle()
         handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
         handle.customContextMenuRequested.connect(self.__plotContextMenu)
+
+        self.__plotBackground = SynchronizePlotBackground(self)
 
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)

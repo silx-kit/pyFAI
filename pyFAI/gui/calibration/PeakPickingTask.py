@@ -47,6 +47,7 @@ from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
 from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
+from .helper.SynchronizePlotBackground import SynchronizePlotBackground
 from .CalibrationContext import CalibrationContext
 from .helper.MarkerManager import MarkerManager
 from ..utils import FilterBuilder
@@ -314,6 +315,8 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
         colormap = CalibrationContext.instance().getRawColormap()
         self.setDefaultColormap(colormap)
+
+        self.__plotBackground = SynchronizePlotBackground(self)
 
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
