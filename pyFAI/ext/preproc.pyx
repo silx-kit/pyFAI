@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "16/11/2018"
+__date__ = "26/11/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -41,7 +41,7 @@ from cython.parallel import prange
 from libc.math cimport fabs
 from isnan cimport isnan
 from cython cimport floating
-         
+
 
 @cython.boundscheck(False)
 @cython.cdivision(True)
@@ -78,7 +78,7 @@ cdef floating[::1]c1_preproc(floating[::1] data,
     """
     cdef:
         int size, i
-        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, 
+        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,
         bint do_polarization, is_valid
         floating[::1] result
         floating one_value, one_num, one_den, one_flat
@@ -361,7 +361,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
     :param dark_variance: variance of the dark
     NaN are always considered as invalid
 
-    Empty pixels are 0.0 for both signal, variance and normalization 
+    Empty pixels are 0.0 for both signal, variance and normalization
     """
     cdef:
         int size, i
@@ -470,14 +470,14 @@ cdef floating[:, ::1]c4_preproc(floating[::1] data,
     :param dark_variance: variance of the dark
     NaN are always considered as invalid
 
-    Empty pixels are 0.0 for both signal, variance, normalization and count 
+    Empty pixels are 0.0 for both signal, variance, normalization and count
     """
     cdef:
         int size, i
         bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,
         bint is_valid, do_polarization, do_variance, do_dark_variance
         floating[:, ::1] result
-        floating one_num, one_result, one_flat, one_den, one_var
+        floating one_num, one_result, one_flat, one_den, one_var, one_count
 
     with gil:
         size = data.size
@@ -546,7 +546,7 @@ cdef floating[:, ::1]c4_preproc(floating[::1] data,
         result[i, 1] += one_var
         result[i, 2] += one_den
         result[i, 3] += one_count
-        
+
     return result
 
 
@@ -594,7 +594,7 @@ def _preproc(floating[::1] raw,
     """
     cdef:
         int size
-        floating[::1] res1d 
+        floating[::1] res1d
         floating[:, ::1] res2d
 
     # initialization of values:
@@ -604,15 +604,15 @@ def _preproc(floating[::1] raw,
         out_shape = list(shape)
         if split_result == 4:
             out_shape += [4]
-            if poisssonian:
+            if poissonian:
                 variance = raw
             res2d = c4_preproc(raw, dark, flat, solidangle, polarization, absorption,
-                               mask, dummy, delta_dummy, check_dummy, normalization_factor, 
+                               mask, dummy, delta_dummy, check_dummy, normalization_factor,
                                variance, dark_variance)
         elif (variance is not None):
             out_shape += [3]
             res2d = c3_preproc(raw, dark, flat, solidangle, polarization, absorption,
-                               mask, dummy, delta_dummy, check_dummy, normalization_factor, 
+                               mask, dummy, delta_dummy, check_dummy, normalization_factor,
                                variance, dark_variance)
         elif poissonian:
             out_shape += [3]
@@ -710,7 +710,7 @@ def preproc(raw,
     if (dummy is None):
         check_dummy = False
         dummy = delta_dummy = dtype(empty or 0.0)
-        
+
     else:
         check_dummy = True
         dummy = dtype(dummy)
@@ -729,7 +729,7 @@ def preproc(raw,
     else:
         assert mask.size == size, "Mask array size is correct"
         mask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-    
+
     return _preproc(raw,
                     shape,
                     check_dummy,

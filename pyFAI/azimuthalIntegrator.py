@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2018"
+__date__ = "26/11/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -54,7 +54,7 @@ from .containers import Integrate1dResult, Integrate2dResult
 from .io import DefaultAiWriter
 error = None
 
-from .preproc import preproc as preproc_np
+from .engines.preproc import preproc as preproc_np
 try:
     from .ext.preproc import preproc as preproc_cy
 except ImportError as err:
@@ -1530,11 +1530,11 @@ class AzimuthalIntegrator(Geometry):
         :type deviceid: int
         :param block_size: OpenCL grid size
         :type block_size: int
-        
+
         Unused/deprecated arguments:
-        
+
         :param padded: deprecated
-        
+
         :return: (2theta, I) in degrees
         :rtype: 2-tuple of 1D arrays
 
@@ -2759,9 +2759,9 @@ class AzimuthalIntegrator(Geometry):
                         normalization_factor=1.0,
                         metadata=None):
         """Demonstrator for the new azimuthal integrator taking care of the normalization,
-        
-        Early stage prototype, 
-         
+
+        Early stage prototype,
+
         """
 
         if variance is not None:
@@ -4595,7 +4595,7 @@ class AzimuthalIntegrator(Geometry):
 
     def __getstate__(self):
         """Helper function for pickling ai
-        
+
         :return: the state of the object
         """
 
@@ -4608,7 +4608,7 @@ class AzimuthalIntegrator(Geometry):
 
     def __setstate__(self, state):
         """Helper function for unpickling ai
-        
+
         :param state: the state of the object
         """
         for statekey, statevalue in state.items():

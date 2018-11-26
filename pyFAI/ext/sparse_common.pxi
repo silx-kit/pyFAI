@@ -29,13 +29,14 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/11/2018"
+__date__ = "26/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
 
 import cython
+from cython.parallel import prange
 import numpy
 cimport numpy as cnumpy
 
@@ -48,7 +49,7 @@ lut_d = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
 
 class CsrIntegrator2d(object):
     """Abstract class which implements only the integrator...
-    
+
     Now uses CSR (Compressed Sparse raw) with main attributes:
     * nnz: number of non zero elements
     * data: coefficient of the matrix in a 1D vector of float32
@@ -57,7 +58,7 @@ class CsrIntegrator2d(object):
 
     Nota: nnz = indptr[-1]
     """
-    def __init__(self, 
+    def __init__(self,
                  int size,
                  cnumpy.float32_t[::1] data=None,
                  cnumpy.int32_t[::1] indices=None,
@@ -67,8 +68,8 @@ class CsrIntegrator2d(object):
                  bin_centers1=None):
 
         """Constructor of the abstract class
-        
-        :param bins: number of output bins 
+
+        :param bins: number of output bins
         :param size: input image size
         :param data: data of the CSR matrix
         :param indices: indices of the CSR matrix
@@ -88,10 +89,10 @@ class CsrIntegrator2d(object):
         self.indptr = None
         if (data is not None) and (indices is not None) and (indptr is not None):
             self.set_matrix(data, indices, indptr)
-            
-    def set_matrix(self, 
-                   cnumpy.float32_t[::1] data not None, 
-                   cnumpy.int_t[::1] indices not None, 
+
+    def set_matrix(self,
+                   cnumpy.float32_t[::1] data not None,
+                   cnumpy.int_t[::1] indices not None,
                    cnumpy.int_t[::1] indptr not None):
         """Actually create the CSR_matrix"""
         from scipy.sparse import csr_matrix
@@ -100,7 +101,7 @@ class CsrIntegrator2d(object):
         self.indices = indices
         self.indptr = indptr
         self.lut_size = len(indices)
-        
+
         self._csr = csr_matrix((data, indices, indptr))
         if (self.bin_centers0 is not None) and (self.bin_centers1 is not None):
             assert len(self.bin_centers0) * len(self.bin_centers1) == len(indptr) - 1
@@ -249,9 +250,8 @@ class CsrIntegrator2d(object):
                 merged[i] += acc_data / acc_count / normalization_factor
             else:
                 merged[i] += cdummy
-        return (self.bin_centers, 
-                numpy.asarray(merged), 
-                numpy.asarray(sum_data), 
+        return (self.bin_centers,
+                numpy.asarray(merged),
+                numpy.asarray(sum_data),
                 numpy.asarray(sum_count))
 
-    

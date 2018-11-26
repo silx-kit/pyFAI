@@ -28,9 +28,11 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "20/11/2018"
+__date__ = "26/11/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
+
+include "sparse_utils.pyx"
 
 import cython
 cimport numpy as cnumpy
@@ -53,8 +55,6 @@ from ..third_party import six
 import fabio
 
 from sparse_builder cimport SparseBuilder
-from sparse_utils cimport ArrayBuilder, lut_t
-from sparse_utils import ArrayBuilder, lut_d
 
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
