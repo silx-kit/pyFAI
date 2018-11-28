@@ -758,7 +758,7 @@ class DistortionWorker(object):
         :param variance: the variance associated to the data
         :param normalization: normalization factor
         :return: processed data
-        
+
         TODO: manage variance in distortion correction
         """
         if preproc is not None:
