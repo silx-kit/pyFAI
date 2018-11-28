@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/11/2018"
+__date__ = "27/11/2018"
 
 import logging
 import numpy
@@ -810,6 +810,8 @@ class PeakPickingTask(AbstractCalibrationTask):
             if self.__ringSelectionMode.isChecked() or self.__arcSelectionMode.isChecked():
                 ringNumber = lastRingNumber + 1
             elif self.__peakSelectionMode.isChecked():
+                if lastRingNumber == 0:
+                    lastRingNumber = 1
                 ringNumber = lastRingNumber
                 points = points[0:1]
             else:

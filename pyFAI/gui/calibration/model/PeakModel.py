@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/10/2018"
+__date__ = "27/11/2018"
 
 from .AbstractModel import AbstractModel
 
@@ -72,6 +72,7 @@ class PeakModel(AbstractModel):
         return self.__ringNumber
 
     def setRingNumber(self, ringNumber):
+        assert(ringNumber >= 1)
         self.__ringNumber = ringNumber
         self.wasChanged()
 
