@@ -94,9 +94,8 @@ def configure_parser_arguments(parser):
     parser.add_argument("-s", "--spline", dest="spline",
                         help="spline file describing the detector distortion", default=None)
 
-    # Not yet used
     parser.add_argument("-n", "--pt", dest="npt",
-                        help="file with datapoints saved. Default: basename.npt", default=None)
+                        help="file with datapoints saved. Example: basename.npt", default=None)
 
     # Not yet used
     parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
@@ -500,6 +499,16 @@ def setup_model(model, options):
         logger.error("gui option not supported")
     if options.interactive is not True:
         logger.error("interactive option not supported")
+
+    if options.npt:
+        try:
+            from pyFAI.gui.calibration.helper import model_transform
+            from pyFAI.control_points import ControlPoints
+            controlPoints = ControlPoints(filename=options.npt)
+            peakSelectionModel = model.peakSelectionModel()
+            model_transform.initPeaksFromControlPoints(peakSelectionModel, controlPoints)
+        except Exception as e:
+            displayExceptionBox("Error while loading control-point file", e)
 
 
 def logUncaughtExceptions(exceptionClass, exception, stack):
