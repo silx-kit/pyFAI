@@ -49,8 +49,6 @@ import json
 
 from .. import io
 from .. import spline
-from .. import utils
-from .. import average
 from ..utils import binning, expand2d, crc32
 from ..third_party.six import with_metaclass
 
@@ -658,10 +656,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_pixel_corners(self, ary):
         """Sets the position of pixel corners with some additional validation
-        
-        :param ary: This a 4D array which contains: number of lines, 
-                                                    number of columns, 
-                                                    corner index, 
+
+        :param ary: This a 4D array which contains: number of lines,
+                                                    number of columns,
+                                                    corner index,
                                                     position in space Z, Y, X
         """
         if ary is None:
