@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "28/11/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -56,6 +56,7 @@ from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime
 from argparse import ArgumentParser
 urlparse = six.moves.urllib.parse.urlparse
+from .utils import ioutils
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index, rot, trans')
@@ -367,12 +368,16 @@ If the number of files is too large, use double quotes like "*.edf" """
             logger.error(("Unable to setup Azimuthal integrator:"
                           " no poni file provided"))
             raise RuntimeError("You must provide poni a file")
+
+        detector = self.ai.detector
         if self.dark:
-            self.ai.set_darkfiles(self.dark)
+            data, _ = ioutils(self.dark)
+            detector.set_darkcurrent(data)
         if self.flat:
-            self.ai.set_flatfiles(self.flat)
+            data, _ = ioutils(self.flat)
+            detector.set_flatfield(data)
         if self.mask is not None:
-            self.ai.detector.set_maskfile(self.mask)
+            detector.set_maskfile(self.mask)
 
     def init_ai(self):
         """Force initialization of azimuthal intgrator

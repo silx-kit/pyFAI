@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/05/2018"
+__date__ = "28/11/2018"
 __status__ = "development"
 
 import threading
@@ -101,6 +101,7 @@ from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
+from .utils import ioutils
 try:
     from .ext.preproc import preproc
     USE_CYTHON = True
@@ -156,15 +157,19 @@ def make_ai(config):
             else:
                 ai.mask = mask
 
+    detector = ai.detector
     dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
                   if os.path.isfile(i.strip())]
-    if dark_files and config.get("do_dark"):
-        ai.set_darkfiles(dark_files)
-
     flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
                   if os.path.isfile(i.strip())]
+
+    if dark_files and config.get("do_dark"):
+        data, _ = ioutils(dark_files)
+        detector.set_darkcurrent(data)
+
     if flat_files and config.get("do_flat"):
-        ai.set_flatfiles(flat_files)
+        data, _ = ioutils(flat_files)
+        detector.set_darkcurrent(data)
 
     return ai
 
@@ -379,12 +384,14 @@ class Worker(object):
             self.extension = None
 
     def setDarkcurrentFile(self, imagefile):
-        self.ai.set_darkfiles(imagefile)
-        self.dark_current_image = imagefile
+        data, source = ioutils.average_files(imagefile)
+        self.ai.detector.set_darkcurrent(data)
+        self.dark_current_image = source
 
     def setFlatfieldFile(self, imagefile):
-        self.ai.set_flatfiles(imagefile)
-        self.flat_field_image = imagefile
+        data, source = ioutils.average_files(imagefile)
+        self.ai.detector.set_flatfield(data)
+        self.flat_field_image = source
 
     def setJsonConfig(self, jsonconfig):
         print("start config ...")
@@ -440,12 +447,20 @@ class Worker(object):
                 self.ai.mask = mask
                 self.mask_image = os.path.abspath(mask_file)
 
-        self.ai.set_darkfiles([i.strip() for i in config.get("dark_current", "").split(",")
-                               if os.path.isfile(i.strip())])
-        self.ai.set_flatfiles([i.strip() for i in config.get("flat_field", "").split(",")
-                               if os.path.isfile(i.strip())])
-        self.dark_current_image = self.ai.darkfiles
-        self.flat_field_image = self.ai.flatfiles
+        detector = self.ai.detector
+
+        dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
+                      if os.path.isfile(i.strip())]
+        data, source = ioutils.average_files(dark_files)
+        detector.set_darkcurrent(data)
+        self.dark_current_image = source
+
+        flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
+                      if os.path.isfile(i.strip())]
+        data, source = ioutils.average_files(flat_files)
+        detector.set_flatfield(data)
+        self.flat_field_image = source
+
         if config.get("do_2D"):
             self.nbpt_azim = int(config.get("nbpt_azim"))
         else:

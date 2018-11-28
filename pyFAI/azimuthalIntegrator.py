@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2018"
+__date__ = "28/11/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -4550,40 +4550,6 @@ class AzimuthalIntegrator(Geometry):
         return self.detector.get_flatfield()
 
     flatfield = property(get_flatfield, set_flatfield)
-
-    def set_darkfiles(self, files=None, method="mean"):
-        """Set the dark current from one or mutliple files, avaraged
-        according to the method provided.
-
-        Moved to Detector.
-
-        :param files: file(s) used to compute the dark.
-        :type files: str or list(str) or None
-        :param method: method used to compute the dark, "mean" or "median"
-        :type method: str
-        """
-        self.detector.set_darkfiles(files, method)
-
-    @property
-    def darkfiles(self):
-        return self.detector.darkfiles
-
-    def set_flatfiles(self, files, method="mean"):
-        """Set the flat field from one or mutliple files, averaged
-        according to the method provided.
-
-        Moved to Detector.
-
-        :param files: file(s) used to compute the flat-field.
-        :type files: str or list(str) or None
-        :param method: method used to compute the dark, "mean" or "median"
-        :type method: str
-        """
-        self.detector.set_flatfiles(files, method)
-
-    @property
-    def flatfiles(self):
-        return self.detector.flatfiles
 
     def get_empty(self):
         return self._empty

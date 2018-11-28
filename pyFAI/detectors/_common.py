@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2018"
+__date__ = "28/11/2018"
 __status__ = "stable"
 
 
@@ -214,8 +214,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
         self._flatfield_crc = None  # not saved as part of HDF5 structure
         self._darkcurrent = None
         self._darkcurrent_crc = None  # not saved as part of HDF5 structure
-        self.flatfiles = None  # not saved as part of HDF5 structure
-        self.darkfiles = None  # not saved as part of HDF5 structure
 
         self._splineCache = {}  # key=(dx,xpoints,ypoints) value: ndarray
         self._sem = threading.Semaphore()
@@ -234,7 +232,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         ":return: a shallow copy of itself"
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
-                     "_darkcurrent_crc", "flatfiles", "darkfiles"]
+                     "_darkcurrent_crc"]
         mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
         new = self.__class__()
         for key in unmutable + mutable:
@@ -247,7 +245,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         ":return: a deep copy of itself"
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
-                     "_darkcurrent_crc", "flatfiles", "darkfiles"]
+                     "_darkcurrent_crc"]
         mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
         if memo is None:
             memo = {}
@@ -900,31 +898,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     flatfield = property(get_flatfield, set_flatfield)
 
-    def set_flatfiles(self, files, method="mean"):
-        """
-        :param files: file(s) used to compute the flat-field.
-        :type files: str or list(str) or None
-        :param method: method used to compute the dark, "mean" or "median"
-        :type method: str
-
-        Set the flat field from one or mutliple files, averaged
-        according to the method provided
-        """
-        if type(files) in utils.StringTypes:
-            files = [i.strip() for i in files.split(",")]
-        elif not files:
-            files = []
-        if len(files) == 0:
-            self.set_flatfield(None)
-        elif len(files) == 1:
-            if fabio is None:
-                raise RuntimeError("FabIO is missing")
-            self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
-            self.flatfiles = files[0]
-        else:
-            self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
-            self.flatfiles = "%s(%s)" % (method, ",".join(files))
-
     def get_darkcurrent(self):
         return self._darkcurrent
 
@@ -936,31 +909,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
         self._darkcurrent_crc = crc32(dark) if dark is not None else None
 
     darkcurrent = property(get_darkcurrent, set_darkcurrent)
-
-    def set_darkfiles(self, files=None, method="mean"):
-        """
-        :param files: file(s) used to compute the dark.
-        :type files: str or list(str) or None
-        :param method: method used to compute the dark, "mean" or "median"
-        :type method: str
-
-        Set the dark current from one or mutliple files, avaraged
-        according to the method provided
-        """
-        if type(files) in utils.StringTypes:
-            files = [i.strip() for i in files.split(",")]
-        elif not files:
-            files = []
-        if len(files) == 0:
-            self.set_darkcurrent(None)
-        elif len(files) == 1:
-            if fabio is None:
-                raise RuntimeError("FabIO is missing")
-            self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
-            self.darkfiles = files[0]
-        else:
-            self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
-            self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
     def __getnewargs_ex__(self):
         "Helper function for pickling detectors"

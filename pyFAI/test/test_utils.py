@@ -35,17 +35,21 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/10/2018"
+__date__ = "28/11/2018"
 
 import unittest
 import logging
+import numpy
+import tempfile
+import os.path
+import shutil
+
+import fabio
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from .. import utils
+from ..utils import ioutils
 from .. import _version
-
-# to increase test coverage of missing files:
-from .. import directories
 
 
 class TestUtils(unittest.TestCase):
@@ -73,10 +77,45 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(_version.calc_hexversion(0, 0, 0, 0, 1), 1, "Serial is OK")
 
 
+class TestIoUtils(unittest.TestCase):
+    def setUp(self):
+        shape = (10, 15)
+        self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
+        self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
+
+        tmp_dir = os.path.join(UtilsTest.tempdir, self.id())
+        if not os.path.isdir(tmp_dir):
+            os.mkdir(tmp_dir)
+        self.tmp_dir = tmp_dir
+
+        fd, self.edf1 = tempfile.mkstemp(".edf", "testAI1", tmp_dir)
+        os.close(fd)
+        fd, self.edf2 = tempfile.mkstemp(".edf", "testAI2", tmp_dir)
+        os.close(fd)
+        fabio.edfimage.edfimage(data=self.rnd1).write(self.edf1)
+        fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dir)
+
+    def test_single(self):
+        files = (self.edf1,)
+        data, source = ioutils.average_files(files, "mean")
+        self.assertTrue(source == "%s" % (self.edf1,))
+        self.assertTrue(abs(data - self.rnd1).max() == 0)
+
+    def test_multi(self):
+        files = (self.edf1, self.edf2)
+        data, source = ioutils.average_files(files, "mean")
+        self.assertTrue(source == "%s(%s,%s)" % ("mean", self.edf1, self.edf2))
+        self.assertTrue(abs(data - 0.5 * (self.rnd1 + self.rnd2)).max() == 0)
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestUtils))
+    testsuite.addTest(loader(TestIoUtils))
     return testsuite
 
 

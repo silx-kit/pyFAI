@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/07/2018"
+__date__ = "28/11/2018"
 
 import unittest
 import os
@@ -43,9 +43,8 @@ import logging
 import time
 import copy
 import fabio
-import tempfile
 import gc
-import shutil
+
 from . import utilstest
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
@@ -492,45 +491,11 @@ class TestSaxs(unittest.TestCase):
         self.assertGreater(res_azimuthal.sigma.min(), 0, "Azimuthal error are positive")
 
 
-class TestSetter(unittest.TestCase):
-    def setUp(self):
-        self.ai = AzimuthalIntegrator()
-        shape = (10, 15)
-        self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
-        self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
-
-        tmp_dir = os.path.join(UtilsTest.tempdir, self.id())
-        if not os.path.isdir(tmp_dir):
-            os.mkdir(tmp_dir)
-        self.tmp_dir = tmp_dir
-
-        fd, self.edf1 = tempfile.mkstemp(".edf", "testAI1", tmp_dir)
-        os.close(fd)
-        fd, self.edf2 = tempfile.mkstemp(".edf", "testAI2", tmp_dir)
-        os.close(fd)
-        fabio.edfimage.edfimage(data=self.rnd1).write(self.edf1)
-        fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
-
-    def tearDown(self):
-        shutil.rmtree(self.tmp_dir)
-
-    def test_flat(self):
-        self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")
-        self.assertTrue(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
-        self.assertTrue(abs(self.ai.flatfield - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Flat array is OK")
-
-    def test_dark(self):
-        self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
-        self.assertTrue(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
-        self.assertTrue(abs(self.ai.darkcurrent - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Dark array is OK")
-
-
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestAzimHalfFrelon))
     testsuite.addTest(loader(TestFlatimage))
-    testsuite.addTest(loader(TestSetter))
     # Consumes a lot of memory
     # testsuite.addTest(loader(TestAzimPilatus))
     testsuite.addTest(loader(TestSaxs))
