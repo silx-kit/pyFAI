@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/11/2018"
+__date__ = "23/11/2018"
 
 import logging
 import numpy
@@ -36,10 +36,80 @@ import collections
 from silx.image import marchingsquares
 import pyFAI.utils
 from ...geometryRefinement import GeometryRefinement
+from .model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..peak_picker import PeakPicker
 from ..utils import timeutils
 
 _logger = logging.getLogger(__name__)
+
+
+class GeometryRefinementContext(object):
+    """Store the full context of the GeometryRefinement object
+
+    Right now, GeometryRefinement store the bound but do not store the fixed
+    constraints. It make the context difficult to manage and to trust.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.__geoRef = GeometryRefinement(*args, **kwargs)
+        fixed = pyFAI.utils.FixedParameters()
+        fixed.add("wavelength")
+        self.__fixed = fixed
+
+        self.__bounds = {}
+        attrs = ("wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3")
+        for name in attrs:
+            min_getter = getattr(self.__geoRef, "get_%s_min" % name)
+            max_getter = getattr(self.__geoRef, "get_%s_max" % name)
+            minValue, maxValue = min_getter(), max_getter()
+            self.__bounds[name] = minValue, maxValue
+
+    def __getattr__(self, name):
+        return object.__getattribute__(self.__geoRef, name)
+
+    def __setattr__(self, name, value):
+        if "__" in name:
+            return super(GeometryRefinementContext, self).__setattr__(name, value)
+        return object.__setattr__(self.__geoRef, name, value)
+
+    def bounds(self):
+        return self.__bounds
+
+    def fixed(self):
+        return self.__fixed
+
+    def setFixed(self, fixed):
+        self.__fixed = fixed
+
+    def setBounds(self, bounds):
+        self.__bounds = bounds
+
+    def chi2(self):
+        if "wavelength" in self.__fixed:
+            chi2 = self.__geoRef.chi2()
+        else:
+            chi2 = self.__geoRef.chi2_wavelength()
+        return chi2
+
+    def refine(self, maxiter):
+        attrs = ["wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
+        for name in attrs:
+            if name in self.__fixed:
+                continue
+            min_setter = getattr(self.__geoRef, "set_%s_min" % name)
+            max_setter = getattr(self.__geoRef, "set_%s_max" % name)
+            if name in self.__bounds:
+                minValue, maxValue = self.__bounds[name]
+            else:
+                minValue, maxValue = -float("inf"), float("inf")
+            min_setter(minValue)
+            max_setter(maxValue)
+
+        if "wavelength" in self.__fixed:
+            deltaS = self.__geoRef.refine2(maxiter, self.__fixed)
+        else:
+            deltaS = self.__geoRef.refine2_wavelength(maxiter, self.__fixed)
+        return deltaS
 
 
 class RingCalibration(object):
@@ -51,15 +121,12 @@ class RingCalibration(object):
         self.__calibrant.set_wavelength(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
-        self.__init(peaks, method)
-
-        fixed = pyFAI.utils.FixedParameters()
-        fixed.add("wavelength")
-        self.__fixed = fixed
-        self.__bounds = {}
         self.__rms = None
         self.__previousRms = None
         self.__peakResidual = None
+        self.__defaultConstraints = None
+
+        self.__init(peaks, method)
 
     def __initgeoRef(self):
         """
@@ -82,22 +149,32 @@ class RingCalibration(object):
         #            defaults[key] = val
         return defaults
 
-    def __init(self, peaks, method):
+    def __init(self, peaks, method, constraintsModel=None):
         defaults = self.__initgeoRef()
-        fixed = pyFAI.utils.FixedParameters()
-        fixed.add("wavelength")
 
         if len(peaks) == 0:
             self.__peakPicker = None
             self.__geoRef = None
             return
 
-        geoRef = GeometryRefinement(data=peaks,
-                                    wavelength=self.__wavelength,
-                                    detector=self.__detector,
-                                    calibrant=self.__calibrant,
-                                    **defaults)
-        self.__rms = geoRef.refine2(1000000, fix=fixed)
+        geoRef = GeometryRefinementContext(data=peaks,
+                                           wavelength=self.__wavelength,
+                                           detector=self.__detector,
+                                           calibrant=self.__calibrant,
+                                           **defaults)
+
+        self.__geoRef = geoRef
+
+        # Store the default constraints
+        self.__defaultConstraints = GeometryConstraintsModel()
+        self.toGeometryConstraintsModel(self.__defaultConstraints)
+
+        # Update the constraints
+        if constraintsModel is not None:
+            assert(constraintsModel.isValid())
+            self.fromGeometryConstraintsModel(constraintsModel)
+
+        self.__rms = self.__geoRef.refine(1000000)
         self.__peakResidual = self.__rms
         self.__previousRms = None
 
@@ -110,8 +187,8 @@ class RingCalibration(object):
         self.__peakPicker = peakPicker
         self.__geoRef = geoRef
 
-    def init(self, peaks, method):
-        self.__init(peaks, method)
+    def init(self, peaks, method, constraintsModel):
+        self.__init(peaks, method, constraintsModel=constraintsModel)
 
     def update(self, image, mask, calibrant, detector, wavelength=None):
         self.__image = image
@@ -127,31 +204,8 @@ class RingCalibration(object):
     def __computeRms(self):
         if self.__geoRef is None:
             return None
-        if "wavelength" in self.__fixed:
-            chi2 = self.__geoRef.chi2()
-        else:
-            chi2 = self.__geoRef.chi2_wavelength()
+        chi2 = self.__geoRef.chi2()
         return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
-
-    def __refine(self, maxiter=1000000, fix=None):
-
-        attrs = ["wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
-        for name in attrs:
-            if name in self.__fixed:
-                continue
-            min_setter = getattr(self.__geoRef, "set_%s_min" % name)
-            max_setter = getattr(self.__geoRef, "set_%s_max" % name)
-            if name in self.__bounds:
-                minValue, maxValue = self.__bounds[name]
-            else:
-                minValue, maxValue = -float("inf"), float("inf")
-            min_setter(minValue)
-            max_setter(maxValue)
-
-        if "wavelength" in self.__fixed:
-            return self.__geoRef.refine2(maxiter, fix)
-        else:
-            return self.__geoRef.refine2_wavelength(maxiter, fix)
 
     def refine(self, max_iter=500, seconds=10):
         """
@@ -169,7 +223,7 @@ class RingCalibration(object):
         timer = timeutils.Timer(seconds=10)
 
         while count < max_iter and not timer.isTimeout():
-            residual = self.__refine(10000, fix=self.__fixed)
+            residual = self.__geoRef.refine(10000)
             if residual >= previous_residual:
                 break
             previous_residual = residual
@@ -303,7 +357,7 @@ class RingCalibration(object):
             self.__previousRms = None
             self.__rms = None
 
-    def toGeometryConstriansModel(self, contraintsModel, reachFromGeoRef=True):
+    def toGeometryConstraintsModel(self, contraintsModel, reachFromGeoRef=True):
         if reachFromGeoRef is False:
             raise NotImplementedError("Not implemented")
         attrs = [
@@ -315,23 +369,31 @@ class RingCalibration(object):
             ("rot2", contraintsModel.rotation2()),
             ("rot3", contraintsModel.rotation3()),
         ]
+        bounds = self.__geoRef.bounds()
+        fixed = self.__geoRef.fixed()
         for name, constraint in attrs:
-            min_getter = getattr(self.__geoRef, "get_%s_min" % name)
-            max_getter = getattr(self.__geoRef, "get_%s_max" % name)
-            minValue, maxValue = min_getter(), max_getter()
+            minValue, maxValue = bounds[name]
             constraint.setRangeConstraint(minValue, maxValue)
-            if name in self.__fixed:
+            if name in fixed:
                 constraint.setFixed()
 
-    def fromGeometryConstriansModel(self, contraintsModel):
+    def defaultGeometryConstraintsModel(self):
+        """Returns the default constraints
+
+        Not the one used, but the one initially set to the refinement engine.
+        """
+        assert(self.__defaultConstraints is not None)
+        return self.__defaultConstraints
+
+    def fromGeometryConstraintsModel(self, constraintsModel):
         attrs = [
-            ("wavelength", contraintsModel.wavelength()),
-            ("dist", contraintsModel.distance()),
-            ("poni1", contraintsModel.poni1()),
-            ("poni2", contraintsModel.poni2()),
-            ("rot1", contraintsModel.rotation1()),
-            ("rot2", contraintsModel.rotation2()),
-            ("rot3", contraintsModel.rotation3()),
+            ("wavelength", constraintsModel.wavelength()),
+            ("dist", constraintsModel.distance()),
+            ("poni1", constraintsModel.poni1()),
+            ("poni2", constraintsModel.poni2()),
+            ("rot1", constraintsModel.rotation1()),
+            ("rot2", constraintsModel.rotation2()),
+            ("rot3", constraintsModel.rotation3()),
         ]
         fixed = pyFAI.utils.FixedParameters()
         bounds = {}
@@ -345,7 +407,5 @@ class RingCalibration(object):
                 if maxValue is None:
                     maxValue = +float("inf")
                 bounds[name] = minValue, maxValue
-        self.__fixed = fixed
-        # FIXME: Return should not be stored inside __bounds but inside geoRef
-        # cause it create an indermediat cache, which could be unsynchronized
-        self.__bounds = bounds
+        self.__geoRef.setFixed(fixed)
+        self.__geoRef.setBounds(bounds)

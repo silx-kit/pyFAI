@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/08/2018"
+__date__ = "22/11/2018"
 
 import logging
 import numpy
@@ -35,6 +35,7 @@ from silx.image import marchingsquares
 
 import pyFAI.utils
 from pyFAI.geometryRefinement import GeometryRefinement
+from pyFAI.geometry import Geometry
 from ..peak_picker import PeakPicker
 
 _logger = logging.getLogger(__name__)
@@ -73,11 +74,14 @@ class RingExtractor(object):
         #            defaults[key] = val
         return defaults
 
-    def __createGeoRef(self, peaks, fixed):
+    def __createGeoRefFromPeaks(self, peaks):
         """
         Contains the geometry refinement part specific to Calibration
         Sets up the initial guess when starting pyFAI-calib
         """
+
+        fixed = pyFAI.utils.FixedParameters()
+        fixed.add("wavelength")
 
         scores = []
         PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
@@ -121,30 +125,51 @@ class RingExtractor(object):
 
         return geoRef
 
-    def extract(self, peaks, method="massif", maxRings=None, pointPerDegree=1.0):
+    def __createGeoRefFromGeometry(self, geometryModel):
+        geoRef = Geometry(
+            dist=geometryModel.distance().value(),
+            wavelength=geometryModel.wavelength().value(),
+            poni1=geometryModel.poni1().value(),
+            poni2=geometryModel.poni2().value(),
+            rot1=geometryModel.rotation1().value(),
+            rot2=geometryModel.rotation2().value(),
+            rot3=geometryModel.rotation3().value(),
+            detector=self.__detector)
+        return geoRef
+
+    def extract(self, peaks=None, geometryModel=None, method="massif", maxRings=None, pointPerDegree=1.0):
         """
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed.
 
         # FIXME pts_per_deg
         """
-        fixed = pyFAI.utils.FixedParameters()
-        fixed.add("wavelength")
+        assert(numpy.logical_xor(peaks is not None, geometryModel is not None))
 
-        geoRef = self.__createGeoRef(peaks, fixed=fixed)
+        if peaks is not None:
+            # Energy from from experiment settings
+            wavelength = self.__wavelength
+            self.__calibrant.setWavelength_change2th(wavelength)
+            geoRef = self.__createGeoRefFromPeaks(peaks)
+        elif geometryModel is not None:
+            # Fitted energy
+            assert(geometryModel.isValid())
+            wavelength = geometryModel.wavelength().value()
+            self.__calibrant.setWavelength_change2th(wavelength)
+            geoRef = self.__createGeoRefFromGeometry(geometryModel)
+
         self.__geoRef = geoRef
 
         peakPicker = PeakPicker(data=self.__image,
                                 mask=self.__mask,
                                 calibrant=self.__calibrant,
-                                wavelength=self.__wavelength,
+                                wavelength=wavelength,
                                 detector=self.__detector,
                                 method=method)
 
         peakPicker.reset()
         peakPicker.init(method, False)
-        # if geoRef:
-        #     ai.setPyFAI(**geoRef.getPyFAI())
+
         tth = numpy.array([i for i in self.__calibrant.get_2th() if i is not None])
         tth = numpy.unique(tth)
         tth_min = numpy.zeros_like(tth)

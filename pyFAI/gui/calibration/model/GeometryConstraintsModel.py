@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/11/2018"
+__date__ = "22/11/2018"
 
 from .AbstractModel import AbstractModel
 from .ConstraintModel import ConstraintModel
@@ -68,6 +68,7 @@ class GeometryConstraintsModel(AbstractModel):
             return False
         if not self.__rotation3.isValid():
             return False
+        return True
 
     def distance(self):
         return self.__distance
@@ -106,6 +107,21 @@ class GeometryConstraintsModel(AbstractModel):
         model.rotation2().set(self.__rotation2)
         model.rotation3().set(self.__rotation3)
         return model
+
+    def set(self, other):
+        """Set this geometry constraints with the other informations.
+
+        :param GeometryConstraintsModel other:
+        """
+        self.lockSignals()
+        self.distance().set(other.distance())
+        self.wavelength().set(other.wavelength())
+        self.poni1().set(other.poni1())
+        self.poni2().set(other.poni2())
+        self.rotation1().set(other.rotation1())
+        self.rotation2().set(other.rotation2())
+        self.rotation3().set(other.rotation3())
+        self.unlockSignals()
 
     def fillDefault(self, other):
         """Fill unset values of this model with the other model

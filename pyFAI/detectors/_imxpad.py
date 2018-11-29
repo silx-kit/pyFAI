@@ -546,7 +546,7 @@ class Cirpad(ImXPadS10):
         w = (0.1e-3 + 0.24e-3 + 75.14e-3) * u + (0.8e-3) * v + (0.55e-3) * s + r
         return self._translation(nmd, w)
 
-    def get_pixel_corners(self):
+    def _get_pixel_corners(self):
         pixel_size1 = self._calc_pixels_size(self.MEDIUM_MODULE_SIZE[0],
                                              self.MODULE_SIZE[0],
                                              self.PIXEL_SIZE[0])
@@ -581,16 +581,17 @@ class Cirpad(ImXPadS10):
         corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
         corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
 
-        n_corners = corners
+        modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2]*i]) for i in range(20)]
+        return numpy.concatenate(modules, axis=0)
 
-        # then we compute the positions of the 19 remaining ones
-        for _ in range(1, 20):
-            n_corners = self._passage(n_corners, self.ROT)
-            # Depending on the expected layout
-            corners = numpy.concatenate((corners, n_corners), axis=0)
-        return corners
+    def get_pixel_corners(self):
+        if self._pixel_corners is None:
+            with self._sem:
+                if self._pixel_corners is None:  
+                    self._pixel_corners = self._get_pixel_corners()
+        return self._pixel_corners
 
-    # Pas fait encore
+    # TODO !!!
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         if (d1 is None) or d2 is None:
             d1 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[0]).astype(numpy.float32), self.MAX_SHAPE[1], False)

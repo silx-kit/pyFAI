@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2018"
+__date__ = "22/11/2018"
 
 import os.path
 
@@ -46,7 +46,7 @@ class CalibrantSelector(qt.QComboBox):
 
         # feed the widget with default calibrants
         items = pyFAI.calibrant.CALIBRANT_FACTORY.items()
-        items = sorted(items)
+        items = sorted(items, key=lambda x: x[0].lower())
         for calibrantName, calibrant in items:
             self.addItem(calibrantName, calibrant)
             icon = icons.getQIcon("pyfai:gui/icons/calibrant")

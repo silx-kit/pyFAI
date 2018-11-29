@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/10/2018"
+__date__ = "21/11/2018"
 
 import os
 import logging
@@ -64,6 +64,8 @@ class DetectorSelectorDrop(qt.QWidget):
         self._manufacturerList.setModel(model)
         selection = self._manufacturerList.selectionModel()
         selection.selectionChanged.connect(self.__manufacturerChanged)
+        manufacturerModel = model
+        manufacturerSelection = selection
 
         model = AllDetectorModel(self)
         modelFilter = DetectorFilter(self)
@@ -120,6 +122,10 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__pixelWidth.changed.connect(self.__customDetectorChanged)
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
         self.__customDetector = None
+
+        # By default select all the manufacturers
+        allIndex = manufacturerModel.index(0, 0)
+        manufacturerSelection.select(allIndex, qt.QItemSelectionModel.ClearAndSelect)
 
     def __splineFileChanged(self):
         splineFile = self.__splineFile.value()
