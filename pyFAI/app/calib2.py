@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2018"
+__date__ = "28/11/2018"
 __status__ = "production"
 
 import logging
@@ -91,30 +91,29 @@ def configure_parser_arguments(parser):
                         help="file containing the mask (for image reconstruction)", default=None)
     parser.add_argument("-p", "--pixel", dest="pixel",
                         help="size of the pixel in micron", default=None)
+    parser.add_argument("-s", "--spline", dest="spline",
+                        help="spline file describing the detector distortion", default=None)
+
+    parser.add_argument("-n", "--pt", dest="npt",
+                        help="file with datapoints saved. Example: basename.npt", default=None)
 
     # Not yet used
     parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
-                        help="file containing the diffraction parameter (poni-file).",
+                        help="file containing the diffraction parameter (poni-file) [not used].",
                         default=None)
     # Not yet used
     parser.add_argument("-b", "--background", dest="background",
-                        help="Automatic background subtraction if no value are provided",
+                        help="Automatic background subtraction if no value are provided [not used]",
                         default=None)
     # Not yet used
     parser.add_argument("-d", "--dark", dest="dark",
-                        help="list of comma separated dark images to average and subtract", default=None)
+                        help="list of comma separated dark images to average and subtract [not used]", default=None)
     # Not yet used
     parser.add_argument("-f", "--flat", dest="flat",
-                        help="list of comma separated flat images to average and divide", default=None)
-    # Not yet used
-    parser.add_argument("-s", "--spline", dest="spline",
-                        help="spline file describing the detector distortion", default=None)
-    # Not yet used
-    parser.add_argument("-n", "--pt", dest="npt",
-                        help="file with datapoints saved. Default: basename.npt", default=None)
+                        help="list of comma separated flat images to average and divide [not used]", default=None)
     # Not yet used
     parser.add_argument("--filter", dest="filter",
-                        help="select the filter, either mean(default), max or median",
+                        help="select the filter, either mean(default), max or median [not used]",
                         default=None)
 
     # Geometry
@@ -500,6 +499,16 @@ def setup_model(model, options):
         logger.error("gui option not supported")
     if options.interactive is not True:
         logger.error("interactive option not supported")
+
+    if options.npt:
+        try:
+            from pyFAI.gui.calibration.helper import model_transform
+            from pyFAI.control_points import ControlPoints
+            controlPoints = ControlPoints(filename=options.npt)
+            peakSelectionModel = model.peakSelectionModel()
+            model_transform.initPeaksFromControlPoints(peakSelectionModel, controlPoints)
+        except Exception as e:
+            displayExceptionBox("Error while loading control-point file", e)
 
 
 def logUncaughtExceptions(exceptionClass, exception, stack):

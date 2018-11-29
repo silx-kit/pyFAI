@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/11/2018"
+__date__ = "28/11/2018"
 
 import logging
 import numpy
@@ -51,6 +51,8 @@ from .CalibrationContext import CalibrationContext
 from .helper.MarkerManager import MarkerManager
 from ..utils import FilterBuilder
 from ..utils import validators
+from .helper import model_transform
+
 
 _logger = logging.getLogger(__name__)
 
@@ -586,13 +588,8 @@ class PeakPickingTask(AbstractCalibrationTask):
             try:
                 controlPoints = pyFAI.control_points.ControlPoints(filename)
                 oldState = self.__copyPeaks(self.__undoStack)
-                self.model().peakSelectionModel().clear()
-                for label in controlPoints.get_labels():
-                    group = controlPoints.get(lbl=label)
-                    peakModel = self.__createNewPeak(group.points)
-                    peakModel.setRingNumber(group.ring + 1)
-                    peakModel.setName(label)
-                    self.model().peakSelectionModel().append(peakModel)
+                peakSelectionModel = self.model().peakSelectionModel()
+                model_transform.initPeaksFromControlPoints(peakSelectionModel, controlPoints)
                 newState = self.__copyPeaks(self.__undoStack)
                 command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
                 command.setText("load rings")
@@ -617,13 +614,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         if not os.path.exists(filename) and not filename.endswith(".npt"):
             filename = filename + ".npt"
         try:
-            calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
-            wavelength = self.model().experimentSettingsModel().wavelength().value()
-            controlPoints = pyFAI.control_points.ControlPoints(None, calibrant, wavelength)
-            for peakModel in self.model().peakSelectionModel():
-                ringNumber = peakModel.ringNumber() - 1
-                points = peakModel.coords()
-                controlPoints.append(points=points, ring=ringNumber)
+            controlPoints = model_transform.createControlPoints(self.model())
             controlPoints.save(filename)
         except Exception as e:
             _logger.error(e.args[0])
@@ -800,8 +791,8 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         if len(points) > 0:
             # reach bigger ring
-            selection = self.model().peakSelectionModel()
-            ringNumbers = [p.ringNumber() for p in selection]
+            peakSelectionModel = self.model().peakSelectionModel()
+            ringNumbers = [p.ringNumber() for p in peakSelectionModel]
             if ringNumbers == []:
                 lastRingNumber = 0
             else:
@@ -817,12 +808,12 @@ class PeakPickingTask(AbstractCalibrationTask):
             else:
                 raise ValueError("Picking mode unknown")
 
-            peakModel = self.__createNewPeak(points)
+            peakModel = model_transform.createRing(points, peakSelectionModel)
             peakModel.setRingNumber(ringNumber)
             oldState = self.__copyPeaks(self.__undoStack)
-            self.model().peakSelectionModel().append(peakModel)
+            peakSelectionModel.append(peakModel)
             newState = self.__copyPeaks(self.__undoStack)
-            command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+            command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
             command.setText("add peak %s" % peakModel.name())
             command.setRedoInhibited(True)
             self.__undoStack.push(command)
@@ -855,42 +846,6 @@ class PeakPickingTask(AbstractCalibrationTask):
             copy = peakModel.copy(parent)
             state.append(copy)
         return state
-
-    def __createNewPeak(self, points):
-        selection = self.model().peakSelectionModel()
-
-        # reach the bigger name
-        names = ["% 8s" % p.name() for p in selection]
-        if len(names) > 0:
-            names = list(sorted(names))
-            bigger = names[-1].strip()
-            number = 0
-            for c in bigger:
-                number = number * 26 + (ord(c) - ord('a'))
-        else:
-            number = -1
-        number = number + 1
-
-        # compute the next one
-        name = ""
-        if number == 0:
-            name = "a"
-        else:
-            n = number
-            while n > 0:
-                c = n % 26
-                n = n // 26
-                name = chr(c + ord('a')) + name
-
-        color = CalibrationContext.instance().getMarkerColor(number)
-
-        peakModel = PeakModel(self.model().peakSelectionModel())
-        peakModel.setName(name)
-        peakModel.setColor(color)
-        peakModel.setCoords(points)
-        peakModel.setRingNumber(1)
-
-        return peakModel
 
     def __autoExtractRingsLater(self):
         self.__plot.setProcessing()
@@ -979,14 +934,15 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         # update the gui
         oldState = self.__copyPeaks(self.__undoStack)
-        self.model().peakSelectionModel().clear()
+        peakSelectionModel = self.model().peakSelectionModel()
+        peakSelectionModel.clear()
         for ringNumber in sorted(newPeaks.keys()):
             coords = newPeaks[ringNumber]
-            peakModel = self.__createNewPeak(coords)
+            peakModel = model_transform.createRing(coords, peakSelectionModel)
             peakModel.setRingNumber(ringNumber)
-            self.model().peakSelectionModel().append(peakModel)
+            peakSelectionModel.append(peakModel)
         newState = self.__copyPeaks(self.__undoStack)
-        command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+        command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
         command.setText("extract rings")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)

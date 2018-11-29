@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/11/2018"
+__date__ = "28/11/2018"
 
 import logging
 import numpy
@@ -1101,5 +1101,11 @@ class GeometryTask(AbstractCalibrationTask):
             self.__plot.removeImage("image")
 
     def __widgetShow(self):
+        if not self.__peaksInvalidated:
+            # In case of the very first time
+            geometry = self.model().fittedGeometry()
+            peakPickingSelection = self.model().peakSelectionModel()
+            self.__peaksInvalidated = len(peakPickingSelection) != 0 and not geometry.isValid()
+
         if self.__peaksInvalidated:
             self.__initGeometryLater()
