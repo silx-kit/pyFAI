@@ -41,6 +41,8 @@ logger = logging.getLogger(__name__)
 from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
+from ..engines.CSR_engine import CsrIntegrator2d
+from .. import azimuthalIntegrator
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
 
@@ -109,6 +111,19 @@ class TestCSR(utilstest.ParametricTestCase):
         logger.debug("error mean: %s, std: %s", error.mean(), error.std())
         self.assertLess(error.mean(), 0.1, "img are almost the same")
         self.assertLess(error.std(), 3, "img are almost the same")
+
+        # Validate the scipy integrator ....
+        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        scipy_engine = CsrIntegrator2d(self.data.size,
+                                       data=engine.data,
+                                       indices=engine.indices,
+                                       indptr=engine.indptr,
+                                       empty=0.0,
+                                       bin_centers0=engine.bin_centers0,
+                                       bin_centers1=engine.bin_centers1)
+
+        res = scipy_engine.integrate(self.data)
+        print(res)
 
     def test_2d_nosplit(self):
         self.ai.reset()

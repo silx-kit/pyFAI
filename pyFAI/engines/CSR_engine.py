@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2018"
+__date__ = "27/11/2018"
 __status__ = "development"
 
 import logging
@@ -38,7 +38,7 @@ import numpy
 from scipy.sparse import csr_matrix
 from .preproc import preproc as preproc_np
 try:
-    from .ext.preproc import preproc as preproc_cy
+    from ..ext.preproc import preproc as preproc_cy
 except ImportError as err:
     logger.warning("ImportError pyFAI.ext.preproc %s", err)
     preproc = preproc_np
