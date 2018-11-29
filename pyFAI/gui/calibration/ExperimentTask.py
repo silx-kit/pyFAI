@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/11/2018"
+__date__ = "28/11/2018"
 
 import fabio
 import numpy
@@ -216,10 +216,12 @@ class ExperimentTask(AbstractCalibrationTask):
 
         self._detectorSizeUnit.setVisible(detector is not None)
         if detector is None:
+            self._detectorLabel.setStyleSheet("QLabel { color: red }")
             self._detectorSize.setText("")
             self._detectorFileDescription.setVisible(False)
             self._detectorFileDescriptionTitle.setVisible(False)
         else:
+            self._detectorLabel.setStyleSheet("QLabel { }")
             text = [str(s) for s in detector.max_shape]
             text = u" × ".join(text)
             self._detectorSize.setText(text)
@@ -290,7 +292,7 @@ class ExperimentTask(AbstractCalibrationTask):
         try:
             detector = self.model().experimentSettingsModel().detector()
             if detector is None:
-                self.__displayError("No detector")
+                self._error.setVisible(False)
                 self.__updateDetectorTemplate()
                 return
             binning = detector.get_binning()
