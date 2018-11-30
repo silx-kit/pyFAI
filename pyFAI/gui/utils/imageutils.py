@@ -30,12 +30,13 @@ from __future__ import division
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "06/08/2018"
+__date__ = "27/11/2018"
 
 
 import numpy
 
 from silx.gui import qt
+from silx.gui import colors
 
 
 def convertArrayToQImage(image):
@@ -74,3 +75,20 @@ def convertArrayToQImage(image):
         assert(False)
 
     return qimage.copy()  # Making a copy of the image and its data
+
+
+def maskArrayToRgba(mask, falseColor, trueColor):
+    """
+    Returns an RGBA uint8 numpy array using colors to map True (usually masked pixels)
+    and Flase (valid pixel) from
+    the mask array.
+    """
+    trueColor = numpy.array(colors.rgba(trueColor))
+    trueColor = (trueColor * 256.0).clip(0, 255).astype(numpy.uint8)
+    falseColor = numpy.array(colors.rgba(falseColor))
+    falseColor = (falseColor * 256.0).clip(0, 255).astype(numpy.uint8)
+    shape = mask.shape[0], mask.shape[1], 4
+    image = numpy.empty(shape, dtype=numpy.uint8)
+    image[mask] = trueColor
+    image[~mask] = falseColor
+    return image

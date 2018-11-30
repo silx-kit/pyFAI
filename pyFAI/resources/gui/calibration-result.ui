@@ -42,58 +42,6 @@
          <string>Integration parameters</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_10">
-         <item row="3" column="1">
-          <widget class="QCheckBox" name="_polarizationFactorCheck">
-           <property name="text">
-            <string>Polarization factor:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="2">
-          <widget class="QLabel" name="_implementation">
-           <property name="text">
-            <string>Cython</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="1">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Histogram:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="UnitSelector" name="_radialUnit"/>
-         </item>
-         <item row="5" column="2">
-          <widget class="QLabel" name="_pixelSplitting">
-           <property name="text">
-            <string>Bounding box</string>
-           </property>
-          </widget>
-         </item>
-         <item row="8" column="1" colspan="2">
-          <widget class="ThreadPoolPushButton" name="_integrateButton">
-           <property name="text">
-            <string>Integrate</string>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="1">
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>Implementation:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Pixel splitting:</string>
-           </property>
-          </widget>
-         </item>
          <item row="3" column="2">
           <widget class="QuantityEdit" name="_polarizationFactor">
            <property name="sizePolicy">
@@ -107,29 +55,6 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Methods:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2">
-          <widget class="QComboBox" name="_methodSelector">
-           <item>
-            <property name="text">
-             <string>Default</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="6" column="2">
-          <widget class="QLabel" name="_method">
-           <property name="text">
-            <string>Direct</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="1">
           <widget class="QLabel" name="label_6">
            <property name="text">
@@ -137,21 +62,15 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="2">
-          <widget class="QuantityEdit" name="_azimuthalPoints">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <item row="4" column="1">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Integration method:</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
-          <widget class="QuantityEdit" name="_radialPoints">
+         <item row="2" column="2">
+          <widget class="QuantityEdit" name="_azimuthalPoints">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -170,10 +89,66 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="2">
+          <widget class="QuantityEdit" name="_radialPoints">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="UnitSelector" name="_radialUnit">
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1" colspan="2">
+          <widget class="ThreadPoolPushButton" name="_integrateButton">
+           <property name="text">
+            <string>Integrate</string>
+           </property>
+          </widget>
+         </item>
          <item row="2" column="1">
           <widget class="QLabel" name="label_8">
            <property name="text">
             <string>Azimuthal points:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2">
+          <widget class="QComboBox" name="_method">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>CSR in Cython</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="_polarizationFactorCheck">
+           <property name="text">
+            <string>Polarization factor:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1" colspan="2">
+          <widget class="QCheckBox" name="_displayMask">
+           <property name="text">
+            <string>Display mask overlay</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

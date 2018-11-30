@@ -47,6 +47,7 @@ from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
 from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
+from .helper.SynchronizePlotBackground import SynchronizePlotBackground
 from .CalibrationContext import CalibrationContext
 from .helper.MarkerManager import MarkerManager
 from ..utils import FilterBuilder
@@ -314,6 +315,8 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
         colormap = CalibrationContext.instance().getRawColormap()
         self.setDefaultColormap(colormap)
+
+        self.__plotBackground = SynchronizePlotBackground(self)
 
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
@@ -974,8 +977,7 @@ class PeakPickingTask(AbstractCalibrationTask):
     def _updateModel(self, model):
         self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
-        settings.image().changed.connect(self.__imageUpdated)
-        settings.mask().changed.connect(self.__maskUpdated)
+        settings.maskedImage().changed.connect(self.__imageUpdated)
         settings.image().changed.connect(self.__invalidateMassif)
         settings.mask().changed.connect(self.__invalidateMassif)
         model.peakSelectionModel().changed.connect(self.__peakSelectionChanged)
@@ -984,7 +986,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__undoStack.clear()
 
         self.__imageUpdated()
-        self.__maskUpdated()
         self.__peakSelectionChanged()
 
     def __peakSelectionChanged(self):
@@ -1003,15 +1004,11 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__peakSelectionView.setModel(tableModel)
 
     def __imageUpdated(self):
-        image = self.model().experimentSettingsModel().image().value()
+        image = self.model().experimentSettingsModel().maskedImage().value()
         if image is not None:
-            self.__plot.addImage(image, legend="image", selectable=True, copy=False)
+            self.__plot.addImage(image, legend="image", selectable=True, copy=False, z=-1)
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
             self.__plot.resetZoom()
         else:
             self.__plot.removeImage("image")
-
-    def __maskUpdated(self):
-        _mask = self.model().experimentSettingsModel().mask().value()
-        # FIXME maybe it is good to display the mask somewhere here

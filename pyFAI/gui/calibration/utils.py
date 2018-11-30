@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/08/2018"
+__date__ = "26/11/2018"
 
 
 import numpy
@@ -35,26 +35,20 @@ import collections
 
 from silx.gui import qt
 from silx.gui.widgets.WaitingPushButton import WaitingPushButton
+from silx.gui.colors import Colormap
 
 from pyFAI import units
 
 
 def getFreeColorRange(colormap):
     name = colormap['name']
-
-    import matplotlib.cm
-
-    from silx.gui.plot.matplotlib import Colormap
-    cmap = Colormap.getColormap(name)
-
-    norm = matplotlib.colors.Normalize(0, 255)
-    scalarMappable = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
+    colormap = Colormap(name)
 
     # extract all hues from colormap
-    colors = scalarMappable.to_rgba(range(256))
+    colors = colormap.getNColors()
     hues = []
     for c in colors:
-        c = qt.QColor.fromRgbF(c[0], c[1], c[2])
+        c = qt.QColor.fromRgb(c[0], c[1], c[2])
         hues.append(c.hueF())
 
     # search the bigger empty hue range

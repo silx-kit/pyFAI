@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/10/2018"
+__date__ = "27/11/2018"
 
 import logging
 import numpy
@@ -47,8 +47,10 @@ from .CalibrationContext import CalibrationContext
 from ..utils import units
 from ..utils import validators
 from .helper.MarkerManager import MarkerManager
+from .helper.SynchronizePlotBackground import SynchronizePlotBackground
 from pyFAI.ext.invert_geometry import InvertGeometry
 from ..utils import FilterBuilder
+from ..utils import imageutils
 
 _logger = logging.getLogger(__name__)
 
@@ -143,6 +145,9 @@ class IntegrationProcess(object):
         self.__rotation3 = geometry.rotation3().value()
         return True
 
+    def setDisplayMask(self, displayed):
+        self.__displayMask = displayed
+
     def setResetZoomPolicy(self, policy):
         self.__resetZoomPolicy = policy
 
@@ -180,6 +185,20 @@ class IntegrationProcess(object):
             mask=self.__mask,
             polarization_factor=self.__polarizationFactor)
 
+        # Create an image masked where data exists
+        maskData = numpy.ones(shape=self.__image.shape, dtype=numpy.float32)
+        maskData[self.__mask == 0] = float("NaN")
+
+        if self.__displayMask:
+            self.__resultMask2d = ai.integrate2d(
+                data=maskData,
+                npt_rad=self.__nPointsRadial,
+                npt_azim=self.__nPointsAzimuthal,
+                unit=self.__radialUnit,
+                polarization_factor=self.__polarizationFactor)
+        else:
+            self.__resultMask2d = None
+
         try:
             self.__directDist = ai.getFit2D()["directDist"]
         except Exception:
@@ -213,6 +232,9 @@ class IntegrationProcess(object):
 
     def result2d(self):
         return self.__result2d
+
+    def resultMask2d(self):
+        return self.__resultMask2d
 
     def radialUnit(self):
         return self.__radialUnit
@@ -345,6 +367,8 @@ class IntegrationPlot(qt.QFrame):
         self.__plot2d.getXAxis().sigLimitsChanged.connect(self.__axesChanged)
         self.__plot1d.sigPlotSignal.connect(self.__plot1dSignalReceived)
         self.__plot2d.sigPlotSignal.connect(self.__plot2dSignalReceived)
+
+        self.__plotBackground = SynchronizePlotBackground(self.__plot2d)
 
         widget = self.__plot1d
         if hasattr(widget, "centralWidget"):
@@ -659,22 +683,53 @@ class IntegrationPlot(qt.QFrame):
 
         self.__setResult(result1d)
 
-        # Assume that axes are linear
+        def compute_location(result):
+            # Assume that axes are linear
+            if result.intensity.shape[1] > 1:
+                scaleX = (result.radial[-1] - result.radial[0]) / (result.intensity.shape[1] - 1)
+            else:
+                scaleX = 1.0
+            if result.intensity.shape[0] > 1:
+                scaleY = (result.azimuthal[-1] - result.azimuthal[0]) / (result.intensity.shape[0] - 1)
+            else:
+                scaleY = 1.0
+            halfPixel = 0.5 * scaleX, 0.5 * scaleY
+            origin = (result.radial[0] - halfPixel[0], result.azimuthal[0] - halfPixel[1])
+            return origin, scaleX, scaleY
+
+        resultMask2d = integrationProcess.resultMask2d()
+        isMaskDisplayed = resultMask2d is not None
+
         result2d = integrationProcess.result2d()
-        if result2d.intensity.shape[1] > 1:
-            scaleX = (result2d.radial[-1] - result2d.radial[0]) / (result2d.intensity.shape[1] - 1)
+        result2d_intensity = result2d.intensity
+
+        # Mask pixels with no data
+        result2d_intensity[result2d.count == 0] = float("NaN")
+
+        if isMaskDisplayed:
+            maskedColor = CalibrationContext.instance().getMaskedColor()
+            transparent = (0.0, 0.0, 0.0, 0.0)
+            resultMask2d_rgba = imageutils.maskArrayToRgba(resultMask2d.count != 0,
+                                                           falseColor=transparent,
+                                                           trueColor=maskedColor)
+            origin, scaleX, scaleY = compute_location(resultMask2d)
+            self.__plot2d.addImage(
+                legend="integrated_mask",
+                data=resultMask2d_rgba,
+                origin=origin,
+                scale=(scaleX, scaleY),
+                resetzoom=False)
         else:
-            scaleX = 1.0
-        if result2d.intensity.shape[0] > 1:
-            scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / (result2d.intensity.shape[0] - 1)
-        else:
-            scaleY = 1.0
-        halfPixel = 0.5 * scaleX, 0.5 * scaleY
-        origin = (result2d.radial[0] - halfPixel[0], result2d.azimuthal[0] - halfPixel[1])
+            try:
+                self.__plot2d.removeImage("integrated_mask")
+            except Exception:
+                pass
+
         colormap = self.getDefaultColormap()
+        origin, scaleX, scaleY = compute_location(result2d)
         self.__plot2d.addImage(
-            legend="result2d",
-            data=result2d.intensity,
+            legend="integrated_data",
+            data=result2d_intensity,
             origin=origin,
             scale=(scaleX, scaleY),
             colormap=colormap,
@@ -758,6 +813,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self.__polarizationModel = None
         self._polarizationFactorCheck.clicked[bool].connect(self.__polarizationFactorChecked)
         self.widgetShow.connect(self.__widgetShow)
+        self._displayMask.clicked[bool].connect(self.__displayMaskChecked)
 
         self._integrateButton.beforeExecuting.connect(self.__integrate)
         self._integrateButton.setDisabledWhenWaiting(True)
@@ -779,6 +835,9 @@ class IntegrationTask(AbstractCalibrationTask):
         self._polarizationFactorCheck.setChecked(isEnabled)
         self._polarizationFactor.setEnabled(isEnabled)
         self._polarizationFactorCheck.blockSignals(old)
+
+    def __displayMaskChecked(self):
+        self.__invalidateIntegrationNoReset()
 
     def __invalidateIntegration(self):
         if self.isVisible():
@@ -811,6 +870,8 @@ class IntegrationTask(AbstractCalibrationTask):
         if self.__integrationResetZoomPolicy is not None:
             self.__integrationProcess.setResetZoomPolicy(self.__integrationResetZoomPolicy)
             self.__integrationResetZoomPolicy = None
+
+        self.__integrationProcess.setDisplayMask(self._displayMask.isChecked())
 
         if not self.__integrationProcess.isValid():
             self.__integrationProcess = None

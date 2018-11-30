@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/11/2018"
+__date__ = "26/11/2018"
 
 import logging
 import os.path
@@ -39,9 +39,10 @@ from silx.gui.plot.tools import PositionInfo
 
 import pyFAI.utils
 from .AbstractCalibrationTask import AbstractCalibrationTask
-from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
+from .helper.SynchronizeRawView import SynchronizeRawView
 from .helper.MarkerManager import MarkerManager
+from .helper.SynchronizeMaskToolColor import SynchronizeMaskToolColor
 
 
 _logger = logging.getLogger(__name__)
@@ -50,6 +51,10 @@ _logger = logging.getLogger(__name__)
 class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
     """Inherite the silx mask to be able to save and restore internally
     imported/exported masks to the application model."""
+
+    def __init__(self, parent=None, plot=None):
+        silx.gui.plot.MaskToolsWidget.MaskToolsWidget.__init__(self, parent=parent, plot=plot)
+        self.__syncColor = SynchronizeMaskToolColor(self)
 
     def __extractDirectory(self, filename):
         if filename is not None and filename != "":

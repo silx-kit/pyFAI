@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2018"
+__date__ = "26/11/2018"
 
 import weakref
 import logging
@@ -75,6 +75,8 @@ class CalibrationContext(object):
         self.__wavelengthUnit.setValue(units.Unit.ANGSTROM)
         self.__dialogState = None
         self.__markerColors = {}
+
+        self.sigStyleChanged = self.__rawColormap.sigChanged
 
     def __restoreColormap(self, groupName, colormap):
         settings = self.__settings
@@ -294,6 +296,33 @@ class CalibrationContext(object):
             return color
         else:
             raise ValueError("Mode '%s' not expected" % mode)
+
+    def getLabelColor(self):
+        """Returns the Qt color used to display text label
+
+        :rtype: qt.QColor
+        """
+        markers = self.markerColorList()
+        color = markers[0]
+        return color
+
+    def getMaskedColor(self):
+        """Returns the Qt color used to display masked pixels
+
+        :rtype: qt.QColor
+        """
+        return qt.QColor(255, 0, 255)
+
+    def getBackgroundColor(self):
+        """Returns the Qt color used to display part of the diagram outside of
+        the data.
+
+        :rtype: qt.QColor
+        """
+        colors = self.__rawColormap.getNColors()
+        color = colors[0]
+        color = 255 - ((255 - color) // 2)
+        return qt.QColor(color[0], color[1], color[2])
 
     def getHtmlMarkerColor(self, index):
         colors = self.markerColorList()

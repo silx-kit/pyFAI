@@ -41,6 +41,7 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
 from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
+from .helper.SynchronizePlotBackground import SynchronizePlotBackground
 from .CalibrationContext import CalibrationContext
 from ..widgets.UnitLabel import UnitLabel
 from ..widgets.QuantityLabel import QuantityLabel
@@ -487,6 +488,8 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         handle = self.getWidgetHandle()
         handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
         handle.customContextMenuRequested.connect(self.__plotContextMenu)
+
+        self.__plotBackground = SynchronizePlotBackground(self)
 
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
@@ -1063,7 +1066,7 @@ class GeometryTask(AbstractCalibrationTask):
     def _updateModel(self, model):
         self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
-        settings.image().changed.connect(self.__imageUpdated)
+        settings.maskedImage().changed.connect(self.__imageUpdated)
         settings.wavelength().changed.connect(self.__invalidateWavelength)
 
         geometry = model.fittedGeometry()
@@ -1091,7 +1094,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.__imageUpdated()
 
     def __imageUpdated(self):
-        image = self.model().experimentSettingsModel().image().value()
+        image = self.model().experimentSettingsModel().maskedImage().value()
         if image is not None:
             self.__plot.addImage(image, legend="image", copy=False)
             self.__plot.setGraphXLimits(0, image.shape[0])
