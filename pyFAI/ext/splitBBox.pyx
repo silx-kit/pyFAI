@@ -37,7 +37,7 @@ __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
-
+from libc.stdio cimport printf
 import logging
 logger = logging.getLogger(__name__)
 
@@ -810,19 +810,18 @@ def histoBBox2d_ng(weights,
 #                                   dark_variance=0.0)
 
             if not is_valid:
-                with gil:
-                    print("idx %s %s data=%s variance=%s dark=%s flat=%s sa=%s pol=%s dummy=%s dd=%s cd=%s nf=%s"%( 
-                                   idx, value, cdata[idx],
-                                   cvariance[idx] if do_variance else 0.0,
-                                   cdark[idx] if do_dark else 0.0,
-                                   cflat[idx] if do_flat else 1.0,
-                                   csolidangle[idx] if do_solidangle else 1.0,
-                                   cpolarization[idx] if do_polarization else 1.0,
-                                   cdummy,
-                                   ddummy,
-                                   check_dummy,
-                                   normalization_factor,
-                                   ))
+                printf("idx %d data=%f variance=%f dark=%f flat=%f sa=%f pol=%f dummy=%f dd=%f cd=%f nf=%f",
+                       idx, cdata[idx],
+                       cvariance[idx] if do_variance else 0.0,
+                       cdark[idx] if do_dark else 0.0,
+                       cflat[idx] if do_flat else 1.0,
+                       csolidangle[idx] if do_solidangle else 1.0,
+                       cpolarization[idx] if do_polarization else 1.0,
+                       cdummy,
+                       ddummy,
+                       check_dummy,
+                       normalization_factor,
+                       )
                 continue
 
             min0 = cpos0_lower[idx]
