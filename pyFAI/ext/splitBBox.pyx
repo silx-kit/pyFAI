@@ -652,7 +652,7 @@ def histoBBox2d_ng(weights,
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
-        data_t cdummy, ddummy
+        data_t cdummy, ddummy=0.0
         
         # Related to positions: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
@@ -690,14 +690,18 @@ def histoBBox2d_ng(weights,
         check_mask = True
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
-    if (dummy is not None) and delta_dummy is not None:
+    if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
         cdummy = float(dummy)
         ddummy = float(delta_dummy)
     elif (dummy is not None):
         cdummy = float(dummy)
+        ddummy = 0.0
+        check_dummy = True
     else:
         cdummy = float(empty)
+        ddummy = 0.0
+        check_dummy = False
 
     if dark is not None:
         assert dark.size == size, "dark current array size"
@@ -810,7 +814,7 @@ def histoBBox2d_ng(weights,
 #                                   dark_variance=0.0)
 
             if not is_valid:
-                printf("idx %d data=%f variance=%f dark=%f flat=%f sa=%f pol=%f dummy=%f dd=%f cd=%f nf=%f",
+                printf("idx %d data=%f variance=%f dark=%f flat=%f sa=%f pol=%f dummy=%f dd=%f cd=%d nf=%f",
                        idx, cdata[idx],
                        cvariance[idx] if do_variance else 0.0,
                        cdark[idx] if do_dark else 0.0,
