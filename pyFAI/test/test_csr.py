@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
-from ..engines.CSR_engine import CsrIntegrator2d
+from ..engines.CSR_engine import CsrIntegrator2d, CsrIntegrator1d
 from .. import azimuthalIntegrator
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
@@ -100,6 +100,62 @@ class TestCSR(utilstest.ParametricTestCase):
                 out_ocl_csr = None
                 out_ref = None
 
+    def test_1d_splitbbox(self):
+        self.ai.reset()
+        tth, img = self.ai.integrate1d(self.data, self.N, unit="2th_deg", method="splitbbox")
+        tth_csr, img_csr = self.ai.integrate1d(self.data, self.N, unit="2th_deg", method="csr")
+        self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
+        error = (img - img_csr)
+        logger.debug("ref: %s; obt: %s", img.shape, img_csr.shape)
+        logger.debug("error mean: %s, std: %s", error.mean(), error.std())
+        self.assertLess(error.mean(), 0.1, "img are almost the same")
+        self.assertLess(error.std(), 3, "img are almost the same")
+
+        # Validate the scipy integrator ....
+        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        scipy_engine = CsrIntegrator1d(self.data.size,
+                                       data=engine.data,
+                                       indices=engine.indices,
+                                       indptr=engine.indptr,
+                                       empty=0.0,
+                                       bin_centers=engine.bin_centers)
+
+        res_csr = engine.integrate(self.data)
+        res_scipy = scipy_engine.integrate(self.data)
+
+        self.assertTrue(numpy.allclose(res_csr[0], res_scipy[0]), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr[3], res_scipy[2][..., 3]), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[3], res_scipy[2][..., 2]), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr[2], res_scipy[2][..., 0]), "sum_data is almost the same")
+
+    def test_1d_nosplit(self):
+        self.ai.reset()
+        result_histo = self.ai.integrate1d(self.data, self.N, unit="2th_deg", method="histogram")
+        result_nosplit = self.ai.integrate1d(self.data, self.N, unit="2th_deg", method="nosplit_csr")
+        self.assertTrue(numpy.allclose(result_histo.radial, result_nosplit.radial), " 2Th are the same")
+        error = (result_histo.intensity - result_nosplit.intensity)
+        logger.debug("ref: %s; obt: %s", result_histo.intensity.shape, result_nosplit.intensity.shape)
+        logger.debug("error mean: %s, std: %s", error.mean(), error.std())
+        self.assertLess(error.mean(), 1e-3, "img are almost the same")
+        self.assertLess(error.std(), 3, "img are almost the same")
+
+        # Validate the scipy integrator ....
+        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        scipy_engine = CsrIntegrator1d(self.data.size,
+                                       data=engine.data,
+                                       indices=engine.indices,
+                                       indptr=engine.indptr,
+                                       empty=0.0,
+                                       bin_centers=engine.bin_centers)
+
+        res_csr = engine.integrate(self.data)
+        res_scipy = scipy_engine.integrate(self.data)
+
+        self.assertTrue(numpy.allclose(res_csr[0], res_scipy[0]), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr[3], res_scipy[2][..., 3]), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[3], res_scipy[2][..., 2]), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr[2], res_scipy[2][..., 0]), "sum_data is almost the same")
+
     def test_2d_splitbbox(self):
         self.ai.reset()
         img, tth, chi = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="splitbbox")
@@ -122,8 +178,14 @@ class TestCSR(utilstest.ParametricTestCase):
                                        bin_centers0=engine.bin_centers0,
                                        bin_centers1=engine.bin_centers1)
 
-        res = scipy_engine.integrate(self.data)
-        print(res)
+        res_csr = engine.integrate(self.data)
+        res_scipy = scipy_engine.integrate(self.data)
+
+        self.assertTrue(numpy.allclose(res_csr[1], res_scipy[1]), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr[2], res_scipy[2]), "pos2 is the same")
+        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy[3][..., 3]), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy[3][..., 2]), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr[3].T, res_scipy[3][..., 0]), "sum_data is almost the same")
 
     def test_2d_nosplit(self):
         self.ai.reset()
@@ -136,6 +198,25 @@ class TestCSR(utilstest.ParametricTestCase):
         logger.debug("error mean: %s, std: %s", error.mean(), error.std())
         self.assertLess(error.mean(), 1e-3, "img are almost the same")
         self.assertLess(error.std(), 3, "img are almost the same")
+
+        # Validate the scipy integrator ....
+        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        scipy_engine = CsrIntegrator2d(self.data.size,
+                                       data=engine.data,
+                                       indices=engine.indices,
+                                       indptr=engine.indptr,
+                                       empty=0.0,
+                                       bin_centers0=engine.bin_centers0,
+                                       bin_centers1=engine.bin_centers1)
+
+        res_csr = engine.integrate(self.data)
+        res_scipy = scipy_engine.integrate(self.data)
+
+        self.assertTrue(numpy.allclose(res_csr[1], res_scipy[1]), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr[2], res_scipy[2]), "pos2 is the same")
+        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy[3][..., 3]), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy[3][..., 2]), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr[3].T, res_scipy[3][..., 0]), "sum_data is almost the same")
 
 
 def suite():
