@@ -33,7 +33,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "30/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -864,6 +864,7 @@ def pseudoSplit2D_ng(pos not None,
             if min1 < (-chiDiscAtPi) * pi:
                 min1 = (-chiDiscAtPi) * pi
 
+            #TODO: Depending on the future of #1021, update accordingly
             value = preproc_value(cdata[idx],
                                   variance=cvariance[idx] if do_variance else 0.0,
                                   dark=cdark[idx] if do_dark else 0.0,

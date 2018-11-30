@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/11/2018"
+__date__ = "30/11/2018"
 
 import unittest
 import numpy
@@ -136,6 +136,7 @@ class TestSplitBBoxNg(unittest.TestCase):
         det = Detector.factory("Pilatus 100k")
         shape = det.shape
         img = numpy.random.randint(0, 65000, numpy.prod(shape))
+        img = numpy.load("image.npy").ravel()
         ai = AzimuthalIntegrator(1, detector=det)
         ai.wavelength = 1e-10
         tth = ai.center_array(shape, unit="2th_rad", scale=False).ravel()
@@ -150,28 +151,31 @@ class TestSplitBBoxNg(unittest.TestCase):
                                                                   dtth,
                                                                   chi,
                                                                   dchi,
-                                                                  )
+                                                                  empty=-1)
         cls.results["histoBBox2d_ng"] = splitBBox.histoBBox2d_ng(img,
                                                                  tth,
                                                                  dtth,
                                                                  chi,
                                                                  dchi,
-                                                                 variance=img)
+                                                                 variance=img,
+                                                                 empty=-1)
         # Legacy implementation:
         cls.results["fullSplit2D_legacy"] = splitPixel.fullSplit2D(pos,
                                                                    img,
-                                                                   bins=(100, 36)
-                                                                  )
+                                                                   bins=(100, 36),
+                                                                   empty=-1)
         cls.results["fullSplit2D_ng"] = splitPixel.pseudoSplit2D_ng(pos,
                                                                     img,
                                                                     bins=(100, 36),
-                                                                    variance=img
-                                                                   )
+                                                                    variance=img,
+                                                                    empty=-1)
+        cls.img = img
 
     @classmethod
     def tearDownClass(cls):
         super(TestSplitBBoxNg, cls).tearDownClass()
         cls.results = None
+        cls.img = None
 
     def test_split_bbox_2d(self):
         # radial position:
@@ -187,6 +191,16 @@ class TestSplitBBoxNg(unittest.TestCase):
         # pixel count:
         count_legacy = self.results["histoBBox2d_legacy"][4]
         count_ng = self.results["histoBBox2d_ng"][4]["count"]
+
+        if abs(count_ng).max() == 0:
+            print(splitBBox)
+            print(count_legacy)
+            print(count_ng)
+            print("prop", self.results["histoBBox2d_ng"][4])
+            print("pos1", self.results["histoBBox2d_ng"][3])
+            print("pos0", self.results["histoBBox2d_ng"][2])
+            print("err", self.results["histoBBox2d_ng"][1])
+            print("int", self.results["histoBBox2d_ng"][0])
         self.assertEqual(abs(count_legacy - count_ng).max(), 0, "count is the same")
         # same for normalisation ... in this case
         count_ng = self.results["histoBBox2d_ng"][4]["norm"]
