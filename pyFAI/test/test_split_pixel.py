@@ -135,8 +135,9 @@ class TestSplitBBoxNg(unittest.TestCase):
         super(TestSplitBBoxNg, cls).setUpClass()
         det = Detector.factory("Pilatus 100k")
         shape = det.shape
+        # The randomness of the image is not correlated to bug #1021
         img = numpy.random.randint(0, 65000, numpy.prod(shape))
-        img = numpy.load("image.npy").ravel()
+
         ai = AzimuthalIntegrator(1, detector=det)
         ai.wavelength = 1e-10
         tth = ai.center_array(shape, unit="2th_rad", scale=False).ravel()
