@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "13/08/2018"
+__date__ = "03/12/2018"
 
 from silx.gui import qt
 
@@ -37,7 +37,7 @@ class ElidedLabel(qt.QLabel):
     """
 
     def __init__(self, parent):
-        super(qt.QLabel, self).__init__(parent)
+        super(ElidedLabel, self).__init__(parent)
         self.__text = ""
         self.__toolTip = ""
         self.__valueAsToolTip = False
