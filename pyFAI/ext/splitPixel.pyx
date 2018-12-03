@@ -33,7 +33,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "03/12/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -732,7 +732,9 @@ def pseudoSplit2D_ng(pos not None,
         data_t[:, ::1] out_error, out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
         mask_t[:] cmask
         data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
-        bint check_mask = False, check_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_variance = False
+        bint check_mask = False, check_dummy = False, do_dark = False, 
+        bint do_flat = False, do_polarization = False, do_solidangle = False, 
+        bint do_variance = False, is_valid
         data_t cdummy = 0, cddummy = 0, scale = 1
         position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, delta_right = 0, delta_left = 0, delta_up = 0, delta_down = 0, inv_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
@@ -742,6 +744,7 @@ def pseudoSplit2D_ng(pos not None,
         position_t delta0, delta1, new_width, new_height, new_min0, new_max0, new_min1, new_max1
         int bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
         acc_t norm
+        preproc_t value
 
     if pos0Range is not None and len(pos0Range) == 2:
         pos0_min = min(pos0Range)
@@ -864,21 +867,21 @@ def pseudoSplit2D_ng(pos not None,
             if min1 < (-chiDiscAtPi) * pi:
                 min1 = (-chiDiscAtPi) * pi
 
-            value = preproc_value(cdata[idx],
-                                  variance=cvariance[idx] if do_variance else 0.0,
-                                  dark=cdark[idx] if do_dark else 0.0,
-                                  flat=cflat[idx] if do_flat else 1.0,
-                                  solidangle=csolidangle[idx] if do_solidangle else 1.0,
-                                  polarization=cpolarization[idx] if do_polarization else 1.0,
-                                  absorption=1.0,
-                                  mask=cmask[idx] if check_mask else 0,
-                                  dummy=cdummy,
-                                  delta_dummy=cddummy,
-                                  check_dummy=check_dummy,
-                                  normalization_factor=normalization_factor,
-                                  dark_variance=0.0)
-
-            if value.count == 0.0:
+            is_valid = preproc_value_inplace(&value,
+                                             cdata[idx],
+                                             variance=cvariance[idx] if do_variance else 0.0,
+                                             dark=cdark[idx] if do_dark else 0.0,
+                                             flat=cflat[idx] if do_flat else 1.0,
+                                             solidangle=csolidangle[idx] if do_solidangle else 1.0,
+                                             polarization=cpolarization[idx] if do_polarization else 1.0,
+                                             absorption=1.0,
+                                             mask=cmask[idx] if check_mask else 0,
+                                             dummy=cdummy,
+                                             delta_dummy=cddummy,
+                                             check_dummy=check_dummy,
+                                             normalization_factor=normalization_factor,
+                                             dark_variance=0.0)
+            if not is_valid:
                 continue
 
             scale = 1.0
