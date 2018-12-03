@@ -85,7 +85,7 @@ class ElidedLabel(qt.QLabel):
     def getText(self):
         return self.__text
 
-    text = qt.pyqtProperty(str, getText, setText)
+    text = qt.Property(str, getText, setText)
 
     def setToolTip(self, toolTip):
         self.__toolTip = toolTip
@@ -94,7 +94,7 @@ class ElidedLabel(qt.QLabel):
     def getToolTip(self):
         return self.__toolTip
 
-    toolTip = qt.pyqtProperty(str, getToolTip, setToolTip)
+    toolTip = qt.Property(str, getToolTip, setToolTip)
 
     def setElideMode(self, elideMode):
         self.__elideMode = elideMode
@@ -103,4 +103,4 @@ class ElidedLabel(qt.QLabel):
     def getElideMode(self):
         return self.__elideMode
 
-    elideMode = qt.pyqtProperty(qt.Qt.TextElideMode, getToolTip, setToolTip)
+    elideMode = qt.Property(qt.Qt.TextElideMode, getToolTip, setToolTip)
