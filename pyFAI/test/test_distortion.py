@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/05/2018"
+__date__ = "30/10/2018"
 
 
 import unittest
@@ -147,6 +147,7 @@ class TestHalfCCD(unittest.TestCase):
         precision at 1e-3 : 90% of pixels
         """
         self.dis.reset(method="lut", prepare=False)
+        self.dis.empty = 0.0
         try:
             self.dis.calc_LUT()
         except MemoryError as error:
@@ -165,7 +166,7 @@ class TestHalfCCD(unittest.TestCase):
         self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
         a, b, c = self.dis.correct(self.preproc)
-        cor = a[:-1, :]
+        cor = c[:-1, :, 0]
         error = b[:-1, :]
         delta = abs(cor - self.fit2d)
         logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
@@ -208,7 +209,7 @@ class TestHalfCCD(unittest.TestCase):
 
         # Now test with error propagation
         a, b, c = self.dis.correct(self.preproc)
-        cor = a[:-1, :]
+        cor = c[:-1, :, 0]
         error = b[:-1, :]
         delta = abs(cor - self.fit2d)
         logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
@@ -346,7 +347,7 @@ class TestManual(unittest.TestCase):
         # working with halfccd spline
         x, y = numpy.ogrid[:1024, :2048]
         grid = numpy.logical_or(x % 100 == 0, y % 100 == 0) + numpy.ones((1024, 2048), numpy.float32)
-        det = detectors.FReLoN("halfccd.spline")
+        det = detectors.FReLoN(UtilsTest.getimage("halfccd.spline"))
         # working with halfccd spline
         # x, y = numpy.ogrid[:2048, :2048]
         # grid = numpy.logical_or(x % 100 == 0, y % 100 == 0).astype(numpy.float32) + numpy.ones((2048, 2048), numpy.float32)

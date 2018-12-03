@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/05/2018"
+__date__ = "30/10/2018"
 __status__ = "development"
 
 import logging
@@ -379,7 +379,7 @@ class Distortion(object):
                 self.calc_LUT()
             if _distortion is not None:
                 out = _distortion.correct(image, self.shape_in, self._shape_out, self.lut,
-                                          dummy=dummy, delta_dummy=delta_dummy)
+                                          dummy=dummy or self.empty, delta_dummy=delta_dummy)
             else:
                 if self.method == "lut":
                     big = image.ravel().take(self.lut.idx) * self.lut.coef
