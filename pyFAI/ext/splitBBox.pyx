@@ -37,7 +37,6 @@ __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
-from libc.stdio cimport printf
 import logging
 logger = logging.getLogger(__name__)
 
