@@ -164,7 +164,6 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
     """
     cdef:
         floating signal, norm, count
-        #preproc_t result
         bint is_valid
 
     is_valid = (not isnan(data)) and (mask == 0) 
