@@ -32,7 +32,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "30/11/2018"
+__date__ = "03/12/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -798,34 +798,8 @@ def histoBBox2d_ng(weights,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
                                              dark_variance=0.0)
-            
-#             value = preproc_value(cdata[idx],
-#                                   variance=cvariance[idx] if do_variance else 0.0,
-#                                   dark=cdark[idx] if do_dark else 0.0,
-#                                   flat=cflat[idx] if do_flat else 1.0,
-#                                   solidangle=csolidangle[idx] if do_solidangle else 1.0,
-#                                   polarization=cpolarization[idx] if do_polarization else 1.0,
-#                                   absorption=1.0,
-#                                   mask=0,
-#                                   dummy=cdummy,
-#                                   delta_dummy=ddummy,
-#                                   check_dummy=check_dummy,
-#                                   normalization_factor=normalization_factor,
-#                                   dark_variance=0.0)
 
             if not is_valid:
-                printf("idx %d data=%f variance=%f dark=%f flat=%f sa=%f pol=%f dummy=%f dd=%f cd=%d nf=%f",
-                       idx, cdata[idx],
-                       cvariance[idx] if do_variance else 0.0,
-                       cdark[idx] if do_dark else 0.0,
-                       cflat[idx] if do_flat else 1.0,
-                       csolidangle[idx] if do_solidangle else 1.0,
-                       cpolarization[idx] if do_polarization else 1.0,
-                       cdummy,
-                       ddummy,
-                       check_dummy,
-                       normalization_factor,
-                       )
                 continue
 
             min0 = cpos0_lower[idx]

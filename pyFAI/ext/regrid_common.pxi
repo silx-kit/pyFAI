@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "30/11/2018"
+__date__ = "03/12/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -130,109 +130,37 @@ cdef floating calc_upper_bound(floating maximum_value) nogil:
         return maximum_value / EPS32
 
 
-cdef inline preproc_t preproc_value(floating data,
-                                    floating variance=0.0,
-                                    floating dark=0.0,
-                                    floating flat=1.0,
-                                    floating solidangle=1.0,
-                                    floating polarization=1.0,
-                                    floating absorption=1.0,
-                                    any_int_t mask=0,
-                                    floating dummy=0.0,
-                                    floating delta_dummy=0.0,
-                                    bint check_dummy=False,
-                                    floating normalization_factor=1.0,
-                                    floating dark_variance=0.0) nogil:
-    """This is a Function in the C-space that performs the preprocessing
-    for one data point 
-    
-    
-    :param: data,
-    :return: preproc_t which contains (signal, variance, normalisation, count)
-
-    where:
-    * signal = data-dark
-    * variance = variance + dark_variance 
-    * norm = prod(all normalisation)
-    
-    unless data are invalid (mask, nan, ...)
-
-
-    """
-    cdef:
-        floating signal, norm, count
-        preproc_t result
-        bint is_valid
-
-    is_valid = (not isnan(data)) and (mask == 0) 
-    if is_valid and check_dummy:
-        if delta_dummy == 0.0:
-            is_valid = (data != dummy)
-        else:
-            is_valid = fabs(data - dummy) > delta_dummy
-
-    if is_valid:
-        if delta_dummy == 0.0:
-            is_valid = (flat != dummy)
-        else:
-            is_valid = fabs(flat - dummy) > delta_dummy
-
-    if is_valid:
-        # Do not use "/=" as they mean reduction for cython
-        if dark:
-            signal = data - dark
-            if dark_variance:
-                variance = variance + dark_variance
-        else:
-            signal = data
-        norm = normalization_factor * flat * polarization * solidangle * absorption
-        
-        if (isnan(signal) or isnan(norm) or isnan(variance) or (norm == 0)):
-            signal = 0.0
-            variance = 0.0
-            norm = 0.0
-            count = 0.0
-        else:
-            count = 1.0
-    else:
-        signal = 0.0
-        variance = 0.0
-        norm = 0.0
-        count = 0.0
-    result.signal = signal
-    result.variance = variance
-    result.norm = norm
-    result.count = count
-    return result
-
 cdef inline bint preproc_value_inplace(preproc_t* result,
-                                        floating data,
-                                        floating variance=0.0,
-                                        floating dark=0.0,
-                                        floating flat=1.0,
-                                        floating solidangle=1.0,
-                                        floating polarization=1.0,
-                                        floating absorption=1.0,
-                                        any_int_t mask=0,
-                                        floating dummy=0.0,
-                                        floating delta_dummy=0.0,
-                                        bint check_dummy=False,
-                                        floating normalization_factor=1.0,
-                                        floating dark_variance=0.0) nogil:
+                                       floating data,
+                                       floating variance=0.0,
+                                       floating dark=0.0,
+                                       floating flat=1.0,
+                                       floating solidangle=1.0,
+                                       floating polarization=1.0,
+                                       floating absorption=1.0,
+                                       any_int_t mask=0,
+                                       floating dummy=0.0,
+                                       floating delta_dummy=0.0,
+                                       bint check_dummy=False,
+                                       floating normalization_factor=1.0,
+                                       floating dark_variance=0.0) nogil:
     """This is a Function in the C-space that performs the preprocessing
     for one data point 
     
     
-    :param: data,
-    :param: preproc_t which contains (signal, variance, normalisation, count)
+    :param result: the container for the result, i.e. output which contains (signal, variance, normalisation, count)
+    :param data and variance: the raw value and the associated variance
+    :param dark and dark_variance: the dark-noise and the associated variance to be subtracted (signal) or added (variance)  
+    :param flat, solidangle, polarization, absorption, normalization_factor: all normalization to be multiplied togeather
+    :param dummy, delta_dummy, mask,check_dummy: controls the masking of the pixel 
     :return: isvalid, i.e. True if the pixel is worth further processing 
-    where:
+
+    where the result is calculated this way:
     * signal = data-dark
     * variance = variance + dark_variance 
-    * norm = prod(all normalisation)
+    * norm = prod(all normalization)
     
-    unless data are invalid (mask, nan, ...)
-
+    unless data are invalid (mask, nan, ...) where the result is all null.
     """
     cdef:
         floating signal, norm, count
