@@ -216,7 +216,7 @@ class RingCalibration(object):
         parameters = geoRef.getParams()
         scores.append((score, parameters, rms))
 
-        # ReachUse the better one
+        # Use the better one
         scores.sort()
         _score, parameters, rms = scores[0]
         geoRef.setParams(parameters)
