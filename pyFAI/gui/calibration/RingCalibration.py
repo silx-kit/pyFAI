@@ -134,7 +134,6 @@ class RingCalibration(object):
         self.__wavelength = wavelength
         self.__rms = None
         self.__previousRms = None
-        self.__peakResidual = None
         self.__defaultConstraints = None
 
         self.__init(peaks, method)
@@ -186,7 +185,6 @@ class RingCalibration(object):
             self.fromGeometryConstraintsModel(constraintsModel)
 
         self.__rms = self.__geoRef.refine(1000000)
-        self.__peakResidual = self.__rms
         self.__previousRms = None
 
         peakPicker = PeakPicker(data=self.__image,
@@ -262,10 +260,6 @@ class RingCalibration(object):
         The unit is the radian.
         """
         return self.__previousRms
-
-    def getPeakResidual(self):
-        """Returns the residual computed from the peak selection."""
-        return self.__peakResidual
 
     def getTwoThetaArray(self):
         """
