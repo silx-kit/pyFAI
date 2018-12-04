@@ -41,14 +41,14 @@ from collections import OrderedDict, namedtuple
 Method = namedtuple("Method", ["dim", "algo", "impl", "split", "target"])
 
 
-class IntegrationMethods:
+class IntegrationMethod:
     "Keeps track of all integration methods"
     _registry = OrderedDict()
 
     @classmethod
-    def display(cls):
+    def available(cls):
         """return a list of pretty printed integration method available"""
-        return [i.__repr__() for i in cls._registry.values]
+        return [i.__repr__() for i in cls._registry.values()]
 
     @classmethod
     def select_method(cls, dim, algo=None, impl=None, split=None):
@@ -64,28 +64,35 @@ class IntegrationMethods:
         # TODO
         pass
 
-    def __init__(self, dim, algo, impl, split, target=None,
+    def __init__(self, dim, algo, impl, split, target=None, target_name=None,
                  class_=None, function=None, old_method=None, extra=None):
         """Constructor of the class, only registers the 
         :param dim: 1 or 2 integration engine
         :param algo: "histogram" for direct integration, "sparse" for LUT or CSR
         :param impl: "numpy", "scipy", "cython" or "opencl" to describe the implementation
         :param split: pixel splitting options "no", "BBox", "pseudo", "full"
-        :param target: the OpenCL device,
-        :param 
+        :param target: the OpenCL device as 2-tuple of indices
+        :param target_name: Full name of the OpenCL device
+        :param class_: class used to instanciate
+        :param function: function to be called
+        :param old_method: former method name (legacy)
+        :param extra: extra informations
         """
         self.dimension = dim
         self.algorithm = algo
         self.pixel_splitting = split
         self.implementation = impl
         self.target = target
+        self.target_name = target_name or str(target)
         self.class_ = class_
         self.function = function
         self.old_method_name = old_method
         self.extra = extra
+        self.method = Method(dim, algo.lower(), impl.lower(), split.lower(), target)
+        self.__class__._registry[self.method] = self
 
     def __repr__(self):
         if self.target:
-            return ", ".join((str(self.dimension) + "d", self.algorithm, self.pixel_splitting + " split", self.target + " device"))
+            return ", ".join((str(self.dimension) + "d", self.implementation, self.pixel_splitting + " split", self.algorithm, self.target_name))
         else:
-            return ", ".join((str(self.dimension) + "d", self.algorithm, self.pixel_splitting + " split"))
+            return ", ".join((str(self.dimension) + "d", self.implementation, self.pixel_splitting + " split", self.algorithm))

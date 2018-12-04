@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2018"
+__date__ = "04/12/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -43,9 +43,10 @@ import warnings
 import tempfile
 import threading
 import gc
-import numpy
 from math import pi, log
+import numpy
 from numpy import rad2deg
+
 from .geometry import Geometry
 from . import units
 from .utils import EPS32, deg2rad, crc32
@@ -53,6 +54,13 @@ from .utils.decorators import deprecated, deprecated_warning
 from .containers import Integrate1dResult, Integrate2dResult
 from .io import DefaultAiWriter
 error = None
+
+
+from .method_registry import IntegrationMethod
+
+# Register numpy integrators
+IntegrationMethod(1, "python", "histogram", "no", old_method="numpy", function=numpy.histogram)
+IntegrationMethod(2, "python", "histogram", "no", old_method="numpy", function=numpy.histogram2d)
 
 from .preproc import preproc as preproc_np
 try:
@@ -70,6 +78,22 @@ except ImportError as error:
                    " Look-up table based azimuthal integration")
     logger.debug("Backtrace", exc_info=True)
     splitBBoxLUT = None
+else:
+    # Register splitBBoxLUT integrators
+    IntegrationMethod(1, "cython", "LUT", "bbox", old_method="lut", class_=splitBBoxLUT.HistoBBox1d)
+    IntegrationMethod(2, "cython", "LUT", "bbox", old_method="lut", class_=splitBBoxLUT.HistoBBox2d)
+
+try:
+    from .ext import splitPixelFullLUT
+except ImportError as error:
+    logger.warning("Unable to import pyFAI.ext.splitPixelFullLUT for"
+                   " Look-up table based azimuthal integration")
+    logger.debug("Backtrace", exc_info=True)
+    splitPixelFullLUT = None
+else:
+    # Register splitPixelFullLUT integrators
+    IntegrationMethod(1, "cython", "LUT", "full", old_method="full_lut", class_=splitPixelFullLUT.HistoLUT1dFullSplit)
+    IntegrationMethod(2, "cython", "LUT", "full", old_method="full_lut", class_=splitPixelFullLUT.HistoLUT2dFullSplit)
 
 try:
     # Used for 1D integration
@@ -78,6 +102,10 @@ except ImportError as error:
     logger.error("Unable to import pyFAI.ext.splitPixel full pixel splitting: %s", error)
     logger.debug("Backtrace", exc_info=True)
     splitPixel = None
+else:
+    # Register splitPixel integrators
+    IntegrationMethod(1, "cython", "histogram", "full", old_method="splitpix", function=splitPixel.fullSplit1D)
+    IntegrationMethod(2, "cython", "histogram", "pseudo", old_method="splitpix", function=splitPixel.fullSplit2D)
 
 # try:
 #    # Used fro 2D integration
@@ -93,6 +121,10 @@ except ImportError as error:
     logger.error("Unable to import pyFAI.ext.splitBBox"
                  " Bounding Box pixel splitting: %s", error)
     splitBBox = None
+else:
+    # Register splitBBox integrators
+    IntegrationMethod(1, "cython", "histogram", "bbox", old_method="bbox", function=splitBBox.histoBBox1d)
+    IntegrationMethod(2, "cython", "histogram", "bbox", old_method="bbox", function=splitBBox.histoBBox2d)
 
 try:
     from .ext import histogram
@@ -100,6 +132,10 @@ except ImportError as error:
     logger.error("Unable to import pyFAI.ext.histogram"
                  " Cython histogram implementation: %s", error)
     histogram = None
+else:
+    # Register histogram integrators
+    IntegrationMethod(1, "cython", "histogram", "no", old_method="cython", function=histogram.histogram)
+    IntegrationMethod(2, "cython", "histogram", "no", old_method="cython", function=histogram.histogram2d)
 
 try:
     from .ext import splitBBoxCSR  # IGNORE:F0401
@@ -107,6 +143,12 @@ except ImportError as error:
     logger.error("Unable to import pyFAI.ext.splitBBoxCSR"
                  " CSR based azimuthal integration: %s", error)
     splitBBoxCSR = None
+else:
+    # Register splitBBoxCSR integrators
+    IntegrationMethod(1, "cython", "CSR", "no", old_method="nosplit_csr", class_=splitBBoxCSR.HistoBBox1d)
+    IntegrationMethod(2, "cython", "CSR", "no", old_method="nosplit_csr", class_=splitBBoxCSR.HistoBBox2d)
+    IntegrationMethod(1, "cython", "CSR", "bbox", old_method="csr", class_=splitBBoxCSR.HistoBBox1d)
+    IntegrationMethod(2, "cython", "CSR", "bbox", old_method="csr", class_=splitBBoxCSR.HistoBBox2d)
 
 try:
     from .ext import splitPixelFullCSR  # IGNORE:F0401
@@ -114,7 +156,10 @@ except ImportError as error:
     logger.error("Unable to import pyFAI.ext.splitPixelFullCSR"
                  " CSR based azimuthal integration: %s", error)
     splitPixelFullCSR = None
-
+else:
+    # Register splitPixelFullCSR integrators
+    IntegrationMethod(1, "cython", "CSR", "full", old_method="full_csr", class_=splitPixelFullCSR.FullSplitCSR_1d)
+    IntegrationMethod(2, "cython", "CSR", "full", old_method="full_csr", class_=splitPixelFullCSR.FullSplitCSR_2d)
 
 from .opencl import ocl
 if ocl:
@@ -123,16 +168,44 @@ if ocl:
     except ImportError as error:  # IGNORE:W0703
         logger.error("Unable to import pyFAI.opencl.azim_hist: %s", error)
         ocl_azim = None
+    else:
+        IntegrationMethod(1, "OpenCL", "histogram", "no",
+                          class_=ocl_azim.Integrator1d)
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
     except ImportError as error:
         logger.error("Unable to import pyFAI.opencl.azim_csr: %s", error)
         ocl_azim_csr = None
+    else:
+        if splitBBoxCSR:
+            IntegrationMethod(1, "OpenCL", "CSR", "bbox",
+                              class_=ocl_azim_csr.OCL_CSR_Integrator)
+            IntegrationMethod(2, "OpenCL", "CSR", "bbox",
+                              class_=ocl_azim_csr.OCL_CSR_Integrator)
+            IntegrationMethod(1, "OpenCL", "CSR", "no",
+                              class_=ocl_azim_csr.OCL_CSR_Integrator)
+            IntegrationMethod(2, "OpenCL", "CSR", "no",
+                              class_=ocl_azim_csr.OCL_CSR_Integrator)
+        if splitPixelFullCSR:
+            IntegrationMethod(1, "OpenCL", "CSR", "full",
+                              class_=ocl_azim_csr.OCL_CSR_Integrator)
+            IntegrationMethod(2, "OpenCL", "CSR", "full",
+                              class_=ocl_azim_csr.OCL_CSR_Integrator)
+
     try:
         from .opencl import azim_lut as ocl_azim_lut  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
         logger.error("Unable to import pyFAI.opencl.azim_lut: %s", error)
         ocl_azim_lut = None
+    else:
+        IntegrationMethod(1, "OpenCL", "LUT", "bbox",
+                          class_=ocl_azim_csr.OCL_CSR_Integrator)
+        IntegrationMethod(2, "OpenCL", "LUT", "bbox",
+                          class_=ocl_azim_csr.OCL_CSR_Integrator)
+        IntegrationMethod(1, "OpenCL", "LUT", "no",
+                          class_=ocl_azim_csr.OCL_CSR_Integrator)
+        IntegrationMethod(2, "OpenCL", "LUT", "no",
+                          class_=ocl_azim_csr.OCL_CSR_Integrator)
     try:
         from .opencl import sort as ocl_sort
     except ImportError as error:  # IGNORE:W0703
