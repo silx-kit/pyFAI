@@ -101,7 +101,7 @@ from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
-from .preproc import preproc as preproc_numpy
+from .engines.preproc import preproc as preproc_numpy
 try:
     from .ext.preproc import preproc
 except ImportError as err:
