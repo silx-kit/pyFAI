@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "27/11/2018"
 __status__ = "development"
 
 import os
@@ -330,6 +330,10 @@ class GeometryRefinement(AzimuthalIntegrator):
             else:
                 bounds.append((getattr(self, "_%s_min" % i), getattr(self, "_%s_max" % i)))
         self.param = numpy.array(param)
+
+        print(self.data)
+        print(self.param, fix, bounds, self.chi2(param) / self.data.shape[0])
+
         if self.data.shape[-1] == 3:
             pos0 = self.data[:, 0]
             pos1 = self.data[:, 1]
@@ -355,6 +359,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         newDeltaSq = self.chi2(new_param) / self.data.shape[0]
         logger.info("Constrained Least square %s --> %s",
                     oldDeltaSq, newDeltaSq)
+
+        print(new_param, fix, bounds, self.chi2(new_param) / self.data.shape[0])
+
         if newDeltaSq < oldDeltaSq:
             i = abs(self.param - new_param).argmax()
 
