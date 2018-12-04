@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/07/2018"
+__date__ = "04/12/2018"
 
 import unittest
 import os
@@ -158,12 +158,10 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare numpy histogram with results of fit2d
         """
-        # logger.info(self.ai.__repr__())
-        with utilstest.TestLogging(logger=depreclog, warning=1):
-            # Filter deprecated warning
-            tth, I = self.ai.xrpd_numpy(self.data,
-                                        len(self.fit2d), self.tmpfiles["numpy"],
-                                        correctSolidAngle=False)
+        tth, I = self.ai.integrate1d(self.data,
+                                     len(self.fit2d),
+                                     filename=self.tmpfiles["numpy"],
+                                     correctSolidAngle=False)
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -184,11 +182,12 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with results of fit2d
         """
-        with utilstest.TestLogging(logger=depreclog, warning=1):
-            # Filter deprecated warning
-            tth, I = self.ai.xrpd_cython(self.data,
-                                         len(self.fit2d), self.tmpfiles["cython"],
-                                         correctSolidAngle=False, pixelSize=None)
+        tth, I = self.ai.integrate1d(self.data,
+                                     len(self.fit2d),
+                                     filename=self.tmpfiles["cython"],
+                                     correctSolidAngle=False,
+                                     unit='2th_deg',
+                                     method="cython")
         # logger.info(tth)
         # logger.info(I)
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
@@ -217,16 +216,14 @@ class TestAzimHalfFrelon(unittest.TestCase):
         t0 = time.time()
         logger.info("in test_cythonSP_vs_fit2d Before SP")
 
-        with utilstest.TestLogging(logger=depreclog, warning=1):
-            # Filter deprecated warning
-            tth, I = self.ai.xrpd_splitPixel(self.data,
-                                             len(self.fit2d),
-                                             self.tmpfiles["cythonSP"],
-                                             correctSolidAngle=False)
+        tth, I = self.ai.integrate1d(self.data,
+                                     len(self.fit2d),
+                                     filename=self.tmpfiles["cythonSP"],
+                                     method="splitpixel",
+                                     correctSolidAngle=False,
+                                     unit="2th_deg")
         logger.info("in test_cythonSP_vs_fit2d Before")
         t1 = time.time() - t0
-        # logger.info(tth)
-        # logger.info(I)
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f", t1, rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
