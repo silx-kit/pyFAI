@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "13/08/2018"
+__date__ = "03/12/2018"
 
 from silx.gui import qt
 
@@ -37,7 +37,7 @@ class ElidedLabel(qt.QLabel):
     """
 
     def __init__(self, parent):
-        super(qt.QLabel, self).__init__(parent)
+        super(ElidedLabel, self).__init__(parent)
         self.__text = ""
         self.__toolTip = ""
         self.__valueAsToolTip = False
@@ -85,7 +85,7 @@ class ElidedLabel(qt.QLabel):
     def getText(self):
         return self.__text
 
-    text = qt.pyqtProperty(str, getText, setText)
+    text = qt.Property(str, getText, setText)
 
     def setToolTip(self, toolTip):
         self.__toolTip = toolTip
@@ -94,7 +94,7 @@ class ElidedLabel(qt.QLabel):
     def getToolTip(self):
         return self.__toolTip
 
-    toolTip = qt.pyqtProperty(str, getToolTip, setToolTip)
+    toolTip = qt.Property(str, getToolTip, setToolTip)
 
     def setElideMode(self, elideMode):
         self.__elideMode = elideMode
@@ -103,4 +103,4 @@ class ElidedLabel(qt.QLabel):
     def getElideMode(self):
         return self.__elideMode
 
-    elideMode = qt.pyqtProperty(qt.Qt.TextElideMode, getToolTip, setToolTip)
+    elideMode = qt.Property(qt.Qt.TextElideMode, getToolTip, setToolTip)
