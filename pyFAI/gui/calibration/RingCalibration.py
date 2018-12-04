@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/11/2018"
+__date__ = "04/12/2018"
 
 import logging
 import numpy
@@ -49,6 +49,8 @@ class GeometryRefinementContext(object):
     Right now, GeometryRefinement store the bound but do not store the fixed
     constraints. It make the context difficult to manage and to trust.
     """
+
+    PARAMETERS = ["wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
 
     def __init__(self, *args, **kwargs):
         self.__geoRef = GeometryRefinement(*args, **kwargs)
@@ -83,6 +85,15 @@ class GeometryRefinementContext(object):
 
     def setBounds(self, bounds):
         self.__bounds = bounds
+
+    def setParams(self, params):
+        """Set the fit parameter values from the list of values"""
+        for value, name in zip(params, self.PARAMETERS):
+            setattr(self.__geoRef, name, value)
+
+    def getParams(self):
+        """Returns list of parameters"""
+        return [getattr(self.__geoRef, p) for p in self.PARAMETERS]
 
     def chi2(self):
         if "wavelength" in self.__fixed:
