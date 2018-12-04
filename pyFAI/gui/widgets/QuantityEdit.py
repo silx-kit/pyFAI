@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/10/2018"
+__date__ = "03/12/2018"
 
 import logging
 from silx.gui import qt
@@ -231,7 +231,7 @@ class QuantityEdit(qt.QLineEdit):
     def setApplyedWhenFocusOut(self, isApplyed):
         self.__applyedWhenFocusOut = isApplyed
 
-    applyedWhenFocusOut = qt.pyqtProperty(bool, isApplyedWhenFocusOut, setApplyedWhenFocusOut)
+    applyedWhenFocusOut = qt.Property(bool, isApplyedWhenFocusOut, setApplyedWhenFocusOut)
     """Apply the current edited value to the widget when it lose the
     focus. By default the previous value is displayed.
     """

@@ -161,7 +161,7 @@ def integrate_shell(options, args):
             for i in range(img.nframes):
                 fimg = img.getframe(i)
                 normalization_factor = get_monitor_value(fimg, options.monitor_key)
-                data = img.data
+                data = fimg.data
                 res = worker.process(data=data,
                                      metadata=fimg.header,
                                      normalization_factor=normalization_factor)
