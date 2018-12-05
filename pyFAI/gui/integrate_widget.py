@@ -63,15 +63,6 @@ from ..third_party import six
 from .utils import projecturl
 
 
-UIC = get_ui_file("integration.ui")
-LOCAL_DOC = "/usr/share/doc/pyfai-doc/html/man/pyFAI-integrate.html"
-if _version.version_info.releaselevel == "final":
-    version_tuple = ".".join(str(i) for i in _version.version_info[:3])
-    REMOTE_DOC = "http://silx.org/doc/pyFAI/" + version_tuple + "/man/pyFAI-integrate.html"
-else:
-    REMOTE_DOC = "http://silx.org/doc/pyFAI/dev/man/pyFAI-integrate.html"
-
-
 class AIWidget(qt.QWidget):
     """
     """
@@ -87,7 +78,8 @@ class AIWidget(qt.QWidget):
         self.json_file = json_file
         qt.QWidget.__init__(self)
         try:
-            qt.loadUi(UIC, self)
+            filename = get_ui_file("integration.ui")
+            qt.loadUi(filename, self)
         except AttributeError as _error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
