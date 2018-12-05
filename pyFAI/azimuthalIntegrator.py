@@ -59,8 +59,8 @@ error = None
 from .method_registry import IntegrationMethod
 
 # Register numpy integrators
-IntegrationMethod(1, "python", "histogram", "no", old_method="numpy", function=numpy.histogram)
-IntegrationMethod(2, "python", "histogram", "no", old_method="numpy", function=numpy.histogram2d)
+IntegrationMethod(1, "no", "histogram", "python", old_method="numpy", function=numpy.histogram)
+IntegrationMethod(2, "no", "histogram", "python", old_method="numpy", function=numpy.histogram2d)
 
 from .preproc import preproc as preproc_np
 try:
@@ -80,8 +80,8 @@ except ImportError as error:
     splitBBoxLUT = None
 else:
     # Register splitBBoxLUT integrators
-    IntegrationMethod(1, "cython", "LUT", "bbox", old_method="lut", class_=splitBBoxLUT.HistoBBox1d)
-    IntegrationMethod(2, "cython", "LUT", "bbox", old_method="lut", class_=splitBBoxLUT.HistoBBox2d)
+    IntegrationMethod(1, "bbox", "LUT", "cython", old_method="lut", class_=splitBBoxLUT.HistoBBox1d)
+    IntegrationMethod(2, "bbox", "LUT", "cython", old_method="lut", class_=splitBBoxLUT.HistoBBox2d)
 
 try:
     from .ext import splitPixelFullLUT
@@ -92,8 +92,8 @@ except ImportError as error:
     splitPixelFullLUT = None
 else:
     # Register splitPixelFullLUT integrators
-    IntegrationMethod(1, "cython", "LUT", "full", old_method="full_lut", class_=splitPixelFullLUT.HistoLUT1dFullSplit)
-    IntegrationMethod(2, "cython", "LUT", "full", old_method="full_lut", class_=splitPixelFullLUT.HistoLUT2dFullSplit)
+    IntegrationMethod(1, "full", "LUT", "cython", old_method="full_lut", class_=splitPixelFullLUT.HistoLUT1dFullSplit)
+    IntegrationMethod(2, "full", "LUT", "cython", old_method="full_lut", class_=splitPixelFullLUT.HistoLUT2dFullSplit)
 
 try:
     # Used for 1D integration
@@ -104,16 +104,8 @@ except ImportError as error:
     splitPixel = None
 else:
     # Register splitPixel integrators
-    IntegrationMethod(1, "cython", "histogram", "full", old_method="splitpix", function=splitPixel.fullSplit1D)
-    IntegrationMethod(2, "cython", "histogram", "pseudo", old_method="splitpix", function=splitPixel.fullSplit2D)
-
-# try:
-#    # Used fro 2D integration
-#    from .ext import splitPixelFull  # IGNORE:F0401
-# except ImportError as error:
-#    logger.error("Unable to import pyFAI.splitPixelFull"
-#                  " full pixel splitting: %s" % error)
-#    splitPixelFull = None
+    IntegrationMethod(1, "full", "histogram", "cython", old_method="splitpixel", function=splitPixel.fullSplit1D)
+    IntegrationMethod(2, "pseudo", "histogram", "cython", old_method="splitpixel", function=splitPixel.fullSplit2D)
 
 try:
     from .ext import splitBBox  # IGNORE:F0401
@@ -123,8 +115,8 @@ except ImportError as error:
     splitBBox = None
 else:
     # Register splitBBox integrators
-    IntegrationMethod(1, "cython", "histogram", "bbox", old_method="bbox", function=splitBBox.histoBBox1d)
-    IntegrationMethod(2, "cython", "histogram", "bbox", old_method="bbox", function=splitBBox.histoBBox2d)
+    IntegrationMethod(1, "bbox", "histogram", "cython", old_method="bbox", function=splitBBox.histoBBox1d)
+    IntegrationMethod(2, "bbox", "histogram", "cython", old_method="bbox", function=splitBBox.histoBBox2d)
 
 try:
     from .ext import histogram
@@ -134,8 +126,8 @@ except ImportError as error:
     histogram = None
 else:
     # Register histogram integrators
-    IntegrationMethod(1, "cython", "histogram", "no", old_method="cython", function=histogram.histogram)
-    IntegrationMethod(2, "cython", "histogram", "no", old_method="cython", function=histogram.histogram2d)
+    IntegrationMethod(1, "no", "histogram", "cython", old_method="cython", function=histogram.histogram)
+    IntegrationMethod(2, "no", "histogram", "cython", old_method="cython", function=histogram.histogram2d)
 
 try:
     from .ext import splitBBoxCSR  # IGNORE:F0401
@@ -145,10 +137,10 @@ except ImportError as error:
     splitBBoxCSR = None
 else:
     # Register splitBBoxCSR integrators
-    IntegrationMethod(1, "cython", "CSR", "no", old_method="nosplit_csr", class_=splitBBoxCSR.HistoBBox1d)
-    IntegrationMethod(2, "cython", "CSR", "no", old_method="nosplit_csr", class_=splitBBoxCSR.HistoBBox2d)
-    IntegrationMethod(1, "cython", "CSR", "bbox", old_method="csr", class_=splitBBoxCSR.HistoBBox1d)
-    IntegrationMethod(2, "cython", "CSR", "bbox", old_method="csr", class_=splitBBoxCSR.HistoBBox2d)
+    IntegrationMethod(1, "no", "CSR", "cython", old_method="nosplit_csr", class_=splitBBoxCSR.HistoBBox1d)
+    IntegrationMethod(2, "no", "CSR", "cython", old_method="nosplit_csr", class_=splitBBoxCSR.HistoBBox2d)
+    IntegrationMethod(1, "bbox", "CSR", "cython", old_method="csr", class_=splitBBoxCSR.HistoBBox1d)
+    IntegrationMethod(2, "bbox", "CSR", "cython", old_method="csr", class_=splitBBoxCSR.HistoBBox2d)
 
 try:
     from .ext import splitPixelFullCSR  # IGNORE:F0401
@@ -158,8 +150,8 @@ except ImportError as error:
     splitPixelFullCSR = None
 else:
     # Register splitPixelFullCSR integrators
-    IntegrationMethod(1, "cython", "CSR", "full", old_method="full_csr", class_=splitPixelFullCSR.FullSplitCSR_1d)
-    IntegrationMethod(2, "cython", "CSR", "full", old_method="full_csr", class_=splitPixelFullCSR.FullSplitCSR_2d)
+    IntegrationMethod(1, "full", "CSR", "cython", old_method="full_csr", class_=splitPixelFullCSR.FullSplitCSR_1d)
+    IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr", class_=splitPixelFullCSR.FullSplitCSR_2d)
 
 from .opencl import ocl
 if ocl:
@@ -169,7 +161,7 @@ if ocl:
         logger.error("Unable to import pyFAI.opencl.azim_hist: %s", error)
         ocl_azim = None
     else:
-        IntegrationMethod(1, "OpenCL", "histogram", "no",
+        IntegrationMethod(1, "no", "histogram", "OpenCL",
                           class_=ocl_azim.Integrator1d)
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
@@ -178,18 +170,18 @@ if ocl:
         ocl_azim_csr = None
     else:
         if splitBBoxCSR:
-            IntegrationMethod(1, "OpenCL", "CSR", "bbox",
+            IntegrationMethod(1, "bbox", "CSR", "OpenCL",
                               class_=ocl_azim_csr.OCL_CSR_Integrator)
-            IntegrationMethod(2, "OpenCL", "CSR", "bbox",
+            IntegrationMethod(2, "bbox", "CSR", "OpenCL",
                               class_=ocl_azim_csr.OCL_CSR_Integrator)
-            IntegrationMethod(1, "OpenCL", "CSR", "no",
+            IntegrationMethod(1, "no", "CSR", "OpenCL",
                               class_=ocl_azim_csr.OCL_CSR_Integrator)
-            IntegrationMethod(2, "OpenCL", "CSR", "no",
+            IntegrationMethod(2, "no", "CSR", "OpenCL",
                               class_=ocl_azim_csr.OCL_CSR_Integrator)
         if splitPixelFullCSR:
-            IntegrationMethod(1, "OpenCL", "CSR", "full",
+            IntegrationMethod(1, "full", "CSR", "OpenCL",
                               class_=ocl_azim_csr.OCL_CSR_Integrator)
-            IntegrationMethod(2, "OpenCL", "CSR", "full",
+            IntegrationMethod(2, "full", "CSR", "OpenCL",
                               class_=ocl_azim_csr.OCL_CSR_Integrator)
 
     try:
@@ -198,13 +190,13 @@ if ocl:
         logger.error("Unable to import pyFAI.opencl.azim_lut: %s", error)
         ocl_azim_lut = None
     else:
-        IntegrationMethod(1, "OpenCL", "LUT", "bbox",
+        IntegrationMethod(1, "bbox", "LUT", "OpenCL",
                           class_=ocl_azim_csr.OCL_CSR_Integrator)
-        IntegrationMethod(2, "OpenCL", "LUT", "bbox",
+        IntegrationMethod(2, "bbox", "LUT", "OpenCL",
                           class_=ocl_azim_csr.OCL_CSR_Integrator)
-        IntegrationMethod(1, "OpenCL", "LUT", "no",
+        IntegrationMethod(1, "no", "LUT", "OpenCL",
                           class_=ocl_azim_csr.OCL_CSR_Integrator)
-        IntegrationMethod(2, "OpenCL", "LUT", "no",
+        IntegrationMethod(2, "no", "LUT", "OpenCL",
                           class_=ocl_azim_csr.OCL_CSR_Integrator)
     try:
         from .opencl import sort as ocl_sort
