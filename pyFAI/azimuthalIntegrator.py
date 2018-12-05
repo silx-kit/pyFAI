@@ -46,7 +46,6 @@ import gc
 from math import pi, log
 import numpy
 from numpy import rad2deg
-
 from .geometry import Geometry
 from . import units
 from .utils import EPS32, deg2rad, crc32
@@ -55,14 +54,13 @@ from .containers import Integrate1dResult, Integrate2dResult
 from .io import DefaultAiWriter
 error = None
 
-
 from .method_registry import IntegrationMethod, Method
 
 # Register numpy integrators
 IntegrationMethod(1, "no", "histogram", "python", old_method="numpy", function=numpy.histogram)
 IntegrationMethod(2, "no", "histogram", "python", old_method="numpy", function=numpy.histogram2d)
 
-from .preproc import preproc as preproc_np
+from .engines.preproc import preproc as preproc_np
 try:
     from .ext.preproc import preproc as preproc_cy
 except ImportError as err:
@@ -206,6 +204,8 @@ if ocl:
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None
 
+from .engines import Engine
+
 # Few constants for engine names:
 OCL_CSR_ENGINE = "ocl_csr_integr"
 OCL_LUT_ENGINE = "ocl_lut_integr"
@@ -213,22 +213,6 @@ OCL_HIST_ENGINE = "ocl_histogram"
 OCL_SORT_ENGINE = "ocl_sorter"
 EXT_LUT_ENGINE = "lut_integrator"
 EXT_CSR_ENGINE = "csr_integrator"
-
-
-class Engine(object):
-    """This class defines a regrid-engine with its locking mechanism"""
-    def __init__(self, engine=None):
-        """Constructor of the class"""
-        self.lock = threading.Semaphore()
-        self.engine = engine
-
-    def reset(self):
-        with self.lock:
-            self.engine = None
-
-    def set_engine(self, engine):
-        "should be called from a locked region"
-        self.engine = engine
 
 
 class AzimuthalIntegrator(Geometry):
@@ -857,7 +841,6 @@ class AzimuthalIntegrator(Geometry):
                                                 unit=unit,
                                                 )
 
-
     def _integrate1d_legacy(self, data, npt, filename=None,
                             correctSolidAngle=True,
                             variance=None, error_model=None,
@@ -1185,7 +1168,7 @@ class AzimuthalIntegrator(Geometry):
                         logger.warning("MemoryError: falling back on forward implementation")
                         integr = None
                         self.reset_engines()
-                        method = self.DEFAULT_METHOD_1D
+                        method = self.DEFAULT_METHOD
                     else:
                         engine.set_engine(integr)
                 if integr:
@@ -3307,7 +3290,7 @@ class AzimuthalIntegrator(Geometry):
 
     def __getstate__(self):
         """Helper function for pickling ai
-        
+
         :return: the state of the object
         """
 
@@ -3320,7 +3303,7 @@ class AzimuthalIntegrator(Geometry):
 
     def __setstate__(self, state):
         """Helper function for unpickling ai
-        
+
         :param state: the state of the object
         """
         for statekey, statevalue in state.items():
@@ -3328,3 +3311,4 @@ class AzimuthalIntegrator(Geometry):
         self._sem = threading.Semaphore()
         self._lock = threading.Semaphore()
         self.engines = {}
+

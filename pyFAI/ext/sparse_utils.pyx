@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/01/2018"
+__date__ = "26/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -51,12 +51,12 @@ def LUT_to_CSR(lut):
     nrow = lut.shape[0]
 
     cdef:
-        lut_point[:, ::1] lut_ = numpy.ascontiguousarray(lut, dtype_lut)
-        float[::1] data = numpy.zeros(nrow * ncol, numpy.float32)
-        int[::1]  indices = numpy.zeros(nrow * ncol, numpy.int32)
-        int[::1] indptr = numpy.zeros(nrow + 1, numpy.int32)
+        lut_t[:, ::1] lut_ = numpy.ascontiguousarray(lut, lut_d)
+        cnumpy.float32_t[::1] data = numpy.zeros(nrow * ncol, numpy.float32)
+        cnumpy.int32_t[::1]  indices = numpy.zeros(nrow * ncol, numpy.int32)
+        cnumpy.int32_t[::1] indptr = numpy.zeros(nrow + 1, numpy.int32)
         int i, j, nelt
-        lut_point point
+        lut_t point
     with nogil:
         nelt = 0
         for i in range(nrow):
@@ -92,11 +92,11 @@ def CSR_to_LUT(data, indices, indptr):
     assert ncol > 0, "ncol >0"
 
     cdef:
-        float[::1] data_ = numpy.ascontiguousarray(data, dtype=numpy.float32)
-        int[::1]  indices_ = numpy.ascontiguousarray(indices, dtype=numpy.int32)
-        int[::1] indptr_ = numpy.ascontiguousarray(indptr, dtype=numpy.int32)
-        lut_point[:, ::1] lut = numpy.zeros((nrow, ncol), dtype=dtype_lut)
-        lut_point point
+        cnumpy.float32_t[::1] data_ = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        cnumpy.int32_t[::1]  indices_ = numpy.ascontiguousarray(indices, dtype=numpy.int32)
+        cnumpy.int32_t[::1] indptr_ = numpy.ascontiguousarray(indptr, dtype=numpy.int32)
+        lut_t[:, ::1] lut = numpy.zeros((nrow, ncol), dtype=lut_d)
+        lut_t point
         int i, j, nelt
         float coef
     with nogil:
@@ -115,11 +115,10 @@ def CSR_to_LUT(data, indices, indptr):
 
 cdef class Vector:
     """Variable size vector"""
-# --> see the associated PXD file
-#     cdef:
-#         float[:] coef
-#         int[:] idx
-#         int size, allocated
+    cdef:
+        readonly int size, allocated
+        cnumpy.float32_t[::1] coef
+        cnumpy.int32_t[::1] idx
 
     def __cinit__(self, int min_size=4):
         self.allocated = min_size
@@ -150,8 +149,8 @@ cdef class Vector:
     cdef inline void _append(self, int idx, float coef):
         cdef:
             int pos, new_allocated
-            int[:] newidx
-            float[:] newcoef
+            cnumpy.int32_t[::1] newidx
+            cnumpy.float32_t[::1] newcoef
         pos = self.size
         self.size = pos + 1
         if pos >= self.allocated - 1:
@@ -173,10 +172,10 @@ cdef class Vector:
 
 
 cdef class ArrayBuilder:
-    # --> see the associated PXD file
-    #     cdef:
-    #         int size
-    #         Vector[:] lines
+    cdef:
+        readonly int size
+        Vector[:] lines
+
 
     def __cinit__(self, int nlines, min_size=4):
         cdef int i
@@ -224,29 +223,29 @@ cdef class ArrayBuilder:
     def as_LUT(self):
         cdef:
             int i, max_size = 0
-            int[:] local_idx
-            float[:] local_coef
-            lut_point[:, :] lut
+            cnumpy.int32_t[::1] local_idx
+            cnumpy.float32_t[:] local_coef
+            lut_t[:, :] lut
             Vector vector
         for i in range(len(self.lines)):
             if len(self.lines[i]) > max_size:
                 max_size = len(self.lines[i])
-        lut = numpy.zeros((len(self.lines), max_size), dtype=dtype_lut)
+        lut = numpy.zeros((len(self.lines), max_size), dtype=lut_d)
         for i in range(len(self.lines)):
             vector = self.lines[i]
             local_idx, local_coef = vector.get_data()
             for j in range(len(vector)):
-                lut[i, j] = lut_point(local_idx[j], local_coef[j])
-        return numpy.asarray(lut, dtype=dtype_lut)
+                lut[i, j] = lut_t(local_idx[j], local_coef[j])
+        return numpy.asarray(lut, dtype=lut_d)
 
     def as_CSR(self):
         cdef:
             int i, val, start, end, total_size = 0
             Vector vector
-            lut_point[:, :] lut
-            lut_point[:] data
-            int[:] idptr, idx, local_idx
-            float[:] coef, local_coef
+            lut_t[:, :] lut
+            lut_t[:] data
+            cnumpy.int32_t[:] idptr, idx, local_idx
+            cnumpy.float32_t[:] coef, local_coef
         idptr = numpy.zeros(len(self.lines) + 1, dtype=numpy.int32)
         for i in range(len(self.lines)):
             total_size += len(self.lines[i])

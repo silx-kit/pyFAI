@@ -62,7 +62,7 @@ class IntegrationMethod:
         split = split.lower() if split is not None else "*"
         method_nt = Method(dim, algo, impl, split, None)
         if method_nt in cls._registry:
-            return cls._registry[method_nt]
+            return [cls._registry[method_nt]]
         # Validate on pixel splitting, implementation and algorithm
 
         candidates = [i for i in cls._registry.keys() if i[0] == dim]
@@ -82,7 +82,7 @@ class IntegrationMethod:
         """
         results = []
         for v in cls._registry.values():
-            if (v.dim == dim) and (v.old_method_name == old_method):
+            if (v.dimension == dim) and (v.old_method_name == old_method):
                 results.append(v)
         if results:
             return results
@@ -138,12 +138,12 @@ class IntegrationMethod:
             return cls._registry[smth]
         if isinstance(smth, str):
             comacount = smth.count(",")
-            if comacount > 1:
+            if comacount <= 1:
                 res = cls.select_old_method(dim, smth)
             else:
-                res = cls.select(dim, smth)
+                res = cls.select_method(dim, smth)
         if res:
-            return res[-1]
+            return res[0]
 
     def __init__(self, dim, split, algo, impl, target=None, target_name=None,
                  class_=None, function=None, old_method=None, extra=None):
