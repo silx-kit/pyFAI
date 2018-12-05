@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2018"
+__date__ = "05/12/2018"
 
 import unittest
 import os
@@ -161,7 +161,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
         tth, I = self.ai.integrate1d(self.data,
                                      len(self.fit2d),
                                      filename=self.tmpfiles["numpy"],
-                                     correctSolidAngle=False)
+                                     correctSolidAngle=False,
+                                     unit="2th_deg")
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -244,18 +245,22 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with numpy histogram
         """
-        with utilstest.TestLogging(logger=depreclog, warning=3):
-            # Filter deprecated warning
-            tth_np, I_np = self.ai.xrpd_numpy(self.__class__.data,
-                                              len(self.fit2d),
-                                              correctSolidAngle=False)
-            tth_cy, I_cy = self.ai.xrpd_cython(self.__class__.data,
-                                               len(self.fit2d),
-                                               correctSolidAngle=False)
-            logger.info("before xrpd_splitPixel")
-            tth_sp, I_sp = self.ai.xrpd_splitPixel(self.__class__.data,
-                                                   len(self.fit2d),
-                                                   correctSolidAngle=False)
+        tth_np, I_np = self.ai.integrate1d(self.__class__.data,
+                                           len(self.fit2d),
+                                           correctSolidAngle=False,
+                                           unit="2th_deg",
+                                           method="numpy")
+        tth_cy, I_cy = self.ai.integrate1d(self.__class__.data,
+                                           len(self.fit2d),
+                                           correctSolidAngle=False,
+                                           unit="2th_deg",
+                                           method="cython")
+        logger.info("before xrpd_splitPixel")
+        tth_sp, I_sp = self.ai.integrate1d(self.__class__.data,
+                                           len(self.fit2d),
+                                           correctSolidAngle=False,
+                                           unit="2th_deg",
+                                           method="splitpixel")
         logger.info("After xrpd_splitPixel")
         rwp = mathutil.rwp((tth_cy, I_cy), (tth_np, I_np))
         logger.info("Rwp = %.3f", rwp)
@@ -324,11 +329,8 @@ class TestFlatimage(unittest.TestCase):
         det = Detector(1e-4, 1e-4, max_shape=shape)
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
 
-        with utilstest.TestLogging(logger=depreclog, warning=1):
-            # Filter deprecated warning
-            I = ai.xrpd2_splitPixel(data, 256, 2256, correctSolidAngle=False, dummy=-1.0)[0]
-        # I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
-
+        I = ai.integrate2d(data, 256, 2256, correctSolidAngle=False, dummy=-1.0,
+                           method='splitpixel', unit='2th_deg')[0]
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
             fig = pylab.figure()
@@ -346,10 +348,8 @@ class TestFlatimage(unittest.TestCase):
         data = numpy.ones(shape, dtype="float64")
         det = Detector(1e-4, 1e-4, max_shape=shape)
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
-
-        with utilstest.TestLogging(logger=depreclog, warning=1):
-            # Filter deprecated warning
-            I = ai.xrpd2_splitBBox(data, 256, 256, correctSolidAngle=False, dummy=-1.0)[0]
+        I = ai.integrate2d(data, 256, 256, correctSolidAngle=False, dummy=-1.0,
+                           unit="2th_deg", method='splitbbox')[0]
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
