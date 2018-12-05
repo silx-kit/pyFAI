@@ -126,6 +126,25 @@ class IntegrationMethod:
             method_nt = Method(algo, impl, split)
         return method_nt in cls._registry
 
+    @classmethod
+    def parse(cls, smth, dim=1):
+        """Parse the string for the content
+         
+        """
+        res = []
+        if isinstance(smth, cls):
+            return smth
+        if isinstance(smth, Method) and cls.is_available(method_nt=smth):
+            return cls._registry[smth]
+        if isinstance(smth, str):
+            comacount = smth.count(",")
+            if comacount > 1:
+                res = cls.select_old_method(dim, smth)
+            else:
+                res = cls.select(dim, smth)
+        if res:
+            return res[-1]
+
     def __init__(self, dim, split, algo, impl, target=None, target_name=None,
                  class_=None, function=None, old_method=None, extra=None):
         """Constructor of the class, only registers the 

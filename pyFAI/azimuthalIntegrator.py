@@ -56,7 +56,7 @@ from .io import DefaultAiWriter
 error = None
 
 
-from .method_registry import IntegrationMethod
+from .method_registry import IntegrationMethod, Method
 
 # Register numpy integrators
 IntegrationMethod(1, "no", "histogram", "python", old_method="numpy", function=numpy.histogram)
@@ -244,7 +244,10 @@ class AzimuthalIntegrator(Geometry):
         >>> q, I, sigma = ai.integrate1d(data, npt, unit="q_nm^-1", error_model="poisson")
         >>> regrouped = ai.integrate2d(data, npt_rad, npt_azim, unit="q_nm^-1")[0]
     """
-    DEFAULT_METHOD = "splitbbox"
+
+    DEFAULT_METHOD_1D = Method(1, "full", "histogram", "cython", None)
+    DEFAULT_METHOD_2D = Method(1, "pseudo", "histogram", "cython", None)
+    "Fail-safe low-memory integrator"
 
     USE_LEGACY_MASK_NORMALIZATION = True
     """If true, the Python engine integrator will normalize the mask to use the
@@ -1043,7 +1046,7 @@ class AzimuthalIntegrator(Geometry):
                         logger.warning("MemoryError: falling back on default forward implementation")
                         integr = None
                         self.reset_engines()
-                        method = self.DEFAULT_METHOD
+                        method = self.DEFAULT_METHOD_1D
                     else:
                         engine.set_engine(integr)
                 if integr:
@@ -1182,7 +1185,7 @@ class AzimuthalIntegrator(Geometry):
                         logger.warning("MemoryError: falling back on forward implementation")
                         integr = None
                         self.reset_engines()
-                        method = self.DEFAULT_METHOD
+                        method = self.DEFAULT_METHOD_1D
                     else:
                         engine.set_engine(integr)
                 if integr:
@@ -1263,7 +1266,7 @@ class AzimuthalIntegrator(Geometry):
             if splitPixel is None:
                 logger.warning("SplitPixelFull is not available,"
                                " falling back on splitbbox histogram !")
-                method = self.DEFAULT_METHOD
+                method = self.DEFAULT_METHOD_1D
             else:
                 logger.debug("integrate1d uses SplitPixel implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
@@ -1752,7 +1755,7 @@ class AzimuthalIntegrator(Geometry):
                         logger.warning("MemoryError: falling back on forward implementation")
                         integr = None
                         self.reset_engines()
-                        method = self.DEFAULT_METHOD
+                        method = self.DEFAULT_METHOD_2D
                         error = True
                     else:
                         error = False
@@ -1864,7 +1867,7 @@ class AzimuthalIntegrator(Geometry):
                         logger.warning("MemoryError: falling back on default forward implementation")
                         integr = None
                         self.reset_engines()
-                        method = self.DEFAULT_METHOD
+                        method = self.DEFAULT_METHOD_2D
                         error = True
                     else:
                         error = False
@@ -1928,7 +1931,7 @@ class AzimuthalIntegrator(Geometry):
             if splitPixel is None:
                 logger.warning("splitPixel is not available;"
                                " falling back on default method")
-                method = self.DEFAULT_METHOD
+                method = self.DEFAULT_METHOD_2D
             else:
                 logger.debug("integrate2d uses SplitPixel implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
@@ -2244,7 +2247,7 @@ class AzimuthalIntegrator(Geometry):
                         logger.warning("MemoryError: falling back on forward implementation")
                         integr = None
                         self.reset_engines()
-                        method = self.DEFAULT_METHOD
+                        method = self.DEFAULT_METHOD_2D
                         error = True
                     else:
                         error = False
