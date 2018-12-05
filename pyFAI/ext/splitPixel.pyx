@@ -38,7 +38,7 @@ __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
-include "sparse_common.pxi"
+
 
 cimport cython
 from cython cimport floating

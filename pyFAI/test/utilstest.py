@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "29/11/2018"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -482,13 +482,14 @@ def create_fake_data(dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
     """Simulate a SAXS image with a small detector by default
     :return: image, azimuthalIngtegrator 
     """
-    import pyFAI.calibrant
-    import pyFAI.azimuthalIntegrator
+    from .. import calibrant as pyFAI_calibrant
+    from .. import azimuthalIntegrator
     import numpy
-    cal = pyFAI.calibrant.get_calibrant("AgBh")
+    cal = pyFAI_calibrant.get_calibrant(calibrant)
     cal.wavelength = wavelength
-    ai = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(dist, poni1, poni2,
-                    rot1, rot2, rot3, detector=detector, wavelength=wavelength)
+    ai = azimuthalIntegrator.AzimuthalIntegrator(dist, poni1, poni2,
+                                                 rot1, rot2, rot3,
+                                                 detector=detector, wavelength=wavelength)
     img = cal.fake_calibration_image(ai, Imax=Imax) + offset
     if poissonian:
         return numpy.random.poisson(img), ai

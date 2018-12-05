@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "03/12/2018"
 
 import functools
 
@@ -39,7 +39,7 @@ class UnitLabel(qt.QLabel):
     """
 
     def __init__(self, parent):
-        super(qt.QLabel, self).__init__(parent)
+        super(UnitLabel, self).__init__(parent)
         self.__unit = None
         self.__model = None
         self.__isUnitEditable = False

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/11/2018"
+__date__ = "04/12/2018"
 
 import logging
 import numpy
@@ -49,6 +49,8 @@ class GeometryRefinementContext(object):
     Right now, GeometryRefinement store the bound but do not store the fixed
     constraints. It make the context difficult to manage and to trust.
     """
+
+    PARAMETERS = ["wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
 
     def __init__(self, *args, **kwargs):
         self.__geoRef = GeometryRefinement(*args, **kwargs)
@@ -83,6 +85,15 @@ class GeometryRefinementContext(object):
 
     def setBounds(self, bounds):
         self.__bounds = bounds
+
+    def setParams(self, params):
+        """Set the fit parameter values from the list of values"""
+        for value, name in zip(params, self.PARAMETERS):
+            setattr(self.__geoRef, name, value)
+
+    def getParams(self):
+        """Returns list of parameters"""
+        return [getattr(self.__geoRef, p) for p in self.PARAMETERS]
 
     def chi2(self):
         if "wavelength" in self.__fixed:
@@ -123,12 +134,11 @@ class RingCalibration(object):
         self.__wavelength = wavelength
         self.__rms = None
         self.__previousRms = None
-        self.__peakResidual = None
         self.__defaultConstraints = None
 
         self.__init(peaks, method)
 
-    def __initgeoRef(self):
+    def __initGeoRef(self):
         """
         Tries to initialise the GeometryRefinement (dist, poni, rot)
         Returns a dictionary of key value pairs
@@ -150,32 +160,68 @@ class RingCalibration(object):
         return defaults
 
     def __init(self, peaks, method, constraintsModel=None):
-        defaults = self.__initgeoRef()
 
         if len(peaks) == 0:
             self.__peakPicker = None
             self.__geoRef = None
             return
 
-        geoRef = GeometryRefinementContext(data=peaks,
-                                           wavelength=self.__wavelength,
-                                           detector=self.__detector,
-                                           calibrant=self.__calibrant,
-                                           **defaults)
+        scores = []
+        defaultParams = self.__initGeoRef()
 
+        geoRef = GeometryRefinementContext(
+            data=peaks,
+            wavelength=self.__wavelength,
+            detector=self.__detector,
+            calibrant=self.__calibrant,
+            **defaultParams)
         self.__geoRef = geoRef
 
         # Store the default constraints
         self.__defaultConstraints = GeometryConstraintsModel()
         self.toGeometryConstraintsModel(self.__defaultConstraints)
 
-        # Update the constraints
+        # First attempt
+
+        geoRef = GeometryRefinementContext(
+            data=peaks,
+            wavelength=self.__wavelength,
+            detector=self.__detector,
+            calibrant=self.__calibrant,
+            **defaultParams)
+        self.__geoRef = geoRef
         if constraintsModel is not None:
             assert(constraintsModel.isValid())
             self.fromGeometryConstraintsModel(constraintsModel)
+        rms = geoRef.refine(1000000)
+        score = geoRef.chi2()
+        parameters = geoRef.getParams()
+        scores.append((score, parameters, rms))
 
-        self.__rms = self.__geoRef.refine(1000000)
-        self.__peakResidual = self.__rms
+        # Second attempt
+
+        geoRef = GeometryRefinementContext(
+            data=peaks,
+            wavelength=self.__wavelength,
+            detector=self.__detector,
+            calibrant=self.__calibrant,
+            **defaultParams)
+        self.__geoRef = geoRef
+        geoRef.guess_poni()
+        if constraintsModel is not None:
+            assert(constraintsModel.isValid())
+            self.fromGeometryConstraintsModel(constraintsModel)
+        rms = geoRef.refine(1000000)
+        score = geoRef.chi2()
+        parameters = geoRef.getParams()
+        scores.append((score, parameters, rms))
+
+        # Use the better one
+        scores.sort()
+        _score, parameters, rms = scores[0]
+        geoRef.setParams(parameters)
+
+        self.__rms = rms
         self.__previousRms = None
 
         peakPicker = PeakPicker(data=self.__image,
@@ -251,10 +297,6 @@ class RingCalibration(object):
         The unit is the radian.
         """
         return self.__previousRms
-
-    def getPeakResidual(self):
-        """Returns the residual computed from the peak selection."""
-        return self.__peakResidual
 
     def getTwoThetaArray(self):
         """

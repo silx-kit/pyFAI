@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2018"
+__date__ = "16/11/2018"
 __status__ = "development"
 
 import threading
@@ -101,7 +101,7 @@ from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
-from .preproc import preproc as preproc_numpy
+from .engines.preproc import preproc as preproc_numpy
 try:
     from .ext.preproc import preproc
 except ImportError as err:
