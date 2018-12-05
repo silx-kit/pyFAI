@@ -65,7 +65,7 @@ from ..third_party import six
 from .utils import projecturl
 
 
-class AIWidget(qt.QWidget):
+class IntegrationDialog(qt.QWidget):
     """
     """
     def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):

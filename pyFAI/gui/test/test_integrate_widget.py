@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2018"
+__date__ = "05/12/2018"
 
 import os
 import sys
@@ -43,13 +43,13 @@ import numpy
 import logging
 
 from silx.gui import qt
-from ...gui.integrate_widget import AIWidget
+from ...gui.IntegrationDialog import IntegrationDialog
 from pyFAI.test.utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
 
-class TestAIWidget(unittest.TestCase):
+class TestIntegrationDialog(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -72,7 +72,7 @@ class TestAIWidget(unittest.TestCase):
         cls.app = None
 
     def test_process_no_data(self):
-        widget = AIWidget(json_file=None)
+        widget = IntegrationDialog(json_file=None)
         widget.set_ponifile(UtilsTest.getimage("Pilatus1M.poni"))
         widget.nbpt_rad.setText("2")
         result = widget.proceed()
@@ -83,7 +83,7 @@ class TestAIWidget(unittest.TestCase):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[23.5, 9.9]]
 
-        widget = AIWidget(json_file=None)
+        widget = IntegrationDialog(json_file=None)
         widget.set_ponifile(ponifile)
         widget.do_2D.setChecked(False)
         widget.nbpt_rad.setText("2")
@@ -96,7 +96,7 @@ class TestAIWidget(unittest.TestCase):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[5.6, 4.5], [41.8, 9.3]]]
 
-        widget = AIWidget(json_file=None)
+        widget = IntegrationDialog(json_file=None)
         widget.set_ponifile(ponifile)
         widget.do_2D.setChecked(True)
         widget.nbpt_azim.setText("2")
@@ -110,7 +110,7 @@ class TestAIWidget(unittest.TestCase):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[1.9, 1.9], [23.5, 9.9]]]
 
-        widget = AIWidget(json_file=None)
+        widget = IntegrationDialog(json_file=None)
         widget.set_ponifile(ponifile)
         widget.do_2D.setChecked(False)
         widget.nbpt_rad.setText("2")
@@ -123,7 +123,7 @@ class TestAIWidget(unittest.TestCase):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[[5.6, 4.5], [41.8, 9.3]], [2.0, 2.0], [-124.5, -124.2]]]
 
-        widget = AIWidget(json_file=None)
+        widget = IntegrationDialog(json_file=None)
         widget.set_ponifile(ponifile)
         widget.do_2D.setChecked(True)
         widget.nbpt_azim.setText("2")
@@ -140,7 +140,7 @@ class TestAIWidget(unittest.TestCase):
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(loader(TestAIWidget))
+    testsuite.addTest(loader(TestIntegrationDialog))
     return testsuite
 
 

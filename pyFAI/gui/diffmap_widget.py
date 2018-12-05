@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/10/2018"
+__date__ = "05/12/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -47,7 +47,7 @@ from silx.gui import qt
 from .matplotlib import pyplot
 from ..utils import int_, str_, get_ui_file
 from ..units import to_unit
-from .integrate_widget import AIWidget
+from .IntegrationDialog import IntegrationDialog
 from .. import worker
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 class IntegrateWidget(qt.QDialog):
     def __init__(self, parent=None):
         qt.QDialog.__init__(self)
-        self.widget = AIWidget()
+        self.widget = IntegrationDialog()
         self.layout = qt.QGridLayout(self)
         self.layout.addWidget(self.widget)
         self.widget.okButton.clicked.disconnect()
