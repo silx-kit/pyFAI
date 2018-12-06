@@ -34,11 +34,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2018"
+__date__ = "06/12/2018"
 __status__ = "development"
 
 from collections import OrderedDict, namedtuple
 Method = namedtuple("Method", ["dim", "split", "algo", "impl", "target"])
+ClassFunction = namedtuple("ClassFunction", ["klass", "function"])
 
 
 class IntegrationMethod:
@@ -67,11 +68,11 @@ class IntegrationMethod:
 
         candidates = [i for i in cls._registry.keys() if i[0] == dim]
         if split != "*":
-            candidates = [i for i in candidates if i[3] == split]
+            candidates = [i for i in candidates if i[1] == split]
         if algo != "*":
-            candidates = [i for i in candidates if i[1] == algo]
+            candidates = [i for i in candidates if i[2] == algo]
         if impl != "*":
-            candidates = [i for i in candidates if i[2] == impl]
+            candidates = [i for i in candidates if i[3] == impl]
         return [cls._registry[i] for i in candidates]
 
     @classmethod
@@ -130,6 +131,7 @@ class IntegrationMethod:
     def parse(cls, smth, dim=1):
         """Parse the string for the content
          
+        TODO: parser does not allow to select device
         """
         res = []
         if isinstance(smth, cls):
@@ -146,7 +148,7 @@ class IntegrationMethod:
             return res[0]
 
     def __init__(self, dim, split, algo, impl, target=None, target_name=None,
-                 class_=None, function=None, old_method=None, extra=None):
+                 class_funct=None, function=None, old_method=None, extra=None):
         """Constructor of the class, only registers the 
         :param dim: 1 or 2 integration engine
         :param split: pixel splitting options "no", "BBox", "pseudo", "full"
@@ -154,22 +156,28 @@ class IntegrationMethod:
         :param impl: "python", "cython" or "opencl" to describe the implementation
         :param target: the OpenCL device as 2-tuple of indices
         :param target_name: Full name of the OpenCL device
-        :param class_: class used to instanciate
-        :param function: function to be called
+        :param class_funct: class used and function to be used
         :param old_method: former method name (legacy)
         :param extra: extra informations
         """
-        self.dimension = dim
-        self.algorithm = algo
-        self.pixel_splitting = split
-        self.implementation = impl
+        self.dimension = int(dim)
+        self.algorithm = str(algo)
+        self.algo_lower = self.algorithm.lower()
+        self.pixel_splitting = str(split)
+        self.split_lower = self.pixel_splitting.lower()
+        self.implementation = str(impl)
+        self.impl_lower = self.implementation.lower()
         self.target = target
         self.target_name = target_name or str(target)
-        self.class_ = class_
-        self.function = function
+        if class_funct:
+            self.class_funct = ClassFunction(*class_funct)
         self.old_method_name = old_method
         self.extra = extra
-        self.method = Method(dim, algo.lower(), impl.lower(), split.lower(), target)
+        self.method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)
+        # basic checks ....
+        assert self.split_lower in ("no", "bbox", "pseudo", "full")
+        assert self.algo_lower in ("histogram", "lut", "csr")
+        assert self.impl_lower in ("python", "cython", "opencl")
         self.__class__._registry[self.method] = self
 
     def __repr__(self):
