@@ -290,14 +290,14 @@ class TestAzimHalfFrelon(unittest.TestCase):
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_medfilt1d(self):
-        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr")
-        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr")
+        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_csr")
+        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_ocl_csr")
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d median Rwp = %.3f", rwp)
         self.assertLess(rwp, 1, "Rwp medfilt1d Numpy/OpenCL: %.3f" % rwp)
 
-        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr", percentile=(20, 80))
-        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr", percentile=(20, 80))
+        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_csr", percentile=(20, 80))
+        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_ocl_csr", percentile=(20, 80))
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
         self.assertLess(rwp, 3, "Rwp trimmed-mean Numpy/OpenCL: %.3f" % rwp)
