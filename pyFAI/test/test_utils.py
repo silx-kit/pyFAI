@@ -78,7 +78,7 @@ class TestUtils(unittest.TestCase):
         l = IntegrationMethod.list_available()
         logger.info("Found %s integration methods available on this computer: %s",
                     len(l), os.linesep.join([""] + l))
-        self.assertGreater(l, 2, "at least 2 integration methods are available")
+        self.assertGreater(len(l), 2, "at least 2 integration methods are available")
 
     def test_directories(self):
         logger.info("data directories exists: %s %s", directories.PYFAI_DATA, os.path.exists(directories.PYFAI_DATA))
