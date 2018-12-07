@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2018"
+__date__ = "07/12/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2788,7 +2788,8 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
         unit = units.to_unit(unit)
-        if "ocl" in method and npt_azim and (npt_azim - 1):
+        method = IntegrationMethod.parse(method)
+        if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
             npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
             if npt_azim != old:
@@ -2802,12 +2803,12 @@ class AzimuthalIntegrator(Geometry):
                                  polarization_factor=polarization_factor,
                                  normalization_factor=normalization_factor)
         integ2d = res2d.intensity
-        if ("ocl" in method) and (ocl is not None):
-            if ("csr" in method) and \
+        if (method.impl_lower == "opencl"):
+            if (method.algo_lower == "csr") and \
                     (OCL_CSR_ENGINE in self.engines) and \
                     (self.engines[OCL_CSR_ENGINE].engine is not None):
                 ctx = self.engines[OCL_CSR_ENGINE].engine.ctx
-            elif "lut" in method and \
+            elif (method.algo_lower == "lut") and
                     (OCL_LUT_ENGINE in self.engines) and \
                     (self.engines[OCL_LUT_ENGINE].engine is not None):
                 ctx = self.engines[OCL_LUT_ENGINE].engine.ctx
