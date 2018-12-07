@@ -77,27 +77,34 @@ class IntegrationMethod:
         return [i.__repr__() for i in cls._registry.values()]
 
     @classmethod
-    def select_method(cls, dim, split=None, algo=None, impl=None, method_nt=None):
+    def select_method(cls, dim=None, split=None, algo=None, impl=None,
+                      target=None, target_type=None):
         """Retrieve all algorithm which are fitting the requirement
         """
-        if method_nt is not None:
-            dim, algo, split, split = method_nt[:4]
-        dim = int(dim)
+        dim = int(dim) if dim else 0
         algo = algo.lower() if algo is not None else "*"
         impl = impl.lower() if impl is not None else "*"
         split = split.lower() if split is not None else "*"
-        method_nt = Method(dim, algo, impl, split, None)
+        target_type = target_type.lower() if target_type else "*"
+        method_nt = Method(dim, algo, impl, split, target)
         if method_nt in cls._registry:
             return [cls._registry[method_nt]]
         # Validate on pixel splitting, implementation and algorithm
-
-        candidates = [i for i in cls._registry.keys() if i[0] == dim]
+        if dim:
+            candidates = [i for i in cls._registry.keys() if i[0] == dim]
+        else:
+            candidates = cls._registry.keys()
         if split != "*":
             candidates = [i for i in candidates if i[1] == split]
         if algo != "*":
             candidates = [i for i in candidates if i[2] == algo]
         if impl != "*":
             candidates = [i for i in candidates if i[3] == impl]
+        if target:
+            candidates = [i for i in candidates if i[4] == target]
+        if target_type != "*":
+            candidates = [i for i in candidates
+                          if cls._registry[i].target_type == target_type]
 
         res = [cls._registry[i] for i in candidates]
         while not res:
