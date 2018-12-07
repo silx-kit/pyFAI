@@ -2788,8 +2788,9 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
         unit = units.to_unit(unit)
-        method = IntegrationMethod.parse(method)
-        logger.info("medfilt1d with method: %s", method)
+        new_method = IntegrationMethod.parse(method)
+        logger.info("medfilt1d with method: %s -> %s", method, new_method)
+        method = new_method
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
             npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
