@@ -2789,6 +2789,7 @@ class AzimuthalIntegrator(Geometry):
             delta_dummy = None
         unit = units.to_unit(unit)
         method = IntegrationMethod.parse(method)
+        logger.info("medfilt1d with method: %s", method)
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
             npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
