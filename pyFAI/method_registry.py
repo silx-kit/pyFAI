@@ -34,12 +34,37 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2018"
+__date__ = "07/12/2018"
 __status__ = "development"
 
+from logging import getLogger
+logger = getLogger(__name__)
 from collections import OrderedDict, namedtuple
 Method = namedtuple("Method", ["dim", "split", "algo", "impl", "target"])
 ClassFunction = namedtuple("ClassFunction", ["klass", "function"])
+
+
+def _degraded(split, algo, impl):
+    "provide a degraded version of the input"
+    if impl == "opencl":
+        return split, algo, "cython"
+    elif algo == "lut":
+        return split, "histogram", impl
+    elif algo == "csr":
+        return split, "histogram", impl
+    elif split == "full":
+        return "pseudo", algo, impl
+    elif split == "full":
+        return "pseudo", algo, impl
+    elif split == "pseudo":
+        return "bbox", algo, impl
+    elif split == "bbox":
+        return "no", algo, impl
+    elif impl == "cython":
+        return split, algo, "python"
+    else:
+        # Totally fail safe ?
+        return "no", "histogram", "python"
 
 
 class IntegrationMethod:
@@ -73,7 +98,15 @@ class IntegrationMethod:
             candidates = [i for i in candidates if i[2] == algo]
         if impl != "*":
             candidates = [i for i in candidates if i[3] == impl]
-        return [cls._registry[i] for i in candidates]
+
+        res = [cls._registry[i] for i in candidates]
+        while not res:
+            newsplit, newalgo, newimpl = _degraded(split, algo, impl)
+            logger.info("Degrading method from (%s,%s,%s) -> (%s,%s,%s)",
+                        split, algo, impl, newsplit, newalgo, newimpl)
+            split, algo, impl = newsplit, newalgo, newimpl
+            res = cls.select_method(dim, split, algo, impl)
+        return res
 
     @classmethod
     def select_old_method(cls, dim, old_method):
