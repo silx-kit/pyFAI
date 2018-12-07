@@ -157,7 +157,10 @@ class IntegrationMethod:
             algo = algo.lower() if algo is not None else ""
             impl = impl.lower() if impl is not None else ""
             split = split.lower() if split is not None else ""
-            method_nt = Method(algo, impl, split)
+            if impl == "opencl":
+                target = (0, 0)
+            method_nt = Method(dim, split, algo, impl, target)
+
         return method_nt in cls._registry
 
     @classmethod
@@ -176,12 +179,13 @@ class IntegrationMethod:
             if comacount <= 1:
                 res = cls.select_old_method(dim, smth)
             else:
-                res = cls.select_method(dim, smth)
+                res = cls.select_method(dim, *[i.split()[0] for i in (smth.split(","))])
         if res:
             return res[0]
 
-    def __init__(self, dim, split, algo, impl, target=None, target_name=None,
-                 class_funct=None, function=None, old_method=None, extra=None):
+    def __init__(self, dim, split, algo, impl,
+                 target=None, target_name=None, target_type=None,
+                 class_funct=None, old_method=None, extra=None):
         """Constructor of the class, only registers the 
         :param dim: 1 or 2 integration engine
         :param split: pixel splitting options "no", "BBox", "pseudo", "full"
@@ -202,6 +206,7 @@ class IntegrationMethod:
         self.impl_lower = self.implementation.lower()
         self.target = target
         self.target_name = target_name or str(target)
+        self.target_type = target_type
         if class_funct:
             self.class_funct = ClassFunction(*class_funct)
         self.old_method_name = old_method

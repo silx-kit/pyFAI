@@ -178,15 +178,19 @@ else:
 from .opencl import ocl
 if ocl:
     devices_list = []
+    devtype_list = []
     devices = OrderedDict()
     perf = []
     for platform in ocl.platforms:
         for device in platform.devices:
             perf.append(device.flops)
             devices_list.append((platform.id, device.id))
+            devtype_list.append(device.type.lower())
+
     for idx in (len(perf) - 1 - numpy.argsort(perf)):
         device = devices_list[idx]
-        devices[device] = "%s / %s" % (ocl.platforms[device[0]].name, ocl.platforms[device[0]].devices[device[1]].name)
+        devices[device] = ("%s / %s" % (ocl.platforms[device[0]].name, ocl.platforms[device[0]].devices[device[1]].name),
+                           devtype_list[idx])
 
     try:
         from .opencl import azim_hist as ocl_azim  # IGNORE:F0401
@@ -196,8 +200,8 @@ if ocl:
     else:
         for ids, name in devices.items():
             IntegrationMethod(1, "no", "histogram", "OpenCL",
-              class_funct=(ocl_azim.Integrator1d, ocl_azim.Integrator1d.execute),
-              target=ids, target_name=name)
+                              class_funct=(ocl_azim.Integrator1d, ocl_azim.Integrator1d.execute),
+                              target=ids, target_name=name[0], target_type=name[1])
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
     except ImportError as error:
@@ -208,24 +212,24 @@ if ocl:
             for ids, name in devices.items():
                 IntegrationMethod(1, "bbox", "CSR", "OpenCL",
                                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "bbox", "CSR", "OpenCL",
                                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(1, "no", "CSR", "OpenCL",
                                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "no", "CSR", "OpenCL",
                                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
         if splitPixelFullCSR:
             for ids, name in devices.items():
                 IntegrationMethod(1, "full", "CSR", "OpenCL",
                                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "full", "CSR", "OpenCL",
                                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
 
     try:
         from .opencl import azim_lut as ocl_azim_lut  # IGNORE:F0401
@@ -237,24 +241,24 @@ if ocl:
             for ids, name in devices.items():
                 IntegrationMethod(1, "bbox", "LUT", "OpenCL",
                                   class_funct=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "bbox", "LUT", "OpenCL",
                                   class_funct=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(1, "no", "LUT", "OpenCL",
                                   class_funct=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "no", "LUT", "OpenCL",
                                   class_funct=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
         if splitPixelFullLUT:
             for ids, name in devices.items():
                 IntegrationMethod(1, "full", "LUT", "OpenCL",
                                   class_funct=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "full", "LUT", "OpenCL",
                                   class_funct=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
-                                  target=ids, target_name=name)
+                                  target=ids, target_name=name[0], target_type=name[1])
 
     try:
         from .opencl import sort as ocl_sort
@@ -2788,9 +2792,7 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
         unit = units.to_unit(unit)
-        new_method = IntegrationMethod.parse(method, dim=2)
-        logger.info("medfilt1d with method: %s -> %s", method, new_method)
-        method = new_method
+        method = IntegrationMethod.parse(method, dim=2)
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
             npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
@@ -2928,13 +2930,15 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.NaN
             delta_dummy = None
         unit = units.to_unit(unit)
+        method = IntegrationMethod.parse(method, dim=2)
+
         if "__len__" in dir(thres) and len(thres) > 0:
             sigma_lo = thres[0]
             sigma_hi = thres[-1]
         else:
             sigma_lo = sigma_hi = thres
 
-        if "ocl" in method and npt_azim and (npt_azim - 1):
+        if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
             npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
             if npt_azim != old:
@@ -2949,12 +2953,12 @@ class AzimuthalIntegrator(Geometry):
                                  polarization_factor=polarization_factor,
                                  normalization_factor=normalization_factor)
         image = res2d.intensity
-        if ("ocl" in method) and (ocl is not None):
-            if ("csr" in method) and \
+        if (method.impl_lower == "opencl"):
+            if (method.algo_lower == "csr") and \
                     (OCL_CSR_ENGINE in self.engines) and \
                     (self.engines[OCL_CSR_ENGINE].engine is not None):
                 ctx = self.engines[OCL_CSR_ENGINE].engine.ctx
-            elif "lut" in method and \
+            elif (method.algo_lower == "csr") and \
                     (OCL_LUT_ENGINE in self.engines) and \
                     (self.engines[OCL_LUT_ENGINE].engine is not None):
                 ctx = self.engines[OCL_LUT_ENGINE].engine.ctx
@@ -3018,7 +3022,7 @@ class AzimuthalIntegrator(Geometry):
 
         result = Integrate1dResult(res2d.radial, mean, std)
         result._set_method_called("sigma_clip")
-        result._set_compute_engine(method)
+        result._set_compute_engine(str(method))
         result._set_percentile(thres)
         result._set_npt_azim(npt_azim)
         result._set_unit(unit)
