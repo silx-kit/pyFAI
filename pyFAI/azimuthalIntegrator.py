@@ -2809,7 +2809,7 @@ class AzimuthalIntegrator(Geometry):
                     (OCL_CSR_ENGINE in self.engines) and \
                     (self.engines[OCL_CSR_ENGINE].engine is not None):
                 ctx = self.engines[OCL_CSR_ENGINE].engine.ctx
-            elif (method.algo_lower == "lut") and
+            elif (method.algo_lower == "lut") and \
                     (OCL_LUT_ENGINE in self.engines) and \
                     (self.engines[OCL_LUT_ENGINE].engine is not None):
                 ctx = self.engines[OCL_LUT_ENGINE].engine.ctx
