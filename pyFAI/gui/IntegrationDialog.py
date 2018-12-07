@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2018"
+__date__ = "07/12/2018"
 __status__ = "development"
 
 import logging
@@ -45,7 +45,6 @@ import json
 import os
 import time
 import threading
-import math
 import os.path as op
 import numpy
 
@@ -55,20 +54,31 @@ from silx.gui import qt
 logger = logging.getLogger(__name__)
 
 from .. import worker
-from ..detectors import ALL_DETECTORS, detector_factory
+from .calibration.DetectorSelectorDrop import DetectorSelectorDrop
+from .dialog.OpenClDeviceDialog import OpenClDeviceDialog
+from .dialog.GeometryDialog import GeometryDialog
+from ..detectors import detector_factory
 from ..opencl import ocl
 from ..utils import float_, int_, str_, get_ui_file
 from ..io import HDF5Writer
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..units import RADIAL_UNITS
+from ..units import RADIAL_UNITS, to_unit
 from ..third_party import six
 from .utils import projecturl
+from .calibration.model.GeometryModel import GeometryModel
+from .calibration.model.DataModel import DataModel
+from .utils import units
 
 
 class IntegrationDialog(qt.QWidget):
+    """Dialog to configure an azimuthal integration.
     """
-    """
+
     def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
+        qt.QWidget.__init__(self)
+        filename = get_ui_file("integration.ui")
+        qt.loadUi(filename, self)
+
         self.units = {}
         self.input_data = input_data
         self.output_path = output_path
@@ -76,99 +86,71 @@ class IntegrationDialog(qt.QWidget):
         self.slow_dim = slow_dim
         self.fast_dim = fast_dim
         self.name = None
+        self._openclDevice = "any"
         self._sem = threading.Semaphore()
         self.json_file = json_file
-        qt.QWidget.__init__(self)
-        try:
-            filename = get_ui_file("integration.ui")
-            qt.loadUi(filename, self)
-        except AttributeError as _error:
-            logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
-            raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
-        self.all_detectors = list(ALL_DETECTORS.keys())
-        self.all_detectors.sort()
-        self.detector.addItems([i.capitalize() for i in self.all_detectors])
-        self.detector.setCurrentIndex(self.all_detectors.index("detector"))
+
+        self.__geometryModel = GeometryModel()
+        self.__detector = None
+
+        self.geometry_label.setGeometryModel(self.__geometryModel)
+
+        # Connect widget to edit the wavelength
+        wavelengthUnit = DataModel()
+        wavelengthUnit.setValue(units.Unit.ENERGY)
+        self.wavelengthEdit.setModel(self.__geometryModel.wavelength())
+        self.wavelengthEdit.setDisplayedUnitModel(wavelengthUnit)
+        self.wavelengthEdit.setModelUnit(units.Unit.METER_WL)
+        self.wavelengthUnit.setUnitModel(wavelengthUnit)
+        self.wavelengthUnit.setUnitEditable(True)
+
+        self.load_detector.clicked.connect(self.selectDetector)
+        self.opencl_config_button.clicked.connect(self.selectOpenClDevice)
+        self.show_geometry.clicked.connect(self.showGeometry)
+
         # connect file selection windows
-        self.file_poni.clicked.connect(self.select_ponifile)
-        self.file_splinefile.clicked.connect(self.select_splinefile)
+        self.file_import.clicked.connect(self.select_ponifile)
         self.file_mask_file.clicked.connect(self.select_maskfile)
         self.file_dark_current.clicked.connect(self.select_darkcurrent)
         self.file_flat_field.clicked.connect(self.select_flatfield)
+
         # connect button bar
-        self.okButton = self.buttonBox.button(qt.QDialogButtonBox.Ok)
-        self.saveButton = self.buttonBox.button(qt.QDialogButtonBox.Save)
-        self.resetButton = self.buttonBox.button(qt.QDialogButtonBox.Reset)
-        self.cancelButton = self.buttonBox.button(qt.QDialogButtonBox.Cancel)
-        self.okButton.clicked.connect(self.proceed)
-        self.saveButton.clicked.connect(self.save_config)
-        self.buttonBox.helpRequested.connect(self.help)
-        self.cancelButton.clicked.connect(self.die)
-        self.resetButton.clicked.connect(self.restore)
+        # FIXME: Do it
+        # self.okButton = self.buttonBox.button(qt.QDialogButtonBox.Ok)
+        # self.saveButton = self.buttonBox.button(qt.QDialogButtonBox.Save)
+        # self.resetButton = self.buttonBox.button(qt.QDialogButtonBox.Reset)
+        # self.cancelButton = self.buttonBox.button(qt.QDialogButtonBox.Cancel)
+        # self.okButton.clicked.connect(self.proceed)
+        self.save_json_button.clicked.connect(self.save_config)
+        # self.buttonBox.helpRequested.connect(self.help)
+        # self.cancelButton.clicked.connect(self.die)
+        # self.resetButton.clicked.connect(self.restore)
 
-        self.detector.currentIndexChanged.connect(self.detector_changed)
-        self.do_OpenCL.clicked.connect(self.openCL_changed)
-        self.platform.currentIndexChanged.connect(self.platform_changed)
-        self.set_validators()
-        self.assign_unit()
-        if self.json_file is not None:
-            self.restore(self.json_file)
-        self.progressBar.setValue(0)
-        self.hdf5_path = None
-
-    def assign_unit(self):
-        """
-        assign unit to the corresponding widget
-        """
-        self.units = {}
-        for unit in RADIAL_UNITS:
-            if unit == "2th_deg":
-                self.units[unit] = self.tth_deg
-            elif unit == "2th_rad":
-                self.units[unit] = self.tth_rad
-            elif unit == "q_nm^-1":
-                self.units[unit] = self.q_nm
-            elif unit == "q_A^-1":
-                self.units[unit] = self.q_A
-            elif unit == "r_mm":
-                self.units[unit] = self.r_mm
-            else:
-                logger.debug("Unit unknown to GUI %s", unit)
-
-    def set_validators(self):
-        """
-        Set all validators for text entries
-        """
+        # FIXME: Do it
+        # self.do_OpenCL.clicked.connect(self.openCL_changed)
+        # self.platform.currentIndexChanged.connect(self.platform_changed)
         npt_validator = qt.QIntValidator()
         npt_validator.setBottom(1)
         self.nbpt_rad.setValidator(npt_validator)
         self.nbpt_azim.setValidator(npt_validator)
+        self.radial_unit.setUnits(RADIAL_UNITS.values())
+        self.radial_unit.model().setValue(RADIAL_UNITS["2th_deg"])
 
-        wl_validator = qt.QDoubleValidator(self)
-        wl_validator.setBottom(1e-15)
-        wl_validator.setTop(1e-6)
-        self.wavelength.setValidator(wl_validator)
+        self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
+        self.__radialUnitUpdated()
 
-        distance_validator = qt.QDoubleValidator(self)
-        distance_validator.setBottom(0)
-        self.pixel1.setValidator(distance_validator)
-        self.pixel2.setValidator(distance_validator)
-        self.poni1.setValidator(distance_validator)
-        self.poni2.setValidator(distance_validator)
+        # FIXME: Do it
+        # self.progressBar.setValue(0)
+        self.hdf5_path = None
 
-        angle_validator = qt.QDoubleValidator(self)
-        distance_validator.setBottom(-math.pi)
-        distance_validator.setTop(math.pi)
-        self.rot1.setValidator(angle_validator)
-        self.rot2.setValidator(angle_validator)
-        self.rot3.setValidator(angle_validator)
-        # done at widget level
-        # self.polarization_factor.setValidator(qt.QDoubleValidator(-1, 1, 3))
+        self.setDetector(None)
+        if self.json_file is not None:
+            self.restore(self.json_file)
 
     def __get_unit(self):
-        for unit, widget in self.units.items():
-            if widget is not None and widget.isChecked():
-                return unit
+        unit = self.radial_unit.model().value()
+        if unit is not None:
+            return unit
         logger.warning("Undefined unit !!! falling back on 2th_deg")
         return RADIAL_UNITS["2th_deg"]
 
@@ -416,18 +398,14 @@ class IntegrationDialog(qt.QWidget):
 
         :return: dict with all information.
         """
-        to_save = {"poni": str_(self.poni.text()).strip(),
-                   "detector": str_(self.detector.currentText()).lower(),
-                   "wavelength": self._float("wavelength", None),
-                   "splineFile": str_(self.splineFile.text()).strip(),
-                   "pixel1": self._float("pixel1", None),
-                   "pixel2": self._float("pixel2", None),
-                   "dist": self._float("dist", None),
-                   "poni1": self._float("poni1", None),
-                   "poni2": self._float("poni2", None),
-                   "rot1": self._float("rot1", None),
-                   "rot2": self._float("rot2", None),
-                   "rot3": self._float("rot3", None),
+
+        to_save = {"wavelength": self.__geometryModel.wavelength().value(),
+                   "dist": self.__geometryModel.distance().value(),
+                   "poni1": self.__geometryModel.poni1().value(),
+                   "poni2": self.__geometryModel.poni2().value(),
+                   "rot1": self.__geometryModel.rotation1().value(),
+                   "rot2": self.__geometryModel.rotation2().value(),
+                   "rot3": self.__geometryModel.rotation3().value(),
                    "do_dummy": bool(self.do_dummy.isChecked()),
                    "do_mask": bool(self.do_mask.isChecked()),
                    "do_dark": bool(self.do_dark.isChecked()),
@@ -451,14 +429,13 @@ class IntegrationDialog(qt.QWidget):
                    "radial_range_max": self._float("radial_range_max", None),
                    "azimuth_range_min": self._float("azimuth_range_min", None),
                    "azimuth_range_max": self._float("azimuth_range_max", None),
-                   "do_OpenCL": bool(self.do_OpenCL.isChecked())
+                   "do_OpenCL": bool(self.do_OpenCL.isChecked()),
+                   "unit": str(self.radial_unit.model().value()),
                    }
-        for unit, widget in self.units.items():
-            if widget is not None and widget.isChecked():
-                to_save["unit"] = str(unit)
-                break
-        else:
-            logger.info("Undefined unit !!!")
+
+        to_save["detector"] = self.__detector.__class__.__name__
+        to_save["detector_config"] = self.__detector.get_config()
+
         return to_save
 
     def dump(self, filename=None):
@@ -503,19 +480,64 @@ class IntegrationDialog(qt.QWidget):
         :param dico: dictionary with description of the widget
         :type dico: dict
         """
-        setup_data = {"poni": self.poni.setText,
-                      # "detector": self.all_detectors[self.detector.getCurrentIndex()],
-                      "wavelength": lambda a: self.wavelength.setText(str_(a)),
-                      "splineFile": lambda a: self.splineFile.setText(str_(a)),
-                      "pixel1": lambda a: self.pixel1.setText(str_(a)),
-                      "pixel2": lambda a: self.pixel2.setText(str_(a)),
-                      "dist": lambda a: self.dist.setText(str_(a)),
-                      "poni1": lambda a: self.poni1.setText(str_(a)),
-                      "poni2": lambda a: self.poni2.setText(str_(a)),
-                      "rot1": lambda a: self.rot1.setText(str_(a)),
-                      "rot2": lambda a: self.rot2.setText(str_(a)),
-                      "rot3": lambda a: self.rot3.setText(str_(a)),
-                      "do_dummy": self.do_dummy.setChecked,
+        dico = dico.copy()
+
+        # poni file
+        # NOTE: Compatibility (poni is not stored since pyFAI v0.17)
+        value = dico.pop("poni", None)
+        if value:
+            self.set_ponifile(value)
+
+        # geometry
+        value = dico.pop("wavelength", None)
+        self.__geometryModel.wavelength().setValue(value)
+        value = dico.pop("dist", None)
+        self.__geometryModel.distance().setValue(value)
+        value = dico.pop("poni1", None)
+        self.__geometryModel.poni1().setValue(value)
+        value = dico.pop("poni2", None)
+        self.__geometryModel.poni2().setValue(value)
+        value = dico.pop("rot1", None)
+        self.__geometryModel.rotation1().setValue(value)
+        value = dico.pop("rot2", None)
+        self.__geometryModel.rotation2().setValue(value)
+        value = dico.pop("rot3", None)
+        self.__geometryModel.rotation3().setValue(value)
+
+        # detector
+        value = dico.pop("detector_config", None)
+        if value:
+            # NOTE: Default way to describe a detector since pyFAI 0.17
+            detector_config = value
+            detector_class = dico.pop("detector")
+            detector = detector_factory(detector_class, config=detector_config)
+            self.setDetector(detector)
+        value = dico.pop("detector", None)
+        if value:
+            # NOTE: Previous way to describe a detector before pyFAI 0.17
+            # NOTE: pixel1/pixel2/splineFile was not parsed here
+            detector_name = value.lower()
+            detector = detector_factory(detector_name)
+
+            if detector_name == "detector":
+                value = dico.pop("pixel1", None)
+                if value:
+                    detector.set_pixel1(value)
+                value = dico.pop("pixel2", None)
+                if value:
+                    detector.set_pixel2(value)
+            else:
+                # Drop it as it was not really used
+                _ = dico.pop("pixel1", None)
+                _ = dico.pop("pixel2", None)
+
+            splineFile = dico.pop("splineFile", None)
+            if splineFile:
+                detector.set_splineFile(splineFile)
+
+            self.setDetector(detector)
+
+        setup_data = {"do_dummy": self.do_dummy.setChecked,
                       "do_dark": self.do_dark.setChecked,
                       "do_flat": self.do_flat.setChecked,
                       "do_polarization": self.do_polarization.setChecked,
@@ -542,18 +564,19 @@ class IntegrationDialog(qt.QWidget):
 
         for key, value in setup_data.items():
             if key in dico and (value is not None):
-                value(dico[key])
-        if "unit" in dico:
-            for unit, widget in self.units.items():
-                if str(unit) == dico["unit"] and widget is not None:
-                    widget.setChecked(True)
-                    break
-        if "detector" in dico:
-            detector = dico["detector"].lower()
-            if detector in self.all_detectors:
-                self.detector.setCurrentIndex(self.all_detectors.index(detector))
+                value(dico.pop(key))
+
+        value = dico.pop("unit", None)
+        if value is not None:
+            unit = to_unit(value)
+            self.radial_unit.model().setValue(unit)
+
         if setup_data.get("do_OpenCL"):
             self.openCL_changed()
+
+        if len(dico) != 0:
+            for key, value in dico.items():
+                logger.warning("json key '%s' unused", key)
 
     def getOpenFileName(self, title):
         """Display a dialog to select a filename and return it.
@@ -575,23 +598,59 @@ class IntegrationDialog(qt.QWidget):
         filename = dialog.selectedFiles()[0]
         return filename
 
+    def selectDetector(self):
+        popup = DetectorSelectorDrop(self)
+        popupParent = self.load_detector
+        pos = popupParent.mapToGlobal(popupParent.rect().bottomRight())
+        pos = pos + popup.rect().topLeft() - popup.rect().topRight()
+        popup.move(pos)
+        popup.show()
+
+        dialog = qt.QDialog(self)
+        dialog.setWindowTitle("Detector selection")
+        layout = qt.QVBoxLayout(dialog)
+        layout.addWidget(popup)
+
+        buttonBox = qt.QDialogButtonBox(qt.QDialogButtonBox.Ok |
+                                        qt.QDialogButtonBox.Cancel)
+        buttonBox.accepted.connect(dialog.accept)
+        buttonBox.rejected.connect(dialog.reject)
+        layout.addWidget(buttonBox)
+
+        # It have to be here to set the focus on the right widget
+        popup.setDetector(self.__detector)
+        result = dialog.exec_()
+        if result:
+            newDetector = popup.detector()
+            self.setDetector(newDetector)
+
+    def __radialUnitUpdated(self):
+        unit = self.__get_unit()
+        # FIXME extract the unit
+        self._radialRangeUnit.setText(str(unit))
+
+    def showGeometry(self):
+        dialog = GeometryDialog(self)
+        dialog.setGeometryModel(self.__geometryModel)
+        dialog.setDetector(self.__detector)
+        dialog.exec_()
+
+    def selectOpenClDevice(self):
+        dialog = OpenClDeviceDialog(self)
+        dialog.selectDevice(self._openclDevice)
+        result = dialog.exec_()
+        if result:
+            self._openclDevice = dialog.device()
+            self.opencl_label.setDevice(self._openclDevice)
+
+    def setDetector(self, detector):
+        self.__detector = detector
+        self.detector_label.setDetector(detector)
+
     def select_ponifile(self):
         ponifile = self.getOpenFileName("Open a poni file")
         if ponifile is not None:
             self.set_ponifile(ponifile)
-
-    def select_splinefile(self):
-        logger.debug("select_splinefile")
-        splinefile = self.getOpenFileName("Open a spline file")
-        if splinefile:
-            try:
-                ai = AzimuthalIntegrator()
-                ai.detector.set_splineFile(splinefile)
-                self.pixel1.setText(str(ai.pixel1))
-                self.pixel2.setText(str(ai.pixel2))
-                self.splineFile.setText(ai.detector.splineFile or "")
-            except Exception as error:
-                logger.error("failed %s on %s", error, splinefile)
 
     def select_maskfile(self):
         logger.debug("select_maskfile")
@@ -614,45 +673,31 @@ class IntegrationDialog(qt.QWidget):
             self.flat_field.setText(str_(flatfield))
             self.do_flat.setChecked(True)
 
-    def set_ponifile(self, ponifile=None):
-        if ponifile is None:
-            ponifile = str_(self.poni.text())
-        else:
-            if self.poni.text() != ponifile:
-                self.poni.setText(ponifile)
-#         try:
-#             str(ponifile)
-#         except UnicodeError:
-#             ponifile = ponifile.encode("utf8")
-#         print(ponifile, type(ponifile))
+    def set_ponifile(self, ponifile):
         try:
+            # TODO: It should not be needed to create an AI to parse a PONI file
             ai = AzimuthalIntegrator.sload(ponifile)
         except Exception as error:
-            ai = AzimuthalIntegrator()
+            # FIXME: An error have to be displayed in the GUI
             logger.error("file %s does not look like a poni-file, error %s", ponifile, error)
             return
-        self.pixel1.setText(str_(ai.pixel1))
-        self.pixel2.setText(str_(ai.pixel2))
-        self.dist.setText(str_(ai.dist))
-        self.poni1.setText(str_(ai.poni1))
-        self.poni2.setText(str_(ai.poni2))
-        self.rot1.setText(str_(ai.rot1))
-        self.rot2.setText(str_(ai.rot2))
-        self.rot3.setText(str_(ai.rot3))
-        self.splineFile.setText(str_(ai.detector.splineFile))
-        self.wavelength.setText(str_(ai._wavelength))
 
-        name = ai.detector.name.lower().replace(" ", "_")
-        if name not in self.all_detectors:
-            name = ai.detector.name.lower().replace(" ", "")
-        if name in self.all_detectors:
-            self.detector.setCurrentIndex(self.all_detectors.index(name))
-        else:
-            self.detector.setCurrentIndex(self.all_detectors.index("detector"))
+        model = self.__geometryModel
+        model.distance().setValue(ai.dist)
+        model.poni1().setValue(ai.poni1)
+        model.poni2().setValue(ai.poni2)
+        model.rotation1().setValue(ai.rot1)
+        model.rotation2().setValue(ai.rot2)
+        model.rotation3().setValue(ai.rot3)
+        # TODO: why is there an underscore to _wavelength here?
+        model.wavelength().setValue(ai._wavelength)
+
+        self.setDetector(ai.detector)
 
     def set_input_data(self, stack, stack_name=None):
         self.input_data = stack
         self.name = stack_name
+
     setStackDataObject = set_input_data
 
     def _float(self, kw, default=0):
@@ -664,23 +709,6 @@ class IntegrationDialog(qt.QWidget):
             except ValueError:
                 logger.error("Unable to convert %s to float: %s", kw, txtval)
         return fval
-
-    def detector_changed(self):
-        logger.debug("detector_changed")
-        detector = str_(self.detector.currentText()).lower()
-        inst = detector_factory(detector)
-        if inst.force_pixel:
-            self.pixel1.setText(str(inst.pixel1))
-            self.pixel2.setText(str(inst.pixel2))
-            self.splineFile.setText("")
-        elif self.splineFile.text():
-            splineFile = str_(self.splineFile.text()).strip()
-            if op.isfile(splineFile):
-                inst.set_splineFile(splineFile)
-                self.pixel1.setText(str(inst.pixel1))
-                self.pixel2.setText(str(inst.pixel2))
-            else:
-                logger.warning("No such spline file %s", splineFile)
 
     def openCL_changed(self):
         logger.debug("do_OpenCL")
