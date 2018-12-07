@@ -45,6 +45,7 @@ logger = logging.getLogger(__name__)
 from .. import utils
 from .. import _version
 from ..method_registry import IntegrationMethod
+from .. import azimuthalIntegrator
 # to increase test coverage of missing files:
 from .. import directories
 
@@ -76,7 +77,7 @@ class TestUtils(unittest.TestCase):
     def test_method_registry(self):
         l = IntegrationMethod.list_available()
         logger.info("Found %s integration methods available on this computer: %s",
-                    len(l), os.linesep.join(l))
+                    len(l), os.linesep.join([""] + l))
         self.assertGreater(l, 2, "at least 2 integration methods are available")
 
     def test_directories(self):

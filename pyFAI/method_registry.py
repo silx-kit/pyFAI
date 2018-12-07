@@ -86,6 +86,8 @@ class IntegrationMethod:
         impl = impl.lower() if impl is not None else "*"
         split = split.lower() if split is not None else "*"
         target_type = target_type.lower() if target_type else "*"
+        if target_type in ("any", "all"):
+            target_type = "*"
         method_nt = Method(dim, algo, impl, split, target)
         if method_nt in cls._registry:
             return [cls._registry[method_nt]]
@@ -165,6 +167,7 @@ class IntegrationMethod:
             impl = impl.lower() if impl is not None else ""
             split = split.lower() if split is not None else ""
             if impl == "opencl":
+                # indexes start at 0 hence ...
                 target = (0, 0)
             method_nt = Method(dim, split, algo, impl, target)
 
