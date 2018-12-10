@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2018"
+__date__ = "10/12/2018"
 __status__ = "development"
 
 import logging
@@ -139,6 +139,8 @@ class IntegrationDialog(qt.QWidget):
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
 
+        self.__configureDisabledStates()
+
         # FIXME: Do it
         # self.progressBar.setValue(0)
         self.hdf5_path = None
@@ -146,6 +148,33 @@ class IntegrationDialog(qt.QWidget):
         self.setDetector(None)
         if self.json_file is not None:
             self.restore(self.json_file)
+
+    def __configureDisabledStates(self):
+        self.do_mask.clicked.connect(self.__updateDisabledStates)
+        self.do_dark.clicked.connect(self.__updateDisabledStates)
+        self.do_flat.clicked.connect(self.__updateDisabledStates)
+        self.do_dummy.clicked.connect(self.__updateDisabledStates)
+        self.do_polarization.clicked.connect(self.__updateDisabledStates)
+        self.do_radial_range.clicked.connect(self.__updateDisabledStates)
+        self.do_azimuthal_range.clicked.connect(self.__updateDisabledStates)
+        self.do_poisson.clicked.connect(self.__updateDisabledStates)
+
+        self.__updateDisabledStates()
+
+    def __updateDisabledStates(self):
+        self.mask_file.setEnabled(self.do_mask.isChecked())
+        self.dark_current.setEnabled(self.do_dark.isChecked())
+        self.flat_field.setEnabled(self.do_flat.isChecked())
+        self.val_dummy.setEnabled(self.do_dummy.isChecked())
+        self.delta_dummy.setEnabled(self.do_dummy.isChecked())
+        self.polarization_factor.setEnabled(self.do_polarization.isChecked())
+        enabled = self.do_radial_range.isChecked()
+        self.radial_range_min.setEnabled(enabled)
+        self.radial_range_max.setEnabled(enabled)
+        enabled = self.do_azimuthal_range.isChecked()
+        self.azimuth_range_min.setEnabled(enabled)
+        self.azimuth_range_max.setEnabled(enabled)
+        self.error_selection.setEnabled(self.do_poisson.isChecked())
 
     def __get_unit(self):
         unit = self.radial_unit.model().value()
