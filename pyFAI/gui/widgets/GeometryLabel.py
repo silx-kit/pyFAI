@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/12/2018"
+__date__ = "10/12/2018"
 
 from ..calibration.model.GeometryModel import GeometryModel
 from .ElidedLabel import ElidedLabel
@@ -58,6 +58,11 @@ class GeometryLabel(ElidedLabel):
             "rotation2": geometry.rotation2().value(),
             "rotation3": geometry.rotation3().value(),
         }
+
+        if set(args.values()) == set([None]):
+            self.setText("No geometry")
+            self.setToolTip("")
+            return
 
         tipTemplate = """<html>
             <ul>
