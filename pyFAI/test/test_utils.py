@@ -35,15 +35,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/10/2018"
+__date__ = "07/12/2018"
 
+import os
 import unittest
 import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from .. import utils
 from .. import _version
-
+from ..method_registry import IntegrationMethod
+from .. import azimuthalIntegrator
 # to increase test coverage of missing files:
 from .. import directories
 
@@ -71,6 +73,15 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(_version.calc_hexversion(0, 0, 1), 1 << 8, "Micro is OK")
         self.assertEqual(_version.calc_hexversion(0, 0, 0, 1), 1 << 4, "Release level is OK")
         self.assertEqual(_version.calc_hexversion(0, 0, 0, 0, 1), 1, "Serial is OK")
+
+    def test_method_registry(self):
+        l = IntegrationMethod.list_available()
+        logger.info("Found %s integration methods available on this computer: %s",
+                    len(l), os.linesep.join([""] + l))
+        self.assertGreater(len(l), 2, "at least 2 integration methods are available")
+
+    def test_directories(self):
+        logger.info("data directories exists: %s %s", directories.PYFAI_DATA, os.path.exists(directories.PYFAI_DATA))
 
 
 def suite():

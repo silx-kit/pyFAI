@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2018"
+__date__ = "04/12/2018"
 
 
 import unittest
@@ -157,9 +157,6 @@ class TestMask(unittest.TestCase):
                     logger.warning("Memory error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
                     break
                 else:
-                    with utilstest.TestLogging(logger=depreclog, warning=1):
-                        # Filter deprecated warning
-                        ref = ai.xrpd(data, self.N)
                     r = mathutil.rwp(ref, res)
                     logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL LUT processing of %s" % (r, ds))

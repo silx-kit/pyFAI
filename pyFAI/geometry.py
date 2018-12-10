@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2018"
+__date__ = "06/12/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1804,7 +1804,7 @@ class Geometry(object):
         except:
             raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
-        chia = self.chia
+        chia = self.chiArray(shape)
 
         built_mask = numpy.ones(shape, dtype=numpy.int8)
         empty_data = numpy.zeros(shape, dtype=numpy.float32)

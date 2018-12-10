@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "06/12/2018"
 
 
 import unittest
@@ -78,7 +78,7 @@ class TestSparseBBox(unittest.TestCase):
             self.assertTrue(numpy.allclose(obt, ref))
 
     def test_CSR(self):
-        obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="CSR")[1]
+        obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="bbox CSR")[1]
         logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
         self.assertTrue(numpy.allclose(obt, self.ref))
 
