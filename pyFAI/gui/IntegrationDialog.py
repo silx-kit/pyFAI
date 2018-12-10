@@ -81,7 +81,6 @@ class IntegrationDialog(qt.QWidget):
         self.output_format = output_format
         self.slow_dim = slow_dim
         self.fast_dim = fast_dim
-        self.name = None
 
         self._sem = threading.Semaphore()
         self.json_file = json_file
@@ -334,19 +333,6 @@ class IntegrationDialog(qt.QWidget):
 
     def set_input_data(self, stack, stack_name=None):
         self.input_data = stack
-        self.name = stack_name
-
-    setStackDataObject = set_input_data
-
-    def _float(self, kw, default=0):
-        fval = default
-        txtval = str(self.__dict__[kw].text())
-        if txtval:
-            try:
-                fval = float(txtval)
-            except ValueError:
-                logger.error("Unable to convert %s to float: %s", kw, txtval)
-        return fval
 
     def save_config(self):
         logger.debug("save_config")
