@@ -69,6 +69,7 @@ class IntegrationFrame(qt.QWidget):
 
         self.__geometryModel = GeometryModel()
         self.__detector = None
+        self.__only1dIntegration = False
 
         self.geometry_label.setGeometryModel(self.__geometryModel)
 
@@ -131,6 +132,13 @@ class IntegrationFrame(qt.QWidget):
         self.azimuth_range_min.setEnabled(enabled)
         self.azimuth_range_max.setEnabled(enabled)
         self.error_selection.setEnabled(self.do_poisson.isChecked())
+
+    def set1dIntegrationOnly(self, only1d):
+        """Enable only 1D integration for this widget."""
+        if only1d:
+            self.do_2D.setChecked(False)
+        self.do_2D.setVisible(not only1d)
+        self.__only1dIntegration = only1d
 
     def getRadialUnit(self):
         unit = self.radial_unit.model().value()
@@ -217,6 +225,7 @@ class IntegrationFrame(qt.QWidget):
 
         :return: dict with all information.
         """
+        # FIXME: "method" is used by diff_map interation, it have to be exposed
 
         config = {"wavelength": self.__geometryModel.wavelength().value(),
                   "dist": self.__geometryModel.distance().value(),
@@ -356,6 +365,10 @@ class IntegrationFrame(qt.QWidget):
 
         if setup_data.get("do_OpenCL"):
             self.__openclChanged()
+
+        if self.__only1dIntegration:
+            # Force unchecked
+            self.do_2D.setChecked(False)
 
         if len(dico) != 0:
             for key, value in dico.items():

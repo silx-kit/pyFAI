@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2018"
+__date__ = "10/12/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -47,7 +47,7 @@ from silx.gui import qt
 from .matplotlib import pyplot
 from ..utils import int_, str_, get_ui_file
 from ..units import to_unit
-from .IntegrationDialog import IntegrationDialog
+from .widgets.IntegrationFrame import IntegrationFrame
 from .. import worker
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
@@ -55,22 +55,20 @@ from .utils.tree import ListDataSet, DataSet
 logger = logging.getLogger(__name__)
 
 
-class IntegrateWidget(qt.QDialog):
+class IntegrateDialog(qt.QDialog):
     def __init__(self, parent=None):
         qt.QDialog.__init__(self)
-        self.widget = IntegrationDialog()
-        self.layout = qt.QGridLayout(self)
-        self.layout.addWidget(self.widget)
-        self.widget.okButton.clicked.disconnect()
-        self.widget.do_2D.setEnabled(False)
-        self.widget.cancelButton.clicked.disconnect()
-        self.widget.okButton.clicked.connect(self.accept)
-        self.widget.cancelButton.clicked.connect(self.reject)
+        self.widget = IntegrationFrame(self)
+        self.widget.set1dIntegrationOnly(True)
 
-    def get_config(self):
-        res = self.widget.dump()
-        res["method"] = self.widget.get_method()
-        return res
+        layout = qt.QVBoxLayout(self)
+        layout.addWidget(self.widget)
+        buttons = qt.QDialogButtonBox(self)
+        buttons.setStandardButtons(qt.QDialogButtonBox.Cancel | qt.QDialogButtonBox.Ok)
+        layout.addWidget(buttons)
+
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
 
 
 class TreeModel(qt.QAbstractItemModel):
@@ -280,13 +278,12 @@ class DiffMapWidget(qt.QWidget):
         """
         """
         logger.info("in configure_diffraction")
-        iw = IntegrateWidget(self)
+        iw = IntegrateDialog(self)
         if self.integration_config:
-            iw.widget.set_config(self.integration_config)
+            iw.widget.setConfig(self.integration_config)
         res = iw.exec_()
         if res == qt.QDialog.Accepted:
-            iw.widget.input_data = [i.path for i in self.list_dataset]
-            self.integration_config = iw.get_config()
+            self.integration_config = iw.widget.getConfig()
         print(json.dumps(self.integration_config, indent=2))
 
     def configure_output(self, *args, **kwargs):
