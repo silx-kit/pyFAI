@@ -1879,7 +1879,7 @@ class Geometry(object):
         new.param = new_param
         cached = {}
         memo[id(self._cached_array)] = cached
-        for key, old_value in self._cached_array.items():
+        for key, old_value in self._cached_array.copy().items():
             if "copy" in dir(old_value):
                 new_value = old_value.copy()
                 memo[id(old_value)] = new_value
