@@ -122,7 +122,7 @@ class TestIntegrateApp(unittest.TestCase):
         ponifile = UtilsTest.getimage("Pilatus1M.poni")
         options = self.Options()
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected = numpy.array([[12.7, 0], [38.1, 0], [63.5, 267.6]])
+        expected = numpy.array([[2.0, 17.0], [2.0, 26.0], [2., 0.]])
         with self.datatempfile(data, {}) as datapath:
             with self.jsontempfile(ponifile) as jsonpath:
                 options.json = jsonpath
@@ -137,7 +137,7 @@ class TestIntegrateApp(unittest.TestCase):
         options = self.Options()
         options.monitor_key = "my_mon"
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected = numpy.array([[12.7, 0], [38.1, 0], [63.5, 535.1]])
+        expected = numpy.array([[2.0, 33.9], [2.0, 52.0], [2., 0.]])
         with self.datatempfile(data, {"my_mon": "0.5"}) as datapath:
             with self.jsontempfile(ponifile) as jsonpath:
                 options.json = jsonpath
@@ -152,7 +152,7 @@ class TestIntegrateApp(unittest.TestCase):
         options = self.Options()
         options.monitor_key = "counter/my_mon"
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected = numpy.array([[12.7, 0], [38.1, 0], [63.5, 133.8]])
+        expected = numpy.array([[2.0, 8.5], [2.0, 13.0], [2., 0.]])
         with self.datatempfile(data, {"counter_mne": "my_mon", "counter_pos": "2.0"}) as datapath:
             with self.jsontempfile(ponifile) as jsonpath:
                 options.json = jsonpath
