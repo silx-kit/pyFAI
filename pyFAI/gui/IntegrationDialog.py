@@ -103,7 +103,7 @@ class IntegrationDialog(qt.QWidget):
         with self._sem:
             out = None
             config = self.dump()
-            frame = self.self.__integrationFrame
+            frame = self.__integrationFrame
             logger.debug("Let's work a bit")
             ai = worker.make_ai(config)
 
