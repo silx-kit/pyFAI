@@ -94,8 +94,7 @@ class IntegrationDialog(qt.QWidget):
         # self.cancelButton.clicked.connect(self.die)
         # self.resetButton.clicked.connect(self.restore)
 
-        # FIXME: Do it
-        # self.progressBar.setValue(0)
+        self.progressBar.setValue(0)
 
         if self.json_file is not None:
             self.restore(self.json_file)
