@@ -2,7 +2,7 @@
 # Windows
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
-version: 0.16.{build}
+version: 0.17.{build}
 shallow_clone: true
 build: false
 
@@ -29,10 +29,10 @@ environment:
 
     matrix:
         # Python 2.7
-        - PYTHON_DIR: "C:\\Python27-x64"
-          PYTHON_VERSION: "2.7.11"
-          PYTHON_ARCH: "64"
-          BUILD_ARGS: ""
+        #- PYTHON_DIR: "C:\\Python27-x64"
+        #  PYTHON_VERSION: "2.7.11"
+        #  PYTHON_ARCH: "64"
+        #  BUILD_ARGS: ""
 
         # Python 3.5
         - PYTHON_DIR: "C:\\Python35-x64"
