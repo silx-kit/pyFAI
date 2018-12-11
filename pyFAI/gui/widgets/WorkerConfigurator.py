@@ -392,6 +392,8 @@ class WorkerConfigurator(qt.QWidget):
             for key, value in dico.items():
                 logger.warning("json key '%s' unused", key)
 
+        self.__updateDisabledStates()
+
     def getOpenFileName(self, title):
         """Display a dialog to select a filename and return it.
 
