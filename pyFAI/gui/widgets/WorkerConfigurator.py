@@ -48,7 +48,7 @@ from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ...detectors import detector_factory
 from ...opencl import ocl
-from ...utils import float_, int_, str_, get_ui_file
+from ...utils import float_, str_, get_ui_file
 from ...azimuthalIntegrator import AzimuthalIntegrator
 from ...units import RADIAL_UNITS, to_unit
 from ..calibration.model.GeometryModel import GeometryModel
@@ -213,13 +213,16 @@ class WorkerConfigurator(qt.QWidget):
             return None
 
     def getRadialNbpt(self):
-        nbpt_rad = str(self.nbpt_rad.text()).strip()
-        if not nbpt_rad:
+        value = str(self.nbpt_rad.text()).strip()
+        if value == "":
             return None
-        return int(nbpt_rad)
+        return int(value)
 
     def getAzimuthalNbpt(self):
-        return int(str(self.nbpt_azim.text()).strip())
+        value = str(self.nbpt_azim.text()).strip()
+        if value == "":
+            return None
+        return int(value)
 
     def getConfig(self):
         """Read the configuration of the plugin and returns it as a dictionary
@@ -246,9 +249,7 @@ class WorkerConfigurator(qt.QWidget):
                   "dark_current": str_(self.dark_current.text()).strip(),
                   "flat_field": str_(self.flat_field.text()).strip(),
                   "polarization_factor": float_(self.polarization_factor.value()),
-                  "nbpt_rad": int_(self.nbpt_rad.text()),
                   "do_2D": bool(self.do_2D.isChecked()),
-                  "nbpt_azim": int_(self.nbpt_azim.text()),
                   "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
                   "do_solid_angle": bool(self.do_solid_angle.isChecked()),
                   "do_radial_range": bool(self.do_radial_range.isChecked()),
@@ -261,6 +262,13 @@ class WorkerConfigurator(qt.QWidget):
                   "do_OpenCL": bool(self.do_OpenCL.isChecked()),
                   "unit": str(self.radial_unit.model().value()),
                   }
+
+        value = self.getRadialNbpt()
+        if value is not None:
+            config["nbpt_rad"] = value
+        value = self.getAzimuthalNbpt()
+        if value is not None:
+            config["nbpt_azim"] = value
 
         config["detector"] = self.__detector.__class__.__name__
         config["detector_config"] = self.__detector.get_config()
