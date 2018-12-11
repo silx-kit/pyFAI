@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2018"
+__date__ = "11/12/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1596,14 +1596,14 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
-    @deprecated(since_version="0.17", only_once=0.20)
+    @deprecated(since_version="0.18", only_once=True, deprecated_since="0.18.0")
     def _integrate2d_legacy(self, data, npt_rad, npt_azim=360,
-                    filename=None, correctSolidAngle=True, variance=None,
-                    error_model=None, radial_range=None, azimuth_range=None,
-                    mask=None, dummy=None, delta_dummy=None,
-                    polarization_factor=None, dark=None, flat=None,
-                    method=None, unit=units.Q, safe=True,
-                    normalization_factor=1.0, all=False, metadata=None):
+                            filename=None, correctSolidAngle=True, variance=None,
+                            error_model=None, radial_range=None, azimuth_range=None,
+                            mask=None, dummy=None, delta_dummy=None,
+                            polarization_factor=None, dark=None, flat=None,
+                            method=None, unit=units.Q, safe=True,
+                            normalization_factor=1.0, all=False, metadata=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/chi(deg) by default
 
@@ -2546,73 +2546,6 @@ class AzimuthalIntegrator(Geometry):
             return res
 
         return result
-
-    @deprecated(reason="Not maintained", since_version="0.10", replacement="integrate1d")
-    def saxs(self, data, npt, filename=None,
-             correctSolidAngle=True, variance=None,
-             error_model=None, qRange=None, chiRange=None,
-             mask=None, dummy=None, delta_dummy=None,
-             polarization_factor=None, dark=None, flat=None,
-             method="bbox", unit=units.Q):
-        """
-        Calculate the azimuthal integrated Saxs curve in q in nm^-1.
-
-        Wrapper for integrate1d emulating behavour of old saxs method
-
-        :param data: 2D array from the CCD camera
-        :type data: ndarray
-        :param npt: number of points in the output pattern
-        :type npt: int
-        :param filename: file to save data to
-        :type filename: str
-        :param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
-        :type correctSolidAngle: bool
-        :param variance: array containing the variance of the data, if you know it
-        :type variance: ndarray
-        :param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
-        :type error_model: str
-        :param qRange: The lower and upper range of the sctter vector q. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        :type qRange: (float, float), optional
-        :param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        :type chiRange: (float, float), optional
-        :param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        :type mask: ndarray
-        :param dummy: value for dead/masked pixels
-        :type dummy: float
-        :param delta_dummy: precision for dummy value
-        :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 and +1.
-                               0 for circular correction, None for no correction
-        :type polarization_factor: float
-        :param dark: dark noise image
-        :type dark: ndarray
-        :param flat: flat field image
-        :type flat: ndarray
-        :param method: can be "numpy", "cython", "BBox" or "splitpixel"
-        :type method: str
-
-        :return: azimuthaly regrouped data, 2theta pos. and chi pos.
-        :rtype: 3-tuple of ndarrays
-        """
-        out = self.integrate1d(data, npt,
-                               filename=filename,
-                               correctSolidAngle=correctSolidAngle,
-                               variance=variance,
-                               error_model=error_model,
-                               radial_range=qRange,
-                               azimuth_range=chiRange,
-                               mask=mask,
-                               dummy=dummy,
-                               delta_dummy=delta_dummy,
-                               polarization_factor=polarization_factor,
-                               dark=dark,
-                               flat=flat,
-                               method=method,
-                               unit=unit)
-        if len(out) == 2:
-            return out[0], out[1], None
-        else:
-            return out
 
     @deprecated(since_version="0.14", reason="Use the class DefaultAiWriter")
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
