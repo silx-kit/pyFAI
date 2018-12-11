@@ -1138,10 +1138,9 @@ class Geometry(object):
         :param config: dictionary with the configuration
         :return: itself
         """
-        if "detector" in config:
-            self.detector = detectors.detector_factory(config["detector"],
-                                                       config.get("detector_config"))
-        else:
+        version = int(config.get("poni_version", 1))
+
+        if version == 1:
             # Handle former version of PONI-file
             if "pixelsize1" in config and "pixelsize2" in config:
                 pixel1 = float(config["pixelsize1"])
@@ -1153,6 +1152,15 @@ class Geometry(object):
                     self.detector.pixel1 = float(config["pixelsize1"])
                 if "pixelsize2" in config:
                     self.detector.pixel2 = float(config["pixelsize2"])
+            if "splinefile" in config:
+                if config["splinefile"].lower() != "none":
+                    self.detector.set_splineFile(config["splinefile"])
+
+        elif version == 2:
+                self.detector = detectors.detector_factory(config["detector"],
+                                                           config.get("detector_config"))
+        else:
+            raise RuntimeError("PONI file verison %s too recent. Upgrade pyFAI.", version)
 
         if "distance" in config:
             self._dist = float(config["distance"])
@@ -1168,9 +1176,6 @@ class Geometry(object):
             self._rot3 = float(config["rot3"])
         if "wavelength" in config:
             self._wavelength = float(config["wavelength"])
-        if "splinefile" in config:
-            if config["splinefile"].lower() != "none":
-                self.detector.set_splineFile(config["splinefile"])
         self.reset()
         return self
 
