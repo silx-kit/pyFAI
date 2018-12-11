@@ -56,13 +56,14 @@ from ..calibration.model.DataModel import DataModel
 from ..utils import units
 
 
-class IntegrationFrame(qt.QWidget):
-    """Frame displaying integration configuration.
+class WorkerConfigurator(qt.QWidget):
+    """Frame displaying integration configuration which can be used as input
+    param of the ~`pyFAI.worker.Worker`.
     """
 
     def __init__(self, parent):
         qt.QWidget.__init__(self, parent)
-        filename = get_ui_file("integration.ui")
+        filename = get_ui_file("worker-configurator.ui")
         qt.loadUi(filename, self)
 
         self._openclDevice = "any"

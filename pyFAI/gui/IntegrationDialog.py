@@ -54,7 +54,7 @@ from silx.gui import qt
 logger = logging.getLogger(__name__)
 
 from .. import worker
-from .widgets.IntegrationFrame import IntegrationFrame
+from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..io import HDF5Writer
 from ..third_party import six
 from .utils import projecturl
@@ -70,9 +70,9 @@ class IntegrationDialog(qt.QWidget):
         filename = get_ui_file("integration-dialog.ui")
         qt.loadUi(filename, self)
 
-        self.__integrationFrame = IntegrationFrame(self._holder)
+        self.__workerConfigurator = WorkerConfigurator(self._holder)
         layout = qt.QVBoxLayout(self._holder)
-        layout.addWidget(self.__integrationFrame)
+        layout.addWidget(self.__workerConfigurator)
         layout.setContentsMargins(0, 0, 0, 0)
         self._holder.setLayout(layout)
 
@@ -103,7 +103,7 @@ class IntegrationDialog(qt.QWidget):
         with self._sem:
             out = None
             config = self.dump()
-            frame = self.__integrationFrame
+            frame = self.__workerConfigurator
             logger.debug("Let's work a bit")
             ai = worker.make_ai(config)
 
@@ -252,7 +252,7 @@ class IntegrationDialog(qt.QWidget):
 
         :return: dict with all information.
         """
-        config = self.__integrationFrame.getConfig()
+        config = self.__workerConfigurator.getConfig()
         return config
 
     def dump(self, filename=None):
@@ -297,7 +297,7 @@ class IntegrationDialog(qt.QWidget):
         :param dico: dictionary with description of the widget
         :type dico: dict
         """
-        self.__integrationFrame.setConfig(dico)
+        self.__workerConfigurator.setConfig(dico)
 
     def set_input_data(self, stack):
         self.input_data = stack
