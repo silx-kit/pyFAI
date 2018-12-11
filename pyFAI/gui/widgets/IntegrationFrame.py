@@ -274,6 +274,16 @@ class IntegrationFrame(qt.QWidget):
         """
         dico = dico.copy()
 
+        # Clean up the GUI
+        self.setDetector(None)
+        self.__geometryModel.wavelength().setValue(None)
+        self.__geometryModel.distance().setValue(None)
+        self.__geometryModel.poni1().setValue(None)
+        self.__geometryModel.poni2().setValue(None)
+        self.__geometryModel.rotation1().setValue(None)
+        self.__geometryModel.rotation2().setValue(None)
+        self.__geometryModel.rotation3().setValue(None)
+
         # poni file
         # NOTE: Compatibility (poni is not stored since pyFAI v0.17)
         value = dico.pop("poni", None)
