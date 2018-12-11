@@ -520,24 +520,38 @@ class Worker(object):
         else:
             self.polarization_factor = None
 
-        value = config.pop("do_OpenCL", None)
-        if value:
+        value1 = config.pop("azimuth_range_min", None)
+        value2 = config.pop("azimuth_range_max", None)
+        apply_values = config.pop("do_azimuthal_range", True)
+        if apply_values and value1 is not None and value2 is not None:
+            self.azimuth_range = float(value1), float(value2)
+
+        value1 = config.pop("radial_range_min", None)
+        value2 = config.pop("radial_range_max", None)
+        apply_values = config.pop("do_radial_range", True)
+        if apply_values and value1 is not None and value2 is not None:
+            self.radial_range = float(value1), float(value2)
+
+        value = config.pop("do_solid_angle", True)
+        self.correct_solid_angle = bool(value)
+
+        self.dummy = config.pop("delta_dummy", None)
+        self.delta_dummy = config.pop("val_dummy", None)
+        apply_values = config.pop("do_dummy", True)
+        if not apply_values:
+            self.dummy, self.delta_dummy = None, None
+
+        do_opencl = config.pop("do_OpenCL", None)
+        method = config.pop("method", None)
+        if do_opencl is not None and method is not None:
+            logger.warning("Both 'method' and 'do_OpenCL' are defined. 'do_OpenCL' is ignored.")
+            do_opencl = None
+        if method is not None:
+            self.method = method
+        elif do_opencl is not None:
             self.method = "csr_ocl"
         else:
-            self.method = config.pop("method", "csr")
-
-        # FIXME: This values are not used
-        # - "do_azimuthal_range"
-        # - "azimuth_range_min"
-        # - "azimuth_range_max"
-        # - "do_radial_range"
-        # - "radial_range_min"
-        # - "radial_range_max"
-        # - "do_solid_angle"
-        # - "delta_dummy"
-        # - "val_dummy"
-        # - "do_dummy"
-        # - "method"
+            self.method = "csr"
 
         logger.info(self.ai.__repr__())
         self.reset()
@@ -563,10 +577,14 @@ class Worker(object):
         if self.do_poisson:
             return "poisson"
         return None
+
     error_model = property(get_error_model, set_error_model)
 
     def get_config(self):
-        """return configuration as a dictionary"""
+        """Returns the configuration as a dictionary.
+
+        FIXME: The returned dictionary is not exhaustive.
+        """
         config = {"unit": str(self.unit)}
         for key in ["dist", "poni1", "poni2", "rot1", "rot3", "rot2", "pixel1", "pixel2", "splineFile", "wavelength"]:
             try:
