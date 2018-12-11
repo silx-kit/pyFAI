@@ -1138,23 +1138,17 @@ class Geometry(object):
         :param config: dictionary with the configuration
         :return: itself
         """
-        version = int(config.get("poni_version", 1))
-
         if "detector" in config:
             self.detector = detectors.detector_factory(config["detector"],
                                                        config.get("detector_config"))
-            if isinstance(self.detector, detectors.NexusDetector):
-                # increment the poni_version for Nexus detector as no further config is needed!
-                version = max(2, version)
         else:
-            self.detector = detectors.Detector()
-        if version == 1:
             # Handle former version of PONI-file
-            if self.detector.force_pixel and ("pixelsize1" in config) and ("pixelsize2" in config):
+            if "pixelsize1" in config and "pixelsize2" in config:
                 pixel1 = float(config["pixelsize1"])
                 pixel2 = float(config["pixelsize2"])
-                self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
+                self.detector = detectors.Detector(pixel1=pixel1, pixel2=pixel2)
             else:
+                self.detector = detectors.Detector()
                 if "pixelsize1" in config:
                     self.detector.pixel1 = float(config["pixelsize1"])
                 if "pixelsize2" in config:
