@@ -1,9 +1,20 @@
 :Author: Jérôme Kieffer
-:Date: 26/10/2018
+:Date: 12/12/2018
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
+
+0.17.0 1?/12/2018
+-----------------
+* Only 200 commits in a couple of month, that was a small release
+* Fix major bugs in pyFAI-calib2 (double validator, initial guess, ...)
+* Constrains have been added to the geometry fitting of pyFAI-calib2
+* Much better support for user defined detector (HDF5)
+* Start the rewrite of all integrators to allow proper error propagation (2D mainly)
+* Factorize the preprocessing steps for many integrators
+* remove tons of code which has been deprecated for years in AzimuthalIntegrator
+* Featuring contribution from Soleil and Berkeley
 
 0.16.0: 26/10/2018
 ------------------
