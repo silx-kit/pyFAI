@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2018"
+__date__ = "11/12/2018"
 __status__ = "development"
 
 import threading
@@ -365,7 +365,7 @@ class Worker(object):
             writer.write(integrated_result)
 
         if self.output == "numpy":
-            if (variance is not  None) and (error is not None):
+            if (variance is not None) and (error is not None):
                 return result, error
             else:
                 return result
@@ -728,7 +728,6 @@ class DistortionWorker(object):
         :param variance: the variance associated to the data
         :param normalization: normalization factor
         :return: processed data
-        
         """
         proc_data = preproc(data,
                             variance=variance,
