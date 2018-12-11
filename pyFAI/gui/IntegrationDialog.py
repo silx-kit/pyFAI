@@ -65,7 +65,7 @@ class IntegrationDialog(qt.QWidget):
     """Dialog to configure an azimuthal integration.
     """
 
-    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
+    def __init__(self, input_data=None, output_path=None, json_file=".azimint.json"):
         qt.QWidget.__init__(self)
         filename = get_ui_file("integration-dialog.ui")
         qt.loadUi(filename, self)
@@ -78,9 +78,6 @@ class IntegrationDialog(qt.QWidget):
 
         self.input_data = input_data
         self.output_path = output_path
-        self.output_format = output_format
-        self.slow_dim = slow_dim
-        self.fast_dim = fast_dim
 
         self._sem = threading.Semaphore()
         self.json_file = json_file
@@ -303,7 +300,7 @@ class IntegrationDialog(qt.QWidget):
         """
         self.__integrationFrame.setConfig(dico)
 
-    def set_input_data(self, stack, stack_name=None):
+    def set_input_data(self, stack):
         self.input_data = stack
 
     def save_config(self):

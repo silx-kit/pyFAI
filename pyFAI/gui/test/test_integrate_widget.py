@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2018"
+__date__ = "11/12/2018"
 
 import os
 import sys
@@ -87,7 +87,7 @@ class TestIntegrationDialog(unittest.TestCase):
         widget.set_ponifile(ponifile)
         widget.do_2D.setChecked(False)
         widget.nbpt_rad.setText("2")
-        widget.set_input_data(numpy.array([data]), "foo")
+        widget.set_input_data(numpy.array([data]))
         result = widget.proceed()
         numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
 
@@ -101,7 +101,7 @@ class TestIntegrationDialog(unittest.TestCase):
         widget.do_2D.setChecked(True)
         widget.nbpt_azim.setText("2")
         widget.nbpt_rad.setText("2")
-        widget.set_input_data(numpy.array([data]), "foo")
+        widget.set_input_data(numpy.array([data]))
         result = widget.proceed()
         numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
 
@@ -114,7 +114,7 @@ class TestIntegrationDialog(unittest.TestCase):
         widget.set_ponifile(ponifile)
         widget.do_2D.setChecked(False)
         widget.nbpt_rad.setText("2")
-        widget.set_input_data([data], "foo")
+        widget.set_input_data([data])
         result = widget.proceed()
         numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
 
@@ -128,7 +128,7 @@ class TestIntegrationDialog(unittest.TestCase):
         widget.do_2D.setChecked(True)
         widget.nbpt_azim.setText("2")
         widget.nbpt_rad.setText("2")
-        widget.set_input_data([data], "foo")
+        widget.set_input_data([data])
         result = widget.proceed()
         # simplify representation
         self.assertEqual(len(result), len(expected))
