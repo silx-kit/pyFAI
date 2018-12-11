@@ -1142,10 +1142,14 @@ class Geometry(object):
 
         if version == 1:
             # Handle former version of PONI-file
-            if "pixelsize1" in config and "pixelsize2" in config:
+            if "detector" in config:
+                self.detector = detectors.detector_factory(config["detector"])
+            else:
+                self.detector = detectors.Detector()
+            if self.detector.force_pixel and ("pixelsize1" in config) and ("pixelsize2" in config):
                 pixel1 = float(config["pixelsize1"])
                 pixel2 = float(config["pixelsize2"])
-                self.detector = detectors.Detector(pixel1=pixel1, pixel2=pixel2)
+                self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
             else:
                 self.detector = detectors.Detector()
                 if "pixelsize1" in config:
@@ -1157,8 +1161,9 @@ class Geometry(object):
                     self.detector.set_splineFile(config["splinefile"])
 
         elif version == 2:
-                self.detector = detectors.detector_factory(config["detector"],
-                                                           config.get("detector_config"))
+                detector_name = config["detector"]
+                detector_config = config["detector_config"]
+                self.detector = detectors.detector_factory(detector_name, detector_config)
         else:
             raise RuntimeError("PONI file verison %s too recent. Upgrade pyFAI.", version)
 
