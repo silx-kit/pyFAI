@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2018"
+__date__ = "11/12/2018"
 __status__ = "development"
 
 import logging
@@ -523,8 +523,10 @@ class IntegrationFrame(qt.QWidget):
             else:
                 method = "csr_ocl"
         else:
-            if self.input_data is not None and len(self.input_data) > 5:
-                method = "csr"
-            else:
-                method = "splitbbox"
+            # FIXME: Was it still needed? As the method can be configured
+            #if self.input_data is not None and len(self.input_data) > 5:
+            #    method = "csr"
+            #else:
+            #    method = "splitbbox"
+            method = "csr"
         return method
