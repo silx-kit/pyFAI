@@ -514,37 +514,6 @@ class Worker(object):
                 pass
 
         return config
-#
-#    "poni" #path of the file
-#
-#    "chi_discontinuity_at_0"
-#    "do_mask"
-#    "do_dark"
-#    "do_azimuthal_range"
-#    "do_flat"
-#    "do_2D"
-#    "azimuth_range_min"
-#    "azimuth_range_max"
-#
-#    "polarization_factor"
-#    "nbpt_rad"
-#    "do_solid_angle"
-#    "do_radial_range"
-#    "do_poisson"
-#    "delta_dummy"
-#    "nbpt_azim"
-#    "flat_field"
-#    "radial_range_min"
-#    "dark_current"
-#    "do_polarization"
-#    "mask_file"
-#    "detector"
-#    "unit"
-#    "radial_range_max"
-#    "val_dummy"
-#    "do_dummy"
-#    "method"
-# }
 
     def get_json_config(self):
         """return configuration as a JSON string"""
