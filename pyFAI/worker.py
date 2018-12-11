@@ -112,59 +112,112 @@ else:
     USE_CYTHON = True
 
 
-def make_ai(config):
-    """Create an Azimuthal integrator from the configuration
-    stand alone function !
+def make_ai(config, consume_keys=False):
+    """Create an Azimuthal integrator from the configuration.
 
-    :param config: dict with all parameters
-    :return: configured (but uninitialized) AzimuthalIntgrator
+    :param config: Key-value dictionary with all parameters
+    :param bool consume_keys: If true the keys from the dictionary will be
+        consumed when used.
+    :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
-    poni = config.get("poni")
-    if poni and os.path.isfile(poni):
-        ai = AzimuthalIntegrator.sload(poni)
-    else:
-        ai = AzimuthalIntegrator()
+    ai = AzimuthalIntegrator()
+    _init_ai(ai, config, consume_keys)
+    return ai
 
-    detector = config.get("detector", None)
-    if detector:
-        ai.detector = detector_factory(detector)
 
-    wavelength = config.get("wavelength", 0)
-    if wavelength:
-        if wavelength <= 0 or wavelength > 1e-6:
-            logger.warning("Wavelength is in meter ... unlikely value %s", wavelength)
-        ai.wavelength = wavelength
+def _init_ai(ai, config, consume_keys=False):
+    """Initialize an :class:`AzimuthalIntegrator` from a configuration.
 
-    splinefile = config.get("splineFile")
-    if splinefile and os.path.isfile(splinefile):
-        ai.detector.splineFile = splinefile
+    :param AzimuthalIntegrator ai: An :class:`AzimuthalIntegrator`.
+    :param config: Key-value dictionary with all parameters
+    :param bool consume_keys: If true the keys from the dictionary will be
+        consumed when used.
+    :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
+    """
+    if not consume_keys:
+        config = dict(config)
 
-    for key in ("pixel1", "pixel2", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
-        value = config.get(key)
+    # Poni-file
+    # NOTE: Compatibility (poni is not stored since pyFAI v0.17)
+    value = config.pop("poni", None)
+    if value:
+        if not os.path.exists(value):
+            logger.warning("Poni-file '%s' not found. The axymuthal integrator is maybe to created as expected", value)
+        else:
+            ai.load(value)
+
+    # Geometry
+    for key in ("dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
+        value = config.pop(key, None)
         if value is not None:
             ai.__setattr__(key, value)
-    if config.get("chi_discontinuity_at_0"):
-        ai.setChiDiscAtZero()
+    wavelength = config.pop("wavelength", None)
+    if wavelength:
+        if wavelength <= 0 or wavelength > 1e-6:
+            logger.warning("Wavelength is in meter... unlikely value %s", wavelength)
+        ai.wavelength = wavelength
 
-    mask_file = config.get("mask_file")
-    if mask_file and config.get("do_mask"):
-        if os.path.exists(mask_file):
-            try:
-                mask = fabio.open(mask_file).data
-            except Exception as error:
-                logger.error("Unable to load mask file %s, error %s", mask_file, error)
+    # Detector
+    value = config.pop("detector_config", None)
+    if value:
+        # NOTE: Default way to describe a detector since pyFAI 0.17
+        detector_config = value
+        detector_class = config.pop("detector")
+        detector = detector_factory(detector_class, config=detector_config)
+        ai.detector = detector
+    else:
+        value = config.pop("detector", None)
+        if value:
+            # NOTE: Previous way to describe a detector before pyFAI 0.17
+            # NOTE: pixel1/pixel2/splineFile was not parsed here
+            detector_name = value.lower()
+            detector = detector_factory(detector_name)
+
+            if detector_name == "detector":
+                value = config.pop("pixel1", None)
+                if value:
+                    detector.set_pixel1(value)
+                value = config.pop("pixel2", None)
+                if value:
+                    detector.set_pixel2(value)
             else:
-                ai.mask = mask
+                # Drop it as it was not really used
+                _ = config.pop("pixel1", None)
+                _ = config.pop("pixel2", None)
 
-    dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
-                  if os.path.isfile(i.strip())]
-    if dark_files and config.get("do_dark"):
-        ai.set_darkfiles(dark_files)
+            splineFile = config.pop("splineFile", None)
+            if splineFile:
+                detector.set_splineFile(splineFile)
 
-    flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
-                  if os.path.isfile(i.strip())]
-    if flat_files and config.get("do_flat"):
-        ai.set_flatfiles(flat_files)
+            ai.detector = detector
+
+    value = config.pop("chi_discontinuity_at_0", False)
+    if value:
+        ai.setChiDiscAtZero()
+    else:
+        ai.setChiDiscAtPi()
+
+    filename = config.pop("mask_file", "")
+    apply_process = config.pop("do_mask", True)
+    if filename and os.path.exists(filename) and apply_process:
+        try:
+            data = fabio.open(filename).data
+        except Exception as error:
+            logger.error("Unable to load mask file %s, error %s", filename, error)
+        else:
+            ai.mask = data
+
+    filename = config.pop("dark_current", "")
+    apply_process = config.pop("do_dark", True)
+    if filename and apply_process:
+        filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
+        ai.set_darkfiles(filenames)
+
+    filename = config.pop("flat_field", "")
+    apply_process = config.pop("do_flat", True)
+    if filename and apply_process:
+        filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
+        ai.set_flatfiles(filenames)
 
     return ai
 
@@ -393,83 +446,98 @@ class Worker(object):
         self.ai.set_flatfiles(imagefile)
         self.flat_field_image = imagefile
 
-    def setJsonConfig(self, jsonconfig):
-        print("start config ...")
-        if os.path.isfile(jsonconfig):
-            with open(jsonconfig, "r") as f:
+    def setJsonConfig(self, json_file):
+        if os.path.isfile(json_file):
+            with open(json_file, "r") as f:
                 config = json.load(f)
         else:
-            config = json.loads(jsonconfig)
-        if "poni" in config:
-            poni = config["poni"]
-            if poni and os.path.isfile(poni):
-                self.ai = AzimuthalIntegrator.sload(poni)
+            config = json.loads(json_file)
+        self.set_config(config)
 
-        detector = config.get("detector", "detector")
-        self.ai.detector = detector_factory(detector)
+    def set_config(self, config, consume_keys=False):
+        """
+        Configure the working from the dictionary.
 
-        if "wavelength" in config:
-            wavelength = config["wavelength"]
+        :param dict config: Key-value configuration
+        :param bool consume_keys: If true the keys from the dictionary will be
+            consumed when used.
+        """
+        print("Start config...")
+
+        if not consume_keys:
+            # Avoid to edit the input argument
+            config = dict(config)
+
+        # Do it here before reading the AI to be able to catch the io
+        filename = config.pop("mask_file", "")
+        apply_process = config.pop("do_mask", True)
+        if filename and os.path.exists(filename) and apply_process:
             try:
-                fwavelength = float(wavelength)
-            except ValueError:
-                logger.error("Unable to convert wavelength to float: %s", wavelength)
-            else:
-                if fwavelength <= 0 or fwavelength > 1e-6:
-                    logger.warning("Wavelength is in meter ... unlikely value %s", fwavelength)
-                self.ai.wavelength = fwavelength
-
-        splineFile = config.get("splineFile")
-        if splineFile and os.path.isfile(splineFile):
-            self.ai.detector.splineFile = splineFile
-        self.ai.pixel1 = float(config.get("pixel1", 1))
-        self.ai.pixel2 = float(config.get("pixel2", 1))
-        self.ai.dist = config.get("dist", 1)
-        self.ai.poni1 = config.get("poni1", 0)
-        self.ai.poni2 = config.get("poni2", 0)
-        self.ai.rot1 = config.get("rot1", 0)
-        self.ai.rot2 = config.get("rot2", 0)
-        self.ai.rot3 = config.get("rot3", 0)
-
-        if config.get("chi_discontinuity_at_0"):
-            self.ai.setChiDiscAtZero()
-        else:
-            self.ai.setChiDiscAtPi()
-
-        mask_file = config.get("mask_file")
-        do_mask = config.get("do_mask")
-        if mask_file and os.path.exists(mask_file) and do_mask:
-            try:
-                mask = fabio.open(mask_file).data
+                data = fabio.open(filename).data
             except Exception as error:
-                logger.error("Unable to load mask file %s, error %s", mask_file, error)
+                logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
-                self.ai.mask = mask
-                self.mask_image = os.path.abspath(mask_file)
+                self.ai.mask = data
 
-        self.ai.set_darkfiles([i.strip() for i in config.get("dark_current", "").split(",")
-                               if os.path.isfile(i.strip())])
-        self.ai.set_flatfiles([i.strip() for i in config.get("flat_field", "").split(",")
-                               if os.path.isfile(i.strip())])
-        self.dark_current_image = self.ai.darkfiles
-        self.flat_field_image = self.ai.flatfiles
-        if config.get("do_2D"):
-            self.nbpt_azim = int(config.get("nbpt_azim"))
+        # Do it here before reading the AI to be able to catch the io
+        filename = config.pop("dark_current", "")
+        apply_process = config.pop("do_dark", True)
+        if filename and apply_process:
+            filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
+            self.ai.set_darkfiles(filenames)
+            self.dark_current_image = filenames
+
+        # Do it here before reading the AI to be able to catch the io
+        filename = config.pop("flat_field", "")
+        apply_process = config.pop("do_flat", True)
+        if filename and apply_process:
+            filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
+            self.ai.set_flatfiles(filenames)
+            self.flat_field_image = self.ai.flatfiles
+
+        _init_ai(self.ai, config, consume_keys=True)
+
+        if config.pop("do_2D", False):
+            self.nbpt_azim = int(config.pop("nbpt_azim"))
         else:
             self.nbpt_azim = 1
-        if config.get("nbpt_rad"):
-            self.nbpt_rad = int(config["nbpt_rad"])
-        self.unit = units.to_unit(config.get("unit", units.TTH_DEG))
-        self.do_poisson = config.get("do_poisson")
-        if config.get("do_polarization"):
-            self.polarization_factor = config.get("polarization_factor")
+
+        value = config.pop("nbpt_rad", None)
+        if value:
+            self.nbpt_rad = int(value)
+
+        value = config.pop("unit", units.TTH_DEG)
+        if value:
+            self.unit = units.to_unit(value)
+
+        value = config.pop("do_poisson", False)
+        self.do_poisson = bool(value)
+
+        value = config.pop("polarization_factor", None)
+        apply_value = config.pop("do_polarization", True)
+        if value and apply_value:
+            self.polarization_factor = value
         else:
             self.polarization_factor = None
 
-        if config.get("do_OpenCL"):
+        value = config.pop("do_OpenCL", None)
+        if value:
             self.method = "csr_ocl"
         else:
-            self.method = "csr"
+            self.method = config.pop("method", "csr")
+
+        # FIXME: This values are not used
+        # - "do_azimuthal_range"
+        # - "azimuth_range_min"
+        # - "azimuth_range_max"
+        # - "do_radial_range"
+        # - "radial_range_min"
+        # - "radial_range_max"
+        # - "do_solid_angle"
+        # - "delta_dummy"
+        # - "val_dummy"
+        # - "do_dummy"
+        # - "method"
 
         logger.info(self.ai.__repr__())
         self.reset()
