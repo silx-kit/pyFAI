@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2018"
+__date__ = "11/12/2018"
 __status__ = "development"
 
 import logging
@@ -99,7 +99,6 @@ class IntegrationDialog(qt.QWidget):
 
         # FIXME: Do it
         # self.progressBar.setValue(0)
-        self.hdf5_path = None
 
         if self.json_file is not None:
             self.restore(self.json_file)
@@ -189,32 +188,6 @@ class IntegrationDialog(qt.QWidget):
 
             elif "__len__" in dir(self.input_data):
                 out = []
-                if self.hdf5_path:
-                    import h5py
-                    hdf5 = h5py.File(self.output_path)
-                    if self.fast_dim:
-                        if "npt_azim" in kwarg:
-                            _ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                      dtype=numpy.float32,
-                                                      chunks=(1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                      maxshape=(None, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]))
-                        else:
-                            _ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_rad"]),
-                                                      dtype=numpy.float32,
-                                                      chunks=(1, self.fast_dim, kwarg["npt_rad"]),
-                                                      maxshape=(None, self.fast_dim, kwarg["npt_rad"]))
-                    else:
-                        if "npt_azim" in kwarg:
-                            _ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                      dtype=numpy.float32,
-                                                      chunks=(1, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                      maxshape=(None, kwarg["npt_azim"], kwarg["npt_rad"]))
-                        else:
-                            _ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_rad"]),
-                                                      dtype=numpy.float32,
-                                                      chunks=(1, kwarg["npt_rad"]),
-                                                      maxshape=(None, kwarg["npt_rad"]))
-
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
                     logger.debug("processing %s", item)
@@ -223,15 +196,14 @@ class IntegrationDialog(qt.QWidget):
                         multiframe = (fab_img.nframes > 1)
                         kwarg["data"] = fab_img.data
                         kwarg["metadata"] = fab_img.header
-                        if self.hdf5_path is None:
-                            if self.output_path and op.isdir(self.output_path):
-                                outpath = op.join(self.output_path, op.splitext(op.basename(item))[0])
-                            else:
-                                outpath = op.splitext(item)[0]
-                            if "npt_azim" in kwarg and not multiframe:
-                                kwarg["filename"] = outpath + ".azim"
-                            else:
-                                kwarg["filename"] = outpath + ".dat"
+                        if self.output_path and op.isdir(self.output_path):
+                            outpath = op.join(self.output_path, op.splitext(op.basename(item))[0])
+                        else:
+                            outpath = op.splitext(item)[0]
+                        if "npt_azim" in kwarg and not multiframe:
+                            kwarg["filename"] = outpath + ".azim"
+                        else:
+                            kwarg["filename"] = outpath + ".dat"
                     else:
                         logger.warning("item is not a file ... guessing it is a numpy array")
                         kwarg["data"] = item
