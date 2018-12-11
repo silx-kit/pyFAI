@@ -36,14 +36,18 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "07/08/2018"
 __status__ = "production"
 
 
-import os.path
+import os
 import numpy
+import logging
+import json
+from collections import OrderedDict
 from ._common import Detector
-from pyFAI.utils import mathutil
+from ..utils import expand2d
+logger = logging.getLogger(__name__)
 
 try:
     import fabio
@@ -51,12 +55,15 @@ except ImportError:
     logger.debug("Backtrace", exc_info=True)
     fabio = None
 
-
-import logging
 logger = logging.getLogger(__name__)
 
 
-class Eiger(Detector):
+class _Dectris(Detector):
+
+    MANUFACTURER = "Dectris"
+
+
+class Eiger(_Dectris):
     """
     Eiger detector: generic description containing mask algorithm
     """
@@ -113,8 +120,8 @@ class Eiger(Detector):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                d1 = mathutil.expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = mathutil.expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+                d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
+                d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
 
         if self.offset1 is None or self.offset2 is None:
             delta1 = delta2 = 0.
@@ -157,6 +164,45 @@ class Eiger(Detector):
         p2 = (self._pixel2 * (delta2 + d2))
         return p1, p2, None
 
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+
+        :return: dict with param for serialization
+        """
+        dico = {}
+        if ((self.max_shape is not None) and
+                ("MAX_SHAPE" in dir(self.__class__)) and
+                (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
+            dico["max_shape"] = self.max_shape
+        if ((self.module_size is not None) and
+                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
+            dico["module_size"] = self.module_size
+        return dico
+
+    def set_config(self, config):
+        """set the config of the detector
+
+        For Eiger detector, possible keys are: max_shape, module_size
+
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+
+        # pixel size is enforced by the detector itself
+        if "max_shape" in config:
+            self.max_shape = tuple(config["max_shape"])
+        module_size = config.get("module_size")
+        if module_size is not None:
+            self.module_size = tuple(module_size)
+        return self
+
 
 class Eiger500k(Eiger):
     """
@@ -198,7 +244,7 @@ class Eiger16M(Eiger):
     aliases = ["Eiger 16M"]
 
 
-class Mythen(Detector):
+class Mythen(_Dectris):
     "Mythen dtrip detector from Dectris"
     aliases = ["Mythen 1280"]
     force_pixel = True
@@ -207,8 +253,16 @@ class Mythen(Detector):
     def __init__(self, pixel1=8e-3, pixel2=50e-6):
         super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
 
-class Pilatus(Detector):
+        :return: dict with param for serialization
+        """
+        return OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2)))
+
+
+class Pilatus(_Dectris):
     """
     Pilatus detector: generic description containing mask algorithm
 
@@ -225,6 +279,17 @@ class Pilatus(Detector):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
             self.module_size = module_size
+        self.set_offset_files(x_offset_file, y_offset_file)
+
+    def __repr__(self):
+        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+        if self.x_offset_file:
+            txt += "\t delta_x= %s" % self.x_offset_file
+        if self.y_offset_file:
+            txt += "\t delta_y= %s" % self.y_offset_file
+        return txt
+
+    def set_offset_files(self, x_offset_file=None, y_offset_file=None):
         self.x_offset_file = x_offset_file
         self.y_offset_file = y_offset_file
         if self.x_offset_file and self.y_offset_file:
@@ -241,14 +306,6 @@ class Pilatus(Detector):
             self.offset1 = None
             self.offset2 = None
             self.uniform_pixel = True
-
-    def __repr__(self):
-        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
-        if self.x_offset_file:
-            txt += "\t delta_x= %s" % self.x_offset_file
-        if self.y_offset_file:
-            txt += "\t delta_y= %s" % self.y_offset_file
-        return txt
 
     def get_splineFile(self):
         if self.x_offset_file and self.y_offset_file:
@@ -316,8 +373,8 @@ class Pilatus(Detector):
         the same shape.
         """
         if self.shape and ((d1 is None) or (d2 is None)):
-            d1 = mathutil.expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-            d2 = mathutil.expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+            d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
+            d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
 
         if (self.offset1 is None) or (self.offset2 is None):
             delta1 = delta2 = 0.
@@ -349,7 +406,9 @@ class Pilatus(Detector):
                     delta1 = -delta1 / 100.0  # Offsets are in percent of pixel and negative
                     delta2 = -delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s", self.offset1.shape, d1.shape)
+                    logger.warning("Surprizing situation !!! please investigate:"
+                                   " offset has shape %s and input array have %s",
+                                   self.offset1.shape, d1.shape)
                     delta1 = delta2 = 0.
         # For Pilatus,
         if center:
@@ -359,6 +418,50 @@ class Pilatus(Detector):
         p1 = (self._pixel1 * (delta1 + d1))
         p2 = (self._pixel2 * (delta2 + d2))
         return p1, p2, None
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict()
+        if ((self.max_shape is not None) and
+                ("MAX_SHAPE" in dir(self.__class__)) and
+                (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
+            dico["max_shape"] = self.max_shape
+        if ((self.module_size is not None) and
+                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
+            dico["module_size"] = self.module_size
+        if self.x_offset_file is not None:
+            dico["x_offset_file"] = self.x_offset_file
+        if self.y_offset_file is not None:
+            dico["y_offset_file"] = self.y_offset_file
+        return dico
+
+    def set_config(self, config):
+        """set the config of the detector
+
+        For Eiger detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file
+
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+
+        # pixel size is enforced by the detector itself
+        if "max_shape" in config:
+            self.max_shape = tuple(config["max_shape"])
+        module_size = config.get("module_size")
+        if module_size is not None:
+            self.module_size = tuple(module_size)
+        self.set_offset_files(config.get("x_offset_file"), config.get("y_offset_file"))
+        return self
 
 
 class Pilatus100k(Pilatus):

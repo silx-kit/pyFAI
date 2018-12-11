@@ -14,7 +14,8 @@ Cookbook are short tutorials: 1 page, 5 minutes to read.
 .. toctree::
    :maxdepth: 1
 
-   calibrate
+   calib-gui/index
+   calib-cli/calibrate
    integration_with_the_gui
    integration_with_scripts
    integration_with_python

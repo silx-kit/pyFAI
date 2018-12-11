@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/02/2018"
+__date__ = "04/12/2018"
 
 
 import unittest
@@ -56,14 +56,13 @@ except ImportError as error:
 
 from ..opencl import ocl
 if ocl is not None:
-    from ..opencl import pyopencl
+    from ..opencl import pyopencl, read_cl_file
     import pyopencl.array
 from .. import load
-from ..opencl.utils import read_cl_file
 from . import utilstest
 from .utilstest import UtilsTest
 from ..utils import mathutil
-from pyFAI.utils.decorators import depreclog
+from ..utils.decorators import depreclog
 
 
 class TestMask(unittest.TestCase):
@@ -158,9 +157,6 @@ class TestMask(unittest.TestCase):
                     logger.warning("Memory error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
                     break
                 else:
-                    with utilstest.TestLogging(logger=depreclog, warning=1):
-                        # Filter deprecated warning
-                        ref = ai.xrpd(data, self.N)
                     r = mathutil.rwp(ref, res)
                     logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL LUT processing of %s" % (r, ds))
@@ -228,7 +224,7 @@ class TestSort(unittest.TestCase):
         self.ws = min(workgroup, self.ws)
         self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
         self.local_mem = pyopencl.LocalMemory(self.ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
-        src = read_cl_file("bitonic.cl")
+        src = read_cl_file("pyfai:openCL/bitonic.cl")
         self.prg = pyopencl.Program(self.ctx, src).build()
 
     def tearDown(self):
@@ -315,11 +311,202 @@ class TestSort(unittest.TestCase):
         self.assertTrue(err == 0.0)
 
 
+class TestKahan(unittest.TestCase):
+    """
+    Test the kernels for compensated math in OpenCL
+    """
+
+    def setUp(self):
+        if not UtilsTest.opencl:
+            self.skipTest("User request to skip OpenCL tests")
+        if pyopencl is None or ocl is None:
+            self.skipTest("OpenCL module (pyopencl) is not present or no device available")
+
+        self.ctx = ocl.create_context(devicetype="GPU")
+        self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+
+    def tearDown(self):
+        self.queue = None
+        self.ctx = None
+
+    @staticmethod
+    def dummy_sum(ary, dtype=None):
+        "perform the actual sum in a dummy way "
+        if dtype is None:
+            dtype = ary.dtype.type
+        sum_ = dtype(0)
+        for i in ary:
+            sum_ += i
+        return sum_
+
+    def test_kahan(self):
+        # simple test
+        N = 26
+        data = (1 << (N - 1 - numpy.arange(N))).astype(numpy.float32)
+
+        ref64 = numpy.sum(data, dtype=numpy.float64)
+        ref32 = self.dummy_sum(data)
+        if (ref64 == ref32):
+            logger.warning("Kahan: invalid tests as float32 provides the same result as float64")
+        # Dummy kernel to evaluate
+        src = """
+        kernel void summation(global float* data,
+                                           int size,
+                                    global float* result)
+        {
+            float2 acc = (float2)(0.0f, 0.0f);
+            for (int i=0; i<size; i++)
+            {
+                acc = kahan_sum(acc, data[i]);    
+            }
+            result[0] = acc.s0;
+            result[1] = acc.s1;
+        }
+        """
+        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build()
+        ones_d = pyopencl.array.to_device(self.queue, data)
+        res_d = pyopencl.array.zeros(self.queue, 2, numpy.float32)
+        evt = prg.summation(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
+        evt.wait()
+        res = res_d.get().sum(dtype=numpy.float64)
+        self.assertEqual(ref64, res)
+
+    def test_dot16(self):
+        # simple test
+        N = 16
+        data = (1 << (N - 1 - numpy.arange(N))).astype(numpy.float32)
+
+        ref64 = numpy.dot(data.astype(numpy.float64), data.astype(numpy.float64))
+        ref32 = numpy.dot(data, data)
+        if (ref64 == ref32):
+            logger.warning("dot16: invalid tests as float32 provides the same result as float64")
+        # Dummy kernel to evaluate
+        src = """
+        kernel void test_dot16(global float* data,
+                                           int size,
+                               global float* result)
+        {
+            float2 acc = (float2)(0.0f, 0.0f);            
+            float16 data16 = (float16) (data[0],data[1],data[2],data[3],data[4],
+                                        data[5],data[6],data[7],data[8],data[9],
+                         data[10],data[11],data[12],data[13],data[14],data[15]);
+            acc = comp_dot16(data16, data16);
+            result[0] = acc.s0;
+            result[1] = acc.s1;
+        }
+
+        kernel void test_dot8(global float* data,
+                                           int size,
+                               global float* result)
+        {
+            float2 acc = (float2)(0.0f, 0.0f);            
+            float8 data0 = (float8) (data[0],data[2],data[4],data[6],data[8],data[10],data[12],data[14]);
+            float8 data1 = (float8) (data[1],data[3],data[5],data[7],data[9],data[11],data[13],data[15]);
+            acc = comp_dot8(data0, data1);
+            result[0] = acc.s0;
+            result[1] = acc.s1;
+        }
+
+        kernel void test_dot4(global float* data,
+                                           int size,
+                               global float* result)
+        {
+            float2 acc = (float2)(0.0f, 0.0f);            
+            float4 data0 = (float4) (data[0],data[4],data[8],data[12]);
+            float4 data1 = (float4) (data[3],data[7],data[11],data[15]);
+            acc = comp_dot4(data0, data1);
+            result[0] = acc.s0;
+            result[1] = acc.s1;
+        }
+        
+        kernel void test_dot3(global float* data,
+                                           int size,
+                               global float* result)
+        {
+            float2 acc = (float2)(0.0f, 0.0f);            
+            float3 data0 = (float3) (data[0],data[4],data[12]);
+            float3 data1 = (float3) (data[3],data[11],data[15]);
+            acc = comp_dot3(data0, data1);
+            result[0] = acc.s0;
+            result[1] = acc.s1;
+        }
+
+        kernel void test_dot2(global float* data,
+                                           int size,
+                               global float* result)
+        {
+            float2 acc = (float2)(0.0f, 0.0f);            
+            float2 data0 = (float2) (data[0],data[14]);
+            float2 data1 = (float2) (data[1],data[15]);
+            acc = comp_dot2(data0, data1);
+            result[0] = acc.s0;
+            result[1] = acc.s1;
+        }
+
+        """
+        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build()
+        ones_d = pyopencl.array.to_device(self.queue, data)
+        res_d = pyopencl.array.zeros(self.queue, 2, numpy.float32)
+        evt = prg.test_dot16(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
+        evt.wait()
+        res = res_d.get().sum(dtype="float64")
+        self.assertEqual(ref64, res)
+
+        res_d.fill(0)
+        data0 = data[0::2]
+        data1 = data[1::2]
+        ref64 = numpy.dot(data0.astype(numpy.float64), data1.astype(numpy.float64))
+        ref32 = numpy.dot(data0, data1)
+        if (ref64 == ref32):
+            logger.warning("dot8: invalid tests as float32 provides the same result as float64")
+        evt = prg.test_dot8(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
+        evt.wait()
+        res = res_d.get().sum(dtype="float64")
+        self.assertEqual(ref64, res)
+
+        res_d.fill(0)
+        data0 = data[0::4]
+        data1 = data[3::4]
+        ref64 = numpy.dot(data0.astype(numpy.float64), data1.astype(numpy.float64))
+        ref32 = numpy.dot(data0, data1)
+        if (ref64 == ref32):
+            logger.warning("dot4: invalid tests as float32 provides the same result as float64")
+        evt = prg.test_dot4(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
+        evt.wait()
+        res = res_d.get().sum(dtype="float64")
+        self.assertEqual(ref64, res)
+
+        res_d.fill(0)
+        data0 = numpy.array([data[0], data[4], data[12]])
+        data1 = numpy.array([data[3], data[11], data[15]])
+        ref64 = numpy.dot(data0.astype(numpy.float64), data1.astype(numpy.float64))
+        ref32 = numpy.dot(data0, data1)
+        if (ref64 == ref32):
+            logger.warning("dot3: invalid tests as float32 provides the same result as float64")
+        evt = prg.test_dot3(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
+        evt.wait()
+        res = res_d.get().sum(dtype="float64")
+        self.assertEqual(ref64, res)
+
+        res_d.fill(0)
+        data0 = numpy.array([data[0], data[14]])
+        data1 = numpy.array([data[1], data[15]])
+        ref64 = numpy.dot(data0.astype(numpy.float64), data1.astype(numpy.float64))
+        ref32 = numpy.dot(data0, data1)
+        if (ref64 == ref32):
+            logger.warning("dot2: invalid tests as float32 provides the same result as float64")
+        evt = prg.test_dot2(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
+        evt.wait()
+        res = res_d.get().sum(dtype="float64")
+        self.assertEqual(ref64, res)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestMask))
     testsuite.addTest(loader(TestSort))
+    testsuite.addTest(loader(TestKahan))
     return testsuite
 
 

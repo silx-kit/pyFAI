@@ -34,17 +34,26 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "04/10/2018"
 __status__ = "stable"
 
 import os
 import logging
-import gc
-
-import numpy
-
 
 logger = logging.getLogger(__name__)
 
-from .utils import get_opencl_code, concatenate_cl_kernel
-from .common import *
+import pyFAI
+
+if not pyFAI.use_opencl:
+    pyopencl = None
+elif os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
+    logger.info("Use of OpenCL has been disables from environment variable: PYFAI_OPENCL=0")
+    pyopencl = None
+else:
+    from silx.opencl.common import *
+    from .. import resources
+    resources.silx_integration()
+
+    from silx.opencl import utils
+    from silx.opencl.utils import get_opencl_code, concatenate_cl_kernel, read_cl_file
+    from silx.opencl import processing

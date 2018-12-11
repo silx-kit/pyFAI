@@ -32,12 +32,13 @@ from __future__ import absolute_import, division, print_function
 
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2018"
+__date__ = "30/10/2018"
 
 import sys
 import os
 import unittest
 import logging
+
 from pyFAI.test.utilstest import test_options
 
 
@@ -80,9 +81,13 @@ def suite():
 
     from . import test_integrate_widget
     from . import test_scripts
+    from . import test_calibration
+    from ..utils import test as test_utils
     test_suite = unittest.TestSuite()
     test_suite.addTest(test_integrate_widget.suite())
     test_suite.addTest(test_scripts.suite())
+    test_suite.addTest(test_calibration.suite())
+    test_suite.addTest(test_utils.suite())
     return test_suite
 
 

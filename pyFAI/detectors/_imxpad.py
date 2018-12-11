@@ -36,11 +36,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "16/10/2018"
 __status__ = "production"
 
 import functools
 import numpy
+import json
 from ._common import Detector
 from pyFAI.utils import mathutil
 
@@ -59,6 +60,8 @@ class ImXPadS10(Detector):
     """
     ImXPad detector: ImXPad s10 detector with 1x1modules
     """
+    MANUFACTURER = "ImXPad"
+
     MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
     MAX_SHAPE = (120, 80)  # max size of the detector
     PIXEL_SIZE = (130e-6, 130e-6)
@@ -217,6 +220,45 @@ class ImXPadS10(Detector):
             p1 = numpy.interp(d1, numpy.arange(self.max_shape[0] + 1), edges1, edges1[0], edges1[-1])
             p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+
+        :return: dict with param for serialization
+        """
+        dico = {}
+        if ((self.max_shape is not None) and
+                ("MAX_SHAPE" in dir(self.__class__)) and
+                (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
+            dico["max_shape"] = self.max_shape
+        if ((self.module_size is not None) and
+                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
+            dico["module_size"] = self.module_size
+        return dico
+
+    def set_config(self, config):
+        """set the config of the detector
+
+        For Xpad detector, possible keys are: max_shape, module_size
+
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+
+        # pixel size is enforced by the detector itself
+        if "max_shape" in config:
+            self.max_shape = tuple(config["max_shape"])
+        module_size = config.get("module_size")
+        if module_size is not None:
+            self.module_size = tuple(module_size)
+        return self
 
 
 class ImXPadS70(ImXPadS10):
@@ -434,7 +476,7 @@ class Cirpad(ImXPadS10):
     IS_CONTIGUOUS = False
     force_pixel = True
     uniform_pixel = False
-    aliases = ["XCirpad"]
+    aliases = ["CirPAD", "XCirpad"]
     MEDIUM_MODULE_SIZE = (560, 120)
     MODULE_SIZE = (80, 120)  # number of pixels per module (y, x)
     PIXEL_SIZE = (130e-6, 130e-6)
@@ -504,7 +546,7 @@ class Cirpad(ImXPadS10):
         w = (0.1e-3 + 0.24e-3 + 75.14e-3) * u + (0.8e-3) * v + (0.55e-3) * s + r
         return self._translation(nmd, w)
 
-    def get_pixel_corners(self):
+    def _get_pixel_corners(self):
         pixel_size1 = self._calc_pixels_size(self.MEDIUM_MODULE_SIZE[0],
                                              self.MODULE_SIZE[0],
                                              self.PIXEL_SIZE[0])
@@ -539,16 +581,17 @@ class Cirpad(ImXPadS10):
         corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
         corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
 
-        n_corners = corners
+        modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2]*i]) for i in range(20)]
+        return numpy.concatenate(modules, axis=0)
 
-        # then we compute the positions of the 19 remaining ones
-        for _ in range(1, 20):
-            n_corners = self._passage(n_corners, self.ROT)
-            # Depending on the expected layout
-            corners = numpy.concatenate((corners, n_corners), axis=0)
-        return corners
+    def get_pixel_corners(self):
+        if self._pixel_corners is None:
+            with self._sem:
+                if self._pixel_corners is None:  
+                    self._pixel_corners = self._get_pixel_corners()
+        return self._pixel_corners
 
-    # Pas fait encore
+    # TODO !!!
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         if (d1 is None) or d2 is None:
             d1 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[0]).astype(numpy.float32), self.MAX_SHAPE[1], False)

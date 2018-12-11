@@ -28,19 +28,13 @@
 #  THE SOFTWARE.
 
 
-"""
-pyFAI-integrate
-
-A graphical tool for performing azimuthal integration on series of files.
-
-
-"""
+"""GUI tool for configuring azimuthal integration on series of files."""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "09/10/2018"
 __satus__ = "production"
 import sys
 import logging
@@ -57,7 +51,7 @@ from pyFAI.io import HDF5Writer
 from pyFAI.utils.shell import ProgressBar
 from pyFAI import average
 
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 
 try:
     from rfoo.utils import rconsole
@@ -74,6 +68,7 @@ def integrate_gui(options, args):
     app = qt.QApplication([])
     if not args:
         dialog = qt.QFileDialog(directory=os.getcwd())
+        dialog.setWindowTitle("Select images to integrate")
         dialog.setFileMode(qt.QFileDialog.ExistingFiles)
         dialog.exec_()
         args = [str(i) for i in dialog.selectedFiles()]
@@ -166,7 +161,7 @@ def integrate_shell(options, args):
             for i in range(img.nframes):
                 fimg = img.getframe(i)
                 normalization_factor = get_monitor_value(fimg, options.monitor_key)
-                data = img.data
+                data = fimg.data
                 res = worker.process(data=data,
                                      metadata=fimg.header,
                                      normalization_factor=normalization_factor)

@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "20/02/2018"
+__date__ = "03/07/2018"
 __license__ = "MIT"
 
 import distutils.util
@@ -76,7 +76,11 @@ def createBasicHandler():
 
 # Use an handler compatible with unittests, else use_buffer is not working
 logging.root.addHandler(createBasicHandler())
+
+# Capture all default warnings
 logging.captureWarnings(True)
+import warnings
+warnings.simplefilter('default')
 
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
@@ -220,6 +224,8 @@ def report_uncovered_files(cov, build_dir, inject_xml=None):
     :param str build_dir: Build directory
     :return: Text report
     """
+    if build_dir.endswith("pyFAI"):
+        build_dir = os.path.dirname(build_dir)
     import fnmatch
 
     existing_files = []
@@ -554,6 +560,6 @@ if options.coverage:
         fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH))
     print(cov.report())
     print("")
-    print(report_uncovered_files(cov, build_dir))
+    print(report_uncovered_files(cov, PROJECT_PATH))
 
 sys.exit(exit_status)

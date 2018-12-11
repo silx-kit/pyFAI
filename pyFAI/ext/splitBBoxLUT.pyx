@@ -30,11 +30,14 @@
 Splitting is done on the pixel's bounding box like fit2D,
 reverse implementation based on a sparse matrix multiplication
 """
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/04/2018"
+__date__ = "19/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
+include "sparse_common.pxi"
 
 import cython
 import os
@@ -49,10 +52,6 @@ import numpy
 cimport numpy
 from ..utils import crc32
 from ..utils.decorators import deprecated
-
-
-include "regrid_common.pxi"
-include "sparse_common.pxi"
 
 
 def int0(a):
@@ -216,11 +215,11 @@ class HistoBBox1d(object):
             acc_t delta_left, delta_right, inv_area
             int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
             bint check_mask, check_pos1
-            numpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             position_t[:] cpos0_sup = self.cpos0_sup
             position_t[:] cpos0_inf = self.cpos0_inf
             position_t[:] cpos1_min, cpos1_max
-            lut_point[:, :] lut
+            lut_t[:, :] lut
             mask_t[:] cmask
 
         size = self.size
@@ -276,7 +275,7 @@ class HistoBBox1d(object):
 
         self.lut_size = lut_size
 
-        lut_nbytes = bins * lut_size * sizeof(lut_point)
+        lut_nbytes = bins * lut_size * sizeof(lut_t)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -293,7 +292,7 @@ class HistoBBox1d(object):
             msg = "The look-up table has dimension (%s,%s) which is a non-sense." +\
                   "Did you mask out all pixel or is your image out of the geometry range?"
             raise RuntimeError(msg % (bins, lut_size))
-        lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_point), format="if")
+        lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_t), format="if")
         memset(&lut[0,0], 0, lut_nbytes)
 
         with nogil:
@@ -358,7 +357,7 @@ class HistoBBox1d(object):
         there is an issue with python2.6 and ref counting"""
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :] lut = self._lut
+        cdef lut_t[:, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
@@ -369,8 +368,8 @@ class HistoBBox1d(object):
         if need_decref and (sys.getrefcount(self._lut) >= rc_before + 2):
             logger.warning("Decref needed")
             Py_XDECREF(<PyObject *> self._lut)
-        return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
-                                        shape=self._lut.shape, dtype=dtype_lut,
+        return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
+                                        shape=self._lut.shape, dtype=lut_d,
                                         copy=True)
 
     @property
@@ -389,7 +388,8 @@ class HistoBBox1d(object):
                   flat=None,
                   solidAngle=None,
                   polarization=None,
-                  double normalization_factor=1.0):
+                  double normalization_factor=1.0,
+                  int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -408,6 +408,7 @@ class HistoBBox1d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
+        :param coef_power: put coef to a given power, 2 for variance, 1 for mean
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: 4-tuple of ndarrays
@@ -426,7 +427,7 @@ class HistoBBox1d(object):
             # Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
             int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :] lut = self._lut
+        cdef lut_t[:, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF & ((rc_after - rc_before) >= 2)
 
@@ -516,7 +517,7 @@ class HistoBBox1d(object):
                 if do_dummy and (data == cdummy):
                     continue
 
-                acc_data = acc_data + coef * data
+                acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
             sum_data[i] += acc_data
             sum_count[i] += acc_count
@@ -545,7 +546,8 @@ class HistoBBox1d(object):
                         flat=None,
                         solidAngle=None,
                         polarization=None,
-                        double normalization_factor=1.0):
+                        double normalization_factor=1.0,
+                        int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
         Single precision implementation using Kahan summation
@@ -565,13 +567,14 @@ class HistoBBox1d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
+        :param coef_power: set to1 for mean and 2 for variance propagation
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: 4-tuple of ndarrays
 
         """
         cdef:
-            numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, lut_size = self.lut_size, size = self.size
+            cnumpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, lut_size = self.lut_size, size = self.size
             float acc_data = 0, acc_count = 0, epsilon = 1e-10
             float data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
@@ -585,7 +588,7 @@ class HistoBBox1d(object):
         # Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :] lut = self._lut
+        cdef lut_t[:, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF & ((rc_after - rc_before) >= 2)
 
@@ -689,7 +692,7 @@ class HistoBBox1d(object):
 #     return sum
 
                 # acc_data = acc_data + coef * data
-                y_data = coef * data - c_data
+                y_data = coef**coef_power * data - c_data
                 t_data = acc_data + y_data
                 c_data = (t_data - acc_data) - y_data
                 acc_data = t_data
@@ -761,7 +764,7 @@ class HistoBBox2d(object):
         :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
         :param unit: can be 2th_deg or r_nm^-1 ...
         """
-        cdef numpy.int32_t i, size, bin0, bin1
+        cdef cnumpy.int32_t i, size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
         assert pos1.size == self.size, "pos1 size"
@@ -825,7 +828,7 @@ class HistoBBox2d(object):
         Called by constructor to calculate the boundaries and the bin position
         """
         cdef:
-            numpy.int32_t size = self.cpos0.size
+            cnumpy.int32_t size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
@@ -919,8 +922,8 @@ class HistoBBox2d(object):
             position_t[::1] cpos0_inf = self.cpos0_inf
             position_t[::1] cpos1_inf = self.cpos1_inf
             position_t[::1] cpos1_sup = self.cpos1_sup
-            numpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            lut_point[:, :, ::1] lut
+            cnumpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            lut_t[:, :, ::1] lut
             mask_t[:] cmask
             acc_t inv_area, delta_down, delta_up, delta_right, delta_left
         if self.check_mask:
@@ -965,7 +968,7 @@ class HistoBBox2d(object):
         # just recycle the outmax array
         outmax[:, :] = 0
 
-        lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_point)
+        lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_t)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -976,7 +979,7 @@ class HistoBBox2d(object):
                     raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
                                       (bins0, bins1, lut_size, lut_nbytes, memsize))
         # else hope we have enough memory
-        lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_point), format="if")
+        lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_t), format="if")
         memset(&lut[0, 0, 0], 0, lut_nbytes)
 
         # NOGIL
@@ -1133,7 +1136,7 @@ class HistoBBox2d(object):
         """
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :, :] lut = self._lut
+        cdef lut_t[:, :, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         shape = (self._lut.shape[0] * self._lut.shape[1], self._lut.shape[2])
@@ -1146,8 +1149,8 @@ class HistoBBox2d(object):
             print("Warning: Decref needed")
             Py_XDECREF(<PyObject *> self._lut)
 
-        return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
-                                        shape=shape, dtype=dtype_lut,
+        return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
+                                        shape=shape, dtype=lut_d,
                                         copy=True)
 
     @property
@@ -1166,7 +1169,8 @@ class HistoBBox2d(object):
                   flat=None,
                   solidAngle=None,
                   polarization=None,
-                  double normalization_factor=1.0):
+                  double normalization_factor=1.0,
+                  int coef_power=1):
         """
         Actually perform the 2D integration which in this case looks more like a matrix-vector product
 
@@ -1185,13 +1189,13 @@ class HistoBBox2d(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param normalization_factor: divide the valid result by this value
-
+        :param coef_power: set to 1 for mean en to 2 for variance propagation
         :return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
         :rtype: 5-tuple of ndarrays
 
         """
         cdef:
-            numpy.int32_t i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, lut_size = self.lut_size, size = self.size, i0 = 0, i1 = 0
+            cnumpy.int32_t i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, lut_size = self.lut_size, size = self.size, i0 = 0, i1 = 0
             acc_t acc_data = 0, acc_count = 0, epsilon = 1e-10
             data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
@@ -1202,7 +1206,7 @@ class HistoBBox2d(object):
         # Ugly hack against bug #89
             int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:, :, ::1] lut = self._lut
+        cdef lut_t[:, :, ::1] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
 
@@ -1291,7 +1295,7 @@ class HistoBBox2d(object):
                     if do_dummy and data == cdummy:
                         continue
 
-                    acc_data = acc_data + coef * data
+                    acc_data = acc_data + coef ** coef_power * data
                     acc_count = acc_count + coef
                 sum_data[i0, i1] += acc_data
                 sum_count[i0, i1] += acc_count

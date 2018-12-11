@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/03/2017"
+__date__ = "27/08/2018"
 
 from pyFAI import units
 from .AbstractModel import AbstractModel
@@ -41,6 +41,10 @@ class IntegrationSettingsModel(AbstractModel):
         self.__radialUnit = DataModel()
         self.__radialUnit.setValue(units.TTH_RAD)
         self.__radialUnit.changed.connect(self.wasChanged)
+        self.__nPointsRadial = DataModel()
+        self.__nPointsRadial.changed.connect(self.wasChanged)
+        self.__nPointsAzimuthal = DataModel()
+        self.__nPointsAzimuthal.changed.connect(self.wasChanged)
 
     def isValid(self):
         if self.__radialUnit.value() is None:
@@ -49,3 +53,9 @@ class IntegrationSettingsModel(AbstractModel):
 
     def radialUnit(self):
         return self.__radialUnit
+
+    def nPointsRadial(self):
+        return self.__nPointsRadial
+
+    def nPointsAzimuthal(self):
+        return self.__nPointsAzimuthal

@@ -27,15 +27,12 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""
-detector2nexus is a small utility that converts a detector description into a NeXus detector
-useable by other pyFAI utilities
-"""
+"""Converts a detector description into a NeXus detector usable by other pyFAI utilities"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "09/10/2018"
 __status__ = "development"
 
 import sys
@@ -43,7 +40,7 @@ import logging
 import numpy
 import fabio
 import pyFAI
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)

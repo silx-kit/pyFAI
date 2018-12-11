@@ -31,7 +31,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="widget" native="true">
+    <widget class="QWidget" name="_rightoptions" native="true">
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <property name="margin">
        <number>0</number>

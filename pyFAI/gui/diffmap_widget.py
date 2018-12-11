@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "18/10/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -149,7 +149,6 @@ class DiffMapWidget(qt.QWidget):
 #     progressbarAborted = Signal()
     uif = "diffmap.ui"
     json_file = ".diffmap.json"
-    URL = "http://pyfai.readthedocs.org/en/latest/man/scripts.html"
 
     def __init__(self):
         qt.QWidget.__init__(self)

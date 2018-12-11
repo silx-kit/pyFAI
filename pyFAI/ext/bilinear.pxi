@@ -25,6 +25,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+cimport cython 
 from libc.math cimport floor, ceil
 import logging
 logger = logging.getLogger("bilinear")

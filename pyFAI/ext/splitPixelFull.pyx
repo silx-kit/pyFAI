@@ -31,20 +31,23 @@
 Splitting is done on the pixel's bounding box like fit2D,
 reverse implementation based on a sparse matrix multiplication
 """
+
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/04/2018"
+__date__ = "15/11/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
+include "regrid_common.pxi"
+
 
 import cython
 cimport numpy
 import numpy
-from libc.math cimport floor, sqrt
+from libc.math cimport floor, sqrt, fabs
 from libc.stdio cimport printf, fflush, stdout
 from cython.view cimport array as cvarray
 
-include "regrid_common.pxi"
 
 cdef inline position_t area4(position_t a0, position_t a1, position_t b0, position_t b1, position_t c0, position_t c1, position_t d0, position_t d1) nogil:
     """
@@ -247,9 +250,9 @@ def fullSplit1D(numpy.ndarray pos not None,
     # pos1_max = pos1_maxin * 1.00001
     dpos = (pos0_max - pos0_min) / (<double> (bins))
 
-    outPos = numpy.linspace(pos0_min + 0.5 * dpos, 
-                            pos0_max - 0.5 * dpos, 
-                            bins)
+    bin_centers = numpy.linspace(pos0_min + 0.5 * dpos, 
+                                 pos0_max - 0.5 * dpos, 
+                                 bins)
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
@@ -381,7 +384,7 @@ def fullSplit1D(numpy.ndarray pos not None,
             else:
                 outMerge[i] = cdummy
 
-    return outPos, outMerge, outData, outCount
+    return bin_centers, outMerge, outData, outCount
 
 
 @cython.cdivision(True)

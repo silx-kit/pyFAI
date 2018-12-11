@@ -27,25 +27,33 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2018"
+__date__ = "28/11/2018"
 
 import logging
 import numpy
 import functools
+import os
+
 from silx.gui import qt
 from silx.gui import icons
+import silx.gui.plot
+from silx.gui.plot.tools import PositionInfo
+
 import pyFAI.utils
 import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.PeakModel import PeakModel
 from pyFAI.gui.calibration.RingExtractor import RingExtractor
-from collections import OrderedDict
 import pyFAI.control_points
-
-import silx.gui.plot
-import os
-from silx.gui.plot.PlotTools import PositionInfo
 from . import utils
+from .helper.SynchronizeRawView import SynchronizeRawView
+from .helper.SynchronizePlotBackground import SynchronizePlotBackground
+from .CalibrationContext import CalibrationContext
+from .helper.MarkerManager import MarkerManager
+from ..utils import FilterBuilder
+from ..utils import validators
+from .helper import model_transform
+
 
 _logger = logging.getLogger(__name__)
 
@@ -89,7 +97,12 @@ class _PeakSelectionTableView(qt.QTableView):
 
     def __init__(self, parent):
         super(_PeakSelectionTableView, self).__init__(parent=parent)
+
         ringDelegate = _SpinBoxItemDelegate(self)
+        palette = qt.QPalette(self.palette())
+        # make sure this value is not edited
+        palette.setColor(qt.QPalette.Base, palette.base().color())
+        ringDelegate.setPalette(palette)
         toolDelegate = _PeakToolItemDelegate(self)
         self.setItemDelegateForColumn(2, ringDelegate)
         self.setItemDelegateForColumn(3, toolDelegate)
@@ -99,11 +112,16 @@ class _PeakSelectionTableView(qt.QTableView):
         self.setVerticalScrollMode(qt.QAbstractItemView.ScrollPerPixel)
         self.setShowGrid(False)
         self.setWordWrap(False)
-        self.setFrameShape(qt.QFrame.NoFrame)
+        # NoFrame glitchies on Debian8 Qt5
+        # self.setFrameShape(qt.QFrame.NoFrame)
 
         self.horizontalHeader().setHighlightSections(False)
         self.verticalHeader().setVisible(False)
-        self.setStyleSheet("QTableView {background: transparent;}")
+
+        palette = qt.QPalette(self.palette())
+        palette.setColor(qt.QPalette.Base, qt.QColor(0, 0, 0, 0))
+        self.setPalette(palette)
+        self.setFrameShape(qt.QFrame.Panel)
 
     def setModel(self, model):
         if self.model() is not None:
@@ -254,11 +272,13 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
     def setData(self, index, value, role=qt.Qt.EditRole):
         if not index.isValid():
-            return
+            return False
         peakModel = self.__peakSelectionModel[index.row()]
         column = index.column()
         if column == 2:
             self.requestRingChange.emit(peakModel, value)
+            return True
+        return False
 
     def removeRows(self, row, count, parent=qt.QModelIndex()):
         # while the tablempdel is already connected to the data model
@@ -280,26 +300,53 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
     def __init__(self, parent):
         super(_PeakPickingPlot, self).__init__(parent=parent)
         self.setKeepDataAspectRatio(True)
-
-        # FIXME Fix using silx 0.5
-        if "BackendMatplotlib" in self._backend.__class__.__name__:
-            # hide axes and viewbox rect
-            self._backend.ax.set_axis_off()
-            self._backend.ax2.set_axis_off()
-            # remove external margins
-            self._backend.ax.set_position([0, 0, 1, 1])
-            self._backend.ax2.set_position([0, 0, 1, 1])
-
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
-        self.setDefaultColormap(colormap)
+        self.setAxesDisplayed(False)
 
         self.__peakSelectionModel = None
         self.__callbacks = {}
-        self.__markerColors = {}
+        self.__processing = None
+
+        markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
+        self.__markerManager = MarkerManager(self, markerModel, pixelBasedPlot=True)
+
+        handle = self.getWidgetHandle()
+        handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        handle.customContextMenuRequested.connect(self.__plotContextMenu)
+
+        colormap = CalibrationContext.instance().getRawColormap()
+        self.setDefaultColormap(colormap)
+
+        self.__plotBackground = SynchronizePlotBackground(self)
+
+        if hasattr(self, "centralWidget"):
+            self.centralWidget().installEventFilter(self)
+
+    def eventFilter(self, widget, event):
+        if event.type() == qt.QEvent.Enter:
+            self.setCursor(qt.Qt.CrossCursor)
+            return True
+        elif event.type() == qt.QEvent.Leave:
+            self.unsetCursor()
+            return True
+        return False
+
+    def __plotContextMenu(self, pos):
+        plot = self
+        from silx.gui.plot.actions.control import ZoomBackAction
+        zoomBackAction = ZoomBackAction(plot=plot, parent=plot)
+
+        menu = qt.QMenu(self)
+
+        menu.addAction(zoomBackAction)
+        menu.addSeparator()
+        menu.addAction(self.__markerManager.createMarkPixelAction(menu, pos))
+        menu.addAction(self.__markerManager.createMarkGeometryAction(menu, pos))
+        action = self.__markerManager.createRemoveClosestMaskerAction(menu, pos)
+        if action is not None:
+            menu.addAction(action)
+
+        handle = plot.getWidgetHandle()
+        menu.exec_(handle.mapToGlobal(pos))
 
     def setModel(self, peakSelectionModel):
         assert self.__peakSelectionModel is None
@@ -336,7 +383,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     def addPeak(self, peakModel):
         color = peakModel.color()
-        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF(), 0.5])
         points = peakModel.coords()
         name = peakModel.name()
 
@@ -349,6 +396,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.addCurve(x=x, y=y,
                       legend="coord" + name,
                       linestyle=' ',
+                      selectable=False,
                       symbol='o',
                       color=numpyColor,
                       resetzoom=False)
@@ -357,35 +405,38 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.removePeak(peakModel)
         self.addPeak(peakModel)
 
-    def markerColorList(self):
-        colormap = self.getDefaultColormap()
+    def unsetProcessing(self):
+        self.__processing.deleteLater()
+        self.__processing = None
 
-        name = colormap['name']
-        if name not in self.__markerColors:
-            colors = self.createMarkerColors()
-            self.__markerColors[name] = colors
-        else:
-            colors = self.__markerColors[name]
-        return colors
-
-    def createMarkerColors(self):
-        colormap = self.getDefaultColormap()
-        return utils.getFreeColorRange(colormap)
+    def setProcessing(self):
+        self.__processing = utils.createProcessingWidgetOverlay(self)
 
 
 class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
+
+    def __init__(self, *args, **kwargs):
+        qt.QStyledItemDelegate.__init__(self, *args, **kwargs)
+        self.__palette = None
+
+    def setPalette(self, palette):
+        self.__palette = qt.QPalette(palette)
 
     def createEditor(self, parent, option, index):
         if not index.isValid():
             return super(_SpinBoxItemDelegate, self).createEditor(parent, option, index)
 
         editor = qt.QSpinBox(parent=parent)
+        if self.__palette is not None:
+            editor.setPalette(self.__palette)
         editor.setMinimum(1)
         editor.setMaximum(999)
         editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
         editor.setFocusPolicy(qt.Qt.StrongFocus)
         editor.setValue(index.data())
         editor.installEventFilter(self)
+        editor.setBackgroundRole(qt.QPalette.Background)
+        editor.setAutoFillBackground(True)
         return editor
 
     def eventFilter(self, widget, event):
@@ -459,98 +510,89 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
 
 class PeakPickingTask(AbstractCalibrationTask):
 
-    def __init__(self):
-        super(PeakPickingTask, self).__init__()
+    def _initGui(self):
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-peakpicking.ui"), self)
-        self.initNextStep()
-        self.__dialogState = None
+        icon = silx.gui.icons.getQIcon("pyfai:gui/icons/task-identify-rings")
+        self.setWindowIcon(icon)
 
-        layout = qt.QVBoxLayout(self._imageHolder)
-        self.__plot = _PeakPickingPlot(parent=self._imageHolder)
-        toolBar = self.__createPlotToolBar(self.__plot)
-        self.__plot.addToolBar(toolBar)
+        self.initNextStep()
+
+        # Insert the plot on the layout
+        holder = self._plotHolder
+        self.__plot = _PeakPickingPlot(parent=holder)
+        self.__plot.setObjectName("plot-picking")
+        holderLayout = qt.QVBoxLayout(holder)
+        holderLayout.setContentsMargins(1, 1, 1, 1)
+        holderLayout.addWidget(self.__plot)
+
+        # Insert the peak view on the layout
+        holder = self._peakSelectionDummy.parent()
+        self.__peakSelectionView = _PeakSelectionTableView(holder)
+        holderLayout = holder.layout()
+        holderLayout.replaceWidget(self._peakSelectionDummy, self.__peakSelectionView)
+
+        self.__undoStack = qt.QUndoStack(self)
+
+        layout = qt.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self._ringToolBarHolder.setLayout(layout)
+        toolBar = self.__createRingToolBar()
+        layout.addWidget(toolBar)
+
+        self.__createPlotToolBar(self.__plot)
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
 
-        layout.addWidget(self.__plot)
-        layout.setContentsMargins(1, 1, 1, 1)
-        self._imageHolder.setLayout(layout)
-
-        self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
-        self._peakSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
-        self.__peakSelectionView = None
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
-        self.__undoStack = qt.QUndoStack(self)
-        self._undoButton.setDefaultAction(self.__undoStack.createUndoAction(self, "Undo"))
-        self._redoButton.setDefaultAction(self.__undoStack.createRedoAction(self, "Redo"))
+        self._extract.setEnabled(False)
+        self._extract.clicked.connect(self.__autoExtractRingsLater)
 
-        self.__mode = qt.QButtonGroup()
-        self.__mode.setExclusive(True)
-        self.__mode.addButton(self._peakSelectionMode)
-        self.__mode.addButton(self._ringSelectionMode)
-        self._ringSelectionMode.setChecked(True)
+        validator = validators.DoubleValidator(self)
+        self._numberOfPeakPerDegree.lineEdit().setValidator(validator)
+        locale = qt.QLocale(qt.QLocale.C)
+        self._numberOfPeakPerDegree.setLocale(locale)
 
-        self._extract.clicked.connect(self.__autoExtractRings)
+        self.__synchronizeRawView = SynchronizeRawView()
+        self.__synchronizeRawView.registerTask(self)
+        self.__synchronizeRawView.registerPlot(self.__plot)
+
+        self.__massif = None
+        self.__massifReconstructed = None
 
     def __createSavePeakDialog(self):
-        dialog = qt.QFileDialog(self)
+        dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
         dialog.setWindowTitle("Save selected peaks")
         dialog.setModal(True)
-
-        extensions = OrderedDict()
-        extensions["Control point files"] = "*.npt"
-
-        filters = []
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-
-        dialog.setNameFilters(filters)
+        builder = FilterBuilder.FilterBuilder()
+        builder.addFileFormat("Control point files", "npt")
+        dialog.setNameFilters(builder.getFilters())
         return dialog
 
     def __createLoadPeakDialog(self):
-        dialog = qt.QFileDialog(self)
+        dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setWindowTitle("Load peaks")
         dialog.setModal(True)
-
-        extensions = OrderedDict()
-        extensions["Control point files"] = "*.npt"
-
-        filters = []
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-
-        dialog.setNameFilters(filters)
+        builder = FilterBuilder.FilterBuilder()
+        builder.addFileFormat("Control point files", "npt")
+        dialog.setNameFilters(builder.getFilters())
         return dialog
 
     def __loadPeaksFromFile(self):
         dialog = self.__createLoadPeakDialog()
 
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
-
         result = dialog.exec_()
         if not result:
             return
-
-        self.__dialogState = dialog.saveState()
 
         filename = dialog.selectedFiles()[0]
         if os.path.exists(filename):
             try:
                 controlPoints = pyFAI.control_points.ControlPoints(filename)
                 oldState = self.__copyPeaks(self.__undoStack)
-                self.model().peakSelectionModel().clear()
-                for label in controlPoints.get_labels():
-                    group = controlPoints.get(lbl=label)
-                    peakModel = self.__createNewPeak(group.points)
-                    peakModel.setRingNumber(group.ring + 1)
-                    peakModel.setName(label)
-                    self.model().peakSelectionModel().append(peakModel)
+                peakSelectionModel = self.model().peakSelectionModel()
+                model_transform.initPeaksFromControlPoints(peakSelectionModel, controlPoints)
                 newState = self.__copyPeaks(self.__undoStack)
                 command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
                 command.setText("load rings")
@@ -567,29 +609,15 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __savePeaksAsFile(self):
         dialog = self.__createSavePeakDialog()
 
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
-
         result = dialog.exec_()
         if not result:
             return
 
-        self.__dialogState = dialog.saveState()
         filename = dialog.selectedFiles()[0]
         if not os.path.exists(filename) and not filename.endswith(".npt"):
             filename = filename + ".npt"
         try:
-            calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
-            wavelength = self.model().experimentSettingsModel().wavelength().value()
-            wavelength = wavelength / 1e10
-            controlPoints = pyFAI.control_points.ControlPoints(None, calibrant, wavelength)
-            for peakModel in self.model().peakSelectionModel():
-                ringNumber = peakModel.ringNumber() - 1
-                points = peakModel.coords()
-                controlPoints.append(points=points, ring=ringNumber)
+            controlPoints = model_transform.createControlPoints(self.model())
             controlPoints.save(filename)
         except Exception as e:
             _logger.error(e.args[0])
@@ -598,17 +626,51 @@ class PeakPickingTask(AbstractCalibrationTask):
         except KeyboardInterrupt:
             raise
 
-    def __createOptionsWidget(self):
-        menu = qt.QMenu(self)
+    def __createRingToolBar(self):
+        toolBar = qt.QToolBar(self)
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-full-ring"))
+        action.setText("Ring")
+        action.setCheckable(True)
+        action.setToolTip("Extract peaks, beyond masked values")
+        toolBar.addAction(action)
+        self.__ringSelectionMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
+        action.setText("Arc")
+        action.setCheckable(True)
+        action.setToolTip("Extract contiguous peaks")
+        toolBar.addAction(action)
+        self.__arcSelectionMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
+        action.setText("Arc")
+        action.setCheckable(True)
+        action.setToolTip("Extract contiguous peaks")
+        toolBar.addAction(action)
+        self.__peakSelectionMode = action
+
+        mode = qt.QActionGroup(self)
+        mode.setExclusive(True)
+        mode.addAction(self.__ringSelectionMode)
+        mode.addAction(self.__arcSelectionMode)
+        mode.addAction(self.__peakSelectionMode)
+        self.__arcSelectionMode.setChecked(True)
+
+        toolBar.addSeparator()
 
         # Load peak selection as file
         loadPeaksFromFile = qt.QAction(self)
         icon = icons.getQIcon('document-open')
+        self.__icon = icon
         loadPeaksFromFile.setIcon(icon)
         loadPeaksFromFile.setText("Load peak selection from file")
         loadPeaksFromFile.triggered.connect(self.__loadPeaksFromFile)
         loadPeaksFromFile.setIconVisibleInMenu(True)
-        menu.addAction(loadPeaksFromFile)
+        toolBar.addAction(loadPeaksFromFile)
 
         # Save peak selection as file
         savePeaksAsFile = qt.QAction(self)
@@ -617,41 +679,31 @@ class PeakPickingTask(AbstractCalibrationTask):
         savePeaksAsFile.setText("Save peak selection as file")
         savePeaksAsFile.triggered.connect(self.__savePeaksAsFile)
         savePeaksAsFile.setIconVisibleInMenu(True)
-        menu.addAction(savePeaksAsFile)
+        toolBar.addAction(savePeaksAsFile)
 
-        options = qt.QToolButton(self)
-        icon = icons.getQIcon('pyfai:gui/icons/options')
-        options.setIcon(icon)
-        options.setPopupMode(qt.QToolButton.InstantPopup)
-        options.setMenu(menu)
-        return options
-
-    def __createPlotToolBar(self, plot):
-        toolBar = qt.QToolBar("Plot tools", plot)
-
-        from silx.gui.plot.actions import control
-        from silx.gui.plot.actions import io
-        from silx.gui.plot.actions import histogram
-
-        toolBar.addAction(control.ResetZoomAction(plot, toolBar))
-        toolBar.addAction(control.ZoomInAction(plot, toolBar))
-        toolBar.addAction(control.ZoomOutAction(plot, toolBar))
         toolBar.addSeparator()
-        toolBar.addAction(control.ColormapAction(plot, toolBar))
-        toolBar.addAction(histogram.PixelIntensitiesHistoAction(plot, toolBar))
-        toolBar.addSeparator()
-        toolBar.addAction(io.CopyAction(plot, toolBar))
-        toolBar.addAction(io.SaveAction(plot, toolBar))
-        toolBar.addAction(io.PrintAction(plot, toolBar))
+        style = qt.QApplication.style()
 
-        stretch = qt.QWidget(self)
-        stretch.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Fixed)
-        toolBar.addWidget(stretch)
+        action = self.__undoStack.createUndoAction(self, "Undo")
+        icon = style.standardIcon(qt.QStyle.SP_ArrowBack)
+        action.setIcon(icon)
+        toolBar.addAction(action)
 
-        self.__options = self.__createOptionsWidget()
-        toolBar.addWidget(self.__options)
+        action = self.__undoStack.createRedoAction(self, "Redo")
+        icon = style.standardIcon(qt.QStyle.SP_ArrowForward)
+        action.setIcon(icon)
+        toolBar.addAction(action)
 
         return toolBar
+
+    def __createPlotToolBar(self, plot):
+        from silx.gui.plot import tools
+        toolBar = tools.InteractiveModeToolBar(parent=self, plot=plot)
+        plot.addToolBar(toolBar)
+        toolBar = tools.ImageToolBar(parent=self, plot=plot)
+        colormapDialog = CalibrationContext.instance().getColormapDialog()
+        toolBar.getColormapAction().setColorDialog(colormapDialog)
+        plot.addToolBar(toolBar)
 
     def __createPlotStatusBar(self, plot):
 
@@ -664,7 +716,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         hbox.setContentsMargins(0, 0, 0, 0)
 
         info = PositionInfo(plot=plot, converters=converters)
-        info.autoSnapToActiveCurve = True
+        info.setSnappingMode(True)
         statusBar = qt.QStatusBar(plot)
         statusBar.setSizeGripEnabled(False)
         statusBar.addWidget(info)
@@ -676,9 +728,43 @@ class PeakPickingTask(AbstractCalibrationTask):
             if button == "left":
                 self.__plotClicked(x, y)
 
+    def __invalidateMassif(self):
+        self.__massif = None
+        self.__massifReconstructed = None
+
+    def __widgetShow(self):
+        pass
+
+    def __createMassif(self, reconstruct=False):
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        experimentSettings = self.model().experimentSettingsModel()
+        image = experimentSettings.image().value()
+        mask = experimentSettings.mask().value()
+        if image is None:
+            return None
+        massif = pyFAI.massif.Massif(image, mask)
+        massif.get_labeled_massif(reconstruct=reconstruct)
+        qt.QApplication.restoreOverrideCursor()
+        return massif
+
+    def __getMassif(self):
+        if self.__ringSelectionMode.isChecked():
+            if self.__massifReconstructed is None:
+                self.__massifReconstructed = self.__createMassif(reconstruct=True)
+            return self.__massifReconstructed
+        elif self.__arcSelectionMode.isChecked() or self.__peakSelectionMode.isChecked():
+            if self.__massif is None:
+                self.__massif = self.__createMassif()
+            return self.__massif
+        else:
+            assert(False)
+
     def __plotClicked(self, x, y):
         image = self.model().experimentSettingsModel().image().value()
-        massif = pyFAI.massif.Massif(image)
+        massif = self.__getMassif()
+        if massif is None:
+            # Nothing to pick
+            return
         points = massif.find_peaks([y, x], stdout=_DummyStdOut())
         if len(points) == 0:
             # toleration
@@ -703,32 +789,34 @@ class PeakPickingTask(AbstractCalibrationTask):
         # filter peaks from the mask
         mask = self.model().experimentSettingsModel().mask().value()
         if mask is not None:
-            points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] != 1, points)
+            points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] == 0, points)
             points = list(points)
 
         if len(points) > 0:
             # reach bigger ring
-            selection = self.model().peakSelectionModel()
-            ringNumbers = [p.ringNumber() for p in selection]
+            peakSelectionModel = self.model().peakSelectionModel()
+            ringNumbers = [p.ringNumber() for p in peakSelectionModel]
             if ringNumbers == []:
                 lastRingNumber = 0
             else:
                 lastRingNumber = max(ringNumbers)
 
-            if self._ringSelectionMode.isChecked():
+            if self.__ringSelectionMode.isChecked() or self.__arcSelectionMode.isChecked():
                 ringNumber = lastRingNumber + 1
-            elif self._peakSelectionMode.isChecked():
+            elif self.__peakSelectionMode.isChecked():
+                if lastRingNumber == 0:
+                    lastRingNumber = 1
                 ringNumber = lastRingNumber
                 points = points[0:1]
             else:
                 raise ValueError("Picking mode unknown")
 
-            peakModel = self.__createNewPeak(points)
+            peakModel = model_transform.createRing(points, peakSelectionModel)
             peakModel.setRingNumber(ringNumber)
             oldState = self.__copyPeaks(self.__undoStack)
-            self.model().peakSelectionModel().append(peakModel)
+            peakSelectionModel.append(peakModel)
             newState = self.__copyPeaks(self.__undoStack)
-            command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+            command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
             command.setText("add peak %s" % peakModel.name())
             command.setRedoInhibited(True)
             self.__undoStack.push(command)
@@ -762,45 +850,22 @@ class PeakPickingTask(AbstractCalibrationTask):
             state.append(copy)
         return state
 
-    def __createNewPeak(self, points):
-        selection = self.model().peakSelectionModel()
-
-        # reach the bigger name
-        names = ["% 8s" % p.name() for p in selection]
-        if len(names) > 0:
-            names = list(sorted(names))
-            bigger = names[-1].strip()
-            number = 0
-            for c in bigger:
-                number = number * 26 + (ord(c) - ord('a'))
-        else:
-            number = -1
-        number = number + 1
-
-        # compute the next one
-        name = ""
-        if number == 0:
-            name = "a"
-        else:
-            n = number
-            while n > 0:
-                c = n % 26
-                n = n // 26
-                name = chr(c + ord('a')) + name
-
-        # FIXME improve color list
-        colors = self.__plot.markerColorList()
-        color = colors[number % len(colors)]
-
-        peakModel = PeakModel(self.model().peakSelectionModel())
-        peakModel.setName(name)
-        peakModel.setColor(color)
-        peakModel.setCoords(points)
-        peakModel.setRingNumber(1)
-
-        return peakModel
+    def __autoExtractRingsLater(self):
+        self.__plot.setProcessing()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        self._extract.setWaiting(True)
+        # Wait for Qt repaint first
+        qt.QTimer.singleShot(1, self.__autoExtractRings)
 
     def __autoExtractRings(self):
+        try:
+            self.__autoExtractRingsCompute()
+        finally:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+
+    def __autoExtractRingsCompute(self):
         maxRings = self._maxRingToExtract.value()
         pointPerDegree = self._numberOfPeakPerDegree.value()
 
@@ -810,18 +875,53 @@ class PeakPickingTask(AbstractCalibrationTask):
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
-        wavelength = wavelength / 1e10
+
+        if detector is None:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", "No detector defined")
+            return
+        if calibrant is None:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", "No calibrant defined")
+            return
+        if wavelength is None:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", "No wavelength defined")
+            return
+
         extractor = RingExtractor(image, mask, calibrant, detector, wavelength)
 
-        # FIXME numpy array can be allocated first
-        peaks = []
-        for peakModel in self.model().peakSelectionModel():
-            ringNumber = peakModel.ringNumber()
-            for coord in peakModel.coords():
-                peaks.append([coord[0], coord[1], ringNumber - 1])
-        peaks = numpy.array(peaks)
+        # Constant dependant of the ui file
+        FROM_PEAKS = 0
+        FROM_FIT = 1
+
+        geometrySourceIndex = self._geometrySource.currentIndex()
+        if geometrySourceIndex == FROM_PEAKS:
+            # FIXME numpy array can be allocated first
+            peaks = []
+            for peakModel in self.model().peakSelectionModel():
+                ringNumber = peakModel.ringNumber()
+                for coord in peakModel.coords():
+                    peaks.append([coord[0], coord[1], ringNumber - 1])
+            peaks = numpy.array(peaks)
+            geometryModel = None
+        elif geometrySourceIndex == FROM_FIT:
+            peaks = None
+            geometryModel = self.model().fittedGeometry()
+            if not geometryModel.isValid():
+                _logger.error("The fitted model is not valid. Extraction cancelled.")
+                return
+        else:
+            assert(False)
 
         newPeaksRaw = extractor.extract(peaks=peaks,
+                                        geometryModel=geometryModel,
                                         method="massif",
                                         maxRings=maxRings,
                                         pointPerDegree=pointPerDegree)
@@ -837,14 +937,15 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         # update the gui
         oldState = self.__copyPeaks(self.__undoStack)
-        self.model().peakSelectionModel().clear()
+        peakSelectionModel = self.model().peakSelectionModel()
+        peakSelectionModel.clear()
         for ringNumber in sorted(newPeaks.keys()):
             coords = newPeaks[ringNumber]
-            peakModel = self.__createNewPeak(coords)
+            peakModel = model_transform.createRing(coords, peakSelectionModel)
             peakModel.setRingNumber(ringNumber)
-            self.model().peakSelectionModel().append(peakModel)
+            peakSelectionModel.append(peakModel)
         newState = self.__copyPeaks(self.__undoStack)
-        command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+        command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
         command.setText("extract rings")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
@@ -862,7 +963,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         image = self.__plot.getImage("image")
         if image is None:
             return value
-        data = image.getData()
+        data = image.getData(copy=False)
         ox, oy = image.getOrigin()
         sx, sy = image.getScale()
         row, col = (y - oy) / sy, (x - ox) / sx
@@ -874,34 +975,40 @@ class PeakPickingTask(AbstractCalibrationTask):
         return value
 
     def _updateModel(self, model):
+        self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
-        settings.image().changed.connect(self.__imageUpdated)
-        settings.mask().changed.connect(self.__maskUpdated)
+        settings.maskedImage().changed.connect(self.__imageUpdated)
+        settings.image().changed.connect(self.__invalidateMassif)
+        settings.mask().changed.connect(self.__invalidateMassif)
+        model.peakSelectionModel().changed.connect(self.__peakSelectionChanged)
         self.__plot.setModel(model.peakSelectionModel())
         self.__initPeakSelectionView(model)
         self.__undoStack.clear()
 
-    def __initPeakSelectionView(self, model):
-        if self.__peakSelectionView is None:
-            self.__peakSelectionView = _PeakSelectionTableView(self)
-            layout = qt.QHBoxLayout(self._peakSelectionHolder)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(self.__peakSelectionView)
-            self._peakSelectionHolder.setLayout(layout)
+        self.__imageUpdated()
+        self.__peakSelectionChanged()
 
+    def __peakSelectionChanged(self):
+        peakCount = self.model().peakSelectionModel().peakCount()
+        if peakCount < 3:
+            self._extract.setEnabled(False)
+            self.setToolTip("Select manually more peaks to auto extract peaks")
+        else:
+            self._extract.setEnabled(True)
+            self.setToolTip("")
+
+    def __initPeakSelectionView(self, model):
         tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())
         tableModel.requestRingChange.connect(self.__setRingNumber)
         tableModel.requestRemovePeak.connect(self.__removePeak)
         self.__peakSelectionView.setModel(tableModel)
 
     def __imageUpdated(self):
-        image = self.model().experimentSettingsModel().image().value()
-        self.__plot.addImage(image, legend="image", selectable=True)
+        image = self.model().experimentSettingsModel().maskedImage().value()
         if image is not None:
+            self.__plot.addImage(image, legend="image", selectable=True, copy=False, z=-1)
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
             self.__plot.resetZoom()
-
-    def __maskUpdated(self):
-        _mask = self.model().experimentSettingsModel().mask().value()
-        # FIXME maybe it is good to display the mask somewhere here
+        else:
+            self.__plot.removeImage("image")

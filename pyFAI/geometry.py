@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2018"
+__date__ = "06/12/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -49,6 +49,7 @@ import numpy
 import os
 import threading
 import time
+import json
 from collections import namedtuple, OrderedDict
 
 from . import detectors
@@ -599,7 +600,7 @@ class Geometry(object):
 
     @deprecated
     def positionArray(self, *arg, **kwarg):
-        """Derecated version of positionArray, left for compatibility see doc of position_array"""
+        """Deprecated version of :meth:`position_array`, left for compatibility see doc of position_array"""
         return self.position_array(*arg, **kwarg)
 
     def corner_array(self, shape=None, unit=None, use_cython=True, scale=True):
@@ -1096,6 +1097,76 @@ class Geometry(object):
         else:
             return dssa
 
+    def get_config(self):
+        """
+        return the configuration as a dictionnary
+        
+        :return: dictionary with the current configuration
+        """
+
+        config = OrderedDict([("poni_version", 2)])
+        with self._sem:
+            config["detector"] = self.detector.__class__.__name__
+            config["detector_config"] = self.detector.get_config()
+            config["dist"] = self._dist
+            config["poni1"] = self._poni1
+            config["poni2"] = self._poni2
+            config["rot1"] = self._rot1
+            config["rot2"] = self._rot2
+            config["rot3"] = self._rot3
+            if self._wavelength:
+                config["wavelength"] = self._wavelength
+        return config
+
+    def set_config(self, config):
+        """
+        Set the config of the geometry and of the underlying detector
+        
+        :param config: dictionary with the configuration
+        :return: itself
+        """
+        version = int(config.get("poni_version", 1))
+
+        if "detector" in config:
+            self.detector = detectors.detector_factory(config["detector"],
+                                                       config.get("detector_config"))
+            if isinstance(self.detector, detectors.NexusDetector):
+                # increment the poni_version for Nexus detector as no further config is needed!
+                version = max(2, version)
+        else:
+            self.detector = detectors.Detector()
+        if version == 1:
+            # Handle former version of PONI-file
+            if self.detector.force_pixel and ("pixelsize1" in config) and ("pixelsize2" in config):
+                pixel1 = float(config["pixelsize1"])
+                pixel2 = float(config["pixelsize2"])
+                self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
+            else:
+                if "pixelsize1" in config:
+                    self.detector.pixel1 = float(config["pixelsize1"])
+                if "pixelsize2" in config:
+                    self.detector.pixel2 = float(config["pixelsize2"])
+
+        if "distance" in config:
+            self._dist = float(config["distance"])
+        if "poni1" in config:
+            self._poni1 = float(config["poni1"])
+        if "poni2" in config:
+            self._poni2 = float(config["poni2"])
+        if "rot1" in config:
+            self._rot1 = float(config["rot1"])
+        if "rot2" in config:
+            self._rot2 = float(config["rot2"])
+        if "rot3" in config:
+            self._rot3 = float(config["rot3"])
+        if "wavelength" in config:
+            self._wavelength = float(config["wavelength"])
+        if "splinefile" in config:
+            if config["splinefile"].lower() != "none":
+                self.detector.set_splineFile(config["splinefile"])
+        self.reset()
+        return self
+
     def save(self, filename):
         """
         Save the geometry parameters.
@@ -1108,15 +1179,10 @@ class Geometry(object):
                 f.write(("# Nota: C-Order, 1 refers to the Y axis,"
                          " 2 to the X axis \n"))
                 f.write("# Calibration done at %s\n" % time.ctime())
+                f.write("poni_version: 2\n")
                 detector = self.detector
-                if isinstance(detector, detectors.NexusDetector) and detector._filename:
-                    f.write("Detector: %s\n" % os.path.abspath(detector._filename))
-                elif detector.name != "Detector":
-                    f.write("Detector: %s\n" % detector.__class__.__name__)
-                f.write("PixelSize1: %s\n" % detector.pixel1)
-                f.write("PixelSize2: %s\n" % detector.pixel2)
-                if detector.splineFile:
-                    f.write("SplineFile: %s\n" % detector.splineFile)
+                f.write("Detector: %s\n" % detector.__class__.__name__)
+                f.write("Detector_config: %s\n" % json.dumps(detector.get_config()))
 
                 f.write("Distance: %s\n" % self._dist)
                 f.write("Poni1: %s\n" % self._poni1)
@@ -1150,8 +1216,9 @@ class Geometry(object):
 
         :param filename: name of the file to load
         :type filename: string
+        :return: itself with updated parameters
         """
-        data = {}
+        data = OrderedDict()
         with open(filename) as opened_file:
             for line in opened_file:
                 if line.startswith("#") or (":" not in line):
@@ -1164,37 +1231,7 @@ class Geometry(object):
                 except Exception as error:  # IGNORE:W0703:
                     logger.error("Error %s with line: %s", error, line)
                 data[key] = value
-        if "detector" in data:
-            self.detector = detectors.detector_factory(data["detector"])
-        else:
-            self.detector = detectors.Detector()
-        if self.detector.force_pixel and ("pixelsize1" in data) and ("pixelsize2" in data):
-            pixel1 = float(data["pixelsize1"])
-            pixel2 = float(data["pixelsize2"])
-            self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
-        else:
-            if "pixelsize1" in data:
-                self.detector.pixel1 = float(data["pixelsize1"])
-            if "pixelsize2" in data:
-                self.detector.pixel2 = float(data["pixelsize2"])
-        if "distance" in data:
-            self._dist = float(data["distance"])
-        if "poni1" in data:
-            self._poni1 = float(data["poni1"])
-        if "poni2" in data:
-            self._poni2 = float(data["poni2"])
-        if "rot1" in data:
-            self._rot1 = float(data["rot1"])
-        if "rot2" in data:
-            self._rot2 = float(data["rot2"])
-        if "rot3" in data:
-            self._rot3 = float(data["rot3"])
-        if "wavelength" in data:
-            self._wavelength = float(data["wavelength"])
-        if "splinefile" in data:
-            if data["splinefile"].lower() != "none":
-                self.detector.set_splineFile(data["splinefile"])
-        self.reset()
+        return self.set_config(data)
     read = load
 
     def getPyFAI(self):
@@ -1767,7 +1804,7 @@ class Geometry(object):
         except:
             raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
-        chia = self.chia
+        chia = self.chiArray(shape)
 
         built_mask = numpy.ones(shape, dtype=numpy.int8)
         empty_data = numpy.zeros(shape, dtype=numpy.float32)
@@ -1842,7 +1879,7 @@ class Geometry(object):
         new.param = new_param
         cached = {}
         memo[id(self._cached_array)] = cached
-        for key, old_value in self._cached_array.items():
+        for key, old_value in self._cached_array.copy().items():
             if "copy" in dir(old_value):
                 new_value = old_value.copy()
                 memo[id(old_value)] = new_value
@@ -2171,3 +2208,32 @@ class Geometry(object):
     @property
     def _transmission_corr(self):
         return self._cached_array.get("transmission_corr")
+
+    def __getnewargs_ex__(self):
+        "Helper function for pickling geometry"
+        return (self.dist, self.poni1, self.poni2,
+                self.rot1, self.rot2, self.rot3,
+                self.pixel1, self.pixel2,
+                self.splineFile, self.detector, self.wavelength), {}
+
+    def __getstate__(self):
+        """Helper function for pickling geometry
+        
+        :return: the state of the object
+        """
+
+        state_blacklist = ('_sem',)
+        state = self.__dict__.copy()
+        for key in state_blacklist:
+            if key in state:
+                del state[key]
+        return state
+
+    def __setstate__(self, state):
+        """Helper function for unpickling geometry
+        
+        :param state: the state of the object
+        """
+        for statekey, statevalue in state.items():
+            setattr(self, statekey, statevalue)
+        self._sem = threading.Semaphore()

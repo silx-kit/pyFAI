@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/06/2018"
+__date__ = "19/11/2018"
 __status__ = "stable"
 
 
@@ -45,6 +45,7 @@ import os
 import posixpath
 import threading
 from collections import OrderedDict
+import json
 
 from .. import io
 from .. import spline
@@ -79,6 +80,10 @@ class DetectorMeta(type):
     # created
     def __init__(cls, name, bases, dct):
         # "Detector" is a bit peculiar: while abstract it may be needed by the GUI, so adding it to the repository
+        if name.startswith("_"):
+            # It's not a public class
+            return
+
         if hasattr(cls, 'MAX_SHAPE') or name == "Detector":
             cls.registry[name.lower()] = cls
             if hasattr(cls, "aliases"):
@@ -93,6 +98,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
     """
     Generic class representing a 2D detector
     """
+    MANUFACTURER = None
+
     force_pixel = False  # Used to specify pixel size should be defined by the class itself.
     aliases = []  # list of alternative names
     registry = {}  # list of  detectors ...
@@ -118,22 +125,58 @@ class Detector(with_metaclass(DetectorMeta, object)):
         :rtype: pyFAI.detectors.Detector
         """
         if isinstance(name, Detector):
+            # It's already a detector
             return name
+
         if os.path.isfile(name):
+            # It's a filename
             return NexusDetector(name)
-        name = name.lower()
-        names = [name, name.replace(" ", "_")]
-        for name in names:
-            if name in cls.registry:
-                mydet = cls.registry[name]()
-                if config is not None:
-                    mydet.set_config(config)
-                return mydet
-        else:
+
+        # Search for the detector class
+        import pyFAI.detectors
+        detectorClass = None
+        if hasattr(pyFAI.detectors, name):
+            # It's a classname
+            cls = getattr(pyFAI.detectors, name)
+            if issubclass(cls, pyFAI.detectors.Detector):
+                # Avoid code injection
+                detectorClass = cls
+
+        if detectorClass is None:
+            # Search the name using the name database
+            name = name.lower()
+            names = [name, name.replace(" ", "_")]
+            for name in names:
+                if name in cls.registry:
+                    detectorClass = cls.registry[name]
+                    break
+
+        if detectorClass is None:
             msg = ("Detector %s is unknown !, "
                    "please check if the filename exists or select one from %s" % (name, cls.registry.keys()))
             logger.error(msg)
             raise RuntimeError(msg)
+
+        # Create the detector
+        detector = None
+        if config is not None:
+            if not isinstance(config, dict):
+                try:
+                    config = json.loads(config)
+                except Exception as err:  # IGNORE:W0703:
+                    logger.error("Unable to parse config %s with JSON: %s, %s",
+                                 name, config, err)
+                    raise err
+            try:
+                detector = detectorClass(**config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to configure detector %s with config: %s\n %s",
+                             name, config, err)
+                raise err
+        else:
+            detector = detectorClass()
+
+        return detector
 
     def __init__(self, pixel1=None, pixel2=None, splineFile=None, max_shape=None):
         """
@@ -228,32 +271,64 @@ class Detector(with_metaclass(DetectorMeta, object)):
             new.set_splineFile(self._splineFile)
         return new
 
+    def __eq__(self, other):
+        """Equality checker for detector, used in tests
+
+        Checks for pixel1, pixel2, binning, shape, max_shape.
+        """
+        if other is None:
+            return False
+        res = True
+        for what in ["pixel1", "pixel2", "binning", "shape", "max_shape"]:
+            res &= getattr(self, what) == getattr(other, what)
+        return res
+
     def set_config(self, config):
         """
-        Sets the configuration of the detector. This implies:
-
-        - Orientation: integers
-        - Binning
-        - ROI
+        Sets the configuration of the detector.
 
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
-        keys in that dictionary are :
+        keys in that dictionary are:  pixel1, pixel2, splineFile, max_shape
 
-        - "orientation": integers from 0 to 7
-        - "binning": integer or 2-tuple of integers. If only one integer is
-            provided,
-        - "offset": coordinate (in pixels) of the start of the detector
+        :param config: string or JSON-serialized dict
+        :return: self
         """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
         if not self.force_pixel:
-            if "pixel1" in config:
-                self.set_pixel1(config["pixel1"])
-            if "pixel2" in config:
-                self.set_pixel2(config["pixel2"])
+            pixel1 = config.get("pixel1")
+            pixel2 = config.get("pixel2")
+            if pixel1:
+                self.set_pixel1(pixel1)
+            if pixel2:
+                self.set_pixel2(pixel2)
             if "splineFile" in config:
-                self.set_splineFile(config["splineFile"])
-        # TODO: complete
+                self.set_splineFile(config.get("splineFile"))
+            if "max_shape" in config:
+                self.max_shape = config.get("max_shape")
+        return self
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+
+        Derivative classes should implement this method
+        if they change the constructor!
+
+        :return: dict with param for serialization
+        """
+        dico = OrderedDict((("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2),
+                            ('max_shape', self.max_shape)))
+        if self._splineFile:
+            dico["splineFile"] = self._splineFile
+        return dico
 
     def get_splineFile(self):
         return self._splineFile
@@ -266,7 +341,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
             self.uniform_pixel = False
-            self.max_shape = (int(self.spline.ymax - self.spline.ymin), int(self.spline.xmax - self.spline.xmin))
+            self.max_shape = self.spline.getDetectorSize()
             # assume no binning
             self.shape = self.max_shape
             self._binning = (1, 1)
@@ -368,9 +443,11 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         dico = OrderedDict((("detector", self.name),
                             ("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+                            ("pixel2", self._pixel2),
+                            ('max_shape', self.max_shape)))
         if self._splineFile:
             dico["splineFile"] = self._splineFile
+
         return dico
 
     def getFit2D(self):
@@ -393,12 +470,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         if "detector" in kwarg:
             import pyFAI.detectors
-            self = pyFAI.detectors.detector_factory(kwarg["detector"])
-        for kw in kwarg:
-            if kw in ["pixel1", "pixel2"]:
-                setattr(self, kw, kwarg[kw])
-            elif kw == "splineFile":
-                self.set_splineFile(kwarg[kw])
+            config = {}
+            for key in ("pixel1", "pixel2", 'max_shape', "splineFile"):
+                if key in kwarg:
+                    config[key] = kwarg[key]
+            self = pyFAI.detectors.detector_factory(kwarg["detector"], config)
+        return self
 
     @classmethod
     def from_dict(cls, dico):
@@ -482,14 +559,14 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 delta1 = d1 - i1
                 delta2 = d2 - i2
                 pixels = self._pixel_corners[i1, i2]
-                A1 = pixels[:, :, 0, 1]
-                A2 = pixels[:, :, 0, 2]
-                B1 = pixels[:, :, 1, 1]
-                B2 = pixels[:, :, 1, 2]
-                C1 = pixels[:, :, 2, 1]
-                C2 = pixels[:, :, 2, 2]
-                D1 = pixels[:, :, 3, 1]
-                D2 = pixels[:, :, 3, 2]
+                A1 = pixels[..., 0, 1]
+                A2 = pixels[..., 0, 2]
+                B1 = pixels[..., 1, 1]
+                B2 = pixels[..., 1, 2]
+                C1 = pixels[..., 2, 1]
+                C2 = pixels[..., 2, 2]
+                D1 = pixels[..., 3, 1]
+                D2 = pixels[..., 3, 2]
                 # points A and D are on the same dim1 (Y), they differ in dim2 (X)
                 # points B and C are on the same dim1 (Y), they differ in dim2 (X)
                 # points A and B are on the same dim2 (X), they differ in dim1 (Y)
@@ -504,10 +581,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
                     + C2 * delta1 * delta2 \
                     + D2 * (1.0 - delta1) * delta2
                 if not self.IS_FLAT:
-                    A0 = pixels[:, :, 0, 0]
-                    B0 = pixels[:, :, 1, 0]
-                    C0 = pixels[:, :, 2, 0]
-                    D0 = pixels[:, :, 3, 0]
+                    A0 = pixels[..., 0, 0]
+                    B0 = pixels[..., 1, 0]
+                    C0 = pixels[..., 2, 0]
+                    D0 = pixels[..., 3, 0]
                     p3 = A0 * (1.0 - delta1) * (1.0 - delta2) \
                         + B0 * delta1 * (1.0 - delta2) \
                         + C0 * delta1 * delta2 \
@@ -581,6 +658,32 @@ class Detector(with_metaclass(DetectorMeta, object)):
                         self._pixel_corners[:, :, 3, 0] = p3[:-1, 1:]
         return self._pixel_corners
 
+    def set_pixel_corners(self, ary):
+        """Sets the position of pixel corners with some additional validation
+        
+        :param ary: This a 4D array which contains: number of lines, 
+                                                    number of columns, 
+                                                    corner index, 
+                                                    position in space Z, Y, X
+        """
+        if ary is None:
+            # Leave as it is ... just reset the array
+            self._pixel_corners = None
+        else:
+            ary = numpy.ascontiguousarray(ary, dtype=numpy.float32)
+            # Validation for the array
+            assert ary.ndim == 4
+            assert ary.shape[3] == 3  # 3 coordinates in Z Y X
+            assert ary.shape[2] >= 3  # at least 3 corners per pixel
+
+            z = ary[..., 0]
+            is_flat = (z.max() == z.min() == 0.0)
+            with self._sem:
+                self.IS_CONTIGUOUS = False
+                self.IS_FLAT = is_flat
+                self.uniform_pixel = False  # This enforces the usage of pixel_corners
+                self._pixel_corners = ary
+
     def save(self, filename):
         """
         Saves the detector description into a NeXus file, adapted from:
@@ -629,8 +732,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 dset.attrs["interpretation"] = "vertex"
 
     def guess_binning(self, data):
-        """
-        Guess the binning/mode depending on the image shape
+        """Guess the binning/mode depending on the image shape
+
+        If the binning changes, this enforces the reset of the mask.
+
         :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
         :return: True if the data fit the detector
         :rtype: bool
@@ -643,6 +748,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
             logger.warning("No shape available to guess the binning: %s", data)
             self._binning = 1, 1
             return False
+
+        if shape == self.shape:
+            return True
 
         if not self.force_pixel:
             if shape != self.max_shape:
@@ -854,6 +962,31 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
+    def __getnewargs_ex__(self):
+        "Helper function for pickling detectors"
+        return (self.pixel1, self.pixel2, self.splineFile, self.max_shape), {}
+
+    def __getstate__(self):
+        """Helper function for pickling detectors
+
+        :return: the state of the object
+        """
+        state_blacklist = ('_sem',)
+        state = self.__dict__.copy()
+        for key in state_blacklist:
+            if key in state:
+                del state[key]
+        return state
+
+    def __setstate__(self, state):
+        """Helper function for unpickling detectors
+
+        :param state: the state of the object
+        """
+        for statekey, statevalue in state.items():
+            setattr(self, statekey, statevalue)
+        self._sem = threading.Semaphore()
+
 
 class NexusDetector(Detector):
     """
@@ -927,6 +1060,15 @@ class NexusDetector(Detector):
                 self.max_shape = tuple(i * j for i, j in zip(self.shape, self._binning))
         self._filename = filename
 
+    def get_filename(self):
+        """Returns the filename containing the description of this detector.
+
+        :rtype: Enum[None|str]
+        """
+        return self._filename
+
+    filename = property(get_filename)
+
     @classmethod
     def sload(cls, filename):
         """
@@ -939,6 +1081,36 @@ class NexusDetector(Detector):
         obj = cls()
         cls.load(filename)
         return obj
+
+    def set_config(self, config):
+        """set the config of the detector
+
+        For Nexus detector, the only valid key is "filename"
+
+        :param config: dict or JSON serialized dict
+        :return: detector instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+        filename = config.get("filename")
+        if os.path.exists(filename):
+            self.load(filename)
+        else:
+            logger.error("Unable to configure Nexus detector, config: %s",
+                         config)
+        return self
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+
+        :return: dict with param for serialization
+        """
+        return {"filename": self._filename}
 
     def getPyFAI(self):
         """

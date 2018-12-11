@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "30/11/2018"
 
 import unittest
 import numpy
@@ -47,26 +47,29 @@ logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
 from ..utils import mathutil
+from ..ext import splitBBox, splitPixel
 
 
 class TestSplitPixel(unittest.TestCase):
 
-    def setUp(self):
-        unittest.TestCase.setUp(self)
+    @classmethod
+    def setUpClass(cls):
+        super(TestSplitPixel, cls).setUpClass()
         img = numpy.zeros((512, 512))
         for i in range(1, 6):
             img[i * 100, i * 100] = 1
         det = Detector(1e-4, 1e-4)
         det.shape = (512, 512)
         ai = AzimuthalIntegrator(1, detector=det)
-        self.results = {}
+        cls.results = {}
         for i, meth in enumerate(["numpy", "cython", "splitbbox", "splitpixel", "csr_no", "csr_bbox", "csr_full"]):
-            self.results[meth] = ai.integrate1d(img, 10000, method=meth, unit="2th_deg")
+            cls.results[meth] = ai.integrate1d(img, 10000, method=meth, unit="2th_deg")
             ai.reset()
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.results = None
+    @classmethod
+    def tearDownClass(cls):
+        super(TestSplitPixel, cls).tearDownClass()
+        cls.results = None
 
     def test_no_split(self):
         """
@@ -124,10 +127,136 @@ class TestSplitPixel(unittest.TestCase):
         self.assertTrue(mathutil.rwp(self.results["csr_bbox"], self.results["csr_full"]) > thres, "csr_full/csr_full")
 
 
+class TestSplitBBoxNg(unittest.TestCase):
+    """Test the equivalence of the historical SplitBBox with the one propagating 
+    the variance"""
+    @classmethod
+    def setUpClass(cls):
+        super(TestSplitBBoxNg, cls).setUpClass()
+        det = Detector.factory("Pilatus 100k")
+        shape = det.shape
+        # The randomness of the image is not correlated to bug #1021
+        img = numpy.random.randint(0, 65000, numpy.prod(shape))
+
+        ai = AzimuthalIntegrator(1, detector=det)
+        ai.wavelength = 1e-10
+        tth = ai.center_array(shape, unit="2th_rad", scale=False).ravel()
+        dtth = ai.delta_array(shape, unit="2th_rad").ravel()
+        chi = ai.chiArray(shape).ravel()
+        dchi = ai.deltaChi(shape).ravel()
+        pos = ai.corner_array(shape, unit="2th_deg", use_cython=True, scale=False)
+        cls.results = {}
+        # Legacy implementation:
+        cls.results["histoBBox2d_legacy"] = splitBBox.histoBBox2d(img,
+                                                                  tth,
+                                                                  dtth,
+                                                                  chi,
+                                                                  dchi,
+                                                                  empty=-1)
+        cls.results["histoBBox2d_ng"] = splitBBox.histoBBox2d_ng(img,
+                                                                 tth,
+                                                                 dtth,
+                                                                 chi,
+                                                                 dchi,
+                                                                 variance=img,
+                                                                 empty=-1)
+        # Legacy implementation:
+        cls.results["fullSplit2D_legacy"] = splitPixel.fullSplit2D(pos,
+                                                                   img,
+                                                                   bins=(100, 36),
+                                                                   empty=-1)
+        cls.results["fullSplit2D_ng"] = splitPixel.pseudoSplit2D_ng(pos,
+                                                                    img,
+                                                                    bins=(100, 36),
+                                                                    variance=img,
+                                                                    empty=-1)
+        cls.img = img
+
+    @classmethod
+    def tearDownClass(cls):
+        super(TestSplitBBoxNg, cls).tearDownClass()
+        cls.results = None
+        cls.img = None
+
+    def test_split_bbox_2d(self):
+        # radial position:
+        tth_legacy = self.results["histoBBox2d_legacy"][1]
+        tth_ng = self.results["histoBBox2d_ng"][2]
+        self.assertEqual(abs(tth_legacy - tth_ng).max(), 0, "radial position is the same")
+
+        # azimuthal position:
+        chi_legacy = self.results["histoBBox2d_legacy"][2]
+        chi_ng = self.results["histoBBox2d_ng"][3]
+        self.assertEqual(abs(chi_legacy - chi_ng).max(), 0, "azimuthal position is the same")
+
+        # pixel count:
+        count_legacy = self.results["histoBBox2d_legacy"][4]
+        count_ng = self.results["histoBBox2d_ng"][4]["count"]
+
+        if abs(count_ng).max() == 0:
+            print(splitBBox)
+            print(count_legacy)
+            print(count_ng)
+            print("prop", self.results["histoBBox2d_ng"][4])
+            print("pos1", self.results["histoBBox2d_ng"][3])
+            print("pos0", self.results["histoBBox2d_ng"][2])
+            print("err", self.results["histoBBox2d_ng"][1])
+            print("int", self.results["histoBBox2d_ng"][0])
+        self.assertEqual(abs(count_legacy - count_ng).max(), 0, "count is the same")
+        # same for normalisation ... in this case
+        count_ng = self.results["histoBBox2d_ng"][4]["norm"]
+        self.assertEqual(abs(count_legacy - count_ng).max(), 0, "norm is old-count")
+
+        # Weighted signal:
+        weighted_legacy = self.results["histoBBox2d_legacy"][3]
+        signal = self.results["histoBBox2d_ng"][4]["signal"]
+        self.assertEqual(abs(signal - weighted_legacy).max(), 0, "Weighted is the same")
+
+        # resulting intensity validation
+        int_legacy = self.results["histoBBox2d_legacy"][0]
+        int_ng = self.results["histoBBox2d_ng"][0]
+        self.assertEqual(abs(int_legacy - int_ng).max(), 0, "intensity is the same")
+
+    def test_split_pixel_2d(self):
+        # radial position:
+        tth_legacy = self.results["fullSplit2D_legacy"][1]
+        tth_ng = self.results["fullSplit2D_ng"][2]
+        self.assertEqual(abs(tth_legacy - tth_ng).max(), 0, "radial position is the same")
+
+        # azimuthal position:
+        chi_legacy = self.results["fullSplit2D_legacy"][2]
+        chi_ng = self.results["fullSplit2D_ng"][3]
+        self.assertEqual(abs(chi_legacy - chi_ng).max(), 0, "azimuthal position is the same")
+
+        # pixel count:
+        count_legacy = self.results["fullSplit2D_legacy"][4]
+        count_ng = self.results["fullSplit2D_ng"][4]["count"]
+        self.assertLess(abs(count_legacy - count_ng).mean(), 1, "count is almost the same")
+        # same for normalisation ... in this case
+        count_ng = self.results["fullSplit2D_ng"][4]["norm"]
+        self.assertLess(abs(count_legacy - count_ng).mean(), 1, "norm is almost old-count")
+
+#         # Weighted signal:
+#         weighted_legacy = self.results["fullSplit2D_legacy"][3]
+#         signal = self.results["fullSplit2D_ng"][4]["signal"]
+#         print(weighted_legacy)
+#         print(signal)
+#         print(abs(signal / weighted_legacy).nanmean())
+#         self.assertEqual(abs(signal - weighted_legacy).max(), 0, "Weighted is the same")
+
+        # resulting intensity validation
+#         int_legacy = self.results["fullSplit2D_legacy"][0]
+#         int_ng = self.results["histoBBox2d_ng"][0]
+#         print(int_legacy)
+#         print(int_ng)
+#         self.assertEqual(abs(int_legacy - int_ng).max(), 0, "intensity is the same")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestSplitPixel))
+    testsuite.addTest(loader(TestSplitBBoxNg))
     return testsuite
 
 

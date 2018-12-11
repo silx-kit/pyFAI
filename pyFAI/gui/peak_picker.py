@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2018"
+__date__ = "25/10/2018"
 __status__ = "production"
 
 import os
@@ -160,7 +160,7 @@ class PeakPicker(object):
         else:
             data = self.data
         self.massif = Massif(data)
-        self._init_thread = threading.Thread(target=self.massif.getLabeledMassif, name="massif_process")
+        self._init_thread = threading.Thread(target=self.massif.get_labeled_massif, name="massif_process")
         self._init_thread.start()
         if sync:
             self._init_thread.join()

@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "26/11/2018"
 
 
 import os
@@ -45,11 +45,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-from .. import preproc as python_preproc
+from ..engines import preproc as python_preproc
 from ..ext import preproc as cython_preproc
-from ..opencl import preproc as ocl_preproc
+from ..opencl import ocl, preproc as ocl_preproc
 from .utilstest import UtilsTest
-from ..opencl.common import ocl
 
 
 class TestPreproc(unittest.TestCase):

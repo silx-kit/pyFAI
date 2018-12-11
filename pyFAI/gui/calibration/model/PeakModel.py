@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/02/2017"
+__date__ = "27/11/2018"
 
 from .AbstractModel import AbstractModel
 
@@ -40,6 +40,9 @@ class PeakModel(AbstractModel):
         self.__color = None
         self.__coords = []
         self.__ringNumber = None
+
+    def __len__(self):
+        return len(self.__coords)
 
     def isValid(self):
         return self.__name is not None and self.__ringNumber is not None
@@ -69,6 +72,7 @@ class PeakModel(AbstractModel):
         return self.__ringNumber
 
     def setRingNumber(self, ringNumber):
+        assert(ringNumber >= 1)
         self.__ringNumber = ringNumber
         self.wasChanged()
 

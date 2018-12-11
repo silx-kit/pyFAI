@@ -65,46 +65,42 @@ struct lut_point_t
  * @param lut         Pointer to an 2D-array of (unsigned integers,float) containing the index of input pixels and the fraction of pixel going to the bin
  * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
  * @param dummy       Float: value for bad pixels
- * @param delta_dummy Float: precision for bad pixel value
- * @param do_dark     Bool/int: shall dark-current correction be applied ?
- * @param dark        Float pointer to global memory storing the dark image.
- * @param do_flat     Bool/int: shall flat-field correction be applied ? (could contain polarization corrections)
- * @param flat        Float pointer to global memory storing the flat image.
- * @param outData     Float pointer to the output 1D array with the weighted histogram
- * @param outCount    Float pointer to the output 1D array with the unweighted histogram
- * @param outMerged   Float pointer to the output 1D array with the diffractogram
+ * @param coef_power  Set to 2 for variance propagation, leave to 1 for mean calculation
+ * @param sum_data     Float pointer to the output 1D array with the weighted histogram
+ * @param sum_count    Float pointer to the output 1D array with the unweighted histogram
+ * @param mergedd   Float pointer to the output 1D array with the diffractogram
  *
  */
 __kernel void
-lut_integrate(  const     __global    float              *weights,
-                const     __global    struct lut_point_t *lut,
-                const                 char                do_dummy,
-                const                 float               dummy,
-                          __global    float              *outData,
-                          __global    float              *outCount,
-                          __global    float              *outMerge
+lut_integrate(  const     global    float              *weights,
+                const     global    struct lut_point_t *lut,
+                const               char                do_dummy,
+                const               float               dummy,
+                const               int                 coef_power,
+                          global    float              *sum_data,
+                          global    float              *sum_count,
+                          global    float              *merged
                 )
 {
-    int idx, k, j, i= get_global_id(0);
-    float sum_data = 0.0f;
-    float sum_count = 0.0f;
-    float cd = 0.0f;
-    float cc = 0.0f;
-    float t, y;
+    int idx, k, j, bin_num= get_global_id(0);
+
+    // we use _K suffix to highlight it is float2 used for Kahan summation
+    float2 sum_data_K = (float2)(0.0f, 0.0f);
+    float2 sum_count_K = (float2)(0.0f, 0.0f);
     const float epsilon = 1e-10f;
     float coef, data;
-    if(i < NBINS)
+    if(bin_num < NBINS)
     {
         for (j=0;j<NLUT;j++)
         {
             if (ON_CPU){
                 //On CPU best performances are obtained  when each single thread reads adjacent memory
-                k = i*NLUT+j;
+                k = bin_num*NLUT+j;
 
             }
             else{
                 //On GPU best performances are obtained  when threads are reading adjacent memory
-                k = j*NBINS+i;
+                k = j*NBINS+bin_num;
             }
 
             idx = lut[k].idx;
@@ -118,21 +114,15 @@ lut_integrate(  const     __global    float              *weights,
                 //sum_count += coef;
                 //Kahan summation allows single precision arithmetics with error compensation
                 //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-                y = coef*data - cd;
-                t = sum_data + y;
-                cd = (t - sum_data) - y;
-                sum_data = t;
-                y = coef - cc;
-                t = sum_count + y;
-                cc = (t - sum_count) - y;
-                sum_count = t;
+                sum_data_K = kahan_sum(sum_data_K, pown(coef, coef_power) * data);
+                sum_count_K = kahan_sum(sum_count_K, coef);
             };//end if dummy
         };//for j
-        outData[i] = sum_data;
-        outCount[i] = sum_count;
-        if (sum_count > epsilon)
-            outMerge[i] =  sum_data / sum_count;
+        sum_data[bin_num] = sum_data_K.s0;
+        sum_count[bin_num] = sum_count_K.s0;
+        if (sum_count_K.s0 > epsilon)
+            merged[bin_num] =  sum_data_K.s0 / sum_count_K.s0;
         else
-            outMerge[i] = dummy;
+            merged[bin_num] = dummy;
   };//if NBINS
 };//end kernel

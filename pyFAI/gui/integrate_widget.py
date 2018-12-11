@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "18/10/2018"
 __status__ = "development"
 
 import logging
@@ -51,6 +51,7 @@ import numpy
 logger = logging.getLogger(__name__)
 from silx.gui import qt
 import fabio
+from .. import _version
 from .. import worker
 from ..detectors import ALL_DETECTORS, detector_factory
 from ..opencl import ocl
@@ -59,16 +60,21 @@ from ..io import HDF5Writer
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..units import RADIAL_UNITS
 from ..third_party import six
+from .utils import projecturl
 
 
 UIC = get_ui_file("integration.ui")
+LOCAL_DOC = "/usr/share/doc/pyfai-doc/html/man/pyFAI-integrate.html"
+if _version.version_info.releaselevel == "final":
+    version_tuple = ".".join(str(i) for i in _version.version_info[:3])
+    REMOTE_DOC = "http://silx.org/doc/pyFAI/" + version_tuple + "/man/pyFAI-integrate.html"
+else:
+    REMOTE_DOC = "http://silx.org/doc/pyFAI/dev/man/pyFAI-integrate.html"
 
 
 class AIWidget(qt.QWidget):
     """
     """
-    URL = "http://pyfai.readthedocs.org/en/latest/man/pyFAI-integrate.html"
-
     def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
         self.units = {}
         self.input_data = input_data
@@ -163,7 +169,7 @@ class AIWidget(qt.QWidget):
         self.rot2.setValidator(angle_validator)
         self.rot3.setValidator(angle_validator)
         # done at widget level
-#        self.polarization_factor.setValidator(qt.QDoubleValidator(-1, 1, 3))
+        # self.polarization_factor.setValidator(qt.QDoubleValidator(-1, 1, 3))
 
     def __get_unit(self):
         for unit, widget in self.units.items():
@@ -408,7 +414,8 @@ class AIWidget(qt.QWidget):
 
     def help(self):
         logger.debug("Please, help")
-        qt.QDesktopServices.openUrl(qt.QUrl(self.URL))
+        url = projecturl.get_documentation_url("man/pyFAI-integrate.html")
+        qt.QDesktopServices.openUrl(qt.QUrl(url))
 
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary
@@ -640,7 +647,10 @@ class AIWidget(qt.QWidget):
         self.rot3.setText(str_(ai.rot3))
         self.splineFile.setText(str_(ai.detector.splineFile))
         self.wavelength.setText(str_(ai._wavelength))
-        name = ai.detector.name.lower()
+
+        name = ai.detector.name.lower().replace(" ", "_")
+        if name not in self.all_detectors:
+            name = ai.detector.name.lower().replace(" ", "")
         if name in self.all_detectors:
             self.detector.setCurrentIndex(self.all_detectors.index(name))
         else:

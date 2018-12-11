@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2018"
+__date__ = "17/10/2018"
 
 import sys
 import unittest
@@ -63,7 +63,6 @@ from . import test_convolution
 from . import test_sparse
 from . import test_csr
 from . import test_blob_detection
-from . import test_marchingsquares
 from . import test_io
 from . import test_calibrant
 from . import test_polarization
@@ -81,11 +80,14 @@ from . import test_preproc
 from . import test_bayes
 from . import test_scripts
 from . import test_spline
+from . import test_sparse_builder
 from . import test_goniometer
 from . import test_integrate_app
 from . import test_pyfai_api
 from ..opencl import test as test_opencl
 from ..gui import test as test_gui
+from . import test_invert_geometry
+from . import test_massif
 
 
 def suite():
@@ -113,7 +115,6 @@ def suite():
     testsuite.addTest(test_sparse.suite())
     testsuite.addTest(test_csr.suite())
     testsuite.addTest(test_blob_detection.suite())
-    testsuite.addTest(test_marchingsquares.suite())
     testsuite.addTest(test_io.suite())
     testsuite.addTest(test_calibrant.suite())
     testsuite.addTest(test_polarization.suite())
@@ -131,9 +132,12 @@ def suite():
     testsuite.addTest(test_bayes.suite())
     testsuite.addTest(test_scripts.suite())
     testsuite.addTest(test_spline.suite())
+    testsuite.addTest(test_sparse_builder.suite())
     testsuite.addTest(test_goniometer.suite())
     testsuite.addTest(test_opencl.suite())
     testsuite.addTest(test_pyfai_api.suite())
+    testsuite.addTest(test_invert_geometry.suite())
+    testsuite.addTest(test_massif.suite())
     return testsuite
 
 

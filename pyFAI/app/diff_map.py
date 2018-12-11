@@ -28,24 +28,20 @@
 #  THE SOFTWARE.
 
 
-"""
-diff_tomo
-
-A tool for fast processing of diffraction tomography
-"""
+"""GUI interface for reduction of diffraction tomography experiments"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "10/10/2018"
 __satus__ = "Production"
 
 import logging
 import sys
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
-logger = logging.getLogger("diff_tomo")
+logger = logging.getLogger("diff_map")
 from pyFAI.diffmap import DiffMap
 
 

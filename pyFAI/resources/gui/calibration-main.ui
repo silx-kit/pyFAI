@@ -6,53 +6,127 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>524</width>
-    <height>312</height>
+    <width>567</width>
+    <height>367</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>PyFAI Calibration</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="margin">
+     <number>0</number>
+    </property>
     <item>
-     <widget class="QListWidget" name="_list">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
+     <widget class="QWidget" name="widget" native="true">
       <property name="styleSheet">
-       <string notr="true">QListWidget {
+       <string notr="true">QWidget {
+	background: #132577;
+}</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>60</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QListWidget" name="_list">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QListWidget {
 	border: 0;
-	background: rgba(1,1,1,0);
+	background: #132577;
 }
 
 QListWidget::item {
-	background: rgba(1,1,1,0);
 	height: 40px;
 	font: 0 16pt;
-	color:black;
-	margin: 10px;
+	color:white;
+	background-color: #132577;
+	margin-bottom: 20px;
 }
 
 QListWidget::item:selected {
 	font: 75 16pt;
-	background-color: grey;
+	background-color: #4d5ea3;
+	color: white;
 }
 </string>
-      </property>
-      <property name="currentRow">
-       <number>-1</number>
-      </property>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="uniformItemSizes">
+          <bool>true</bool>
+         </property>
+         <property name="currentRow">
+          <number>-1</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_help">
+         <property name="toolTip">
+          <string>Open a web browser containing a cookbook for calibration</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+	color: white;
+	border: 0;
+	margin: 5px;
+}</string>
+         </property>
+         <property name="text">
+          <string>Help...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
-     <widget class="QStackedWidget" name="_stack">
-      <property name="currentIndex">
-       <number>-1</number>
-      </property>
+     <widget class="QWidget" name="widget_2" native="true">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QStackedWidget" name="_stack">
+         <property name="currentIndex">
+          <number>-1</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>

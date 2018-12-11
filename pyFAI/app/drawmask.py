@@ -28,17 +28,13 @@
 #  THE SOFTWARE.
 
 
-"""
-pyFAI-drawmask
-
-Use silx library to provide a widget to custom a mask
-"""
+"""Use silx library to provide a widget to customize a mask """
 
 __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "09/10/2018"
 __satus__ = "Production"
 
 import os
@@ -56,7 +52,7 @@ if silx.version_info < (0, 2):
 import silx.gui.plot
 from silx.gui import qt
 import pyFAI.utils
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 
 
 class AbstractMaskImageWidget(qt.QMainWindow):
