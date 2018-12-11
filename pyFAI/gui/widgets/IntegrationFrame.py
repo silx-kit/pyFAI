@@ -530,10 +530,5 @@ class IntegrationFrame(qt.QWidget):
             else:
                 method = "csr_ocl"
         else:
-            # FIXME: Was it still needed? As the method can be configured
-            #if self.input_data is not None and len(self.input_data) > 5:
-            #    method = "csr"
-            #else:
-            #    method = "splitbbox"
-            method = "csr"
+            method = "splitbbox"
         return method
