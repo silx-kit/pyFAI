@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2018"
+__date__ = "11/12/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1012,6 +1012,8 @@ class AzimuthalIntegrator(Geometry):
             azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
+            self.check_chi_disc(azimuth_range)
+
             chi = self.chiArray(shape)
         else:
             chi = None
@@ -1690,6 +1692,7 @@ class AzimuthalIntegrator(Geometry):
             azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
+            self.check_chi_disc(azimuth_range)
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
@@ -2127,6 +2130,7 @@ class AzimuthalIntegrator(Geometry):
             azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
+            self.check_chi_disc(azimuth_range)
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
