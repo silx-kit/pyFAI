@@ -281,20 +281,27 @@ class IntegrationFrame(qt.QWidget):
             self.loadFromPoniFile(value)
 
         # geometry
-        value = dico.pop("wavelength", None)
-        self.__geometryModel.wavelength().setValue(value)
-        value = dico.pop("dist", None)
-        self.__geometryModel.distance().setValue(value)
-        value = dico.pop("poni1", None)
-        self.__geometryModel.poni1().setValue(value)
-        value = dico.pop("poni2", None)
-        self.__geometryModel.poni2().setValue(value)
-        value = dico.pop("rot1", None)
-        self.__geometryModel.rotation1().setValue(value)
-        value = dico.pop("rot2", None)
-        self.__geometryModel.rotation2().setValue(value)
-        value = dico.pop("rot3", None)
-        self.__geometryModel.rotation3().setValue(value)
+        if "wavelength" in dico:
+            value = dico.pop("wavelength")
+            self.__geometryModel.wavelength().setValue(value)
+        if "dist" in dico:
+            value = dico.pop("dist")
+            self.__geometryModel.distance().setValue(value)
+        if "poni1" in dico:
+            value = dico.pop("poni1")
+            self.__geometryModel.poni1().setValue(value)
+        if "poni2" in dico:
+            value = dico.pop("poni2")
+            self.__geometryModel.poni2().setValue(value)
+        if "rot1" in dico:
+            value = dico.pop("rot1")
+            self.__geometryModel.rotation1().setValue(value)
+        if "rot2" in dico:
+            value = dico.pop("rot2")
+            self.__geometryModel.rotation2().setValue(value)
+        if "rot3" in dico:
+            value = dico.pop("rot3")
+            self.__geometryModel.rotation3().setValue(value)
 
         # detector
         value = dico.pop("detector_config", None)
