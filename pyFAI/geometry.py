@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2018"
+__date__ = "11/12/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -194,6 +194,20 @@ class Geometry(object):
                           (f2d["directDist"], f2d["centerX"], f2d["centerY"],
                            f2d["tilt"], f2d["tiltPlanRotation"]))
         return os.linesep.join(lstTxt)
+
+    def check_chi_disc(self, range):
+        """Check the position of the \chi discontinuity
+        
+        :param range: range of chi for the integration
+        :return: True if there is a problem 
+        
+        """
+        lower = range[0]
+        upper = range[-1]
+        disc = pi if self.chiDiscAtPi else 0
+        if (lower < disc) and (upper > disc):
+            logger.warning("Chi discontinuity in azimuthal range ! disc=%s in [%s, %s]", disc, lower, upper)
+            return 1
 
     def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None):
         """
