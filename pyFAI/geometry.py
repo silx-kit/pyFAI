@@ -44,7 +44,7 @@ __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
-from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt, pi
+from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
 import threading
@@ -197,14 +197,13 @@ class Geometry(object):
 
     def check_chi_disc(self, range):
         """Check the position of the \chi discontinuity
-        
+
         :param range: range of chi for the integration
-        :return: True if there is a problem 
-        
+        :return: True if there is a problem
         """
         lower = range[0]
         upper = range[-1]
-        disc = pi if self.chiDiscAtPi else 0
+        disc = numpy.pi if self.chiDiscAtPi else 0
         if (lower < disc) and (upper > disc):
             logger.warning("Chi discontinuity in azimuthal range ! disc=%s in [%s, %s]", disc, lower, upper)
             return 1
@@ -1114,7 +1113,7 @@ class Geometry(object):
     def get_config(self):
         """
         return the configuration as a dictionnary
-        
+
         :return: dictionary with the current configuration
         """
 
@@ -1135,7 +1134,7 @@ class Geometry(object):
     def set_config(self, config):
         """
         Set the config of the geometry and of the underlying detector
-        
+
         :param config: dictionary with the configuration
         :return: itself
         """
@@ -1814,9 +1813,8 @@ class Geometry(object):
             shape = self.detector.max_shape
         try:
             ttha = self.__getattribute__(dim1_unit.center)(shape)
-
         except:
-            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
+            raise RuntimeError("in pyFAI.Geometry.calcfrom2d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
         chia = self.chiArray(shape)
 
@@ -2232,7 +2230,7 @@ class Geometry(object):
 
     def __getstate__(self):
         """Helper function for pickling geometry
-        
+
         :return: the state of the object
         """
 
@@ -2245,7 +2243,7 @@ class Geometry(object):
 
     def __setstate__(self, state):
         """Helper function for unpickling geometry
-        
+
         :param state: the state of the object
         """
         for statekey, statevalue in state.items():
