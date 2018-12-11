@@ -495,16 +495,18 @@ class Worker(object):
         _init_ai(self.ai, config, consume_keys=True)
 
         # Uses it anyway in case do_2D is customed after the configuration
-        value = config.pop("nbpt_azim", 1)
-        self.nbpt_azim = int(value)
+        value = config.pop("nbpt_azim", None)
+        if value:
+            self.nbpt_azim = int(value)
+        else:
+            self.nbpt_azim = 1
 
         value = config.pop("nbpt_rad", None)
         if value:
             self.nbpt_rad = int(value)
 
         value = config.pop("unit", units.TTH_DEG)
-        if value:
-            self.unit = units.to_unit(value)
+        self.unit = units.to_unit(value)
 
         value = config.pop("do_poisson", False)
         self.do_poisson = bool(value)
@@ -544,7 +546,7 @@ class Worker(object):
             do_opencl = None
         if method is not None:
             self.method = method
-        elif do_opencl is not None:
+        elif do_opencl is not None and do_opencl:
             self.method = "csr_ocl"
         else:
             self.method = "csr"
