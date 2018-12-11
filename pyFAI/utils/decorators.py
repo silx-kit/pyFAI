@@ -52,7 +52,7 @@ _CACHE_VERSIONS = {}
 
 
 def deprecated(func=None, reason=None, replacement=None, since_version=None,
-               only_once=True, skip_backtrace_count=1,
+               only_once=False, skip_backtrace_count=1,
                deprecated_since=None):
     """
     Decorator that deprecates the use of a function
