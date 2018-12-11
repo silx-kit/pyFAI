@@ -497,10 +497,9 @@ class Worker(object):
 
         _init_ai(self.ai, config, consume_keys=True)
 
-        if config.pop("do_2D", False):
-            self.nbpt_azim = int(config.pop("nbpt_azim"))
-        else:
-            self.nbpt_azim = 1
+        # Uses it anyway in case do_2D is customed after the configuration
+        value = config.pop("nbpt_azim", 1)
+        self.nbpt_azim = int(value)
 
         value = config.pop("nbpt_rad", None)
         if value:
