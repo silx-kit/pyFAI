@@ -105,10 +105,13 @@ def integrate_shell(options, args):
     with open(options.json) as f:
         config = json.load(f)
 
-    ai = pyFAI.worker.make_ai(config)
-    worker = pyFAI.worker.Worker(azimuthalIntegrator=ai)
-    # TODO this will init again the azimuthal integrator, there is a problem on the architecture
-    worker.setJsonConfig(options.json)
+    worker = pyFAI.worker.Worker()
+    worker.set_config(config, consume_keys=True)
+
+    # Check unused keys
+    for key in config.keys():
+        logger.warning("Configuration key '%s' from json file '%s' is unused", key, options.json)
+
     worker.safe = False  # all processing are expected to be the same.
     start_time = time.time()
 
