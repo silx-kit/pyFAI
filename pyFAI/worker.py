@@ -372,10 +372,7 @@ class Worker(object):
             #        kwarg["filename"] += self.extension
             #    else:
             #        kwarg["filename"] += ".xy"
-        if self.do_poisson:
-            kwarg["error_model"] = "poisson"
-        else:
-            kwarg["error_model"] = None
+        kwarg["error_model"] = self.error_model
 
         if self.radial_range is not None:
             kwarg["radial_range"] = self.radial_range
