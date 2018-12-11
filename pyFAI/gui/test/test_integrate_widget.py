@@ -73,61 +73,59 @@ class TestIntegrationDialog(unittest.TestCase):
 
     def test_process_no_data(self):
         widget = IntegrationDialog(json_file=None)
-        widget.set_ponifile(UtilsTest.getimage("Pilatus1M.poni"))
-        widget.nbpt_rad.setText("2")
+        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
+                "nbpt_rad": 2}
+        widget.set_config(dico)
         result = widget.proceed()
         self.assertIsNone(result)
 
     def test_process_numpy_1d(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[23.5, 9.9]]
 
         widget = IntegrationDialog(json_file=None)
-        widget.set_ponifile(ponifile)
-        widget.do_2D.setChecked(False)
-        widget.nbpt_rad.setText("2")
+        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
+                "do_2D": False,
+                "nbpt_rad": 2}
+        widget.set_config(dico)
         widget.set_input_data(numpy.array([data]))
         result = widget.proceed()
         numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
 
     def test_process_numpy_2d(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[5.6, 4.5], [41.8, 9.3]]]
-
         widget = IntegrationDialog(json_file=None)
-        widget.set_ponifile(ponifile)
-        widget.do_2D.setChecked(True)
-        widget.nbpt_azim.setText("2")
-        widget.nbpt_rad.setText("2")
+        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
+                "do_2D": True,
+                "nbpt_azim": 2,
+                "nbpt_rad": 2}
+        widget.set_config(dico)
         widget.set_input_data(numpy.array([data]))
         result = widget.proceed()
         numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
 
     def test_process_array_1d(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[1.9, 1.9], [23.5, 9.9]]]
-
         widget = IntegrationDialog(json_file=None)
-        widget.set_ponifile(ponifile)
-        widget.do_2D.setChecked(False)
-        widget.nbpt_rad.setText("2")
+        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
+                "do_2D": False,
+                "nbpt_rad": 2}
+        widget.set_config(dico)
         widget.set_input_data([data])
         result = widget.proceed()
         numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
 
     def test_process_array_2d(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[[5.6, 4.5], [41.8, 9.3]], [2.0, 2.0], [-124.5, -124.2]]]
-
         widget = IntegrationDialog(json_file=None)
-        widget.set_ponifile(ponifile)
-        widget.do_2D.setChecked(True)
-        widget.nbpt_azim.setText("2")
-        widget.nbpt_rad.setText("2")
+        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
+                "do_2D": True,
+                "nbpt_azim": 2,
+                "nbpt_rad": 2}
+        widget.set_config(dico)
         widget.set_input_data([data])
         result = widget.proceed()
         # simplify representation
