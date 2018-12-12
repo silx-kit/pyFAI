@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "12/12/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -46,6 +46,7 @@ from cython.parallel import prange
 import numpy
 cimport numpy
 from libc.math cimport fabs, floor, sqrt
+from libc.stdlib cimport abs
 from libc.stdio cimport printf, fflush, stdout
 
 from ..utils import crc32
@@ -778,7 +779,7 @@ class FullSplitCSR_2d(object):
                             tmp_i += point_and_line(B0, B1, C0, C1, i, j)
                             tmp_i += point_and_line(C0, C1, D0, D1, i, j)
                             tmp_i += point_and_line(D0, D1, A0, A1, i, j)
-                            is_inside[i, j] = (<int> fabs(tmp_i)) / <int> 4
+                            is_inside[i, j] = abs(tmp_i / 4)
 
                     for i in range(bins0):
                         for j in range(bins1):
@@ -962,7 +963,7 @@ class FullSplitCSR_2d(object):
                             tmp_i += point_and_line(B0, B1, C0, C1, i, j)
                             tmp_i += point_and_line(C0, C1, D0, D1, i, j)
                             tmp_i += point_and_line(D0, D1, A0, A1, i, j)
-                            is_inside[i, j] = (<int> fabs(tmp_i)) / <int> 4
+                            is_inside[i, j] = abs(tmp_i / 4)
 
                     for i in range(bins0):
                         for j in range(bins1):
