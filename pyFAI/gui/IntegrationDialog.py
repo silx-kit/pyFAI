@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "12/12/2018"
 __status__ = "development"
 
 import logging
@@ -53,7 +53,7 @@ from silx.gui import qt
 
 logger = logging.getLogger(__name__)
 
-from .. import worker
+from .. import worker as worker_mdl
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..io import HDF5Writer
 from ..third_party import six
@@ -103,41 +103,7 @@ class IntegrationDialog(qt.QWidget):
         with self._sem:
             out = None
             config = self.dump()
-            frame = self.__workerConfigurator
-            logger.debug("Let's work a bit")
-            ai = worker.make_ai(config)
-
-            # Default Keyword arguments
-            kwarg = {
-                "unit": frame.getRadialUnit(),
-                "dummy": frame.getDummy(),
-                "delta_dummy": frame.getDeltaDummy(),
-                "polarization_factor": frame.getPolarizationFactor(),
-                "filename": None,
-                "safe": False,
-                "correctSolidAngle": frame.getCorrectSolidAngle(),
-                "error_model": frame.getErrorModel(),
-                "method": frame.getMethod(),
-                "npt_rad": frame.getRadialNbpt()}
-
-            if kwarg["npt_rad"] is None:
-                message = "You must provide the number of output radial bins !"
-                qt.QMessageBox.warning(self, "PyFAI integrate", message)
-                return {}
-
-            if frame.getIntegrationKind() == "2d":
-                kwarg["npt_azim"] = frame.getAzimuthalNbpt()
-            rangeValue = frame.getRadialRange()
-            if rangeValue is not None:
-                kwarg["radial_range"] = rangeValue
-            rangeValue = frame.getAzimuthalRange()
-            if rangeValue is not None:
-                kwarg["azimuth_range"] = rangeValue
-
-            logger.info("Parameters for integration:%s%s" % (os.linesep,
-                        os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
-
-            logger.debug("processing %s", self.input_data)
+            logger.debug("Processing %s", self.input_data)
             start_time = time.time()
             if self.input_data is None or len(self.input_data) == 0:
                 logger.warning("No input data to process")
@@ -145,44 +111,59 @@ class IntegrationDialog(qt.QWidget):
 
             elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
                 # We have a numpy array of dim3
-                w = worker.Worker(azimuthalIntegrator=ai)
-                try:
-                    w.nbpt_rad = frame.getRadialNbpt()
-                    w.unit = frame.getRadialUnit()
-                    w.dummy = frame.getDummy()
-                    w.delta_dummy = frame.getDeltaDummy()
-                    w.polarization_factor = frame.getPolarizationFactor()
-                    # NOTE: previous implementation was using safe=False, the worker use safe=True
-                    w.correct_solid_angle = frame.getCorrectSolidAngle()
-                    w.error_model = frame.getErrorModel()
-                    w.method = frame.getMethod()
-                    w.safe = False
-                    if frame.getIntegrationKind() == "2d":
-                        w.nbpt_azim = frame.getAzimuthalNbpt()
-                    else:
-                        w.nbpt_azim = 1
-                    w.radial_range = frame.getRadialRange()
-                    w.azimuth_range = frame.getAzimuthalRange()
-                except RuntimeError as e:
-                    qt.QMessageBox.warning(self, "PyFAI integrate", e.args[0] + ". Action aboreded.")
-                    return {}
+                worker = worker_mdl.Worker()
+                worker.set_config(config)
+                worker.safe = False
 
-                if frame.getIntegrationKind() == "2d":
-                    out = numpy.zeros((self.input_data.shape[0], w.nbpt_azim, w.nbpt_rad), dtype=numpy.float32)
+                if worker.do_2D():
+                    out = numpy.zeros((self.input_data.shape[0], worker.nbpt_azim, worker.nbpt_rad), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         data = self.input_data[i]
-                        out[i] = w.process(data)
+                        out[i] = worker.process(data)
                 else:
-                    out = numpy.zeros((self.input_data.shape[0], w.nbpt_rad), dtype=numpy.float32)
+                    out = numpy.zeros((self.input_data.shape[0], worker.nbpt_rad), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         data = self.input_data[i]
-                        result = w.process(data)
+                        result = worker.process(data)
                         result = result.T[1]
                         out[i] = result
 
             elif "__len__" in dir(self.input_data):
+                ai = worker_mdl.make_ai(config)
+                frame = self.__workerConfigurator
+
+                # Default Keyword arguments
+                kwarg = {
+                    "unit": frame.getRadialUnit(),
+                    "dummy": frame.getDummy(),
+                    "delta_dummy": frame.getDeltaDummy(),
+                    "polarization_factor": frame.getPolarizationFactor(),
+                    "filename": None,
+                    "safe": False,
+                    "correctSolidAngle": frame.getCorrectSolidAngle(),
+                    "error_model": frame.getErrorModel(),
+                    "method": frame.getMethod(),
+                    "npt_rad": frame.getRadialNbpt()}
+
+                if kwarg["npt_rad"] is None:
+                    message = "You must provide the number of output radial bins !"
+                    qt.QMessageBox.warning(self, "PyFAI integrate", message)
+                    return {}
+
+                if frame.getIntegrationKind() == "2d":
+                    kwarg["npt_azim"] = frame.getAzimuthalNbpt()
+                rangeValue = frame.getRadialRange()
+                if rangeValue is not None:
+                    kwarg["radial_range"] = rangeValue
+                rangeValue = frame.getAzimuthalRange()
+                if rangeValue is not None:
+                    kwarg["azimuth_range"] = rangeValue
+
+                logger.info("Parameters for integration:%s%s" % (os.linesep,
+                            os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
+
                 out = []
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
