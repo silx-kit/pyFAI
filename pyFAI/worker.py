@@ -500,6 +500,10 @@ class Worker(object):
         else:
             self.nbpt_azim = 1
 
+        do_2D = config.pop("do_2D", False)
+        if do_2D is False:
+            self.nbpt_azim = 1
+
         value = config.pop("nbpt_rad", None)
         if value:
             self.nbpt_rad = int(value)
