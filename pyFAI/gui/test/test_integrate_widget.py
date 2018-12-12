@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "12/12/2018"
 
 import os
 import sys
@@ -86,7 +86,8 @@ class TestIntegrationDialog(unittest.TestCase):
         widget = IntegrationDialog(json_file=None)
         dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
                 "do_2D": False,
-                "nbpt_rad": 2}
+                "nbpt_rad": 2,
+                "method": "splitbbox"}
         widget.set_config(dico)
         widget.set_input_data(numpy.array([data]))
         result = widget.proceed()
@@ -99,7 +100,8 @@ class TestIntegrationDialog(unittest.TestCase):
         dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
                 "do_2D": True,
                 "nbpt_azim": 2,
-                "nbpt_rad": 2}
+                "nbpt_rad": 2,
+                "method": "splitbbox"}
         widget.set_config(dico)
         widget.set_input_data(numpy.array([data]))
         result = widget.proceed()
