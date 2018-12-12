@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "12/12/2018"
 __status__ = "development"
 
 import threading
@@ -125,13 +125,14 @@ def make_ai(config, consume_keys=False):
     return ai
 
 
-def _init_ai(ai, config, consume_keys=False):
+def _init_ai(ai, config, consume_keys=False, read_maps=True):
     """Initialize an :class:`AzimuthalIntegrator` from a configuration.
 
     :param AzimuthalIntegrator ai: An :class:`AzimuthalIntegrator`.
     :param config: Key-value dictionary with all parameters
     :param bool consume_keys: If true the keys from the dictionary will be
         consumed when used.
+    :param bool read_maps: If true mask, flat, dark will be read.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
     if not consume_keys:
@@ -197,27 +198,28 @@ def _init_ai(ai, config, consume_keys=False):
     else:
         ai.setChiDiscAtPi()
 
-    filename = config.pop("mask_file", "")
-    apply_process = config.pop("do_mask", True)
-    if filename and os.path.exists(filename) and apply_process:
-        try:
-            data = fabio.open(filename).data
-        except Exception as error:
-            logger.error("Unable to load mask file %s, error %s", filename, error)
-        else:
-            ai.mask = data
+    if read_maps:
+        filename = config.pop("mask_file", "")
+        apply_process = config.pop("do_mask", True)
+        if filename and os.path.exists(filename) and apply_process:
+            try:
+                data = fabio.open(filename).data
+            except Exception as error:
+                logger.error("Unable to load mask file %s, error %s", filename, error)
+            else:
+                ai.mask = data
 
-    filename = config.pop("dark_current", "")
-    apply_process = config.pop("do_dark", True)
-    if filename and apply_process:
-        filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
-        ai.set_darkfiles(filenames)
+        filename = config.pop("dark_current", "")
+        apply_process = config.pop("do_dark", True)
+        if filename and apply_process:
+            filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
+            ai.set_darkfiles(filenames)
 
-    filename = config.pop("flat_field", "")
-    apply_process = config.pop("do_flat", True)
-    if filename and apply_process:
-        filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
-        ai.set_flatfiles(filenames)
+        filename = config.pop("flat_field", "")
+        apply_process = config.pop("do_flat", True)
+        if filename and apply_process:
+            filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
+            ai.set_flatfiles(filenames)
 
     return ai
 
@@ -458,11 +460,11 @@ class Worker(object):
         :param bool consume_keys: If true the keys from the dictionary will be
             consumed when used.
         """
-        print("Start config...")
-
         if not consume_keys:
             # Avoid to edit the input argument
             config = dict(config)
+
+        _init_ai(self.ai, config, consume_keys=True, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
         filename = config.pop("mask_file", "")
@@ -475,7 +477,7 @@ class Worker(object):
             else:
                 self.ai.mask = data
 
-        # Do it here before reading the AI to be able to catch the io
+        # Do it here while we have to store metadata
         filename = config.pop("dark_current", "")
         apply_process = config.pop("do_dark", True)
         if filename and apply_process:
@@ -483,15 +485,13 @@ class Worker(object):
             self.ai.set_darkfiles(filenames)
             self.dark_current_image = filenames
 
-        # Do it here before reading the AI to be able to catch the io
+        # Do it here while we have to store metadata
         filename = config.pop("flat_field", "")
         apply_process = config.pop("do_flat", True)
         if filename and apply_process:
             filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
             self.ai.set_flatfiles(filenames)
             self.flat_field_image = self.ai.flatfiles
-
-        _init_ai(self.ai, config, consume_keys=True)
 
         # Uses it anyway in case do_2D is customed after the configuration
         value = config.pop("nbpt_azim", None)
