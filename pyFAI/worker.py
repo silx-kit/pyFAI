@@ -313,7 +313,6 @@ class Worker(object):
                 if self.needs_reset:
                     self.ai.reset()
                     self.needs_reset = False
-        # print self.__repr__()
 
     def reconfig(self, shape=(2048, 2048), sync=False):
         """
