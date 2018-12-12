@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "12/12/2018"
 __status__ = "development"
 
 import logging
@@ -67,6 +67,7 @@ class WorkerConfigurator(qt.QWidget):
         qt.loadUi(filename, self)
 
         self._openclDevice = "any"
+        self.__method = None
 
         self.__geometryModel = GeometryModel()
         self.__detector = None
@@ -263,6 +264,9 @@ class WorkerConfigurator(qt.QWidget):
                   "unit": str(self.radial_unit.model().value()),
                   }
 
+        if self.__method is not None:
+            config["method"] = self.__method
+
         value = self.getRadialNbpt()
         if value is not None:
             config["nbpt_rad"] = value
@@ -388,6 +392,9 @@ class WorkerConfigurator(qt.QWidget):
         if value is not None:
             unit = to_unit(value)
             self.radial_unit.model().setValue(unit)
+
+        value = dico.pop("method", None)
+        self.__method = value
 
         if setup_data.get("do_OpenCL"):
             self.__openclChanged()
