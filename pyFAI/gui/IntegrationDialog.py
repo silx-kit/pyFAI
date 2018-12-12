@@ -109,7 +109,7 @@ class IntegrationDialog(qt.QWidget):
                 logger.warning("No input data to process")
                 return
 
-            elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
+            elif hasattr(self.input_data, "ndim") and self.input_data.ndim == 3:
                 # We have a numpy array of dim3
                 worker = worker_mdl.Worker()
                 worker.set_config(config)
@@ -130,7 +130,7 @@ class IntegrationDialog(qt.QWidget):
                         result = result.T[1]
                         out[i] = result
 
-            elif "__len__" in dir(self.input_data):
+            elif hasattr(self.input_data, "__len__"):
                 ai = worker_mdl.make_ai(config)
                 frame = self.__workerConfigurator
 
