@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2018"
+__date__ = "13/12/2018"
 __status__ = "development"
 
 import threading
@@ -415,7 +415,9 @@ class Worker(object):
         if writer is not None:
             writer.write(integrated_result)
 
-        if self.output == "numpy":
+        if self.output == "raw":
+            return integrated_result
+        elif self.output == "numpy":
             if (variance is not None) and (error is not None):
                 return result, error
             else:
