@@ -83,17 +83,9 @@ class IntegrationDialog(qt.QWidget):
         self._sem = threading.Semaphore()
         self.json_file = json_file
 
-        # connect button bar
-        # FIXME: Do it
-        # self.okButton = self.buttonBox.button(qt.QDialogButtonBox.Ok)
-        # self.saveButton = self.buttonBox.button(qt.QDialogButtonBox.Save)
-        # self.resetButton = self.buttonBox.button(qt.QDialogButtonBox.Reset)
-        # self.cancelButton = self.buttonBox.button(qt.QDialogButtonBox.Cancel)
-        # self.okButton.clicked.connect(self.proceed)
+        self.batch_processing.clicked.connect(self.proceed)
         self.save_json_button.clicked.connect(self.save_config)
-        # self.buttonBox.helpRequested.connect(self.help)
-        # self.cancelButton.clicked.connect(self.die)
-        # self.resetButton.clicked.connect(self.restore)
+        self.quit_button.clicked.connect(self.die)
 
         self.progressBar.setValue(0)
 
@@ -101,6 +93,16 @@ class IntegrationDialog(qt.QWidget):
             self.restore(self.json_file)
 
     def proceed(self):
+
+        if len(self.input_data) == 0:
+            dialog = qt.QFileDialog(directory=os.getcwd())
+            dialog.setWindowTitle("Select images to integrate")
+            dialog.setFileMode(qt.QFileDialog.ExistingFiles)
+            dialog.exec_()
+            self.input_data = [str(i) for i in dialog.selectedFiles()]
+
+        self.__workerConfigurator.setEnabled(False)
+
         with self._sem:
             out = None
             config = self.dump()
@@ -207,6 +209,11 @@ class IntegrationDialog(qt.QWidget):
 
             logger.info("Processing Done in %.3fs !", time.time() - start_time)
             self.progressBar.setValue(100)
+
+        qt.QMessageBox.information(self,
+                                   "Integration",
+                                   "Batch processing completed.")
+
         self.die()
         # TODO: It should return nothing
         return out

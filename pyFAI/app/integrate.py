@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "13/12/2018"
 __satus__ = "production"
 import sys
 import logging
@@ -64,15 +64,7 @@ except ImportError:
 def integrate_gui(options, args):
     from silx.gui import qt
     from pyFAI.gui.IntegrationDialog import IntegrationDialog
-
     app = qt.QApplication([])
-    if not args:
-        dialog = qt.QFileDialog(directory=os.getcwd())
-        dialog.setWindowTitle("Select images to integrate")
-        dialog.setFileMode(qt.QFileDialog.ExistingFiles)
-        dialog.exec_()
-        args = [str(i) for i in dialog.selectedFiles()]
-
     window = IntegrationDialog(args, options.output, json_file=options.json)
     window.set_input_data(args)
     window.show()
