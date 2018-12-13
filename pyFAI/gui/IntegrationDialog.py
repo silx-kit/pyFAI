@@ -208,6 +208,7 @@ class IntegrationDialog(qt.QWidget):
             logger.info("Processing Done in %.3fs !", time.time() - start_time)
             self.progressBar.setValue(100)
         self.die()
+        # TODO: It should return nothing
         return out
 
     def die(self):
