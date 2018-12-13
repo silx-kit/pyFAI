@@ -89,10 +89,10 @@ class WorkerConfigurator(qt.QWidget):
         self.show_geometry.clicked.connect(self.showGeometry)
 
         # connect file selection windows
-        self.file_import.clicked.connect(self.selectPoniFile)
-        self.file_mask_file.clicked.connect(self.select_maskfile)
-        self.file_dark_current.clicked.connect(self.select_darkcurrent)
-        self.file_flat_field.clicked.connect(self.select_flatfield)
+        self.file_import.clicked.connect(self.__selectPoniFile)
+        self.file_mask_file.clicked.connect(self.__selectMaskFile)
+        self.file_dark_current.clicked.connect(self.__selectDarkCurrent)
+        self.file_flat_field.clicked.connect(self.__selectFlatField)
 
         npt_validator = qt.QIntValidator()
         npt_validator.setBottom(1)
@@ -142,20 +142,20 @@ class WorkerConfigurator(qt.QWidget):
         self.do_2D.setVisible(not only1d)
         self.__only1dIntegration = only1d
 
-    def getRadialUnit(self):
+    def __getRadialUnit(self):
         unit = self.radial_unit.model().value()
         if unit is not None:
             return unit
         logger.warning("Undefined unit !!! falling back on 2th_deg")
         return RADIAL_UNITS["2th_deg"]
 
-    def getRadialNbpt(self):
+    def __getRadialNbpt(self):
         value = str(self.nbpt_rad.text()).strip()
         if value == "":
             return None
         return int(value)
 
-    def getAzimuthalNbpt(self):
+    def __getAzimuthalNbpt(self):
         value = str(self.nbpt_azim.text()).strip()
         if value == "":
             return None
@@ -203,10 +203,10 @@ class WorkerConfigurator(qt.QWidget):
         if self.__method is not None:
             config["method"] = self.__method
 
-        value = self.getRadialNbpt()
+        value = self.__getRadialNbpt()
         if value is not None:
             config["nbpt_rad"] = value
-        value = self.getAzimuthalNbpt()
+        value = self.__getAzimuthalNbpt()
         if value is not None:
             config["nbpt_azim"] = value
 
@@ -392,7 +392,7 @@ class WorkerConfigurator(qt.QWidget):
             self.setDetector(newDetector)
 
     def __radialUnitUpdated(self):
-        unit = self.getRadialUnit()
+        unit = self.__getRadialUnit()
         # FIXME extract the unit
         self._radialRangeUnit.setText(str(unit))
 
@@ -414,26 +414,26 @@ class WorkerConfigurator(qt.QWidget):
         self.__detector = detector
         self.detector_label.setDetector(detector)
 
-    def selectPoniFile(self):
+    def __selectPoniFile(self):
         ponifile = self.getOpenFileName("Open a poni file")
         if ponifile is not None:
             self.loadFromPoniFile(ponifile)
 
-    def select_maskfile(self):
+    def __selectMaskFile(self):
         logger.debug("select_maskfile")
         maskfile = self.getOpenFileName("Open a mask image")
         if maskfile:
             self.mask_file.setText(maskfile or "")
             self.do_mask.setChecked(True)
 
-    def select_darkcurrent(self):
+    def __selectDarkCurrent(self):
         logger.debug("select_darkcurrent")
         darkcurrent = self.getOpenFileName("Open a dark image")
         if darkcurrent:
             self.dark_current.setText(str_(darkcurrent))
             self.do_dark.setChecked(True)
 
-    def select_flatfield(self):
+    def __selectFlatField(self):
         logger.debug("select_flatfield")
         flatfield = self.getOpenFileName("Open a flatfield image")
         if flatfield:
@@ -481,7 +481,7 @@ class WorkerConfigurator(qt.QWidget):
             if self.platform.count() == 0:
                 self.platform.addItems([i.name for i in ocl.platforms])
 
-    def getMethod(self):
+    def __getMethod(self):
         """
         Return the method name for azimuthal intgration
         """
