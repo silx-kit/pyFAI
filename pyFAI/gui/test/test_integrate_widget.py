@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2018"
+__date__ = "13/12/2018"
 
 import os
 import sys
@@ -126,7 +126,8 @@ class TestIntegrationDialog(unittest.TestCase):
         dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
                 "do_2D": True,
                 "nbpt_azim": 2,
-                "nbpt_rad": 2}
+                "nbpt_rad": 2,
+                "method": "splitbbox"}
         widget.set_config(dico)
         widget.set_input_data([data])
         result = widget.proceed()
