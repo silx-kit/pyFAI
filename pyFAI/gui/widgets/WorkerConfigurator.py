@@ -38,6 +38,8 @@ __date__ = "13/12/2018"
 __status__ = "development"
 
 import logging
+import json
+import os.path
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +56,7 @@ from ..calibration.model.GeometryModel import GeometryModel
 from ..calibration.model.DataModel import DataModel
 from ..utils import units
 from ...utils import stringutil
+from ..utils import FilterBuilder
 
 
 class WorkerConfigurator(qt.QWidget):
@@ -90,7 +93,7 @@ class WorkerConfigurator(qt.QWidget):
         self.show_geometry.clicked.connect(self.showGeometry)
 
         # connect file selection windows
-        self.file_import.clicked.connect(self.__selectPoniFile)
+        self.file_import.clicked.connect(self.__selectFile)
         self.file_mask_file.clicked.connect(self.__selectMaskFile)
         self.file_dark_current.clicked.connect(self.__selectDarkCurrent)
         self.file_flat_field.clicked.connect(self.__selectFlatField)
@@ -420,10 +423,28 @@ class WorkerConfigurator(qt.QWidget):
         self.__detector = detector
         self.detector_label.setDetector(detector)
 
-    def __selectPoniFile(self):
-        ponifile = self.getOpenFileName("Open a poni file")
-        if ponifile is not None:
-            self.loadFromPoniFile(ponifile)
+    def __selectFile(self):
+        dialog = qt.QFileDialog(self)
+        dialog.setWindowTitle("Open a poni file")
+        dialog.setModal(True)
+        dialog.setAcceptMode(qt.QFileDialog.AcceptOpen)
+
+        builder = FilterBuilder.FilterBuilder()
+        builder.addFileFormat("PONI files", "poni")
+        builder.addFileFormat("JSON files", "json")
+        dialog.setNameFilters(builder.getFilters())
+
+        result = dialog.exec_()
+        if not result:
+            return
+
+        filename = dialog.selectedFiles()[0]
+        if filename.endswith(".json"):
+            self.loadFromJsonFile(filename)
+        elif filename.endswith(".poni"):
+            self.loadFromPoniFile(filename)
+        else:
+            logger.error("File %s unsupported", filename)
 
     def __selectMaskFile(self):
         logger.debug("select_maskfile")
@@ -445,6 +466,15 @@ class WorkerConfigurator(qt.QWidget):
         if flatfield:
             self.flat_field.setText(str_(flatfield))
             self.do_flat.setChecked(True)
+
+    def loadFromJsonFile(self, filename):
+        """Initialize the widget using a json file."""
+        if not os.path.isfile(filename):
+            logger.error("No such file: %s", filename)
+            return
+        with open(filename) as f:
+            config = json.load(f)
+        self.setConfig(config)
 
     def loadFromPoniFile(self, ponifile):
         try:
