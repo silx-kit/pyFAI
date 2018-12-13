@@ -41,7 +41,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/08/2018"
+__date__ = "13/12/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -71,17 +71,18 @@ class Unit(object):
     It has at least a name and a scale (in SI-unit)
     """
     def __init__(self, name, scale=1, label=None, equation=None,
-                 center=None, corner=None, delta=None):
+                 center=None, corner=None, delta=None, short_name=None, unit_symbol=None):
         """Constructor of a unit.
 
-        :param (str) name: name of the unit
-        :param (float) scale: scale of th unit to go to SI
-        :param (string) label: label for nice representation in matplotlib,
+        :param str name: name of the unit
+        :param float scale: scale of th unit to go to SI
+        :param string label: label for nice representation in matplotlib,
                                 can use latex representation
-        :param (funct) equation: equation to calculate the value from coordinates
+        :param func equation: equation to calculate the value from coordinates
                                  (x,y,z) in detector space.
                                  Parameters of the function are x, y, z, lambda
-        :param (str) center: name of the fast-path function
+        :param str center: name of the fast-path function
+        :param str unit_symbol: Symbol used to display values of this unit
         """
         self.name = name
         self.scale = scale
@@ -90,6 +91,8 @@ class Unit(object):
         self.center = center
         self.delta = delta
         self.equation = equation
+        self.short_name = short_name
+        self.unit_symbol = unit_symbol
 
     def get(self, key):
         """Mimic the dictionary interface
@@ -114,8 +117,8 @@ RADIAL_UNITS = {}
 
 
 def register_radial_unit(name, scale=1, label=None, equation=None,
-                         center=None, corner=None, delta=None):
-    RADIAL_UNITS[name] = Unit(name, scale, label, equation, center, corner, delta)
+                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None):
+    RADIAL_UNITS[name] = Unit(name, scale, label, equation, center, corner, delta, short_name, unit_symbol)
 
 
 def eq_r(x, y, z=None, wavelength=None):
@@ -156,86 +159,113 @@ register_radial_unit("r_mm",
                      delta="deltaR",
                      scale=1000.0,
                      label=r"Radius $r$ ($mm$)",
-                     equation=eq_r)
+                     equation=eq_r,
+                     short_name="r",
+                     unit_symbol="mm")
 
 register_radial_unit("r_m",
                      center="rArray",
                      delta="deltaR",
                      scale=1.0,
                      label=r"Radius $r$ ($m$)",
-                     equation=eq_r)
+                     equation=eq_r,
+                     short_name="r",
+                     unit_symbol="m")
 
 register_radial_unit("2th_deg", scale=180.0 / numpy.pi,
                      center="twoThetaArray",
                      delta="delta2Theta",
                      label=r"Scattering angle $2\theta$ ($^{o}$)",
-                     equation=eq_2th
-                     )
+                     equation=eq_2th,
+                     short_name=r"2\theta",
+                     unit_symbol="deg")
 
 register_radial_unit("2th_rad",
                      center="twoThetaArray",
                      delta="delta2Theta",
                      scale=1.0,
                      label=r"Scattering angle $2\theta$ ($rad$)",
-                     equation=eq_2th)
+                     equation=eq_2th,
+                     short_name=r"2\theta",
+                     unit_symbol="rad")
 
 register_radial_unit("q_nm^-1",
                      center="qArray",
                      delta="deltaQ",
                      scale=1.0,
                      label=r"Scattering vector $q$ ($nm^{-1}$)",
-                     equation=eq_q)
+                     equation=eq_q,
+                     short_name="q",
+                     unit_symbol="nm^{-1}")
 
 register_radial_unit("q_A^-1",
                      center="qArray",
                      delta="deltaQ",
                      scale=0.1,
                      label=r"Scattering vector $q$ ($\AA^{-1}$)",
-                     equation=eq_q)
+                     equation=eq_q,
+                     short_name="q",
+                     unit_symbol="\AA^{-1}")
 
 register_radial_unit("d*2_A^-2",
                      center="rd2Array",
                      delta="deltaRd2",
                      scale=0.01,
                      label=r"Reciprocal spacing squared $d^{*2}$ ($\AA^{-2}$)",
-                     equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2)
+                     equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2,
+                     short_name="d^{*2}",
+                     unit_symbol="\AA^{-2}")
 
 register_radial_unit("d*2_nm^-2",
                      center="rd2Array",
                      delta="deltaRd2",
                      scale=1.0,
                      label=r"Reciprocal spacing squared $d^{*2}$ ($nm^{-2}$)",
-                     equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2)
+                     equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2,
+                     short_name="d^{*2}",
+                     unit_symbol="nm^{-2}")
 
 register_radial_unit("log10(q.m)_None",
                      scale=1.0,
                      label=r"log10($q$.m)",
-                     equation=lambda x, y, z, wavelength: numpy.log10(1e9 * eq_q(x, y, z, wavelength)))
+                     equation=lambda x, y, z, wavelength: numpy.log10(1e9 * eq_q(x, y, z, wavelength)),
+                     short_name="log10(q.m)",
+                     unit_symbol="?")
 
 register_radial_unit("log(q.nm)_None",
                      scale=1.0,
                      label=r"log($q$.nm)",
-                     equation=lambda x, y, z, wavelength: numpy.log(eq_q(x, y, z, wavelength)))
+                     equation=lambda x, y, z, wavelength: numpy.log(eq_q(x, y, z, wavelength)),
+                     short_name="log(q.nm)",
+                     unit_symbol="?")
 
 register_radial_unit("log(1+q.nm)_None",
                      scale=1.0,
                      label=r"log(1+$q$.nm)",
-                     equation=lambda x, y, z, wavelength: numpy.log1p(eq_q(x, y, z, wavelength)))
+                     equation=lambda x, y, z, wavelength: numpy.log1p(eq_q(x, y, z, wavelength)),
+                     short_name="log(1+q.nm)",
+                     unit_symbol="?")
 
 register_radial_unit("log(1+q.A)_None",
                      scale=1.0,
                      label=r"log(1+$q$.\AA)",
-                     equation=lambda x, y, z, wavelength: numpy.log1p(0.1 * eq_q(x, y, z, wavelength)))
+                     equation=lambda x, y, z, wavelength: numpy.log1p(0.1 * eq_q(x, y, z, wavelength)),
+                     short_name=r"log(1+q.\AA)",
+                     unit_symbol="?")
 
 register_radial_unit("arcsinh(q.nm)_None",
                      scale=1.0,
                      label=r"arcsinh($q$.nm)",
-                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength)))
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength)),
+                     short_name="arcsinh(q.nm)",
+                     unit_symbol="?")
 
 register_radial_unit("arcsinh(q.A)_None",
                      scale=1.0,
                      label=r"arcsinh($q$.\AA)",
-                     equation=lambda x, y, z, wavelength: numpy.arcsinh(0.1 * eq_q(x, y, z, wavelength)))
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(0.1 * eq_q(x, y, z, wavelength)),
+                     short_name=r"arcsinh(q.\AA)",
+                     unit_symbol="?")
 
 
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
