@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "06/12/2018"
+__date__ = "13/12/2018"
 
 from silx.gui import qt
 
@@ -137,7 +137,9 @@ class OpenClDeviceDialog(qt.QDialog):
 
         :param Union[str,Tuple[int,int]] device: A device.
         """
-        if device == "any":
+        if device is None:
+            self._anyDeviceButton.setChecked(True)
+        elif device == "any":
             self._anyDeviceButton.setChecked(True)
         elif device == "gpu":
             self._anyGpuButton.setChecked(True)
