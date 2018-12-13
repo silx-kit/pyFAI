@@ -31,7 +31,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "13/12/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -71,3 +71,23 @@ def safe_format(format_string, arguments):
         args = arguments
         kwargs = {}
     return _safe_formater.vformat(format_string, args, kwargs)
+
+
+def latex_to_unicode(string):
+    """Returns a unicode representation from latex strings used by pyFAI.
+
+    .. note:: The latex string could be removed from the pyFAI core.
+
+    :param str string: A latex string to convert
+    :rtype: str
+    """
+    string = string.replace("$", u"")
+    string = string.replace("^{-2}", u"⁻²")
+    string = string.replace("^{-1}", u"⁻¹")
+    string = string.replace("^.", u"⋅")
+    string = string.replace("2\\theta", u"2θ")
+    string = string.replace("^{o}", u"°")
+    string = string.replace("\\AA", u"Å")
+    string = string.replace("log10", u"log₁₀")
+    string = string.replace("^{*2}", u"d*²")
+    return string
