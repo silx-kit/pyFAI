@@ -47,7 +47,6 @@ from ..calibration.DetectorSelectorDrop import DetectorSelectorDrop
 from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ...detectors import detector_factory
-from ...opencl import ocl
 from ...utils import float_, str_, get_ui_file
 from ...azimuthalIntegrator import AzimuthalIntegrator
 from ...units import RADIAL_UNITS, to_unit
@@ -66,8 +65,9 @@ class WorkerConfigurator(qt.QWidget):
         filename = get_ui_file("worker-configurator.ui")
         qt.loadUi(filename, self)
 
-        self._openclDevice = "any"
-        self.__method = None
+        self.__histo = None
+        self.__impl = "splitbbox"
+        self._openclDevice = None
 
         self.__geometryModel = GeometryModel()
         self.__detector = None
@@ -103,8 +103,10 @@ class WorkerConfigurator(qt.QWidget):
 
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
+        self.do_OpenCL.toggled.connect(self.__openclChanged)
 
         self.__configureDisabledStates()
+        self.__updateMethodLabel()
 
         self.setDetector(None)
 
@@ -166,8 +168,6 @@ class WorkerConfigurator(qt.QWidget):
 
         :return: dict with all information.
         """
-        # FIXME: "method" is used by diff_map interation, it have to be exposed
-
         config = {"wavelength": self.__geometryModel.wavelength().value(),
                   "dist": self.__geometryModel.distance().value(),
                   "poni1": self.__geometryModel.poni1().value(),
@@ -196,12 +196,9 @@ class WorkerConfigurator(qt.QWidget):
                   "radial_range_max": self._float("radial_range_max", None),
                   "azimuth_range_min": self._float("azimuth_range_min", None),
                   "azimuth_range_max": self._float("azimuth_range_max", None),
-                  "do_OpenCL": bool(self.do_OpenCL.isChecked()),
                   "unit": str(self.radial_unit.model().value()),
+                  "method": self.__getMethod(),
                   }
-
-        if self.__method is not None:
-            config["method"] = self.__method
 
         value = self.__getRadialNbpt()
         if value is not None:
@@ -317,8 +314,7 @@ class WorkerConfigurator(qt.QWidget):
                       "radial_range_max": lambda a: self.radial_range_max.setText(str_(a)),
                       "azimuth_range_min": lambda a: self.azimuth_range_min.setText(str_(a)),
                       "azimuth_range_max": lambda a: self.azimuth_range_max.setText(str_(a)),
-                      "do_solid_angle": self.do_solid_angle.setChecked,
-                      "do_OpenCL": self.do_OpenCL.setChecked}
+                      "do_solid_angle": self.do_solid_angle.setChecked}
 
         for key, value in setup_data.items():
             if key in dico and (value is not None):
@@ -329,11 +325,9 @@ class WorkerConfigurator(qt.QWidget):
             unit = to_unit(value)
             self.radial_unit.model().setValue(unit)
 
-        value = dico.pop("method", None)
-        self.__method = value
-
-        if setup_data.get("do_OpenCL"):
-            self.__openclChanged()
+        method = dico.pop("method", None)
+        use_opencl = dico.pop("do_OpenCL", False)
+        self.__setMethod(method, use_opencl)
 
         if self.__only1dIntegration:
             # Force unchecked
@@ -409,6 +403,7 @@ class WorkerConfigurator(qt.QWidget):
         if result:
             self._openclDevice = dialog.device()
             self.opencl_label.setDevice(self._openclDevice)
+            self.__updateMethodLabel()
 
     def setDetector(self, detector):
         self.__detector = detector
@@ -472,27 +467,88 @@ class WorkerConfigurator(qt.QWidget):
         return fval
 
     def __openclChanged(self):
-        logger.debug("do_OpenCL")
         do_ocl = bool(self.do_OpenCL.isChecked())
-        if do_ocl:
-            if ocl is None:
-                self.do_OpenCL.setChecked(0)
-                return
-            if self.platform.count() == 0:
-                self.platform.addItems([i.name for i in ocl.platforms])
+        self.opencl_config_button.setEnabled(do_ocl)
+        self.opencl_label.setEnabled(do_ocl)
+        self.__updateMethodLabel()
+
+    def __updateMethodLabel(self):
+        method = self.__getMethod()
+        self.methodLabel.setText(method)
+
+    def __parseMethod(self, method):
+        elements = method.split("_")
+        if len(elements) == 1:
+            return None, method, None
+        histo = elements[0]
+        impl = elements[1]
+        if impl != "ocl":
+            assert(len(elements) <= 2)
+            return histo, impl, None
+
+        if len(elements) == 2:
+            return histo, impl, "any"
+        elif len(elements) == 3:
+            if elements[2] == "gpu":
+                return histo, impl, "gpu"
+            elif elements[2] == "cpu":
+                return histo, impl, "cpu"
+            else:
+                try:
+                    elements = elements[2].split(",")
+                    return int(elements[0]), int(elements[1])
+                except Exception:
+                    logger.debug("Backtrace", exc_info=True)
+                    logger.warning("Unsupported opencl device from '%s'", method)
+                    return histo, impl, "any"
+        else:
+            logger.warning("Unsupported opencl device from '%s'", method)
+            return histo, impl, None
+
+    def __setMethod(self, method, use_opencl):
+        # Store the original method
+        if method is not None:
+            pass
+        elif use_opencl:
+            method = "csr_ocl"
+        else:
+            method = "splitbbox"
+
+        histo, impl, device = self.__parseMethod(method)
+        self.__histo = histo
+        self.__impl = impl
+        self._openclDevice = device
+
+        self.do_OpenCL.setChecked(self._openclDevice is not None)
+        self.opencl_label.setDevice(self._openclDevice)
+        self.__openclChanged()
 
     def __getMethod(self):
         """
         Return the method name for azimuthal intgration
         """
         if self.do_OpenCL.isChecked():
-            platform = ocl.get_platform(self.platform.currentText())
-            pid = platform.id
-            did = platform.get_device(self.device.currentText()).id
-            if (pid is not None) and (did is not None):
-                method = "csr_ocl_%i,%i" % (pid, did)
+            device = self._openclDevice
+            if device is None or device == "any":
+                pattern = "%s_ocl"
+            elif device == "cpu":
+                pattern = "%s_ocl_cpu"
+            elif device == "gpu":
+                pattern = "%s_ocl_gpu"
             else:
-                method = "csr_ocl"
+                pid, did = device
+                pattern = "%%s_ocl_%i,%i" % (pid, did)
+            if self.__histo is None:
+                histo = "csr"
+            else:
+                histo = self.__histo
+            method = pattern % histo
         else:
-            method = "splitbbox"
+            if self.__impl == "ocl":
+                method = "splitbbox"
+            elif self.__histo is None:
+                method = self.__impl
+            else:
+                method = "%s_%s" % (self.__histo, self.__impl)
+
         return method
