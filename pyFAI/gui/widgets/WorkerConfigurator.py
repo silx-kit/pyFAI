@@ -170,7 +170,9 @@ class WorkerConfigurator(qt.QWidget):
 
         :return: dict with all information.
         """
-        config = {"wavelength": self.__geometryModel.wavelength().value(),
+        config = {"version": 2,
+                  "application": "pyfai-integrate",
+                  "wavelength": self.__geometryModel.wavelength().value(),
                   "dist": self.__geometryModel.distance().value(),
                   "poni1": self.__geometryModel.poni1().value(),
                   "poni2": self.__geometryModel.poni2().value(),
