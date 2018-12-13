@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2018"
+__date__ = "13/12/2018"
 __status__ = "development"
 
 import logging
@@ -55,6 +55,7 @@ logger = logging.getLogger(__name__)
 
 from .. import worker as worker_mdl
 from .widgets.WorkerConfigurator import WorkerConfigurator
+from ..io import DefaultAiWriter
 from ..io import HDF5Writer
 from ..third_party import six
 from .utils import projecturl
@@ -131,89 +132,79 @@ class IntegrationDialog(qt.QWidget):
                         out[i] = result
 
             elif hasattr(self.input_data, "__len__"):
-                ai = worker_mdl.make_ai(config)
-                frame = self.__workerConfigurator
+                worker = worker_mdl.Worker()
+                worker.set_config(config)
+                worker.safe = False
+                worker.output = "raw"
 
-                # Default Keyword arguments
-                kwarg = {
-                    "unit": frame.getRadialUnit(),
-                    "dummy": frame.getDummy(),
-                    "delta_dummy": frame.getDeltaDummy(),
-                    "polarization_factor": frame.getPolarizationFactor(),
-                    "filename": None,
-                    "safe": False,
-                    "correctSolidAngle": frame.getCorrectSolidAngle(),
-                    "error_model": frame.getErrorModel(),
-                    "method": frame.getMethod(),
-                    "npt_rad": frame.getRadialNbpt()}
-
-                if kwarg["npt_rad"] is None:
+                if worker.nbpt_rad is None:
                     message = "You must provide the number of output radial bins !"
                     qt.QMessageBox.warning(self, "PyFAI integrate", message)
                     return {}
 
-                if frame.getIntegrationKind() == "2d":
-                    kwarg["npt_azim"] = frame.getAzimuthalNbpt()
-                rangeValue = frame.getRadialRange()
-                if rangeValue is not None:
-                    kwarg["radial_range"] = rangeValue
-                rangeValue = frame.getAzimuthalRange()
-                if rangeValue is not None:
-                    kwarg["azimuth_range"] = rangeValue
-
-                logger.info("Parameters for integration:%s%s" % (os.linesep,
-                            os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
+                logger.info("Parameters for integration: %s", str(config))
 
                 out = []
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
-                    logger.debug("processing %s", item)
+                    logger.debug("Processing %s", item)
+
+                    numpy_array = False
                     if isinstance(item, (six.text_type, six.binary_type)) and op.exists(item):
-                        fab_img = fabio.open(item)
-                        multiframe = (fab_img.nframes > 1)
-                        kwarg["data"] = fab_img.data
-                        kwarg["metadata"] = fab_img.header
-                        if self.output_path and op.isdir(self.output_path):
-                            outpath = op.join(self.output_path, op.splitext(op.basename(item))[0])
-                        else:
-                            outpath = op.splitext(item)[0]
-                        if "npt_azim" in kwarg and not multiframe:
-                            kwarg["filename"] = outpath + ".azim"
-                        else:
-                            kwarg["filename"] = outpath + ".dat"
-                    else:
-                        logger.warning("item is not a file ... guessing it is a numpy array")
-                        kwarg["data"] = item
-                        kwarg["filename"] = None
-                        multiframe = False
-                    if multiframe:
-                        if kwarg["filename"]:
-                            outpath = op.splitext(kwarg["filename"])[0]
-                        kwarg["filename"] = None
-                        writer = HDF5Writer(outpath + "_pyFAI.h5")
-                        writer.init(config)
-                        for i in range(fab_img.nframes):
-                            frame = fab_img.getframe(i)
-                            kwarg["data"] = frame.data
-                            kwarg["metadata"] = frame.header
-                            if "npt_azim" in kwarg:
-                                res = ai.integrate2d(**kwarg)
+                        img = fabio.open(item)
+                        multiframe = img.nframes > 1
+
+                        custom_ext = True
+                        if self.output_path:
+                            if os.path.isdir(self.output_path):
+                                outpath = os.path.join(self.output_path, os.path.splitext(os.path.basename(item))[0])
                             else:
-                                if "npt_rad" in kwarg:  # convert npt_rad -> npt
-                                    kwarg["npt"] = kwarg.pop("npt_rad")
-                                res = ai.integrate1d(**kwarg)
-                            writer.write(res, index=i)
+                                outpath = os.path.abspath(self.output_path)
+                                custom_ext = False
+                        else:
+                            outpath = os.path.splitext(item)[0]
+
+                        if custom_ext:
+                            if multiframe:
+                                outpath = outpath + "_pyFAI.h5"
+                            else:
+                                if worker.do_2D():
+                                    outpath = outpath + ".azim"
+                                else:
+                                    outpath = outpath + ".dat"
+                    else:
+                        logger.warning("Item is not a file ... guessing it is a numpy array")
+                        numpy_array = True
+                        multiframe = False
+
+                    if multiframe:
+                        writer = HDF5Writer(outpath)
+                        writer.init(config)
+
+                        for i in range(img.nframes):
+                            fimg = img.getframe(i)
+                            data = fimg.data
+                            res = worker.process(data=data,
+                                                 metadata=fimg.header,
+                                                 writer=writer
+                                                 )
                         writer.close()
                     else:
-                        if kwarg.get("npt_azim"):
-                            res = ai.integrate2d(**kwarg)
+                        if numpy_array:
+                            data = item
+                            writer = None
+                            metadata = None
                         else:
-                            if "npt_rad" in kwarg:  # convert npt_rad -> npt
-                                kwarg["npt"] = kwarg.pop("npt_rad")
-                            res = ai.integrate1d(**kwarg)
+                            data = img.data
+                            writer = DefaultAiWriter(outpath, worker.ai)
+                            metadata = img.header
+                        res = worker.process(data,
+                                             writer=writer,
+                                             metadata=metadata)
+                        if writer:
+                            writer.close()
                     out.append(res)
 
-                    # TODO manage HDF5 stuff !!!
             logger.info("Processing Done in %.3fs !", time.time() - start_time)
             self.progressBar.setValue(100)
         self.die()
