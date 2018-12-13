@@ -53,6 +53,7 @@ from ...units import RADIAL_UNITS, to_unit
 from ..calibration.model.GeometryModel import GeometryModel
 from ..calibration.model.DataModel import DataModel
 from ..utils import units
+from ...utils import stringutil
 
 
 class WorkerConfigurator(qt.QWidget):
@@ -101,6 +102,7 @@ class WorkerConfigurator(qt.QWidget):
         self.radial_unit.setUnits(RADIAL_UNITS.values())
         self.radial_unit.model().setValue(RADIAL_UNITS["2th_deg"])
 
+        self.radial_unit.setShortNameDisplay(True)
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
         self.do_OpenCL.toggled.connect(self.__openclChanged)
@@ -388,7 +390,14 @@ class WorkerConfigurator(qt.QWidget):
     def __radialUnitUpdated(self):
         unit = self.__getRadialUnit()
         # FIXME extract the unit
-        self._radialRangeUnit.setText(str(unit))
+        if unit.unit_symbol == "?":
+            name = stringutil.latex_to_unicode(unit.short_name)
+            toolTip = "The unit for the quantity %s is not expressible." % name
+        else:
+            toolTip = ""
+        symbol = stringutil.latex_to_unicode(unit.unit_symbol)
+        self._radialRangeUnit.setText(symbol)
+        self._radialRangeUnit.setToolTip(toolTip)
 
     def showGeometry(self):
         dialog = GeometryDialog(self)
