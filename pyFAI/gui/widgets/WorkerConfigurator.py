@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2018"
+__date__ = "13/12/2018"
 __status__ = "development"
 
 import logging
@@ -148,70 +148,6 @@ class WorkerConfigurator(qt.QWidget):
             return unit
         logger.warning("Undefined unit !!! falling back on 2th_deg")
         return RADIAL_UNITS["2th_deg"]
-
-    def getIntegrationKind(self):
-        if self.do_2D.isChecked():
-            return "2d"
-        else:
-            return "1d"
-
-    def getCorrectSolidAngle(self):
-        return bool(self.do_solid_angle.isChecked())
-
-    def getDummy(self):
-        if bool(self.do_dummy.isChecked()):
-            return float_(self.val_dummy.text())
-        else:
-            return None
-
-    def getDeltaDummy(self):
-        if not bool(self.do_dummy.isChecked()):
-            return None
-        delta_dummy = str(self.delta_dummy.text())
-        if delta_dummy:
-            return float(delta_dummy)
-        else:
-            return None
-
-    def getPolarizationFactor(self):
-        if bool(self.do_polarization.isChecked()):
-            return float(self.polarization_factor.value())
-        else:
-            return None
-
-    def getRadialRange(self):
-        if not self.do_radial_range.isChecked():
-            return None
-        try:
-            rad_min = float_(self.radial_range_min.text())
-            rad_max = float_(self.radial_range_max.text())
-        except ValueError as error:
-            logger.error("error in parsing radial range: %s", error)
-            return None
-        result = (rad_min, rad_max)
-        if result == (None, None):
-            result = None
-        return result
-
-    def getAzimuthalRange(self):
-        if not self.do_azimuthal_range.isChecked():
-            return None
-        try:
-            azim_min = float_(self.azimuth_range_min.text())
-            azim_max = float_(self.azimuth_range_max.text())
-        except ValueError as error:
-            logger.error("error in parsing azimuthal range: %s", error)
-            return None
-        result = (azim_min, azim_max)
-        if result == (None, None):
-            result = None
-        return result
-
-    def getErrorModel(self):
-        if self.do_poisson.isChecked():
-            return "poisson"
-        else:
-            return None
 
     def getRadialNbpt(self):
         value = str(self.nbpt_rad.text()).strip()
