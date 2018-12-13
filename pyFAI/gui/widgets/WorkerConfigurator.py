@@ -227,6 +227,14 @@ class WorkerConfigurator(qt.QWidget):
         """
         dico = dico.copy()
 
+        version = dico.pop("version", 1)
+        if version > 2:
+            logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read the configuration", version)
+        if version >= 2:
+            application = dico.pop("application", None)
+            if application != "pyfai-integrate":
+                logger.error("It is not a configuration file from pyFAI-integrate.")
+
         # Clean up the GUI
         self.setDetector(None)
         self.__geometryModel.wavelength().setValue(None)
