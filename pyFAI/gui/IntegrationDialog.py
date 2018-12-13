@@ -83,7 +83,7 @@ class IntegrationDialog(qt.QWidget):
         self._sem = threading.Semaphore()
         self.json_file = json_file
 
-        self.batch_processing.clicked.connect(self.proceed)
+        self.batch_processing.clicked.connect(self.__batchProcess)
         self.save_json_button.clicked.connect(self.save_config)
         self.quit_button.clicked.connect(self.die)
 
@@ -92,9 +92,8 @@ class IntegrationDialog(qt.QWidget):
         if self.json_file is not None:
             self.restore(self.json_file)
 
-    def proceed(self):
-
-        if len(self.input_data) == 0:
+    def __batchProcess(self):
+        if self.input_data is None or len(self.input_data) == 0:
             dialog = qt.QFileDialog(directory=os.getcwd())
             dialog.setWindowTitle("Select images to integrate")
             dialog.setFileMode(qt.QFileDialog.ExistingFiles)
@@ -103,6 +102,13 @@ class IntegrationDialog(qt.QWidget):
 
         self.__workerConfigurator.setEnabled(False)
 
+        qt.QMessageBox.information(self,
+                                   "Integration",
+                                   "Batch processing completed.")
+
+        self.die()
+
+    def proceed(self):
         with self._sem:
             out = None
             config = self.dump()
@@ -210,11 +216,6 @@ class IntegrationDialog(qt.QWidget):
             logger.info("Processing Done in %.3fs !", time.time() - start_time)
             self.progressBar.setValue(100)
 
-        qt.QMessageBox.information(self,
-                                   "Integration",
-                                   "Batch processing completed.")
-
-        self.die()
         # TODO: It should return nothing
         return out
 
