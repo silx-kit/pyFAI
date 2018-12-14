@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/11/2018"
+__date__ = "14/12/2018"
 
 import logging
 import numpy
@@ -691,7 +691,8 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__updateRings()
 
     def unsetProcessing(self):
-        self.__processing.deleteLater()
+        if self.__processing is not None:
+            self.__processing.deleteLater()
 
     def setProcessing(self):
         self.__processing = utils.createProcessingWidgetOverlay(self)
