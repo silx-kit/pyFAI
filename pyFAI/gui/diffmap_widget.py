@@ -489,12 +489,13 @@ class DiffMapWidget(qt.QWidget):
         """
         if idx_file >= 0:
             self.progressBar.setValue(idx_file)
-        try:
-            if self.update_sem._value < 1:
-                return
-        except AttributeError:  # Compatibility with Python2
-            if self.update_sem._Semaphore__value < 1:
-                return
+
+        # Check if there is a free semaphore without blocking
+        if self.update_sem.acquire(blocking=False):
+            self.update_sem.release()
+        else:
+            # It's full
+            return
 
         with self.update_sem:
             try:
