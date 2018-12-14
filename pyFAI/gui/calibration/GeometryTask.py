@@ -664,7 +664,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         color = CalibrationContext.instance().getMarkerColor(ringId, mode="numpy")
         items = []
         for lineId, line in enumerate(polyline):
-            y, x = line[:, 0], line[:, 1]
+            y, x = line[:, 0] + 0.5, line[:, 1] + 0.5
             legend = "ring-%i-%i" % (ringId, lineId)
             self.addCurve(
                 x=x,
