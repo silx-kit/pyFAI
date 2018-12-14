@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/12/2018"
+__date__ = "14/12/2018"
 
 from silx.gui import qt
 
@@ -72,7 +72,7 @@ class OpenClDeviceLabel(qt.QLabel):
             if device is not None:
                 deviceName, platformName = device.name, device.platform.name
             else:
-                deviceName, platformName = None
+                deviceName, platformName = None, None
 
             args = {
                 "deviceName": deviceName,
