@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2018"
+__date__ = "14/12/2018"
 __status__ = "stable"
 
 
@@ -53,6 +53,7 @@ from .. import utils
 from .. import average
 from ..utils import binning, expand2d, crc32
 from ..third_party.six import with_metaclass
+from ..utils.decorators import deprecated
 
 logger = logging.getLogger(__name__)
 
@@ -900,6 +901,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     flatfield = property(get_flatfield, set_flatfield)
 
+    @deprecated(reason="Not maintained", since_version="0.17")
     def set_flatfiles(self, files, method="mean"):
         """
         :param files: file(s) used to compute the flat-field.
@@ -937,6 +939,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     darkcurrent = property(get_darkcurrent, set_darkcurrent)
 
+    @deprecated(reason="Not maintained", since_version="0.17")
     def set_darkfiles(self, files=None, method="mean"):
         """
         :param files: file(s) used to compute the dark.
