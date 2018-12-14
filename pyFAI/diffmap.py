@@ -320,16 +320,16 @@ If the number of files is too large, use double quotes like "*.edf" """
             grp = nxs.new_class(grp, name=subgrp, class_type="NXcollection")
 
         processgrp = nxs.new_class(grp, "pyFAI", class_type="NXprocess")
-        processgrp["program"] = numpy.array([numpy.str_(i) for i in sys.argv], dtype=dtype)
+        processgrp["program"] = numpy.array([i for i in sys.argv], dtype=dtype)
         processgrp["version"] = PyFAI_VERSION
         processgrp["date"] = get_isotime()
         if self.mask:
             processgrp["maskfile"] = self.mask
         if self.flat:
-            processgrp["flatfiles"] = numpy.array([numpy.str_(i) for i in self.flat], dtype=dtype)
+            processgrp["flatfiles"] = numpy.array([i for i in self.flat], dtype=dtype)
         if self.dark:
-            processgrp["darkfiles"] = numpy.array([numpy.str_(i) for i in self.dark], dtype=dtype)
-        processgrp["inputfiles"] = numpy.array([numpy.str_(i) for i in self.inputfiles], dtype=dtype)
+            processgrp["darkfiles"] = numpy.array([i for i in self.dark], dtype=dtype)
+        processgrp["inputfiles"] = numpy.array([i for i in self.inputfiles], dtype=dtype)
         if self.poni is not None:
             processgrp["PONIfile"] = self.poni
 
