@@ -27,10 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/08/2018"
+__date__ = "13/12/2018"
 
 from silx.gui import qt
+
 from ..calibration.model.DataModel import DataModel
+from ...utils import stringutil
 
 
 class UnitSelector(qt.QComboBox):
@@ -41,18 +43,21 @@ class UnitSelector(qt.QComboBox):
         self.__model = None
         self.setModel(DataModel())
         self.currentIndexChanged[int].connect(self.__currentIndexChanged)
+        self.__shortName = False
 
-    def formatToUnicode(self, label):
-        label = label.replace("$", u"")
-        label = label.replace("^{-2}", u"⁻²")
-        label = label.replace("^{-1}", u"⁻¹")
-        label = label.replace("^.", u"⋅")
-        label = label.replace("2\\theta", u"2θ")
-        label = label.replace("^{o}", u"°")
-        label = label.replace("\\AA", u"Å")
-        label = label.replace("log10", u"log₁₀")
-        label = label.replace("^{*2}", u"d*²")
-        return label
+    def setShortNameDisplay(self, shortName):
+        if self.__shortName == shortName:
+            return
+        self.__shortName = shortName
+        units = self.units()
+        self.setUnits(units)
+
+    def units(self):
+        units = []
+        for index in range(self.count()):
+            unit = self.itemData(index)
+            units.append(unit)
+        return units
 
     def setUnits(self, units):
         previousUnit = self.__model.value()
@@ -63,7 +68,16 @@ class UnitSelector(qt.QComboBox):
         units = sorted(list(units), key=lambda u: u.label)
 
         for unit in units:
-            label = self.formatToUnicode(unit.label)
+            if self.__shortName:
+                name = stringutil.latex_to_unicode(unit.short_name)
+                symbol = unit.unit_symbol
+                if symbol == "?":
+                    label = name
+                else:
+                    symbol = stringutil.latex_to_unicode(unit.unit_symbol)
+                    label = "%s (%s)" % (name, symbol)
+            else:
+                label = stringutil.latex_to_unicode(unit.label)
             self.addItem(label, unit)
         # try to find the previous unit in the new list
         if previousUnit is None:

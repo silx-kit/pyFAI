@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "03/12/2018"
+__date__ = "07/12/2018"
 
 from silx.gui import qt
 
@@ -40,7 +40,8 @@ class ElidedLabel(qt.QLabel):
         super(ElidedLabel, self).__init__(parent)
         self.__text = ""
         self.__toolTip = ""
-        self.__valueAsToolTip = False
+        self.__valueAsToolTip = True
+        self.__textIsElided = False
         self.__elideMode = qt.Qt.ElideRight
         self.__updateMinimumSize()
 
@@ -62,19 +63,19 @@ class ElidedLabel(qt.QLabel):
         metrics = qt.QFontMetrics(self.font())
         elidedText = metrics.elidedText(self.__text, self.__elideMode, self.width())
         qt.QLabel.setText(self, elidedText)
-        self.__setValueAsTooltip(elidedText != self.__text)
+        self.__setTextIsElided(elidedText != self.__text)
 
-    def __updateTooltip(self):
-        if self.__valueAsToolTip:
+    def __updateToolTip(self):
+        if self.__textIsElided and self.__valueAsToolTip:
             qt.QLabel.setToolTip(self, self.__text + "<br/>" + self.__toolTip)
         else:
             qt.QLabel.setToolTip(self, self.__toolTip)
 
-    def __setValueAsTooltip(self, enable):
-        if self.__valueAsToolTip == enable:
+    def __setTextIsElided(self, enable):
+        if self.__textIsElided == enable:
             return
-        self.__valueAsToolTip = enable
-        self.__updateTooltip()
+        self.__textIsElided = enable
+        self.__updateToolTip()
 
     # Properties
 
@@ -89,7 +90,7 @@ class ElidedLabel(qt.QLabel):
 
     def setToolTip(self, toolTip):
         self.__toolTip = toolTip
-        self.__updateTooltip()
+        self.__updateToolTip()
 
     def getToolTip(self):
         return self.__toolTip
@@ -104,3 +105,14 @@ class ElidedLabel(qt.QLabel):
         return self.__elideMode
 
     elideMode = qt.Property(qt.Qt.TextElideMode, getToolTip, setToolTip)
+
+    def setValueAsToolTip(self, enabled):
+        if self.__valueAsToolTip == enabled:
+            return
+        self.__valueAsToolTip = enabled
+        self.__updateToolTip()
+
+    def getValueAsToolTip(self):
+        return self.__valueAsToolTip
+
+    valueAsToolTip = qt.Property(bool, getValueAsToolTip, setValueAsToolTip)
