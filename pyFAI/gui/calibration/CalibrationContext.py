@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/11/2018"
+__date__ = "14/12/2018"
 
 import weakref
 import logging
@@ -322,6 +322,8 @@ class CalibrationContext(object):
         colors = self.__rawColormap.getNColors()
         color = colors[0]
         color = 255 - ((255 - color) // 2)
+        color = int(color.mean())
+        color = [color, color, color]
         return qt.QColor(color[0], color[1], color[2])
 
     def getHtmlMarkerColor(self, index):
