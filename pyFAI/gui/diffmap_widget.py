@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "14/12/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -489,8 +489,13 @@ class DiffMapWidget(qt.QWidget):
         """
         if idx_file >= 0:
             self.progressBar.setValue(idx_file)
-        if self.update_sem._Semaphore__value < 1:
-            return
+        try:
+            if self.update_sem._value < 1:
+                return
+        except AttributeError:  # Compatibility with Python2
+            if self.update_sem._Semaphore__value < 1:
+                return
+
         with self.update_sem:
             try:
                 data = self.data_h5.value
