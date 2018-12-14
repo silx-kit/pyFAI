@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/12/2018"
+__date__ = "14/12/2018"
 
 from silx.gui import qt
 
@@ -120,9 +120,9 @@ class OpenClDeviceDialog(qt.QDialog):
                 deviceName = qt.QStandardItem(device.name)
                 platformName = qt.QStandardItem(platform.name)
                 deviceType = qt.QStandardItem(typeName)
-                deviceId = qt.QStandardItem(str(deviceId))
-                platformId = qt.QStandardItem(str(platformId))
-                model.appendRow([deviceName, platformName, deviceType, platformId, deviceId])
+                deviceItem = qt.QStandardItem(str(deviceId))
+                platformItem = qt.QStandardItem(str(platformId))
+                model.appendRow([deviceName, platformName, deviceType, platformItem, deviceItem])
 
         return model
 
