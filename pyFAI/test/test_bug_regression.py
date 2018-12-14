@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/10/2018"
+__date__ = "11/12/2018"
 
 import sys
 import os
@@ -54,7 +54,6 @@ from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from .. import detectors
 from .. import units
-from ..utils import six
 from math import pi
 
 try:
@@ -66,8 +65,8 @@ except ImportError:
 
     def load_source(module_name, file_path):
         """Plugin loader which does not pollute sys.module,
-        
-        Not as powerful as the v3.5+ 
+
+        Not as powerful as the v3.5+
         """
         return importlib.import_module(module_name, module_name.split(".")[0])
 
@@ -75,7 +74,7 @@ else:
 
     def load_source(module_name, file_path):
         """Plugin loader which does not pollute sys.module,
-        
+
         Python Version >=3.5"""
         spec = importlib.util.spec_from_file_location(module_name, file_path)
         module = importlib.util.module_from_spec(spec)
