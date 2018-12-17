@@ -106,7 +106,8 @@ class _PeakSelectionTableView(qt.QTableView):
         self.setItemDelegateForColumn(2, ringDelegate)
         self.setItemDelegateForColumn(3, toolDelegate)
 
-        self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
+        # self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
+        self.setSelectionMode(qt.QAbstractItemView.NoSelection)
         self.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
         self.setVerticalScrollMode(qt.QAbstractItemView.ScrollPerPixel)
         self.setShowGrid(False)
