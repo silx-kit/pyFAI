@@ -328,7 +328,7 @@ class WorkerConfigurator(qt.QWidget):
             if filenames is None:
                 return ""
             if isinstance(filenames, list):
-                return ",".join()
+                return ",".join(filenames)
             if "," in filenames:
                 logger.warning("Dark or flat files are described using comma separator list. You should use a python/json list of string instead.")
             filenames = filenames.strip()
