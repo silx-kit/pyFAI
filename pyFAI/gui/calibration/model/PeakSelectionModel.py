@@ -27,16 +27,25 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/10/2018"
+__date__ = "17/12/2018"
 
+from silx.gui import qt
 from .AbstractModel import AbstractModel
 
 
 class PeakSelectionModel(AbstractModel):
 
+    structureChanged = qt.Signal()
+    """Emitted when there is different elements in the list."""
+
+    contentChanged = qt.Signal()
+    """Emitted when the content of the elements changed."""
+
     def __init__(self, parent=None):
         super(PeakSelectionModel, self).__init__(parent)
         self.__peaks = []
+        self.__cacheStructureWasChanged = False
+        self.__cacheContentWasChanged = False
 
     def isValid(self):
         for p in self.__peaks:
@@ -63,13 +72,38 @@ class PeakSelectionModel(AbstractModel):
 
     def append(self, peak):
         self.__peaks.append(peak)
-        peak.changed.connect(self.wasChanged)
-        self.wasChanged()
+        peak.changed.connect(self.__contentWasChanged)
+        self.__structureWasChanged()
 
     def remove(self, peak):
         self.__peaks.remove(peak)
-        peak.changed.disconnect(self.wasChanged)
-        self.wasChanged()
+        peak.changed.disconnect(self.__contentWasChanged)
+        self.__structureWasChanged()
+
+    def __structureWasChanged(self):
+        emitted = self.wasChanged()
+        if emitted:
+            self.structureChanged.emit()
+        else:
+            self.__cacheStructureWasChanged = True
+
+    def __contentWasChanged(self):
+        emitted = self.wasChanged()
+        if emitted:
+            self.contentChanged.emit()
+        else:
+            self.__cacheContentWasChanged = True
+
+    def unlockSignals(self):
+        unlocked = AbstractModel.unlockSignals(self)
+        if unlocked:
+            if self.__cacheStructureWasChanged:
+                self.structureChanged.emit()
+            if self.__cacheContentWasChanged:
+                self.contentChanged.emit()
+        self.__cacheStructureWasChanged = False
+        self.__cacheContentWasChanged = False
+        return unlocked
 
     def clear(self):
         self.lockSignals()
