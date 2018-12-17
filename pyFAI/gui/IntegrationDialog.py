@@ -107,6 +107,10 @@ class IntegrationDialog(qt.QWidget):
         self.progressBar.setVisible(True)
         self.__workerConfigurator.setEnabled(False)
 
+        # Needed to update the display (hide the dialog, display the bar...)
+        app = qt.QApplication.instance()
+        while app.hasPendingEvents():
+            app.processEvents()
 
         self.proceed()
 
