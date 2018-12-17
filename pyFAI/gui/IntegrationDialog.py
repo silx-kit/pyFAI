@@ -97,7 +97,9 @@ class IntegrationDialog(qt.QWidget):
             dialog = qt.QFileDialog(directory=os.getcwd())
             dialog.setWindowTitle("Select images to integrate")
             dialog.setFileMode(qt.QFileDialog.ExistingFiles)
-            dialog.exec_()
+            result = dialog.exec_()
+            if not result:
+                return
             self.input_data = [str(i) for i in dialog.selectedFiles()]
 
         self.__workerConfigurator.setEnabled(False)
