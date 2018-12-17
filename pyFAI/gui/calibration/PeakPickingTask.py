@@ -42,7 +42,6 @@ from silx.gui.plot.tools import PositionInfo
 import pyFAI.utils
 import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
-from pyFAI.gui.calibration.model.PeakModel import PeakModel
 from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
 from . import utils
