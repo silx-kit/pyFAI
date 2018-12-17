@@ -27,23 +27,24 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/11/2018"
+__date__ = "17/12/2018"
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
 from .CalibrantModel import CalibrantModel
 from .DataModel import DataModel
 from .MaskedImageModel import MaskedImageModel
+from .ImageModel import ImageModel
 
 
 class ExperimentSettingsModel(AbstractModel):
 
     def __init__(self, parent=None):
         super(ExperimentSettingsModel, self).__init__(parent)
-        self.__image = DataModel()
-        self.__mask = DataModel()
+        self.__image = ImageModel()
+        self.__mask = ImageModel()
         self.__maskedImage = MaskedImageModel(None, self.__image, self.__mask)
-        self.__dark = DataModel()
+        self.__dark = ImageModel()
         self.__imageFile = DataModel()
         self.__maskFile = DataModel()
         self.__darkFile = DataModel()
