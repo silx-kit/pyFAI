@@ -518,7 +518,7 @@ class Worker(object):
             filenames = _read_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            self.ai.deletector.set_darkcurrent(data)
+            self.ai.detector.set_darkcurrent(data)
             self.dark_current_image = "%s(%s)" % (method, ",".join(filenames))
 
         # Do it here while we have to store metadata
@@ -528,7 +528,7 @@ class Worker(object):
             filenames = _read_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            self.ai.deletector.set_flatfield(data)
+            self.ai.detector.set_flatfield(data)
             self.flat_field_image = "%s(%s)" % (method, ",".join(filenames))
 
         # Uses it anyway in case do_2D is customed after the configuration
