@@ -33,7 +33,7 @@ example: ./bootstrap.py ipython
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "30/01/2018"
+__date__ = "14/12/2018"
 
 
 import sys
@@ -197,8 +197,7 @@ home = os.path.dirname(os.path.abspath(__file__))
 LIBPATH = os.path.join(home, 'build', _distutils_dir_name('lib'))
 cwd = os.getcwd()
 os.chdir(home)
-build = subprocess.Popen([sys.executable, "setup.py", "build"],
-                         shell=False, cwd=os.path.dirname(os.path.abspath(__file__)))
+build = subprocess.Popen([sys.executable, "setup.py", "build"], shell=False)
 logger.info("Build process ended with rc= %s", build.wait())
 os.chdir(cwd)
 

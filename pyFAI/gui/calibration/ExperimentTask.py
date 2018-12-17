@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/11/2018"
+__date__ = "06/12/2018"
 
 import fabio
 import numpy
@@ -110,7 +110,7 @@ class ExperimentTask(AbstractCalibrationTask):
         settings = model.experimentSettingsModel()
 
         self._calibrant.setModel(settings.calibrantModel())
-        self._detectorLabel.setAppModel(settings.detectorModel())
+        self._detectorLabel.setDetectorModel(settings.detectorModel())
         self._image.setModel(settings.imageFile())
         self._mask.setModel(settings.maskFile())
         self._dark.setModel(settings.darkFile())
