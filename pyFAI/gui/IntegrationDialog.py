@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2018"
+__date__ = "17/12/2018"
 __status__ = "development"
 
 import logging
@@ -87,6 +87,7 @@ class IntegrationDialog(qt.QWidget):
         self.save_json_button.clicked.connect(self.save_config)
         self.quit_button.clicked.connect(self.die)
 
+        self.progressBar.setVisible(False)
         self.progressBar.setValue(0)
 
         if self.json_file is not None:
@@ -101,7 +102,9 @@ class IntegrationDialog(qt.QWidget):
             if not result:
                 return
             self.input_data = [str(i) for i in dialog.selectedFiles()]
+            dialog.close()
 
+        self.progressBar.setVisible(True)
         self.__workerConfigurator.setEnabled(False)
 
 
