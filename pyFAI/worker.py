@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2018"
+__date__ = "17/12/2018"
 __status__ = "development"
 
 import threading
@@ -239,7 +239,7 @@ def _read_filenames(filenames):
     return filenames.split(",")
 
 
-def _reduce_images(self, filenames, method="mean"):
+def _reduce_images(filenames, method="mean"):
     """
     Reduce a set of filenames using a reduction method
 
