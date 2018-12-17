@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/11/2018"
+__date__ = "17/12/2018"
 
 import logging
 import numpy
@@ -42,7 +42,6 @@ from silx.gui.plot.tools import PositionInfo
 import pyFAI.utils
 import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
-from pyFAI.gui.calibration.model.PeakModel import PeakModel
 from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
 from . import utils
@@ -107,7 +106,8 @@ class _PeakSelectionTableView(qt.QTableView):
         self.setItemDelegateForColumn(2, ringDelegate)
         self.setItemDelegateForColumn(3, toolDelegate)
 
-        self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
+        # self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
+        self.setSelectionMode(qt.QAbstractItemView.NoSelection)
         self.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
         self.setVerticalScrollMode(qt.QAbstractItemView.ScrollPerPixel)
         self.setShowGrid(False)
@@ -199,7 +199,8 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
         assert isinstance(parent, PeakPickingTask)
         super(_PeakSelectionTableModel, self).__init__(parent=parent)
         self.__peakSelectionModel = peakSelectionModel
-        peakSelectionModel.changed.connect(self.__invalidateModel)
+        peakSelectionModel.structureChanged.connect(self.__invalidateModel)
+        peakSelectionModel.contentChanged.connect(self.__invalidateContentModel)
         self.__callbacks = []
         self.__invalidateModel()
         # QAbstractTableModel do not provide access to the parent
@@ -216,6 +217,10 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
             item.changed.connect(callback)
             self.__callbacks.append((item, callback))
         self.endResetModel()
+
+    def __invalidateContentModel(self):
+        for index, _ in enumerate(self.__peakSelectionModel):
+            self.__invalidateItem(index)
 
     def __invalidateItem(self, index):
         index1 = self.index(index, 0, qt.QModelIndex())
@@ -281,8 +286,8 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
         return False
 
     def removeRows(self, row, count, parent=qt.QModelIndex()):
-        # while the tablempdel is already connected to the data model
-        self.__peakSelectionModel.changed.disconnect(self.__invalidateModel)
+        # while the tablemodel is already connected to the data model
+        self.__peakSelectionModel.structureChanged.disconnect(self.__invalidateModel)
 
         self.beginRemoveRows(parent, row, row + count - 1)
         for i in reversed(range(count)):
@@ -290,8 +295,8 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
             self.requestRemovePeak.emit(peakModel)
         self.endRemoveRows()
 
-        # while the tablempdel is already connected to the data model
-        self.__peakSelectionModel.changed.connect(self.__invalidateModel)
+        # while the tablemodel is already connected to the data model
+        self.__peakSelectionModel.structureChanged.connect(self.__invalidateModel)
         return True
 
 
