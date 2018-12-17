@@ -186,21 +186,21 @@ class IntegrationProcess(object):
             polarization_factor=self.__polarizationFactor)
 
         # Create an image masked where data exists
+        self.__resultMask2d = None
         if self.__mask is not None:
-            maskData = numpy.ones(shape=self.__image.shape, dtype=numpy.float32)
-            maskData[self.__mask == 0] = float("NaN")
+            if self.__mask.shape == self.__image.shape:
+                maskData = numpy.ones(shape=self.__image.shape, dtype=numpy.float32)
+                maskData[self.__mask == 0] = float("NaN")
 
-            if self.__displayMask:
-                self.__resultMask2d = ai.integrate2d(
-                    data=maskData,
-                    npt_rad=self.__nPointsRadial,
-                    npt_azim=self.__nPointsAzimuthal,
-                    unit=self.__radialUnit,
-                    polarization_factor=self.__polarizationFactor)
+                if self.__displayMask:
+                    self.__resultMask2d = ai.integrate2d(
+                        data=maskData,
+                        npt_rad=self.__nPointsRadial,
+                        npt_azim=self.__nPointsAzimuthal,
+                        unit=self.__radialUnit,
+                        polarization_factor=self.__polarizationFactor)
             else:
-                self.__resultMask2d = None
-        else:
-            self.__resultMask2d = None
+                _logger.warning("Inconsistency between image and mask sizes. %s != %s", self.__image.shape, self.__mask.shape)
 
         try:
             self.__directDist = ai.getFit2D()["directDist"]
