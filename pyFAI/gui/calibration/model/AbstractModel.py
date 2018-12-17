@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2017"
+__date__ = "17/12/2018"
 
 from silx.gui import qt
 
@@ -45,17 +45,28 @@ class AbstractModel(qt.QObject):
         return True
 
     def wasChanged(self):
+        """Emit the change event in case of the model was not locked.
+
+        :returns: True if the signal was emitted.
+        """
         if self.__isLocked > 0:
             self.__wasChanged = True
+            return False
         else:
             self.changed.emit()
+            return True
 
     def lockSignals(self):
         self.__isLocked = self.__isLocked + 1
 
     def unlockSignals(self):
+        """Unlock the change events
+
+        :returns: False if the model is still locked, else True
+        """
         assert self.__isLocked > 0
         self.__isLocked = self.__isLocked - 1
         if self.__isLocked == 0 and self.__wasChanged:
             self.__wasChanged = False
             self.wasChanged()
+        return self.__isLocked == 0
