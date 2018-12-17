@@ -102,6 +102,9 @@ class IntegrationDialog(qt.QWidget):
 
         self.__workerConfigurator.setEnabled(False)
 
+
+        self.proceed()
+
         qt.QMessageBox.information(self,
                                    "Integration",
                                    "Batch processing completed.")
