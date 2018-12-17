@@ -51,6 +51,8 @@ class MaskedImageModel(DataModel):
         mask = self.__mask.value()
         if mask is None:
             return image
+        if mask.shape != image.shape:
+            return image
         image = image.astype(copy=True, dtype=numpy.float32)
         image[mask != 0] = float("nan")
         return image
