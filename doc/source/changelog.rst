@@ -8,14 +8,15 @@ ChangeLog of Versions
 0.17.0 1?/12/2018
 -----------------
 * Only 200 commits in a couple of month, this ia a small release
-* Fix major bugs in pyFAI-calib2 (double validator, initial guess, ...)
+* Fix major bugs in pyFAI-calib2 (double validator, initial guess, ring position)
 * Constrains have been added to the geometry fitting of pyFAI-calib2
 * Much better support for user defined detector (HDF5)
 * Start the rewrite of all integrators to allow proper error propagation (2D done)
 * Factorize the preprocessing steps for many integrators
 * Remove tons of code which has been deprecated for years in AzimuthalIntegrator
 * Featuring contribution from Soleil and Berkeley
-* Stop supporting Python2.7 on Windows
+* Stop supporting Python2.7 on Windows (there won't be wheels!)
+* All scripts are now using Python3.x
 
 0.16.0: 26/10/2018
 ------------------
