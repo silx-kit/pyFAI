@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/11/2018"
+__date__ = "14/12/2018"
 
 import logging
 import os.path
@@ -43,6 +43,7 @@ from .CalibrationContext import CalibrationContext
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .helper.MarkerManager import MarkerManager
 from .helper.SynchronizeMaskToolColor import SynchronizeMaskToolColor
+from .helper.SynchronizePlotBackground import SynchronizePlotBackground
 
 
 _logger = logging.getLogger(__name__)
@@ -121,6 +122,8 @@ class MaskTask(AbstractCalibrationTask):
 
         self.__plot = self.__createPlot(self._imageHolder)
         self.__plot.setObjectName("plot-mask")
+
+        self.__plotBackground = SynchronizePlotBackground(self.__plot)
 
         markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
         self.__markerManager = MarkerManager(self.__plot, markerModel, pixelBasedPlot=True)
