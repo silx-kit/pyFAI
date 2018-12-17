@@ -429,6 +429,7 @@ class Worker(object):
                 result = numpy.vstack(integrated_result).T
 
         except Exception as err:
+            logger.debug("Backtrace", exc_info=True)
             err2 = ["error in integration do_2d: %s" % self.do_2D(),
                     str(err.__class__.__name__),
                     str(err),
