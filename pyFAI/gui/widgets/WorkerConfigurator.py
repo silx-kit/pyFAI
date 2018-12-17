@@ -225,8 +225,9 @@ class WorkerConfigurator(qt.QWidget):
         if value is not None:
             config["nbpt_azim"] = value
 
-        config["detector"] = self.__detector.__class__.__name__
-        config["detector_config"] = self.__detector.get_config()
+        if self.__detector is not None:
+            config["detector"] = self.__detector.__class__.__name__
+            config["detector_config"] = self.__detector.get_config()
 
         return config
 
