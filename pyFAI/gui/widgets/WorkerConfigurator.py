@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2018"
+__date__ = "17/12/2018"
 __status__ = "development"
 
 import logging
@@ -64,7 +64,7 @@ class WorkerConfigurator(qt.QWidget):
     param of the ~`pyFAI.worker.Worker`.
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         qt.QWidget.__init__(self, parent)
         filename = get_ui_file("worker-configurator.ui")
         qt.loadUi(filename, self)
