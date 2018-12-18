@@ -40,12 +40,11 @@ import sys
 import time
 import fabio
 import logging
-from .. import date, version as pyFAI_version
-from .. import units
-from .. import utils
-from ..average import average_dark
-from ..method_registry import IntegrationMethod
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI import date, version as pyFAI_version
+from pyFAI import units
+from pyFAI import utils
+from pyFAI.method_registry import IntegrationMethod
+from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 hc = units.hc
 
 logging.basicConfig(level=logging.INFO)
