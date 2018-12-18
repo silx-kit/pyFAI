@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2018"
+__date__ = "18/12/2018"
 
 import logging
 import os.path
@@ -143,6 +143,7 @@ class MaskTask(AbstractCalibrationTask):
 
         self.initNextStep()
 
+        self.__plot = None
         self.__plot = self.__createPlot(self._imageHolder)
         self.__plot.setObjectName("plot-mask")
 
@@ -249,6 +250,10 @@ class MaskTask(AbstractCalibrationTask):
         """
         value = 'n/a'
 
+        if self.__plot is None:
+            # It could happen at the creation of the plot
+            # the creation of PositionInfo
+            return value
         image = self.__plot.getImage("image")
         if image is None:
             return value
