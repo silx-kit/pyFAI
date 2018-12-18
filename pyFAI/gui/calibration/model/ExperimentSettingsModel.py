@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/12/2018"
+__date__ = "18/12/2018"
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
@@ -44,6 +44,8 @@ class ExperimentSettingsModel(AbstractModel):
         self.__image = ImageModel()
         self.__mask = ImageModel()
         self.__maskedImage = MaskedImageModel(None, self.__image, self.__mask)
+        self.__isDetectorMask = True
+
         self.__dark = ImageModel()
         self.__imageFile = DataModel()
         self.__maskFile = DataModel()
@@ -63,6 +65,42 @@ class ExperimentSettingsModel(AbstractModel):
         self.__polarizationFactor.changed.connect(self.wasChanged)
         self.__calibrantModel.changed.connect(self.wasChanged)
         self.__detectorModel.changed.connect(self.wasChanged)
+
+        self.__image.changed.connect(self.__updateDetectorMask)
+        self.__detectorModel.changed.connect(self.__updateDetectorMask)
+        self.__mask.changed.connect(self.__notAnymoreADetectorMask)
+
+    def __updateDetectorMask(self):
+        if self.maskFile().value() is not None:
+            # It exists a custom mask
+            return
+
+        if not self.__isDetectorMask:
+            # It was not set by this process
+            # Then it was customed by the user
+            return
+
+        detector = self.__detectorModel.detector()
+        if detector is None:
+            mask = None
+        else:
+            image = self.__image.value()
+            if image is not None:
+                detector.guess_binning(image)
+
+            mask = detector.mask
+            # Here mask can be None
+            # For example if image do not feet the detector
+
+        if mask is not None:
+            mask = mask.copy()
+        self.__mask.changed.disconnect(self.__notAnymoreADetectorMask)
+        self.__mask.setValue(mask)
+        self.__isDetectorMask = True
+        self.__mask.changed.connect(self.__notAnymoreADetectorMask)
+
+    def __notAnymoreADetectorMask(self):
+        self.__isDetectorMask = False
 
     def isValid(self):
         return True
