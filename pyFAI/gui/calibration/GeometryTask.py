@@ -763,7 +763,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
 
-        constraintLayout = qt.QHBoxLayout(self)
+        constraintLayout = qt.QHBoxLayout()
         defaultConstraintsButton = qt.QPushButton("Default contraints", self)
         saxsConstraintsButton = qt.QPushButton("SAXS contraints", self)
         constraintLayout.addWidget(defaultConstraintsButton)
