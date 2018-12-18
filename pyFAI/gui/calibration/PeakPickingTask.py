@@ -411,7 +411,8 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.addPeak(peakModel)
 
     def unsetProcessing(self):
-        self.__processing.deleteLater()
+        if self.__processing is not None:
+            self.__processing.deleteLater()
         self.__processing = None
 
     def setProcessing(self):
