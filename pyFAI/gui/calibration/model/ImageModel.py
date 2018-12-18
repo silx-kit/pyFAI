@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,41 +27,28 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-
+__date__ = "18/12/2018"
 
 import numpy
 from .DataModel import DataModel
 
 
-class MaskedImageModel(DataModel):
-    """Image cleaned up by setting masked pixels to NaN"""
+class ImageModel(DataModel):
 
-    def __init__(self, parent=None, image=None, mask=None):
-        super(MaskedImageModel, self).__init__(parent=parent)
-        self.__image = image
-        self.__mask = mask
-        image.changed.connect(self.__invalidateValue)
-        mask.changed.connect(self.__invalidateValue)
-        self.__value = None
-
-    def __computeImageData(self):
-        image = self.__image.value()
-        if image is None:
-            return None
-        mask = self.__mask.value()
-        if mask is None:
-            return image
-        if mask.shape != image.shape:
-            return image
-        image = image.astype(copy=True, dtype=numpy.float32)
-        image[mask != 0] = float("nan")
-        return image
-
-    def __invalidateValue(self):
-        self.__value = None
-        self.wasChanged()
-
-    def value(self):
-        if self.__value is None:
-            self.__value = self.__computeImageData()
-        return self.__value
+    def setValue(self, value):
+        """Set the value of this image model."""
+        if value is not None:
+            if not isinstance(value, numpy.ndarray):
+                raise TypeError("A numpy array is expected, but %s was found." % value.__class__.__name__)
+            if len(value.shape) != 2:
+                raise TypeError("A 2d array is expected, but %s was found." % value.shape)
+            if value.dtype.kind not in "uif":
+                raise TypeError("A numeric array is expected, but %s was found." % value.dtype.kind)
+            previous = self.value()
+            if previous is value:
+                # Filter same images
+                return
+            if previous is not None and numpy.array_equal(value, previous):
+                # Filter same images
+                return
+        super(ImageModel, self).setValue(value)
