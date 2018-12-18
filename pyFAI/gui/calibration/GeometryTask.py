@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2018"
+__date__ = "18/12/2018"
 
 import logging
 import numpy
@@ -763,6 +763,37 @@ class GeometryTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
 
+        constraintLayout = qt.QHBoxLayout()
+        defaultConstraintsButton = qt.QPushButton("Default contraints", self)
+        saxsConstraintsButton = qt.QPushButton("SAXS contraints", self)
+        constraintLayout.addWidget(defaultConstraintsButton)
+        constraintLayout.addWidget(saxsConstraintsButton)
+        layout.addLayout(constraintLayout, layout.rowCount(), 0, 1, -1)
+        defaultConstraintsButton.clicked.connect(self.__setDefaultConstraints)
+        saxsConstraintsButton.clicked.connect(self.__setSaxsConstraints)
+
+    def __setDefaultConstraints(self):
+        """Apply default contraints imposed by the refinment process"""
+        calibrationModel = self.model()
+        constraintsModel = calibrationModel.geometryConstraintsModel()
+        constraintsModel.set(self.__defaultConstraints)
+
+    def __setSaxsConstraints(self):
+        """Apply default contraints use by SAXS experiments"""
+        calibrationModel = self.model()
+        constraintsModel = calibrationModel.geometryConstraintsModel()
+        constraintsModel.lockSignals()
+        constraintsModel.rotation1().setFixed(True)
+        constraintsModel.rotation2().setFixed(True)
+        constraintsModel.rotation3().setFixed(True)
+        constraintsModel.unlockSignals()
+        geometryModel = calibrationModel.fittedGeometry()
+        geometryModel.lockSignals()
+        geometryModel.rotation1().setValue(0)
+        geometryModel.rotation2().setValue(0)
+        geometryModel.rotation3().setValue(0)
+        geometryModel.unlockSignals()
+
     def addParameterToLayout(self, layout, param):
         # an empty grid returns 1
         row = layout.rowCount()
@@ -848,6 +879,9 @@ class GeometryTask(AbstractCalibrationTask):
         if detector is None:
             return None
         if wavelength is None:
+            return None
+
+        if len(self.model().peakSelectionModel()) == 0:
             return None
 
         peaks = []
