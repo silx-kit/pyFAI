@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/12/2018"
+__date__ = "17/12/2018"
 
 import logging
 from silx.gui import qt
@@ -66,6 +66,15 @@ class QuantityEdit(qt.QLineEdit):
 
         self.editingFinished.connect(self.__editingFinished)
         self.returnPressed.connect(self.__returnPressed)
+
+    def event(self, event):
+        if event.type() == 207:
+            if self.__previousText != self.text():
+                # TODO: This tries to capture Linux copy-paste using middle mouse
+                # button. But this event do not match exactly what it is intented.
+                # None of the available events capture this special copy-paste.
+                self.__wasModified = True
+        return qt.QLineEdit.event(self, event)
 
     def focusInEvent(self, event):
         self.__previousText = self.text()

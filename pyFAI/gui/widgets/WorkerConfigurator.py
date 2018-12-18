@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2018"
+__date__ = "17/12/2018"
 __status__ = "development"
 
 import logging
@@ -64,7 +64,7 @@ class WorkerConfigurator(qt.QWidget):
     param of the ~`pyFAI.worker.Worker`.
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         qt.QWidget.__init__(self, parent)
         filename = get_ui_file("worker-configurator.ui")
         qt.loadUi(filename, self)
@@ -173,6 +173,17 @@ class WorkerConfigurator(qt.QWidget):
 
         :return: dict with all information.
         """
+        def splitFiles(filenames):
+            """In case files was provided with comma.
+
+            The file brower was in this case not working, but the returned
+            config will be valid.
+            """
+            filenames = filenames.strip()
+            if filenames == "":
+                return None
+            return [name.strip() for name in filenames.split(",")]
+
         config = {"version": 2,
                   "application": "pyfai-integrate",
                   "wavelength": self.__geometryModel.wavelength().value(),
@@ -190,8 +201,8 @@ class WorkerConfigurator(qt.QWidget):
                   "val_dummy": self._float("val_dummy", None),
                   "delta_dummy": self._float("delta_dummy", None),
                   "mask_file": str_(self.mask_file.text()).strip(),
-                  "dark_current": str_(self.dark_current.text()).strip(),
-                  "flat_field": str_(self.flat_field.text()).strip(),
+                  "dark_current": splitFiles(self.dark_current.text()),
+                  "flat_field": splitFiles(self.flat_field.text()),
                   "polarization_factor": float_(self.polarization_factor.value()),
                   "do_2D": bool(self.do_2D.isChecked()),
                   "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
@@ -214,8 +225,9 @@ class WorkerConfigurator(qt.QWidget):
         if value is not None:
             config["nbpt_azim"] = value
 
-        config["detector"] = self.__detector.__class__.__name__
-        config["detector_config"] = self.__detector.get_config()
+        if self.__detector is not None:
+            config["detector"] = self.__detector.__class__.__name__
+            config["detector_config"] = self.__detector.get_config()
 
         return config
 
@@ -307,6 +319,21 @@ class WorkerConfigurator(qt.QWidget):
 
             self.setDetector(detector)
 
+        def normalizeFiles(filenames):
+            """Normalize different versions of the filename list.
+
+            FIXME: The file brower will not work, but the returned config will
+            be valid
+            """
+            if filenames is None:
+                return ""
+            if isinstance(filenames, list):
+                return ",".join(filenames)
+            if "," in filenames:
+                logger.warning("Dark or flat files are described using comma separator list. You should use a python/json list of string instead.")
+            filenames = filenames.strip()
+            return filenames
+
         setup_data = {"do_dummy": self.do_dummy.setChecked,
                       "do_dark": self.do_dark.setChecked,
                       "do_flat": self.do_flat.setChecked,
@@ -315,8 +342,8 @@ class WorkerConfigurator(qt.QWidget):
                       "delta_dummy": lambda a: self.delta_dummy.setText(str_(a)),
                       "do_mask": self.do_mask.setChecked,
                       "mask_file": lambda a: self.mask_file.setText(str_(a)),
-                      "dark_current": lambda a: self.dark_current.setText(str_(a)),
-                      "flat_field": lambda a: self.flat_field.setText(str_(a)),
+                      "dark_current": lambda a: self.dark_current.setText(normalizeFiles(a)),
+                      "flat_field": lambda a: self.flat_field.setText(normalizeFiles(a)),
                       "polarization_factor": self.polarization_factor.setValue,
                       "nbpt_rad": lambda a: self.nbpt_rad.setText(str_(a)),
                       "do_2D": self.do_2D.setChecked,

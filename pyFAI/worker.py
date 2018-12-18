@@ -85,18 +85,19 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2018"
+__date__ = "17/12/2018"
 __status__ = "development"
 
 import threading
 import os.path
 import logging
 import json
+import numpy
+import fabio
 
 logger = logging.getLogger(__name__)
 
-import numpy
-import fabio
+from . import average
 from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
@@ -212,16 +213,47 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
         filename = config.pop("dark_current", "")
         apply_process = config.pop("do_dark", True)
         if filename and apply_process:
-            filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
+            filenames = _read_filenames(filename)
             ai.set_darkfiles(filenames)
 
         filename = config.pop("flat_field", "")
         apply_process = config.pop("do_flat", True)
         if filename and apply_process:
-            filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
+            filenames = _read_filenames(filename)
             ai.set_flatfiles(filenames)
 
     return ai
+
+
+def _read_filenames(filenames):
+    """Returns a list of strings from a comma separated string list or a list.
+
+    :rtype: List[str]
+    """
+    if filenames is None:
+        return []
+    if isinstance(filenames, list):
+        return filenames
+    if "," in filenames:
+        logger.warning("Dark or flat files are described using comma separator list. You should use a python/json list of string instead.")
+    return filenames.split(",")
+
+
+def _reduce_images(filenames, method="mean"):
+    """
+    Reduce a set of filenames using a reduction method
+
+    :param List[str] filenames: List of files used to compute the data
+    :param str method: method used to compute the dark, "mean" or "median"
+    """
+    if len(filenames) == 0:
+        return None
+    if fabio is None:
+        raise RuntimeError("FabIO is missing")
+    if len(filenames) == 1:
+        return fabio.open(filenames[0]).data.astype(numpy.float32)
+    else:
+        return average.average_images(filenames, filter_=method, fformat=None, threshold=0)
 
 
 class Worker(object):
@@ -397,6 +429,7 @@ class Worker(object):
                 result = numpy.vstack(integrated_result).T
 
         except Exception as err:
+            logger.debug("Backtrace", exc_info=True)
             err2 = ["error in integration do_2d: %s" % self.do_2D(),
                     str(err.__class__.__name__),
                     str(err),
@@ -483,17 +516,21 @@ class Worker(object):
         filename = config.pop("dark_current", "")
         apply_process = config.pop("do_dark", True)
         if filename and apply_process:
-            filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
-            self.ai.set_darkfiles(filenames)
-            self.dark_current_image = filenames
+            filenames = _read_filenames(filename)
+            method = "mean"
+            data = _reduce_images(filenames, method=method)
+            self.ai.detector.set_darkcurrent(data)
+            self.dark_current_image = "%s(%s)" % (method, ",".join(filenames))
 
         # Do it here while we have to store metadata
         filename = config.pop("flat_field", "")
         apply_process = config.pop("do_flat", True)
         if filename and apply_process:
-            filenames = [name.strip() for name in filename.split(",") if os.path.isfile(name.strip())]
-            self.ai.set_flatfiles(filenames)
-            self.flat_field_image = self.ai.flatfiles
+            filenames = _read_filenames(filename)
+            method = "mean"
+            data = _reduce_images(filenames, method=method)
+            self.ai.detector.set_flatfield(data)
+            self.flat_field_image = "%s(%s)" % (method, ",".join(filenames))
 
         # Uses it anyway in case do_2D is customed after the configuration
         value = config.pop("nbpt_azim", None)
