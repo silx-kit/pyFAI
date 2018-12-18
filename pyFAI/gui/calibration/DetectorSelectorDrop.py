@@ -179,16 +179,8 @@ class DetectorSelectorDrop(qt.QWidget):
 
         maxShape = detectorWidth, detectorHeight
         detector = pyFAI.detectors.Detector(
-            pixel1=pixelWidth / 10.0**6,
-            pixel2=pixelHeight / 10.0**6,
-            max_shape=maxShape)
-        self.__customDetector = detector
-        self._customResult.setVisible(True)
-        self._customResult.setText("Detector configured")
-
-        detector = pyFAI.detectors.Detector(
-            pixel1=pixelWidth / 10.0**6,
-            pixel2=pixelHeight / 10.0**6,
+            pixel1=pixelWidth * 1e-6,
+            pixel2=pixelHeight * 1e-6,
             max_shape=maxShape)
         self.__customDetector = detector
         self._customResult.setVisible(True)
@@ -406,11 +398,11 @@ class DetectorSelectorDrop(qt.QWidget):
             self.__detectorWidth.setValue(detector.max_shape[0])
             self.__detectorHeight.setValue(detector.max_shape[1])
         if detector.pixel1 is not None:
-            self.__pixelWidth.setValue(detector.pixel1 * 10.0**6)
+            self.__pixelWidth.setValue(detector.pixel1 * 1e6)
         else:
             self.__pixelWidth.setValue(None)
         if detector.pixel2 is not None:
-            self.__pixelHeight.setValue(detector.pixel2 * 10.0**6)
+            self.__pixelHeight.setValue(detector.pixel2 * 1e6)
         else:
             self.__pixelHeight.setValue(None)
 
