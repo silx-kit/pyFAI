@@ -32,27 +32,32 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "18/12/2018"
 __status__ = "production"
 
 import os
 import sys
 import time
 import fabio
-import pyFAI.units
-import pyFAI.utils
-hc = pyFAI.units.hc
 import logging
+from .. import date, version as pyFAI_version
+from .. import units
+from .. import utils
+from ..average import average_dark
+from ..method_registry import IntegrationMethod
+from ..azimuthalIntegrator import AzimuthalIntegrator
+hc = units.hc
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
-logger = logging.getLogger("PyFAI")
+logger = logging.getLogger(__name__)
 
 from argparse import ArgumentParser
 
 
 def main():
     usage = "pyFAI-saxs [options] -n 1000 -p ponifile file1.edf file2.edf ..."
-    version = "PyFAI-saxs version %s from %s " % (pyFAI.version, pyFAI.date)
+    version = "PyFAI-saxs version %s from %s " % (pyFAI_version, date)
     description = """Azimuthal integration for SAXS users."""
     epilog = """pyFAI-saxs is the SAXS script of pyFAI that allows data
     reduction (azimuthal integration) for Small Angle Scattering with output
@@ -111,10 +116,10 @@ def main():
     options = parser.parse_args()
     if len(options.args) < 1:
         logger.error("incorrect number of arguments")
-    to_process = pyFAI.utils.expand_args(options.args)
+    to_process = utils.expand_args(options.args)
 
     if options.ponifile and to_process:
-        integrator = pyFAI.load(options.ponifile)
+        integrator = AzimuthalIntegrator.sload(options.ponifile)
 
         if to_process:
             first = to_process[0]
@@ -134,9 +139,9 @@ def main():
             method = options.method
         else:
             if len(to_process) > 5:
-                method = "full_csr"
+                method = IntegrationMethod.select_method(1, "full", "csr")[0]
             else:
-                method = "splitpixel"
+                method = IntegrationMethod.select_method(1, "full", "histogram")[0]
         print(integrator)
         print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
 
