@@ -980,8 +980,7 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
 
-        method = IntegrationMethod.parse(method, dim=1) or self.DEFAULT_METHOD_1D
-        assert method.dimension == 1
+        method = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_1D
         unit = units.to_unit(unit)
 
         if mask is None:
@@ -1662,8 +1661,6 @@ class AzimuthalIntegrator(Geometry):
             logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
 
         method = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_2D
-        assert method.dimension == 2
-
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
