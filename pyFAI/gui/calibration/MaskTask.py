@@ -283,6 +283,9 @@ class MaskTask(AbstractCalibrationTask):
             self.__plot.removeImage("image")
 
     def __widgetShow(self):
+        # Really make sure to be synchronized
+        # We can't trust events from libs
+        self.__modelMaskChanged = True
         self.__updateWidgetFromModel()
 
     def __widgetHide(self):
