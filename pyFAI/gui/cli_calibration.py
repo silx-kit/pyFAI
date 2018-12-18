@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "17/12/2018"
 __status__ = "production"
 
 import os
@@ -1123,7 +1123,7 @@ class AbstractCalibration(object):
             print(" fitted err4 = " + str_res)
             chi = numpy.rad2deg(chi)
             if self.ax_chiplot:
-                color = matplotlib.colors.cnames.keys()[ring]
+                color = list(matplotlib.colors.cnames.keys())[ring]
                 self.ax_chiplot.plot(chi, err4, "o", color=color, label="ring #%i (%.3f$^o$)" % (ring, ref_2th))
                 chi2 = numpy.linspace(-180, 180, 360)
                 self.ax_chiplot.plot(chi2, model(numpy.deg2rad(chi2), *popt), color=color, label=str_res)
