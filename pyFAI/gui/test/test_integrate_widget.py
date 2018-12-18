@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2018"
+__date__ = "17/12/2018"
 
 import os
 import sys
@@ -44,6 +44,7 @@ import logging
 
 from silx.gui import qt
 from ...gui.IntegrationDialog import IntegrationDialog
+from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
 from pyFAI.test.utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
@@ -136,6 +137,24 @@ class TestIntegrationDialog(unittest.TestCase):
         self.assertEqual(len(result[0]), len(expected[0]))
         for i in range(len(result[0])):
             numpy.testing.assert_array_almost_equal(result[0][i], expected[0][i], decimal=1)
+
+    def test_config_flatdark_v1(self):
+        dico = {"dark_current": "a,b,c",
+                "flat_field": "a,b,d"}
+        widget = WorkerConfigurator()
+        widget.setConfig(dico)
+        dico = widget.getConfig()
+        self.assertEqual(dico["dark_current"], ["a", "b", "c"])
+        self.assertEqual(dico["flat_field"], ["a", "b", "d"])
+
+    def test_config_flatdark_v2(self):
+        dico = {"dark_current": ["a", "b", "c"],
+                "flat_field": ["a", "b", "d"]}
+        widget = WorkerConfigurator()
+        widget.setConfig(dico)
+        dico = widget.getConfig()
+        self.assertEqual(dico["dark_current"], ["a", "b", "c"])
+        self.assertEqual(dico["flat_field"], ["a", "b", "d"])
 
 
 def suite():
