@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/12/2018"
+__date__ = "18/12/2018"
 
 import numpy
 from .DataModel import DataModel
@@ -44,4 +44,11 @@ class ImageModel(DataModel):
                 raise TypeError("A 2d array is expected, but %s was found." % value.shape)
             if value.dtype.kind not in "uif":
                 raise TypeError("A numeric array is expected, but %s was found." % value.dtype.kind)
+            previous = self.value()
+            if previous is value:
+                # Filter same images
+                return
+            if previous is not None and numpy.array_equal(value, previous):
+                # Filter same images
+                return
         super(ImageModel, self).setValue(value)
