@@ -73,6 +73,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self._modelList.setModel(modelFilter)
         selection = self._modelList.selectionModel()
         selection.selectionChanged.connect(self.__modelChanged)
+        self._modelList.doubleClicked.connect(self.__selectAndAccept)
 
         customModel = qt.QStandardItemModel(self)
         item = qt.QStandardItem("From file")
@@ -126,6 +127,12 @@ class DetectorSelectorDrop(qt.QWidget):
         # By default select all the manufacturers
         allIndex = manufacturerModel.index(0, 0)
         manufacturerSelection.select(allIndex, qt.QItemSelectionModel.ClearAndSelect)
+
+    def __selectAndAccept(self):
+        # FIXME: This have to be part of the dialog, and not here
+        window = self.window()
+        if isinstance(window, qt.QDialog):
+            window.accept()
 
     def __splineFileChanged(self):
         splineFile = self.__splineFile.value()
