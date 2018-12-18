@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/11/2018"
+__date__ = "18/12/2018"
 
 import os
 import logging
@@ -53,7 +53,7 @@ class DetectorSelectorDrop(qt.QWidget):
 
     _CustomDetectorRole = qt.Qt.UserRole
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super(DetectorSelectorDrop, self).__init__(parent)
         qt.loadUi(pyFAI.utils.get_ui_file("detector-selection-drop.ui"), self)
 
