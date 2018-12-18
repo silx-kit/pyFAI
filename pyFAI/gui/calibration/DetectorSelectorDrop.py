@@ -392,10 +392,20 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__pixelWidth.changed.disconnect(self.__customDetectorChanged)
         self.__pixelHeight.changed.disconnect(self.__customDetectorChanged)
 
-        self.__detectorWidth.setValue(detector.max_shape[0])
-        self.__detectorHeight.setValue(detector.max_shape[1])
-        self.__pixelWidth.setValue(detector.pixel1 * 10.0**6)
-        self.__pixelHeight.setValue(detector.pixel2 * 10.0**6)
+        if detector.max_shape is None:
+            self.__detectorWidth.setValue(None)
+            self.__detectorHeight.setValue(None)
+        else:
+            self.__detectorWidth.setValue(detector.max_shape[0])
+            self.__detectorHeight.setValue(detector.max_shape[1])
+        if detector.pixel1 is not None:
+            self.__pixelWidth.setValue(detector.pixel1 * 10.0**6)
+        else:
+            self.__pixelWidth.setValue(None)
+        if detector.pixel2 is not None:
+            self.__pixelHeight.setValue(detector.pixel2 * 10.0**6)
+        else:
+            self.__pixelHeight.setValue(None)
 
         self.__customDetector = detector
         self.__detectorWidth.changed.connect(self.__customDetectorChanged)
