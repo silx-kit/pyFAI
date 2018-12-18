@@ -3109,6 +3109,7 @@ class AzimuthalIntegrator(Geometry):
 
     flatfield = property(get_flatfield, set_flatfield)
 
+    @deprecated(reason="Not maintained", since_version="0.17")
     def set_darkfiles(self, files=None, method="mean"):
         """Set the dark current from one or mutliple files, avaraged
         according to the method provided.
@@ -3123,9 +3124,11 @@ class AzimuthalIntegrator(Geometry):
         self.detector.set_darkfiles(files, method)
 
     @property
+    @deprecated(reason="Not maintained", since_version="0.17")
     def darkfiles(self):
         return self.detector.darkfiles
 
+    @deprecated(reason="Not maintained", since_version="0.17")
     def set_flatfiles(self, files, method="mean"):
         """Set the flat field from one or mutliple files, averaged
         according to the method provided.
@@ -3140,6 +3143,7 @@ class AzimuthalIntegrator(Geometry):
         self.detector.set_flatfiles(files, method)
 
     @property
+    @deprecated(reason="Not maintained", since_version="0.17")
     def flatfiles(self):
         return self.detector.flatfiles
 
