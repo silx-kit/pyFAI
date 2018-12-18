@@ -4,6 +4,8 @@ global-exclude *.pyc
 global-exclude *.pyo
 global-exclude .git
 global-exclude .ipynb_checkpoints
+global-exclude *.h5
+global-exclude *.npz
 recursive-include package/debian? *
 recursive-include pyFAI/ext  *.c *.h *.pyx *.pxd *.pxi
 recursive-include pyFAI *.py
@@ -33,7 +35,12 @@ include copyright
 include requirements.txt
 include pyproject.toml
 
-#Include doc without checkpoints
+#Include doc without checkpoints or downloaded files
 recursive-include doc *
 recursive-exclude doc .ipynb_checkpoints/*.ipynb
+recursive-exclude doc *.h5
+recursive-exclude doc *.npz
+recursive-exclude doc *.npy
+recursive-exclude doc *.edf
+recursive-exclude doc *.edf
 
