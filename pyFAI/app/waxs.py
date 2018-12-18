@@ -33,27 +33,31 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "18/12/2018"
 __status__ = "production"
 
 import os
 import sys
 import time
 import fabio
-import pyFAI.units
-import pyFAI.utils
-hc = pyFAI.units.hc
+from pyFAI import date, version as pyFAI_version
+from pyFAI import units
+from pyFAI import utils
+from pyFAI.average import average_dark
+from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI.method_registry import IntegrationMethod
+hc = units.hc
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
-logger = logging.getLogger("PyFAI")
+logger = logging.getLogger(__name__)
 
 from argparse import ArgumentParser
 
 
 def main():
     usage = "pyFAI-waxs [options] -p ponifile file1.edf file2.edf ..."
-    version = "pyFAI-waxs version %s from %s" % (pyFAI.version, pyFAI.date)
+    version = "pyFAI-waxs version %s from %s" % (pyFAI_version, date)
     description = "Azimuthal integration for powder diffraction."
     epilog = """pyFAI-waxs is the script of pyFAI that allows data reduction
     (azimuthal integration) for Wide Angle Scattering to produce X-Ray Powder
@@ -124,18 +128,20 @@ def main():
     if len(options.args) < 1:
         logger.error("incorrect number of arguments")
 
-    to_process = pyFAI.utils.expand_args(options.args)
+    to_process = utils.expand_args(options.args)
 
     if options.ponifile and to_process:
-        integrator = pyFAI.load(options.ponifile)
+        integrator = AzimuthalIntegrator.sload(options.ponifile)
 
         if options.method:
-            method = options.method
+            method1d = method2d = options.method
         else:
             if len(to_process) > 5:
-                method = "full_csr"
+                method1d = IntegrationMethod.select_method(1, "full", "csr")[0]
+                method2d = IntegrationMethod.select_method(2, "full", "csr")[0]
             else:
-                method = "splitpixel"
+                method1d = IntegrationMethod.select_method(1, "full", "histogram")[0]
+                method2d = IntegrationMethod.select_method(2, "full", "histogram")[0]
         if to_process:
             first = to_process[0]
             fabimg = fabio.open(first)
@@ -153,7 +159,7 @@ def main():
             integrator.flatfield = fabio.open(options.flat).data
 
         print(integrator)
-        print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
+        print("Mask: %s\tMethods: %s / %s" % (integrator.maskfile, method1d, method2d))
         for afile in to_process:
             sys.stdout.write("Integrating %s --> " % afile)
             outfile = os.path.splitext(afile)[0] + options.ext
@@ -161,7 +167,7 @@ def main():
             t0 = time.time()
             fabimg = fabio.open(afile)
             if options.multiframe:
-                data = pyFAI.average.average_dark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
+                data = average_dark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
             else:
                 data = fabimg.data
             t1 = time.time()
@@ -170,7 +176,7 @@ def main():
                                    filename=outfile,
                                    dummy=options.dummy,
                                    delta_dummy=options.delta_dummy,
-                                   method=method,
+                                   method=method1d,
                                    unit=options.unit,
                                    error_model=options.error_model,
                                    polarization_factor=options.polarization_factor,
@@ -184,7 +190,7 @@ def main():
                                        filename=azimFile,
                                        dummy=options.dummy,
                                        delta_dummy=options.delta_dummy,
-                                       method=method,
+                                       method=method2d,
                                        unit=options.unit,
                                        error_model=options.error_model,
                                        polarization_factor=options.polarization_factor,

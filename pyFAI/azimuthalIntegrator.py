@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2018"
+__date__ = "18/12/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -981,6 +981,7 @@ class AzimuthalIntegrator(Geometry):
             logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
 
         method = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_1D
+        assert method.dimension == 1
         unit = units.to_unit(unit)
 
         if mask is None:
@@ -1660,7 +1661,8 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
 
-        method = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_2D
+        method = IntegrationMethod.parse(method, 2) or self.DEFAULT_METHOD_2D
+        assert method.dimension == 2
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
