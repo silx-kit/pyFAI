@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "18/12/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -981,6 +981,7 @@ class AzimuthalIntegrator(Geometry):
             logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
 
         method = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_1D
+        assert method.dimension == 1
         unit = units.to_unit(unit)
 
         if mask is None:
@@ -1660,7 +1661,8 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
 
-        method = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_2D
+        method = IntegrationMethod.parse(method, 2) or self.DEFAULT_METHOD_2D
+        assert method.dimension == 2
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
@@ -3109,6 +3111,7 @@ class AzimuthalIntegrator(Geometry):
 
     flatfield = property(get_flatfield, set_flatfield)
 
+    @deprecated(reason="Not maintained", since_version="0.17")
     def set_darkfiles(self, files=None, method="mean"):
         """Set the dark current from one or mutliple files, avaraged
         according to the method provided.
@@ -3123,9 +3126,11 @@ class AzimuthalIntegrator(Geometry):
         self.detector.set_darkfiles(files, method)
 
     @property
+    @deprecated(reason="Not maintained", since_version="0.17")
     def darkfiles(self):
         return self.detector.darkfiles
 
+    @deprecated(reason="Not maintained", since_version="0.17")
     def set_flatfiles(self, files, method="mean"):
         """Set the flat field from one or mutliple files, averaged
         according to the method provided.
@@ -3140,6 +3145,7 @@ class AzimuthalIntegrator(Geometry):
         self.detector.set_flatfiles(files, method)
 
     @property
+    @deprecated(reason="Not maintained", since_version="0.17")
     def flatfiles(self):
         return self.detector.flatfiles
 

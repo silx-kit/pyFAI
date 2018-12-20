@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2018"
+__date__ = "18/12/2018"
 
 import logging
 import os.path
@@ -53,9 +53,20 @@ class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
     """Inherite the silx mask to be able to save and restore internally
     imported/exported masks to the application model."""
 
+    sigUserMaskChanged = qt.Signal()
+    """Emitted when the user changes the mask.
+
+    sigMaskChanged on silx 0.9 to not provide that. This signal is used with a
+    filter.
+    """
+
     def __init__(self, parent=None, plot=None):
         silx.gui.plot.MaskToolsWidget.MaskToolsWidget.__init__(self, parent=parent, plot=plot)
         self.__syncColor = SynchronizeMaskToolColor(self)
+        self.sigMaskChanged.connect(self.__emitUserMaskChanged)
+
+    def __emitUserMaskChanged(self):
+        self.sigUserMaskChanged.emit()
 
     def __extractDirectory(self, filename):
         if filename is not None and filename != "":
@@ -110,6 +121,18 @@ class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
         maskModel = experimentSettings.maskFile()
         maskModel.setValue(filename)
 
+    def setSelectionMask(self, mask):
+        self.sigMaskChanged.disconnect(self.__emitUserMaskChanged)
+        result = super(_MaskToolsWidget, self).setSelectionMask(mask)
+        self.sigMaskChanged.connect(self.__emitUserMaskChanged)
+        return result
+
+    def showEvent(self, event):
+        self.sigMaskChanged.disconnect(self.__emitUserMaskChanged)
+        result = silx.gui.plot.MaskToolsWidget.MaskToolsWidget.showEvent(self, event)
+        self.sigMaskChanged.connect(self.__emitUserMaskChanged)
+        return result
+
 
 class MaskTask(AbstractCalibrationTask):
 
@@ -120,6 +143,7 @@ class MaskTask(AbstractCalibrationTask):
 
         self.initNextStep()
 
+        self.__plot = None
         self.__plot = self.__createPlot(self._imageHolder)
         self.__plot.setObjectName("plot-mask")
 
@@ -148,8 +172,7 @@ class MaskTask(AbstractCalibrationTask):
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
 
-        # FIXME ask for a stable API
-        self.__maskPanel._mask.sigChanged.connect(self.__maskFromPlotChanged)
+        self.__maskPanel.sigUserMaskChanged.connect(self.__maskFromPlotChanged)
         self.widgetShow.connect(self.__widgetShow)
         self.widgetHide.connect(self.__widgetHide)
 
@@ -227,6 +250,10 @@ class MaskTask(AbstractCalibrationTask):
         """
         value = 'n/a'
 
+        if self.__plot is None:
+            # It could happen at the creation of the plot
+            # the creation of PositionInfo
+            return value
         image = self.__plot.getImage("image")
         if image is None:
             return value
@@ -261,6 +288,9 @@ class MaskTask(AbstractCalibrationTask):
             self.__plot.removeImage("image")
 
     def __widgetShow(self):
+        # Really make sure to be synchronized
+        # We can't trust events from libs
+        self.__modelMaskChanged = True
         self.__updateWidgetFromModel()
 
     def __widgetHide(self):

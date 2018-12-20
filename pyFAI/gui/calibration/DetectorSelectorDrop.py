@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/11/2018"
+__date__ = "18/12/2018"
 
 import os
 import logging
@@ -53,7 +53,7 @@ class DetectorSelectorDrop(qt.QWidget):
 
     _CustomDetectorRole = qt.Qt.UserRole
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super(DetectorSelectorDrop, self).__init__(parent)
         qt.loadUi(pyFAI.utils.get_ui_file("detector-selection-drop.ui"), self)
 
@@ -73,6 +73,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self._modelList.setModel(modelFilter)
         selection = self._modelList.selectionModel()
         selection.selectionChanged.connect(self.__modelChanged)
+        self._modelList.doubleClicked.connect(self.__selectAndAccept)
 
         customModel = qt.QStandardItemModel(self)
         item = qt.QStandardItem("From file")
@@ -127,6 +128,12 @@ class DetectorSelectorDrop(qt.QWidget):
         allIndex = manufacturerModel.index(0, 0)
         manufacturerSelection.select(allIndex, qt.QItemSelectionModel.ClearAndSelect)
 
+    def __selectAndAccept(self):
+        # FIXME: This have to be part of the dialog, and not here
+        window = self.window()
+        if isinstance(window, qt.QDialog):
+            window.accept()
+
     def __splineFileChanged(self):
         splineFile = self.__splineFile.value()
         if splineFile is not None:
@@ -172,16 +179,8 @@ class DetectorSelectorDrop(qt.QWidget):
 
         maxShape = detectorWidth, detectorHeight
         detector = pyFAI.detectors.Detector(
-            pixel1=pixelWidth / 10.0**6,
-            pixel2=pixelHeight / 10.0**6,
-            max_shape=maxShape)
-        self.__customDetector = detector
-        self._customResult.setVisible(True)
-        self._customResult.setText("Detector configured")
-
-        detector = pyFAI.detectors.Detector(
-            pixel1=pixelWidth / 10.0**6,
-            pixel2=pixelHeight / 10.0**6,
+            pixel1=pixelWidth * 1e-6,
+            pixel2=pixelHeight * 1e-6,
             max_shape=maxShape)
         self.__customDetector = detector
         self._customResult.setVisible(True)
@@ -392,10 +391,20 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__pixelWidth.changed.disconnect(self.__customDetectorChanged)
         self.__pixelHeight.changed.disconnect(self.__customDetectorChanged)
 
-        self.__detectorWidth.setValue(detector.max_shape[0])
-        self.__detectorHeight.setValue(detector.max_shape[1])
-        self.__pixelWidth.setValue(detector.pixel1 * 10.0**6)
-        self.__pixelHeight.setValue(detector.pixel2 * 10.0**6)
+        if detector.max_shape is None:
+            self.__detectorWidth.setValue(None)
+            self.__detectorHeight.setValue(None)
+        else:
+            self.__detectorWidth.setValue(detector.max_shape[0])
+            self.__detectorHeight.setValue(detector.max_shape[1])
+        if detector.pixel1 is not None:
+            self.__pixelWidth.setValue(detector.pixel1 * 1e6)
+        else:
+            self.__pixelWidth.setValue(None)
+        if detector.pixel2 is not None:
+            self.__pixelHeight.setValue(detector.pixel2 * 1e6)
+        else:
+            self.__pixelHeight.setValue(None)
 
         self.__customDetector = detector
         self.__detectorWidth.changed.connect(self.__customDetectorChanged)
