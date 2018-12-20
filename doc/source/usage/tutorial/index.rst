@@ -22,6 +22,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Geometry/geometry
    Distortion/Distortion
    Calibrant/Calibrant
+   Calibrant/new_calibrant
    LogScale/Guinier
    multi-geometry
    MakeCalibrant/make_calibrant
