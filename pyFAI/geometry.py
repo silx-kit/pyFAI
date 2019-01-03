@@ -2081,9 +2081,6 @@ class Geometry(object):
         self._cached_array["q_corner"] = q_corner
 
     def get_wavelength(self):
-        if self._wavelength is None:
-            raise RuntimeWarning("Using wavelength without having defined"
-                                 " it previously ... excepted to fail !")
         return self._wavelength
 
     wavelength = property(get_wavelength, set_wavelength)
