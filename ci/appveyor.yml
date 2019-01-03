@@ -2,7 +2,7 @@
 # Windows
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
-version: 0.13.{build}
+version: 0.18.{build}
 shallow_clone: true
 build: false
 
@@ -21,6 +21,8 @@ os:
 cache:
     - '%LOCALAPPDATA%\pip\Cache'
 
+image: Visual Studio 2017
+
 environment:
     global:
         WIN_SDK_ROOT: "C:\\Program Files\\Microsoft SDKs\\Windows"
@@ -29,10 +31,10 @@ environment:
 
     matrix:
         # Python 2.7
-        - PYTHON_DIR: "C:\\Python27-x64"
-          PYTHON_VERSION: "2.7.11"
-          PYTHON_ARCH: "64"
-          BUILD_ARGS: ""
+        #- PYTHON_DIR: "C:\\Python27-x64"
+        #  PYTHON_VERSION: "2.7.11"
+        #  PYTHON_ARCH: "64"
+        #  BUILD_ARGS: ""
 
         # Python 3.5
         - PYTHON_DIR: "C:\\Python35-x64"
@@ -44,9 +46,14 @@ environment:
         - PYTHON_DIR: "C:\\Python36-x64"
           #PYTHON_VERSION: "3.4.3"
           PYTHON_ARCH: "64"
-          # OpenMP is not available on python 3.4
-          #BUILD_ARGS: "--no-openmp"
 
+        # Python 3.7
+        - PYTHON_DIR: "C:\\Python37-x64"
+          PYTHON_ARCH: "64"
+
+
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
     # Add Python to PATH
