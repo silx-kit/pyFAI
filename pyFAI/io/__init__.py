@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2018"
+__date__ = "03/01/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -64,9 +64,9 @@ except ImportError:
     OrderedDict = dict
 
 
-from .utils import StringTypes, fully_qualified_name
-from . import units
-from . import version
+from ..utils import StringTypes, fully_qualified_name
+from .. import units
+from .. import version
 
 
 logger = logging.getLogger(__name__)
