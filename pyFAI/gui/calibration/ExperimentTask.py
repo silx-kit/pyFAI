@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "06/12/2018"
+__date__ = "03/01/2019"
 
 import fabio
 import numpy
@@ -42,7 +42,7 @@ import pyFAI.utils
 from pyFAI.calibrant import Calibrant
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 import pyFAI.detectors
-from .DetectorSelectorDrop import DetectorSelectorDrop
+from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .CalibrationContext import CalibrationContext
 from ..utils import units
@@ -181,29 +181,11 @@ class ExperimentTask(AbstractCalibrationTask):
     def __customDetector(self):
         settings = self.model().experimentSettingsModel()
         detector = settings.detectorModel().detector()
-        popup = DetectorSelectorDrop(self)
-        popupParent = self._customDetector
-        pos = popupParent.mapToGlobal(popupParent.rect().bottomRight())
-        pos = pos + popup.rect().topLeft() - popup.rect().topRight()
-        popup.move(pos)
-        popup.show()
-
-        dialog = qt.QDialog(self)
-        dialog.setWindowTitle("Detector selection")
-        layout = qt.QVBoxLayout(dialog)
-        layout.addWidget(popup)
-
-        buttonBox = qt.QDialogButtonBox(qt.QDialogButtonBox.Ok |
-                                        qt.QDialogButtonBox.Cancel)
-        buttonBox.accepted.connect(dialog.accept)
-        buttonBox.rejected.connect(dialog.reject)
-        layout.addWidget(buttonBox)
-
-        # It have to be here to set the focus on the right widget
-        popup.setDetector(detector)
+        dialog = DetectorSelectorDialog(self)
+        dialog.selectDetector(detector)
         result = dialog.exec_()
         if result:
-            newDetector = popup.detector()
+            newDetector = dialog.selectedDetector()
             settings.detectorModel().setDetector(newDetector)
 
     def __waveLengthChanged(self):

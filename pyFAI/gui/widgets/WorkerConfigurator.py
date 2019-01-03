@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2018"
+__date__ = "03/01/2019"
 __status__ = "development"
 
 import logging
@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 from silx.gui import qt
 
-from ..calibration.DetectorSelectorDrop import DetectorSelectorDrop
+from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
 from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ...detectors import detector_factory
@@ -402,29 +402,11 @@ class WorkerConfigurator(qt.QWidget):
         return filename
 
     def selectDetector(self):
-        popup = DetectorSelectorDrop(self)
-        popupParent = self.load_detector
-        pos = popupParent.mapToGlobal(popupParent.rect().bottomRight())
-        pos = pos + popup.rect().topLeft() - popup.rect().topRight()
-        popup.move(pos)
-        popup.show()
-
-        dialog = qt.QDialog(self)
-        dialog.setWindowTitle("Detector selection")
-        layout = qt.QVBoxLayout(dialog)
-        layout.addWidget(popup)
-
-        buttonBox = qt.QDialogButtonBox(qt.QDialogButtonBox.Ok |
-                                        qt.QDialogButtonBox.Cancel)
-        buttonBox.accepted.connect(dialog.accept)
-        buttonBox.rejected.connect(dialog.reject)
-        layout.addWidget(buttonBox)
-
-        # It have to be here to set the focus on the right widget
-        popup.setDetector(self.__detector)
+        dialog = DetectorSelectorDialog(self)
+        dialog.selectDetector(self.__detector)
         result = dialog.exec_()
         if result:
-            newDetector = popup.detector()
+            newDetector = dialog.selectedDetector()
             self.setDetector(newDetector)
 
     def __radialUnitUpdated(self):
