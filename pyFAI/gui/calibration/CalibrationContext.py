@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2018"
+__date__ = "03/01/2019"
 
 import weakref
 import logging
@@ -39,9 +39,10 @@ from silx.gui.colors import Colormap
 
 from .model.CalibrationModel import CalibrationModel
 from .model.DataModel import DataModel
-from . import utils
 from ..utils import eventutils
 from ..utils import units
+from ..utils import colorutils
+from ...utils import stringutil
 
 
 _logger = logging.getLogger(__name__)
@@ -166,7 +167,7 @@ class CalibrationContext(object):
         isFullScreen = settings.value("full-screen", False)
         try:
             if not isinstance(isFullScreen, bool):
-                isFullScreen = utils.stringToBool(isFullScreen)
+                isFullScreen = stringutil.to_bool(isFullScreen)
         except ValueError:
             isFullScreen = False
         settings.endGroup()
@@ -343,4 +344,4 @@ class CalibrationContext(object):
 
     def createMarkerColors(self):
         colormap = self.getRawColormap()
-        return utils.getFreeColorRange(colormap)
+        return colorutils.getFreeColorRange(colormap)

@@ -31,7 +31,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2018"
+__date__ = "03/01/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -91,3 +91,20 @@ def latex_to_unicode(string):
     string = string.replace("log10", u"log₁₀")
     string = string.replace("^{*2}", u"d*²")
     return string
+
+
+_TRUE_STRINGS = set(["yes", "true", "1"])
+_FALSE_STRINGS = set(["no", "false", "0"])
+
+
+def to_bool(string):
+    """Returns a safe boolean from a string.
+
+    :raise ValueError: If the string do not contains a boolean information.
+    """
+    lower = string.lower()
+    if lower in _TRUE_STRINGS:
+        return True
+    if lower in _FALSE_STRINGS:
+        return False
+    raise ValueError("'%s' is not a valid boolean" % string)

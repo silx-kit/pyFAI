@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/12/2018"
+__date__ = "03/01/2019"
 
 import logging
 import numpy
@@ -39,7 +39,6 @@ import silx.gui.plot
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
-from . import utils
 from .helper.SynchronizeRawView import SynchronizeRawView
 from .helper.SynchronizePlotBackground import SynchronizePlotBackground
 from .CalibrationContext import CalibrationContext
@@ -52,6 +51,7 @@ from ..utils import units
 from ..utils import eventutils
 from ..utils import validators
 from .helper.MarkerManager import MarkerManager
+from .helper import ProcessingWidget
 
 _logger = logging.getLogger(__name__)
 
@@ -695,7 +695,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             self.__processing.deleteLater()
 
     def setProcessing(self):
-        self.__processing = utils.createProcessingWidgetOverlay(self)
+        self.__processing = ProcessingWidget.createProcessingWidgetOverlay(self)
 
 
 class GeometryTask(AbstractCalibrationTask):
