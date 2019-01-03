@@ -21,6 +21,8 @@ os:
 cache:
     - '%LOCALAPPDATA%\pip\Cache'
 
+image: Visual Studio 2017
+
 environment:
     global:
         WIN_SDK_ROOT: "C:\\Program Files\\Microsoft SDKs\\Windows"
