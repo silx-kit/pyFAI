@@ -50,13 +50,13 @@ from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ...detectors import detector_factory
 from ...utils import float_, str_, get_ui_file
-from ...azimuthalIntegrator import AzimuthalIntegrator
 from ...units import RADIAL_UNITS, to_unit
 from ..model.GeometryModel import GeometryModel
 from ..model.DataModel import DataModel
 from ..utils import units
 from ...utils import stringutil
 from ..utils import FilterBuilder
+from ...io.ponifile import PoniFile
 
 
 class WorkerConfigurator(qt.QWidget):
@@ -495,24 +495,23 @@ class WorkerConfigurator(qt.QWidget):
 
     def loadFromPoniFile(self, ponifile):
         try:
-            # TODO: It should not be needed to create an AI to parse a PONI file
-            ai = AzimuthalIntegrator.sload(ponifile)
+            poni = PoniFile(ponifile)
         except Exception as error:
             # FIXME: An error have to be displayed in the GUI
             logger.error("file %s does not look like a poni-file, error %s", ponifile, error)
             return
 
         model = self.__geometryModel
-        model.distance().setValue(ai.dist)
-        model.poni1().setValue(ai.poni1)
-        model.poni2().setValue(ai.poni2)
-        model.rotation1().setValue(ai.rot1)
-        model.rotation2().setValue(ai.rot2)
-        model.rotation3().setValue(ai.rot3)
+        model.distance().setValue(poni.dist)
+        model.poni1().setValue(poni.poni1)
+        model.poni2().setValue(poni.poni2)
+        model.rotation1().setValue(poni.rot1)
+        model.rotation2().setValue(poni.rot2)
+        model.rotation3().setValue(poni.rot3)
         # TODO: why is there an underscore to _wavelength here?
-        model.wavelength().setValue(ai._wavelength)
+        model.wavelength().setValue(poni.wavelength)
 
-        self.setDetector(ai.detector)
+        self.setDetector(poni.detector)
 
     def _float(self, kw, default=0):
         fval = default
