@@ -1287,7 +1287,7 @@ class Geometry(object):
                           self._rot1, self._rot2, self._rot3]
             self.chiDiscAtPi = True  # position of the discontinuity of chi in radians, pi by default
             self.reset()
-#            self._wavelength = None
+            # self._wavelength = None
             self._oversampling = None
             if self.splineFile:
                 self.detector.set_splineFile(self.splineFile)
@@ -2096,6 +2096,7 @@ class Geometry(object):
 
     def del_ttha(self):
         self._cached_array["2th_center"] = None
+
     ttha = property(get_ttha, set_ttha, del_ttha, "2theta array in cache")
 
     def get_chia(self):
@@ -2106,6 +2107,7 @@ class Geometry(object):
 
     def del_chia(self):
         self._cached_array["chi_center"] = None
+
     chia = property(get_chia, set_chia, del_chia, "chi array in cache")
 
     def get_dssa(self):
@@ -2129,6 +2131,7 @@ class Geometry(object):
 
     def del_qa(self):
         self._cached_array["q_center"] = None
+
     qa = property(get_qa, set_qa, del_qa, "Q array in cache")
 
     def get_ra(self):
@@ -2139,6 +2142,7 @@ class Geometry(object):
 
     def del_ra(self):
         self.self._cached_array["r_center"] = None
+
     ra = property(get_ra, set_ra, del_ra, "R array in cache")
 
     def get_pixel1(self):
