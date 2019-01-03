@@ -862,7 +862,7 @@ class Nexus(object):
         """
         close the filename and update all entries
         """
-        if self.mode!="r":
+        if self.mode != "r":
             end_time = get_isotime()
             for entry in self.to_close:
                 entry["end_time"] = end_time
