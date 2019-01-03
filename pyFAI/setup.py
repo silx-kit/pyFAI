@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/11/2018"
+__date__ = "03/01/2019"
 
 import os
 from numpy.distutils.misc_util import Configuration
@@ -43,6 +43,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('resources')
     config.add_subpackage('test')
     config.add_subpackage('utils')
+    config.add_subpackage('io')
 
     # includes third_party only if it is available
     local_path = os.path.join(top_path, parent_package, "pyFAI", "third_party")

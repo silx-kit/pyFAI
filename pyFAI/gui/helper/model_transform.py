@@ -33,10 +33,10 @@ __license__ = "MIT"
 
 
 from pyFAI.control_points import ControlPoints
-from pyFAI.gui.calibration.model.CalibrationModel import CalibrationModel
-from pyFAI.gui.calibration.model.PeakSelectionModel import PeakSelectionModel
-from pyFAI.gui.calibration.model.PeakModel import PeakModel
-from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
+from pyFAI.gui.model.CalibrationModel import CalibrationModel
+from pyFAI.gui.model.PeakSelectionModel import PeakSelectionModel
+from pyFAI.gui.model.PeakModel import PeakModel
+from pyFAI.gui.CalibrationContext import CalibrationContext
 
 
 def createControlPoints(model):

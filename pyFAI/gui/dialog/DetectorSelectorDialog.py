@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/12/2018"
+__date__ = "03/01/2019"
 
 import os
 import logging
@@ -38,9 +38,9 @@ import pyFAI.utils
 import pyFAI.detectors
 from ..widgets.DetectorModel import AllDetectorModel
 from ..widgets.DetectorModel import DetectorFilter
-from .model.DataModel import DataModel
+from ..model.DataModel import DataModel
 from ..utils import validators
-from .CalibrationContext import CalibrationContext
+from ..CalibrationContext import CalibrationContext
 from ..utils import FilterBuilder
 
 
@@ -512,3 +512,38 @@ class DetectorSelectorDrop(qt.QWidget):
             self._stacked.setCurrentWidget(self._manualPanel)
         else:
             assert(False)
+
+
+class DetectorSelectorDialog(qt.QDialog):
+
+    def __init__(self, parent=None):
+        super(DetectorSelectorDialog, self).__init__(parent=parent)
+        self.setWindowTitle("Detector selection")
+
+        self.__content = DetectorSelectorDrop(self)
+
+        layout = qt.QVBoxLayout(self)
+        layout.addWidget(self.__content)
+
+        buttonBox = qt.QDialogButtonBox(qt.QDialogButtonBox.Ok |
+                                        qt.QDialogButtonBox.Cancel)
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+        layout.addWidget(buttonBox)
+
+    def selectDetector(self, detector):
+        """
+        Select a detector.
+
+        :param pyFAI.detectors.Detector detector: Detector to select in this
+            dialog
+        """
+        self.__content.setDetector(detector)
+
+    def selectedDetector(self):
+        """
+        Returns the selected detector.
+
+        :rtype: pyFAI.detectors.Detector
+        """
+        return self.__content.detector()

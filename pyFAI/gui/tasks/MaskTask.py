@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/12/2018"
+__date__ = "03/01/2019"
 
 import logging
 import os.path
@@ -39,11 +39,11 @@ from silx.gui.plot.tools import PositionInfo
 
 import pyFAI.utils
 from .AbstractCalibrationTask import AbstractCalibrationTask
-from .CalibrationContext import CalibrationContext
-from .helper.SynchronizeRawView import SynchronizeRawView
-from .helper.MarkerManager import MarkerManager
-from .helper.SynchronizeMaskToolColor import SynchronizeMaskToolColor
-from .helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..CalibrationContext import CalibrationContext
+from ..helper.SynchronizeRawView import SynchronizeRawView
+from ..helper.MarkerManager import MarkerManager
+from ..helper.SynchronizeMaskToolColor import SynchronizeMaskToolColor
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 
 
 _logger = logging.getLogger(__name__)

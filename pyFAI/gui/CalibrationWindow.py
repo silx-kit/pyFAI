@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/10/2018"
+__date__ = "03/01/2019"
 
 import functools
 
@@ -36,7 +36,7 @@ from silx.gui import icons
 
 import pyFAI.utils
 from .model import MarkerModel
-from ..utils import projecturl
+from .utils import projecturl
 
 
 class MenuItem(qt.QListWidgetItem):
@@ -234,11 +234,11 @@ class CalibrationWindow(qt.QMainWindow):
         self.__context.saveWindowLocationSettings("main-window", self)
 
     def createTasks(self):
-        from pyFAI.gui.calibration.ExperimentTask import ExperimentTask
-        from pyFAI.gui.calibration.MaskTask import MaskTask
-        from pyFAI.gui.calibration.PeakPickingTask import PeakPickingTask
-        from pyFAI.gui.calibration.GeometryTask import GeometryTask
-        from pyFAI.gui.calibration.IntegrationTask import IntegrationTask
+        from pyFAI.gui.tasks.ExperimentTask import ExperimentTask
+        from pyFAI.gui.tasks.MaskTask import MaskTask
+        from pyFAI.gui.tasks.PeakPickingTask import PeakPickingTask
+        from pyFAI.gui.tasks.GeometryTask import GeometryTask
+        from pyFAI.gui.tasks.IntegrationTask import IntegrationTask
 
         tasks = [
             ExperimentTask(),

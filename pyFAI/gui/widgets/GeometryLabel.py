@@ -27,9 +27,9 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/12/2018"
+__date__ = "03/01/2019"
 
-from ..calibration.model.GeometryModel import GeometryModel
+from ..model.GeometryModel import GeometryModel
 from .ElidedLabel import ElidedLabel
 
 
@@ -83,7 +83,7 @@ class GeometryLabel(ElidedLabel):
     def setGeometryModel(self, geometryModel):
         """Set the geometry to display.
 
-        :param ~pyFAI.gui.calibration.model.GeometryModel geometryModel: A geometry.
+        :param ~pyFAI.gui.model.GeometryModel geometryModel: A geometry.
         """
         assert(isinstance(geometryModel, GeometryModel))
         if self.__geometry is geometryModel:
@@ -97,6 +97,6 @@ class GeometryLabel(ElidedLabel):
     def geometryModel(self):
         """Returns the geometry model
 
-        :rtype: Union[None,~pyFAI.gui.calibration.model.GeometryModel]
+        :rtype: Union[None,~pyFAI.gui.model.GeometryModel]
         """
         return self.__geometry

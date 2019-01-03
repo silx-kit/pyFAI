@@ -22,8 +22,34 @@
 # THE SOFTWARE.
 #
 # ###########################################################################*/
-"""GUI relative to calibration"""
+
+from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/02/2017"
+__date__ = "03/01/2019"
+
+from silx.gui import qt
+from silx.gui.widgets.WaitingPushButton import WaitingPushButton
+
+
+def createProcessingWidgetOverlay(parent):
+    """Create a widget overlay to show that the application is processing data
+    to update the plot.
+
+    :param qt.QWidget widget: Widget containing the overlay
+    :rtype: qt.QWidget
+    """
+    if hasattr(parent, "centralWidget"):
+        parent = parent.centralWidget()
+    button = WaitingPushButton(parent)
+    button.setWaiting(True)
+    button.setText("Processing...")
+    button.setDown(True)
+    position = parent.size()
+    size = button.sizeHint()
+    position = (position - size) / 2
+    rect = qt.QRect(qt.QPoint(position.width(), position.height()), size)
+    button.setGeometry(rect)
+    button.setVisible(True)
+    return button
