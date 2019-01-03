@@ -37,21 +37,21 @@ from silx.gui import icons
 import silx.gui.plot
 
 import pyFAI.utils
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
-from pyFAI.gui.calibration.RingCalibration import RingCalibration
-from .helper.SynchronizeRawView import SynchronizeRawView
-from .helper.SynchronizePlotBackground import SynchronizePlotBackground
-from .CalibrationContext import CalibrationContext
+from .AbstractCalibrationTask import AbstractCalibrationTask
+from ..helper.RingCalibration import RingCalibration
+from ..helper.SynchronizeRawView import SynchronizeRawView
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..CalibrationContext import CalibrationContext
 from ..widgets.UnitLabel import UnitLabel
 from ..widgets.QuantityLabel import QuantityLabel
 from ..widgets.QuantityEdit import QuantityEdit
-from .model.DataModel import DataModel
-from .model.GeometryConstraintsModel import GeometryConstraintsModel
+from ..model.DataModel import DataModel
+from ..model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..utils import units
 from ..utils import eventutils
 from ..utils import validators
-from .helper.MarkerManager import MarkerManager
-from .helper import ProcessingWidget
+from ..helper.MarkerManager import MarkerManager
+from ..helper import ProcessingWidget
 
 _logger = logging.getLogger(__name__)
 

@@ -38,9 +38,9 @@ import pyFAI.utils
 import pyFAI.detectors
 from ..widgets.DetectorModel import AllDetectorModel
 from ..widgets.DetectorModel import DetectorFilter
-from ..calibration.model.DataModel import DataModel
+from ..model.DataModel import DataModel
 from ..utils import validators
-from ..calibration.CalibrationContext import CalibrationContext
+from ..CalibrationContext import CalibrationContext
 from ..utils import FilterBuilder
 
 

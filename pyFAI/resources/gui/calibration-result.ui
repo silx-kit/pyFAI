@@ -237,7 +237,7 @@
   <customwidget>
    <class>IntegrationPlot</class>
    <extends>QFrame</extends>
-   <header>pyFAI.gui.calibration.IntegrationTask</header>
+   <header>pyFAI.gui.tasks.IntegrationTask</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -52,8 +52,8 @@ from ...detectors import detector_factory
 from ...utils import float_, str_, get_ui_file
 from ...azimuthalIntegrator import AzimuthalIntegrator
 from ...units import RADIAL_UNITS, to_unit
-from ..calibration.model.GeometryModel import GeometryModel
-from ..calibration.model.DataModel import DataModel
+from ..model.GeometryModel import GeometryModel
+from ..model.DataModel import DataModel
 from ..utils import units
 from ...utils import stringutil
 from ..utils import FilterBuilder

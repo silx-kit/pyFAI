@@ -39,10 +39,10 @@ from silx.gui.colors import Colormap
 
 from .model.CalibrationModel import CalibrationModel
 from .model.DataModel import DataModel
-from ..utils import eventutils
-from ..utils import units
-from ..utils import colorutils
-from ...utils import stringutil
+from .utils import eventutils
+from .utils import units
+from .utils import colorutils
+from ..utils import stringutil
 
 
 _logger = logging.getLogger(__name__)

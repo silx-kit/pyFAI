@@ -38,17 +38,17 @@ import silx.gui.icons
 import silx.io
 
 import pyFAI.utils
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from .AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from ..utils import unitutils
-from .model.DataModel import DataModel
+from ..model.DataModel import DataModel
 from ..widgets.QuantityLabel import QuantityLabel
-from .CalibrationContext import CalibrationContext
+from ..CalibrationContext import CalibrationContext
 from ..utils import units
 from ..utils import validators
-from .helper.MarkerManager import MarkerManager
-from .helper.SynchronizePlotBackground import SynchronizePlotBackground
-from .helper import ProcessingWidget
+from ..helper.MarkerManager import MarkerManager
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..helper import ProcessingWidget
 from pyFAI.ext.invert_geometry import InvertGeometry
 from ..utils import FilterBuilder
 from ..utils import imageutils

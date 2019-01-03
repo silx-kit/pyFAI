@@ -40,14 +40,14 @@ from silx.gui import icons
 
 import pyFAI.utils
 from pyFAI.calibrant import Calibrant
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from .AbstractCalibrationTask import AbstractCalibrationTask
 import pyFAI.detectors
 from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
-from .helper.SynchronizeRawView import SynchronizeRawView
-from .CalibrationContext import CalibrationContext
+from ..helper.SynchronizeRawView import SynchronizeRawView
+from ..CalibrationContext import CalibrationContext
 from ..utils import units
 from ..utils import FilterBuilder
-from .helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 
 _logger = logging.getLogger(__name__)
 

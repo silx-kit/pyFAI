@@ -36,8 +36,8 @@ import numpy
 from silx.gui import qt
 
 from ..model import MarkerModel
-from ...utils import unitutils
-from ...utils import eventutils
+from ..utils import unitutils
+from ..utils import eventutils
 from ..CalibrationContext import CalibrationContext
 from pyFAI.ext.invert_geometry import InvertGeometry
 import pyFAI.units

@@ -41,17 +41,17 @@ from silx.gui.plot.tools import PositionInfo
 
 import pyFAI.utils
 import pyFAI.massif
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
-from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
-from .helper.SynchronizeRawView import SynchronizeRawView
-from .helper.SynchronizePlotBackground import SynchronizePlotBackground
-from .CalibrationContext import CalibrationContext
-from .helper.MarkerManager import MarkerManager
-from .helper import ProcessingWidget
+from .AbstractCalibrationTask import AbstractCalibrationTask
+from ..helper.RingExtractor import RingExtractor
+from ..helper.SynchronizeRawView import SynchronizeRawView
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..CalibrationContext import CalibrationContext
+from ..helper.MarkerManager import MarkerManager
+from ..helper import ProcessingWidget
 from ..utils import FilterBuilder
 from ..utils import validators
-from .helper import model_transform
+from ..helper import model_transform
 
 
 _logger = logging.getLogger(__name__)

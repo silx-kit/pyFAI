@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "03/12/2018"
+__date__ = "03/01/2019"
 
 import functools
 
@@ -48,7 +48,7 @@ class UnitLabel(qt.QLabel):
         """
         Set the displayed unit.
 
-        :param pyFAI.gui.calibration.units.Unit unit: An unit
+        :param pyFAI.gui.units.Unit unit: An unit
         """
         if self.__unit is unit:
             return
@@ -62,7 +62,7 @@ class UnitLabel(qt.QLabel):
 
     def getUnit(self):
         """
-        :rtype: pyFAI.gui.calibration.units.Unit
+        :rtype: pyFAI.gui.units.Unit
         """
         return self.__unit
 
@@ -70,7 +70,7 @@ class UnitLabel(qt.QLabel):
         """
         Set the model containing an unit.
 
-        :param pyFAI.gui.calibration.model.DataUnit.DataUnit: Model containing
+        :param pyFAI.gui.model.DataUnit.DataUnit: Model containing
             the unit.
         """
         if self.__model is not None:
@@ -88,7 +88,7 @@ class UnitLabel(qt.QLabel):
 
     def getUnitModel(self):
         """
-        :rtype: pyFAI.gui.calibration.model.DataUnit.DataUnit
+        :rtype: pyFAI.gui.model.DataUnit.DataUnit
         """
         return self.__model
 
