@@ -2,7 +2,7 @@
 # Windows
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
-version: 0.17.{build}
+version: 0.18.{build}
 shallow_clone: true
 build: false
 
