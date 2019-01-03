@@ -1116,6 +1116,9 @@ class Geometry(object):
         :return: dictionary with the current configuration
         """
         with self._sem:
+            # TODO: ponifile should not be used here
+            #     if it was only used for IO, it would be better to remove
+            #     this function
             poni = ponifile.PoniFile(data=self)
             return poni.as_dict()
 
@@ -1146,6 +1149,9 @@ class Geometry(object):
         :param config: dictionary with the configuration
         :return: itself
         """
+        # TODO: ponifile should not be used here
+        #     if it was only used for IO, it would be better to remove
+        #     this function
         poni = ponifile.PoniFile(config)
         self._init_from_poni(poni)
         return self
