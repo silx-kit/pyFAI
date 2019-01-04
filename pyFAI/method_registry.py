@@ -118,6 +118,8 @@ class IntegrationMethod:
                 newsplit, newalgo, newimpl = _degraded(split, algo, impl)
                 logger.info("Degrading method from (%s,%s,%s) -> (%s,%s,%s)",
                             split, algo, impl, newsplit, newalgo, newimpl)
+                if (split, algo, impl) == (newsplit, newalgo, newimpl):
+                    break
                 split, algo, impl = newsplit, newalgo, newimpl
                 res = cls.select_method(dim, split, algo, impl)
         return res
