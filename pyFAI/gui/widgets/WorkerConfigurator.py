@@ -48,6 +48,7 @@ from silx.gui import qt
 from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
 from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
+from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from ...detectors import detector_factory
 from ...utils import float_, str_, get_ui_file
 from ...units import RADIAL_UNITS, to_unit
@@ -91,6 +92,7 @@ class WorkerConfigurator(qt.QWidget):
 
         self.load_detector.clicked.connect(self.selectDetector)
         self.opencl_config_button.clicked.connect(self.selectOpenClDevice)
+        self.method_config_button.clicked.connect(self.selectMethod)
         self.show_geometry.clicked.connect(self.showGeometry)
 
         # connect file selection windows
@@ -404,6 +406,14 @@ class WorkerConfigurator(qt.QWidget):
             self._openclDevice = dialog.device()
             self.opencl_label.setDevice(self._openclDevice)
             self.__updateMethodLabel()
+
+    def selectMethod(self):
+        dialog = IntegrationMethodDialog(self)
+        dialog.selectMethod(self.__getMethod())
+        result = dialog.exec_()
+        if result:
+            method = dialog.selectedMethod()
+            print(method)
 
     def setDetector(self, detector):
         self.__detector = detector
