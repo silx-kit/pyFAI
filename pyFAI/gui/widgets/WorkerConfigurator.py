@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "04/01/2019"
 __status__ = "development"
 
 import logging
@@ -508,7 +508,6 @@ class WorkerConfigurator(qt.QWidget):
         model.rotation1().setValue(poni.rot1)
         model.rotation2().setValue(poni.rot2)
         model.rotation3().setValue(poni.rot3)
-        # TODO: why is there an underscore to _wavelength here?
         model.wavelength().setValue(poni.wavelength)
 
         self.setDetector(poni.detector)
