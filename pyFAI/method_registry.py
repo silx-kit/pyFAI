@@ -27,14 +27,14 @@
 #  THE SOFTWARE.
 
 """
-Contains a registry of all integrator available 
+Contains a registry of all integrator available
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2018"
+__date__ = "04/01/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -119,9 +119,9 @@ class IntegrationMethod:
 
     @classmethod
     def select_old_method(cls, dim, old_method):
-        """Retrieve all algorithm which are fitting the requirement from old_method
-        valid 
-        "numpy", "cython", "bbox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl"
+        """Retrieve all algorithms which are fitting the requirements from
+        old_method. Valid input are "numpy", "cython", "bbox" or "splitpixel",
+        "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl".
         """
         results = []
         for v in cls._registry.values():
@@ -154,7 +154,7 @@ class IntegrationMethod:
     def is_available(cls, dim, split=None, algo=None, impl=None, method_nt=None):
         """
         Check if the method is currently available
-        
+
         :param dim: 1 or 2D integration
         :param split: pixel splitting options "no", "BBox", "pseudo", "full"
         :param algo: "histogram" for direct integration, LUT or CSR for sparse
@@ -176,7 +176,7 @@ class IntegrationMethod:
     @classmethod
     def parse(cls, smth, dim=1):
         """Parse the string for the content
-         
+
         TODO: parser does not allow to select device
         """
         res = []
@@ -196,7 +196,8 @@ class IntegrationMethod:
     def __init__(self, dim, split, algo, impl,
                  target=None, target_name=None, target_type=None,
                  class_funct=None, old_method=None, extra=None):
-        """Constructor of the class, only registers the 
+        """Constructor of the class, registring the methods.
+
         :param dim: 1 or 2 integration engine
         :param split: pixel splitting options "no", "BBox", "pseudo", "full"
         :param algo: "histogram" for direct integration, LUT or CSR for sparse
