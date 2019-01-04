@@ -176,6 +176,8 @@ class IntegrationMethod:
             if impl == "opencl":
                 # indexes start at 0 hence ...
                 target = (0, 0)
+            else:
+                target = None
             method_nt = Method(dim, split, algo, impl, target)
 
         return method_nt in cls._registry
