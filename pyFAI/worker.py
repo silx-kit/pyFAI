@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2018"
+__date__ = "04/01/2019"
 __status__ = "development"
 
 import threading
@@ -102,6 +102,7 @@ from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
+from .io import integration_config
 from .engines.preproc import preproc as preproc_numpy
 try:
     from .ext.preproc import preproc
@@ -121,6 +122,7 @@ def make_ai(config, consume_keys=False):
         consumed when used.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
+    config = integration_config.normalize(config, inplace=consume_keys)
     ai = AzimuthalIntegrator()
     _init_ai(ai, config, consume_keys)
     return ai
@@ -138,15 +140,6 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
     """
     if not consume_keys:
         config = dict(config)
-
-    # Poni-file
-    # NOTE: Compatibility (poni is not stored since pyFAI v0.17)
-    value = config.pop("poni", None)
-    if value:
-        if not os.path.exists(value):
-            logger.warning("Poni-file '%s' not found. The axymuthal integrator is maybe to created as expected", value)
-        else:
-            ai.load(value)
 
     # Geometry
     for key in ("dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
@@ -167,31 +160,6 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
         detector_class = config.pop("detector")
         detector = detector_factory(detector_class, config=detector_config)
         ai.detector = detector
-    else:
-        value = config.pop("detector", None)
-        if value:
-            # NOTE: Previous way to describe a detector before pyFAI 0.17
-            # NOTE: pixel1/pixel2/splineFile was not parsed here
-            detector_name = value.lower()
-            detector = detector_factory(detector_name)
-
-            if detector_name == "detector":
-                value = config.pop("pixel1", None)
-                if value:
-                    detector.set_pixel1(value)
-                value = config.pop("pixel2", None)
-                if value:
-                    detector.set_pixel2(value)
-            else:
-                # Drop it as it was not really used
-                _ = config.pop("pixel1", None)
-                _ = config.pop("pixel2", None)
-
-            splineFile = config.pop("splineFile", None)
-            if splineFile:
-                detector.set_splineFile(splineFile)
-
-            ai.detector = detector
 
     value = config.pop("chi_discontinuity_at_0", False)
     if value:
@@ -230,13 +198,12 @@ def _read_filenames(filenames):
 
     :rtype: List[str]
     """
-    if filenames is None:
+    if filenames is None or filenames == "":
         return []
     if isinstance(filenames, list):
         return filenames
-    if "," in filenames:
-        logger.warning("Dark or flat files are described using comma separator list. You should use a python/json list of string instead.")
-    return filenames.split(",")
+    # It's a single filename
+    return [filenames]
 
 
 def _reduce_images(filenames, method="mean"):
@@ -413,6 +380,8 @@ class Worker(object):
         if self.azimuth_range is not None:
             kwarg["azimuth_range"] = self.azimuth_range
 
+        print(kwarg)
+
         error = None
         try:
             if self.do_2D():
@@ -499,6 +468,7 @@ class Worker(object):
             # Avoid to edit the input argument
             config = dict(config)
 
+        integration_config.normalize(config, inplace=True)
         _init_ai(self.ai, config, consume_keys=True, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
@@ -519,6 +489,7 @@ class Worker(object):
             filenames = _read_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
+            print(data)
             self.ai.detector.set_darkcurrent(data)
             self.dark_current_image = "%s(%s)" % (method, ",".join(filenames))
 
@@ -529,6 +500,7 @@ class Worker(object):
             filenames = _read_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
+            print(data)
             self.ai.detector.set_flatfield(data)
             self.flat_field_image = "%s(%s)" % (method, ",".join(filenames))
 
@@ -581,17 +553,7 @@ class Worker(object):
         if not apply_values:
             self.dummy, self.delta_dummy = None, None
 
-        do_opencl = config.pop("do_OpenCL", None)
-        method = config.pop("method", None)
-        if do_opencl is not None and method is not None:
-            logger.warning("Both 'method' and 'do_OpenCL' are defined. 'do_OpenCL' is ignored.")
-            do_opencl = None
-        if method is not None:
-            self.method = method
-        elif do_opencl is not None and do_opencl:
-            self.method = "csr_ocl"
-        else:
-            self.method = "csr"
+        self.method = config.pop("method", "csr")
 
         logger.info(self.ai.__repr__())
         self.reset()
