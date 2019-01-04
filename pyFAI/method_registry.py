@@ -71,6 +71,10 @@ class IntegrationMethod:
     "Keeps track of all integration methods"
     _registry = OrderedDict()
 
+    AVAILABLE_SLITS = ("no", "bbox", "pseudo", "full")
+    AVAILABLE_ALGOS = ("histogram", "lut", "csr")
+    AVAILABLE_IMPLS = ("python", "cython", "opencl")
+
     @classmethod
     def list_available(cls):
         """return a list of pretty printed integration method available"""
@@ -224,9 +228,9 @@ class IntegrationMethod:
         self.extra = extra
         self.method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)
         # basic checks ....
-        assert self.split_lower in ("no", "bbox", "pseudo", "full")
-        assert self.algo_lower in ("histogram", "lut", "csr")
-        assert self.impl_lower in ("python", "cython", "opencl")
+        assert self.split_lower in self.AVAILABLE_SLITS
+        assert self.algo_lower in self.AVAILABLE_ALGOS
+        assert self.impl_lower in self.AVAILABLE_IMPLS
         self.__class__._registry[self.method] = self
 
     def __repr__(self):
