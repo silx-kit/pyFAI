@@ -82,7 +82,7 @@ class IntegrationMethod:
 
     @classmethod
     def select_method(cls, dim=None, split=None, algo=None, impl=None,
-                      target=None, target_type=None):
+                      target=None, target_type=None, degradable=True):
         """Retrieve all algorithm which are fitting the requirement
         """
         dim = int(dim) if dim else 0
@@ -113,12 +113,13 @@ class IntegrationMethod:
                           if cls._registry[i].target_type == target_type]
 
         res = [cls._registry[i] for i in candidates]
-        while not res:
-            newsplit, newalgo, newimpl = _degraded(split, algo, impl)
-            logger.info("Degrading method from (%s,%s,%s) -> (%s,%s,%s)",
-                        split, algo, impl, newsplit, newalgo, newimpl)
-            split, algo, impl = newsplit, newalgo, newimpl
-            res = cls.select_method(dim, split, algo, impl)
+        if degradable:
+            while not res:
+                newsplit, newalgo, newimpl = _degraded(split, algo, impl)
+                logger.info("Degrading method from (%s,%s,%s) -> (%s,%s,%s)",
+                            split, algo, impl, newsplit, newalgo, newimpl)
+                split, algo, impl = newsplit, newalgo, newimpl
+                res = cls.select_method(dim, split, algo, impl)
         return res
 
     @classmethod
