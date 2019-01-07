@@ -255,15 +255,13 @@ class IntegrationMethodWidget(qt.QWidget):
             methods = method_registry.IntegrationMethod.select_method(2, *localMethod, degradable=False)
             available2d = len(methods) != 0
 
+            label = self._HUMAN_READABLE.get(name, name)
             if available1d and available2d:
                 color = qt.Qt.black
-                label = self._HUMAN_READABLE.get(name, name)
             elif not available1d and not available2d:
                 color = qt.Qt.grey
-                label = self._HUMAN_READABLE.get(name, name)
             else:
                 color = qt.Qt.red
-                label = self._HUMAN_READABLE.get(name, name)
                 if available1d:
                     label = "%s (only 1D)" % label
                 elif available2d:
