@@ -58,6 +58,8 @@ from ...utils import stringutil
 from ..utils import FilterBuilder
 from ...io.ponifile import PoniFile
 from ...io import integration_config
+from ... import method_registry
+from ...third_party import six
 
 
 class WorkerConfigurator(qt.QWidget):
@@ -70,9 +72,8 @@ class WorkerConfigurator(qt.QWidget):
         filename = get_ui_file("worker-configurator.ui")
         qt.loadUi(filename, self)
 
-        self.__histo = None
-        self.__impl = "splitbbox"
-        self._openclDevice = None
+        self.__openclDevice = None
+        self.__method = None
 
         self.__geometryModel = GeometryModel()
         self.__detector = None
@@ -90,7 +91,7 @@ class WorkerConfigurator(qt.QWidget):
         self.wavelengthUnit.setUnitEditable(True)
 
         self.load_detector.clicked.connect(self.selectDetector)
-        self.opencl_config_button.clicked.connect(self.selectOpenClDevice)
+        self.opencl_config_button.clicked.connect(self.selectOpenclDevice)
         self.method_config_button.clicked.connect(self.selectMethod)
         self.show_geometry.clicked.connect(self.showGeometry)
 
@@ -110,12 +111,11 @@ class WorkerConfigurator(qt.QWidget):
         self.radial_unit.setShortNameDisplay(True)
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
-        self.do_OpenCL.toggled.connect(self.__openclChanged)
 
         self.__configureDisabledStates()
-        self.__updateMethodLabel()
 
         self.setDetector(None)
+        self.__setMethod("csr")
 
     def __configureDisabledStates(self):
         self.do_mask.clicked.connect(self.__updateDisabledStates)
@@ -186,7 +186,7 @@ class WorkerConfigurator(qt.QWidget):
                 return None
             return [name.strip() for name in filenames.split(",")]
 
-        config = {"version": 2,
+        config = {"version": 3,
                   "application": "pyfai-integrate",
                   "wavelength": self.__geometryModel.wavelength().value(),
                   "dist": self.__geometryModel.distance().value(),
@@ -217,8 +217,12 @@ class WorkerConfigurator(qt.QWidget):
                   "azimuth_range_min": self._float("azimuth_range_min", None),
                   "azimuth_range_max": self._float("azimuth_range_max", None),
                   "unit": str(self.radial_unit.model().value()),
-                  "method": self.__getMethod(),
                   }
+
+        method = self.__method
+        config["method"] = method.split, method.algo, method.impl
+        if method.impl == "opencl":
+            config["opencl_device"] = self.__openclDevice
 
         value = self.__getRadialNbpt()
         if value is not None:
@@ -247,7 +251,7 @@ class WorkerConfigurator(qt.QWidget):
             application = dico.pop("application", None)
             if application != "pyfai-integrate":
                 logger.error("It is not a configuration file from pyFAI-integrate.")
-        if version > 2:
+        if version > 3:
             logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read the configuration", version)
 
         # Clean up the GUI
@@ -314,7 +318,6 @@ class WorkerConfigurator(qt.QWidget):
                       "flat_field": lambda a: self.flat_field.setText(normalizeFiles(a)),
                       "polarization_factor": self.polarization_factor.setValue,
                       "nbpt_rad": lambda a: self.nbpt_rad.setText(str_(a)),
-                      "do_2D": self.do_2D.setChecked,
                       "nbpt_azim": lambda a: self.nbpt_azim.setText(str_(a)),
                       "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
                       "do_radial_range": self.do_radial_range.setChecked,
@@ -337,7 +340,9 @@ class WorkerConfigurator(qt.QWidget):
 
         method = reader.pop_method()
         self.__setMethod(method)
+        self.__setOpenclDevice(method.target)
 
+        self.do_2D.setChecked(method.dim == 2)
         if self.__only1dIntegration:
             # Force unchecked
             self.do_2D.setChecked(False)
@@ -394,22 +399,21 @@ class WorkerConfigurator(qt.QWidget):
         dialog.setDetector(self.__detector)
         dialog.exec_()
 
-    def selectOpenClDevice(self):
+    def selectOpenclDevice(self):
         dialog = OpenClDeviceDialog(self)
-        dialog.selectDevice(self._openclDevice)
+        dialog.selectDevice(self.__openclDevice)
         result = dialog.exec_()
         if result:
-            self._openclDevice = dialog.device()
-            self.opencl_label.setDevice(self._openclDevice)
-            self.__updateMethodLabel()
+            device = dialog.device()
+            self.__setOpenclDevice(device)
 
     def selectMethod(self):
         dialog = IntegrationMethodDialog(self)
-        dialog.selectMethod(self.__getMethod())
+        dialog.selectMethod(self.__method)
         result = dialog.exec_()
         if result:
             method = dialog.selectedMethod()
-            print(method)
+            self.__setMethod(method)
 
     def setDetector(self, detector):
         self.__detector = detector
@@ -497,85 +501,22 @@ class WorkerConfigurator(qt.QWidget):
                 logger.error("Unable to convert %s to float: %s", kw, txtval)
         return fval
 
-    def __openclChanged(self):
-        do_ocl = bool(self.do_OpenCL.isChecked())
-        self.opencl_config_button.setEnabled(do_ocl)
-        self.opencl_label.setEnabled(do_ocl)
-        self.__updateMethodLabel()
-
-    def __updateMethodLabel(self):
-        method = self.__getMethod()
-        self.methodLabel.setText(method)
-
-    def __parseMethod(self, method):
-        elements = method.split("_")
-        if len(elements) == 1:
-            return None, method, None
-        histo = elements[0]
-        impl = elements[1]
-        if impl != "ocl":
-            assert(len(elements) <= 2)
-            return histo, impl, None
-
-        if len(elements) == 2:
-            return histo, impl, "any"
-        elif len(elements) == 3:
-            if elements[2] == "gpu":
-                return histo, impl, "gpu"
-            elif elements[2] == "cpu":
-                return histo, impl, "cpu"
-            else:
-                try:
-                    elements = elements[2].split(",")
-                    return int(elements[0]), int(elements[1])
-                except Exception:
-                    logger.debug("Backtrace", exc_info=True)
-                    logger.warning("Unsupported opencl device from '%s'", method)
-                    return histo, impl, "any"
-        else:
-            logger.warning("Unsupported opencl device from '%s'", method)
-            return histo, impl, None
+    def __setOpenclDevice(self, device):
+        self.__openclDevice = device
+        self.opencl_label.setDevice(device)
 
     def __setMethod(self, method):
-        # Store the original method
-        if method is None:
-            method = "splitbbox"
-
-        histo, impl, device = self.__parseMethod(method)
-        self.__histo = histo
-        self.__impl = impl
-        self._openclDevice = device
-
-        self.do_OpenCL.setChecked(self._openclDevice is not None)
-        self.opencl_label.setDevice(self._openclDevice)
-        self.__openclChanged()
-
-    def __getMethod(self):
-        """
-        Return the method name for azimuthal intgration
-        """
-        if self.do_OpenCL.isChecked():
-            device = self._openclDevice
-            if device is None or device == "any":
-                pattern = "%s_ocl"
-            elif device == "cpu":
-                pattern = "%s_ocl_cpu"
-            elif device == "gpu":
-                pattern = "%s_ocl_gpu"
-            else:
-                pid, did = device
-                pattern = "%%s_ocl_%i,%i" % (pid, did)
-            if self.__histo is None:
-                histo = "csr"
-            else:
-                histo = self.__histo
-            method = pattern % histo
+        if isinstance(method, method_registry.Method):
+            pass
+        elif isinstance(method, six.string_types):
+            method = method_registry.IntegrationMethod.parse_old_method(method)
         else:
-            if self.__impl == "ocl":
-                method = "splitbbox"
-            elif self.__histo is None:
-                method = self.__impl
-            else:
-                method = "%s_%s" % (self.__histo, self.__impl)
-
-        return method
+            split, algo, impl = method
+            method = method_registry.Method(dim=666, split=split, algo=algo, impl=impl, target=None)
+        self.__method = method
+        string = str(self.__method)
+        openclEnabled = method.impl == "opencl"
+        self.methodLabel.setText(string)
+        self.opencl_title.setEnabled(openclEnabled)
+        self.opencl_label.setEnabled(openclEnabled)
+        self.opencl_config_button.setEnabled(openclEnabled)

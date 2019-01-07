@@ -507,8 +507,10 @@ class Worker(object):
         else:
             self.nbpt_azim = 1
 
-        do_2D = config.pop("do_2D", False)
-        if do_2D is False:
+        reader = integration_config.ConfigurationReader(config)
+        self.method = reader.pop_method("csr")
+
+        if self.method.dim == 1:
             self.nbpt_azim = 1
 
         value = config.pop("nbpt_rad", None)
@@ -548,9 +550,6 @@ class Worker(object):
         apply_values = config.pop("do_dummy", True)
         if not apply_values:
             self.dummy, self.delta_dummy = None, None
-
-        reader = integration_config.ConfigurationReader(config)
-        self.method = reader.pop_method("csr")
 
         logger.info(self.ai.__repr__())
         self.reset()

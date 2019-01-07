@@ -42,6 +42,7 @@ import six
 
 from . import ponifile
 from .. import detectors
+from .. import method_registry
 
 _logger = logging.getLogger(__name__)
 
@@ -146,6 +147,19 @@ def _patch_v1_to_v2(config):
     config["application"] = "pyfai-integrate"
 
 
+def _patch_v2_to_v3(config):
+    """Rework the config dictionary from version 2 to version 3
+
+    :param dict config: Dictionary reworked inplace.
+    """
+    old_method = config.pop("method")
+    method = method_registry.IntegrationMethod.parse_old_method(old_method)
+    config["method"] = method.split, method.algo, method.impl
+    config["opencl_device"] = method.target
+
+    config["version"] = 3
+
+
 def normalize(config, inplace=False):
     """Normalize the configuration file to the one supported internally\
     (the last one).
@@ -161,14 +175,15 @@ def normalize(config, inplace=False):
     if version == 1:
         # NOTE: Previous way to describe an integration process before pyFAI 0.17
         _patch_v1_to_v2(config)
+    version = config["version"]
+    if version == 2:
+        _patch_v2_to_v3(config)
 
     application = config.get("application", None)
     if application != "pyfai-integrate":
         raise ValueError("Configuration application do not match. Found '%s'" % application)
 
-    if version == 2:
-        pass
-    elif version > 2:
+    if version > 3:
         _logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read this configuration", version)
 
     return config
@@ -199,5 +214,21 @@ class ConfigurationReader(object):
 
         :rtype: pyFAI.method_registry.Method
         """
+        do_2d = self._config.pop("do_2D", 1)
+        dim = 2 if do_2d else 1
         method = self._config.pop("method", default)
+        target = self._config.pop("opencl_device", None)
+
+        if method is None:
+            method = method_registry.Method(dim, "*", "*", "*")
+        if isinstance(method, six.string_types):
+            method = method_registry.IntegrationMethod.parse_old_method(old_method=method)
+            method = method_registry.Method(dim, method.split, method.algo, method.impl, target=target)
+        elif isinstance(method, (list, tuple)):
+            if len(method) != 3:
+                raise TypeError("Method size %s unsupported." % len(method))
+            split, algo, impl = method
+            method = method_registry.Method(dim, split, algo, impl, target)
+        else:
+            raise TypeError("Method type %s unsupported." % type(method))
         return method
