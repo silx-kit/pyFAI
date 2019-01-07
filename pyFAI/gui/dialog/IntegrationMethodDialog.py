@@ -128,7 +128,6 @@ class IntegrationMethodWidget(qt.QWidget):
             except ValueError:
                 image = "foo"
             template = """<html><table><tr><td valign="middle"><img src="{image}" /></td><td valign="middle">{description}</td></tr></html>"""
-            print(image)
         else:
             template = "<html><table><tr><td>{description}</td></tr></html>"
         description = self._DESCRIPTION_DOC.get(code, "No description.")

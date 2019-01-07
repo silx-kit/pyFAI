@@ -376,8 +376,6 @@ class Worker(object):
         if self.azimuth_range is not None:
             kwarg["azimuth_range"] = self.azimuth_range
 
-        print(kwarg)
-
         error = None
         try:
             if self.do_2D():
@@ -485,7 +483,6 @@ class Worker(object):
             filenames = _read_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            print(data)
             self.ai.detector.set_darkcurrent(data)
             self.dark_current_image = "%s(%s)" % (method, ",".join(filenames))
 
@@ -496,7 +493,6 @@ class Worker(object):
             filenames = _read_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            print(data)
             self.ai.detector.set_flatfield(data)
             self.flat_field_image = "%s(%s)" % (method, ",".join(filenames))
 
