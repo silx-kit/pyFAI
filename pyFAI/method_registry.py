@@ -158,7 +158,7 @@ class IntegrationMethod:
         return cls.select_method(dim, split, algo, impl)
 
     @classmethod
-    def is_available(cls, dim, split=None, algo=None, impl=None, method_nt=None):
+    def is_available(cls, dim=None, split=None, algo=None, impl=None, method_nt=None):
         """
         Check if the method is currently available
 
