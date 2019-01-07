@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/01/2019"
+__date__ = "07/01/2019"
 
 from silx.gui import qt
 from ... import method_registry
@@ -78,8 +78,8 @@ class IntegrationMethodWidget(qt.QWidget):
         self._splitView.setSelectionMode(qt.QAbstractItemView.SingleSelection)
 
         self.setTupleMethod(("*", "*", "*"))
-        self._updateMessage()
-        self.sigMethodChanged.connect(self._updateMessage)
+        self.__updateFeedback()
+        self.sigMethodChanged.connect(self.__updateFeedback)
 
     def _createAlgorithmModel(self):
         model = qt.QStandardItemModel(self)
@@ -118,13 +118,13 @@ class IntegrationMethodWidget(qt.QWidget):
         return model
 
     def __implementationChanged(self):
-        self._updateMessage()
+        self.__updateFeedback()
 
     def __algorithmChanged(self):
-        self._updateMessage()
+        self.__updateFeedback()
 
     def __splittingChanged(self):
-        self._updateMessage()
+        self.__updateFeedback()
 
     def __indexFromCode(self, model, code):
         for i in range(model.rowCount()):
@@ -168,9 +168,14 @@ class IntegrationMethodWidget(qt.QWidget):
         self.__selectCode(split, self._splittingModel, self._splitView)
         self.__selectCode(impl, self._implementationModel, self._implView)
         self.__selectCode(algo, self._algoModel, self._algoView)
-        self._updateMessage()
+        self.__updateFeedback()
 
     def method(self):
+        """
+        Returns method as tuple of slit, algo and impl
+
+        :rtype: Tuple[str,str,str]
+        """
         index = self._implView.selectedIndexes()[0]
         impl = index.data(self.CodeRole)
         index = self._algoView.selectedIndexes()[0]
@@ -179,7 +184,58 @@ class IntegrationMethodWidget(qt.QWidget):
         split = index.data(self.CodeRole)
         return split, algo, impl
 
-    def _updateMessage(self):
+    def __updateFeedback(self):
+        self.__updateItems()
+        self.__updateMessage()
+
+    def __updateItemsFromModel(self, codeList, model, method):
+        for name in codeList:
+            index = self.__indexFromCode(model, name)
+            if not index.isValid():
+                continue
+            item = model.itemFromIndex(index)
+
+            localMethod = (name if m is None else m for m in method)
+            methods = method_registry.IntegrationMethod.select_method(1, *localMethod, degradable=False)
+            available1d = len(methods) != 0
+            methods = method_registry.IntegrationMethod.select_method(2, *localMethod, degradable=False)
+            available2d = len(methods) != 0
+
+            if available1d and available2d:
+                color = qt.Qt.black
+                label = self._HUMAN_READABLE.get(name, name)
+            elif not available1d and not available2d:
+                color = qt.Qt.grey
+                label = self._HUMAN_READABLE.get(name, name)
+            else:
+                color = qt.Qt.red
+                label = self._HUMAN_READABLE.get(name, name)
+                if available1d:
+                    label = "%s (only 1D)" % label
+                elif available2d:
+                    label = "%s (only 2D)" % label
+
+            item.setForeground(qt.QBrush(color))
+            item.setText(label)
+
+    def __updateItems(self):
+        method = self.method()
+        split, algo, impl = method
+
+        localMethod = None, algo, impl
+        self.__updateItemsFromModel(method_registry.IntegrationMethod.AVAILABLE_SLITS,
+                                    self._splittingModel,
+                                    localMethod)
+        localMethod = split, None, impl
+        self.__updateItemsFromModel(method_registry.IntegrationMethod.AVAILABLE_ALGOS,
+                                    self._algoModel,
+                                    localMethod)
+        localMethod = split, algo, None
+        self.__updateItemsFromModel(method_registry.IntegrationMethod.AVAILABLE_IMPLS,
+                                    self._implementationModel,
+                                    localMethod)
+
+    def __updateMessage(self):
         method = self.method()
 
         methods = method_registry.IntegrationMethod.select_method(1, *method, degradable=False)
