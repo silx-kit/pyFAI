@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2019"
+__date__ = "07/01/2019"
 __status__ = "development"
 
 import threading
@@ -98,7 +98,6 @@ import fabio
 logger = logging.getLogger(__name__)
 
 from . import average
-from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
@@ -153,12 +152,9 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
         ai.wavelength = wavelength
 
     # Detector
-    value = config.pop("detector_config", None)
-    if value:
-        # NOTE: Default way to describe a detector since pyFAI 0.17
-        detector_config = value
-        detector_class = config.pop("detector")
-        detector = detector_factory(detector_class, config=detector_config)
+    reader = integration_config.ConfigurationReader(config)
+    detector = reader.pop_detector()
+    if detector is not None:
         ai.detector = detector
 
     value = config.pop("chi_discontinuity_at_0", False)
@@ -549,7 +545,8 @@ class Worker(object):
         if not apply_values:
             self.dummy, self.delta_dummy = None, None
 
-        self.method = config.pop("method", "csr")
+        reader = integration_config.ConfigurationReader(config)
+        self.method = reader.pop_method("csr")
 
         logger.info(self.ai.__repr__())
         self.reset()

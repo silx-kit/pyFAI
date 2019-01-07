@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2019"
+__date__ = "07/01/2019"
 __status__ = "development"
 
 import logging
@@ -49,7 +49,6 @@ from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
 from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
-from ...detectors import detector_factory
 from ...utils import float_, str_, get_ui_file
 from ...units import RADIAL_UNITS, to_unit
 from ..model.GeometryModel import GeometryModel
@@ -284,14 +283,11 @@ class WorkerConfigurator(qt.QWidget):
             value = dico.pop("rot3")
             self.__geometryModel.rotation3().setValue(value)
 
+        reader = integration_config.ConfigurationReader(dico)
+
         # detector
-        value = dico.pop("detector_config", None)
-        if value:
-            # NOTE: Default way to describe a detector since pyFAI 0.17
-            detector_config = value
-            detector_class = dico.pop("detector")
-            detector = detector_factory(detector_class, config=detector_config)
-            self.setDetector(detector)
+        detector = reader.pop_detector()
+        self.setDetector(detector)
 
         def normalizeFiles(filenames):
             """Normalize different versions of the filename list.
@@ -339,7 +335,7 @@ class WorkerConfigurator(qt.QWidget):
             unit = to_unit(value)
             self.radial_unit.model().setValue(unit)
 
-        method = dico.pop("method", None)
+        method = reader.pop_method()
         self.__setMethod(method)
 
         if self.__only1dIntegration:
