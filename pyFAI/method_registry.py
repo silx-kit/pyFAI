@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2019"
+__date__ = "07/01/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -124,6 +124,45 @@ class IntegrationMethod:
                 res = cls.select_method(dim, split, algo, impl)
         return res
 
+    @staticmethod
+    def parse_old_method(old_method):
+        algo = "*"
+        impl = "*"
+        split = "*"
+        old_method = old_method.lower()
+        if "lut" in old_method:
+            algo = "lut"
+        elif "csr" in old_method:
+            algo = "csr"
+
+        target = None
+
+        if "ocl" in old_method:
+            impl = "opencl"
+            elements = old_method.split("_")
+            if len(elements) == 2:
+                target_string = elements[-1]
+                if target_string == "cpu":
+                    target = "cpu"
+                elif target_string == "gpu":
+                    target = "gpu"
+                elif target_string in ["*", "any", "all"]:
+                    target = None
+                elif "," in target_string:
+                    try:
+                        values = target_string.split(",")
+                        target = int(values[0]), int(values[1])
+                    except ValueError:
+                        pass
+
+        if "bbox" in old_method:
+            split = "bbox"
+        elif "full" in old_method:
+            split = "full"
+        elif "no" in old_method:
+            split = "no"
+        return Method(666, split, algo, impl, target)
+
     @classmethod
     def select_old_method(cls, dim, old_method):
         """Retrieve all algorithms which are fitting the requirements from
@@ -137,25 +176,15 @@ class IntegrationMethod:
         if results:
             return results
         dim = int(dim)
-        algo = "*"
-        impl = "*"
-        split = "*"
-        old_method = old_method.lower()
-        if "lut" in old_method:
-            algo = "lut"
-        elif "csr" in old_method:
-            algo = "csr"
+        method = cls.parse_old_method(old_method)
+        _, split, algo, impl, target = method
+        if target in ["cpu", "gpu", None]:
+            target_type = target
+            target = None
+        else:
+            target_type = None
 
-        if "ocl" in old_method:
-            impl = "opencl"
-
-        if "bbox" in old_method:
-            split = "bbox"
-        elif "full" in old_method:
-            split = "full"
-        elif "no" in old_method:
-            split = "no"
-        return cls.select_method(dim, split, algo, impl)
+        return cls.select_method(dim, split, algo, impl, target_type=target_type, target=target)
 
     @classmethod
     def is_available(cls, dim=None, split=None, algo=None, impl=None, method_nt=None):
