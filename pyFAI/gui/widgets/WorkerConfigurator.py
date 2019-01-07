@@ -514,8 +514,9 @@ class WorkerConfigurator(qt.QWidget):
             split, algo, impl = method
             method = method_registry.Method(dim=666, split=split, algo=algo, impl=impl, target=None)
         self.__method = method
-        string = str(self.__method)
         openclEnabled = method.impl == "opencl"
+        template = "{method.impl}, {method.algo}, {method.split}"
+        string = template.format(method=method)
         self.methodLabel.setText(string)
         self.opencl_title.setEnabled(openclEnabled)
         self.opencl_label.setEnabled(openclEnabled)
