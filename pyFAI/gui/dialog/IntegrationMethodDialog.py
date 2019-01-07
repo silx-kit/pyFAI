@@ -29,7 +29,10 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "07/01/2019"
 
+
 from silx.gui import qt
+from silx.gui import icons
+
 from ... import method_registry
 import pyFAI.utils
 
@@ -44,11 +47,31 @@ class IntegrationMethodWidget(qt.QWidget):
         "pseudo": "Pseudo split",
         "full": "Full splitting",
         "histogram": "Histogram",
-        "lut": "Look-up table (LUT)",
-        "csr": "Compressed sparse row (CSR)",
+        "lut": "LUT",
+        "csr": "CSR",
         "python": "Python",
         "cython": "Cython",
         "opencl": "OpenCL",
+    }
+
+    _IMAGE_DOC = {
+        "no": "pyfai:gui/images/pixelsplitting-no",
+        "bbox": "pyfai:gui/images/pixelsplitting-bbox",
+        "pseudo": "pyfai:gui/images/pixelsplitting-pseudo",
+        "full": "pyfai:gui/images/pixelsplitting-full",
+    }
+
+    _DESCRIPTION_DOC = {
+        "no": "No pixel splitting. Each pixel is used in a single box of the result.",
+        "bbox": "Split the bounding box corresponding to the pixel in the integrated geometry.",
+        "pseudo": "Split an approximative bounding box corresponding to the pixel in the integrated geometry.",
+        "full": "Split the pixel using a klinear approximation.",
+        "histogram": "Preprocess the data using an histogram.",
+        "lut": "Structure the data using a LUT (look-up table). Usually consuming less memory.",
+        "csr": "Structure the data using a CSR (compressed sparse row). Usually faster for processing.",
+        "python": "Use a pure Python/numpy implementation. Slow but portable.",
+        "cython": "Use a Cython/C/C++ implementation. Fast but platform dependent.",
+        "opencl": "Use an OpenCL implementation based on hardware acceleration using parallelization. Fastest but hardware/driver dependeant.",
     }
 
     CodeRole = qt.Qt.UserRole + 1
@@ -77,9 +100,40 @@ class IntegrationMethodWidget(qt.QWidget):
         selection.selectionChanged.connect(self.__splittingChanged)
         self._splitView.setSelectionMode(qt.QAbstractItemView.SingleSelection)
 
+        self._implView.entered.connect(self.__mouseEntered)
+        self._implView.setMouseTracking(True)
+        self._algoView.entered.connect(self.__mouseEntered)
+        self._algoView.setMouseTracking(True)
+        self._splitView.entered.connect(self.__mouseEntered)
+        self._splitView.setMouseTracking(True)
+
         self.setTupleMethod(("*", "*", "*"))
         self.__updateFeedback()
         self.sigMethodChanged.connect(self.__updateFeedback)
+
+    def __mouseEntered(self, index):
+        code = index.data(self.CodeRole)
+        if code == "*":
+            qt.QToolTip.hideText()
+        else:
+            qt.QToolTip.showText(qt.QCursor.pos(),
+                                 self.__createToolTip(code),
+                                 self)
+
+    def __createToolTip(self, code):
+        image = self._IMAGE_DOC.get(code, None)
+        if image is not None:
+            try:
+                image = icons.getQFile(image).fileName()
+            except ValueError:
+                image = "foo"
+            template = """<html><table><tr><td valign="middle"><img src="{image}" /></td><td valign="middle">{description}</td></tr></html>"""
+            print(image)
+        else:
+            template = "<html><table><tr><td>{description}</td></tr></html>"
+        description = self._DESCRIPTION_DOC.get(code, "No description.")
+        toolTip = template.format(image=image, description=description)
+        return toolTip
 
     def _createAlgorithmModel(self):
         model = qt.QStandardItemModel(self)
