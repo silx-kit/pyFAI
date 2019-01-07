@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2019"
+__date__ = "07/01/2019"
 __docformat__ = 'restructuredtext'
 
 
@@ -172,3 +172,32 @@ def normalize(config, inplace=False):
         _logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read this configuration", version)
 
     return config
+
+
+class ConfigurationReader(object):
+
+    def __init__(self, config):
+        self._config = config
+
+    def pop_detector(self):
+        """
+        Returns the detector stored in the json configuration.
+
+        :rtype: pyFAI.detectors.Detector
+        """
+        value = self._config.pop("detector_config", None)
+        if value:
+            # NOTE: Default way to describe a detector since pyFAI 0.17
+            detector_config = value
+            detector_class = self._config.pop("detector")
+            detector = detectors.detector_factory(detector_class, config=detector_config)
+            return detector
+        return None
+
+    def pop_method(self, default=None):
+        """Returns a Method from the method field from the json dictionary.
+
+        :rtype: pyFAI.method_registry.Method
+        """
+        method = self._config.pop("method", default)
+        return method
