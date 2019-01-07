@@ -201,7 +201,10 @@ class IntegrationMethodWidget(qt.QWidget):
         selection.blockSignals(old)
 
     def setMethod(self, method):
-        if isinstance(method, tuple):
+        if isinstance(method, method_registry.Method):
+            method = method.split, method.algo, method.impl
+            self.setTupleMethod(method)
+        elif isinstance(method, tuple):
             self.setTupleMethod(method)
         else:
             self.setStringMethod(method)
