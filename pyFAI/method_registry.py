@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2019"
+__date__ = "08/01/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -82,9 +82,18 @@ class IntegrationMethod:
 
     @classmethod
     def select_method(cls, dim=None, split=None, algo=None, impl=None,
-                      target=None, target_type=None, degradable=True):
+                      target=None, target_type=None, degradable=True, method=None):
         """Retrieve all algorithm which are fitting the requirement
         """
+        if method is not None:
+            dim, split, algo, impl, target = method
+            if isinstance(target, (list, tuple)):
+                target, target_type = target, None
+            else:
+                target, target_type = None, method.target
+            return cls.select_method(dim, split, algo, impl,
+                                     target, target_type,
+                                     degradable=degradable)
         dim = int(dim) if dim else 0
         algo = algo.lower() if algo is not None else "*"
         impl = impl.lower() if impl is not None else "*"
