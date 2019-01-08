@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "08/01/2019"
 
 import fabio
 import numpy
@@ -102,7 +102,27 @@ class ExperimentTask(AbstractCalibrationTask):
         toolBar.getColormapAction().setColorDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
+        toolBar = qt.QToolBar(self)
+        plot3dAction = qt.QAction(self)
+        plot3dAction.setText("3D visualization")
+        plot3dAction.setToolTip("Display a 3D visualization of the detector")
+        plot3dAction.triggered.connect(self.__display3dDialog)
+        toolBar.addAction(plot3dAction)
+        plot.addToolBar(toolBar)
+
         return plot
+
+    def __display3dDialog(self):
+        from ..dialog.Detector3dDialog import Detector3dDialog
+        dialog = Detector3dDialog(self)
+
+        settings = self.model().experimentSettingsModel()
+        detector = settings.detectorModel().detector()
+        image = settings.image().value()
+        mask = settings.mask().value()
+        colormap = CalibrationContext.instance().getRawColormap()
+        dialog.setData(detector, image, mask, colormap)
+        dialog.exec_()
 
     def _updateModel(self, model):
         self.__synchronizeRawView.registerModel(model.rawPlotView())
