@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/01/2019"
+__date__ = "08/01/2019"
 
 
 from silx.gui import qt
@@ -200,7 +200,9 @@ class IntegrationMethodWidget(qt.QWidget):
         selection.blockSignals(old)
 
     def setMethod(self, method):
-        if isinstance(method, method_registry.Method):
+        if method is None:
+            self.setTupleMethod(("*", "*", "*"))
+        elif isinstance(method, method_registry.Method):
             method = method.split, method.algo, method.impl
             self.setTupleMethod(method)
         elif isinstance(method, tuple):

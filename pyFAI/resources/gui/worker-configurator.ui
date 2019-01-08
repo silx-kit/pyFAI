@@ -529,10 +529,7 @@
        </widget>
       </item>
       <item row="1" column="1" colspan="2">
-       <widget class="QLabel" name="methodLabel">
-        <property name="text">
-         <string/>
-        </property>
+       <widget class="MethodLabel" name="methodLabel">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
@@ -587,6 +584,11 @@
    <class>GeometryLabel</class>
    <extends>QLabel</extends>
    <header>pyFAI.gui.widgets.GeometryLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>MethodLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.MethodLabel</header>
   </customwidget>
  </customwidgets>
  <resources/>
