@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2019"
+__date__ = "08/01/2019"
 __status__ = "development"
 
 import logging
@@ -59,7 +59,6 @@ from ..utils import FilterBuilder
 from ...io.ponifile import PoniFile
 from ...io import integration_config
 from ... import method_registry
-from ...third_party import six
 
 
 class WorkerConfigurator(qt.QWidget):
@@ -100,6 +99,7 @@ class WorkerConfigurator(qt.QWidget):
         self.file_mask_file.clicked.connect(self.__selectMaskFile)
         self.file_dark_current.clicked.connect(self.__selectDarkCurrent)
         self.file_flat_field.clicked.connect(self.__selectFlatField)
+        self.do_2D.toggled.connect(self.__dimChanged)
 
         npt_validator = qt.QIntValidator()
         npt_validator.setBottom(1)
@@ -115,7 +115,7 @@ class WorkerConfigurator(qt.QWidget):
         self.__configureDisabledStates()
 
         self.setDetector(None)
-        self.__setMethod("csr")
+        self.__setMethod(None)
 
     def __configureDisabledStates(self):
         self.do_mask.clicked.connect(self.__updateDisabledStates)
@@ -413,6 +413,10 @@ class WorkerConfigurator(qt.QWidget):
         result = dialog.exec_()
         if result:
             method = dialog.selectedMethod()
+            # TODO selectedMethod should return a `Method` tuple
+            split, algo, impl = method
+            dim = 2 if self.do_2D.isChecked() else 1
+            method = method_registry.Method(dim=dim, split=split, algo=algo, impl=impl, target=None)
             self.__setMethod(method)
 
     def setDetector(self, detector):
@@ -505,19 +509,18 @@ class WorkerConfigurator(qt.QWidget):
         self.__openclDevice = device
         self.opencl_label.setDevice(device)
 
+    def __dimChanged(self):
+        if self.__method is None:
+            return
+        _dim, split, algo, impl, target = self.__method
+        dim = 2 if self.do_2D.isChecked() else 1
+        method = method_registry.Method(dim=dim, split=split, algo=algo, impl=impl, target=target)
+        self.__setMethod(method)
+
     def __setMethod(self, method):
-        if isinstance(method, method_registry.Method):
-            pass
-        elif isinstance(method, six.string_types):
-            method = method_registry.IntegrationMethod.parse_old_method(method)
-        else:
-            split, algo, impl = method
-            method = method_registry.Method(dim=666, split=split, algo=algo, impl=impl, target=None)
         self.__method = method
-        openclEnabled = method.impl == "opencl"
-        template = "{method.impl}, {method.algo}, {method.split}"
-        string = template.format(method=method)
-        self.methodLabel.setText(string)
+        self.methodLabel.setMethod(method)
+        openclEnabled = (method.impl if method is not None else "") == "opencl"
         self.opencl_title.setEnabled(openclEnabled)
         self.opencl_label.setEnabled(openclEnabled)
         self.opencl_config_button.setEnabled(openclEnabled)
