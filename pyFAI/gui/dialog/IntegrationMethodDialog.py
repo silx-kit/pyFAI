@@ -65,7 +65,7 @@ class IntegrationMethodWidget(qt.QWidget):
         "no": "No pixel splitting. Each pixel is used in a single box of the result.",
         "bbox": "Split the bounding box corresponding to the pixel in the integrated geometry.",
         "pseudo": "Split an approximative bounding box corresponding to the pixel in the integrated geometry.",
-        "full": "Split the pixel using a klinear approximation.",
+        "full": "Split the pixel using a linear approximation.",
         "histogram": "Preprocess the data using an histogram.",
         "lut": "Structure the data using a LUT (look-up table). Usually consuming less memory.",
         "csr": "Structure the data using a CSR (compressed sparse row). Usually faster for processing.",
