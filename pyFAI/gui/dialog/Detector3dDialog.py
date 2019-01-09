@@ -227,14 +227,28 @@ class Detector3dDialog(qt.QDialog):
         self.setWindowTitle("Display sample stage")
         self.__plot = SceneWindow(self)
         self.__plot.setVisible(False)
+
         self.__process = qt.QProgressBar(self)
         self.__process.setFormat("Processing data")
         self.__process.setRange(0, 100)
+
+        self.__buttons = qt.QDialogButtonBox(self)
+        self.__buttons.addButton(qt.QDialogButtonBox.StandardButton.Cancel)
+        self.__buttons.accepted.connect(self.accept)
+        self.__buttons.rejected.connect(self.reject)
+
         layout = qt.QVBoxLayout(self)
         layout.addWidget(self.__plot)
         layout.addWidget(self.__process)
+        layout.addWidget(self.__buttons)
 
     def __detectorLoaded(self, thread):
+        self.__process.setVisible(False)
+        self.__plot.setVisible(True)
+        self.__buttons.clear()
+        self.__buttons.addButton(qt.QDialogButtonBox.StandardButton.Close)
+        self.adjustSize()
+
         sceneWidget = self.__plot.getSceneWidget()
         item = thread.getDetectorItem()
         sceneWidget.addItem(item)
@@ -245,9 +259,6 @@ class Detector3dDialog(qt.QDialog):
             item = thread.getSampleItem()
             sceneWidget.addItem(item)
         sceneWidget.resetZoom(face="left")
-        self.__process.setVisible(False)
-        self.__plot.setVisible(True)
-        self.adjustSize()
 
     def __detectorLoading(self, percent):
         self.__process.setValue(percent)
