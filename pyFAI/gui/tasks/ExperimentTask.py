@@ -104,6 +104,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
         toolBar = qt.QToolBar(self)
         plot3dAction = qt.QAction(self)
+        plot3dAction.setIcon(icons.getQIcon("pyfai:gui/icons/3d"))
         plot3dAction.setText("3D visualization")
         plot3dAction.setToolTip("Display a 3D visualization of the detector")
         plot3dAction.triggered.connect(self.__display3dDialog)
