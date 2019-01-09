@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "04/01/2019"
 __status__ = "development"
 
 import logging
@@ -50,13 +50,14 @@ from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ...detectors import detector_factory
 from ...utils import float_, str_, get_ui_file
-from ...azimuthalIntegrator import AzimuthalIntegrator
 from ...units import RADIAL_UNITS, to_unit
 from ..model.GeometryModel import GeometryModel
 from ..model.DataModel import DataModel
 from ..utils import units
 from ...utils import stringutil
 from ..utils import FilterBuilder
+from ...io.ponifile import PoniFile
+from ...io import integration_config
 
 
 class WorkerConfigurator(qt.QWidget):
@@ -238,14 +239,15 @@ class WorkerConfigurator(qt.QWidget):
         :type dico: dict
         """
         dico = dico.copy()
+        dico = integration_config.normalize(dico, inplace=True)
 
-        version = dico.pop("version", 1)
-        if version > 2:
-            logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read the configuration", version)
+        version = dico.pop("version")
         if version >= 2:
             application = dico.pop("application", None)
             if application != "pyfai-integrate":
                 logger.error("It is not a configuration file from pyFAI-integrate.")
+        if version > 2:
+            logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read the configuration", version)
 
         # Clean up the GUI
         self.setDetector(None)
@@ -256,12 +258,6 @@ class WorkerConfigurator(qt.QWidget):
         self.__geometryModel.rotation1().setValue(None)
         self.__geometryModel.rotation2().setValue(None)
         self.__geometryModel.rotation3().setValue(None)
-
-        # poni file
-        # NOTE: Compatibility (poni is not stored since pyFAI v0.17)
-        value = dico.pop("poni", None)
-        if value:
-            self.loadFromPoniFile(value)
 
         # geometry
         if "wavelength" in dico:
@@ -294,30 +290,6 @@ class WorkerConfigurator(qt.QWidget):
             detector_class = dico.pop("detector")
             detector = detector_factory(detector_class, config=detector_config)
             self.setDetector(detector)
-        value = dico.pop("detector", None)
-        if value:
-            # NOTE: Previous way to describe a detector before pyFAI 0.17
-            # NOTE: pixel1/pixel2/splineFile was not parsed here
-            detector_name = value.lower()
-            detector = detector_factory(detector_name)
-
-            if detector_name == "detector":
-                value = dico.pop("pixel1", None)
-                if value:
-                    detector.set_pixel1(value)
-                value = dico.pop("pixel2", None)
-                if value:
-                    detector.set_pixel2(value)
-            else:
-                # Drop it as it was not really used
-                _ = dico.pop("pixel1", None)
-                _ = dico.pop("pixel2", None)
-
-            splineFile = dico.pop("splineFile", None)
-            if splineFile:
-                detector.set_splineFile(splineFile)
-
-            self.setDetector(detector)
 
         def normalizeFiles(filenames):
             """Normalize different versions of the filename list.
@@ -329,8 +301,6 @@ class WorkerConfigurator(qt.QWidget):
                 return ""
             if isinstance(filenames, list):
                 return ",".join(filenames)
-            if "," in filenames:
-                logger.warning("Dark or flat files are described using comma separator list. You should use a python/json list of string instead.")
             filenames = filenames.strip()
             return filenames
 
@@ -368,8 +338,7 @@ class WorkerConfigurator(qt.QWidget):
             self.radial_unit.model().setValue(unit)
 
         method = dico.pop("method", None)
-        use_opencl = dico.pop("do_OpenCL", False)
-        self.__setMethod(method, use_opencl)
+        self.__setMethod(method)
 
         if self.__only1dIntegration:
             # Force unchecked
@@ -495,24 +464,22 @@ class WorkerConfigurator(qt.QWidget):
 
     def loadFromPoniFile(self, ponifile):
         try:
-            # TODO: It should not be needed to create an AI to parse a PONI file
-            ai = AzimuthalIntegrator.sload(ponifile)
+            poni = PoniFile(ponifile)
         except Exception as error:
             # FIXME: An error have to be displayed in the GUI
             logger.error("file %s does not look like a poni-file, error %s", ponifile, error)
             return
 
         model = self.__geometryModel
-        model.distance().setValue(ai.dist)
-        model.poni1().setValue(ai.poni1)
-        model.poni2().setValue(ai.poni2)
-        model.rotation1().setValue(ai.rot1)
-        model.rotation2().setValue(ai.rot2)
-        model.rotation3().setValue(ai.rot3)
-        # TODO: why is there an underscore to _wavelength here?
-        model.wavelength().setValue(ai._wavelength)
+        model.distance().setValue(poni.dist)
+        model.poni1().setValue(poni.poni1)
+        model.poni2().setValue(poni.poni2)
+        model.rotation1().setValue(poni.rot1)
+        model.rotation2().setValue(poni.rot2)
+        model.rotation3().setValue(poni.rot3)
+        model.wavelength().setValue(poni.wavelength)
 
-        self.setDetector(ai.detector)
+        self.setDetector(poni.detector)
 
     def _float(self, kw, default=0):
         fval = default
@@ -563,13 +530,9 @@ class WorkerConfigurator(qt.QWidget):
             logger.warning("Unsupported opencl device from '%s'", method)
             return histo, impl, None
 
-    def __setMethod(self, method, use_opencl):
+    def __setMethod(self, method):
         # Store the original method
-        if method is not None:
-            pass
-        elif use_opencl:
-            method = "csr_ocl"
-        else:
+        if method is None:
             method = "splitbbox"
 
         histo, impl, device = self.__parseMethod(method)

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2018"
+__date__ = "03/01/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -55,7 +55,7 @@ from .containers import Integrate1dResult, Integrate2dResult
 from .io import DefaultAiWriter
 error = None
 
-from .method_registry import IntegrationMethod, Method
+from .method_registry import IntegrationMethod
 
 # Register numpy integrators which are fail-safe
 IntegrationMethod(1, "no", "histogram", "python", old_method="numpy",
@@ -588,7 +588,7 @@ class AzimuthalIntegrator(Geometry):
         geometric arrays, mask, 2theta/chi range). Unless many tests
         will be done at each integration.
 
-        Nota: this deprecated code is maintained until a new histograming on GPU 
+        Nota: this deprecated code is maintained until a new histograming on GPU
         is available
 
         """
@@ -1482,9 +1482,8 @@ class AzimuthalIntegrator(Geometry):
                         normalization_factor=1.0,
                         metadata=None):
         """Demonstrator for the new azimuthal integrator taking care of the normalization,
-        
-        Early stage prototype, 
-         
+
+        Early stage prototype
         """
 
         if variance is not None:
@@ -2041,12 +2040,12 @@ class AzimuthalIntegrator(Geometry):
     integrate2d = _integrate2d_legacy
 
     def _integrate2d_ng(self, data, npt_rad, npt_azim=360,
-                    filename=None, correctSolidAngle=True, variance=None,
-                    error_model=None, radial_range=None, azimuth_range=None,
-                    mask=None, dummy=None, delta_dummy=None,
-                    polarization_factor=None, dark=None, flat=None,
-                    method="bbox", unit=units.Q, safe=True,
-                    normalization_factor=1.0, all=False, metadata=None):
+                        filename=None, correctSolidAngle=True, variance=None,
+                        error_model=None, radial_range=None, azimuth_range=None,
+                        mask=None, dummy=None, delta_dummy=None,
+                        polarization_factor=None, dark=None, flat=None,
+                        method="bbox", unit=units.Q, safe=True,
+                        normalization_factor=1.0, all=False, metadata=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/chi(deg) by default
 
@@ -3194,4 +3193,3 @@ class AzimuthalIntegrator(Geometry):
         self._sem = threading.Semaphore()
         self._lock = threading.Semaphore()
         self.engines = {}
-
