@@ -50,6 +50,7 @@ class CreateDetectorGeometryTheard(qt.QThread):
         self.__image = None
         self.__mask = None
         self.__colormap = None
+        self.__geometry = None
         self.__last = None
 
     def setDetector(self, detector):
@@ -64,6 +65,9 @@ class CreateDetectorGeometryTheard(qt.QThread):
     def setColormap(self, colormap):
         self.__colormap = colormap
 
+    def setGeometry(self, geometry):
+        self.__geometry = geometry
+
     def emitProgressValue(self, value, force=False):
         now = time.time()
         if not force and self.__last is not None and now - self.__last < 1.0:
@@ -74,7 +78,15 @@ class CreateDetectorGeometryTheard(qt.QThread):
 
     def run(self):
         self.emitProgressValue(0, force=True)
-        pixels = self.__detector.get_pixel_corners()
+
+        if self.__geometry is not None:
+            if self.__detector is not None:
+                self.__geometry.detector = self.__detector
+            pixels = self.__geometry.calc_pos_zyx(corners=True)
+            pixels = numpy.array(pixels)
+            pixels = numpy.moveaxis(pixels, 0, -1)
+        else:
+            pixels = self.__detector.get_pixel_corners()
 
         height, width, _, _, = pixels.shape
         nb_vertices = width * height * 6
@@ -159,6 +171,9 @@ class CreateDetectorGeometryTheard(qt.QThread):
 
         self.emitProgressValue(100, force=True)
 
+    def hasGeometry(self):
+        return self.__geometry is not None
+
     def getDetectorMesh(self):
         mesh = Mesh()
         mesh.setData(position=self.__positions_array, color=self.__colors_array)
@@ -192,8 +207,9 @@ class Detector3dDialog(qt.QDialog):
     def __detectorLoading(self, percent):
         self.__process.setValue(percent)
 
-    def setData(self, detector, image=None, mask=None, colormap=None):
+    def setData(self, detector=None, image=None, mask=None, colormap=None, geometry=None):
         thread = CreateDetectorGeometryTheard(self)
+        thread.setGeometry(geometry)
         thread.setDetector(detector)
         thread.setImage(image)
         thread.setMask(mask)
