@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2018"
+__date__ = "07/01/2019"
 __status__ = "stable"
 
 
@@ -960,6 +960,8 @@ def get_project_configuration(dry_run):
             'gui/*.ui',
             'gui/icons/*.svg',
             'gui/icons/*.png',
+            'gui/images/*.svg',
+            'gui/images/*.png',
             'openCL/*.cl',
         ]
     }

@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2018"
+__date__ = "07/01/2019"
 
 import os
 import sys
@@ -46,6 +46,8 @@ from silx.gui import qt
 from ...gui.IntegrationDialog import IntegrationDialog
 from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
 from pyFAI.test.utilstest import UtilsTest
+from pyFAI.io import integration_config
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +64,10 @@ class TestIntegrationDialog(unittest.TestCase):
         elif qt is not None:
             cls.app = qt.QApplication([])
 
+        config = {"poni": UtilsTest.getimage("Pilatus1M.poni")}
+        integration_config.normalize(config, inplace=True)
+        cls.base_config = config
+
     def setUp(self):
         if qt is None:
             self.skipTest("Qt is not available")
@@ -74,8 +80,8 @@ class TestIntegrationDialog(unittest.TestCase):
 
     def test_process_no_data(self):
         widget = IntegrationDialog(json_file=None)
-        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
-                "nbpt_rad": 2}
+        dico = {"nbpt_rad": 2}
+        dico.update(self.base_config)
         widget.set_config(dico)
         result = widget.proceed()
         self.assertIsNone(result)
@@ -85,10 +91,11 @@ class TestIntegrationDialog(unittest.TestCase):
         expected = [[23.5, 9.9]]
 
         widget = IntegrationDialog(json_file=None)
-        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
-                "do_2D": False,
-                "nbpt_rad": 2,
-                "method": "splitbbox"}
+        params = {"do_2D": False,
+                  "nbpt_rad": 2,
+                  "method": ("bbox", "histogram", "cython")}
+        dico = self.base_config.copy()
+        dico.update(params)
         widget.set_config(dico)
         widget.set_input_data(numpy.array([data]))
         result = widget.proceed()
@@ -98,11 +105,12 @@ class TestIntegrationDialog(unittest.TestCase):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[5.6, 4.5], [41.8, 9.3]]]
         widget = IntegrationDialog(json_file=None)
-        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
-                "do_2D": True,
-                "nbpt_azim": 2,
-                "nbpt_rad": 2,
-                "method": "splitbbox"}
+        params = {"do_2D": True,
+                  "nbpt_azim": 2,
+                  "nbpt_rad": 2,
+                  "method": ("bbox", "histogram", "cython")}
+        dico = self.base_config.copy()
+        dico.update(params)
         widget.set_config(dico)
         widget.set_input_data(numpy.array([data]))
         result = widget.proceed()
@@ -112,9 +120,11 @@ class TestIntegrationDialog(unittest.TestCase):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[1.9, 1.9], [23.5, 9.9]]]
         widget = IntegrationDialog(json_file=None)
-        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
-                "do_2D": False,
-                "nbpt_rad": 2}
+        params = {"do_2D": False,
+                  "nbpt_rad": 2,
+                  "method": ("bbox", "histogram", "cython")}
+        dico = self.base_config.copy()
+        dico.update(params)
         widget.set_config(dico)
         widget.set_input_data([data])
         result = widget.proceed()
@@ -124,11 +134,12 @@ class TestIntegrationDialog(unittest.TestCase):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[[5.6, 4.5], [41.8, 9.3]], [2.0, 2.0], [-124.5, -124.2]]]
         widget = IntegrationDialog(json_file=None)
-        dico = {"poni": UtilsTest.getimage("Pilatus1M.poni"),
-                "do_2D": True,
-                "nbpt_azim": 2,
-                "nbpt_rad": 2,
-                "method": "splitbbox"}
+        params = {"do_2D": True,
+                  "nbpt_azim": 2,
+                  "nbpt_rad": 2,
+                  "method": ("bbox", "histogram", "cython")}
+        dico = self.base_config.copy()
+        dico.update(params)
         widget.set_config(dico)
         widget.set_input_data([data])
         result = widget.proceed()

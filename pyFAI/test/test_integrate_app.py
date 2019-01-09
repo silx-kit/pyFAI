@@ -32,10 +32,12 @@ import os
 import fabio
 import contextlib
 import unittest
-import pyFAI.app.integrate
 import tempfile
-from .utilstest import UtilsTest
 import numpy
+
+import pyFAI.app.integrate
+from .utilstest import UtilsTest
+from pyFAI.io import integration_config
 
 
 class TestIntegrateApp(unittest.TestCase):
@@ -55,12 +57,13 @@ class TestIntegrateApp(unittest.TestCase):
 
     @contextlib.contextmanager
     def jsontempfile(self, ponipath, nbpt_azim=1):
-        data = {}
-        data["poni"] = ponipath
+        data = {"poni": ponipath}
+        integration_config.normalize(data, inplace=True)
         data["wavelength"] = 1
         data["nbpt_rad"] = 3
         data["nbpt_azim"] = nbpt_azim
         data["do_2D"] = nbpt_azim > 1
+        data["method"] = ("bbox", "histogram", "cython")
         fd, path = tempfile.mkstemp(prefix="pyfai_", suffix=".json")
         os.close(fd)
         with open(path, 'w') as fp:
