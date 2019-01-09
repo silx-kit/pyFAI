@@ -244,6 +244,7 @@ class Detector3dDialog(qt.QDialog):
             sceneWidget.addItem(item)
             item = thread.getSampleItem()
             sceneWidget.addItem(item)
+        sceneWidget.resetZoom(face="left")
         self.__process.setVisible(False)
         self.__plot.setVisible(True)
         self.adjustSize()
