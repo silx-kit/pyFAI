@@ -25,7 +25,7 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "03/10/2018"
+__date__ = "03/01/2019"
 
 import numpy
 import numbers
@@ -63,7 +63,7 @@ class QuantityLabel(qt.QLabel):
         """
         Set the model containing an unit.
 
-        :param pyFAI.gui.calibration.model.DataUnit.DataUnit: Model containing
+        :param pyFAI.gui.model.DataUnit.DataUnit: Model containing
             the unit.
         """
         if self.__displayedUnitModel is not None:

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # coding: utf8
 # /*##########################################################################
 #
@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "18/12/2018"
 __status__ = "stable"
 
 
@@ -946,7 +946,7 @@ def get_project_configuration(dry_run):
         "numexpr",
         # for the use of pkg_resources on script launcher
         "setuptools",
-        "silx>=0.8"]
+        "silx>=0.9"]
 
     setup_requires = [
         "setuptools",

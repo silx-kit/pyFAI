@@ -27,14 +27,14 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/11/2018"
+__date__ = "03/01/2019"
 
 import os.path
 
 from silx.gui import qt
 from silx.gui import icons
 import pyFAI.calibrant
-from ..calibration.model.CalibrantModel import CalibrantModel
+from ..model.CalibrantModel import CalibrantModel
 
 
 class CalibrantSelector(qt.QComboBox):

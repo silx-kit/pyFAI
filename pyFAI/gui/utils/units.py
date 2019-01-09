@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/08/2018"
+__date__ = "03/01/2019"
 
 
 import numpy
@@ -40,6 +40,8 @@ class Dimentionality(enum.Enum):
     LENGTH = "Length"
 
     WAVELENGTH = "Wavelength"
+
+    PIXEL = "Pixel"
 
     @property
     def fullname(self):
@@ -63,6 +65,8 @@ class Unit(enum.Enum):
     METER_WL = ("Meter", u"m", Dimentionality.WAVELENGTH),
 
     ENERGY = ("Energy", u"keV", Dimentionality.WAVELENGTH),
+
+    PIXEL = ("Pixel", u"px", Dimentionality.PIXEL),
 
     @property
     def fullname(self):

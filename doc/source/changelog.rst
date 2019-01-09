@@ -1,9 +1,24 @@
 :Author: Jérôme Kieffer
-:Date: 26/10/2018
+:Date: 19/12/2018
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
+
+0.17.0 19/12/2018
+-----------------
+* Only 200 commits in a couple of month, this ia a small release
+* Fix major bugs in pyFAI-calib2 (double validator, initial guess, ring position)
+* Constrains have been added to the geometry fitting of pyFAI-calib2
+* New pyFAI-integrate graphical application
+* Much better support for user defined detector (HDF5)
+* Start the rewrite of all integrators to allow proper error propagation (2D done)
+* Factorize the preprocessing steps for many integrators
+* Remove tons of code which has been deprecated for years in AzimuthalIntegrator
+* Featuring contribution from Soleil and Berkeley
+* Stop supporting Python2.7 on Windows (there won't be wheels!)
+* All scripts are now using Python 3.x (x>=4)
+* This is the last release supporting Python 2.7, 3.4 hence debian 8
 
 0.16.0: 26/10/2018
 ------------------

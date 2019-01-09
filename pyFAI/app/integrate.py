@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "13/12/2018"
 __satus__ = "production"
 import sys
 import logging
@@ -63,17 +63,9 @@ except ImportError:
 
 def integrate_gui(options, args):
     from silx.gui import qt
-    from pyFAI.gui.integrate_widget import AIWidget
-
+    from pyFAI.gui.IntegrationDialog import IntegrationDialog
     app = qt.QApplication([])
-    if not args:
-        dialog = qt.QFileDialog(directory=os.getcwd())
-        dialog.setWindowTitle("Select images to integrate")
-        dialog.setFileMode(qt.QFileDialog.ExistingFiles)
-        dialog.exec_()
-        args = [str(i) for i in dialog.selectedFiles()]
-
-    window = AIWidget(args, options.output, options.format, options.slow, options.rapid, options.json)
+    window = IntegrationDialog(args, options.output, json_file=options.json)
     window.set_input_data(args)
     window.show()
     return app.exec_()
@@ -105,10 +97,13 @@ def integrate_shell(options, args):
     with open(options.json) as f:
         config = json.load(f)
 
-    ai = pyFAI.worker.make_ai(config)
-    worker = pyFAI.worker.Worker(azimuthalIntegrator=ai)
-    # TODO this will init again the azimuthal integrator, there is a problem on the architecture
-    worker.setJsonConfig(options.json)
+    worker = pyFAI.worker.Worker()
+    worker.set_config(config, consume_keys=True)
+
+    # Check unused keys
+    for key in config.keys():
+        logger.warning("Configuration key '%s' from json file '%s' is unused", key, options.json)
+
     worker.safe = False  # all processing are expected to be the same.
     start_time = time.time()
 

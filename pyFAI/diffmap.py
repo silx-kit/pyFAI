@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "14/12/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -301,6 +301,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         """
         Create the HDF5 structure if needed ...
         """
+        import h5py
+        dtype = h5py.special_dtype(vlen=six.text_type)
+
         if self.hdf5 is None:
             raise RuntimeError("No output HDF5 file provided")
 
@@ -317,17 +320,18 @@ If the number of files is too large, use double quotes like "*.edf" """
             grp = nxs.new_class(grp, name=subgrp, class_type="NXcollection")
 
         processgrp = nxs.new_class(grp, "pyFAI", class_type="NXprocess")
-        processgrp["program"] = numpy.array([numpy.str_(i) for i in sys.argv])
-        processgrp["version"] = numpy.str_(PyFAI_VERSION)
-        processgrp["date"] = numpy.str_(get_isotime())
+        processgrp["program"] = numpy.array([i for i in sys.argv], dtype=dtype)
+        processgrp["version"] = PyFAI_VERSION
+        processgrp["date"] = get_isotime()
         if self.mask:
-            processgrp["maskfile"] = numpy.str_(self.mask)
+            processgrp["maskfile"] = self.mask
         if self.flat:
-            processgrp["flatfiles"] = numpy.array([numpy.str_(i) for i in self.flat])
+            processgrp["flatfiles"] = numpy.array([i for i in self.flat], dtype=dtype)
         if self.dark:
-            processgrp["darkfiles"] = numpy.array([numpy.str_(i) for i in self.dark])
-        processgrp["inputfiles"] = numpy.array([numpy.str_(i) for i in self.inputfiles])
-        processgrp["PONIfile"] = numpy.str_(self.poni)
+            processgrp["darkfiles"] = numpy.array([i for i in self.dark], dtype=dtype)
+        processgrp["inputfiles"] = numpy.array([i for i in self.inputfiles], dtype=dtype)
+        if self.poni is not None:
+            processgrp["PONIfile"] = self.poni
 
         processgrp["dim0"] = self.npt_slow
         processgrp["dim0"].attrs["axis"] = self.slow_motor_name
@@ -336,10 +340,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         processgrp["dim2"] = self.npt_rad
         processgrp["dim2"].attrs["axis"] = "diffraction"
         for k, v in self.ai.getPyFAI().items():
-            if "__len__" in dir(v):
-                processgrp[k] = numpy.str_(v)
-            elif v:
-                processgrp[k] = v
+            processgrp[k] = v
 
         self.group = nxs.new_class(grp, name=spath[-2], class_type="NXdata")
 

@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2018"
+__date__ = "03/01/2019"
 
 import unittest
 import logging
@@ -50,8 +50,8 @@ except ImportError:
 import pyFAI.resources
 import pyFAI.calibrant
 import pyFAI.detectors
-from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
-from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
+from pyFAI.gui.CalibrationWindow import CalibrationWindow
+from pyFAI.gui.CalibrationContext import CalibrationContext
 
 _logger = logging.getLogger(__name__)
 

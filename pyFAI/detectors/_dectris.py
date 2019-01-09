@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2018"
+__date__ = "17/12/2018"
 __status__ = "production"
 
 
@@ -66,6 +66,10 @@ class _Dectris(Detector):
 class Eiger(_Dectris):
     """
     Eiger detector: generic description containing mask algorithm
+    
+    Nota: 512k modules (514*1030) are made of 2x4 submodules of 256*256 pixels. 
+    Two missing pixels are interpolated at each sub-module boundary which explains 
+    the +2 and the +6 pixels.    
     """
     MODULE_SIZE = (514, 1030)
     MODULE_GAP = (37, 10)

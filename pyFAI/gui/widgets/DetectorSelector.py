@@ -27,10 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2018"
+__date__ = "03/01/2019"
 
 from silx.gui import qt
-from ..calibration.model.DetectorModel import DetectorModel
+from ..model.DetectorModel import DetectorModel
 from .DetectorModel import AllDetectorModel
 from .DetectorModel import DetectorFilter
 

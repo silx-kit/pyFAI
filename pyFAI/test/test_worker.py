@@ -34,17 +34,21 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/05/2018"
+__date__ = "17/12/2018"
 
 
 import unittest
 import numpy
 import logging
+import os.path
 from .. import units, worker
 from ..worker import Worker, PixelwiseWorker
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
+from . import utilstest
+import shutil
+
 
 logger = logging.getLogger(__name__)
 
@@ -291,10 +295,72 @@ class TestWorker(unittest.TestCase):
         self.assertLess(delta_err, precision, "Cython error calculation are OK: %s" % err)
 
 
+class TestWorkerConfig(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.directory = os.path.join(utilstest.test_options.tempdir, cls.__name__)
+        os.makedirs(cls.directory)
+        print(cls.directory)
+
+        cls.a = os.path.join(cls.directory, "a.npy")
+        cls.b = os.path.join(cls.directory, "b.npy")
+        cls.c = os.path.join(cls.directory, "c.npy")
+        cls.d = os.path.join(cls.directory, "d.npy")
+
+        cls.shape = (2, 2)
+        ones = numpy.ones(shape=cls.shape)
+        numpy.save(cls.a, ones)
+        numpy.save(cls.b, ones * 2)
+        numpy.save(cls.c, ones * 3)
+        numpy.save(cls.d, ones * 4)
+
+    def test_flatdark_v1(self):
+        abc = ",".join([self.a, self.b, self.c])
+        abd = ",".join([self.a, self.b, self.d])
+        config = {"dark_current": abc,
+                  "flat_field": abd,
+                  "poni": utilstest.UtilsTest.getimage("Pilatus1M.poni"),
+                  "detector": "Detector",
+                  "detector_config": {"pixel1": 1, "pixel2": 1, "max_shape": (2, 2)},
+                  "do_2D": False,
+                  "nbpt_rad": 2,
+                  "do_solid_angle": False,
+                  "method": "splitbbox"}
+        worker = Worker()
+        worker.set_config(config)
+        data = numpy.ones(shape=self.shape)
+        worker.process(data=data)
+        self.assertTrue(numpy.isclose(worker.ai.detector.get_darkcurrent()[0, 0], (1 + 2 + 3) / 3))
+        self.assertTrue(numpy.isclose(worker.ai.detector.get_flatfield()[0, 0], (1 + 2 + 4) / 3))
+
+    def test_flatdark_v2(self):
+        config = {"dark_current": [self.a, self.b, self.c],
+                  "flat_field": [self.a, self.b, self.d],
+                  "poni": utilstest.UtilsTest.getimage("Pilatus1M.poni"),
+                  "detector": "Detector",
+                  "detector_config": {"pixel1": 1, "pixel2": 1, "max_shape": (2, 2)},
+                  "do_2D": False,
+                  "nbpt_rad": 2,
+                  "do_solid_angle": False,
+                  "method": "splitbbox"}
+        worker = Worker()
+        worker.set_config(config)
+        data = numpy.ones(shape=self.shape)
+        worker.process(data=data)
+        self.assertTrue(numpy.isclose(worker.ai.detector.get_darkcurrent()[0, 0], (1 + 2 + 3) / 3))
+        self.assertTrue(numpy.isclose(worker.ai.detector.get_flatfield()[0, 0], (1 + 2 + 4) / 3))
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.directory)
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestWorker))
+    testsuite.addTest(loader(TestWorkerConfig))
     return testsuite
 
 

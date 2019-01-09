@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2018"
+__date__ = "06/12/2018"
 
 from silx.gui import qt
 from silx.utils import html
@@ -47,6 +47,7 @@ class DetectorLabel(qt.QLabel):
     def __init__(self, parent=None):
         super(DetectorLabel, self).__init__(parent)
         self.__model = None
+        self.__detector = None
 
     def __getModelName(self, detectorClass):
         modelName = None
@@ -57,13 +58,16 @@ class DetectorLabel(qt.QLabel):
             modelName = detectorClass.__name__
         return modelName
 
-    def __updateDisplay(self):
-        if self.__model is None:
-            self.setText("No detector")
-            self.setToolTip("No detector")
-            return
+    def detector(self):
+        if self.__detector is not None:
+            return self.__detector
+        if self.__model is not None:
+            detector = self.__model.detector()
+            return detector
+        return None
 
-        detector = self.__model.detector()
+    def __updateDisplay(self):
+        detector = self.detector()
         if detector is None:
             self.setText("No detector")
             self.setToolTip("No detector")
@@ -95,16 +99,22 @@ class DetectorLabel(qt.QLabel):
         self.setText(text)
         self.setToolTip(description)
 
-    def setAppModel(self, model):
+    def setDetectorModel(self, model):
+        self.__detector = None
         if self.__model is not None:
-            self.__model.changed.disconnect(self.__appModelChanged)
+            self.__model.changed.disconnect(self.__modelChanged)
         self.__model = model
         if self.__model is not None:
-            self.__model.changed.connect(self.__appModelChanged)
-        self.__appModelChanged()
+            self.__model.changed.connect(self.__modelChanged)
+        self.__modelChanged()
 
-    def __appModelChanged(self):
+    def __modelChanged(self):
         self.__updateDisplay()
 
-    def appModel(self):
+    def detectorModel(self):
         return self.__model
+
+    def setDetector(self, detector):
+        self.__model = None
+        self.__detector = detector
+        self.__updateDisplay()

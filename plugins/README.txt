@@ -14,9 +14,3 @@ EDNA
 ----
 EDNA is a framework for plugin based application.
 A generic pyFAI plugin is planed soon.
-
-
-PyMca
------
-PyMca is an X-ray fluorescence and map analysis tool.
-This pyFAI plugin will provide azimuthal regrouping capabilities to PyMca.
