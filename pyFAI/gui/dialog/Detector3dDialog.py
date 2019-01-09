@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/01/2019"
+__date__ = "09/01/2019"
 
 import sys
 import os.path
@@ -50,13 +50,14 @@ class Detector3dDialog(qt.QDialog):
         layout = qt.QVBoxLayout(self)
         layout.addWidget(self.__plot)
 
-    def __createMesh(self, pixels, image, mask, colormap):
+    def __createDetectorMesh(self, detector, image, mask, colormap):
         """
         Create a 3D image from pyFAI pixel detector definitions, and a raw image
         from the detector.
 
         :rtype: items.DataItem3D
         """
+        pixels = detector.get_pixel_corners()
 
         height, width, _, _, = pixels.shape
         nb_vertices = width * height * 6
@@ -130,8 +131,6 @@ class Detector3dDialog(qt.QDialog):
         return mesh
 
     def setData(self, detector, image=None, mask=None, colormap=None):
-        pixels = detector.get_pixel_corners()
-
         acquisition_filename = sys.argv[2]
         if not os.path.exists(acquisition_filename):
             raise Exception("File not found")
@@ -141,5 +140,5 @@ class Detector3dDialog(qt.QDialog):
         if colormap is None:
             colormap = colors.Colormap("inferno")
 
-        mesh = self.__createMesh(pixels, image, mask, colormap)
+        mesh = self.__createDetectorMesh(detector, image, mask, colormap)
         sceneWidget.addItem(mesh)
