@@ -35,17 +35,17 @@ import functools
 
 from silx.gui import qt
 import silx.math.combo
-from silx.gui.plot3d.items.mesh import Mesh
+from silx.gui.plot3d.items import mesh
 from silx.gui.plot3d.SceneWindow import SceneWindow
 from silx.gui import colors
 
 
-class CreateDetectorGeometryTheard(qt.QThread):
+class CreateSceneThread(qt.QThread):
 
     progressValue = qt.Signal(int)
 
     def __init__(self, parent=None):
-        super(CreateDetectorGeometryTheard, self).__init__(parent=parent)
+        super(CreateSceneThread, self).__init__(parent=parent)
         self.__detector = None
         self.__image = None
         self.__mask = None
@@ -174,10 +174,48 @@ class CreateDetectorGeometryTheard(qt.QThread):
     def hasGeometry(self):
         return self.__geometry is not None
 
-    def getDetectorMesh(self):
-        mesh = Mesh()
-        mesh.setData(position=self.__positions_array, color=self.__colors_array)
-        return mesh
+    def getDetectorItem(self):
+        item = mesh.Mesh()
+        item.setData(position=self.__positions_array, color=self.__colors_array)
+        item.setLabel("Detector")
+        return item
+
+    def getSampleItem(self):
+        item = mesh.Hexagon()
+
+        # 3mm
+        size = 0.003
+        distance = self.__geometry.dist
+        if size >= distance:
+            size = distance / 2
+
+        item.setData(color=(0, 1.0, 1.0, 0.5),
+                     radius=size,
+                     height=size,
+                     position=(-size / 2, 0, 0),
+                     rotation=(90, (0, 1, 0))
+                     )
+        item.setLabel("Sample")
+        return item
+
+    def getBeamItem(self):
+        item = mesh.Cylinder()
+
+        # 0.5mm
+        size = 0.0005
+        distance = self.__geometry.dist
+        if size >= distance:
+            size = distance / 6
+
+        dist = self.__geometry.dist
+        item.setData(color=(1.0, 0, 0),
+                     radius=size,
+                     height=dist,
+                     position=(dist / 2, 0, 0),
+                     rotation=(90, (0, 1, 0))
+                     )
+        item.setLabel("Beam")
+        return item
 
 
 class Detector3dDialog(qt.QDialog):
@@ -197,9 +235,15 @@ class Detector3dDialog(qt.QDialog):
         layout.addWidget(self.__process)
 
     def __detectorLoaded(self, thread):
-        mesh = thread.getDetectorMesh()
         sceneWidget = self.__plot.getSceneWidget()
-        sceneWidget.addItem(mesh)
+        item = thread.getDetectorItem()
+        sceneWidget.addItem(item)
+        if thread.hasGeometry():
+            # Display the full sample stage
+            item = thread.getBeamItem()
+            sceneWidget.addItem(item)
+            item = thread.getSampleItem()
+            sceneWidget.addItem(item)
         self.__process.setVisible(False)
         self.__plot.setVisible(True)
         self.adjustSize()
@@ -208,7 +252,7 @@ class Detector3dDialog(qt.QDialog):
         self.__process.setValue(percent)
 
     def setData(self, detector=None, image=None, mask=None, colormap=None, geometry=None):
-        thread = CreateDetectorGeometryTheard(self)
+        thread = CreateSceneThread(self)
         thread.setGeometry(geometry)
         thread.setDetector(detector)
         thread.setImage(image)
