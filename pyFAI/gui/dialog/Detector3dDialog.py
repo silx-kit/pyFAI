@@ -29,9 +29,8 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "09/01/2019"
 
-import sys
-import os.path
 import numpy
+import functools
 
 from silx.gui import qt
 import silx.math.combo
@@ -40,24 +39,29 @@ from silx.gui.plot3d.SceneWindow import SceneWindow
 from silx.gui import colors
 
 
-class Detector3dDialog(qt.QDialog):
-    """Dialog to display a selected geometry
-    """
+class CreateDetectorGeometryTheard(qt.QThread):
 
     def __init__(self, parent=None):
-        super(Detector3dDialog, self).__init__(parent=parent)
-        self.__plot = SceneWindow(self)
-        layout = qt.QVBoxLayout(self)
-        layout.addWidget(self.__plot)
+        super(CreateDetectorGeometryTheard, self).__init__(parent=parent)
+        self.__detector = None
+        self.__image = None
+        self.__mask = None
+        self.__colormap = None
 
-    def __createDetectorMesh(self, detector, image, mask, colormap):
-        """
-        Create a 3D image from pyFAI pixel detector definitions, and a raw image
-        from the detector.
+    def setDetector(self, detector):
+        self.__detector = detector
 
-        :rtype: items.DataItem3D
-        """
-        pixels = detector.get_pixel_corners()
+    def setImage(self, image):
+        self.__image = image
+
+    def setMask(self, mask):
+        self.__mask = mask
+
+    def setColormap(self, colormap):
+        self.__colormap = colormap
+
+    def run(self):
+        pixels = self.__detector.get_pixel_corners()
 
         height, width, _, _, = pixels.shape
         nb_vertices = width * height * 6
@@ -69,6 +73,13 @@ class Detector3dDialog(qt.QDialog):
         # Merge all pixels together
         pixels = pixels[...]
         pixels.shape = -1, 4, 3
+
+        image = self.__image
+        mask = self.__mask
+
+        colormap = self.__colormap
+        if colormap is None:
+            colormap = colors.Colormap("inferno")
 
         # Normalize the colormap as a RGBA float lookup table
         lut = colormap.getNColors(256)
@@ -126,19 +137,37 @@ class Detector3dDialog(qt.QDialog):
             triangle_index += 3
             color_index += 1
 
+        self.__positions_array = positions_array
+        self.__colors_array = colors_array
+
+    def getDetectorMesh(self):
         mesh = Mesh()
-        mesh.setData(position=positions_array, color=colors_array)
+        mesh.setData(position=self.__positions_array, color=self.__colors_array)
         return mesh
 
-    def setData(self, detector, image=None, mask=None, colormap=None):
-        acquisition_filename = sys.argv[2]
-        if not os.path.exists(acquisition_filename):
-            raise Exception("File not found")
 
+class Detector3dDialog(qt.QDialog):
+    """Dialog to display a selected geometry
+    """
+
+    def __init__(self, parent=None):
+        super(Detector3dDialog, self).__init__(parent=parent)
+        self.__plot = SceneWindow(self)
+        layout = qt.QVBoxLayout(self)
+        layout.addWidget(self.__plot)
+
+    def __detectorLoaded(self, thread):
+        mesh = thread.getDetectorMesh()
         sceneWidget = self.__plot.getSceneWidget()
-
-        if colormap is None:
-            colormap = colors.Colormap("inferno")
-
-        mesh = self.__createDetectorMesh(detector, image, mask, colormap)
         sceneWidget.addItem(mesh)
+
+    def setData(self, detector, image=None, mask=None, colormap=None):
+        thread = CreateDetectorGeometryTheard(self)
+        thread.setDetector(detector)
+        thread.setImage(image)
+        thread.setMask(mask)
+        thread.setColormap(colormap)
+
+        thread.finished.connect(functools.partial(self.__detectorLoaded, thread))
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
