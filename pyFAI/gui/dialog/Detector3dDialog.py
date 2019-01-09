@@ -30,6 +30,7 @@ __license__ = "MIT"
 __date__ = "09/01/2019"
 
 import numpy
+import time
 import functools
 
 from silx.gui import qt
@@ -41,12 +42,15 @@ from silx.gui import colors
 
 class CreateDetectorGeometryTheard(qt.QThread):
 
+    progressValue = qt.Signal(int)
+
     def __init__(self, parent=None):
         super(CreateDetectorGeometryTheard, self).__init__(parent=parent)
         self.__detector = None
         self.__image = None
         self.__mask = None
         self.__colormap = None
+        self.__last = None
 
     def setDetector(self, detector):
         self.__detector = detector
@@ -60,7 +64,16 @@ class CreateDetectorGeometryTheard(qt.QThread):
     def setColormap(self, colormap):
         self.__colormap = colormap
 
+    def emitProgressValue(self, value, force=False):
+        now = time.time()
+        if not force and self.__last is not None and now - self.__last < 1.0:
+            # Filter events every seconds
+            return
+        self.__last = now
+        self.progressValue.emit(value)
+
     def run(self):
+        self.emitProgressValue(0, force=True)
         pixels = self.__detector.get_pixel_corners()
 
         height, width, _, _, = pixels.shape
@@ -107,8 +120,12 @@ class CreateDetectorGeometryTheard(qt.QThread):
 
         triangle_index = 0
         color_index = 0
+        self.emitProgressValue(10, force=True)
 
         for npixel, pixel in enumerate(pixels):
+            percent = 10 + int(90 * (npixel / len(pixels)))
+            self.emitProgressValue(percent)
+
             masked = False
             if mask is not None:
                 masked = mask[npixel] != 0
@@ -140,6 +157,8 @@ class CreateDetectorGeometryTheard(qt.QThread):
         self.__positions_array = positions_array
         self.__colors_array = colors_array
 
+        self.emitProgressValue(100, force=True)
+
     def getDetectorMesh(self):
         mesh = Mesh()
         mesh.setData(position=self.__positions_array, color=self.__colors_array)
@@ -152,14 +171,26 @@ class Detector3dDialog(qt.QDialog):
 
     def __init__(self, parent=None):
         super(Detector3dDialog, self).__init__(parent=parent)
+        self.setWindowTitle("Display sample stage")
         self.__plot = SceneWindow(self)
+        self.__plot.setVisible(False)
+        self.__process = qt.QProgressBar(self)
+        self.__process.setFormat("Processing data")
+        self.__process.setRange(0, 100)
         layout = qt.QVBoxLayout(self)
         layout.addWidget(self.__plot)
+        layout.addWidget(self.__process)
 
     def __detectorLoaded(self, thread):
         mesh = thread.getDetectorMesh()
         sceneWidget = self.__plot.getSceneWidget()
         sceneWidget.addItem(mesh)
+        self.__process.setVisible(False)
+        self.__plot.setVisible(True)
+        self.adjustSize()
+
+    def __detectorLoading(self, percent):
+        self.__process.setValue(percent)
 
     def setData(self, detector, image=None, mask=None, colormap=None):
         thread = CreateDetectorGeometryTheard(self)
@@ -170,4 +201,5 @@ class Detector3dDialog(qt.QDialog):
 
         thread.finished.connect(functools.partial(self.__detectorLoaded, thread))
         thread.finished.connect(thread.deleteLater)
+        thread.progressValue.connect(self.__detectorLoading)
         thread.start()
