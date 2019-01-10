@@ -319,18 +319,24 @@ class TestKahan(unittest.TestCase):
     Test the kernels for compensated math in OpenCL
     """
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         if not UtilsTest.opencl:
-            self.skipTest("User request to skip OpenCL tests")
+            cls.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
-            self.skipTest("OpenCL module (pyopencl) is not present or no device available")
+            cls.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
-        self.ctx = ocl.create_context(devicetype="GPU")
-        self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+        cls.ctx = ocl.create_context(devicetype="GPU")
+        cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+        cls.args = ""
+        if (platform.machine() in ("i386", "i686") and
+                cls.ctx.devices[0].platform.name == 'Portable Computing Language'):
+            cls.args = "-DX87_VOLATILE=volatile"
 
-    def tearDown(self):
-        self.queue = None
-        self.ctx = None
+    @classmethod
+    def tearDownClass(cls):
+        cls.queue = None
+        cls.ctx = None
 
     @staticmethod
     def dummy_sum(ary, dtype=None):
@@ -366,7 +372,7 @@ class TestKahan(unittest.TestCase):
             result[1] = acc.s1;
         }
         """
-        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build()
+        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build(self.args)
         ones_d = pyopencl.array.to_device(self.queue, data)
         res_d = pyopencl.array.zeros(self.queue, 2, numpy.float32)
         evt = prg.summation(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
@@ -447,12 +453,8 @@ class TestKahan(unittest.TestCase):
         }
 
         """
-        args = ""
-        if (platform.machine() in ("i386", "i686") and
-                self.ctx.devices[0].platform.name == 'Portable Computing Language'):
-            args = "-DX87_VOLATILE=volatile"
 
-        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build(args)
+        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build(self.args)
         ones_d = pyopencl.array.to_device(self.queue, data)
         res_d = pyopencl.array.zeros(self.queue, 2, numpy.float32)
         evt = prg.test_dot16(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
