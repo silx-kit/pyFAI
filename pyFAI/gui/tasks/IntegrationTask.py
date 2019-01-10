@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "10/01/2019"
 
 import logging
 import numpy
@@ -915,6 +915,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self._azimuthalPoints.setModel(integrationSettings.nPointsAzimuthal())
         # connect model
         self.__polarizationModel.changed.connect(self.__polarizationModelChanged)
+        experimentSettings.detectorModel().changed.connect(self.__invalidateIntegrationNoReset)
         experimentSettings.mask().changed.connect(self.__invalidateIntegrationNoReset)
         experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegrationNoReset)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
