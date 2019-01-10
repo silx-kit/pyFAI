@@ -528,17 +528,24 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="do_OpenCL">
-        <property name="text">
-         <string>OpenCL device:</string>
+      <item row="1" column="1" colspan="2">
+       <widget class="MethodLabel" name="methodLabel">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QLabel" name="methodLabel">
+      <item row="1" column="3">
+       <widget class="QToolButton" name="method_config_button">
         <property name="text">
-         <string/>
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="opencl_title">
+        <property name="text">
+         <string>OpenCL device:</string>
         </property>
        </widget>
       </item>
@@ -577,6 +584,11 @@
    <class>GeometryLabel</class>
    <extends>QLabel</extends>
    <header>pyFAI.gui.widgets.GeometryLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>MethodLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.MethodLabel</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -27,14 +27,14 @@
 #  THE SOFTWARE.
 
 """
-Contains a registry of all integrator available 
+Contains a registry of all integrator available
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2018"
+__date__ = "08/01/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -71,6 +71,10 @@ class IntegrationMethod:
     "Keeps track of all integration methods"
     _registry = OrderedDict()
 
+    AVAILABLE_SLITS = ("no", "bbox", "pseudo", "full")
+    AVAILABLE_ALGOS = ("histogram", "lut", "csr")
+    AVAILABLE_IMPLS = ("python", "cython", "opencl")
+
     @classmethod
     def list_available(cls):
         """return a list of pretty printed integration method available"""
@@ -78,9 +82,18 @@ class IntegrationMethod:
 
     @classmethod
     def select_method(cls, dim=None, split=None, algo=None, impl=None,
-                      target=None, target_type=None):
+                      target=None, target_type=None, degradable=True, method=None):
         """Retrieve all algorithm which are fitting the requirement
         """
+        if method is not None:
+            dim, split, algo, impl, target = method
+            if isinstance(target, (list, tuple)):
+                target, target_type = target, None
+            else:
+                target, target_type = None, method.target
+            return cls.select_method(dim, split, algo, impl,
+                                     target, target_type,
+                                     degradable=degradable)
         dim = int(dim) if dim else 0
         algo = algo.lower() if algo is not None else "*"
         impl = impl.lower() if impl is not None else "*"
@@ -109,27 +122,19 @@ class IntegrationMethod:
                           if cls._registry[i].target_type == target_type]
 
         res = [cls._registry[i] for i in candidates]
-        while not res:
-            newsplit, newalgo, newimpl = _degraded(split, algo, impl)
-            logger.info("Degrading method from (%s,%s,%s) -> (%s,%s,%s)",
-                        split, algo, impl, newsplit, newalgo, newimpl)
-            split, algo, impl = newsplit, newalgo, newimpl
-            res = cls.select_method(dim, split, algo, impl)
+        if degradable:
+            while not res:
+                newsplit, newalgo, newimpl = _degraded(split, algo, impl)
+                logger.info("Degrading method from (%s,%s,%s) -> (%s,%s,%s)",
+                            split, algo, impl, newsplit, newalgo, newimpl)
+                if (split, algo, impl) == (newsplit, newalgo, newimpl):
+                    break
+                split, algo, impl = newsplit, newalgo, newimpl
+                res = cls.select_method(dim, split, algo, impl)
         return res
 
-    @classmethod
-    def select_old_method(cls, dim, old_method):
-        """Retrieve all algorithm which are fitting the requirement from old_method
-        valid 
-        "numpy", "cython", "bbox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl"
-        """
-        results = []
-        for v in cls._registry.values():
-            if (v.dimension == dim) and (v.old_method_name == old_method):
-                results.append(v)
-        if results:
-            return results
-        dim = int(dim)
+    @staticmethod
+    def parse_old_method(old_method):
         algo = "*"
         impl = "*"
         split = "*"
@@ -139,8 +144,25 @@ class IntegrationMethod:
         elif "csr" in old_method:
             algo = "csr"
 
+        target = None
+
         if "ocl" in old_method:
             impl = "opencl"
+            elements = old_method.split("_")
+            if len(elements) == 2:
+                target_string = elements[-1]
+                if target_string == "cpu":
+                    target = "cpu"
+                elif target_string == "gpu":
+                    target = "gpu"
+                elif target_string in ["*", "any", "all"]:
+                    target = None
+                elif "," in target_string:
+                    try:
+                        values = target_string.split(",")
+                        target = int(values[0]), int(values[1])
+                    except ValueError:
+                        pass
 
         if "bbox" in old_method:
             split = "bbox"
@@ -148,13 +170,36 @@ class IntegrationMethod:
             split = "full"
         elif "no" in old_method:
             split = "no"
-        return cls.select_method(dim, split, algo, impl)
+        return Method(666, split, algo, impl, target)
 
     @classmethod
-    def is_available(cls, dim, split=None, algo=None, impl=None, method_nt=None):
+    def select_old_method(cls, dim, old_method):
+        """Retrieve all algorithms which are fitting the requirements from
+        old_method. Valid input are "numpy", "cython", "bbox" or "splitpixel",
+        "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl".
+        """
+        results = []
+        for v in cls._registry.values():
+            if (v.dimension == dim) and (v.old_method_name == old_method):
+                results.append(v)
+        if results:
+            return results
+        dim = int(dim)
+        method = cls.parse_old_method(old_method)
+        _, split, algo, impl, target = method
+        if target in ["cpu", "gpu", None]:
+            target_type = target
+            target = None
+        else:
+            target_type = None
+
+        return cls.select_method(dim, split, algo, impl, target_type=target_type, target=target)
+
+    @classmethod
+    def is_available(cls, dim=None, split=None, algo=None, impl=None, method_nt=None):
         """
         Check if the method is currently available
-        
+
         :param dim: 1 or 2D integration
         :param split: pixel splitting options "no", "BBox", "pseudo", "full"
         :param algo: "histogram" for direct integration, LUT or CSR for sparse
@@ -169,6 +214,8 @@ class IntegrationMethod:
             if impl == "opencl":
                 # indexes start at 0 hence ...
                 target = (0, 0)
+            else:
+                target = None
             method_nt = Method(dim, split, algo, impl, target)
 
         return method_nt in cls._registry
@@ -176,7 +223,7 @@ class IntegrationMethod:
     @classmethod
     def parse(cls, smth, dim=1):
         """Parse the string for the content
-         
+
         TODO: parser does not allow to select device
         """
         res = []
@@ -196,7 +243,8 @@ class IntegrationMethod:
     def __init__(self, dim, split, algo, impl,
                  target=None, target_name=None, target_type=None,
                  class_funct=None, old_method=None, extra=None):
-        """Constructor of the class, only registers the 
+        """Constructor of the class, registring the methods.
+
         :param dim: 1 or 2 integration engine
         :param split: pixel splitting options "no", "BBox", "pseudo", "full"
         :param algo: "histogram" for direct integration, LUT or CSR for sparse
@@ -223,13 +271,14 @@ class IntegrationMethod:
         self.extra = extra
         self.method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)
         # basic checks ....
-        assert self.split_lower in ("no", "bbox", "pseudo", "full")
-        assert self.algo_lower in ("histogram", "lut", "csr")
-        assert self.impl_lower in ("python", "cython", "opencl")
+        assert self.split_lower in self.AVAILABLE_SLITS
+        assert self.algo_lower in self.AVAILABLE_ALGOS
+        assert self.impl_lower in self.AVAILABLE_IMPLS
         self.__class__._registry[self.method] = self
 
     def __repr__(self):
         if self.target:
-            return ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation, self.target_name))
+            string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation, self.target_name))
         else:
-            return ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation))
+            string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation))
+        return "IntegrationMethod(%s)" % string

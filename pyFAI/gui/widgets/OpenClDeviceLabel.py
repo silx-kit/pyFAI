@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2018"
+__date__ = "04/01/2019"
 
 from silx.gui import qt
 
@@ -59,7 +59,7 @@ class OpenClDeviceLabel(qt.QLabel):
     def __updateDisplay(self):
         toolTip = ""
         if self.__device is None:
-            label = "No OpenCl device selected"
+            label = "No OpenCL device selected"
         elif self.__device == "any":
             label = "Any available device"
         elif self.__device == "cpu":
