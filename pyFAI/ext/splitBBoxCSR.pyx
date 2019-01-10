@@ -322,9 +322,12 @@ class HistoBBox1d(object):
         outmax[:] = 0
 
         lut_nbytes = nnz * (sizeof(cnumpy.int32_t) + sizeof(cnumpy.float32_t))
-        if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
+        key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+        key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+        print(key_page_size, key_page_cnt) 
+        if (os.name == "posix") and (key_page_size*key_page_cnt):
             try:
-                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+                memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
             except OSError:
                 pass
             else:
@@ -447,9 +450,12 @@ class HistoBBox1d(object):
         outmax[:] = 0
 
         lut_nbytes = nnz * (sizeof(cnumpy.int32_t) + sizeof(cnumpy.float32_t))
-        if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
+        key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+        key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+        print(key_page_size, key_page_cnt) 
+        if (os.name == "posix") and (key_page_size*key_page_cnt):
             try:
-                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+                memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
             except OSError:
                 pass
             else:
@@ -969,9 +975,12 @@ class HistoBBox2d(object):
         outmax[:, :] = 0
         lut_nbytes = nnz * (sizeof(float) + sizeof(cnumpy.int32_t)) + bins0 * bins1 * sizeof(cnumpy.int32_t)
 
-        if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
+        key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+        key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+        print(key_page_size, key_page_cnt) 
+        if (os.name == "posix") and (key_page_size*key_page_cnt):
             try:
-                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+                memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
             except OSError:  # see bug 152
                 pass
             else:
@@ -1178,9 +1187,12 @@ class HistoBBox2d(object):
         # Just recycle the outmax array
         outmax[:, :] = 0
         lut_nbytes = nnz * (sizeof(float) + sizeof(cnumpy.int32_t)) + bins0 * bins1 * sizeof(cnumpy.int32_t)
-        if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
+        key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+        key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+        print(key_page_size, key_page_cnt) 
+        if (os.name == "posix") and (key_page_size*key_page_cnt):
             try:
-                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+                memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
             except OSError:
                 pass
             else:
