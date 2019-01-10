@@ -322,19 +322,21 @@ class HistoBBox1d(object):
         outmax[:] = 0
 
         lut_nbytes = nnz * (sizeof(cnumpy.int32_t) + sizeof(cnumpy.float32_t))
-        key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
-        key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
-        print(key_page_size, key_page_cnt) 
-        if (os.name == "posix") and (key_page_size*key_page_cnt):
-            try:
-                memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
-            except OSError:
-                pass
-            else:
-                if memsize < lut_nbytes:
-                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" %
-                                      (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
-        # else hope that enough memory is available
+		#Check we have enough memory
+        if (os.name == "posix"):
+			key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+			key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+			if key_page_size*key_page_cnt:
+				try:
+					memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
+				except OSError:
+					pass
+				else:
+					if memsize < lut_nbytes:
+						raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
+										  (bins0, bins1, lut_size, lut_nbytes, memsize))
+        # else hope we have enough memory
+
         data = numpy.empty(nnz, dtype=numpy.float32)
         indices = numpy.empty(nnz, dtype=numpy.int32)
 
@@ -450,19 +452,21 @@ class HistoBBox1d(object):
         outmax[:] = 0
 
         lut_nbytes = nnz * (sizeof(cnumpy.int32_t) + sizeof(cnumpy.float32_t))
-        key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
-        key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
-        print(key_page_size, key_page_cnt) 
-        if (os.name == "posix") and (key_page_size*key_page_cnt):
-            try:
-                memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
-            except OSError:
-                pass
-            else:
-                if memsize < lut_nbytes:
-                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" %
-                                      (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
-        # else hope that enough memory is available
+		#Check we have enough memory
+        if (os.name == "posix"):
+			key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+			key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+			if key_page_size*key_page_cnt:
+				try:
+					memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
+				except OSError:
+					pass
+				else:
+					if memsize < lut_nbytes:
+						raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
+										  (bins0, bins1, lut_size, lut_nbytes, memsize))
+        # else hope we have enough memory
+
         data = numpy.empty(nnz, dtype=numpy.float32)
         indices = numpy.empty(nnz, dtype=numpy.int32)
 
@@ -974,19 +978,21 @@ class HistoBBox2d(object):
         # Just recycle the outmax array
         outmax[:, :] = 0
         lut_nbytes = nnz * (sizeof(float) + sizeof(cnumpy.int32_t)) + bins0 * bins1 * sizeof(cnumpy.int32_t)
+		#Check we have enough memory
+        if (os.name == "posix"):
+			key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+			key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+			if key_page_size*key_page_cnt:
+				try:
+					memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
+				except OSError:
+					pass
+				else:
+					if memsize < lut_nbytes:
+						raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
+										  (bins0, bins1, lut_size, lut_nbytes, memsize))
+        # else hope we have enough memory
 
-        key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
-        key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
-        print(key_page_size, key_page_cnt) 
-        if (os.name == "posix") and (key_page_size*key_page_cnt):
-            try:
-                memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
-            except OSError:  # see bug 152
-                pass
-            else:
-                if memsize < lut_nbytes:
-                    raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
-        # else hope that enough memory is available
         data = numpy.zeros(nnz, dtype=numpy.float32)
         indices = numpy.zeros(nnz, dtype=numpy.int32)
         with nogil:
@@ -1187,18 +1193,21 @@ class HistoBBox2d(object):
         # Just recycle the outmax array
         outmax[:, :] = 0
         lut_nbytes = nnz * (sizeof(float) + sizeof(cnumpy.int32_t)) + bins0 * bins1 * sizeof(cnumpy.int32_t)
-        key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
-        key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
-        print(key_page_size, key_page_cnt) 
-        if (os.name == "posix") and (key_page_size*key_page_cnt):
-            try:
-                memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
-            except OSError:
-                pass
-            else:
-                if memsize < lut_nbytes:
-                    raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
-        # else hope that enough memory is available
+		#Check we have enough memory
+        if (os.name == "posix"):
+			key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+			key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+			if key_page_size*key_page_cnt:
+				try:
+					memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
+				except OSError:
+					pass
+				else:
+					if memsize < lut_nbytes:
+						raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
+										  (bins0, bins1, lut_size, lut_nbytes, memsize))
+        # else hope we have enough memory
+
         data = numpy.zeros(nnz, dtype=numpy.float32)
         indices = numpy.zeros(nnz, dtype=numpy.int32)
         with nogil:
