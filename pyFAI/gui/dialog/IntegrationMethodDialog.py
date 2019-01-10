@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/01/2019"
+__date__ = "10/01/2019"
 
 
 from silx.gui import qt
@@ -263,7 +263,7 @@ class IntegrationMethodWidget(qt.QWidget):
             if available1d and available2d:
                 color = qt.Qt.black
             elif not available1d and not available2d:
-                color = qt.Qt.grey
+                color = qt.Qt.gray
             else:
                 color = qt.Qt.red
                 if available1d:
