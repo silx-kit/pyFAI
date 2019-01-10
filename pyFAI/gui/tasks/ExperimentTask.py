@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/01/2019"
+__date__ = "10/01/2019"
 
 import fabio
 import numpy
@@ -136,7 +136,9 @@ class ExperimentTask(AbstractCalibrationTask):
             geometry.rot3 = fittedGeometry.rotation3().value()
             geometry.wavelength = fittedGeometry.wavelength().value()
 
-        dialog.setData(detector, image, mask, colormap, geometry=geometry)
+        dialog.setData(detector=detector,
+                       image=image, mask=mask, colormap=colormap,
+                       geometry=geometry)
         dialog.exec_()
 
     def _updateModel(self, model):
