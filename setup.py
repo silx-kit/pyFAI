@@ -647,13 +647,20 @@ class BuildExt(build_ext):
         elif self.compiler.compiler_type == 'unix':
             # Avoids runtime symbol collision for manylinux1 platform
             # See issue #1070
+            extern = 'extern "C" ' if ext.language == 'c++' else ''
+            return_type = 'void' if sys.version_info[0] <= 2 else 'PyObject*'
+
+            ext.extra_compile_args.append('-fvisibility=hidden')
+
             import numpy
             numpy_version = [int(i) for i in numpy.version.short_version.split(".", 2)[:2]]
             if numpy_version < [1,16]:
-                extern = 'extern "C" ' if ext.language == 'c++' else ''
-                return_type = 'void' if sys.version_info[0] <= 2 else 'PyObject*'
                 ext.extra_compile_args.append(
-                    '''-fvisibility=hidden -D'PyMODINIT_FUNC=%s__attribute__((visibility("default"))) %s ' ''' % (extern, return_type))
+                    '''-D'PyMODINIT_FUNC=%s__attribute__((visibility("default"))) %s ' ''' % (extern, return_type))
+            else:
+                ext.define_macros.append(
+                    ('PyMODINIT_FUNC',
+                     '%s__attribute__((visibility("default"))) %s ' % (extern, return_type)))
 
     def is_debug_interpreter(self):
         """
