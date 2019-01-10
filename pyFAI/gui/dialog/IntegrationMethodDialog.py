@@ -253,7 +253,7 @@ class IntegrationMethodWidget(qt.QWidget):
                 continue
             item = model.itemFromIndex(index)
 
-            localMethod = (name if m is None else m for m in method)
+            localMethod = tuple(name if m is None else m for m in method)
             methods = method_registry.IntegrationMethod.select_method(1, *localMethod, degradable=False)
             available1d = len(methods) != 0
             methods = method_registry.IntegrationMethod.select_method(2, *localMethod, degradable=False)
