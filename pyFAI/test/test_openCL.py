@@ -43,9 +43,9 @@ import time
 import fabio
 import gc
 import numpy
-import platform
 import logging
 import shutil
+import platform
 
 logger = logging.getLogger(__name__)
 try:
@@ -328,10 +328,13 @@ class TestKahan(unittest.TestCase):
 
         cls.ctx = ocl.create_context(devicetype="GPU")
         cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
-        cls.args = ""
-        if (platform.machine() in ("i386", "i686") and
+
+        # this is running 32 bits OpenCL woth POCL
+        if (platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4) and
                 cls.ctx.devices[0].platform.name == 'Portable Computing Language'):
             cls.args = "-DX87_VOLATILE=volatile"
+        else:
+            cls.args = ""
 
     @classmethod
     def tearDownClass(cls):
