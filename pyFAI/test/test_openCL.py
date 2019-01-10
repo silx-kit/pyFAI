@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2018"
+__date__ = "10/01/2019"
 
 
 import unittest
@@ -342,18 +342,6 @@ class TestKahan(unittest.TestCase):
             sum_ += i
         return sum_
 
-    def check_equal(self, value, reference, label=""):
-        "check except on broken arch"
-        if (platform.machine() in ("i386", "i686") and
-            self.ctx.devices[0].platform.name == 'Portable Computing Language'):
-                if value == reference:
-                    logger.info("%s OK: %s == %s", label, reference, value)
-                else:
-                    logger.info("%s NOT GOOD on broken POCL/i386: %s == %s", label, reference, value)
-        else:
-            self.assertEqual(reference, value, label)
-
-
     def test_kahan(self):
         # simple test
         N = 26
@@ -384,7 +372,7 @@ class TestKahan(unittest.TestCase):
         evt = prg.summation(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype=numpy.float64)
-        self.check_equal(ref64, res, label="test_kahan")
+        self.assertEqual(ref64, res, "test_kahan")
 
     def test_dot16(self):
         # simple test
@@ -459,13 +447,18 @@ class TestKahan(unittest.TestCase):
         }
 
         """
-        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build()
+        args = ""
+        if (platform.machine() in ("i386", "i686") and
+                self.ctx.devices[0].platform.name == 'Portable Computing Language'):
+            args = "-DX87_VOLATILE=volatile"
+
+        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build(args)
         ones_d = pyopencl.array.to_device(self.queue, data)
         res_d = pyopencl.array.zeros(self.queue, 2, numpy.float32)
         evt = prg.test_dot16(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot16")
+        self.assertEqual(ref64, res, "test_dot16")
 
         res_d.fill(0)
         data0 = data[0::2]
@@ -477,7 +470,7 @@ class TestKahan(unittest.TestCase):
         evt = prg.test_dot8(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot8")
+        self.assertEqual(ref64, res, "test_dot8")
 
         res_d.fill(0)
         data0 = data[0::4]
@@ -489,7 +482,7 @@ class TestKahan(unittest.TestCase):
         evt = prg.test_dot4(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot4")
+        self.assertEqual(ref64, res, "test_dot4")
 
         res_d.fill(0)
         data0 = numpy.array([data[0], data[4], data[12]])
@@ -501,7 +494,7 @@ class TestKahan(unittest.TestCase):
         evt = prg.test_dot3(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot3")
+        self.assertEqual(ref64, res, "test_dot3")
 
         res_d.fill(0)
         data0 = numpy.array([data[0], data[14]])
@@ -513,7 +506,8 @@ class TestKahan(unittest.TestCase):
         evt = prg.test_dot2(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot2")
+        self.assertEqual(ref64, res, "test_dot2")
+
 
 def suite():
     testsuite = unittest.TestSuite()
