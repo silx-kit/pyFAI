@@ -765,7 +765,9 @@ class GeometryTask(AbstractCalibrationTask):
 
         constraintLayout = qt.QHBoxLayout()
         defaultConstraintsButton = qt.QPushButton("Default contraints", self)
+        defaultConstraintsButton.setToolTip("Remove all the custom constraints.")
         saxsConstraintsButton = qt.QPushButton("SAXS contraints", self)
+        saxsConstraintsButton.setToolTip("Force all the rotations to zero.")
         constraintLayout.addWidget(defaultConstraintsButton)
         constraintLayout.addWidget(saxsConstraintsButton)
         layout.addLayout(constraintLayout, layout.rowCount(), 0, 1, -1)
