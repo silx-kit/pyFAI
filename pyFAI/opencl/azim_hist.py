@@ -251,6 +251,7 @@ class Integrator1d(object):
         try:
             default_compiler_options = self.get_compiler_options(x87_volatile=True)
         except AttributeError:  # Silx version too old
+            logger.warning("Please upgrade to silx v0.10+")
             default_compiler_options = get_x87_volatile_option(self._ctx)
 
         if default_compiler_options:
