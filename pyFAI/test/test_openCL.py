@@ -128,7 +128,9 @@ class TestMask(unittest.TestCase):
             for ds in self.datasets:
                 ai = load(ds["poni"])
                 data = fabio.open(ds["img"]).data
-                res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
+                with utilstest.TestLogging(logger=depreclog, warning=1):
+                    # Filter deprecated warning
+                    res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
                 ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
                 r = mathutil.rwp(ref, res)
                 logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)

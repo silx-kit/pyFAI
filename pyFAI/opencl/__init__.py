@@ -60,7 +60,6 @@ else:
     from silx.opencl import processing
 
 
-@deprecated(reason="upgrade silx>=0.10!")
 def get_x87_volatile_option(ctx):
         # this is running 32 bits OpenCL with POCL
         if (platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4) and

@@ -85,6 +85,7 @@ class Separator(OpenclProcessing):
         try:
             default_compiler_options = self.get_compiler_options(x87_volatile=True)
         except AttributeError:  # Silx version too old
+            logger.warning("Please upgrade to silx v0.10+")
             default_compiler_options = get_x87_volatile_option(self.ctx)
         self.compile_kernels(compile_options=default_compiler_options)
         if block_size is None:
