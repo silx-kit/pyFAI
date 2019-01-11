@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "11/01/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -244,8 +244,23 @@ class Integrator1d(object):
 
         template_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i"
         compile_options = template_options % (self.BLOCK_SIZE, self.nBins, self.nData)
+
         if self.useFp64:
             compile_options += " -D ENABLE_FP64"
+
+        try:
+            default_compiler_options = self.get_compiler_options(x87_volatile=True)
+        except AttributeError:  # Silx version too old
+            import platform
+            if (platform.machine() in ("i386", "i686", "x86_64", "AMD64") and
+                    (tuple.__itemsize__ == 4) and
+                    self.ctx.devices[0].platform.name == 'Portable Computing Language'):
+                default_compiler_options = "-DX87_VOLATILE=volatile"
+            else:
+                default_compiler_options = ""
+
+        if default_compiler_options:
+            compile_options += " " + default_compiler_options
 
         try:
             self._cl_program = pyopencl.Program(self._ctx, kernel_src)

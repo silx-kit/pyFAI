@@ -34,11 +34,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2018"
+__date__ = "10/01/2019"
 __status__ = "stable"
 
 import os
 import logging
+import platform
 
 logger = logging.getLogger(__name__)
 
@@ -57,3 +58,11 @@ else:
     from silx.opencl import utils
     from silx.opencl.utils import get_opencl_code, concatenate_cl_kernel, read_cl_file
     from silx.opencl import processing
+
+def get_x87_volatile_option():
+        # this is running 32 bits OpenCL woth POCL
+        if (platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4) and
+                cls.ctx.devices[0].platform.name == 'Portable Computing Language'):
+            cls.args = "-DX87_VOLATILE=volatile"
+        else:
+            cls.args = ""

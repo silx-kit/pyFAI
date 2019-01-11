@@ -35,7 +35,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "11/01/2019"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -81,7 +81,19 @@ class Separator(OpenclProcessing):
         self.npt_height = npt_height
 
         self.allocate_buffers()
-        self.compile_kernels()
+
+        try:
+            default_compiler_options = self.get_compiler_options(x87_volatile=True)
+        except AttributeError:  # Silx version too old
+            import platform
+            if (platform.machine() in ("i386", "i686", "x86_64", "AMD64") and
+                    (tuple.__itemsize__ == 4) and
+                    self.ctx.devices[0].platform.name == 'Portable Computing Language'):
+                default_compiler_options = "-DX87_VOLATILE=volatile"
+            else:
+                default_compiler_options = ""
+
+        self.compile_kernels(compile_options=default_compiler_options)
         if block_size is None:
             self.block_size = kernel_workgroup_size(self.program, "filter_vertical")
         else:
