@@ -514,8 +514,13 @@ class GeometryRefinement(AzimuthalIntegrator):
         size = d1.size
         x = d1, d2
         rings = self.data[:, 2].astype(numpy.int32)
-        f_with_rot = lambda x, *param: self.tth(x[0], x[1], numpy.concatenate((param, [self.rot3])))
-        f_no_rot = lambda x, *param: self.tth(x[0], x[1], numpy.concatenate((param, [self.rot1, self.rot2, self.rot3])))
+
+        def f_with_rot(x, *param):
+            return self.tth(x[0], x[1], numpy.concatenate((param, [self.rot3])))
+
+        def f_no_rot(x, *param):
+            return self.tth(x[0], x[1], numpy.concatenate((param, [self.rot1, self.rot2, self.rot3])))
+
         y = self.calc_2th(rings, self.wavelength)
         param0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
         ref = self.residu2(param0, d1, d2, rings)
