@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "11/01/2019"
 
 import logging
 import numpy
@@ -905,6 +905,9 @@ class GeometryTask(AbstractCalibrationTask):
     def __invalidateWavelength(self):
         self.__wavelengthInvalidated = True
 
+    def __invalidateCalibration(self):
+        self.__calibration = None
+
     def __getCalibration(self):
         if self.__calibration is None:
             self.__calibration = self.__createCalibration()
@@ -1125,6 +1128,11 @@ class GeometryTask(AbstractCalibrationTask):
 
         model.fittedGeometry().changed.connect(self.__geometryUpdated)
         model.peakSelectionModel().changed.connect(self.__invalidatePeakSelection)
+
+        settings.maskedImage().changed.connect(self.__invalidateCalibration)
+        settings.image().changed.connect(self.__invalidateCalibration)
+        settings.calibrantModel().changed.connect(self.__invalidateCalibration)
+        settings.detectorModel().changed.connect(self.__invalidateCalibration)
 
         self.__imageUpdated()
 
