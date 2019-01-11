@@ -45,6 +45,7 @@ else:
     raise ImportError("pyopencl is not installed")
 
 from . import processing
+from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
@@ -201,14 +202,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         try:
             default_compiler_options = self.get_compiler_options(x87_volatile=True)
         except AttributeError:  # Silx version too old
-            import platform
-            if (platform.machine() in ("i386", "i686", "x86_64", "AMD64") and
-                    (tuple.__itemsize__ == 4) and
-                    self.ctx.devices[0].platform.name == 'Portable Computing Language'):
-                default_compiler_options = "-DX87_VOLATILE=volatile"
-            else:
-                default_compiler_options = ""
-
+            default_compiler_options = get_x87_volatile_option(self.ctx)
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
                           (self.bins, self.size, self.BLOCK_SIZE)
         if default_compiler_options:
