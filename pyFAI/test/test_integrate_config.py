@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2019"
+__date__ = "07/01/2019"
 
 
 import unittest
@@ -102,13 +102,37 @@ class TestIntegrationConfigV1(unittest.TestCase):
         config = {"do_OpenCL": True}
         config = integration_config.normalize(config)
         self.assertNotIn("do_OpenCL", config)
-        self.assertEqual(config["method"], "csr_ocl")
+        self.assertEqual(config["method"], ('*', 'csr', 'opencl'))
+
+
+class TestIntegrationConfigV2(unittest.TestCase):
+
+    def test_opencl_device(self):
+        config = {
+            "version": 2,
+            "application": "pyfai-integrate",
+            "method": "csrocl_1,1"}
+        config = integration_config.normalize(config)
+        self.assertNotIn("do_OpenCL", config)
+        self.assertEqual(config["method"], ('*', 'csr', 'opencl'))
+        self.assertEqual(config["opencl_device"], (1, 1))
+
+    def test_opencl_cpu_device(self):
+        config = {
+            "version": 2,
+            "application": "pyfai-integrate",
+            "method": "lutocl_cpu"}
+        config = integration_config.normalize(config)
+        self.assertNotIn("do_OpenCL", config)
+        self.assertEqual(config["method"], ('*', 'lut', 'opencl'))
+        self.assertEqual(config["opencl_device"], "cpu")
 
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestIntegrationConfigV1))
+    testsuite.addTest(loader(TestIntegrationConfigV2))
     return testsuite
 
 
