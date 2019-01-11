@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2019"
+__date__ = "11/01/2019"
 
 
 import unittest
@@ -60,7 +60,7 @@ if ocl is not None:
     import pyopencl.array
 from .. import load
 from . import utilstest
-from .utilstest import UtilsTest
+from .utilstest import test_options
 from ..utils import mathutil
 from ..utils.decorators import depreclog
 
@@ -68,28 +68,28 @@ from ..utils.decorators import depreclog
 class TestMask(unittest.TestCase):
 
     def setUp(self):
-        if not UtilsTest.opencl:
+        if not test_options.opencl:
             self.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
             self.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
-        self.tmp_dir = os.path.join(UtilsTest.tempdir, "opencl")
+        self.tmp_dir = os.path.join(test_options.tempdir, "opencl")
         if not os.path.isdir(self.tmp_dir):
             os.makedirs(self.tmp_dir)
 
         self.N = 1000
-        self.datasets = [{"img": UtilsTest.getimage("Pilatus1M.edf"),
-                          "poni": UtilsTest.getimage("Pilatus1M.poni"),
+        self.datasets = [{"img": test_options.getimage("Pilatus1M.edf"),
+                          "poni": test_options.getimage("Pilatus1M.poni"),
                           "spline": None},
-                         {"img": UtilsTest.getimage("halfccd.edf"),
-                          "poni": UtilsTest.getimage("halfccd.poni"),
-                          "spline": UtilsTest.getimage("halfccd.spline")},
-                         {"img": UtilsTest.getimage("Frelon2k.edf"),
-                          "poni": UtilsTest.getimage("Frelon2k.poni"),
-                          "spline": UtilsTest.getimage("frelon.spline")},
-                         {"img": UtilsTest.getimage("Pilatus6M.cbf"),
-                          "poni": UtilsTest.getimage("Pilatus6M.poni"),
-                          "spline": None},
+                         {"img": test_options.getimage("halfccd.edf"),
+                          "poni": test_options.getimage("halfccd.poni"),
+                          "spline": test_options.getimage("halfccd.spline")},
+#                          {"img": test_options.getimage("Frelon2k.edf"),
+#                           "poni": test_options.getimage("Frelon2k.poni"),
+#                           "spline": test_options.getimage("frelon.spline")},
+#                          {"img": test_options.getimage("Pilatus6M.cbf"),
+#                           "poni": test_options.getimage("Pilatus6M.poni"),
+#                           "spline": None},
                          ]
         for ds in self.datasets:
             if ds["spline"] is not None:
@@ -111,7 +111,7 @@ class TestMask(unittest.TestCase):
         shutil.rmtree(self.tmp_dir)
         self.tmp_dir = self.N = self.datasets = None
 
-    @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
+    @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_OpenCL(self):
         logger.info("Testing histogram-based algorithm (forward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -139,7 +139,7 @@ class TestMask(unittest.TestCase):
                 del ai, data
                 gc.collect()
 
-    @unittest.skipIf(UtilsTest.low_mem, "test using >500M")
+    @unittest.skipIf(test_options.low_mem, "test using >500M")
     def test_OpenCL_LUT(self):
         logger.info("Testing LUT-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -167,7 +167,7 @@ class TestMask(unittest.TestCase):
                 del ai, data
                 gc.collect()
 
-    @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
+    @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_OpenCL_CSR(self):
         logger.info("Testing CSR-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -204,7 +204,7 @@ class TestSort(unittest.TestCase):
     ws = N // 8
 
     def setUp(self):
-        if not UtilsTest.opencl:
+        if not test_options.opencl:
             self.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
             self.skipTest("OpenCL module (pyopencl) is not present or no device available")
@@ -319,27 +319,25 @@ class TestKahan(unittest.TestCase):
     Test the kernels for compensated math in OpenCL
     """
 
-    @classmethod
-    def setUpClass(cls):
-        if not UtilsTest.opencl:
-            cls.skipTest("User request to skip OpenCL tests")
+    def setUp(self):
+        if not test_options.opencl:
+            self.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
-            cls.skipTest("OpenCL module (pyopencl) is not present or no device available")
+            self.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
-        cls.ctx = ocl.create_context(devicetype="GPU")
-        cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+        self.ctx = ocl.create_context(devicetype="GPU")
+        self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
 
-        # this is running 32 bits OpenCL woth POCL
+        # this is running 32 bits OpenCL with POCL
         if (platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4) and
-                cls.ctx.devices[0].platform.name == 'Portable Computing Language'):
-            cls.args = "-DX87_VOLATILE=volatile"
+                self.ctx.devices[0].platform.name == 'Portable Computing Language'):
+            self.args = "-DX87_VOLATILE=volatile"
         else:
-            cls.args = ""
+            self.args = ""
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.queue = None
-        cls.ctx = None
+    def tearDown(self):
+        self.queue = None
+        self.ctx = None
 
     @staticmethod
     def dummy_sum(ary, dtype=None):
