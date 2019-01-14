@@ -95,8 +95,11 @@ class MethodLabel(qt.QLabel):
         else:
             usedMethods = method_registry.IntegrationMethod.select_method(method=method)
             if len(usedMethods) == 0:
-                label = "No method"
-                toolTip = "No method fit. Integration could be compromized."
+                label = "No method fit"
+                toolTip = self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+                toolTip = ("No method fit. Integration could be compromized. "
+                           "The following configuration is defined:"
+                           "%s</html>" % toolTip)
             else:
                 usedMethod = usedMethods[0]
                 usedMethod = usedMethod.method
