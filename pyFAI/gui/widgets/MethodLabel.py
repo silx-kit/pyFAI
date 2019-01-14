@@ -63,6 +63,7 @@ class MethodLabel(qt.QLabel):
         super(MethodLabel, self).__init__(parent)
         self.__method = None
         self.__labelTemplate = "{split} / {impl} / {algo}"
+        self.__availability = False
         self.__updateFeedback()
 
     def method(self):
@@ -100,43 +101,59 @@ class MethodLabel(qt.QLabel):
             return "degraded"
         return "specialized"
 
+    def setMethodAvailability(self, availability):
+        """Display or not in the widget if the method is available or not.
+
+        :param bool availability: Display in the widget if the method is
+            available or not.
+        """
+        self.__availability = availability
+        self.__updateFeedback()
+
+    def methodAvailability(self):
+        return self.__availability
+
     def __updateFeedback(self):
         method = self.__method
         if method is None:
             label = "No method"
             toolTip = "No method"
         else:
-            usedMethods = method_registry.IntegrationMethod.select_method(method=method)
-            if len(usedMethods) == 0:
-                label = "No method fit"
-                toolTip = self.__methodToString(method, self._TOOLTIP_TEMPLATE)
-                toolTip = ("No method fit. Integration could be compromized. "
-                           "The following configuration is defined:"
-                           "%s</html>" % toolTip)
-            else:
-                usedMethod = usedMethods[0]
-                usedMethod = usedMethod.method
-                compare = self.__compare(usedMethod, method)
-
-                if compare == "same":
+            if not self.__availability:
                     label = self.__methodToString(method, self.__labelTemplate)
                     toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+            else:
+                usedMethods = method_registry.IntegrationMethod.select_method(method=method)
+                if len(usedMethods) == 0:
+                    label = "No method fit"
+                    toolTip = self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+                    toolTip = ("No method fit. Integration could be compromized. "
+                               "The following configuration is defined:"
+                               "%s</html>" % toolTip)
                 else:
-                    original = self.__methodToString(method, self.__labelTemplate)
-                    label = self.__methodToString(usedMethod, self.__labelTemplate)
-                    toolTip = self.__methodToString(usedMethod, self._TOOLTIP_TEMPLATE)
+                    usedMethod = usedMethods[0]
+                    usedMethod = usedMethod.method
+                    compare = self.__compare(usedMethod, method)
 
-                    if compare == "degraded":
-                        label = "Degraded to: " + label
-                        toolTip = ("<html>The method %s is not available, at least, in this computer. "
-                                   "The following method will be used:"
-                                   "%s</html>" % (original, toolTip))
-                    elif compare == "specialized":
-                        label = "Specialized with: " + label
-                        toolTip = ("<html>The generic selection %s will use the following method in this computer:"
-                                   "%s</html>" % (original, toolTip))
+                    if compare == "same":
+                        label = self.__methodToString(method, self.__labelTemplate)
+                        toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
                     else:
-                        assert(False)
+                        original = self.__methodToString(method, self.__labelTemplate)
+                        label = self.__methodToString(usedMethod, self.__labelTemplate)
+                        toolTip = self.__methodToString(usedMethod, self._TOOLTIP_TEMPLATE)
+
+                        if compare == "degraded":
+                            label = "Degraded to: " + label
+                            toolTip = ("<html>The method %s is not available, at least, in this computer. "
+                                       "The following method will be used:"
+                                       "%s</html>" % (original, toolTip))
+                        elif compare == "specialized":
+                            label = "Specialized with: " + label
+                            toolTip = ("<html>The generic selection %s will use the following method in this computer:"
+                                       "%s</html>" % (original, toolTip))
+                        else:
+                            assert(False)
 
         self.setText(label)
         self.setToolTip(toolTip)
