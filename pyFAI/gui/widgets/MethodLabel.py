@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/01/2019"
+__date__ = "14/01/2019"
 
 from silx.gui import qt
 
@@ -50,8 +50,6 @@ class MethodLabel(qt.QLabel):
         "opencl": "OpenCL",
     }
 
-    _LABEL_TEMPLATE = """{split} / {impl} / {algo}"""
-
     _TOOLTIP_TEMPLATE = """<ul>
     <li><b>Pixel splitting:</b> {split}</li>
     <li><b>Implementation:</b> {impl}</li>
@@ -61,6 +59,7 @@ class MethodLabel(qt.QLabel):
     def __init__(self, parent=None):
         super(MethodLabel, self).__init__(parent)
         self.__method = None
+        self.__labelTemplate = "{split} / {impl} / {algo}"
         self.__updateFeedback()
 
     def method(self):
@@ -74,6 +73,17 @@ class MethodLabel(qt.QLabel):
             return
         self.__method = method
         self.__updateFeedback()
+
+    def setLabelTemplate(self, template):
+        """Set the template used to format the label
+
+        :param str template: The template used to format the label
+        """
+        self.__labelTemplate = template
+        self.__updateFeedback()
+
+    def labelTemplate(self):
+        return self.__labelTemplate
 
     def __compare(self, method, methodReference):
         if method == methodReference:
@@ -106,11 +116,11 @@ class MethodLabel(qt.QLabel):
                 compare = self.__compare(usedMethod, method)
 
                 if compare == "same":
-                    label = self.__methodToString(method, self._LABEL_TEMPLATE)
+                    label = self.__methodToString(method, self.__labelTemplate)
                     toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
                 else:
-                    original = self.__methodToString(method, self._LABEL_TEMPLATE)
-                    label = self.__methodToString(usedMethod, self._LABEL_TEMPLATE)
+                    original = self.__methodToString(method, self.__labelTemplate)
+                    label = self.__methodToString(usedMethod, self.__labelTemplate)
                     toolTip = self.__methodToString(usedMethod, self._TOOLTIP_TEMPLATE)
 
                     if compare == "degraded":
