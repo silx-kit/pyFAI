@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/01/2019"
+__date__ = "14/01/2019"
 
 import logging
 import numpy
@@ -52,6 +52,8 @@ from ..helper import ProcessingWidget
 from pyFAI.ext.invert_geometry import InvertGeometry
 from ..utils import FilterBuilder
 from ..utils import imageutils
+from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
+from pyFAI import method_registry
 
 _logger = logging.getLogger(__name__)
 
@@ -99,6 +101,7 @@ class IntegrationProcess(object):
     def __init__(self, model):
         self.__isValid = self._init(model)
         self.__resetZoomPolicy = None
+        self.__method = None
 
     def _init(self, model):
         self.__isValid = True
@@ -149,6 +152,12 @@ class IntegrationProcess(object):
     def setDisplayMask(self, displayed):
         self.__displayMask = displayed
 
+    def setMethod(self, method):
+        self.__method = method
+
+    def method(self):
+        return self.__method
+
     def setResetZoomPolicy(self, policy):
         self.__resetZoomPolicy = policy
 
@@ -169,9 +178,26 @@ class IntegrationProcess(object):
             detector=self.__detector,
             wavelength=self.__wavelength)
 
-        # FIXME error model, method
+        # FIXME Add error model
+
+        method1d = method_registry.Method(1, self.__method.split, self.__method.algo, self.__method.impl, None)
+        methods = method_registry.IntegrationMethod.select_method(method=method1d)
+        if len(methods) == 0:
+            method1d = method_registry.Method(1, method1d.split, "*", "*", None)
+            _logger.warning("Downgrade 1D integration method to %s", method1d)
+        else:
+            method1d = methods[0].method
+
+        method2d = method_registry.Method(2, self.__method.split, self.__method.algo, self.__method.impl, None)
+        methods = method_registry.IntegrationMethod.select_method(method=method2d)
+        if len(methods) == 0:
+            method2d = method_registry.Method(2, method2d.split, "*", "*", None)
+            _logger.warning("Downgrade 2D integration method to %s", method2d)
+        else:
+            method2d = methods[0].method
 
         self.__result1d = ai.integrate1d(
+            method=method1d,
             data=self.__image,
             npt=self.__nPointsRadial,
             unit=self.__radialUnit,
@@ -179,6 +205,7 @@ class IntegrationProcess(object):
             polarization_factor=self.__polarizationFactor)
 
         self.__result2d = ai.integrate2d(
+            method=method2d,
             data=self.__image,
             npt_rad=self.__nPointsRadial,
             npt_azim=self.__nPointsAzimuthal,
@@ -195,6 +222,7 @@ class IntegrationProcess(object):
 
                 if self.__displayMask:
                     self.__resultMask2d = ai.integrate2d(
+                        method=method2d,
                         data=maskData,
                         npt_rad=self.__nPointsRadial,
                         npt_azim=self.__nPointsAzimuthal,
@@ -805,8 +833,12 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.initNextStep()
 
+        self._methodLabel.setLabelTemplate("{split}")
+
         self.__integrationUpToDate = True
         self.__integrationResetZoomPolicy = None
+        method = method_registry.Method(666, "bbox", "csr", "cython", None)
+        self.__setMethod(method)
 
         positiveValidator = validators.IntegerAndEmptyValidator(self)
         positiveValidator.setBottom(1)
@@ -823,8 +855,26 @@ class IntegrationTask(AbstractCalibrationTask):
         self._integrateButton.setDisabledWhenWaiting(True)
         self._integrateButton.finished.connect(self.__integratingFinished)
 
+        self._customMethodButton.clicked.connect(self.__customIntegrationMethod)
+
         self._savePoniButton.clicked.connect(self.__saveAsPoni)
         self._saveJsonButton.clicked.connect(self.__saveAsJson)
+
+    def __customIntegrationMethod(self):
+        dialog = IntegrationMethodDialog(self)
+        dialog.selectMethod(self.__method)
+        result = dialog.exec_()
+        if result:
+            method = dialog.selectedMethod()
+            # TODO selectedMethod should return a `Method` tuple
+            split, algo, impl = method
+            method = method_registry.Method(dim=666, split=split, algo=algo, impl=impl, target=None)
+            self.__setMethod(method)
+
+    def __setMethod(self, method):
+        self.__method = method
+        self._methodLabel.setMethod(method)
+        self.__invalidateIntegrationNoReset()
 
     def aboutToClose(self):
         self._plot.aboutToClose()
@@ -870,6 +920,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
     def __integrate(self):
         self.__integrationProcess = IntegrationProcess(self.model())
+        self.__integrationProcess.setMethod(self.__method)
 
         if self.__integrationResetZoomPolicy is not None:
             self.__integrationProcess.setResetZoomPolicy(self.__integrationResetZoomPolicy)
