@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/12/2018"
+__date__ = "03/01/2019"
 
 import logging
 import numpy
@@ -41,17 +41,17 @@ from silx.gui.plot.tools import PositionInfo
 
 import pyFAI.utils
 import pyFAI.massif
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
-from pyFAI.gui.calibration.RingExtractor import RingExtractor
 import pyFAI.control_points
-from . import utils
-from .helper.SynchronizeRawView import SynchronizeRawView
-from .helper.SynchronizePlotBackground import SynchronizePlotBackground
-from .CalibrationContext import CalibrationContext
-from .helper.MarkerManager import MarkerManager
+from .AbstractCalibrationTask import AbstractCalibrationTask
+from ..helper.RingExtractor import RingExtractor
+from ..helper.SynchronizeRawView import SynchronizeRawView
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..CalibrationContext import CalibrationContext
+from ..helper.MarkerManager import MarkerManager
+from ..helper import ProcessingWidget
 from ..utils import FilterBuilder
 from ..utils import validators
-from .helper import model_transform
+from ..helper import model_transform
 
 
 _logger = logging.getLogger(__name__)
@@ -416,7 +416,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__processing = None
 
     def setProcessing(self):
-        self.__processing = utils.createProcessingWidgetOverlay(self)
+        self.__processing = ProcessingWidget.createProcessingWidgetOverlay(self)
 
 
 class _SpinBoxItemDelegate(qt.QStyledItemDelegate):

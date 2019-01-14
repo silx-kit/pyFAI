@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/12/2018"
+__date__ = "03/01/2019"
 
 import logging
 import numpy
@@ -38,16 +38,17 @@ import silx.gui.icons
 import silx.io
 
 import pyFAI.utils
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from .AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-from . import utils
-from .model.DataModel import DataModel
+from ..utils import unitutils
+from ..model.DataModel import DataModel
 from ..widgets.QuantityLabel import QuantityLabel
-from .CalibrationContext import CalibrationContext
+from ..CalibrationContext import CalibrationContext
 from ..utils import units
 from ..utils import validators
-from .helper.MarkerManager import MarkerManager
-from .helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..helper.MarkerManager import MarkerManager
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..helper import ProcessingWidget
 from pyFAI.ext.invert_geometry import InvertGeometry
 from ..utils import FilterBuilder
 from ..utils import imageutils
@@ -213,7 +214,7 @@ class IntegrationProcess(object):
 
             rings = self.__calibrant.get_2th()
             try:
-                rings = utils.from2ThRad(rings, self.__radialUnit, self.__wavelength, self.__directDist)
+                rings = unitutils.from2ThRad(rings, self.__radialUnit, self.__wavelength, self.__directDist)
             except ValueError:
                 message = "Convertion to unit %s not supported. Ring marks ignored"
                 _logger.warning(message, self.__radialUnit)
@@ -450,10 +451,10 @@ class IntegrationPlot(qt.QFrame):
     def dataToChiTth(self, data):
         """Returns chi and 2theta angles in radian from data coordinate"""
         try:
-            tthRad = utils.tthToRad(data[0],
-                                    unit=self.__radialUnit,
-                                    wavelength=self.__wavelength,
-                                    directDist=self.__directDist)
+            tthRad = unitutils.tthToRad(data[0],
+                                        unit=self.__radialUnit,
+                                        wavelength=self.__wavelength,
+                                        directDist=self.__directDist)
         except Exception:
             _logger.debug("Backtrace", exc_info=True)
             tthRad = None
@@ -783,8 +784,8 @@ class IntegrationPlot(qt.QFrame):
 
     def setProcessing(self):
         self.__setResult(None)
-        self.__processing1d = utils.createProcessingWidgetOverlay(self.__plot1d)
-        self.__processing2d = utils.createProcessingWidgetOverlay(self.__plot2d)
+        self.__processing1d = ProcessingWidget.createProcessingWidgetOverlay(self.__plot1d)
+        self.__processing2d = ProcessingWidget.createProcessingWidgetOverlay(self.__plot2d)
 
     def unsetProcessing(self):
         if self.__processing1d is not None:

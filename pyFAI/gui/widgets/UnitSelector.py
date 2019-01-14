@@ -27,11 +27,11 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/12/2018"
+__date__ = "03/01/2019"
 
 from silx.gui import qt
 
-from ..calibration.model.DataModel import DataModel
+from ..model.DataModel import DataModel
 from ...utils import stringutil
 
 

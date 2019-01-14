@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2018"
+__date__ = "03/01/2019"
 __status__ = "production"
 
 import logging
@@ -502,7 +502,7 @@ def setup_model(model, options):
 
     if options.npt:
         try:
-            from pyFAI.gui.calibration.helper import model_transform
+            from pyFAI.gui.helper import model_transform
             from pyFAI.control_points import ControlPoints
             controlPoints = ControlPoints(filename=options.npt)
             peakSelectionModel = model.peakSelectionModel()
@@ -539,8 +539,8 @@ def main():
     from silx.gui import qt
     # Make sure matplotlib is loaded first by silx
     import silx.gui.plot.matplotlib
-    from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
-    from pyFAI.gui.calibration.CalibrationContext import CalibrationContext
+    from pyFAI.gui.CalibrationWindow import CalibrationWindow
+    from pyFAI.gui.CalibrationContext import CalibrationContext
 
     sys.excepthook = logUncaughtExceptions
     if options.qtargs is None:

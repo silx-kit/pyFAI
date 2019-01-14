@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/10/2018"
+__date__ = "03/01/2019"
 
 import logging
 import functools
@@ -36,11 +36,12 @@ import numpy
 from silx.gui import qt
 
 from ..model import MarkerModel
-from .. import utils
-from ...utils import eventutils
+from ..utils import unitutils
+from ..utils import eventutils
 from ..CalibrationContext import CalibrationContext
 from pyFAI.ext.invert_geometry import InvertGeometry
 import pyFAI.units
+
 
 _logger = logging.getLogger(__name__)
 
@@ -175,10 +176,10 @@ class MarkerManager(object):
                 return
 
             try:
-                tth = utils.from2ThRad(tthRad,
-                                       unit=self.__radialUnit,
-                                       wavelength=self.__wavelength,
-                                       directDist=self.__directDist)
+                tth = unitutils.from2ThRad(tthRad,
+                                           unit=self.__radialUnit,
+                                           wavelength=self.__wavelength,
+                                           directDist=self.__directDist)
                 chi = numpy.rad2deg(chiRad)
             except Exception:
                 _logger.debug("Backtrace", exc_info=True)
@@ -239,10 +240,10 @@ class MarkerManager(object):
             return chi, tth
         else:
             try:
-                tthRad = utils.tthToRad(data[0],
-                                        unit=self.__radialUnit,
-                                        wavelength=self.__wavelength,
-                                        directDist=self.__directDist)
+                tthRad = unitutils.tthToRad(data[0],
+                                            unit=self.__radialUnit,
+                                            wavelength=self.__wavelength,
+                                            directDist=self.__directDist)
             except Exception:
                 _logger.debug("Backtrace", exc_info=True)
                 tthRad = None

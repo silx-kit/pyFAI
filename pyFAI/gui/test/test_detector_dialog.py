@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2018"
+__date__ = "03/01/2019"
 
 import sys
 import os
@@ -43,7 +43,7 @@ import logging
 
 from silx.gui import qt
 from pyFAI.test.utilstest import UtilsTest
-from ...gui.calibration.DetectorSelectorDrop import DetectorSelectorDrop
+from ..dialog.DetectorSelectorDialog import DetectorSelectorDrop
 from pyFAI import detectors
 
 logger = logging.getLogger(__name__)

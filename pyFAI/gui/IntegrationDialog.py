@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2018"
+__date__ = "04/01/2019"
 __status__ = "development"
 
 import logging
@@ -57,6 +57,7 @@ from .. import worker as worker_mdl
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..io import DefaultAiWriter
 from ..io import HDF5Writer
+from ..io import integration_config
 from ..third_party import six
 from .utils import projecturl
 from ..utils import get_ui_file
@@ -290,6 +291,7 @@ class IntegrationDialog(qt.QWidget):
         :param dico: dictionary with description of the widget
         :type dico: dict
         """
+        dico = integration_config.normalize(dico)
         self.__workerConfigurator.setConfig(dico)
 
     def set_input_data(self, stack):

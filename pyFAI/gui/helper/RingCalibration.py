@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/12/2018"
+__date__ = "03/01/2019"
 
 import logging
 import numpy
@@ -36,7 +36,7 @@ import collections
 from silx.image import marchingsquares
 import pyFAI.utils
 from ...geometryRefinement import GeometryRefinement
-from .model.GeometryConstraintsModel import GeometryConstraintsModel
+from ..model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..peak_picker import PeakPicker
 from ..utils import timeutils
 

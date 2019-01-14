@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/12/2018"
+__date__ = "03/01/2019"
 
 import logging
 from silx.gui import qt
@@ -96,7 +96,7 @@ class QuantityEdit(qt.QLineEdit):
         """
         Set the displayed unit.
 
-        :param pyFAI.gui.calibration.units.Unit displayedUnit: An unit
+        :param pyFAI.gui.units.Unit displayedUnit: An unit
         """
         if self.__displayedUnit is displayedUnit:
             return
@@ -105,7 +105,7 @@ class QuantityEdit(qt.QLineEdit):
 
     def getDisplayedUnit(self):
         """
-        :rtype: pyFAI.gui.calibration.units.Unit
+        :rtype: pyFAI.gui.units.Unit
         """
         return self.__displayedUnit
 
@@ -113,7 +113,7 @@ class QuantityEdit(qt.QLineEdit):
         """
         Set the displayed unit.
 
-        :param pyFAI.gui.calibration.units.Unit displayedUnitModel: A model containing a unit
+        :param pyFAI.gui.units.Unit displayedUnitModel: A model containing a unit
         """
         if self.__displayedUnitModel is not None:
             self.__displayedUnitModel.changed.disconnect(self.__displayedUnitModelChanged)
@@ -131,7 +131,7 @@ class QuantityEdit(qt.QLineEdit):
 
     def getDisplayedUnitModel(self):
         """
-        :rtype: pyFAI.gui.calibration.model.DataModel.DataModel
+        :rtype: pyFAI.gui.model.DataModel.DataModel
         """
         return self.__displayedUnitModel
 
@@ -139,7 +139,7 @@ class QuantityEdit(qt.QLineEdit):
         """
         Set the unit of the stroed data in the model.
 
-        :param pyFAI.gui.calibration.units.Unit unit: An unit
+        :param pyFAI.gui.units.Unit unit: An unit
         """
         if self.__modelUnit is modelUnit:
             return
@@ -148,7 +148,7 @@ class QuantityEdit(qt.QLineEdit):
 
     def getModelUnit(self):
         """
-        :rtype: pyFAI.gui.calibration.units.Unit
+        :rtype: pyFAI.gui.units.Unit
         """
         return self.__modelUnit
 
