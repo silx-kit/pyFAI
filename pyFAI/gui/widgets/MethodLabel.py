@@ -29,6 +29,9 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "14/01/2019"
 
+import logging
+_logger = logging.getLogger(__name__)
+
 from silx.gui import qt
 
 from ... import method_registry
@@ -57,6 +60,7 @@ class MethodLabel(qt.QLabel):
     <li><b>Pixel splitting:</b> {split}</li>
     <li><b>Implementation:</b> {impl}</li>
     <li><b>Algorithm:</b> {algo}</li>
+    <li><b>Availability:</b> {availability}</li>
     </ul>"""
 
     def __init__(self, parent=None):
@@ -160,7 +164,30 @@ class MethodLabel(qt.QLabel):
 
     def __methodToString(self, method, template):
         _dim, split, algo, impl, _target = method
+
+        methods = method_registry.IntegrationMethod.select_method(dim="*",
+                                                                  split=split,
+                                                                  algo=algo,
+                                                                  impl=impl,
+                                                                  degradable=False)
+        dimensions = set([m.dimension for m in methods])
+
+        if dimensions == set([1, 2]):
+            availability = "1D and 2D"
+        elif dimensions == set([1]):
+            availability = "Only 1D"
+        elif dimensions == set([2]):
+            availability = "Only 2D"
+        elif dimensions == set([]):
+            availability = "Not available"
+        else:
+            _logger.error("Unexpected dimensions %s", dimensions)
+            availability = "Unsupported"
+
         split = self._HUMAN_READABLE.get(split, split)
         algo = self._HUMAN_READABLE.get(algo, algo)
         impl = self._HUMAN_READABLE.get(impl, impl)
-        return template.format(split=split, algo=algo, impl=impl)
+        return template.format(split=split,
+                               algo=algo,
+                               impl=impl,
+                               availability=availability)
