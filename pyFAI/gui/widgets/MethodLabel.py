@@ -38,6 +38,9 @@ class MethodLabel(qt.QLabel):
     """Readonly line display"""
 
     _HUMAN_READABLE = {
+        "*": "Any",
+        "any": "Any",
+        "all": "Any",
         "no": "No splitting",
         "bbox": "Bounding box",
         "pseudo": "Pseudo split",
