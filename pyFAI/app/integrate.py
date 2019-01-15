@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2018"
+__date__ = "07/01/2019"
 __satus__ = "production"
 import sys
 import logging
@@ -196,6 +196,11 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     parser.add_argument("-v", "--verbose",
                         action="store_true", dest="verbose", default=False,
                         help="switch to verbose/debug mode")
+    parser.add_argument('--debug',
+                        dest="debug",
+                        action="store_true",
+                        default=False,
+                        help='Set logging system in debug mode')
     parser.add_argument("-o", "--output",
                         dest="output", default=None,
                         help="Directory or file where to store the output data")
@@ -233,6 +238,9 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     if options.verbose:
         logger.info("setLevel: debug")
         logger.setLevel(logging.DEBUG)
+
+    if options.debug:
+        logging.root.setLevel(logging.DEBUG)
 
     if options.gui:
         result = integrate_gui(options, args)

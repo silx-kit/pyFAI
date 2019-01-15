@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2019"
+__date__ = "07/01/2019"
 __docformat__ = 'restructuredtext'
 
 
@@ -42,6 +42,7 @@ import six
 
 from . import ponifile
 from .. import detectors
+from .. import method_registry
 
 _logger = logging.getLogger(__name__)
 
@@ -146,6 +147,19 @@ def _patch_v1_to_v2(config):
     config["application"] = "pyfai-integrate"
 
 
+def _patch_v2_to_v3(config):
+    """Rework the config dictionary from version 2 to version 3
+
+    :param dict config: Dictionary reworked inplace.
+    """
+    old_method = config.pop("method")
+    method = method_registry.IntegrationMethod.parse_old_method(old_method)
+    config["method"] = method.split, method.algo, method.impl
+    config["opencl_device"] = method.target
+
+    config["version"] = 3
+
+
 def normalize(config, inplace=False):
     """Normalize the configuration file to the one supported internally\
     (the last one).
@@ -161,14 +175,60 @@ def normalize(config, inplace=False):
     if version == 1:
         # NOTE: Previous way to describe an integration process before pyFAI 0.17
         _patch_v1_to_v2(config)
+    version = config["version"]
+    if version == 2:
+        _patch_v2_to_v3(config)
 
     application = config.get("application", None)
     if application != "pyfai-integrate":
         raise ValueError("Configuration application do not match. Found '%s'" % application)
 
-    if version == 2:
-        pass
-    elif version > 2:
+    if version > 3:
         _logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read this configuration", version)
 
     return config
+
+
+class ConfigurationReader(object):
+
+    def __init__(self, config):
+        self._config = config
+
+    def pop_detector(self):
+        """
+        Returns the detector stored in the json configuration.
+
+        :rtype: pyFAI.detectors.Detector
+        """
+        value = self._config.pop("detector_config", None)
+        if value:
+            # NOTE: Default way to describe a detector since pyFAI 0.17
+            detector_config = value
+            detector_class = self._config.pop("detector")
+            detector = detectors.detector_factory(detector_class, config=detector_config)
+            return detector
+        return None
+
+    def pop_method(self, default=None):
+        """Returns a Method from the method field from the json dictionary.
+
+        :rtype: pyFAI.method_registry.Method
+        """
+        do_2d = self._config.pop("do_2D", 1)
+        dim = 2 if do_2d else 1
+        method = self._config.pop("method", default)
+        target = self._config.pop("opencl_device", None)
+
+        if method is None:
+            method = method_registry.Method(dim, "*", "*", "*")
+        if isinstance(method, six.string_types):
+            method = method_registry.IntegrationMethod.parse_old_method(old_method=method)
+            method = method_registry.Method(dim, method.split, method.algo, method.impl, target=target)
+        elif isinstance(method, (list, tuple)):
+            if len(method) != 3:
+                raise TypeError("Method size %s unsupported." % len(method))
+            split, algo, impl = method
+            method = method_registry.Method(dim, split, algo, impl, target)
+        else:
+            raise TypeError("Method type %s unsupported." % type(method))
+        return method
