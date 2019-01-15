@@ -23,7 +23,6 @@ addons:
   apt:
     packages:
       # Only used by the DISTRIB="ubuntu" setting
-      - libhdf5-7
       - libhdf5-dev
       - gfortran
       - libatlas-base-dev
