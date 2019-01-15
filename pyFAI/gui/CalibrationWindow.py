@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "15/01/2019"
 
 import functools
 
@@ -143,6 +143,9 @@ class CalibrationWindow(qt.QMainWindow):
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-main.ui"), self)
         self.__context = context
         model = context.getCalibrationModel()
+
+        pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
+        self.setWindowIcon(pyfaiIcon)
 
         context.restoreWindowLocationSettings("main-window", self)
 

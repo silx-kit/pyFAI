@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2019"
+__date__ = "15/01/2019"
 __status__ = "development"
 
 import logging
@@ -48,10 +48,11 @@ import threading
 import os.path as op
 import numpy
 
+logger = logging.getLogger(__name__)
+
 import fabio
 from silx.gui import qt
-
-logger = logging.getLogger(__name__)
+from silx.gui import icons
 
 from .. import worker as worker_mdl
 from .widgets.WorkerConfigurator import WorkerConfigurator
@@ -71,6 +72,9 @@ class IntegrationDialog(qt.QWidget):
         qt.QWidget.__init__(self)
         filename = get_ui_file("integration-dialog.ui")
         qt.loadUi(filename, self)
+
+        pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
+        self.setWindowIcon(pyfaiIcon)
 
         self.__workerConfigurator = WorkerConfigurator(self._holder)
         layout = qt.QVBoxLayout(self._holder)
