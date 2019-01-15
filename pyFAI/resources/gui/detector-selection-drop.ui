@@ -107,7 +107,7 @@ background-color: transparent;
    <item>
     <widget class="QStackedWidget" name="_stacked">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="_modelPanel">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -121,9 +121,9 @@ background-color: transparent;
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <widget class="QListView" name="_modelList">
+           <widget class="QTableView" name="_detectorView">
             <property name="styleSheet">
-             <string notr="true">QListView {
+             <string notr="true">QTableView {
 background-color: transparent;
 }</string>
             </property>
@@ -133,6 +133,18 @@ background-color: transparent;
             <property name="editTriggers">
              <set>QAbstractItemView::NoEditTriggers</set>
             </property>
+            <property name="showGrid">
+             <bool>false</bool>
+            </property>
+            <property name="cornerButtonEnabled">
+             <bool>false</bool>
+            </property>
+            <attribute name="horizontalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
            </widget>
           </item>
          </layout>
