@@ -44,8 +44,8 @@ install:
   - "python ci/info_platform.py"
   - "pip install --upgrade pip"
   - "pip install cython"
-  - "pip install --upgrade numpy --no-binary :all:"
-  - "pip install --upgrade h5py mako"  
+  - "pip install --upgrade numpy"
+  - "pip install --upgrade h5py mako"
   - "pip install --upgrade -r ci/requirements_travis.txt"
   - "python ci/info_platform.py"
   - "python setup.py build"
@@ -54,6 +54,6 @@ install:
 
 # command to run tests
 script:
-  - "python ./run_tests.py -m"
-  - "python ./run_tests.py -m --installed"
+  - "python ./run_tests.py -x -m"
+  - "python ./run_tests.py -x -m --installed"
 
