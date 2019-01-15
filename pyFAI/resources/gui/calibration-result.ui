@@ -173,19 +173,6 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QPushButton" name="_saveJsonButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>A JSON file contains all informations provided by PONI files, plus files used for filtering plus parameters for the integrator.</string>
-           </property>
-           <property name="text">
-            <string>Save as JSON file...</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </item>

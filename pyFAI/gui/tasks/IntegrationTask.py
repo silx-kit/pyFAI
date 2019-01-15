@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/01/2019"
+__date__ = "15/01/2019"
 
 import logging
 import numpy
@@ -858,7 +858,6 @@ class IntegrationTask(AbstractCalibrationTask):
         self._customMethodButton.clicked.connect(self.__customIntegrationMethod)
 
         self._savePoniButton.clicked.connect(self.__saveAsPoni)
-        self._saveJsonButton.clicked.connect(self.__saveAsJson)
 
     def __customIntegrationMethod(self):
         dialog = IntegrationMethodDialog(self)
@@ -998,6 +997,3 @@ class IntegrationTask(AbstractCalibrationTask):
         pyfaiGeometry.detector = detector
 
         pyfaiGeometry.save(filename)
-
-    def __saveAsJson(self):
-        pass
