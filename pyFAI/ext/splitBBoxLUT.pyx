@@ -33,11 +33,13 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/11/2018"
+__date__ = "15/01/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "sparse_common.pxi"
+#check LUT is propely represented in C and numpy
+assert LUT_ITEMSIZE == lut_d.itemsize == 8, "Numpy and C have the same internal LUT representation"
 
 import cython
 import os

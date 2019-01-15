@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/11/2018"
+__date__ = "15/01/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -43,6 +43,8 @@ cimport numpy as cnumpy
 cdef struct lut_t:
     cnumpy.int32_t idx
     cnumpy.float32_t coef
+
+LUT_ITEMSIZE = int(sizeof(lut_t))
 
 lut_d = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
 
