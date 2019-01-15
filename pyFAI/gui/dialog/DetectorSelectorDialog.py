@@ -40,7 +40,7 @@ from ..widgets.DetectorModel import AllDetectorModel
 from ..widgets.DetectorModel import DetectorFilter
 from ..model.DataModel import DataModel
 from ..utils import validators
-from ..CalibrationContext import CalibrationContext
+from ..ApplicationContext import ApplicationContext
 from ..utils import FilterBuilder
 
 
@@ -200,7 +200,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self._customResult.setText("Detector configured")
 
     def createSplineDialog(self, title, previousFile):
-        dialog = CalibrationContext.instance().createFileDialog(self, previousFile=previousFile)
+        dialog = ApplicationContext.instance().createFileDialog(self, previousFile=previousFile)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -282,7 +282,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__descriptionFile.setValue(filename)
 
     def createFileDialog(self, title, h5file=True, splineFile=True, previousFile=None):
-        dialog = CalibrationContext.instance().createFileDialog(self, previousFile=previousFile)
+        dialog = ApplicationContext.instance().createFileDialog(self, previousFile=previousFile)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
