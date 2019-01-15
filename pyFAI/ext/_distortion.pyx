@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "26/11/2018"
+__date__ = "15/01/2019"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -1168,6 +1168,8 @@ def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
         cdummy = dummy
         if delta_dummy is None:
             cdelta_dummy = 0.0
+    else:
+        cdummy = cdelta_dummy = numpy.Nan
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
@@ -1228,6 +1230,10 @@ def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
         cdummy = dummy
         if delta_dummy is None:
             cdelta_dummy = 0.0
+    else:
+        cdummy = numpy.NaN
+        cdelta_dummy = 0.0
+
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
@@ -1314,6 +1320,9 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
         cdummy = dummy
         if delta_dummy is None:
             cdelta_dummy = 0.0
+    else:
+        cdummy = numpy.NaN
+        cdelta_dummy = 0.0
 
     data, indices, indptr = LUT
     bins = indptr.size - 1
@@ -1377,6 +1386,9 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
         cdummy = dummy
         if delta_dummy is None:
             cdelta_dummy = 0.0
+    else:
+        cdummy = numpy.NaN 
+        cdelta_dummy = 0.0
 
     data, indices, indptr = LUT
     bins = indptr.size - 1
