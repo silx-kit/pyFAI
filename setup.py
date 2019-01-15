@@ -623,7 +623,8 @@ class BuildExt(build_ext):
             from Cython.Build import cythonize
             patched_exts = cythonize(
                 [ext],
-                compiler_directives={'embedsignature': True},
+                compiler_directives={'embedsignature': True,
+                                     'language_level': 3},
                 force=self.force_cython,
                 compile_time_env={"HAVE_OPENMP": self.use_openmp}
             )
@@ -638,10 +639,15 @@ class BuildExt(build_ext):
 
         # Convert flags from gcc to MSVC if required
         if self.compiler.compiler_type == 'msvc':
-            ext.extra_compile_args = [self.COMPILE_ARGS_CONVERTER.get(f, f)
-                                      for f in ext.extra_compile_args]
-            ext.extra_link_args = [self.LINK_ARGS_CONVERTER.get(f, f)
-                                   for f in ext.extra_link_args]
+            extra_compile_args = [self.COMPILE_ARGS_CONVERTER.get(f, f)
+                                  for f in ext.extra_compile_args]
+            # Avoid empty arg
+            ext.extra_compile_args = [arg for arg in extra_compile_args if arg]
+
+            extra_link_args = [self.LINK_ARGS_CONVERTER.get(f, f)
+                               for f in ext.extra_link_args]
+            # Avoid empty arg
+            ext.extra_link_args = [arg for arg in extra_link_args if arg]
 
         elif self.compiler.compiler_type == 'unix':
             # Avoids runtime symbol collision for manylinux1 platform
@@ -649,8 +655,17 @@ class BuildExt(build_ext):
             extern = 'extern "C" ' if ext.language == 'c++' else ''
             return_type = 'void' if sys.version_info[0] <= 2 else 'PyObject*'
 
-            ext.extra_compile_args.append(
-                '''-fvisibility=hidden -D'PyMODINIT_FUNC=%s__attribute__((visibility("default"))) %s ' ''' % (extern, return_type))
+            ext.extra_compile_args.append('-fvisibility=hidden')
+
+            import numpy
+            numpy_version = [int(i) for i in numpy.version.short_version.split(".", 2)[:2]]
+            if numpy_version < [1,16]:
+                ext.extra_compile_args.append(
+                    '''-D'PyMODINIT_FUNC=%s__attribute__((visibility("default"))) %s ' ''' % (extern, return_type))
+            else:
+                ext.define_macros.append(
+                    ('PyMODINIT_FUNC',
+                     '%s__attribute__((visibility("default"))) %s ' % (extern, return_type)))
 
     def is_debug_interpreter(self):
         """
@@ -806,7 +821,8 @@ class SourceDistWithCython(sdist):
         from Cython.Build import cythonize
         cythonize(
             self.extensions,
-            compiler_directives={'embedsignature': True},
+            compiler_directives={'embedsignature': True,
+                                 'language_level': 3},
             force=True
         )
 

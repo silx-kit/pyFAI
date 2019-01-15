@@ -44,7 +44,7 @@ import cython
 import numpy
 
 # Imports at the C level
-from isnan cimport isnan
+from .isnan cimport isnan
 from cython cimport floating
 from libc.math cimport fabs, M_PI, sqrt
 cimport numpy as cnumpy
