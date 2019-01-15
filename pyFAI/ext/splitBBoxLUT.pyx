@@ -55,6 +55,11 @@ from ..utils import crc32
 from ..utils.decorators import deprecated
 
 
+if LUT_ITEMSIZE == lut_d.itemsize == 8:
+    logger.debug("LUT sizes C:%s \t Numpy: %s", lut_d.itemsize, LUT_ITEMSIZE)
+else:
+    logger.error("LUT sizes C:%s \t Numpy: %s", lut_d.itemsize, LUT_ITEMSIZE)
+    raise ImportError("Numpy and C have the same internal LUT representation")
 
 
 def int0(a):
@@ -1334,11 +1339,3 @@ class HistoBBox2d(object):
     @deprecated(replacement="bin_centers1", since_version="0.16", only_once=True)
     def outPos1(self):
         return self.bin_centers1
-
-
-#if LUT_ITEMSIZE == lut_d.itemsize == 8:
-if False:
-    logger.debug("LUT sizes C:%s \t Numpy: %s", lut_d.itemsize, LUT_ITEMSIZE)
-else:
-    logger.error("LUT sizes C:%s \t Numpy: %s", lut_d.itemsize, LUT_ITEMSIZE)
-    raise ImportError("Numpy and C have the same internal LUT representation")
