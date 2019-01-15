@@ -233,6 +233,11 @@ class DetectorSelectorDrop(qt.QWidget):
         self._fileError.setVisible(False)
         self.__detectorFromFile = None
 
+        if not filename:
+            self._fileError.setVisible(False)
+            self._fileError.setText("")
+            return
+
         if not os.path.exists(filename):
             self._fileError.setVisible(True)
             self._fileError.setText("File not found")
