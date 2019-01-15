@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2018"
+__date__ = "07/01/2019"
 __status__ = "development"
 
 import threading
@@ -98,10 +98,10 @@ import fabio
 logger = logging.getLogger(__name__)
 
 from . import average
-from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
+from .io import integration_config
 from .engines.preproc import preproc as preproc_numpy
 try:
     from .ext.preproc import preproc
@@ -121,6 +121,7 @@ def make_ai(config, consume_keys=False):
         consumed when used.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
+    config = integration_config.normalize(config, inplace=consume_keys)
     ai = AzimuthalIntegrator()
     _init_ai(ai, config, consume_keys)
     return ai
@@ -139,15 +140,6 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
     if not consume_keys:
         config = dict(config)
 
-    # Poni-file
-    # NOTE: Compatibility (poni is not stored since pyFAI v0.17)
-    value = config.pop("poni", None)
-    if value:
-        if not os.path.exists(value):
-            logger.warning("Poni-file '%s' not found. The axymuthal integrator is maybe to created as expected", value)
-        else:
-            ai.load(value)
-
     # Geometry
     for key in ("dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
         value = config.pop(key, None)
@@ -160,38 +152,10 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
         ai.wavelength = wavelength
 
     # Detector
-    value = config.pop("detector_config", None)
-    if value:
-        # NOTE: Default way to describe a detector since pyFAI 0.17
-        detector_config = value
-        detector_class = config.pop("detector")
-        detector = detector_factory(detector_class, config=detector_config)
+    reader = integration_config.ConfigurationReader(config)
+    detector = reader.pop_detector()
+    if detector is not None:
         ai.detector = detector
-    else:
-        value = config.pop("detector", None)
-        if value:
-            # NOTE: Previous way to describe a detector before pyFAI 0.17
-            # NOTE: pixel1/pixel2/splineFile was not parsed here
-            detector_name = value.lower()
-            detector = detector_factory(detector_name)
-
-            if detector_name == "detector":
-                value = config.pop("pixel1", None)
-                if value:
-                    detector.set_pixel1(value)
-                value = config.pop("pixel2", None)
-                if value:
-                    detector.set_pixel2(value)
-            else:
-                # Drop it as it was not really used
-                _ = config.pop("pixel1", None)
-                _ = config.pop("pixel2", None)
-
-            splineFile = config.pop("splineFile", None)
-            if splineFile:
-                detector.set_splineFile(splineFile)
-
-            ai.detector = detector
 
     value = config.pop("chi_discontinuity_at_0", False)
     if value:
@@ -230,13 +194,12 @@ def _read_filenames(filenames):
 
     :rtype: List[str]
     """
-    if filenames is None:
+    if filenames is None or filenames == "":
         return []
     if isinstance(filenames, list):
         return filenames
-    if "," in filenames:
-        logger.warning("Dark or flat files are described using comma separator list. You should use a python/json list of string instead.")
-    return filenames.split(",")
+    # It's a single filename
+    return [filenames]
 
 
 def _reduce_images(filenames, method="mean"):
@@ -499,6 +462,7 @@ class Worker(object):
             # Avoid to edit the input argument
             config = dict(config)
 
+        integration_config.normalize(config, inplace=True)
         _init_ai(self.ai, config, consume_keys=True, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
@@ -539,8 +503,10 @@ class Worker(object):
         else:
             self.nbpt_azim = 1
 
-        do_2D = config.pop("do_2D", False)
-        if do_2D is False:
+        reader = integration_config.ConfigurationReader(config)
+        self.method = reader.pop_method("csr")
+
+        if self.method.dim == 1:
             self.nbpt_azim = 1
 
         value = config.pop("nbpt_rad", None)
@@ -580,18 +546,6 @@ class Worker(object):
         apply_values = config.pop("do_dummy", True)
         if not apply_values:
             self.dummy, self.delta_dummy = None, None
-
-        do_opencl = config.pop("do_OpenCL", None)
-        method = config.pop("method", None)
-        if do_opencl is not None and method is not None:
-            logger.warning("Both 'method' and 'do_OpenCL' are defined. 'do_OpenCL' is ignored.")
-            do_opencl = None
-        if method is not None:
-            self.method = method
-        elif do_opencl is not None and do_opencl:
-            self.method = "csr_ocl"
-        else:
-            self.method = "csr"
 
         logger.info(self.ai.__repr__())
         self.reset()

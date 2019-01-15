@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "03/01/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -48,8 +48,6 @@ from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
 import threading
-import time
-import json
 from collections import namedtuple, OrderedDict
 
 from . import detectors
@@ -57,6 +55,7 @@ from . import units
 from .utils.decorators import deprecated
 from .utils import crc32
 from . import utils
+from .io import ponifile
 
 logger = logging.getLogger(__name__)
 
@@ -1116,20 +1115,32 @@ class Geometry(object):
 
         :return: dictionary with the current configuration
         """
-
-        config = OrderedDict([("poni_version", 2)])
         with self._sem:
-            config["detector"] = self.detector.__class__.__name__
-            config["detector_config"] = self.detector.get_config()
-            config["dist"] = self._dist
-            config["poni1"] = self._poni1
-            config["poni2"] = self._poni2
-            config["rot1"] = self._rot1
-            config["rot2"] = self._rot2
-            config["rot3"] = self._rot3
-            if self._wavelength:
-                config["wavelength"] = self._wavelength
-        return config
+            # TODO: ponifile should not be used here
+            #     if it was only used for IO, it would be better to remove
+            #     this function
+            poni = ponifile.PoniFile(data=self)
+            return poni.as_dict()
+
+    def _init_from_poni(self, poni):
+        """Init the geometry from a poni object."""
+        if poni.detector is not None:
+            self.detector = poni.detector
+        if poni.dist is not None:
+            self._dist = poni.dist
+        if poni.poni1 is not None:
+            self._poni1 = poni.poni1
+        if poni.poni2 is not None:
+            self._poni2 = poni.poni2
+        if poni.rot1 is not None:
+            self._rot1 = poni.rot1
+        if poni.rot2 is not None:
+            self._rot2 = poni.rot2
+        if poni.rot3 is not None:
+            self._rot3 = poni.rot3
+        if poni.rot3 is not None:
+            self._wavelength = poni.wavelength
+        self.reset()
 
     def set_config(self, config):
         """
@@ -1138,50 +1149,11 @@ class Geometry(object):
         :param config: dictionary with the configuration
         :return: itself
         """
-        version = int(config.get("poni_version", 1))
-
-        if version == 1:
-            # Handle former version of PONI-file
-            if "detector" in config:
-                self.detector = detectors.detector_factory(config["detector"])
-            else:
-                self.detector = detectors.Detector()
-            if self.detector.force_pixel and ("pixelsize1" in config) and ("pixelsize2" in config):
-                pixel1 = float(config["pixelsize1"])
-                pixel2 = float(config["pixelsize2"])
-                self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
-            else:
-                self.detector = detectors.Detector()
-                if "pixelsize1" in config:
-                    self.detector.pixel1 = float(config["pixelsize1"])
-                if "pixelsize2" in config:
-                    self.detector.pixel2 = float(config["pixelsize2"])
-            if "splinefile" in config:
-                if config["splinefile"].lower() != "none":
-                    self.detector.set_splineFile(config["splinefile"])
-
-        elif version == 2:
-                detector_name = config["detector"]
-                detector_config = config["detector_config"]
-                self.detector = detectors.detector_factory(detector_name, detector_config)
-        else:
-            raise RuntimeError("PONI file verison %s too recent. Upgrade pyFAI.", version)
-
-        if "distance" in config:
-            self._dist = float(config["distance"])
-        if "poni1" in config:
-            self._poni1 = float(config["poni1"])
-        if "poni2" in config:
-            self._poni2 = float(config["poni2"])
-        if "rot1" in config:
-            self._rot1 = float(config["rot1"])
-        if "rot2" in config:
-            self._rot2 = float(config["rot2"])
-        if "rot3" in config:
-            self._rot3 = float(config["rot3"])
-        if "wavelength" in config:
-            self._wavelength = float(config["wavelength"])
-        self.reset()
+        # TODO: ponifile should not be used here
+        #     if it was only used for IO, it would be better to remove
+        #     this function
+        poni = ponifile.PoniFile(config)
+        self._init_from_poni(poni)
         return self
 
     def save(self, filename):
@@ -1193,24 +1165,11 @@ class Geometry(object):
         """
         try:
             with open(filename, "a") as f:
-                f.write(("# Nota: C-Order, 1 refers to the Y axis,"
-                         " 2 to the X axis \n"))
-                f.write("# Calibration done at %s\n" % time.ctime())
-                f.write("poni_version: 2\n")
-                detector = self.detector
-                f.write("Detector: %s\n" % detector.__class__.__name__)
-                f.write("Detector_config: %s\n" % json.dumps(detector.get_config()))
-
-                f.write("Distance: %s\n" % self._dist)
-                f.write("Poni1: %s\n" % self._poni1)
-                f.write("Poni2: %s\n" % self._poni2)
-                f.write("Rot1: %s\n" % self._rot1)
-                f.write("Rot2: %s\n" % self._rot2)
-                f.write("Rot3: %s\n" % self._rot3)
-                if self._wavelength is not None:
-                    f.write("Wavelength: %s\n" % self._wavelength)
+                poni = ponifile.PoniFile(self)
+                poni.write(f)
         except IOError:
             logger.error("IOError while writing to file %s", filename)
+
     write = save
 
     @classmethod
@@ -1235,20 +1194,10 @@ class Geometry(object):
         :type filename: string
         :return: itself with updated parameters
         """
-        data = OrderedDict()
-        with open(filename) as opened_file:
-            for line in opened_file:
-                if line.startswith("#") or (":" not in line):
-                    continue
-                words = line.split(":", 1)
+        poni = ponifile.PoniFile(data=filename)
+        self._init_from_poni(poni)
+        return self
 
-                key = words[0].strip().lower()
-                try:
-                    value = words[1].strip()
-                except Exception as error:  # IGNORE:W0703:
-                    logger.error("Error %s with line: %s", error, line)
-                data[key] = value
-        return self.set_config(data)
     read = load
 
     def getPyFAI(self):
@@ -1287,7 +1236,7 @@ class Geometry(object):
                           self._rot1, self._rot2, self._rot3]
             self.chiDiscAtPi = True  # position of the discontinuity of chi in radians, pi by default
             self.reset()
-#            self._wavelength = None
+            # self._wavelength = None
             self._oversampling = None
             if self.splineFile:
                 self.detector.set_splineFile(self.splineFile)
@@ -2081,9 +2030,6 @@ class Geometry(object):
         self._cached_array["q_corner"] = q_corner
 
     def get_wavelength(self):
-        if self._wavelength is None:
-            raise RuntimeWarning("Using wavelength without having defined"
-                                 " it previously ... excepted to fail !")
         return self._wavelength
 
     wavelength = property(get_wavelength, set_wavelength)
@@ -2096,6 +2042,7 @@ class Geometry(object):
 
     def del_ttha(self):
         self._cached_array["2th_center"] = None
+
     ttha = property(get_ttha, set_ttha, del_ttha, "2theta array in cache")
 
     def get_chia(self):
@@ -2106,6 +2053,7 @@ class Geometry(object):
 
     def del_chia(self):
         self._cached_array["chi_center"] = None
+
     chia = property(get_chia, set_chia, del_chia, "chi array in cache")
 
     def get_dssa(self):
@@ -2129,6 +2077,7 @@ class Geometry(object):
 
     def del_qa(self):
         self._cached_array["q_center"] = None
+
     qa = property(get_qa, set_qa, del_qa, "Q array in cache")
 
     def get_ra(self):
@@ -2139,6 +2088,7 @@ class Geometry(object):
 
     def del_ra(self):
         self.self._cached_array["r_center"] = None
+
     ra = property(get_ra, set_ra, del_ra, "R array in cache")
 
     def get_pixel1(self):
