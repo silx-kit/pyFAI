@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2019"
+__date__ = "15/01/2019"
 __docformat__ = 'restructuredtext'
 
 
@@ -201,7 +201,7 @@ class ConfigurationReader(object):
         :rtype: pyFAI.detectors.Detector
         """
         value = self._config.pop("detector_config", None)
-        if value:
+        if value is not None:
             # NOTE: Default way to describe a detector since pyFAI 0.17
             detector_config = value
             detector_class = self._config.pop("detector")
