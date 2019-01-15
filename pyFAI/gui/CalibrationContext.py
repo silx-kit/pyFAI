@@ -25,12 +25,9 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "15/01/2019"
 
-import weakref
 import logging
-import functools
-import os
 import numpy
 
 from silx.gui import qt
@@ -42,29 +39,34 @@ from .model.DataModel import DataModel
 from .utils import eventutils
 from .utils import units
 from .utils import colorutils
-from ..utils import stringutil
+from .ApplicationContext import ApplicationContext
 
 
 _logger = logging.getLogger(__name__)
 
 
-class CalibrationContext(object):
+class CalibrationContext(ApplicationContext):
 
-    _instance = None
+    __instance = None
 
-    @classmethod
-    def instance(cls):
+    @staticmethod
+    def _releaseSingleton():
+        ApplicationContext._releaseSingleton()
+        CalibrationContext.__instance = None
+
+    @staticmethod
+    def instance():
         """
         :rtype: CalibrationContext
         """
-        assert(cls._instance is not None)
-        return cls._instance
+        assert(CalibrationContext.__instance is not None)
+        return CalibrationContext.__instance
 
     def __init__(self, settings=None):
-        assert(self.__class__._instance is None)
-        self.__parent = None
+        super(CalibrationContext, self).__init__(settings=settings)
+        assert(CalibrationContext.__instance is None)
         self.__defaultColormapDialog = None
-        self.__class__._instance = self
+        CalibrationContext.__instance = self
         self.__calibrationModel = None
         self.__rawColormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
         self.__settings = settings
@@ -74,7 +76,6 @@ class CalibrationContext(object):
         self.__lengthUnit.setValue(units.Unit.METER)
         self.__wavelengthUnit = DataModel()
         self.__wavelengthUnit.setValue(units.Unit.ANGSTROM)
-        self.__dialogState = None
         self.__markerColors = {}
 
         self.sigStyleChanged = self.__rawColormap.sigChanged
@@ -149,62 +150,7 @@ class CalibrationContext(object):
         settings.endGroup()
 
         # Synchronize the file storage
-        settings.sync()
-
-    def restoreWindowLocationSettings(self, groupName, window):
-        """Restore the window settings using this settings object
-
-        :param qt.QSettings settings: Initialized settings
-        """
-        settings = self.__settings
-        if settings is None:
-            _logger.debug("Settings not set")
-            return
-
-        settings.beginGroup(groupName)
-        size = settings.value("size", qt.QSize())
-        pos = settings.value("pos", qt.QPoint())
-        isFullScreen = settings.value("full-screen", False)
-        try:
-            if not isinstance(isFullScreen, bool):
-                isFullScreen = stringutil.to_bool(isFullScreen)
-        except ValueError:
-            isFullScreen = False
-        settings.endGroup()
-
-        if not pos.isNull():
-            window.move(pos)
-        if not size.isNull():
-            window.resize(size)
-        if isFullScreen:
-            window.showFullScreen()
-
-    def saveWindowLocationSettings(self, groupName, window):
-        """Save the window settings to this settings object
-
-        :param qt.QSettings settings: Initialized settings
-        """
-        settings = self.__settings
-        if settings is None:
-            _logger.debug("Settings not set")
-            return
-
-        isFullScreen = bool(window.windowState() & qt.Qt.WindowFullScreen)
-        if isFullScreen:
-            # show in normal to catch the normal geometry
-            window.showNormal()
-
-        settings.beginGroup(groupName)
-        settings.setValue("size", window.size())
-        settings.setValue("pos", window.pos())
-        settings.setValue("full-screen", isFullScreen)
-        settings.endGroup()
-
-        if isFullScreen:
-            window.showFullScreen()
-
-    def setParent(self, parent):
-        self.__parent = weakref.ref(parent)
+        super(CalibrationContext, self).saveSettings()
 
     def getCalibrationModel(self):
         if self.__calibrationModel is None:
@@ -225,7 +171,7 @@ class CalibrationContext(object):
         :rtype: ColorDialog
         """
         if self.__defaultColormapDialog is None:
-            parent = self.__parent()
+            parent = self.parent()
             if parent is None:
                 return None
             dialog = ColormapDialog(parent=parent)
@@ -259,32 +205,6 @@ class CalibrationContext(object):
 
     def getWavelengthUnit(self):
         return self.__wavelengthUnit
-
-    def createFileDialog(self, parent, previousFile=None):
-        """Create a file dialog configured with a default path.
-
-        :rtype: qt.QFileDialog
-        """
-        dialog = qt.QFileDialog(parent)
-        dialog.finished.connect(functools.partial(self.__saveDialogState, dialog))
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
-
-        if previousFile is not None:
-            if os.path.exists(previousFile):
-                if os.path.isdir(previousFile):
-                    directory = previousFile
-                else:
-                    directory = os.path.dirname(previousFile)
-                dialog.setDirectory(directory)
-
-        return dialog
-
-    def __saveDialogState(self, dialog):
-        self.__dialogState = dialog.saveState()
 
     def getMarkerColor(self, index, mode="qt"):
         colors = self.markerColorList()
