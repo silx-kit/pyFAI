@@ -40,6 +40,7 @@ __status__ = "development"
 import logging
 import json
 import os.path
+import collections
 
 logger = logging.getLogger(__name__)
 
@@ -186,55 +187,65 @@ class WorkerConfigurator(qt.QWidget):
                 return None
             return [name.strip() for name in filenames.split(",")]
 
-        config = {"version": 3,
-                  "application": "pyfai-integrate",
-                  "wavelength": self.__geometryModel.wavelength().value(),
-                  "dist": self.__geometryModel.distance().value(),
-                  "poni1": self.__geometryModel.poni1().value(),
-                  "poni2": self.__geometryModel.poni2().value(),
-                  "rot1": self.__geometryModel.rotation1().value(),
-                  "rot2": self.__geometryModel.rotation2().value(),
-                  "rot3": self.__geometryModel.rotation3().value(),
-                  "do_dummy": bool(self.do_dummy.isChecked()),
-                  "do_mask": bool(self.do_mask.isChecked()),
-                  "do_dark": bool(self.do_dark.isChecked()),
-                  "do_flat": bool(self.do_flat.isChecked()),
-                  "do_polarization": bool(self.do_polarization.isChecked()),
-                  "val_dummy": self._float("val_dummy", None),
-                  "delta_dummy": self._float("delta_dummy", None),
-                  "mask_file": str_(self.mask_file.text()).strip(),
-                  "dark_current": splitFiles(self.dark_current.text()),
-                  "flat_field": splitFiles(self.flat_field.text()),
-                  "polarization_factor": float_(self.polarization_factor.value()),
-                  "do_2D": bool(self.do_2D.isChecked()),
-                  "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
-                  "do_solid_angle": bool(self.do_solid_angle.isChecked()),
-                  "do_radial_range": bool(self.do_radial_range.isChecked()),
-                  "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
-                  "do_poisson": bool(self.do_poisson.isChecked()),
-                  "radial_range_min": self._float("radial_range_min", None),
-                  "radial_range_max": self._float("radial_range_max", None),
-                  "azimuth_range_min": self._float("azimuth_range_min", None),
-                  "azimuth_range_max": self._float("azimuth_range_max", None),
-                  "unit": str(self.radial_unit.model().value()),
-                  }
+        config = collections.OrderedDict()
 
-        method = self.__method
-        if method is not None:
-            config["method"] = method.split, method.algo, method.impl
-            if method.impl == "opencl":
-                config["opencl_device"] = self.__openclDevice
+        # file-version
+        config["application"] = "pyfai-integrate"
+        config["version"] =  3
 
+        # geometry
+        config["wavelength"] = self.__geometryModel.wavelength().value()
+        config["dist"] = self.__geometryModel.distance().value()
+        config["poni1"] = self.__geometryModel.poni1().value()
+        config["poni2"] = self.__geometryModel.poni2().value()
+        config["rot1"] = self.__geometryModel.rotation1().value()
+        config["rot2"] = self.__geometryModel.rotation2().value()
+        config["rot3"] = self.__geometryModel.rotation3().value()
+
+        # detector
+        if self.__detector is not None:
+            config["detector"] = self.__detector.__class__.__name__
+            config["detector_config"] = self.__detector.get_config()
+
+        # pre-processing
+        config["do_mask"] = bool(self.do_mask.isChecked())
+        config["mask_file"] = str_(self.mask_file.text()).strip()
+        config["do_dark"] = bool(self.do_dark.isChecked())
+        config["dark_current"] = splitFiles(self.dark_current.text())
+        config["do_flat"] = bool(self.do_flat.isChecked())
+        config["flat_field"] = splitFiles(self.flat_field.text())
+        config["do_polarization"] = bool(self.do_polarization.isChecked())
+        config["polarization_factor"] = float_(self.polarization_factor.value())
+        config["do_dummy"] = bool(self.do_dummy.isChecked())
+        config["val_dummy"] = self._float("val_dummy", None)
+        config["delta_dummy"] = self._float("delta_dummy", None)
+
+        # integration
+        config["do_2D"] = bool(self.do_2D.isChecked())
         value = self.__getRadialNbpt()
         if value is not None:
             config["nbpt_rad"] = value
         value = self.__getAzimuthalNbpt()
         if value is not None:
             config["nbpt_azim"] = value
+        config["unit"] = str(self.radial_unit.model().value())
+        config["do_radial_range"] = bool(self.do_radial_range.isChecked())
+        config["radial_range_min"] = self._float("radial_range_min", None)
+        config["radial_range_max"] = self._float("radial_range_max", None)
+        config["do_azimuthal_range"] = bool(self.do_azimuthal_range.isChecked())
+        config["azimuth_range_min"] = self._float("azimuth_range_min", None)
+        config["azimuth_range_max"] = self._float("azimuth_range_max", None)
 
-        if self.__detector is not None:
-            config["detector"] = self.__detector.__class__.__name__
-            config["detector_config"] = self.__detector.get_config()
+        # processing-config
+        config["chi_discontinuity_at_0"] = bool(self.chi_discontinuity_at_0.isChecked())
+        config["do_solid_angle"] = bool(self.do_solid_angle.isChecked())
+        config["do_poisson"] = bool(self.do_poisson.isChecked())
+
+        method = self.__method
+        if method is not None:
+            config["method"] = method.split, method.algo, method.impl
+            if method.impl == "opencl":
+                config["opencl_device"] = self.__openclDevice
 
         return config
 
