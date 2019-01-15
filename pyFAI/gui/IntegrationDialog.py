@@ -68,13 +68,17 @@ class IntegrationDialog(qt.QWidget):
     """Dialog to configure an azimuthal integration.
     """
 
-    def __init__(self, input_data=None, output_path=None, json_file=".azimint.json"):
+    def __init__(self, input_data=None, output_path=None, json_file=".azimint.json", context=None):
         qt.QWidget.__init__(self)
         filename = get_ui_file("integration-dialog.ui")
         qt.loadUi(filename, self)
 
         pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
         self.setWindowIcon(pyfaiIcon)
+
+        self.__context = context
+        if context is not None:
+            context.restoreWindowLocationSettings("main-window", self)
 
         self.__workerConfigurator = WorkerConfigurator(self._holder)
         layout = qt.QVBoxLayout(self._holder)
@@ -97,6 +101,11 @@ class IntegrationDialog(qt.QWidget):
 
         if self.json_file is not None:
             self.restore(self.json_file)
+
+    def closeEvent(self, event):
+        context = self.__context
+        if context is not None:
+            self.__context.saveWindowLocationSettings("main-window", self)
 
     def __batchProcess(self):
         if self.input_data is None or len(self.input_data) == 0:
