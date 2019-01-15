@@ -87,7 +87,11 @@ class AllDetectorModel(qt.QStandardItemModel):
             item.setData(detector, role=self.CLASS_ROLE)
             item.setData(modelName, role=self.MODEL_ROLE)
             item.setData(manufacturerName, role=self.MANUFACTURER_ROLE)
-            self.appendRow(item)
+            item2 = qt.QStandardItem(manufacturerName)
+            item2.setData(detector, role=self.CLASS_ROLE)
+            item2.setData(modelName, role=self.MODEL_ROLE)
+            item2.setData(manufacturerName, role=self.MANUFACTURER_ROLE)
+            self.appendRow([item, item2])
 
     def indexFromDetector(self, detector, manufacturer):
         for row in range(self.rowCount()):
