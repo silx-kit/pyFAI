@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/01/2019"
+__date__ = "15/01/2019"
 
 import numpy
 import time
@@ -264,7 +264,7 @@ class Detector3dDialog(qt.QDialog):
         self.__process.setRange(0, 100)
 
         self.__buttons = qt.QDialogButtonBox(self)
-        self.__buttons.addButton(qt.QDialogButtonBox.StandardButton.Cancel)
+        self.__buttons.addButton(qt.QDialogButtonBox.Cancel)
         self.__buttons.accepted.connect(self.accept)
         self.__buttons.rejected.connect(self.reject)
 
@@ -280,7 +280,7 @@ class Detector3dDialog(qt.QDialog):
         self.__process.setVisible(False)
         self.__plot.setVisible(True)
         self.__buttons.clear()
-        self.__buttons.addButton(qt.QDialogButtonBox.StandardButton.Close)
+        self.__buttons.addButton(qt.QDialogButtonBox.Close)
         self.adjustSize()
 
         sceneWidget = self.__plot.getSceneWidget()
