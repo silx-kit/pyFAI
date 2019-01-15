@@ -220,8 +220,8 @@ class ConfigurationReader(object):
         target = self._config.pop("opencl_device", None)
 
         if method is None:
-            method = method_registry.Method(dim, "*", "*", "*")
-        if isinstance(method, six.string_types):
+            method = method_registry.Method(dim, "*", "*", "*", target=None)
+        elif isinstance(method, six.string_types):
             method = method_registry.IntegrationMethod.parse_old_method(old_method=method)
             method = method_registry.Method(dim, method.split, method.algo, method.impl, target=target)
         elif isinstance(method, (list, tuple)):
