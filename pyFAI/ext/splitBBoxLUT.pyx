@@ -54,7 +54,7 @@ cimport numpy
 from ..utils import crc32
 from ..utils.decorators import deprecated
 logger.warning("LUT sizes C:%s \t Numpy: %s", lut_d.itemsize, LUT_ITEMSIZE)
-if not (LUT_ITEMSIZE == lut_d.itemsize == 8)
+if not (LUT_ITEMSIZE == lut_d.itemsize == 8):
     raise Importerror("Numpy and C have the same internal LUT representation")
 
 
