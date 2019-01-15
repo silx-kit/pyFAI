@@ -200,13 +200,13 @@ class ConfigurationReader(object):
 
         :rtype: pyFAI.detectors.Detector
         """
-        value = self._config.pop("detector_config", None)
-        if value is not None:
+        detector_class = self._config.pop("detector", None)
+        if detector_class is not None:
             # NOTE: Default way to describe a detector since pyFAI 0.17
-            detector_config = value
-            detector_class = self._config.pop("detector")
+            detector_config = self._config.pop("detector_config", None)
             detector = detectors.detector_factory(detector_class, config=detector_config)
             return detector
+
         return None
 
     def pop_method(self, default=None):
