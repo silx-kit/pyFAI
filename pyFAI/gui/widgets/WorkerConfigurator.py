@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2019"
+__date__ = "15/01/2019"
 __status__ = "development"
 
 import logging
@@ -220,9 +220,10 @@ class WorkerConfigurator(qt.QWidget):
                   }
 
         method = self.__method
-        config["method"] = method.split, method.algo, method.impl
-        if method.impl == "opencl":
-            config["opencl_device"] = self.__openclDevice
+        if method is not None:
+            config["method"] = method.split, method.algo, method.impl
+            if method.impl == "opencl":
+                config["opencl_device"] = self.__openclDevice
 
         value = self.__getRadialNbpt()
         if value is not None:
