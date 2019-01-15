@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2018"
+__date__ = "15/01/2019"
 
 from silx.gui import qt
 import pyFAI.detectors
@@ -68,10 +68,18 @@ class AllDetectorModel(qt.QStandardItemModel):
                 result.append((modelName, manufacturer, detectorClass))
             return result
 
+        def sortingKey(item):
+            modelName, manufacturerName, _detector = item
+            if modelName:
+                modelName = modelName.lower()
+            if manufacturerName:
+                manufacturerName = manufacturerName.lower()
+            return modelName, manufacturerName
+
         items = []
         for c in detectorClasses:
             items.extend(getNameAndManufacturer(c))
-        items = sorted(items)
+        items = sorted(items, key=sortingKey)
         for modelName, manufacturerName, detector in items:
             if detector is pyFAI.detectors.Detector:
                 continue
