@@ -10,10 +10,10 @@ python:
   - "3.6"
 #  - "3.7"
 # Enable 3.7 without globally enabling sudo and dist: xenial for other build jobs
-matrix:
-  include:
-   - python: 3.7
-     dist: xenial
+#matrix:
+#  include:
+#   - python: 3.7
+#     dist: xenial
 
 #virtualenv:
 #    system_site_packages: NO !!!
@@ -45,7 +45,7 @@ install:
   - "python ci/info_platform.py"
   - "pip install --upgrade pip"
   - "pip install cython"
-  - "pip install --upgrade numpy --no-binary :all:"
+  - "pip install --upgrade numpy " #--no-binary :all:"
   - "pip install --upgrade h5py mako"
   - "pip install --upgrade -r ci/requirements_travis.txt"
   - "python ci/info_platform.py"
