@@ -34,6 +34,7 @@ addons:
       - opencl-headers
       - python-pyopencl
       - python3-pyopencl
+      - gdb
 # command to install dependencies
 
 before_install:
@@ -54,6 +55,6 @@ install:
 
 # command to run tests
 script:
-  - "python ./run_tests.py -m"
+  - "gdb -batch -ex 'set pagination off' -ex 'run run_tests.py -m' -ex 'bt' --args python"
   - "python ./run_tests.py -m --installed"
 
