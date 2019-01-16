@@ -56,5 +56,5 @@ install:
 # command to run tests
 script:
   - "gdb -batch -ex 'set pagination off' -ex 'run run_tests.py -m -vv' -ex 'bt' --args python"
-  - "python -vv ./run_tests.py -m -vv --installed"
+  - "python -vv ./run_tests.py -m -vv --installed" 
 
