@@ -18,6 +18,8 @@ addons:
       - ocl-icd-libopencl1
       - opencl-headers
       - libnuma1
+      - ocl-icd-dev 
+      - ocl-icd-opencl-dev
       - valgrind
 # command to install dependencies
 
