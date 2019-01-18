@@ -14,6 +14,6 @@ scipy
 matplotlib
 mako
 pybind11
-pyopencl==2018.1 # The latest using cffi and wheels available
+pyopencl
 numexpr
 silx
