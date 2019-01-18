@@ -13,6 +13,7 @@ fabio
 scipy
 matplotlib
 mako
-pyopencl==2018.1.1 # Until pyopencl 2018.2 issue is fixed
+pybind11
+pyopencl==2018.1 # The latest using cffi and wheels available
 numexpr
 silx

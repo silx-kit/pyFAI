@@ -1,32 +1,24 @@
-os:
-  - linux
-#  - osx
-
+os: linux
+dist: xenial
 language: python
 python:
   - "2.7"
   - "3.4"
   - "3.5"
-#virtualenv:
-#    system_site_packages: NO !!!
-# the system python and the one from travis have been compiled with different options
+  - "3.6"
+  - "3.7"
 
 addons:
   apt:
     packages:
-      # Only used by the DISTRIB="ubuntu" setting
-      - libhdf5-7
       - libhdf5-dev
       - gfortran
       - libatlas-base-dev
-      - libqtcore4
 #For OpenCL:
-      - python-cffi
-      - python3-cffi
       - ocl-icd-libopencl1
       - opencl-headers
-      - python-pyopencl
-      - python3-pyopencl
+      - libnuma1
+      - valgrind
 # command to install dependencies
 
 before_install:
@@ -36,9 +28,9 @@ before_install:
 install:
   - "python ci/info_platform.py"
   - "pip install --upgrade pip"
-  - "pip install cython"
-  - "pip install --upgrade numpy"
-  - "pip install --upgrade h5py"  
+  - "pip install --upgrade numpy " #--no-binary :all:"
+  - "pip install --upgrade cython mako pybind11"
+  - "pip install --upgrade h5py "
   - "pip install --upgrade -r ci/requirements_travis.txt"
   - "python ci/info_platform.py"
   - "python setup.py build"
@@ -47,5 +39,6 @@ install:
 
 # command to run tests
 script:
-  - "python setup.py test"
-  - "python ./run_tests.py -m --installed"
+  - "PYTHONMALLOC=malloc valgrind python -vv run_tests.py -m -vv"
+  - "python -vv ./run_tests.py -m -vv --installed" 
+
