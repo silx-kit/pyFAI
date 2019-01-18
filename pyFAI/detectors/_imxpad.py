@@ -581,8 +581,10 @@ class Cirpad(ImXPadS10):
         corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
         corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
 
-        modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2]*i]) for i in range(20)]
-        return numpy.concatenate(modules, axis=0)
+        modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2] * i]) for i in range(20)]
+        result = numpy.concatenate(modules, axis=0)
+        result = numpy.ascontiguousarray(result, result.dtype)
+        return result
 
     def get_pixel_corners(self):
         if self._pixel_corners is None:
