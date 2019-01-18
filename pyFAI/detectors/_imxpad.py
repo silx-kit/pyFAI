@@ -535,8 +535,17 @@ class Cirpad(ImXPadS10):
 
     def _passage(self, corners, rot):
         shape = corners.shape
-        origine = corners[0][0][0, :]
+        #  deltaX = -((560 + 3 * 6 + 10)*0.13/1000) * numpy.sin(numpy.deg2rad(rot[2]))
+        deltaX, deltaY = 0.0, 0.0
         nmd = self._rotation(corners, rot)
+        for i in range(1, int(round(numpy.abs(rot[2])/6.74))):
+            deltaX = deltaX + ((560.0 + 3 * 6 + 10)*0.13/1000) * numpy.sin(numpy.deg2rad(-rot[2] -6.74*(i)))
+        for i in range(int(round(numpy.abs(rot[2])/6.74))):
+            deltaY = deltaY + ((560.0 + 3 * 6 + 10)*0.13/1000) * numpy.cos(numpy.deg2rad(-rot[2] - 6.74*(i+1)))
+        # origine = corners[0][0][0, :] # + [deltaX, deltaY, 0]
+        nmd[:,:,:,0] = nmd[:,:,:,0] + deltaX
+        nmd[:,:,:,1] = nmd[:,:,:,1] + deltaY
+        """
         u = corners[shape[0] - 1][0][1, :] - corners[0][0][0, :]
         u = u / numpy.linalg.norm(u)
         s = self._rotation(u, rot)
@@ -545,6 +554,8 @@ class Cirpad(ImXPadS10):
         r = origine - nmd[0][0][0, :]
         w = (0.1e-3 + 0.24e-3 + 75.14e-3) * u + (0.8e-3) * v + (0.55e-3) * s + r
         return self._translation(nmd, w)
+        """
+        return self._translation(nmd, [0, 0, 0])
 
     def _get_pixel_corners(self):
         pixel_size1 = self._calc_pixels_size(self.MEDIUM_MODULE_SIZE[0],
