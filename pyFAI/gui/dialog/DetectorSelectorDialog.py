@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "15/01/2019"
 
 import os
 import logging
@@ -40,7 +40,7 @@ from ..widgets.DetectorModel import AllDetectorModel
 from ..widgets.DetectorModel import DetectorFilter
 from ..model.DataModel import DataModel
 from ..utils import validators
-from ..CalibrationContext import CalibrationContext
+from ..ApplicationContext import ApplicationContext
 from ..utils import FilterBuilder
 
 
@@ -64,16 +64,30 @@ class DetectorSelectorDrop(qt.QWidget):
         self._manufacturerList.setModel(model)
         selection = self._manufacturerList.selectionModel()
         selection.selectionChanged.connect(self.__manufacturerChanged)
-        manufacturerModel = model
-        manufacturerSelection = selection
 
         model = AllDetectorModel(self)
         modelFilter = DetectorFilter(self)
         modelFilter.setSourceModel(model)
-        self._modelList.setModel(modelFilter)
-        selection = self._modelList.selectionModel()
+
+        self._detectorView.setModel(modelFilter)
+        self._detectorView.setSelectionMode(qt.QAbstractItemView.SingleSelection)
+        self._detectorView.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
+        self._detectorView.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
+        self._detectorView.setWordWrap(False)
+
+        header = self._detectorView.horizontalHeader()
+        # Manufacturer first
+        self.MANUFACTURER_COLUMN = 1
+        header.moveSection(self.MANUFACTURER_COLUMN, 0)
+        if qt.qVersion() < "5.0":
+            header.setSectionResizeMode = self.setResizeMode
+        header.setSectionResizeMode(0, qt.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, qt.QHeaderView.ResizeToContents)
+        header.setStretchLastSection(True)
+
+        selection = self._detectorView.selectionModel()
         selection.selectionChanged.connect(self.__modelChanged)
-        self._modelList.doubleClicked.connect(self.__selectAndAccept)
+        self._detectorView.doubleClicked.connect(self.__selectAndAccept)
 
         customModel = qt.QStandardItemModel(self)
         item = qt.QStandardItem("From file")
@@ -125,8 +139,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__customDetector = None
 
         # By default select all the manufacturers
-        allIndex = manufacturerModel.index(0, 0)
-        manufacturerSelection.select(allIndex, qt.QItemSelectionModel.ClearAndSelect)
+        self.__selectAllRegistreredDetector()
 
     def __selectAndAccept(self):
         # FIXME: This have to be part of the dialog, and not here
@@ -187,7 +200,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self._customResult.setText("Detector configured")
 
     def createSplineDialog(self, title, previousFile):
-        dialog = CalibrationContext.instance().createFileDialog(self, previousFile=previousFile)
+        dialog = ApplicationContext.instance().createFileDialog(self, previousFile=previousFile)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -219,6 +232,11 @@ class DetectorSelectorDrop(qt.QWidget):
         self._fileResult.setVisible(False)
         self._fileError.setVisible(False)
         self.__detectorFromFile = None
+
+        if not filename:
+            self._fileError.setVisible(False)
+            self._fileError.setText("")
+            return
 
         if not os.path.exists(filename):
             self._fileError.setVisible(True)
@@ -264,7 +282,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__descriptionFile.setValue(filename)
 
     def createFileDialog(self, title, h5file=True, splineFile=True, previousFile=None):
-        dialog = CalibrationContext.instance().createFileDialog(self, previousFile=previousFile)
+        dialog = ApplicationContext.instance().createFileDialog(self, previousFile=previousFile)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -415,16 +433,35 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__setCustomField("MANUAL")
         self._customList.setFocus(qt.Qt.NoFocusReason)
 
+    def __selectAllRegistreredDetector(self):
+        headerView = self._detectorView.horizontalHeader()
+        headerView.setSectionHidden(self.MANUFACTURER_COLUMN, True)
+
+        model = self._manufacturerList.model()
+        selectionModel = self._manufacturerList.selectionModel()
+        index = 0
+        indexStart = model.index(index, 0)
+        indexEnd = model.index(index, model.columnCount() - 1)
+        selection = qt.QItemSelection(indexStart, indexEnd)
+        selectionModel.select(selection, qt.QItemSelectionModel.ClearAndSelect)
+
     def __selectRegistreredDetector(self, detector):
+        headerView = self._detectorView.horizontalHeader()
+        headerView.setSectionHidden(self.MANUFACTURER_COLUMN, False)
+
         manufacturer = detector.MANUFACTURER
         if isinstance(manufacturer, list):
             manufacturer = manufacturer[0]
         self.__setManufacturer(manufacturer)
-        model = self._modelList.model()
+        model = self._detectorView.model()
         index = model.indexFromDetector(detector.__class__, manufacturer)
-        selection = self._modelList.selectionModel()
-        selection.select(index, qt.QItemSelectionModel.ClearAndSelect)
-        self._modelList.scrollTo(index, qt.QAbstractItemView.PositionAtCenter)
+        index = index.row()
+        selectionModel = self._detectorView.selectionModel()
+        indexStart = model.index(index, 0)
+        indexEnd = model.index(index, model.columnCount() - 1)
+        selection = qt.QItemSelection(indexStart, indexEnd)
+        selectionModel.select(selection, qt.QItemSelectionModel.ClearAndSelect)
+        self._detectorView.scrollTo(indexStart, qt.QAbstractItemView.PositionAtCenter)
 
         splineFile = detector.get_splineFile()
         if splineFile is not None:
@@ -473,11 +510,11 @@ class DetectorSelectorDrop(qt.QWidget):
         return model.data(index, role=self._CustomDetectorRole)
 
     def currentDetectorClass(self):
-        indexes = self._modelList.selectedIndexes()
+        indexes = self._detectorView.selectedIndexes()
         if len(indexes) == 0:
             return None
         index = indexes[0]
-        model = self._modelList.model()
+        model = self._detectorView.model()
         return model.data(index, role=AllDetectorModel.CLASS_ROLE)
 
     def __modelChanged(self, selected, deselected):
@@ -492,17 +529,20 @@ class DetectorSelectorDrop(qt.QWidget):
         self._customList.repaint()
 
         manufacturer = self.currentManufacturer()
-        model = self._modelList.model()
+        headerView = self._detectorView.horizontalHeader()
+        headerView.setSectionHidden(self.MANUFACTURER_COLUMN, manufacturer != "*")
+
+        model = self._detectorView.model()
         model.setManufacturerFilter(manufacturer)
         self._stacked.setCurrentWidget(self._modelPanel)
 
     def __customSelectionChanged(self, selected, deselected):
         # Clean up manufacurer selection
-        selection = self._modelList.selectionModel()
+        selection = self._detectorView.selectionModel()
         selection.reset()
         selection = self._manufacturerList.selectionModel()
         selection.reset()
-        self._modelList.repaint()
+        self._detectorView.repaint()
         self._manufacturerList.repaint()
 
         field = self.currentCustomField()
