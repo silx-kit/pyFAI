@@ -124,7 +124,7 @@ class CreateSceneThread(qt.QThread):
 
         # Merge all pixels together
         pixels = pixels[...]
-        pixels.shape = -1, 4, 3
+        pixels = numpy.reshape(pixels,(-1, 4, 3))
 
         image = self.__image
         mask = self.__mask
