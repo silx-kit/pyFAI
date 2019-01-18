@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "11/01/2019"
+__date__ = "18/01/2019"
 
 import logging
 import numpy
@@ -52,6 +52,7 @@ from ..utils import eventutils
 from ..utils import validators
 from ..helper.MarkerManager import MarkerManager
 from ..helper import ProcessingWidget
+from ..helper import model_transform
 
 _logger = logging.getLogger(__name__)
 
@@ -829,6 +830,15 @@ class GeometryTask(AbstractCalibrationTask):
         toolBar.getColormapAction().setColorDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
+        toolBar = qt.QToolBar(self)
+        plot3dAction = qt.QAction(self)
+        plot3dAction.setIcon(icons.getQIcon("pyfai:gui/icons/3d"))
+        plot3dAction.setText("3D visualization")
+        plot3dAction.setToolTip("Display a 3D visualization of the sample stage")
+        plot3dAction.triggered.connect(self.__display3dDialog)
+        toolBar.addAction(plot3dAction)
+        plot.addToolBar(toolBar)
+
     def __mouseMoved(self, x, y):
         value = None
 
@@ -1157,3 +1167,25 @@ class GeometryTask(AbstractCalibrationTask):
 
         if self.__peaksInvalidated:
             self.__initGeometryLater()
+
+    def __display3dDialog(self):
+        from ..dialog.Detector3dDialog import Detector3dDialog
+        dialog = Detector3dDialog(self)
+
+        settings = self.model().experimentSettingsModel()
+        detector = settings.detectorModel().detector()
+        image = settings.image().value()
+        mask = settings.mask().value()
+        colormap = CalibrationContext.instance().getRawColormap()
+        geometry = None
+
+        fittedGeometry = self.model().fittedGeometry()
+        if fittedGeometry.isValid():
+            from pyFAI import geometry
+            geometry = geometry.Geometry()
+            model_transform.geometryModelToGeometry(fittedGeometry, geometry)
+
+        dialog.setData(detector=detector,
+                       image=image, mask=mask, colormap=colormap,
+                       geometry=geometry)
+        dialog.exec_()
