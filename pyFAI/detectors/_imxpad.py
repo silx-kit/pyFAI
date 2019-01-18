@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2018"
+__date__ = "18/01/2019"
 __status__ = "production"
 
 import functools
@@ -587,7 +587,7 @@ class Cirpad(ImXPadS10):
     def get_pixel_corners(self):
         if self._pixel_corners is None:
             with self._sem:
-                if self._pixel_corners is None:  
+                if self._pixel_corners is None:
                     self._pixel_corners = self._get_pixel_corners()
         return self._pixel_corners
 
