@@ -42,23 +42,16 @@ __status__ = "development"
 
 import logging
 import json
-import os
-import time
-import threading
 import os.path as op
 
 logger = logging.getLogger(__name__)
 
-import fabio
 from silx.gui import qt
 from silx.gui import icons
 
 from .. import worker as worker_mdl
 from .widgets.WorkerConfigurator import WorkerConfigurator
-from ..io import DefaultAiWriter
-from ..io import HDF5Writer
 from ..io import integration_config
-from ..third_party import six
 from .utils import projecturl
 from ..utils import get_ui_file
 from ..app import integrate
@@ -114,6 +107,8 @@ class IntegrationDialog(qt.QWidget):
     """Dialog to configure an azimuthal integration.
     """
 
+    batchProcessRequested = qt.Signal()
+
     def __init__(self, input_data=None, output_path=None, json_file=".azimint.json", context=None):
         qt.QWidget.__init__(self)
         filename = get_ui_file("integration-dialog.ui")
@@ -135,10 +130,9 @@ class IntegrationDialog(qt.QWidget):
         self.input_data = input_data
         self.output_path = output_path
 
-        self._sem = threading.Semaphore()
         self.json_file = json_file
 
-        self.batch_processing.clicked.connect(self.__batchProcess)
+        self.batch_processing.clicked.connect(self.__fireBatchProcess)
         self.save_json_button.clicked.connect(self.save_config)
         self.quit_button.clicked.connect(self.die)
 
@@ -153,132 +147,8 @@ class IntegrationDialog(qt.QWidget):
         if context is not None:
             self.__context.saveWindowLocationSettings("main-window", self)
 
-    def __batchProcess(self):
-        if self.input_data is None or len(self.input_data) == 0:
-            dialog = qt.QFileDialog(directory=os.getcwd())
-            dialog.setWindowTitle("Select images to integrate")
-            dialog.setFileMode(qt.QFileDialog.ExistingFiles)
-            result = dialog.exec_()
-            if not result:
-                return
-            self.input_data = [str(i) for i in dialog.selectedFiles()]
-            dialog.close()
-
-        self.progressBar.setVisible(True)
-        self.__workerConfigurator.setEnabled(False)
-
-        # Needed to update the display (hide the dialog, display the bar...)
-        app = qt.QApplication.instance()
-        while app.hasPendingEvents():
-            app.processEvents()
-
-        self.proceed()
-
-        qt.QMessageBox.information(self,
-                                   "Integration",
-                                   "Batch processing completed.")
-
-        self.die()
-
-    def proceed(self):
-        with self._sem:
-            config = self.dump()
-            logger.debug("Processing %s", self.input_data)
-            start_time = time.time()
-            if self.input_data is None or len(self.input_data) == 0:
-                logger.warning("No input data to process")
-                return
-
-            elif hasattr(self.input_data, "ndim") and self.input_data.ndim == 3:
-                # We have a numpy array of dim3
-                worker = worker_mdl.Worker()
-                worker.set_config(config)
-                worker.safe = False
-
-                if worker.do_2D():
-                    for i in range(self.input_data.shape[0]):
-                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                        data = self.input_data[i]
-                        worker.process(data)
-                else:
-                    for i in range(self.input_data.shape[0]):
-                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                        data = self.input_data[i]
-                        worker.process(data)
-
-            elif hasattr(self.input_data, "__len__"):
-                worker = worker_mdl.Worker()
-                worker.set_config(config)
-                worker.safe = False
-                worker.output = "raw"
-
-                if worker.nbpt_rad is None:
-                    message = "You must provide the number of output radial bins !"
-                    qt.QMessageBox.warning(self, "PyFAI integrate", message)
-                    return {}
-
-                logger.info("Parameters for integration: %s", str(config))
-
-                for i, item in enumerate(self.input_data):
-                    self.progressBar.setValue(100.0 * i / len(self.input_data))
-                    logger.debug("Processing %s", item)
-
-                    numpy_array = False
-                    if isinstance(item, (six.text_type, six.binary_type)) and op.exists(item):
-                        img = fabio.open(item)
-                        multiframe = img.nframes > 1
-
-                        custom_ext = True
-                        if self.output_path:
-                            if os.path.isdir(self.output_path):
-                                outpath = os.path.join(self.output_path, os.path.splitext(os.path.basename(item))[0])
-                            else:
-                                outpath = os.path.abspath(self.output_path)
-                                custom_ext = False
-                        else:
-                            outpath = os.path.splitext(item)[0]
-
-                        if custom_ext:
-                            if multiframe:
-                                outpath = outpath + "_pyFAI.h5"
-                            else:
-                                if worker.do_2D():
-                                    outpath = outpath + ".azim"
-                                else:
-                                    outpath = outpath + ".dat"
-                    else:
-                        logger.warning("Item is not a file ... guessing it is a numpy array")
-                        numpy_array = True
-                        multiframe = False
-
-                    if multiframe:
-                        writer = HDF5Writer(outpath)
-                        writer.init(config)
-
-                        for i in range(img.nframes):
-                            fimg = img.getframe(i)
-                            data = fimg.data
-                            worker.process(data=data,
-                                           metadata=fimg.header,
-                                           writer=writer)
-                        writer.close()
-                    else:
-                        if numpy_array:
-                            data = item
-                            writer = None
-                            metadata = None
-                        else:
-                            data = img.data
-                            writer = DefaultAiWriter(outpath, worker.ai)
-                            metadata = img.header
-                        worker.process(data,
-                                       writer=writer,
-                                       metadata=metadata)
-                        if writer:
-                            writer.close()
-
-            logger.info("Processing Done in %.3fs !", time.time() - start_time)
-            self.progressBar.setValue(100)
+    def __fireBatchProcess(self):
+        self.batchProcessRequested.emit()
 
     def die(self):
         logger.debug("bye bye")

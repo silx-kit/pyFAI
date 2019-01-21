@@ -36,14 +36,20 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "21/01/2019"
 __satus__ = "production"
+
 import sys
 import logging
 import time
+import numpy
 import os.path
+import six
+
 import fabio
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI")
+
 import pyFAI.utils
 import pyFAI.worker
 from pyFAI.io import DefaultAiWriter
@@ -64,6 +70,9 @@ except ImportError:
 def integrate_gui(options, args):
     from silx.gui import qt
     from pyFAI.gui.IntegrationDialog import IntegrationDialog
+    from pyFAI.gui.IntegrationDialog import IntegrationProcess
+    from pyFAI.gui.utils.eventutils import QtProxifier
+
     app = qt.QApplication([])
 
     from pyFAI.gui.ApplicationContext import ApplicationContext
@@ -74,9 +83,54 @@ def integrate_gui(options, args):
                             None)
     context = ApplicationContext(settings)
 
+    def moveCenterTo(window, center):
+        half = window.size() * 0.5
+        half = qt.QPoint(half.width(), half.height())
+        corner = center - half
+        window.move(corner)
+
+    def processData():
+        center = window.geometry().center()
+        window.setVisible(False)
+        window.deleteLater()
+        input_data = window.input_data
+        if input_data is None or len(input_data) == 0:
+            dialog = qt.QFileDialog(directory=os.getcwd())
+            dialog.setWindowTitle("Select images to integrate")
+            dialog.setFileMode(qt.QFileDialog.ExistingFiles)
+            moveCenterTo(dialog, center)
+            result = dialog.exec_()
+            if not result:
+                return
+            input_data = [str(i) for i in dialog.selectedFiles()]
+            center = dialog.geometry().center()
+            dialog.close()
+
+        config = window.get_config()
+
+        dialog = IntegrationProcess(None)
+        dialog.adjustSize()
+        moveCenterTo(dialog, center)
+
+        class QtProcess(qt.QThread):
+            def run(self):
+                qtObserver = QtProxifier(dialog)
+                process(input_data, window.output_path, config, options.monitor_key, qtObserver)
+
+        qtProcess = QtProcess()
+        qtProcess.start()
+
+        result = dialog.exec_()
+
+        qt.QMessageBox.information(dialog,
+                                   "Integration",
+                                   "Batch processing completed.")
+        dialog.deleteLater()
+
     window = IntegrationDialog(args, options.output, json_file=options.json, context=context)
-    window.set_input_data(args)
+    window.batchProcessRequested.connect(processData)
     window.show()
+
     result = app.exec_()
     context.saveSettings()
     return result
