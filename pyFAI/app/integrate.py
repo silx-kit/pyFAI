@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2019"
+__date__ = "15/01/2019"
 __satus__ = "production"
 import sys
 import logging
@@ -65,10 +65,21 @@ def integrate_gui(options, args):
     from silx.gui import qt
     from pyFAI.gui.IntegrationDialog import IntegrationDialog
     app = qt.QApplication([])
-    window = IntegrationDialog(args, options.output, json_file=options.json)
+
+    from pyFAI.gui.ApplicationContext import ApplicationContext
+    settings = qt.QSettings(qt.QSettings.IniFormat,
+                            qt.QSettings.UserScope,
+                            "pyfai",
+                            "pyfai-integrate",
+                            None)
+    context = ApplicationContext(settings)
+
+    window = IntegrationDialog(args, options.output, json_file=options.json, context=context)
     window.set_input_data(args)
     window.show()
-    return app.exec_()
+    result = app.exec_()
+    context.saveSettings()
+    return result
 
 
 def get_monitor_value(image, monitor_key):

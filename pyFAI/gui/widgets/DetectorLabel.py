@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "06/12/2018"
+__date__ = "11/01/2019"
 
 from silx.gui import qt
 from silx.utils import html
@@ -42,6 +42,14 @@ class DetectorLabel(qt.QLabel):
 
     _MANUFACTURER_TEMPLATE = "<span style=\"vertical-align:sub;\">%s</span>"
 
+    _TOOLTIP_TEMPLATE = ("<html>"
+                         "<ul>"
+                         "<li><b>Model:</b> {model}</li>"
+                         "<li><b>Manufacturer:</b> {manufacturer}</li>"
+                         "<li><b>Type:</b> {kind}</li>"
+                         "</ul>"
+                         "</html>")
+
     _MODEL_TEMPLATE = "%s"
 
     def __init__(self, parent=None):
@@ -49,7 +57,15 @@ class DetectorLabel(qt.QLabel):
         self.__model = None
         self.__detector = None
 
-    def __getModelName(self, detectorClass):
+    def __getModelName(self, detector):
+        if isinstance(detector, pyFAI.detectors.NexusDetector):
+            if hasattr(detector, "name"):
+                name = detector.name
+                if name is not None:
+                    return name
+
+        detectorClass = detector.__class__
+
         modelName = None
         if hasattr(detectorClass, "aliases"):
             if len(detectorClass.aliases) > 0:
@@ -74,30 +90,53 @@ class DetectorLabel(qt.QLabel):
             return
 
         if detector.__class__ is pyFAI.detectors.NexusDetector:
-            className = detector.__class__.__name__
-            name = self.__getModelName(detector.__class__)
+            model = self.__getModelName(detector)
+            manufacturer = "Not specified"
+            kind = "Nexus definition"
+            if detector.filename:
+                kind = "%s (%s)" % (kind, detector.filename)
 
-            if className == name:
-                description = self._MODEL_TEMPLATE % html.escape(className)
-            else:
-                description = self._MANUFACTURER_TEMPLATE % html.escape(className)
-                description += self._MODEL_TEMPLATE % html.escape(name)
+            description = self._MANUFACTURER_TEMPLATE % html.escape("NeXus")
+            description += self._MODEL_TEMPLATE % html.escape(model)
+
+            data = {
+                "kind": html.escape(kind),
+                "manufacturer": html.escape(manufacturer),
+                "model": html.escape(model),
+            }
+            tooltip = self._TOOLTIP_TEMPLATE.format(**data)
 
         elif detector.__class__ is pyFAI.detectors.Detector:
             description = self._MODEL_TEMPLATE % "Custom detector"
+            tooltip = description
 
         else:
             manufacturer = detector.MANUFACTURER
             if isinstance(manufacturer, list):
                 manufacturer = manufacturer[0]
-            model = self.__getModelName(detector.__class__)
+            model = self.__getModelName(detector)
             description = self._MODEL_TEMPLATE % html.escape(model)
             if manufacturer is not None:
-                description = self._MANUFACTURER_TEMPLATE % html.escape(manufacturer) + " " + description
+                manufacturer = html.escape(manufacturer)
+                description = self._MANUFACTURER_TEMPLATE % manufacturer + " " + description
+            else:
+                manufacturer = "Not specified"
+
+            if detector.__class__.__module__.startswith("pyFAI.detectors."):
+                kind = "pyFAI definition"
+            else:
+                kind = "Custom definition"
+
+            data = {
+                "kind": html.escape(kind),
+                "manufacturer": html.escape(manufacturer),
+                "model": html.escape(model),
+            }
+            tooltip = self._TOOLTIP_TEMPLATE.format(**data)
 
         text = self._BASE_TEMPLATE % description
         self.setText(text)
-        self.setToolTip(description)
+        self.setToolTip(tooltip)
 
     def setDetectorModel(self, model):
         self.__detector = None

@@ -119,3 +119,13 @@ def initPeaksFromControlPoints(peakSelectionModel, controlPoints, context=None):
         peakModel.setRingNumber(group.ring + 1)
         peakModel.setName(label)
         peakSelectionModel.append(peakModel)
+
+
+def geometryModelToGeometry(geometryModel, geometry):
+    geometry.dist = geometryModel.distance().value()
+    geometry.poni1 = geometryModel.poni1().value()
+    geometry.poni2 = geometryModel.poni2().value()
+    geometry.rot1 = geometryModel.rotation1().value()
+    geometry.rot2 = geometryModel.rotation2().value()
+    geometry.rot3 = geometryModel.rotation3().value()
+    geometry.wavelength = geometryModel.wavelength().value()
