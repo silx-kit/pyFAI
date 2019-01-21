@@ -61,6 +61,53 @@ from ..io import integration_config
 from ..third_party import six
 from .utils import projecturl
 from ..utils import get_ui_file
+from ..app import integrate
+
+
+class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
+
+    def __init__(self, parent=None):
+        qt.QDialog.__init__(self, parent=parent)
+        integrate.IntegrationObserver.__init__(self)
+        self.setWindowTitle("Processing...")
+
+        self.__button = qt.QPushButton(self)
+        self.__button.setText("Cancel")
+        self.__progressBar = qt.QProgressBar(self)
+
+        layout = qt.QHBoxLayout(self)
+        layout.addWidget(self.__progressBar)
+        layout.addWidget(self.__button)
+
+    def worker_initialized(self, worker):
+        """
+        Called when the worker is initialized
+
+        :param int data_count: Number of data to integrate
+        """
+        pass
+
+    def processing_started(self, data_count):
+        """
+        Called before starting the full processing.
+
+        :param int data_count: Number of data to integrate
+        """
+        self.__progressBar.setRange(0, data_count + 1)
+
+    def processing_data(self, data_id, filename):
+        """
+        Start processing the data `data_id`
+
+        :param int data_id: Id of the data
+        :param str filename: Filename of the data, if any.
+        """
+        self.__progressBar.setValue(data_id)
+
+    def processing_finished(self):
+        """Called when the full processing is finisehd."""
+        self.__progressBar.setValue(self.__progressBar.maximum())
+        self.accept()
 
 
 class IntegrationDialog(qt.QWidget):
