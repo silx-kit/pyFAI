@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2019"
+__date__ = "21/01/2019"
 __status__ = "development"
 
 import logging
@@ -46,7 +46,6 @@ import os
 import time
 import threading
 import os.path as op
-import numpy
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +135,6 @@ class IntegrationDialog(qt.QWidget):
 
     def proceed(self):
         with self._sem:
-            out = None
             config = self.dump()
             logger.debug("Processing %s", self.input_data)
             start_time = time.time()
@@ -151,19 +149,15 @@ class IntegrationDialog(qt.QWidget):
                 worker.safe = False
 
                 if worker.do_2D():
-                    out = numpy.zeros((self.input_data.shape[0], worker.nbpt_azim, worker.nbpt_rad), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         data = self.input_data[i]
-                        out[i] = worker.process(data)
+                        worker.process(data)
                 else:
-                    out = numpy.zeros((self.input_data.shape[0], worker.nbpt_rad), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         data = self.input_data[i]
-                        result = worker.process(data)
-                        result = result.T[1]
-                        out[i] = result
+                        worker.process(data)
 
             elif hasattr(self.input_data, "__len__"):
                 worker = worker_mdl.Worker()
@@ -178,7 +172,6 @@ class IntegrationDialog(qt.QWidget):
 
                 logger.info("Parameters for integration: %s", str(config))
 
-                out = []
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
                     logger.debug("Processing %s", item)
@@ -218,10 +211,9 @@ class IntegrationDialog(qt.QWidget):
                         for i in range(img.nframes):
                             fimg = img.getframe(i)
                             data = fimg.data
-                            res = worker.process(data=data,
-                                                 metadata=fimg.header,
-                                                 writer=writer
-                                                 )
+                            worker.process(data=data,
+                                           metadata=fimg.header,
+                                           writer=writer)
                         writer.close()
                     else:
                         if numpy_array:
@@ -232,18 +224,14 @@ class IntegrationDialog(qt.QWidget):
                             data = img.data
                             writer = DefaultAiWriter(outpath, worker.ai)
                             metadata = img.header
-                        res = worker.process(data,
-                                             writer=writer,
-                                             metadata=metadata)
+                        worker.process(data,
+                                       writer=writer,
+                                       metadata=metadata)
                         if writer:
                             writer.close()
-                    out.append(res)
 
             logger.info("Processing Done in %.3fs !", time.time() - start_time)
             self.progressBar.setValue(100)
-
-        # TODO: It should return nothing
-        return out
 
     def die(self):
         logger.debug("bye bye")
