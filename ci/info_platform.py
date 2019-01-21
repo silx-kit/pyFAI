@@ -44,6 +44,14 @@ print("      include %s" % numpy.get_include())
 print("      options %s" % numpy.get_printoptions())
 print("")
 try:
+    from silx.gui.qt import QT_VERSION_STR
+except Exception as error:
+    print("Unable to import Qt")
+    print(error)
+else:
+    print("Qt version " + QT_VERSION_STR)
+print("")
+try:
     import pyopencl
 except Exception as error:
     print("Unable to import pyopencl: %s" % error)

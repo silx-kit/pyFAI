@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/12/2018"
+__date__ = "15/01/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -313,7 +313,7 @@ class FullSplitCSR_1d(object):
         indptr = numpy.concatenate(([numpy.int32(0)], 
                                     numpy.asarray(outmax).cumsum(dtype=numpy.int32)))
 
-        self.indptr = indptr
+        self.indptr = numpy.asarray(indptr)
 
         cdef:
             numpy.int32_t[::1] indices = numpy.zeros(indptr[bins], dtype=numpy.int32)

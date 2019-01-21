@@ -29,7 +29,7 @@
 """Re-implementation of numpy histograms without OpenMP"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "13/11/2018"
+__date__ = "15/01/2019"
 __license__ = "MIY"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -205,9 +205,9 @@ def histogram2d(cnumpy.ndarray pos0,
             numpy.asarray(out_count))
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def histogram_preproc(cnumpy.ndarray pos,
                       cnumpy.ndarray weights,
                       int bins=100,
