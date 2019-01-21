@@ -168,8 +168,12 @@ def process(input_data, output, config, monitor_name, observer):
     """
     worker = pyFAI.worker.Worker()
     worker.set_config(config, consume_keys=True)
+
     # Check unused keys
     for key in config.keys():
+        # FIXME this should be read also
+        if key in ["application", "version"]:
+            pass
         logger.warning("Configuration key '%s' from json is unused", key)
 
     worker.safe = False  # all processing are expected to be the same.
