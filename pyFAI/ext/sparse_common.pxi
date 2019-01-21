@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/01/2019"
+__date__ = "21/01/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -46,7 +46,11 @@ cdef struct lut_t:
 
 LUT_ITEMSIZE = int(sizeof(lut_t))
 
-lut_d = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
+# Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
+if _numpy_1_12_py2_bug:
+    lut_d = numpy.dtype([(b"idx", numpy.int32), (b"coef", numpy.float32)])
+else:
+    lut_d = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
 
 
 class CsrIntegrator2d(object):
