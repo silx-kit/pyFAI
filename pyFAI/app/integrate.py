@@ -123,12 +123,12 @@ class IntegrationObserver(object):
         """
         pass
 
-    def processing_data(self, data_id, data_name):
+    def processing_data(self, data_id, filename):
         """
         Start processing the data `data_id`
 
         :param int data_id: Id of the data
-        :param int data_name: Name of the data
+        :param str filename: Filename of the data, if any.
         """
         pass
 
@@ -148,8 +148,14 @@ class ShellIntegrationObserver(IntegrationObserver):
     def processing_started(self, data_count):
         self._progress_bar = ProgressBar("Integration", data_count, 20)
 
-    def processing_data(self, data_id, data_name):
-        message = data_name
+    def processing_data(self, data_id, filename=None):
+        if filename:
+            if len(filename) > 100:
+                message = os.path.basename(filename)
+            else:
+                message = filename
+        else:
+            message = ""
         self._progress_bar.update(data_id + 1, message=message)
 
     def processing_finished(self):
@@ -182,74 +188,108 @@ def process(input_data, output, config, monitor_name, observer):
     if observer is not None:
         observer.worker_initialized(worker)
 
-    # Skip unexisting files
-    image_filenames = []
+    # Skip invalide data
+    valid_data = []
     for item in input_data:
-        if os.path.exists(item) and os.path.isfile(item):
-            image_filenames.append(item)
+        if isinstance(item, six.string_types):
+            if os.path.isfile(item):
+                valid_data.append(item)
+            else:
+                logger.warning("File %s do not exists. File ignored.", item)
+        elif isinstance(item, fabio.fabioimage.FabioImage):
+            valid_data.append(item)
+        elif isinstance(item, numpy.ndarray):
+            valid_data.append(item)
         else:
-            logger.warning("File %s do not exists. Ignored.", item)
-    image_filenames = sorted(image_filenames)
+            logger.warning("Type %s unsopported. Data ignored.", item)
+
+    valid_data = sorted(valid_data)
 
     if observer is not None:
-        observer.processing_started(len(image_filenames))
+        observer.processing_started(len(valid_data))
 
     # Integrate files one by one
-    for i, item in enumerate(image_filenames):
+    for i, item in enumerate(valid_data):
         logger.debug("Processing %s", item)
 
-        if len(item) > 100:
-            message = os.path.basename(item)
-        else:
-            message = item
+        # TODO rework it as source
+        if isinstance(item, six.string_types):
+            kind = "filename"
+            filename = item
+            fabio_image = fabio.open(item)
+            multiframe = fabio_image.nframes > 1
+        elif isinstance(item, fabio.fabioimage.FabioImage):
+            kind = "fabio-image"
+            fabio_image = item
+            multiframe = fabio_image.nframes > 1
+            filename = fabio_image.filename
+        elif isinstance(item, numpy.ndarray):
+            kind = "numpy-array"
+            filename = None
+            fabio_image = None
+            multiframe = False
 
         if observer is not None:
-            observer.processing_data(i + 1, data_name=message)
+            observer.processing_data(i + 1, filename=filename)
 
-        img = fabio.open(item)
-        multiframe = img.nframes > 1
+        if filename:
+            output_name = os.path.splitext(filename)[0]
+        else:
+            output_name = "array_%d" % i
 
-        custom_ext = True
+        if multiframe:
+            extension = "_pyFAI.h5"
+        else:
+            if worker.do_2D():
+                extension = ".azim"
+            else:
+                extension = ".dat"
+        output_name = "%s%s" % (output_name, extension)
+
         if output:
             if os.path.isdir(output):
-                outpath = os.path.join(output, os.path.splitext(os.path.basename(item))[0])
+                basename = os.path.basename(output_name)
+                outpath = os.path.join(output, basename)
             else:
                 outpath = os.path.abspath(output)
-                custom_ext = False
         else:
-            outpath = os.path.splitext(item)[0]
+            outpath = output_name
 
-        if custom_ext:
-            if multiframe:
-                outpath = outpath + "_pyFAI.h5"
+        if fabio_image is None:
+            if item.ndim == 3:
+                writer = HDF5Writer(outpath)
+                writer.init()
+                for i in item:
+                    data = item[i]
+                    worker.process(data=data,
+                                   writer=writer)
             else:
-                if worker.do_2D():
-                    outpath = outpath + ".azim"
-                else:
-                    outpath = outpath + ".dat"
-        if multiframe:
-            writer = HDF5Writer(outpath)
-            writer.init(config)
-
-            for i in range(img.nframes):
-                fimg = img.getframe(i)
-                normalization_factor = get_monitor_value(fimg, monitor_name)
-                data = fimg.data
-                res = worker.process(data=data,
-                                     metadata=fimg.header,
-                                     normalization_factor=normalization_factor)
-                if not worker.do_2D():
-                    res = res.T[1]
-                writer.write(res, index=i)
-            writer.close()
+                writer = DefaultAiWriter(outpath, worker.ai)
+                worker.process(data=data,
+                               writer=writer)
         else:
-            normalization_factor = get_monitor_value(img, monitor_name)
-            data = img.data
-            writer = DefaultAiWriter(outpath, worker.ai)
-            worker.process(data,
-                           normalization_factor=normalization_factor,
-                           writer=writer)
-            writer.close()
+            if multiframe:
+                writer = HDF5Writer(outpath)
+                writer.init(config)
+
+                for i in range(fabio_image.nframes):
+                    fimg = fabio_image.getframe(i)
+                    normalization_factor = get_monitor_value(fimg, monitor_name)
+                    data = fimg.data
+                    worker.process(data=data,
+                                   metadata=fimg.header,
+                                   normalization_factor=normalization_factor,
+                                   writer=writer)
+                writer.close()
+            else:
+                writer = DefaultAiWriter(outpath, worker.ai)
+
+                normalization_factor = get_monitor_value(fabio_image, monitor_name)
+                data = fabio_image.data
+                worker.process(data,
+                               normalization_factor=normalization_factor,
+                               writer=writer)
+                writer.close()
 
     if observer is not None:
         observer.processing_finished()
