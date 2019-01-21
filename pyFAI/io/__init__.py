@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "21/01/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -67,6 +67,7 @@ except ImportError:
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
 from .. import version
+from .. import containers
 
 
 logger = logging.getLogger(__name__)
@@ -608,7 +609,7 @@ class DefaultAiWriter(Writer):
             raise Exception("This file format do not support multi frame. You have to change the filename.")
         self._already_written = True
 
-        if fully_qualified_name(data) == 'pyFAI.containers.Integrate1dResult':
+        if isinstance(data, containers.Integrate1dResult):
             self.save1D(filename=self._filename,
                         dim1=data.radial,
                         I=data.intensity,
@@ -621,7 +622,7 @@ class DefaultAiWriter(Writer):
                         normalization_factor=data.normalization_factor,
                         metadata=data.metadata)
 
-        elif fully_qualified_name(data) == 'pyFAI.containers.Integrate2dResult':
+        elif isinstance(data, containers.Integrate2dResult):
             self.save2D(filename=self._filename,
                         I=data.intensity,
                         dim1=data.radial,
