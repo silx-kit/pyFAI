@@ -535,16 +535,14 @@ class Cirpad(ImXPadS10):
 
     def _passage(self, corners, rot):
         shape = corners.shape
-        #  deltaX = -((560 + 3 * 6 + 10)*0.13/1000) * numpy.sin(numpy.deg2rad(rot[2]))
         deltaX, deltaY = 0.0, 0.0
         nmd = self._rotation(corners, rot)
+        # Size in mm of the chip in the Y direction (including 10px gap)
+        size_Y = ((560.0 + 3 * 6 + 20)*0.13/1000)
         for i in range(1, int(round(numpy.abs(rot[2])/6.74))):
-            deltaX = deltaX + ((560.0 + 3 * 6 + 10)*0.13/1000) * numpy.sin(numpy.deg2rad(-rot[2] -6.74*(i)))
+            deltaX = deltaX + numpy.sin(numpy.deg2rad(-rot[2] -6.74*(i)))
         for i in range(int(round(numpy.abs(rot[2])/6.74))):
-            deltaY = deltaY + ((560.0 + 3 * 6 + 10)*0.13/1000) * numpy.cos(numpy.deg2rad(-rot[2] - 6.74*(i+1)))
-        # origine = corners[0][0][0, :] # + [deltaX, deltaY, 0]
-        nmd[:,:,:,0] = nmd[:,:,:,0] + deltaX
-        nmd[:,:,:,1] = nmd[:,:,:,1] + deltaY
+            deltaY = deltaY + numpy.cos(numpy.deg2rad(-rot[2] - 6.74*(i+1)))
         """
         u = corners[shape[0] - 1][0][1, :] - corners[0][0][0, :]
         u = u / numpy.linalg.norm(u)
@@ -555,7 +553,7 @@ class Cirpad(ImXPadS10):
         w = (0.1e-3 + 0.24e-3 + 75.14e-3) * u + (0.8e-3) * v + (0.55e-3) * s + r
         return self._translation(nmd, w)
         """
-        return self._translation(nmd, [0, 0, 0])
+        return self._translation(nmd, [size_Y*deltaX,size_Y*deltaY, 0])
 
     def _get_pixel_corners(self):
         pixel_size1 = self._calc_pixels_size(self.MEDIUM_MODULE_SIZE[0],
