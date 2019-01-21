@@ -391,7 +391,11 @@ class HDF5Writer(Writer):
         logger.debug("In write, index %s", index)
         radial = None
         azimuthal = None
-        if isinstance(data, numpy.ndarray):
+        if isinstance(data, containers.Integrate1dResult):
+            I = data.intensity
+        elif isinstance(data, containers.Integrate2dResult):
+            I = data.intensity
+        elif isinstance(data, numpy.ndarray):
             I = data
         elif isinstance(data, (list, tuple)):
             n = len(data)
