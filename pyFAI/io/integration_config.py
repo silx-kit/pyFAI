@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2019"
+__date__ = "15/01/2019"
 __docformat__ = 'restructuredtext'
 
 
@@ -200,13 +200,13 @@ class ConfigurationReader(object):
 
         :rtype: pyFAI.detectors.Detector
         """
-        value = self._config.pop("detector_config", None)
-        if value:
+        detector_class = self._config.pop("detector", None)
+        if detector_class is not None:
             # NOTE: Default way to describe a detector since pyFAI 0.17
-            detector_config = value
-            detector_class = self._config.pop("detector")
+            detector_config = self._config.pop("detector_config", None)
             detector = detectors.detector_factory(detector_class, config=detector_config)
             return detector
+
         return None
 
     def pop_method(self, default=None):
@@ -220,8 +220,8 @@ class ConfigurationReader(object):
         target = self._config.pop("opencl_device", None)
 
         if method is None:
-            method = method_registry.Method(dim, "*", "*", "*")
-        if isinstance(method, six.string_types):
+            method = method_registry.Method(dim, "*", "*", "*", target=None)
+        elif isinstance(method, six.string_types):
             method = method_registry.IntegrationMethod.parse_old_method(old_method=method)
             method = method_registry.Method(dim, method.split, method.algo, method.impl, target=target)
         elif isinstance(method, (list, tuple)):

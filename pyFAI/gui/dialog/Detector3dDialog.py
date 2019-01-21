@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/01/2019"
+__date__ = "18/01/2019"
 
 import numpy
 import time
@@ -36,6 +36,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+from silx.utils import html
 from silx.gui import qt
 import silx.math.combo
 from silx.gui.plot3d.items import mesh
@@ -95,7 +96,7 @@ class CreateSceneThread(qt.QThread):
         try:
             result = self.runProcess()
         except Exception as e:
-            _logger.debug("Backtrace", exc_info=True)
+            _logger.error("Backtrace", exc_info=True)
             self.__error = str(e)
             self.__isAborted = True
         else:
@@ -124,7 +125,7 @@ class CreateSceneThread(qt.QThread):
 
         # Merge all pixels together
         pixels = pixels[...]
-        pixels = numpy.reshape(pixels,(-1, 4, 3))
+        pixels = numpy.reshape(pixels, (-1, 4, 3))
 
         image = self.__image
         mask = self.__mask
@@ -275,7 +276,11 @@ class Detector3dDialog(qt.QDialog):
 
     def __detectorLoaded(self, thread):
         if thread.isAborted():
-            _logger.error(thread.errorString())
+            template = "<html>3D preview cancelled:<br/>%s</html>"
+            message = template % html.escape(thread.errorString())
+            self.setVisible(False)
+            qt.QMessageBox.critical(self, "Error", message)
+            self.deleteLater()
             return
         self.__process.setVisible(False)
         self.__plot.setVisible(True)
