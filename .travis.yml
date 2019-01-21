@@ -41,6 +41,6 @@ install:
 
 # command to run tests
 script:
-  - "python -v run_tests.py -m"
-  - "python -v ./run_tests.py -m --installed" 
+  - "python run_tests.py -m"
+  - "python ./run_tests.py -m --installed" 
 
