@@ -89,8 +89,8 @@ class ExperimentTask(AbstractCalibrationTask):
         plot = silx.gui.plot.PlotWidget(parent=parent)
         plot.setKeepDataAspectRatio(True)
         plot.setDataMargins(0.1, 0.1, 0.1, 0.1)
-        plot.setGraphXLabel("Y")
-        plot.setGraphYLabel("X")
+        plot.setGraphXLabel("X")
+        plot.setGraphYLabel("Y")
 
         colormap = CalibrationContext.instance().getRawColormap()
         plot.setDefaultColormap(colormap)
