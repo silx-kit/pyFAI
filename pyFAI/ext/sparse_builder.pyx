@@ -28,7 +28,7 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "13/07/2018"
+__date__ = "21/01/2019"
 __copyright__ = "2018, ESRF"
 
 import numpy
@@ -50,6 +50,7 @@ from cython cimport floating
 include "sparse_builder.pxi"
 
 cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+
 
 @cython.cdivision(True)
 cdef inline floating calc_upper_bound(floating maximum_value) nogil:
