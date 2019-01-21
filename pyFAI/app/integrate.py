@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2019"
+__date__ = "21/01/2019"
 __satus__ = "production"
 import sys
 import logging
@@ -103,31 +103,92 @@ def get_monitor_value(image, monitor_key):
         return 1.0
 
 
-def integrate_shell(options, args):
-    import json
-    with open(options.json) as f:
-        config = json.load(f)
+class IntegrationObserver(object):
+    """Interface providing access to the to the processing of the `process`
+    function."""
 
+    def worker_initialized(self, worker):
+        """
+        Called when the worker is initialized
+
+        :param int data_count: Number of data to integrate
+        """
+        pass
+
+    def processing_started(self, data_count):
+        """
+        Called before starting the full processing.
+
+        :param int data_count: Number of data to integrate
+        """
+        pass
+
+    def processing_data(self, data_id, data_name):
+        """
+        Start processing the data `data_id`
+
+        :param int data_id: Id of the data
+        :param int data_name: Name of the data
+        """
+        pass
+
+    def processing_finished(self):
+        """Called when the full processing is finisehd."""
+        pass
+
+
+class ShellIntegrationObserver(IntegrationObserver):
+    """
+    Implement `IntegrationObserver` as a shell display.
+    """
+
+    def __init__(self):
+        self._progress_bar = None
+
+    def processing_started(self, data_count):
+        self._progress_bar = ProgressBar("Integration", data_count, 20)
+
+    def processing_data(self, data_id, data_name):
+        message = data_name
+        self._progress_bar.update(data_id + 1, message=message)
+
+    def processing_finished(self):
+        self._progress_bar.clear()
+
+
+def process(input_data, output, config, monitor_name, observer):
+    """
+    Integrate a set of data.
+
+    :param List[str] input_data: List of input filenames
+    :param str output: Filename of directory output
+    :param dict config: Dictionary to configure `pyFAI.worker.Worker`
+    :param IntegrationObserver observer: Observer of the processing
+    :param:
+    """
     worker = pyFAI.worker.Worker()
     worker.set_config(config, consume_keys=True)
-
     # Check unused keys
     for key in config.keys():
-        logger.warning("Configuration key '%s' from json file '%s' is unused", key, options.json)
+        logger.warning("Configuration key '%s' from json is unused", key)
 
     worker.safe = False  # all processing are expected to be the same.
     start_time = time.time()
 
+    if observer is not None:
+        observer.worker_initialized(worker)
+
     # Skip unexisting files
     image_filenames = []
-    for item in args:
+    for item in input_data:
         if os.path.exists(item) and os.path.isfile(item):
             image_filenames.append(item)
         else:
             logger.warning("File %s do not exists. Ignored.", item)
     image_filenames = sorted(image_filenames)
 
-    progress_bar = ProgressBar("Integration", len(image_filenames), 20)
+    if observer is not None:
+        observer.processing_started(len(image_filenames))
 
     # Integrate files one by one
     for i, item in enumerate(image_filenames):
@@ -137,17 +198,19 @@ def integrate_shell(options, args):
             message = os.path.basename(item)
         else:
             message = item
-        progress_bar.update(i + 1, message=message)
+
+        if observer is not None:
+            observer.processing_data(i + 1, data_name=message)
 
         img = fabio.open(item)
         multiframe = img.nframes > 1
 
         custom_ext = True
-        if options.output:
-            if os.path.isdir(options.output):
-                outpath = os.path.join(options.output, os.path.splitext(os.path.basename(item))[0])
+        if output:
+            if os.path.isdir(output):
+                outpath = os.path.join(output, os.path.splitext(os.path.basename(item))[0])
             else:
-                outpath = os.path.abspath(options.output)
+                outpath = os.path.abspath(output)
                 custom_ext = False
         else:
             outpath = os.path.splitext(item)[0]
@@ -166,7 +229,7 @@ def integrate_shell(options, args):
 
             for i in range(img.nframes):
                 fimg = img.getframe(i)
-                normalization_factor = get_monitor_value(fimg, options.monitor_key)
+                normalization_factor = get_monitor_value(fimg, monitor_name)
                 data = fimg.data
                 res = worker.process(data=data,
                                      metadata=fimg.header,
@@ -176,7 +239,7 @@ def integrate_shell(options, args):
                 writer.write(res, index=i)
             writer.close()
         else:
-            normalization_factor = get_monitor_value(img, options.monitor_key)
+            normalization_factor = get_monitor_value(img, monitor_name)
             data = img.data
             writer = DefaultAiWriter(outpath, worker.ai)
             worker.process(data,
@@ -184,9 +247,22 @@ def integrate_shell(options, args):
                            writer=writer)
             writer.close()
 
-    progress_bar.clear()
+    if observer is not None:
+        observer.processing_finished()
     logger.info("Processing done in %.3fs !", (time.time() - start_time))
     return 0
+
+
+def integrate_shell(options, args):
+    import json
+    with open(options.json) as f:
+        config = json.load(f)
+
+    observer = ShellIntegrationObserver()
+    monitor_name = options.monitor_key
+    filenames = args
+    output = options.output
+    return process(filenames, output, config, monitor_name, observer)
 
 
 def main():
