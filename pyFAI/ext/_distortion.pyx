@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "15/01/2019"
+__date__ = "21/01/2019"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -1839,7 +1839,7 @@ class Distortion(object):
             with self._sem:
                 if self.LUT is None:
                     pos = self.pos
-                    lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.lut_size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
+                    lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.lut_size), dtype=lut_d)
                     size = self.shape[0] * self.shape[1] * self.lut_size * sizeof(lut_t)
                     memset(&lut[0, 0, 0], 0, size)
                     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], size / 1.0e6))
