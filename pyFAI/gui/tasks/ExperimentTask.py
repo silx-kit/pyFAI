@@ -24,10 +24,11 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
+from pyFAI.gui.helper import model_transform
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/01/2019"
+__date__ = "18/01/2019"
 
 import fabio
 import numpy
@@ -88,8 +89,8 @@ class ExperimentTask(AbstractCalibrationTask):
         plot = silx.gui.plot.PlotWidget(parent=parent)
         plot.setKeepDataAspectRatio(True)
         plot.setDataMargins(0.1, 0.1, 0.1, 0.1)
-        plot.setGraphXLabel("Y")
-        plot.setGraphYLabel("X")
+        plot.setGraphXLabel("X")
+        plot.setGraphYLabel("Y")
 
         colormap = CalibrationContext.instance().getRawColormap()
         plot.setDefaultColormap(colormap)
@@ -122,21 +123,9 @@ class ExperimentTask(AbstractCalibrationTask):
         image = settings.image().value()
         mask = settings.mask().value()
         colormap = CalibrationContext.instance().getRawColormap()
-        geometry = None
-
-        fittedGeometry = self.model().fittedGeometry()
-        if fittedGeometry.isValid():
-            from pyFAI import geometry
-            geometry = geometry.Geometry()
-            geometry.dist = fittedGeometry.distance().value()
-            geometry.poni1 = fittedGeometry.poni1().value()
-            geometry.poni2 = fittedGeometry.poni2().value()
-            geometry.rot1 = fittedGeometry.rotation1().value()
-            geometry.rot2 = fittedGeometry.rotation2().value()
-            geometry.rot3 = fittedGeometry.rotation3().value()
-            geometry.wavelength = fittedGeometry.wavelength().value()
-
-        dialog.setData(detector, image, mask, colormap, geometry=geometry)
+        dialog.setData(detector=detector,
+                       image=image, mask=mask, colormap=colormap,
+                       geometry=None)
         dialog.exec_()
 
     def _updateModel(self, model):

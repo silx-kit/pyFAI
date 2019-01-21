@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/01/2019"
+__date__ = "10/01/2019"
 
 
 from silx.gui import qt
@@ -62,16 +62,16 @@ class IntegrationMethodWidget(qt.QWidget):
     }
 
     _DESCRIPTION_DOC = {
-        "no": "No pixel splitting. Each pixel is used in a single box of the result.",
-        "bbox": "Split the bounding box corresponding to the pixel in the integrated geometry.",
-        "pseudo": "Split an approximative bounding box corresponding to the pixel in the integrated geometry.",
-        "full": "Split the pixel using a linear approximation.",
-        "histogram": "Preprocess the data using an histogram.",
-        "lut": "Structure the data using a LUT (look-up table). Usually consuming less memory.",
-        "csr": "Structure the data using a CSR (compressed sparse row). Usually faster for processing.",
-        "python": "Use a pure Python/numpy implementation. Slow but portable.",
-        "cython": "Use a Cython/C/C++ implementation. Fast but platform dependent.",
-        "opencl": "Use an OpenCL implementation based on hardware acceleration using parallelization. Fastest but hardware/driver dependeant.",
+        "no": "No pixel splitting. Each pixel contributes to a single bin of the result. No bin correlation but more noise",
+        "bbox": "Split the bounding box corresponding to the pixel in the integrated geometry. The smoothest splitting, blurs a bit the signal",
+        "pseudo": "Scale down the bounding box to the pixel area, before splitting. Good cost/precision compromize, similar to FIT2D",
+        "full": "Split each pixel as a polygon on the output bins. The costly high-precision choice",
+        "histogram": "Direct integration method with the lowest memory footprint but slower",
+        "lut": "Sparse matrix based integration using a look-up table. Long initalization time and highest memory usage. Often slower than CSR",
+        "csr": "Sparse matrix based integration using a a CSR (compressed sparse row) representation. Long initalization time and high memory usage, but the fastest for processing",
+        "python": "Use a pure Python/numpy/scipy implementation. Slow but portable",
+        "cython": "Use a Cython/C/C++ implementation. Fast and reliable default methods",
+        "opencl": "Use an OpenCL implementation based on hardware accelerators. Fastest but hardware/driver dependant",
     }
 
     CodeRole = qt.Qt.UserRole + 1
@@ -253,7 +253,7 @@ class IntegrationMethodWidget(qt.QWidget):
                 continue
             item = model.itemFromIndex(index)
 
-            localMethod = (name if m is None else m for m in method)
+            localMethod = tuple(name if m is None else m for m in method)
             methods = method_registry.IntegrationMethod.select_method(1, *localMethod, degradable=False)
             available1d = len(methods) != 0
             methods = method_registry.IntegrationMethod.select_method(2, *localMethod, degradable=False)
@@ -263,7 +263,7 @@ class IntegrationMethodWidget(qt.QWidget):
             if available1d and available2d:
                 color = qt.Qt.black
             elif not available1d and not available2d:
-                color = qt.Qt.grey
+                color = qt.Qt.gray
             else:
                 color = qt.Qt.red
                 if available1d:

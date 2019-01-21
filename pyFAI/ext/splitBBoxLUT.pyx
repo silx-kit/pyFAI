@@ -33,11 +33,12 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/11/2018"
+__date__ = "15/01/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "sparse_common.pxi"
+#check LUT is propely represented in C and numpy
 
 import cython
 import os
@@ -52,6 +53,13 @@ import numpy
 cimport numpy
 from ..utils import crc32
 from ..utils.decorators import deprecated
+
+
+if LUT_ITEMSIZE == lut_d.itemsize == 8:
+    logger.debug("LUT sizes C:%s \t Numpy: %s", lut_d.itemsize, LUT_ITEMSIZE)
+else:
+    logger.error("LUT sizes C:%s \t Numpy: %s", lut_d.itemsize, LUT_ITEMSIZE)
+    raise ImportError("Numpy and C have the same internal LUT representation")
 
 
 def int0(a):
@@ -276,19 +284,23 @@ class HistoBBox1d(object):
         self.lut_size = lut_size
 
         lut_nbytes = bins * lut_size * sizeof(lut_t)
-        if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            try:
-                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            except OSError:
-                pass
-            else:
-                if memsize < lut_nbytes:
-                    raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s" %
-                                      (bins, lut_size, lut_nbytes, memsize))
-
+        #Check we have enough memory
+        if (os.name == "posix"):
+            key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+            key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+            if key_page_size*key_page_cnt:
+                try:
+                    memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
+                except OSError:
+                    pass
+                else:
+                    if memsize < lut_nbytes:
+                        raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s" %
+                                          (bins, lut_size, lut_nbytes/2.**30, memsize/2.**30))
         # else hope we have enough memory
+
         if (bins == 0) or (lut_size == 0):
-            # fix 271
+            # fix issue #271
             msg = "The look-up table has dimension (%s,%s) which is a non-sense." +\
                   "Did you mask out all pixel or is your image out of the geometry range?"
             raise RuntimeError(msg % (bins, lut_size))
@@ -969,15 +981,20 @@ class HistoBBox2d(object):
         outmax[:, :] = 0
 
         lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_t)
-        if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            try:
-                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            except OSError:
-                pass
-            else:
-                if memsize < lut_nbytes:
-                    raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
-                                      (bins0, bins1, lut_size, lut_nbytes, memsize))
+        #Check we have enough memory
+        if (os.name == "posix"):
+            key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+            key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+            if key_page_size*key_page_cnt:
+                try:
+                    memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
+                except OSError:
+                    pass
+                else:
+                    if memsize < lut_nbytes:
+                        raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
+                                          (bins0, bins1, lut_size, lut_nbytes, memsize))
+
         # else hope we have enough memory
         lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_t), format="if")
         memset(&lut[0, 0, 0], 0, lut_nbytes)

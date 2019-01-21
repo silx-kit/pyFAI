@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "15/01/2019"
 
 import unittest
 import logging
@@ -65,7 +65,7 @@ class TestCalibration(testutils.TestCaseQt):
 
     def setUp(self):
         # FIXME: It would be good to remove this singleton
-        CalibrationContext._instance = None
+        CalibrationContext._releaseSingleton()
         super(TestCalibration, self).setUp()
 
     def create_context(self):

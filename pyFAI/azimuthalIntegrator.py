@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "14/01/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -172,8 +172,9 @@ else:
     # Register splitPixelFullCSR integrators
     IntegrationMethod(1, "full", "CSR", "cython", old_method="full_csr",
                       class_funct=(splitPixelFullCSR.FullSplitCSR_1d, splitPixelFullCSR.FullSplitCSR_1d.integrate))
-    IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr",
-                      class_funct=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate))
+    # FIXME: The implementation is there but the routing have to be fixed
+    # IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr",
+    #                   class_funct=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate))
 
 from .opencl import ocl
 if ocl:

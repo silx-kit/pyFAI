@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/12/2018"
+__date__ = "21/01/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -42,9 +42,15 @@ include "numpy_common.pxi"
 # Imports at the Python level 
 import cython
 import numpy
+import sys
+
+# Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
+
+_numpy_1_12_py2_bug = ((sys.version_info.major == 2) and 
+                       ([1, 12] <= [int(i) for i in numpy.version.version.split(".", 2)[:2]]))
 
 # Imports at the C level
-from isnan cimport isnan
+from .isnan cimport isnan
 from cython cimport floating
 from libc.math cimport fabs, M_PI, sqrt
 cimport numpy as cnumpy
@@ -66,10 +72,16 @@ ctypedef cnumpy.int8_t mask_t
 mask_d = numpy.int8
 
 # Type used for propagating variance
-prop_d = numpy.dtype([('signal', acc_d),
-                      ('variance', acc_d),
-                      ('norm', acc_d),
-                      ('count', acc_d)])
+if _numpy_1_12_py2_bug:
+    prop_d = numpy.dtype([(b'signal', acc_d),
+                          (b'variance', acc_d),
+                          (b'norm', acc_d),
+                          (b'count', acc_d)])
+else: 
+    prop_d = numpy.dtype([('signal', acc_d),
+                          ('variance', acc_d),
+                          ('norm', acc_d),
+                         ('count', acc_d)])
 
 ctypedef fused any_int_t:
     cnumpy.uint8_t

@@ -39,7 +39,7 @@ from cython.parallel import prange
 
 
 from libc.math cimport fabs
-from isnan cimport isnan
+from .isnan cimport isnan
 from cython cimport floating
 
 

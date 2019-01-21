@@ -103,7 +103,7 @@ class TestTranslation(unittest.TestCase):
         g = Goniometer([1., 2., 3., 4., 5., 6., 7.], self.gt, "pilatus100k")
         fname = os.path.join(UtilsTest.tempdir, "gonio.json")
         g.save(fname)
-        self.assert_(os.path.exists(fname), "json file written")
+        self.assertTrue(os.path.exists(fname), "json file written")
         g2 = Goniometer.sload(fname)
         self.assertEqual(str(g), str(g2), "goniometer description are the same")
         ai = g2.get_ai((1, 2))

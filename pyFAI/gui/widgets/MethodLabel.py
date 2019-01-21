@@ -27,7 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/01/2019"
+__date__ = "14/01/2019"
+
+import logging
+_logger = logging.getLogger(__name__)
 
 from silx.gui import qt
 
@@ -38,6 +41,9 @@ class MethodLabel(qt.QLabel):
     """Readonly line display"""
 
     _HUMAN_READABLE = {
+        "*": "Any",
+        "any": "Any",
+        "all": "Any",
         "no": "No splitting",
         "bbox": "Bounding box",
         "pseudo": "Pseudo split",
@@ -50,17 +56,18 @@ class MethodLabel(qt.QLabel):
         "opencl": "OpenCL",
     }
 
-    _LABEL_TEMPLATE = """{split} / {impl} / {algo}"""
-
     _TOOLTIP_TEMPLATE = """<ul>
     <li><b>Pixel splitting:</b> {split}</li>
     <li><b>Implementation:</b> {impl}</li>
     <li><b>Algorithm:</b> {algo}</li>
+    <li><b>Availability:</b> {availability}</li>
     </ul>"""
 
     def __init__(self, parent=None):
         super(MethodLabel, self).__init__(parent)
         self.__method = None
+        self.__labelTemplate = "{split} / {impl} / {algo}"
+        self.__availability = False
         self.__updateFeedback()
 
     def method(self):
@@ -75,6 +82,17 @@ class MethodLabel(qt.QLabel):
         self.__method = method
         self.__updateFeedback()
 
+    def setLabelTemplate(self, template):
+        """Set the template used to format the label
+
+        :param str template: The template used to format the label
+        """
+        self.__labelTemplate = template
+        self.__updateFeedback()
+
+    def labelTemplate(self):
+        return self.__labelTemplate
+
     def __compare(self, method, methodReference):
         if method == methodReference:
             return "same"
@@ -87,47 +105,89 @@ class MethodLabel(qt.QLabel):
             return "degraded"
         return "specialized"
 
+    def setMethodAvailability(self, availability):
+        """Display or not in the widget if the method is available or not.
+
+        :param bool availability: Display in the widget if the method is
+            available or not.
+        """
+        self.__availability = availability
+        self.__updateFeedback()
+
+    def methodAvailability(self):
+        return self.__availability
+
     def __updateFeedback(self):
         method = self.__method
         if method is None:
             label = "No method"
             toolTip = "No method"
         else:
-            usedMethods = method_registry.IntegrationMethod.select_method(method=method)
-            if len(usedMethods) == 0:
-                label = "No method"
-                toolTip = "No method fit. Integration could be compromized."
-            else:
-                usedMethod = usedMethods[0]
-                usedMethod = usedMethod.method
-                compare = self.__compare(usedMethod, method)
-
-                if compare == "same":
-                    label = self.__methodToString(method, self._LABEL_TEMPLATE)
+            if not self.__availability:
+                    label = self.__methodToString(method, self.__labelTemplate)
                     toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+            else:
+                usedMethods = method_registry.IntegrationMethod.select_method(method=method)
+                if len(usedMethods) == 0:
+                    label = "No method fit"
+                    toolTip = self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+                    toolTip = ("No method fit. Integration could be compromized. "
+                               "The following configuration is defined:"
+                               "%s</html>" % toolTip)
                 else:
-                    original = self.__methodToString(method, self._LABEL_TEMPLATE)
-                    label = self.__methodToString(usedMethod, self._LABEL_TEMPLATE)
-                    toolTip = self.__methodToString(usedMethod, self._TOOLTIP_TEMPLATE)
+                    usedMethod = usedMethods[0]
+                    usedMethod = usedMethod.method
+                    compare = self.__compare(usedMethod, method)
 
-                    if compare == "degraded":
-                        label = "Degraded to: " + label
-                        toolTip = ("<html>The method %s is not available, at least, in this computer. "
-                                   "The following method will be used:"
-                                   "%s</html>" % (original, toolTip))
-                    elif compare == "specialized":
-                        label = "Specialized with: " + label
-                        toolTip = ("<html>The generic selection %s will use the following method in this computer:"
-                                   "%s</html>" % (original, toolTip))
+                    if compare == "same":
+                        label = self.__methodToString(method, self.__labelTemplate)
+                        toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
                     else:
-                        assert(False)
+                        original = self.__methodToString(method, self.__labelTemplate)
+                        label = self.__methodToString(usedMethod, self.__labelTemplate)
+                        toolTip = self.__methodToString(usedMethod, self._TOOLTIP_TEMPLATE)
+
+                        if compare == "degraded":
+                            label = "Degraded to: " + label
+                            toolTip = ("<html>The method %s is not available, at least, in this computer. "
+                                       "The following method will be used:"
+                                       "%s</html>" % (original, toolTip))
+                        elif compare == "specialized":
+                            label = "Specialized with: " + label
+                            toolTip = ("<html>The generic selection %s will use the following method in this computer:"
+                                       "%s</html>" % (original, toolTip))
+                        else:
+                            assert(False)
 
         self.setText(label)
         self.setToolTip(toolTip)
 
     def __methodToString(self, method, template):
         _dim, split, algo, impl, _target = method
+
+        methods = method_registry.IntegrationMethod.select_method(dim="*",
+                                                                  split=split,
+                                                                  algo=algo,
+                                                                  impl=impl,
+                                                                  degradable=False)
+        dimensions = set([m.dimension for m in methods])
+
+        if dimensions == set([1, 2]):
+            availability = "1D and 2D"
+        elif dimensions == set([1]):
+            availability = "Only 1D"
+        elif dimensions == set([2]):
+            availability = "Only 2D"
+        elif dimensions == set([]):
+            availability = "Not available"
+        else:
+            _logger.error("Unexpected dimensions %s", dimensions)
+            availability = "Unsupported"
+
         split = self._HUMAN_READABLE.get(split, split)
         algo = self._HUMAN_READABLE.get(algo, algo)
         impl = self._HUMAN_READABLE.get(impl, impl)
-        return template.format(split=split, algo=algo, impl=impl)
+        return template.format(split=split,
+                               algo=algo,
+                               impl=impl,
+                               availability=availability)

@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2019"
+__date__ = "14/01/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -94,12 +94,22 @@ class IntegrationMethod:
             return cls.select_method(dim, split, algo, impl,
                                      target, target_type,
                                      degradable=degradable)
+        any_values = set(["any", "all", "*"])
+        if dim in any_values:
+            methods = []
+            for d in [1, 2]:
+                methods += cls.select_method(dim=d,
+                                             split=split, algo=algo, impl=impl,
+                                             target=target, target_type=target_type,
+                                             degradable=degradable, method=method)
+            return methods
+
         dim = int(dim) if dim else 0
         algo = algo.lower() if algo is not None else "*"
         impl = impl.lower() if impl is not None else "*"
         split = split.lower() if split is not None else "*"
         target_type = target_type.lower() if target_type else "*"
-        if target_type in ("any", "all"):
+        if target_type in any_values:
             target_type = "*"
         method_nt = Method(dim, algo, impl, split, target)
         if method_nt in cls._registry:

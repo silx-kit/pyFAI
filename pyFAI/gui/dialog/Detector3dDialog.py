@@ -27,12 +27,16 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/01/2019"
+__date__ = "18/01/2019"
 
 import numpy
 import time
 import functools
+import logging
 
+_logger = logging.getLogger(__name__)
+
+from silx.utils import html
 from silx.gui import qt
 import silx.math.combo
 from silx.gui.plot3d.items import mesh
@@ -76,7 +80,31 @@ class CreateSceneThread(qt.QThread):
         self.__last = now
         self.progressValue.emit(value)
 
+    def errorString(self):
+        return self.__error
+
+    def isAborted(self):
+        """
+        Returns whether the theard has aborted or not.
+
+        .. note:: Aborted thead are not finished theads.
+        """
+        return self.__isAborted
+
     def run(self):
+        self.__isAborted = False
+        try:
+            result = self.runProcess()
+        except Exception as e:
+            _logger.error("Backtrace", exc_info=True)
+            self.__error = str(e)
+            self.__isAborted = True
+        else:
+            if not result:
+                self.__error = "Task was aborted"
+                self.__isAborted = True
+
+    def runProcess(self):
         self.emitProgressValue(0, force=True)
 
         if self.__geometry is not None:
@@ -97,7 +125,7 @@ class CreateSceneThread(qt.QThread):
 
         # Merge all pixels together
         pixels = pixels[...]
-        pixels.shape = -1, 4, 3
+        pixels = numpy.reshape(pixels, (-1, 4, 3))
 
         image = self.__image
         mask = self.__mask
@@ -138,6 +166,9 @@ class CreateSceneThread(qt.QThread):
             percent = 10 + int(90 * (npixel / len(pixels)))
             self.emitProgressValue(percent)
 
+            if self.isInterruptionRequested():
+                return False
+
             masked = False
             if mask is not None:
                 masked = mask[npixel] != 0
@@ -170,6 +201,7 @@ class CreateSceneThread(qt.QThread):
         self.__colors_array = colors_array
 
         self.emitProgressValue(100, force=True)
+        return True
 
     def hasGeometry(self):
         return self.__geometry is not None
@@ -233,7 +265,7 @@ class Detector3dDialog(qt.QDialog):
         self.__process.setRange(0, 100)
 
         self.__buttons = qt.QDialogButtonBox(self)
-        self.__buttons.addButton(qt.QDialogButtonBox.StandardButton.Cancel)
+        self.__buttons.addButton(qt.QDialogButtonBox.Cancel)
         self.__buttons.accepted.connect(self.accept)
         self.__buttons.rejected.connect(self.reject)
 
@@ -243,10 +275,17 @@ class Detector3dDialog(qt.QDialog):
         layout.addWidget(self.__buttons)
 
     def __detectorLoaded(self, thread):
+        if thread.isAborted():
+            template = "<html>3D preview cancelled:<br/>%s</html>"
+            message = template % html.escape(thread.errorString())
+            self.setVisible(False)
+            qt.QMessageBox.critical(self, "Error", message)
+            self.deleteLater()
+            return
         self.__process.setVisible(False)
         self.__plot.setVisible(True)
         self.__buttons.clear()
-        self.__buttons.addButton(qt.QDialogButtonBox.StandardButton.Close)
+        self.__buttons.addButton(qt.QDialogButtonBox.Close)
         self.adjustSize()
 
         sceneWidget = self.__plot.getSceneWidget()
@@ -274,4 +313,5 @@ class Detector3dDialog(qt.QDialog):
         thread.finished.connect(functools.partial(self.__detectorLoaded, thread))
         thread.finished.connect(thread.deleteLater)
         thread.progressValue.connect(self.__detectorLoading)
+        self.rejected.connect(thread.requestInterruption)
         thread.start()
