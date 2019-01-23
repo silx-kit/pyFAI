@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2019"
+__date__ = "23/01/2019"
 __status__ = "development"
 
 import logging
@@ -191,7 +191,7 @@ class WorkerConfigurator(qt.QWidget):
 
         # file-version
         config["application"] = "pyfai-integrate"
-        config["version"] =  3
+        config["version"] = 3
 
         # geometry
         config["wavelength"] = self.__geometryModel.wavelength().value()
