@@ -34,6 +34,7 @@ import contextlib
 import unittest
 import tempfile
 import numpy
+import shutil
 
 import pyFAI.app.integrate
 from .utilstest import UtilsTest
@@ -166,10 +167,79 @@ class TestIntegrateApp(unittest.TestCase):
                     numpy.testing.assert_almost_equal(result, expected, decimal=1)
 
 
+class _ResultObserver(pyFAI.app.integrate.IntegrationObserver):
+
+    def __init__(self):
+        self.result = []
+
+    def data_result(self, data_id, result):
+        self.result.append(result)
+
+
+class TestProcess(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        config = {"poni": UtilsTest.getimage("Pilatus1M.poni")}
+        integration_config.normalize(config, inplace=True)
+        cls.base_config = config
+
+    def setUp(self):
+        self.tempDir = os.path.join(UtilsTest.tempdir, self.id())
+        os.makedirs(self.tempDir)
+
+    def tearDown(self):
+        shutil.rmtree(self.tempDir)
+        self.tempDir = None
+
+    def test_process_no_data(self):
+        config = {"nbpt_rad": 2}
+        config.update(self.base_config)
+        observer = _ResultObserver()
+        pyFAI.app.integrate.process([], self.tempDir, config, monitor_name=None, observer=observer)
+        self.assertEqual(len(observer.result), 0)
+
+    def test_process_numpy_1d(self):
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        expected_result = [23.5, 9.9]
+        expected_radial = [1.9, 1.9]
+        params = {"do_2D": False,
+                  "nbpt_rad": 2,
+                  "method": ("bbox", "histogram", "cython")}
+        config = self.base_config.copy()
+        config.update(params)
+        observer = _ResultObserver()
+        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        self.assertEqual(len(observer.result), 1)
+        result = observer.result[0]
+        numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
+        numpy.testing.assert_array_almost_equal(result.radial, expected_radial, decimal=1)
+
+    def test_process_numpy_2d(self):
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        expected_result = [[5.6, 4.5], [41.8, 9.3]]
+        expected_radial = [2.0, 2.0]
+        expected_azimuthal = [-124.5, -124.2]
+        params = {"do_2D": True,
+                  "nbpt_azim": 2,
+                  "nbpt_rad": 2,
+                  "method": ("bbox", "histogram", "cython")}
+        config = self.base_config.copy()
+        config.update(params)
+        observer = _ResultObserver()
+        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        self.assertEqual(len(observer.result), 1)
+        result = observer.result[0]
+        numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
+        numpy.testing.assert_array_almost_equal(result.radial, expected_radial, decimal=1)
+        numpy.testing.assert_array_almost_equal(result.azimuthal, expected_azimuthal, decimal=1)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestIntegrateApp))
+    testsuite.addTest(loader(TestProcess))
     return testsuite
 
 
