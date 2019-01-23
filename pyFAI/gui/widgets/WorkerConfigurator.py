@@ -57,6 +57,7 @@ from ..model.DataModel import DataModel
 from ..utils import units
 from ...utils import stringutil
 from ..utils import FilterBuilder
+from ..utils import validators
 from ...io.ponifile import PoniFile
 from ...io import integration_config
 from ... import method_registry
@@ -113,6 +114,10 @@ class WorkerConfigurator(qt.QWidget):
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
 
+        doubleOrEmptyValidator = validators.DoubleAndEmptyValidator()
+        self.normalization_factor_value.setValidator(doubleOrEmptyValidator)
+        self.normalization_factor_value.setText("1.0")
+
         self.__configureDisabledStates()
 
         self.setDetector(None)
@@ -127,6 +132,7 @@ class WorkerConfigurator(qt.QWidget):
         self.do_radial_range.clicked.connect(self.__updateDisabledStates)
         self.do_azimuthal_range.clicked.connect(self.__updateDisabledStates)
         self.do_poisson.clicked.connect(self.__updateDisabledStates)
+        self.do_normalization_factor.clicked.connect(self.__updateDisabledStates)
 
         self.__updateDisabledStates()
 
@@ -144,6 +150,7 @@ class WorkerConfigurator(qt.QWidget):
         self.azimuth_range_min.setEnabled(enabled)
         self.azimuth_range_max.setEnabled(enabled)
         self.error_selection.setEnabled(self.do_poisson.isChecked())
+        self.normalization_factor_value.setEnabled(self.do_normalization_factor.isChecked())
 
     def set1dIntegrationOnly(self, only1d):
         """Enable only 1D integration for this widget."""
@@ -247,6 +254,12 @@ class WorkerConfigurator(qt.QWidget):
             if method.impl == "opencl":
                 config["opencl_device"] = self.__openclDevice
 
+        if self.do_normalization_factor.isChecked():
+            value = self.normalization_factor_value.text()
+            if value != "":
+                value = self._float(value)
+                config["normalization_factor"] = value
+
         return config
 
     def setConfig(self, dico):
@@ -345,6 +358,9 @@ class WorkerConfigurator(qt.QWidget):
             if key in dico and (value is not None):
                 value(dico.pop(key))
 
+        normalizationFactor = dico.pop("normalization_factor", None)
+        self.__setNormalizationFactor(normalizationFactor)
+
         value = dico.pop("unit", None)
         if value is not None:
             unit = to_unit(value)
@@ -430,6 +446,11 @@ class WorkerConfigurator(qt.QWidget):
             dim = 2 if self.do_2D.isChecked() else 1
             method = method_registry.Method(dim=dim, split=split, algo=algo, impl=impl, target=None)
             self.__setMethod(method)
+
+    def __setNormalizationFactor(self, value):
+        text = str(value) if value is not None else "1.0"
+        self.normalization_factor_value.setText(text)
+        self.do_normalization_factor.setChecked(value is not None)
 
     def setDetector(self, detector):
         self.__detector = detector

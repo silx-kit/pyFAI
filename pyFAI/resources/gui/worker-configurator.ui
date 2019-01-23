@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>468</width>
-    <height>874</height>
+    <width>484</width>
+    <height>907</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -491,7 +491,7 @@
       <string>Processing</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_6" columnstretch="0,0,0,0">
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_13">
         <property name="text">
          <string>Algorithm:</string>
@@ -528,14 +528,14 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1" colspan="2">
+      <item row="2" column="1" colspan="2">
        <widget class="MethodLabel" name="methodLabel">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
+      <item row="2" column="3">
        <widget class="QToolButton" name="method_config_button">
         <property name="text">
          <string>...</string>
@@ -546,6 +546,29 @@
        <widget class="QLabel" name="opencl_title">
         <property name="text">
          <string>OpenCL device:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="do_normalization_factor">
+        <property name="toolTip">
+         <string>Perform polarization corrections</string>
+        </property>
+        <property name="text">
+         <string>Normalization factor:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="QLineEdit" name="normalization_factor_value">
+        <property name="toolTip">
+         <string>Lower radial bound</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
