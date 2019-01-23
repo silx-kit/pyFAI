@@ -321,8 +321,7 @@ def process(input_data, output, config, monitor_name, observer):
             if item.ndim == 3:
                 writer = HDF5Writer(outpath)
                 writer.init()
-                for iframe in item:
-                    data = item[iframe]
+                for iframe, data in enumerate(item):
                     result = worker.process(data=data,
                                             writer=writer)
                     if observer is not None:
