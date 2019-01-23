@@ -434,7 +434,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                         is divided by the monitor. If the header does not \
                         contain or contains a wrong value, the contribution \
                         of the input file is ignored.\
-                        On EDF files, values from 'counter_pos' can accessed \
+                        On EDF files, values from 'counter_pos' can be accessed \
                         by using the expected mnemonic. \
                         For example 'counter/bmon'.")
     options = parser.parse_args(args)
