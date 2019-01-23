@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2019"
+__date__ = "23/01/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -285,6 +285,8 @@ class HDF5Writer(Writer):
                 if value is None:
                     continue
                 try:
+                    if isinstance(value, (tuple, list, dict)):
+                        value = json.dumps(value)
                     self.pyFAI_grp[key] = value
                 except Exception as e:
                     logger.error("Unable to set %s: %s", key, value)
