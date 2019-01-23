@@ -267,8 +267,6 @@ def process(input_data, output, config, monitor_name, observer):
         else:
             logger.warning("Type %s unsopported. Data ignored.", item)
 
-    valid_data = sorted(valid_data)
-
     if observer is not None:
         observer.processing_started(len(valid_data))
 
@@ -438,6 +436,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
 
     # Analysis arguments and options
     args = pyFAI.utils.expand_args(options.args)
+    args = sorted(args)
 
     if options.verbose:
         logger.info("setLevel: debug")
