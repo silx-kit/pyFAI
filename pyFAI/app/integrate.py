@@ -380,7 +380,12 @@ def integrate_shell(options, args):
     return process(filenames, output, config, monitor_name, observer)
 
 
-def main():
+def _main(args):
+    """Execute the application
+
+    :param str args: Command line argument without the program name
+    :rtype: int
+    """
     usage = "pyFAI-integrate [options] file1.edf file2.edf ..."
     version = "pyFAI-integrate version %s from %s" % (pyFAI.version, pyFAI.date)
     description = """
@@ -432,7 +437,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                         On EDF files, values from 'counter_pos' can accessed \
                         by using the expected mnemonic. \
                         For example 'counter/bmon'.")
-    options = parser.parse_args()
+    options = parser.parse_args(args)
 
     # Analysis arguments and options
     args = pyFAI.utils.expand_args(options.args)
@@ -449,6 +454,12 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
         result = integrate_gui(options, args)
     else:
         result = integrate_shell(options, args)
+    return result
+
+
+def main():
+    args = sys.argv[1:]
+    result = _main(args)
     sys.exit(result)
 
 
