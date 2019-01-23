@@ -234,12 +234,31 @@ class TestProcess(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(result.radial, expected_radial, decimal=1)
         numpy.testing.assert_array_almost_equal(result.azimuthal, expected_azimuthal, decimal=1)
 
+class TestMain(unittest.TestCase):
+
+    def callable(self, *args, **kwargs):
+        pass
+
+    def setUp(self):
+        self._gui = pyFAI.app.integrate.integrate_gui
+        self._shell = pyFAI.app.integrate.integrate_shell
+        pyFAI.app.integrate.integrate_gui = self.callable
+        pyFAI.app.integrate.integrate_shell = self.callable
+
+    def tearDown(self):
+        pyFAI.app.integrate.integrate_gui = self._gui
+        pyFAI.app.integrate.integrate_shell = self._shell
+
+    def test(self):
+        pyFAI.app.integrate._main(["myimage.edf"])
+
 
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestIntegrateApp))
     testsuite.addTest(loader(TestProcess))
+    testsuite.addTest(loader(TestMain))
     return testsuite
 
 
