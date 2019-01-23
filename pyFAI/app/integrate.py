@@ -263,7 +263,7 @@ def process(input_data, output, config, monitor_name, observer):
         observer.processing_started(len(valid_data))
 
     # Integrate files one by one
-    for i, item in enumerate(valid_data):
+    for iitem, item in enumerate(valid_data):
         logger.debug("Processing %s", item)
 
         # TODO rework it as source
@@ -284,12 +284,12 @@ def process(input_data, output, config, monitor_name, observer):
             multiframe = False
 
         if observer is not None:
-            observer.processing_data(i + 1, filename=filename)
+            observer.processing_data(iitem + 1, filename=filename)
 
         if filename:
             output_name = os.path.splitext(filename)[0]
         else:
-            output_name = "array_%d" % i
+            output_name = "array_%d" % iitem
 
         if multiframe:
             extension = "_pyFAI.h5"
@@ -313,8 +313,8 @@ def process(input_data, output, config, monitor_name, observer):
             if item.ndim == 3:
                 writer = HDF5Writer(outpath)
                 writer.init()
-                for i in item:
-                    data = item[i]
+                for iframe in item:
+                    data = item[iframe]
                     worker.process(data=data,
                                    writer=writer)
             else:
@@ -326,8 +326,8 @@ def process(input_data, output, config, monitor_name, observer):
                 writer = HDF5Writer(outpath)
                 writer.init(config)
 
-                for i in range(fabio_image.nframes):
-                    fimg = fabio_image.getframe(i)
+                for iframe in range(fabio_image.nframes):
+                    fimg = fabio_image.getframe(iframe)
                     normalization_factor = get_monitor_value(fimg, monitor_name)
                     data = fimg.data
                     worker.process(data=data,
