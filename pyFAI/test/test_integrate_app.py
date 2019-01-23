@@ -253,6 +253,57 @@ class TestProcess(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(result.radial, expected_radial, decimal=1)
         numpy.testing.assert_array_almost_equal(result.azimuthal, expected_azimuthal, decimal=1)
 
+    def test_fabio_integration1d(self):
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        data = fabio.numpyimage.NumpyImage(data=data)
+        expected_result = [23.5, 9.9]
+        expected_radial = [1.9, 1.9]
+        params = {"do_2D": False,
+                  "nbpt_rad": 2,
+                  "method": ("bbox", "histogram", "cython")}
+        config = self.base_config.copy()
+        config.update(params)
+        observer = _ResultObserver()
+        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        self.assertEqual(len(observer.result), 1)
+        result = observer.result[0]
+        numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
+        numpy.testing.assert_array_almost_equal(result.radial, expected_radial, decimal=1)
+
+    def test_fabio_multiframe_integration2d(self):
+        data1 = numpy.array([[0, 0], [0, 100], [0, 0]])
+        data2 = numpy.array([[0, 0], [0, 200], [0, 0]])
+        data = fabio.edfimage.EdfImage(data=data1)
+        data.appendFrame(data=data2)
+
+        expected_result = [[5.6, 4.5], [41.8, 9.3]]
+        expected_radial = [2.0, 2.0]
+        expected_azimuthal = [-124.5, -124.2]
+        params = {"do_2D": True,
+                  "nbpt_azim": 2,
+                  "nbpt_rad": 2,
+                  "method": ("bbox", "histogram", "cython")}
+        config = self.base_config.copy()
+        config.update(params)
+        observer = _ResultObserver()
+        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        self.assertEqual(len(observer.result), 2)
+        result = observer.result[0]
+        numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
+        numpy.testing.assert_array_almost_equal(result.radial, expected_radial, decimal=1)
+        numpy.testing.assert_array_almost_equal(result.azimuthal, expected_azimuthal, decimal=1)
+
+    def test_unsupported_types(self):
+        params = {"do_2D": True,
+                  "nbpt_azim": 2,
+                  "nbpt_rad": 2,
+                  "method": ("bbox", "histogram", "cython")}
+        config = self.base_config.copy()
+        config.update(params)
+        observer = _ResultObserver()
+        pyFAI.app.integrate.process(["##unexisting_file##.edf", 10], self.tempDir, config, monitor_name=None, observer=observer)
+        self.assertEqual(len(observer.result), 0)
+
 
 class TestMain(unittest.TestCase):
 
