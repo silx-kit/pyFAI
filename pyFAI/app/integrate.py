@@ -236,11 +236,12 @@ def process(input_data, output, config, monitor_name, observer):
     :param:
     """
     worker = pyFAI.worker.Worker()
-    worker.set_config(config, consume_keys=True)
+    worker_config = config.copy()
+    worker.set_config(worker_config, consume_keys=True)
     worker.output = "raw"
 
     # Check unused keys
-    for key in config.keys():
+    for key in worker_config.keys():
         # FIXME this should be read also
         if key in ["application", "version"]:
             pass
@@ -320,7 +321,7 @@ def process(input_data, output, config, monitor_name, observer):
         if fabio_image is None:
             if item.ndim == 3:
                 writer = HDF5Writer(outpath)
-                writer.init()
+                writer.init(fai_cfg=config)
                 for iframe, data in enumerate(item):
                     result = worker.process(data=data,
                                             writer=writer)
@@ -336,7 +337,7 @@ def process(input_data, output, config, monitor_name, observer):
         else:
             if multiframe:
                 writer = HDF5Writer(outpath)
-                writer.init(config)
+                writer.init(fai_cfg=config)
 
                 for iframe in range(fabio_image.nframes):
                     fimg = fabio_image.getframe(iframe)
