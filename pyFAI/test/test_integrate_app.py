@@ -304,6 +304,45 @@ class TestProcess(unittest.TestCase):
         pyFAI.app.integrate.process(["##unexisting_file##.edf", 10], self.tempDir, config, monitor_name=None, observer=observer)
         self.assertEqual(len(observer.result), 0)
 
+    def test_normalization_monitor_name(self):
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        header = {"monitor": 0.5}
+        data = fabio.numpyimage.NumpyImage(data=data, header=header)
+        expected_result = [47.0, 19.8]
+        expected_radial = [1.9, 1.9]
+        params = {"do_2D": False,
+                  "nbpt_rad": 2,
+                  "monitor_name": "monitor",
+                  "method": ("bbox", "histogram", "cython")}
+        config = self.base_config.copy()
+        config.update(params)
+        observer = _ResultObserver()
+        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        self.assertEqual(len(observer.result), 1)
+        result = observer.result[0]
+        numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
+        numpy.testing.assert_array_almost_equal(result.radial, expected_radial, decimal=1)
+
+    def test_normalization_factor_monitor_name(self):
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        header = {"monitor": 0.5}
+        data = fabio.numpyimage.NumpyImage(data=data, header=header)
+        expected_result = [4695.9, 1984.5]
+        expected_radial = [1.9, 1.9]
+        params = {"do_2D": False,
+                  "nbpt_rad": 2,
+                  "monitor_name": "monitor",
+                  "normalization_factor": 0.01,
+                  "method": ("bbox", "histogram", "cython")}
+        config = self.base_config.copy()
+        config.update(params)
+        observer = _ResultObserver()
+        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        self.assertEqual(len(observer.result), 1)
+        result = observer.result[0]
+        numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
+        numpy.testing.assert_array_almost_equal(result.radial, expected_radial, decimal=1)
+
 
 class TestMain(unittest.TestCase):
 
