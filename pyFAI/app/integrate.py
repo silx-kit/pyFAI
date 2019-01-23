@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2019"
+__date__ = "23/01/2019"
 __satus__ = "production"
 
 import sys
@@ -186,6 +186,15 @@ class IntegrationObserver(object):
         """
         pass
 
+    def data_result(self, data_id, result):
+        """
+        Called after each data processing, with the result
+
+        :param int data_id: Id of the data
+        :param object result: Result of the integration.
+        """
+        pass
+
     def processing_finished(self):
         """Called when the full processing is finisehd."""
         pass
@@ -228,6 +237,7 @@ def process(input_data, output, config, monitor_name, observer):
     """
     worker = pyFAI.worker.Worker()
     worker.set_config(config, consume_keys=True)
+    worker.output = "raw"
 
     # Check unused keys
     for key in config.keys():
@@ -315,12 +325,17 @@ def process(input_data, output, config, monitor_name, observer):
                 writer.init()
                 for iframe in item:
                     data = item[iframe]
-                    worker.process(data=data,
-                                   writer=writer)
+                    result = worker.process(data=data,
+                                            writer=writer)
+                    if observer is not None:
+                        observer.data_result(iitem, result)
             else:
+                data = item
                 writer = DefaultAiWriter(outpath, worker.ai)
-                worker.process(data=data,
-                               writer=writer)
+                result = worker.process(data=data,
+                                        writer=writer)
+                if observer is not None:
+                    observer.data_result(iitem, result)
         else:
             if multiframe:
                 writer = HDF5Writer(outpath)
@@ -330,19 +345,23 @@ def process(input_data, output, config, monitor_name, observer):
                     fimg = fabio_image.getframe(iframe)
                     normalization_factor = get_monitor_value(fimg, monitor_name)
                     data = fimg.data
-                    worker.process(data=data,
-                                   metadata=fimg.header,
-                                   normalization_factor=normalization_factor,
-                                   writer=writer)
+                    result = worker.process(data=data,
+                                            metadata=fimg.header,
+                                            normalization_factor=normalization_factor,
+                                            writer=writer)
+                    if observer is not None:
+                        observer.data_result(iitem, result)
                 writer.close()
             else:
                 writer = DefaultAiWriter(outpath, worker.ai)
 
                 normalization_factor = get_monitor_value(fabio_image, monitor_name)
                 data = fabio_image.data
-                worker.process(data,
-                               normalization_factor=normalization_factor,
-                               writer=writer)
+                result = worker.process(data,
+                                        normalization_factor=normalization_factor,
+                                        writer=writer)
+                if observer is not None:
+                    observer.data_result(iitem, result)
                 writer.close()
 
     if observer is not None:
