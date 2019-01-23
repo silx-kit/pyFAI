@@ -115,8 +115,8 @@ class WorkerConfigurator(qt.QWidget):
         self.__radialUnitUpdated()
 
         doubleOrEmptyValidator = validators.DoubleAndEmptyValidator()
-        self.normalization_factor_value.setValidator(doubleOrEmptyValidator)
-        self.normalization_factor_value.setText("1.0")
+        self.normalization_factor.setValidator(doubleOrEmptyValidator)
+        self.normalization_factor.setText("1.0")
 
         self.__configureDisabledStates()
 
@@ -132,7 +132,7 @@ class WorkerConfigurator(qt.QWidget):
         self.do_radial_range.clicked.connect(self.__updateDisabledStates)
         self.do_azimuthal_range.clicked.connect(self.__updateDisabledStates)
         self.do_poisson.clicked.connect(self.__updateDisabledStates)
-        self.do_normalization_factor.clicked.connect(self.__updateDisabledStates)
+        self.do_normalization.clicked.connect(self.__updateDisabledStates)
 
         self.__updateDisabledStates()
 
@@ -150,7 +150,8 @@ class WorkerConfigurator(qt.QWidget):
         self.azimuth_range_min.setEnabled(enabled)
         self.azimuth_range_max.setEnabled(enabled)
         self.error_selection.setEnabled(self.do_poisson.isChecked())
-        self.normalization_factor_value.setEnabled(self.do_normalization_factor.isChecked())
+        self.normalization_factor.setEnabled(self.do_normalization.isChecked())
+        self.monitor_name.setEnabled(self.do_normalization.isChecked())
 
     def set1dIntegrationOnly(self, only1d):
         """Enable only 1D integration for this widget."""
@@ -254,11 +255,20 @@ class WorkerConfigurator(qt.QWidget):
             if method.impl == "opencl":
                 config["opencl_device"] = self.__openclDevice
 
-        if self.do_normalization_factor.isChecked():
-            value = self.normalization_factor_value.text()
+        if self.do_normalization.isChecked():
+            value = self.normalization_factor.text()
             if value != "":
-                value = self._float(value)
-                config["normalization_factor"] = value
+                try:
+                    value = float(value)
+                except ValueError:
+                    value = None
+                if value not in [1.0, None]:
+                    config["normalization_factor"] = value
+
+            value = self.monitor_name.text()
+            if value != "":
+                value = str(value)
+                config["monitor_name"] = value
 
         return config
 
@@ -359,7 +369,8 @@ class WorkerConfigurator(qt.QWidget):
                 value(dico.pop(key))
 
         normalizationFactor = dico.pop("normalization_factor", None)
-        self.__setNormalizationFactor(normalizationFactor)
+        monitorName = dico.pop("monitor_name", None)
+        self.__setNormalization(normalizationFactor, monitorName)
 
         value = dico.pop("unit", None)
         if value is not None:
@@ -447,10 +458,13 @@ class WorkerConfigurator(qt.QWidget):
             method = method_registry.Method(dim=dim, split=split, algo=algo, impl=impl, target=None)
             self.__setMethod(method)
 
-    def __setNormalizationFactor(self, value):
-        text = str(value) if value is not None else "1.0"
-        self.normalization_factor_value.setText(text)
-        self.do_normalization_factor.setChecked(value is not None)
+    def __setNormalization(self, normalizationFactor, monitorName):
+        factor = str(normalizationFactor) if normalizationFactor is not None else "1.0"
+        self.normalization_factor.setText(factor)
+        name = str(monitorName) if monitorName is not None else ""
+        self.monitor_name.setText(name)
+        enabled = normalizationFactor is not None or monitorName is not None
+        self.do_normalization.setChecked(enabled)
 
     def setDetector(self, detector):
         self.__detector = detector

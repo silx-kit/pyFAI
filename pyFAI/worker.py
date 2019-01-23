@@ -549,6 +549,9 @@ class Worker(object):
 
         self._normalization_factor = config.pop("normalization_factor", None)
 
+        if "monitor_name" in config:
+            logger.warning("Monitor name defined but unsupported by the worker.")
+
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown

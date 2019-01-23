@@ -237,6 +237,12 @@ def process(input_data, output, config, monitor_name, observer):
     """
     worker = pyFAI.worker.Worker()
     worker_config = config.copy()
+
+    json_monitor_name = worker_config.pop("monitor_name", None)
+    if monitor_name is None:
+        monitor_name = json_monitor_name
+    elif json_monitor_name is not None:
+        logger.warning("Monitor name from command line argument override the one from the configuration file.")
     worker.set_config(worker_config, consume_keys=True)
     worker.output = "raw"
 
