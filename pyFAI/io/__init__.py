@@ -393,8 +393,11 @@ class HDF5Writer(Writer):
         azimuthal = None
         if isinstance(data, containers.Integrate1dResult):
             I = data.intensity
+            radial = data.radial
         elif isinstance(data, containers.Integrate2dResult):
             I = data.intensity
+            radial = data.radial
+            azimuthal = data.azimuthal
         elif isinstance(data, numpy.ndarray):
             I = data
         elif isinstance(data, (list, tuple)):
