@@ -37,12 +37,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2019"
+__date__ = "24/01/2019"
 __status__ = "development"
 
 import logging
 import json
 import os.path as op
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -55,22 +56,89 @@ from ..io import integration_config
 from .utils import projecturl
 from ..utils import get_ui_file
 from ..app import integrate
+from .. import containers
 
 
 class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
 
     def __init__(self, parent=None):
         qt.QDialog.__init__(self, parent=parent)
+        filename = get_ui_file("integration-process.ui")
+        qt.loadUi(filename, self)
+
         integrate.IntegrationObserver.__init__(self)
         self.setWindowTitle("Processing...")
+        self.__undisplayedResult = None
+        self._displayResult.toggled.connect(self.__displayResultUpdated)
+        self._plot.setDataMargins(0.05, 0.05, 0.05, 0.05)
+        self.__firstPlot = True
+        self.__lastDisplay = None
+        self._progressBar.setFormat("Preprocessing...")
 
-        self.__button = qt.QPushButton(self)
-        self.__button.setText("Cancel")
-        self.__progressBar = qt.QProgressBar(self)
+    def __resultReceived(self, result):
+        isFiltered = not self._displayResult.isChecked()
+        now = time.time()
+        if self.__lastDisplay is not None:
+            if now - self.__lastDisplay < 1.0:
+                isFiltered = True
+        if not isFiltered:
+            self.__undisplayedResult = None
+            self.__lastDisplay = now
+            self.__displayResult(result, resetZoom=self.__firstPlot)
+        else:
+            self.__undisplayedResult = result
+        self.__firstPlot = False
 
-        layout = qt.QHBoxLayout(self)
-        layout.addWidget(self.__progressBar)
-        layout.addWidget(self.__button)
+    def __displayResultUpdated(self):
+        self._plot.setVisible(self._displayResult.isChecked())
+        if self._displayResult.isChecked():
+            if self.__undisplayedResult is not None:
+                result = self.__undisplayedResult
+                self.__undisplayedResult = None
+                self.__displayResult(result, True)
+        self.adjustSize()
+
+    def __displayResult(self, result, resetZoom=False):
+        self._plot.clear()
+        if isinstance(result, containers.Integrate1dResult):
+            self._plot.setGraphXLabel("Radial")
+            self._plot.setGraphYLabel("Intensity")
+            self._plot.addHistogram(
+                legend="result1d",
+                align="center",
+                edges=result.radial,
+                color="blue",
+                histogram=result.intensity,
+                resetzoom=False)
+        elif isinstance(result, containers.Integrate2dResult):
+
+            def computeLocation(result):
+                # Assume that axes are linear
+                if result.intensity.shape[1] > 1:
+                    scaleX = (result.radial[-1] - result.radial[0]) / (result.intensity.shape[1] - 1)
+                else:
+                    scaleX = 1.0
+                if result.intensity.shape[0] > 1:
+                    scaleY = (result.azimuthal[-1] - result.azimuthal[0]) / (result.intensity.shape[0] - 1)
+                else:
+                    scaleY = 1.0
+                halfPixel = 0.5 * scaleX, 0.5 * scaleY
+                origin = (result.radial[0] - halfPixel[0], result.azimuthal[0] - halfPixel[1])
+                return origin, (scaleX, scaleY)
+
+            self._plot.setGraphXLabel("Radial")
+            self._plot.setGraphYLabel("Azimuthal")
+            origin, scale = computeLocation(result)
+            self._plot.addImage(
+                legend="result2d",
+                data=result.intensity,
+                origin=origin,
+                scale=scale,
+                resetzoom=False)
+        else:
+            logger.error("Unsupported result type %s", type(result))
+        if resetZoom:
+            self._plot.resetZoom()
 
     def worker_initialized(self, worker):
         """
@@ -86,7 +154,7 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
 
         :param int data_count: Number of data to integrate
         """
-        self.__progressBar.setRange(0, data_count + 1)
+        self._progressBar.setRange(0, data_count + 1)
 
     def processing_data(self, data_id, filename):
         """
@@ -95,11 +163,18 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         :param int data_id: Id of the data
         :param str filename: Filename of the data, if any.
         """
-        self.__progressBar.setValue(data_id)
+        self._progressBar.setValue(data_id)
+        if len(filename) > 20:
+            filename = op.basename(filename)
+        self._progressBar.setFormat("%s (%%p%%)..." % filename)
+
+    def data_result(self, data_id, result):
+        self.__resultReceived(result)
 
     def processing_finished(self):
         """Called when the full processing is finisehd."""
-        self.__progressBar.setValue(self.__progressBar.maximum())
+        self._progressBar.setValue(self._progressBar.maximum())
+        self.__lastResult = None
         self.accept()
 
 
