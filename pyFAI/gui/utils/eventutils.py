@@ -30,10 +30,11 @@ from __future__ import division
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/01/2019"
+__date__ = "24/01/2019"
 
 
 from silx.gui import qt
+from silx.gui.utils import concurrent
 
 import logging
 import types
@@ -141,13 +142,9 @@ class QtProxifier(qt.QObject):
         self.__target = target
         self._callRequested.connect(self.__callRequested)
 
-    def __callRequested(self, methodName, args, kwargs):
-        """Call the real Qt object"""
-        method = getattr(self.__target, methodName)
-        method(*args, **kwargs)
-
     def __getattr__(self, name):
         """Convert a call request to a Qt signal"""
         def createSignal(*args, **kwargs):
-            self._callRequested.emit(name, args, kwargs)
+            method = getattr(self.__target, name)
+            concurrent.submitToQtMainThread(method, *args, **kwargs)
         return createSignal
