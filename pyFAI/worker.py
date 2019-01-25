@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2019"
+__date__ = "23/01/2019"
 __status__ = "development"
 
 import threading
@@ -547,6 +547,11 @@ class Worker(object):
         if not apply_values:
             self.dummy, self.delta_dummy = None, None
 
+        self._normalization_factor = config.pop("normalization_factor", None)
+
+        if "monitor_name" in config:
+            logger.warning("Monitor name defined but unsupported by the worker.")
+
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
@@ -624,6 +629,7 @@ class Worker(object):
     def set_normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
+
     normalization_factor = property(get_normalization_factor, set_normalization_factor)
 
     __call__ = process
