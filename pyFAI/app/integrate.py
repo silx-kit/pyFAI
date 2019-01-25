@@ -250,7 +250,7 @@ def process(input_data, output, config, monitor_name, observer):
     for key in worker_config.keys():
         # FIXME this should be read also
         if key in ["application", "version"]:
-            pass
+            continue
         logger.warning("Configuration key '%s' from json is unused", key)
 
     worker.safe = False  # all processing are expected to be the same.
