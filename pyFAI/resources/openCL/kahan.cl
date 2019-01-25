@@ -1,6 +1,22 @@
+/*
+ * OpenCL library for 32-bits floating point calculation using compensated arithmetics
+ */
+
+/* Nota: i386 computer use x87 registers which are larger than the 32bits precision
+ * which can invalidate the error compensation mechanism.
+ *
+ * We use the trick to declare some variable "volatile" to enforce the actual
+ * precision reduction of those variables.
+*/
+
+#ifndef X87_VOLATILE
+# define X87_VOLATILE
+#endif
+
 // calculate acc.s0+value with error compensation
 // see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
-// unless wikipedia, here the exact value = acc.s0 + acc.s1 (performed in higher precision)
+// unlike wikipedia, here the exact value = acc.s0 + acc.s1 (performed in higher precision)
+
 static inline float2 kahan_sum(float2 acc, float value)
 {
     if (value)
@@ -15,7 +31,7 @@ static inline float2 kahan_sum(float2 acc, float value)
         }
 
         float cor = value + err;
-        float target = sum + cor;
+        X87_VOLATILE float target = sum + cor;
         err = cor - (target - sum);
         return (float2)(target, err);
     }
@@ -29,7 +45,7 @@ static inline float2 kahan_sum(float2 acc, float value)
 // see https://hal.archives-ouvertes.fr/hal-01367769/document
 static inline float2 comp_prod(float a, float b)
 {
-    float x = a * b;
+    X87_VOLATILE float x = a * b;
     float y = fma(a, b, -x);
     return (float2)(x, y);
 }
@@ -41,13 +57,13 @@ static inline float2 compensated_sum(float2 a, float2 b)
     float first = a.s0;
     float second = b.s0;
     if (fabs(second) > fabs(first))
-    {
+    {//swap first and second
         float tmp = first;
         first = second;
         second = tmp;
     }
     float cor = second + err;
-    float target = first + cor;
+    X87_VOLATILE float target = first + cor;
     err = cor - (target - first);
     return (float2)(target, err);
 }
@@ -60,6 +76,26 @@ static inline float2 compensated_mul(float2 a, float2 b)
     tmp = kahan_sum(tmp, a.s1*b.s1);
     return tmp;
 }
+
+// calculate 1/a  with error compensation (Needs validation)
+static inline float2 compensated_inv(float2 a)
+{
+    float main = a.s0;
+    float err  = a.s1;
+    return (float2)(1.0f/main, -err/(main*main));
+}
+
+// calculate a/b  with error compensation (Needs validation)
+static inline float2 compensated_div(float2 a, float2 b)
+{
+    float ah = a.s0;
+    float al  = a.s1;
+    float bh = b.s0;
+    float bl  = b.s1;
+    float bl_over_bh = bl/bh;
+    return kahan_sum(kahan_sum(a, -a.s1 * bl_over_bh), -a.s0 * bl_over_bh) / bh;
+}
+
 
 // calculate a.b where a and b are float2
 static inline float2 comp_dot2(float2 a, float2 b)

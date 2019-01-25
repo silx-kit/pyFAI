@@ -34,16 +34,22 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2019"
+__date__ = "25/01/2019"
 __satus__ = "production"
+
 import sys
 import logging
 import time
+import numpy
 import os.path
+import six
+
 import fabio
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI")
+
 import pyFAI.utils
 import pyFAI.worker
 from pyFAI.io import DefaultAiWriter
@@ -64,6 +70,8 @@ except ImportError:
 def integrate_gui(options, args):
     from silx.gui import qt
     from pyFAI.gui.IntegrationDialog import IntegrationDialog
+    from pyFAI.gui.IntegrationDialog import IntegrationProcess
+
     app = qt.QApplication([])
 
     from pyFAI.gui.ApplicationContext import ApplicationContext
@@ -74,9 +82,58 @@ def integrate_gui(options, args):
                             None)
     context = ApplicationContext(settings)
 
+    def moveCenterTo(window, center):
+        half = window.size() * 0.5
+        half = qt.QPoint(half.width(), half.height())
+        corner = center - half
+        window.move(corner)
+
+    def processData():
+        center = window.geometry().center()
+        window.setVisible(False)
+        window.deleteLater()
+        input_data = window.input_data
+        if input_data is None or len(input_data) == 0:
+            dialog = qt.QFileDialog(directory=os.getcwd())
+            dialog.setWindowTitle("Select images to integrate")
+            dialog.setFileMode(qt.QFileDialog.ExistingFiles)
+            moveCenterTo(dialog, center)
+            result = dialog.exec_()
+            if not result:
+                return
+            input_data = [str(i) for i in dialog.selectedFiles()]
+            center = dialog.geometry().center()
+            dialog.close()
+
+        config = window.get_config()
+
+        dialog = IntegrationProcess(None)
+        dialog.adjustSize()
+        moveCenterTo(dialog, center)
+
+        class QtProcess(qt.QThread):
+            def run(self):
+                observer = dialog.createObserver(qtSafe=True)
+                process(input_data, window.output_path, config, options.monitor_key, observer)
+
+        qtProcess = QtProcess()
+        qtProcess.start()
+
+        result = dialog.exec_()
+        if result:
+            qt.QMessageBox.information(dialog,
+                                       "Integration",
+                                       "Batch processing completed.")
+        else:
+            qt.QMessageBox.information(dialog,
+                                       "Integration",
+                                       "Batch processing interrupted.")
+        dialog.deleteLater()
+
     window = IntegrationDialog(args, options.output, json_file=options.json, context=context)
-    window.set_input_data(args)
+    window.batchProcessRequested.connect(processData)
     window.show()
+
     result = app.exec_()
     context.saveSettings()
     return result
@@ -103,93 +160,276 @@ def get_monitor_value(image, monitor_key):
         return 1.0
 
 
+class IntegrationObserver(object):
+    """Interface providing access to the to the processing of the `process`
+    function."""
+
+    def __init__(self):
+        self.__is_interruption_requested = False
+
+    def is_interruption_requested(self):
+        return self.__is_interruption_requested
+
+    def request_interruption(self):
+        self.__is_interruption_requested = True
+
+    def worker_initialized(self, worker):
+        """
+        Called when the worker is initialized
+
+        :param int data_count: Number of data to integrate
+        """
+        pass
+
+    def processing_started(self, data_count):
+        """
+        Called before starting the full processing.
+
+        :param int data_count: Number of data to integrate
+        """
+        pass
+
+    def processing_data(self, data_id, filename):
+        """
+        Start processing the data `data_id`
+
+        :param int data_id: Id of the data
+        :param str filename: Filename of the data, if any.
+        """
+        pass
+
+    def data_result(self, data_id, result):
+        """
+        Called after each data processing, with the result
+
+        :param int data_id: Id of the data
+        :param object result: Result of the integration.
+        """
+        pass
+
+    def processing_interrupted(self, reason=None):
+        """Called before `processing_finished` if the processing was
+        interrupted.
+
+        :param [str,Exception,None] error: A reason of the interruption.
+        """
+        pass
+
+    def processing_succeeded(self):
+        """Called before `processing_finished` if the processing succedded."""
+        pass
+
+    def processing_finished(self):
+        """Called when the full processing is finisehd (interupted or not)."""
+        pass
+
+
+class ShellIntegrationObserver(IntegrationObserver):
+    """
+    Implement `IntegrationObserver` as a shell display.
+    """
+
+    def __init__(self):
+        super(ShellIntegrationObserver, self).__init__()
+        self._progress_bar = None
+
+    def processing_started(self, data_count):
+        self._progress_bar = ProgressBar("Integration", data_count, 20)
+
+    def processing_data(self, data_id, filename=None):
+        if filename:
+            if len(filename) > 100:
+                message = os.path.basename(filename)
+            else:
+                message = filename
+        else:
+            message = ""
+        self._progress_bar.update(data_id + 1, message=message)
+
+    def processing_finished(self):
+        self._progress_bar.clear()
+
+
+def process(input_data, output, config, monitor_name, observer):
+    """
+    Integrate a set of data.
+
+    :param List[str] input_data: List of input filenames
+    :param str output: Filename of directory output
+    :param dict config: Dictionary to configure `pyFAI.worker.Worker`
+    :param IntegrationObserver observer: Observer of the processing
+    :param:
+    """
+    worker = pyFAI.worker.Worker()
+    worker_config = config.copy()
+
+    json_monitor_name = worker_config.pop("monitor_name", None)
+    if monitor_name is None:
+        monitor_name = json_monitor_name
+    elif json_monitor_name is not None:
+        logger.warning("Monitor name from command line argument override the one from the configuration file.")
+    worker.set_config(worker_config, consume_keys=True)
+    worker.output = "raw"
+
+    # Check unused keys
+    for key in worker_config.keys():
+        # FIXME this should be read also
+        if key in ["application", "version"]:
+            continue
+        logger.warning("Configuration key '%s' from json is unused", key)
+
+    worker.safe = False  # all processing are expected to be the same.
+    start_time = time.time()
+
+    if observer is not None:
+        observer.worker_initialized(worker)
+
+    # Skip invalide data
+    valid_data = []
+    for item in input_data:
+        if isinstance(item, six.string_types):
+            if os.path.isfile(item):
+                valid_data.append(item)
+            else:
+                logger.warning("File %s do not exists. File ignored.", item)
+        elif isinstance(item, fabio.fabioimage.FabioImage):
+            valid_data.append(item)
+        elif isinstance(item, numpy.ndarray):
+            valid_data.append(item)
+        else:
+            logger.warning("Type %s unsopported. Data ignored.", item)
+
+    if observer is not None:
+        observer.processing_started(len(valid_data))
+
+    # Integrate files one by one
+    for iitem, item in enumerate(valid_data):
+        logger.debug("Processing %s", item)
+
+        # TODO rework it as source
+        if isinstance(item, six.string_types):
+            kind = "filename"
+            filename = item
+            fabio_image = fabio.open(item)
+            multiframe = fabio_image.nframes > 1
+        elif isinstance(item, fabio.fabioimage.FabioImage):
+            kind = "fabio-image"
+            fabio_image = item
+            multiframe = fabio_image.nframes > 1
+            filename = fabio_image.filename
+        elif isinstance(item, numpy.ndarray):
+            kind = "numpy-array"
+            filename = None
+            fabio_image = None
+            multiframe = False
+
+        if observer is not None:
+            observer.processing_data(iitem + 1, filename=filename)
+
+        if filename:
+            output_name = os.path.splitext(filename)[0]
+        else:
+            output_name = "array_%d" % iitem
+
+        if multiframe:
+            extension = "_pyFAI.h5"
+        else:
+            if worker.do_2D():
+                extension = ".azim"
+            else:
+                extension = ".dat"
+        output_name = "%s%s" % (output_name, extension)
+
+        if output:
+            if os.path.isdir(output):
+                basename = os.path.basename(output_name)
+                outpath = os.path.join(output, basename)
+            else:
+                outpath = os.path.abspath(output)
+        else:
+            outpath = output_name
+
+        if fabio_image is None:
+            if item.ndim == 3:
+                writer = HDF5Writer(outpath)
+                writer.init(fai_cfg=config)
+                for iframe, data in enumerate(item):
+                    result = worker.process(data=data,
+                                            writer=writer)
+                    if observer is not None:
+                        if observer.is_interruption_requested():
+                            break
+                        observer.data_result(iitem, result)
+            else:
+                data = item
+                writer = DefaultAiWriter(outpath, worker.ai)
+                result = worker.process(data=data,
+                                        writer=writer)
+                if observer is not None:
+                    observer.data_result(iitem, result)
+        else:
+            if multiframe:
+                writer = HDF5Writer(outpath)
+                writer.init(fai_cfg=config)
+
+                for iframe in range(fabio_image.nframes):
+                    fimg = fabio_image.getframe(iframe)
+                    normalization_factor = get_monitor_value(fimg, monitor_name)
+                    data = fimg.data
+                    result = worker.process(data=data,
+                                            metadata=fimg.header,
+                                            normalization_factor=normalization_factor,
+                                            writer=writer)
+                    if observer is not None:
+                        if observer.is_interruption_requested():
+                            break
+                        observer.data_result(iitem, result)
+                writer.close()
+            else:
+                writer = DefaultAiWriter(outpath, worker.ai)
+
+                normalization_factor = get_monitor_value(fabio_image, monitor_name)
+                data = fabio_image.data
+                result = worker.process(data,
+                                        normalization_factor=normalization_factor,
+                                        writer=writer)
+                if observer is not None:
+                    observer.data_result(iitem, result)
+                writer.close()
+
+        if observer is not None:
+            if observer.is_interruption_requested():
+                break
+
+    if observer is not None:
+        if observer.is_interruption_requested():
+            logger.info("Processing was aborted")
+            observer.processing_interrupted()
+        else:
+            observer.processing_succeeded()
+        observer.processing_finished()
+    logger.info("Processing done in %.3fs !", (time.time() - start_time))
+    return 0
+
+
 def integrate_shell(options, args):
     import json
     with open(options.json) as f:
         config = json.load(f)
 
-    worker = pyFAI.worker.Worker()
-    worker.set_config(config, consume_keys=True)
-
-    # Check unused keys
-    for key in config.keys():
-        logger.warning("Configuration key '%s' from json file '%s' is unused", key, options.json)
-
-    worker.safe = False  # all processing are expected to be the same.
-    start_time = time.time()
-
-    # Skip unexisting files
-    image_filenames = []
-    for item in args:
-        if os.path.exists(item) and os.path.isfile(item):
-            image_filenames.append(item)
-        else:
-            logger.warning("File %s do not exists. Ignored.", item)
-    image_filenames = sorted(image_filenames)
-
-    progress_bar = ProgressBar("Integration", len(image_filenames), 20)
-
-    # Integrate files one by one
-    for i, item in enumerate(image_filenames):
-        logger.debug("Processing %s", item)
-
-        if len(item) > 100:
-            message = os.path.basename(item)
-        else:
-            message = item
-        progress_bar.update(i + 1, message=message)
-
-        img = fabio.open(item)
-        multiframe = img.nframes > 1
-
-        custom_ext = True
-        if options.output:
-            if os.path.isdir(options.output):
-                outpath = os.path.join(options.output, os.path.splitext(os.path.basename(item))[0])
-            else:
-                outpath = os.path.abspath(options.output)
-                custom_ext = False
-        else:
-            outpath = os.path.splitext(item)[0]
-
-        if custom_ext:
-            if multiframe:
-                outpath = outpath + "_pyFAI.h5"
-            else:
-                if worker.do_2D():
-                    outpath = outpath + ".azim"
-                else:
-                    outpath = outpath + ".dat"
-        if multiframe:
-            writer = HDF5Writer(outpath)
-            writer.init(config)
-
-            for i in range(img.nframes):
-                fimg = img.getframe(i)
-                normalization_factor = get_monitor_value(fimg, options.monitor_key)
-                data = fimg.data
-                res = worker.process(data=data,
-                                     metadata=fimg.header,
-                                     normalization_factor=normalization_factor)
-                if not worker.do_2D():
-                    res = res.T[1]
-                writer.write(res, index=i)
-            writer.close()
-        else:
-            normalization_factor = get_monitor_value(img, options.monitor_key)
-            data = img.data
-            writer = DefaultAiWriter(outpath, worker.ai)
-            worker.process(data,
-                           normalization_factor=normalization_factor,
-                           writer=writer)
-            writer.close()
-
-    progress_bar.clear()
-    logger.info("Processing done in %.3fs !", (time.time() - start_time))
-    return 0
+    observer = ShellIntegrationObserver()
+    monitor_name = options.monitor_key
+    filenames = args
+    output = options.output
+    return process(filenames, output, config, monitor_name, observer)
 
 
-def main():
+def _main(args):
+    """Execute the application
+
+    :param str args: Command line argument without the program name
+    :rtype: int
+    """
     usage = "pyFAI-integrate [options] file1.edf file2.edf ..."
     version = "pyFAI-integrate version %s from %s" % (pyFAI.version, pyFAI.date)
     description = """
@@ -238,13 +478,14 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                         is divided by the monitor. If the header does not \
                         contain or contains a wrong value, the contribution \
                         of the input file is ignored.\
-                        On EDF files, values from 'counter_pos' can accessed \
+                        On EDF files, values from 'counter_pos' can be accessed \
                         by using the expected mnemonic. \
                         For example 'counter/bmon'.")
-    options = parser.parse_args()
+    options = parser.parse_args(args)
 
     # Analysis arguments and options
     args = pyFAI.utils.expand_args(options.args)
+    args = sorted(args)
 
     if options.verbose:
         logger.info("setLevel: debug")
@@ -257,6 +498,12 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
         result = integrate_gui(options, args)
     else:
         result = integrate_shell(options, args)
+    return result
+
+
+def main():
+    args = sys.argv[1:]
+    result = _main(args)
     sys.exit(result)
 
 

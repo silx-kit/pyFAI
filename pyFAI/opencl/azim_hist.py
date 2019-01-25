@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "11/01/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -50,7 +50,7 @@ import os
 import logging
 import threading
 import numpy
-from . import concatenate_cl_kernel
+from . import concatenate_cl_kernel, get_x87_volatile_option
 from . import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -244,8 +244,18 @@ class Integrator1d(object):
 
         template_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i"
         compile_options = template_options % (self.BLOCK_SIZE, self.nBins, self.nData)
+
         if self.useFp64:
             compile_options += " -D ENABLE_FP64"
+
+        try:
+            default_compiler_options = self.get_compiler_options(x87_volatile=True)
+        except AttributeError:  # Silx version too old
+            logger.warning("Please upgrade to silx v0.10+")
+            default_compiler_options = get_x87_volatile_option(self._ctx)
+
+        if default_compiler_options:
+            compile_options += " " + default_compiler_options
 
         try:
             self._cl_program = pyopencl.Program(self._ctx, kernel_src)

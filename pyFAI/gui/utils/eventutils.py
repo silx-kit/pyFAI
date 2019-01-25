@@ -30,8 +30,11 @@ from __future__ import division
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/08/2018"
+__date__ = "25/01/2019"
 
+
+from silx.gui import qt
+from silx.gui.utils import concurrent
 
 import logging
 import types
@@ -127,3 +130,25 @@ def createHideSignal(widget):
     widget.sigHidden = SimulatedSignal()
     widget._createHideSignal_oldHideEvent = widget.hideEvent
     widget.hideEvent = types.MethodType(hideEvent, widget)
+
+
+class QtProxifier(qt.QObject):
+    """Provide a safe Qt object from an unsafe object."""
+
+    _callRequested = qt.Signal(str, tuple, dict)
+
+    def __init__(self, target):
+        qt.QObject.__init__(self)
+        self.__target = target
+        self._callRequested.connect(self.__callRequested)
+
+    def _target(self):
+        return self.__target
+
+    def __getattr__(self, name):
+        """Convert a call request to a Qt signal"""
+        def createSignal(*args, **kwargs):
+            method = getattr(self.__target, name)
+            result = concurrent.submitToQtMainThread(method, *args, **kwargs)
+            return result
+        return createSignal

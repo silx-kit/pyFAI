@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2019"
+__date__ = "23/01/2019"
 __status__ = "development"
 
 import logging
@@ -57,6 +57,7 @@ from ..model.DataModel import DataModel
 from ..utils import units
 from ...utils import stringutil
 from ..utils import FilterBuilder
+from ..utils import validators
 from ...io.ponifile import PoniFile
 from ...io import integration_config
 from ... import method_registry
@@ -113,6 +114,10 @@ class WorkerConfigurator(qt.QWidget):
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
 
+        doubleOrEmptyValidator = validators.DoubleAndEmptyValidator()
+        self.normalization_factor.setValidator(doubleOrEmptyValidator)
+        self.normalization_factor.setText("1.0")
+
         self.__configureDisabledStates()
 
         self.setDetector(None)
@@ -127,6 +132,7 @@ class WorkerConfigurator(qt.QWidget):
         self.do_radial_range.clicked.connect(self.__updateDisabledStates)
         self.do_azimuthal_range.clicked.connect(self.__updateDisabledStates)
         self.do_poisson.clicked.connect(self.__updateDisabledStates)
+        self.do_normalization.clicked.connect(self.__updateDisabledStates)
 
         self.__updateDisabledStates()
 
@@ -144,6 +150,8 @@ class WorkerConfigurator(qt.QWidget):
         self.azimuth_range_min.setEnabled(enabled)
         self.azimuth_range_max.setEnabled(enabled)
         self.error_selection.setEnabled(self.do_poisson.isChecked())
+        self.normalization_factor.setEnabled(self.do_normalization.isChecked())
+        self.monitor_name.setEnabled(self.do_normalization.isChecked())
 
     def set1dIntegrationOnly(self, only1d):
         """Enable only 1D integration for this widget."""
@@ -191,7 +199,7 @@ class WorkerConfigurator(qt.QWidget):
 
         # file-version
         config["application"] = "pyfai-integrate"
-        config["version"] =  3
+        config["version"] = 3
 
         # geometry
         config["wavelength"] = self.__geometryModel.wavelength().value()
@@ -246,6 +254,21 @@ class WorkerConfigurator(qt.QWidget):
             config["method"] = method.split, method.algo, method.impl
             if method.impl == "opencl":
                 config["opencl_device"] = self.__openclDevice
+
+        if self.do_normalization.isChecked():
+            value = self.normalization_factor.text()
+            if value != "":
+                try:
+                    value = float(value)
+                except ValueError:
+                    value = None
+                if value not in [1.0, None]:
+                    config["normalization_factor"] = value
+
+            value = self.monitor_name.text()
+            if value != "":
+                value = str(value)
+                config["monitor_name"] = value
 
         return config
 
@@ -345,6 +368,10 @@ class WorkerConfigurator(qt.QWidget):
             if key in dico and (value is not None):
                 value(dico.pop(key))
 
+        normalizationFactor = dico.pop("normalization_factor", None)
+        monitorName = dico.pop("monitor_name", None)
+        self.__setNormalization(normalizationFactor, monitorName)
+
         value = dico.pop("unit", None)
         if value is not None:
             unit = to_unit(value)
@@ -430,6 +457,14 @@ class WorkerConfigurator(qt.QWidget):
             dim = 2 if self.do_2D.isChecked() else 1
             method = method_registry.Method(dim=dim, split=split, algo=algo, impl=impl, target=None)
             self.__setMethod(method)
+
+    def __setNormalization(self, normalizationFactor, monitorName):
+        factor = str(normalizationFactor) if normalizationFactor is not None else "1.0"
+        self.normalization_factor.setText(factor)
+        name = str(monitorName) if monitorName is not None else ""
+        self.monitor_name.setText(name)
+        enabled = normalizationFactor is not None or monitorName is not None
+        self.do_normalization.setChecked(enabled)
 
     def setDetector(self, detector):
         self.__detector = detector
