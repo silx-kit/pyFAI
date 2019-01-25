@@ -30,14 +30,14 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "11/01/2019"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 import numpy
 from collections import OrderedDict
-from . import pyopencl
+from . import pyopencl, get_x87_volatile_option
 from ..utils import calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -185,6 +185,15 @@ class OCL_LUT_Integrator(OpenclProcessing):
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
                           (self.bins, self.size, self.lut_size, int(self.device.type == "CPU"))
+
+        try:
+            default_compiler_options = self.get_compiler_options(x87_volatile=True)
+        except AttributeError:  # Silx version too old
+            logger.warning("Please upgrade to silx v0.10+")
+            default_compiler_options = get_x87_volatile_option(self.ctx)
+
+        if default_compiler_options:
+            compile_options += " " + default_compiler_options
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
 
     def set_kernel_arguments(self):

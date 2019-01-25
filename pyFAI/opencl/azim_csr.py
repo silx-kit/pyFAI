@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "11/01/2019"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,6 +45,7 @@ else:
     raise ImportError("pyopencl is not installed")
 
 from . import processing
+from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
@@ -198,8 +199,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
 
+        try:
+            default_compiler_options = self.get_compiler_options(x87_volatile=True)
+        except AttributeError:  # Silx version too old
+            logger.warning("Please upgrade to silx v0.10+")
+            default_compiler_options = get_x87_volatile_option(self.ctx)
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
                           (self.bins, self.size, self.BLOCK_SIZE)
+        if default_compiler_options:
+            compile_options += " " + default_compiler_options
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
         for kernel_name, kernel in self.kernels.get_kernels().items():
             wg = kernel_workgroup_size(self.program, kernel)

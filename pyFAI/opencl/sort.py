@@ -35,7 +35,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "11/01/2019"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -44,7 +44,7 @@ import logging
 logger = logging.getLogger(__name__)
 from collections import OrderedDict
 import numpy
-from . import ocl, release_cl_buffers, kernel_workgroup_size
+from . import ocl, release_cl_buffers, kernel_workgroup_size, get_x87_volatile_option
 if ocl:
     import pyopencl.array
     from . import processing
@@ -81,7 +81,13 @@ class Separator(OpenclProcessing):
         self.npt_height = npt_height
 
         self.allocate_buffers()
-        self.compile_kernels()
+
+        try:
+            default_compiler_options = self.get_compiler_options(x87_volatile=True)
+        except AttributeError:  # Silx version too old
+            logger.warning("Please upgrade to silx v0.10+")
+            default_compiler_options = get_x87_volatile_option(self.ctx)
+        self.compile_kernels(compile_options=default_compiler_options)
         if block_size is None:
             self.block_size = kernel_workgroup_size(self.program, "filter_vertical")
         else:
