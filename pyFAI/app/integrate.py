@@ -120,10 +120,14 @@ def integrate_gui(options, args):
         qtProcess.start()
 
         result = dialog.exec_()
-
-        qt.QMessageBox.information(dialog,
-                                   "Integration",
-                                   "Batch processing completed.")
+        if result:
+            qt.QMessageBox.information(dialog,
+                                       "Integration",
+                                       "Batch processing completed.")
+        else:
+            qt.QMessageBox.information(dialog,
+                                       "Integration",
+                                       "Batch processing interrupted.")
         dialog.deleteLater()
 
     window = IntegrationDialog(args, options.output, json_file=options.json, context=context)

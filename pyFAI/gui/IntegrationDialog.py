@@ -87,7 +87,11 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         self.__firstPlot = True
         self.__lastDisplay = None
         self._progressBar.setFormat("Preprocessing...")
-        self._cancelButton.clicked.connect(self.request_interruption)
+        self._cancelButton.clicked.connect(self.__interruptionRequested)
+
+    def __interruptionRequested(self):
+        self.setEnabled(False)
+        self.request_interruption()
 
     def __resultReceived(self, result):
         isFiltered = not self._displayResult.isChecked()
@@ -185,11 +189,20 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
     def data_result(self, data_id, result):
         self.__resultReceived(result)
 
+    def processing_interrupted(self):
+        self.__was_interrupted = True
+
+    def processing_succeeded(self):
+        self.__was_interrupted = False
+
     def processing_finished(self):
         """Called when the full processing is finisehd."""
         self._progressBar.setValue(self._progressBar.maximum())
         self.__lastResult = None
-        self.accept()
+        if self.__was_interrupted:
+            self.reject()
+        else:
+            self.accept()
 
     def createObserver(self, qtSafe=True):
         """Returns a processing observer connected to this widget.
