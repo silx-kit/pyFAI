@@ -97,7 +97,8 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         isFiltered = not self._displayResult.isChecked()
         now = time.time()
         if self.__lastDisplay is not None:
-            if now - self.__lastDisplay < 1.0:
+            # Display a new result every 500ms, no more
+            if now - self.__lastDisplay < 0.5:
                 isFiltered = True
         if not isFiltered:
             self.__undisplayedResult = None
