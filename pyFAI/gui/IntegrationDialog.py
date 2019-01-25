@@ -57,6 +57,19 @@ from .utils import projecturl
 from ..utils import get_ui_file
 from ..app import integrate
 from .. import containers
+from pyFAI.gui.utils.eventutils import QtProxifier
+
+
+class _ThreadSafeIntegrationProcess(QtProxifier):
+
+    def is_interruption_requested(self):
+        # NOTE: Not thread safe, but it usually do not call anything but only
+        #       returns a boolean
+        result = self._target().is_interruption_requested()
+        return result
+
+    def request_interruption(self):
+        raise RuntimeError("Not supposed to be called")
 
 
 class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
@@ -177,6 +190,18 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         self._progressBar.setValue(self._progressBar.maximum())
         self.__lastResult = None
         self.accept()
+
+    def createObserver(self, qtSafe=True):
+        """Returns a processing observer connected to this widget.
+
+        :param bool qtSafe: If True the returned observer can be called from
+            any thread. Else it have to be called from the main Qt thread.
+        :rtype: integrate.IntegrationObserver
+        """
+        if qtSafe:
+            return _ThreadSafeIntegrationProcess(self)
+        else:
+            self
 
 
 class IntegrationDialog(qt.QWidget):

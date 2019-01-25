@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2019"
+__date__ = "25/01/2019"
 __satus__ = "production"
 
 import sys
@@ -71,7 +71,6 @@ def integrate_gui(options, args):
     from silx.gui import qt
     from pyFAI.gui.IntegrationDialog import IntegrationDialog
     from pyFAI.gui.IntegrationDialog import IntegrationProcess
-    from pyFAI.gui.utils.eventutils import QtProxifier
 
     app = qt.QApplication([])
 
@@ -114,8 +113,8 @@ def integrate_gui(options, args):
 
         class QtProcess(qt.QThread):
             def run(self):
-                qtObserver = QtProxifier(dialog)
-                process(input_data, window.output_path, config, options.monitor_key, qtObserver)
+                observer = dialog.createObserver(qtSafe=True)
+                process(input_data, window.output_path, config, options.monitor_key, observer)
 
         qtProcess = QtProcess()
         qtProcess.start()
