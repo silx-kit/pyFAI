@@ -36,7 +36,7 @@ import cython
 cimport numpy
 import numpy
 
-from crc32 cimport pyFAI_crc32
+from .crc32 cimport pyFAI_crc32
 
 
 def crc32(numpy.ndarray data not None):

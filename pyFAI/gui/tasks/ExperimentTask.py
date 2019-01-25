@@ -24,10 +24,11 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
+from pyFAI.gui.helper import model_transform
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/01/2019"
+__date__ = "18/01/2019"
 
 import fabio
 import numpy
@@ -122,23 +123,9 @@ class ExperimentTask(AbstractCalibrationTask):
         image = settings.image().value()
         mask = settings.mask().value()
         colormap = CalibrationContext.instance().getRawColormap()
-        geometry = None
-
-        fittedGeometry = self.model().fittedGeometry()
-        if fittedGeometry.isValid():
-            from pyFAI import geometry
-            geometry = geometry.Geometry()
-            geometry.dist = fittedGeometry.distance().value()
-            geometry.poni1 = fittedGeometry.poni1().value()
-            geometry.poni2 = fittedGeometry.poni2().value()
-            geometry.rot1 = fittedGeometry.rotation1().value()
-            geometry.rot2 = fittedGeometry.rotation2().value()
-            geometry.rot3 = fittedGeometry.rotation3().value()
-            geometry.wavelength = fittedGeometry.wavelength().value()
-
         dialog.setData(detector=detector,
                        image=image, mask=mask, colormap=colormap,
-                       geometry=geometry)
+                       geometry=None)
         dialog.exec_()
 
     def _updateModel(self, model):

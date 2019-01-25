@@ -54,7 +54,7 @@ from ..utils import expand2d
 from ..third_party import six
 import fabio
 
-from sparse_builder cimport SparseBuilder
+from .sparse_builder cimport SparseBuilder
 
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
