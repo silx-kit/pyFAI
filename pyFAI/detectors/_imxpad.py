@@ -44,6 +44,7 @@ import numpy
 import json
 from ._common import Detector
 from pyFAI.utils import mathutil
+from pyFAI.geometry import Geometry
 
 import logging
 logger = logging.getLogger(__name__)
@@ -481,7 +482,7 @@ class Cirpad(ImXPadS10):
     MODULE_SIZE = (80, 120)  # number of pixels per module (y, x)
     PIXEL_SIZE = (130e-6, 130e-6)
     DIFFERENT_PIXEL_SIZE = 2.5
-    ROT = [0, 0, -6.74]
+    ROT = [0, 0, 6.74]
 
     # static functions used in order to define the Cirpad
     @staticmethod
@@ -535,15 +536,15 @@ class Cirpad(ImXPadS10):
 
     def _passage(self, corners, rot):
         shape = corners.shape
-        deltaX, deltaY = 0.0, 0.0
+        deltaZ, deltaY = 0.0, 0.0
         nmd = self._rotation(corners, rot)
         # Size in mm of the chip in the Y direction (including 10px gap)
-        size_Y = ((560.0 + 3 * 6 + 20)*0.13/1000)
+        size_Y = ((560.0 + 3 * 6 + 10)*0.13/1000)
         for i in range(1, int(round(numpy.abs(rot[2])/6.74))):
-            deltaX = deltaX + numpy.sin(numpy.deg2rad(-rot[2] -6.74*(i)))
+            deltaZ = deltaZ + numpy.sin(numpy.deg2rad(rot[2]))
         for i in range(int(round(numpy.abs(rot[2])/6.74))):
-            deltaY = deltaY + numpy.cos(numpy.deg2rad(-rot[2] - 6.74*(i+1)))
-        return self._translation(nmd, [size_Y*deltaX,size_Y*deltaY, 0])
+            deltaY = deltaY + numpy.cos(numpy.deg2rad(rot[2] - 6.74*(i+1)))
+        return self._translation(nmd, [size_Y*deltaZ,size_Y*deltaY, 0])
 
     def _get_pixel_corners(self):
         pixel_size1 = self._calc_pixels_size(self.MEDIUM_MODULE_SIZE[0],
@@ -580,7 +581,25 @@ class Cirpad(ImXPadS10):
         corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
         corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
 
-        modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2] * i]) for i in range(20)]
+        #modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2] * i]) for i in range(20)]
+        modules = list()
+        dz, dy = 0.0, 0.0
+        module_size = ((560.0 + 3 * 6 + 10)*0.13/1000)
+        for m in range(20):
+            # rotation
+            rot = numpy.array(self.ROT)
+            rot[2] *= m
+
+            # translation
+            dy += numpy.cos(numpy.deg2rad(-rot[2]))
+            u = numpy.array([module_size*dz, module_size*dy, 0])
+            dz -= numpy.sin(numpy.deg2rad(rot[2]))
+
+            # compute
+            module = self._rotation(corners, rot)
+            module = self._translation(module, u)
+            modules.append(module)
+
         result = numpy.concatenate(modules, axis=0)
         result = numpy.ascontiguousarray(result, result.dtype)
         return result
@@ -661,3 +680,228 @@ class Cirpad(ImXPadS10):
             p2 = p2.astype(numpy.float32)
             p3 = p3.astype(numpy.float32)
         return p1, p2, p3
+
+
+class Cirpad2Module(ImXPadS70):
+    """
+    ImXPad detector: ImXPad s70 detector with 1x7modules
+    """
+    MODULE_SIZE = (80, 120)  # number of pixels per module (y, x)
+    MAX_SHAPE = (560, 120)  # max size of the detector
+    PIXEL_SIZE = (130e-6, 130e-6)
+    BORDER_SIZE_RELATIVE = 2.5
+    force_pixel = True
+    aliases = ["Cirpad2Module"]
+    PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
+
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        super(Cirpad2Module, self).__init__(pixel1=pixel1, pixel2=pixel2)
+
+
+
+
+class Cirpad2(Detector):
+    MAX_SHAPE = (11200, 120) #max size of the detector as the 20 detector
+    IS_FLAT = False
+    IS_CONTIGUOUS = False
+    force_pixel = True
+    uniform_pixel = False
+    aliases = ["Cirpad2"]
+    MEDIUM_MODULE_SIZE = (560, 120) #size of one module, as one detector
+    MODULE_SIZE = (80, 120)  # number of pixels per chip (y, x)
+    PIXEL_SIZE = (130e-6, 130e-6)
+    DIFFERENT_PIXEL_SIZE = 2.5
+
+    # static functions used in order to define the Cirpad
+    @staticmethod
+    def _M(theta, u):
+        """
+        :param theta: the axis value in radian
+        :type theta: float
+        :param u: the axis vector [x, y, z]
+        :type u: [float, float, float]
+        :return: the rotation matrix
+        :rtype: numpy.ndarray (3, 3)
+        """
+        c = numpy.cos(theta)
+        one_minus_c = 1 - c
+        s = numpy.sin(theta)
+        return [[c + u[0] ** 2 * one_minus_c,
+                 u[0] * u[1] * one_minus_c - u[2] * s,
+                 u[0] * u[2] * one_minus_c + u[1] * s],
+                [u[0] * u[1] * one_minus_c + u[2] * s,
+                 c + u[1] ** 2 * one_minus_c,
+                 u[1] * u[2] * one_minus_c - u[0] * s],
+                [u[0] * u[2] * one_minus_c - u[1] * s,
+                 u[1] * u[2] * one_minus_c + u[0] * s,
+                 c + u[2] ** 2 * one_minus_c]]
+
+    @staticmethod
+    def _rotation(md, rot):
+        shape = md.shape
+        axe = numpy.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  # A voir si ce n'est pas une entrée
+        P = functools.reduce(numpy.dot, [Cirpad2._M(numpy.radians(rot[i]), axe[i]) for i in range(len(rot))])
+        try:
+            nmd = numpy.transpose(numpy.reshape(numpy.tensordot(P, numpy.reshape(numpy.transpose(md), (3, shape[0] * shape[1] * 4)), axes=1), (3, 4, shape[1], shape[0])))
+        except IndexError:
+            nmd = numpy.transpose(numpy.tensordot(P, numpy.transpose(md), axes=1))
+        return(nmd)
+
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, dist=0, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=self.MAX_SHAPE)
+        self.modules = list()
+        self.modules_geometry = list()
+        self.modules_param = list()
+        # module_size = (560 + 6*3 + 20)*0.00013/1000
+        deltaZ = 0
+        deltaY = 0
+        #init 20 modules as 20 detectors.
+        for i in range(20):
+            module = Cirpad2Module()
+            geometry = Geometry(dist=dist, poni1=poni1, poni2=poni2,
+                                rot1=rot1, rot2=rot2, rot3=rot3,
+                                pixel1=pixel1, pixel2=pixel2, detector=module)
+            self.modules.append(module)
+            self.modules_geometry.append(geometry)
+            self.modules_param.append([0.65 + deltaZ, deltaY, 0, 0, numpy.deg2rad(-i * 6.74), 0])
+            deltaZ += 0.0043
+            deltaY -= 0.0017
+            # deltaZ -= numpy.sin(numpy.deg2rad(-i*6.74))
+            # deltaY -= numpy.cos(numpy.deg2rad(-i*6.74))
+
+    def _calc_pixels_size(self, length, module_size, pixel_size):
+        size = numpy.ones(length)
+        n = (length // module_size)
+        for i in range(1, n):
+            size[i * module_size - 1] = self.DIFFERENT_PIXEL_SIZE
+            size[i * module_size] = self.DIFFERENT_PIXEL_SIZE
+        return pixel_size * size
+
+    def _get_pixel_corners(self):
+        pixel_size1 = self._calc_pixels_size(self.MEDIUM_MODULE_SIZE[0],
+                                             self.MODULE_SIZE[0],
+                                             self.PIXEL_SIZE[0])
+        pixel_size2 = (numpy.ones(self.MEDIUM_MODULE_SIZE[1]) * self.PIXEL_SIZE[1]).astype(numpy.float32)
+        # half pixel offset
+        pixel_center1 = pixel_size1 / 2.0  # half pixel offset
+        pixel_center2 = pixel_size2 / 2.0
+        # size of all preceeding pixels
+        pixel_center1[1:] += numpy.cumsum(pixel_size1[:-1])
+        pixel_center2[1:] += numpy.cumsum(pixel_size2[:-1])
+
+        pixel_center1.shape = -1, 1
+        pixel_center1.strides = pixel_center1.strides[0], 0
+
+        pixel_center2.shape = 1, -1
+        pixel_center2.strides = 0, pixel_center2.strides[1]
+
+        pixel_size1.shape = -1, 1
+        pixel_size1.strides = pixel_size1.strides[0], 0
+
+        pixel_size2.shape = 1, -1
+        pixel_size2.strides = 0, pixel_size2.strides[1]
+
+        # Position of the first module
+        corners = numpy.zeros((self.MEDIUM_MODULE_SIZE[0], self.MEDIUM_MODULE_SIZE[1], 4, 3), dtype=numpy.float32)
+        corners[:, :, 0, 1] = pixel_center1 - pixel_size1 / 2.0
+        corners[:, :, 0, 2] = pixel_center2 - pixel_size2 / 2.0
+        corners[:, :, 1, 1] = pixel_center1 + pixel_size1 / 2.0
+        corners[:, :, 1, 2] = pixel_center2 - pixel_size2 / 2.0
+        corners[:, :, 2, 1] = pixel_center1 + pixel_size1 / 2.0
+        corners[:, :, 2, 2] = pixel_center2 + pixel_size2 / 2.0
+        corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
+        corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
+
+        modules_position = list()
+        for param, geometry in zip(self.modules_param, self.modules_geometry):
+            zyx = geometry.calc_pos_zyx(d0=0, d1=0, d2=0, param=param, corners=True)
+            modules_position.append(numpy.moveaxis(zyx,0,-1))
+            """
+            c0 = set_modules_position[i][0,0,0,:]
+            c1 = set_modules_position[i][559,0,0,:]
+            c2 = set_modules_position[i][0,119,0,:]
+            size1 = numpy.sqrt((c0[0]-c1[0])**2 + (c0[1]-c1[1])**2 +(c0[2]-c1[2])**2 )
+            size2 = numpy.sqrt((c0[0]-c2[0])**2 + (c0[1]-c2[1])**2 +(c0[2]-c2[2])**2 )
+            print(i, size1, size2)
+            """
+        result = numpy.concatenate(modules_position, axis=0)
+        result = numpy.ascontiguousarray(result, result.dtype)
+        return result
+
+    def get_pixel_corners(self):
+        if self._pixel_corners is None:
+            with self._sem:
+                if self._pixel_corners is None:
+                    self._pixel_corners = self._get_pixel_corners()
+        return self._pixel_corners
+
+    # TODO !!!
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
+        if (d1 is None) or d2 is None:
+            d1 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[0]).astype(numpy.float32), self.MAX_SHAPE[1], False)
+            d2 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[1]).astype(numpy.float32), self.MAX_SHAPE[0], True)
+        corners = self.get_pixel_corners()
+        if center:
+            # avoid += It modifies in place and segfaults
+            d1 = d1 + 0.5
+            d2 = d2 + 0.5
+        if False and use_cython:
+            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners, is_flat=False)
+            p1.shape = d1.shape
+            p2.shape = d2.shape
+            p3.shape = d2.shape
+        else:  # TODO verifiedA verifier
+            i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
+            i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
+            delta1 = d1 - i1
+            delta2 = d2 - i2
+            pixels = corners[i1, i2]
+            if pixels.ndim == 3:
+                A0 = pixels[:, 0, 0]
+                A1 = pixels[:, 0, 1]
+                A2 = pixels[:, 0, 2]
+                B0 = pixels[:, 1, 0]
+                B1 = pixels[:, 1, 1]
+                B2 = pixels[:, 1, 2]
+                C0 = pixels[:, 2, 0]
+                C1 = pixels[:, 2, 1]
+                C2 = pixels[:, 2, 2]
+                D0 = pixels[:, 3, 0]
+                D1 = pixels[:, 3, 1]
+                D2 = pixels[:, 3, 2]
+            else:
+                A0 = pixels[:, :, 0, 0]
+                A1 = pixels[:, :, 0, 1]
+                A2 = pixels[:, :, 0, 2]
+                B0 = pixels[:, :, 1, 0]
+                B1 = pixels[:, :, 1, 1]
+                B2 = pixels[:, :, 1, 2]
+                C0 = pixels[:, :, 2, 0]
+                C1 = pixels[:, :, 2, 1]
+                C2 = pixels[:, :, 2, 2]
+                D0 = pixels[:, :, 3, 0]
+                D1 = pixels[:, :, 3, 1]
+                D2 = pixels[:, :, 3, 2]
+
+            # points A and D are on the same dim1 (Y), they differ in dim2 (X)
+            # points B and C are on the same dim1 (Y), they differ in dim2 (X)
+            # points A and B are on the same dim2 (X), they differ in dim1 (Y)
+            # points C and D are on the same dim2 (X), they differ in dim1 (
+            p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
+                + B1 * delta1 * (1.0 - delta2) \
+                + C1 * delta1 * delta2 \
+                + D1 * (1.0 - delta1) * delta2
+            p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
+                + B2 * delta1 * (1.0 - delta2) \
+                + C2 * delta1 * delta2 \
+                + D2 * (1.0 - delta1) * delta2
+            p3 = A0 * (1.0 - delta1) * (1.0 - delta2) \
+                + B0 * delta1 * (1.0 - delta2) \
+                + C0 * delta1 * delta2 \
+                + D0 * (1.0 - delta1) * delta2
+            # To ensure numerical consitency with cython procedure.
+            p1 = p1.astype(numpy.float32)
+            p2 = p2.astype(numpy.float32)
+            p3 = p3.astype(numpy.float32)
+        return p1, p2, p3
+
