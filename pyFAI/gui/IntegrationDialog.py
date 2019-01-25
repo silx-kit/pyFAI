@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2019"
+__date__ = "25/01/2019"
 __status__ = "development"
 
 import logging
@@ -74,6 +74,7 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         self.__firstPlot = True
         self.__lastDisplay = None
         self._progressBar.setFormat("Preprocessing...")
+        self._cancelButton.clicked.connect(self.request_interruption)
 
     def __resultReceived(self, result):
         isFiltered = not self._displayResult.isChecked()

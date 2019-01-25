@@ -170,6 +170,7 @@ class TestIntegrateApp(unittest.TestCase):
 class _ResultObserver(pyFAI.app.integrate.IntegrationObserver):
 
     def __init__(self):
+        super(_ResultObserver, self).__init__()
         self.result = []
 
     def data_result(self, data_id, result):

@@ -161,6 +161,15 @@ class IntegrationObserver(object):
     """Interface providing access to the to the processing of the `process`
     function."""
 
+    def __init__(self):
+        self.__is_interruption_requested = False
+
+    def is_interruption_requested(self):
+        return self.__is_interruption_requested
+
+    def request_interruption(self):
+        self.__is_interruption_requested = True
+
     def worker_initialized(self, worker):
         """
         Called when the worker is initialized
@@ -195,8 +204,20 @@ class IntegrationObserver(object):
         """
         pass
 
+    def processing_interrupted(self, reason=None):
+        """Called before `processing_finished` if the processing was
+        interrupted.
+
+        :param [str,Exception,None] error: A reason of the interruption.
+        """
+        pass
+
+    def processing_succeeded(self):
+        """Called before `processing_finished` if the processing succedded."""
+        pass
+
     def processing_finished(self):
-        """Called when the full processing is finisehd."""
+        """Called when the full processing is finisehd (interupted or not)."""
         pass
 
 
@@ -206,6 +227,7 @@ class ShellIntegrationObserver(IntegrationObserver):
     """
 
     def __init__(self):
+        super(ShellIntegrationObserver, self).__init__()
         self._progress_bar = None
 
     def processing_started(self, data_count):
@@ -332,6 +354,8 @@ def process(input_data, output, config, monitor_name, observer):
                     result = worker.process(data=data,
                                             writer=writer)
                     if observer is not None:
+                        if observer.is_interruption_requested():
+                            break
                         observer.data_result(iitem, result)
             else:
                 data = item
@@ -354,6 +378,8 @@ def process(input_data, output, config, monitor_name, observer):
                                             normalization_factor=normalization_factor,
                                             writer=writer)
                     if observer is not None:
+                        if observer.is_interruption_requested():
+                            break
                         observer.data_result(iitem, result)
                 writer.close()
             else:
@@ -368,7 +394,16 @@ def process(input_data, output, config, monitor_name, observer):
                     observer.data_result(iitem, result)
                 writer.close()
 
+        if observer is not None:
+            if observer.is_interruption_requested():
+                break
+
     if observer is not None:
+        if observer.is_interruption_requested():
+            logger.info("Processing was aborted")
+            observer.processing_interrupted()
+        else:
+            observer.processing_succeeded()
         observer.processing_finished()
     logger.info("Processing done in %.3fs !", (time.time() - start_time))
     return 0
