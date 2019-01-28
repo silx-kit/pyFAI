@@ -40,8 +40,9 @@ __date__ = "18/01/2019"
 __status__ = "production"
 
 import functools
-import numpy
 import json
+import numpy
+from collections import OrderedDict
 from ._common import Detector
 from pyFAI.utils import mathutil
 from .. import geometry
@@ -767,6 +768,17 @@ class Cirpad2(Detector):
             deltaY -= 0.0017
             # deltaZ -= numpy.sin(numpy.deg2rad(-i*6.74))
             # deltaY -= numpy.cos(numpy.deg2rad(-i*6.74))
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        :return: dict with param for serialization
+        """
+        return OrderedDict((("distance", self.dist),
+                            ("poni1", self.poni1),
+                            ("poni2", self.poni2),
+                            ("rot1", self.rot1),
+                            ("rot2", self.rot2),
+                            ("rot3",self.rot3)))
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)
