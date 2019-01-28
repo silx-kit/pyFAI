@@ -44,7 +44,7 @@ import numpy
 import json
 from ._common import Detector
 from pyFAI.utils import mathutil
-from ..geometry import Geometry
+from .geometry import Geometry
 
 import logging
 logger = logging.getLogger(__name__)
