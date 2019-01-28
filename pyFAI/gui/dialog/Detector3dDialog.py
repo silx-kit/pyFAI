@@ -141,7 +141,7 @@ class CreateSceneThread(qt.QThread):
         values[2::4] = pixelValues
         values[3::4] = pixelValues
 
-        plus = numpy.array([0, 0, 1, 2, 2, 3, 0], dtype=numpy.uint32)
+        plus = numpy.array([0, 1, 2, 2, 3, 0], dtype=numpy.uint32)
         indexes = (numpy.atleast_2d(4 * numpy.arange(vertices.shape[0] // 4, dtype=numpy.uint32)).T + plus).ravel()
         indexes = indexes.astype(numpy.uint32)
 
@@ -151,7 +151,7 @@ class CreateSceneThread(qt.QThread):
 
         item = mesh.ColormapMesh()
         item.moveToThread(qt.QApplication.instance().thread())
-        item.setData(mode="triangle_strip",
+        item.setData(mode="triangles",
                      position=vertices,
                      value=values,
                      indices=indexes,
