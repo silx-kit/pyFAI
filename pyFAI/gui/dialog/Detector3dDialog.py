@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/01/2019"
+__date__ = "28/01/2019"
 
 import numpy
 import time
@@ -197,8 +197,12 @@ class CreateSceneThread(qt.QThread):
             triangle_index += 3
             color_index += 1
 
-        self.__positions_array = positions_array
-        self.__colors_array = colors_array
+        item = mesh.Mesh()
+        item.moveToThread(qt.QApplication.instance().thread())
+        item.setData(position=positions_array,
+                     color=colors_array,
+                     copy=False)
+        self.__detectorItem = item
 
         self.emitProgressValue(100, force=True)
         return True
@@ -207,9 +211,9 @@ class CreateSceneThread(qt.QThread):
         return self.__geometry is not None
 
     def getDetectorItem(self):
-        item = mesh.Mesh()
-        item.setData(position=self.__positions_array, color=self.__colors_array)
+        item = self.__detectorItem
         item.setLabel("Detector")
+        self.__detectorItem = None
         return item
 
     def getSampleItem(self):
