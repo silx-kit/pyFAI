@@ -681,7 +681,7 @@ class Cirpad(ImXPadS10):
         return p1, p2, p3
 
 
-class Cirpad2Module(ImXPadS70):
+class _Cirpad2Module(ImXPadS70):
     """
     ImXPad detector: ImXPad s70 detector with 1x7modules
     """
@@ -694,7 +694,7 @@ class Cirpad2Module(ImXPadS70):
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        super(Cirpad2Module, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        super(_Cirpad2Module, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 class Cirpad2(Detector):
@@ -754,7 +754,7 @@ class Cirpad2(Detector):
         deltaY = 0
         # init 20 modules as 20 detectors.
         for i in range(20):
-            module = Cirpad2Module()
+            module = _Cirpad2Module()
             mdgeometry = geometry.Geometry(dist=dist, poni1=poni1, poni2=poni2,
                                            rot1=rot1, rot2=rot2, rot3=rot3,
                                            pixel1=pixel1, pixel2=pixel2, detector=module)
