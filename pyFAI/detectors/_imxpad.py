@@ -44,7 +44,7 @@ import numpy
 import json
 from ._common import Detector
 from pyFAI.utils import mathutil
-from .. import geometry.Geometry
+from .. import geometry
 
 import logging
 logger = logging.getLogger(__name__)
@@ -757,11 +757,11 @@ class Cirpad2(Detector):
         # init 20 modules as 20 detectors.
         for i in range(20):
             module = Cirpad2Module()
-            geometry = geometry.Geometry(dist=dist, poni1=poni1, poni2=poni2,
+            mdgeometry = geometry.Geometry(dist=dist, poni1=poni1, poni2=poni2,
                                 rot1=rot1, rot2=rot2, rot3=rot3,
                                 pixel1=pixel1, pixel2=pixel2, detector=module)
             self.modules.append(module)
-            self.modules_geometry.append(geometry)
+            self.modules_geometry.append(mdgeometry)
             self.modules_param.append([0.65 + deltaZ, deltaY, 0, 0, numpy.deg2rad(-i * 6.74), 0])
             deltaZ += 0.0043 
             deltaY -= 0.0017
