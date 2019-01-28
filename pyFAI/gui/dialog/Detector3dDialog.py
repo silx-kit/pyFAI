@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/01/2019"
+__date__ = "28/01/2019"
 
 import numpy
 import time
@@ -106,7 +106,67 @@ class CreateSceneThread(qt.QThread):
 
     def runProcess(self):
         self.emitProgressValue(0, force=True)
+        if hasattr(mesh, "ColormapMesh"):
+            # Since silx 0.10
+            result = self.__createDetectorColormapMesh()
+        else:
+            # silx < 0.10
+            result = self.__createDetectorMesh()
+        self.emitProgressValue(100, force=True)
+        return result
 
+    def __createDetectorColormapMesh(self):
+        if self.__geometry is not None:
+            if self.__detector is not None:
+                self.__geometry.detector = self.__detector
+            pixels = self.__geometry.calc_pos_zyx(corners=True)
+            pixels = numpy.array(pixels)
+            pixels = numpy.moveaxis(pixels, 0, -1)
+        else:
+            pixels = self.__detector.get_pixel_corners()
+
+        # Merge all pixels together
+        pixels = pixels[...]
+        vertices = numpy.reshape(pixels, (-1, 3))
+
+        if self.__image is not None:
+            pixelValues = self.__image
+            pixelValues = pixelValues.reshape(-1)
+        else:
+            pixelValues = numpy.zeros(vertices.shape[0] // 4)
+
+        if self.__mask is not None:
+            mask = self.__mask.reshape(-1)
+            if pixelValues.dtype.kind in "ui":
+                pixelValues = pixelValues.astype(numpy.float)
+            pixelValues[mask != 0] = numpy.float("nan")
+
+        values = numpy.empty(shape=(vertices.shape[0]))
+        values[0::4] = pixelValues
+        values[1::4] = pixelValues
+        values[2::4] = pixelValues
+        values[3::4] = pixelValues
+
+        plus = numpy.array([0, 1, 2, 2, 3, 0], dtype=numpy.uint32)
+        indexes = (numpy.atleast_2d(4 * numpy.arange(vertices.shape[0] // 4, dtype=numpy.uint32)).T + plus).ravel()
+        indexes = indexes.astype(numpy.uint32)
+
+        colormap = self.__colormap
+        if colormap is None:
+            colormap = colors.Colormap(name="inferno", normalization=colors.Colormap.LOGARITHM)
+
+        item = mesh.ColormapMesh()
+        item.moveToThread(qt.QApplication.instance().thread())
+        item.setData(mode="triangles",
+                     position=vertices,
+                     value=values,
+                     indices=indexes,
+                     copy=False)
+        item.setColormap(colormap)
+        self.__detectorItem = item
+        return True
+
+    def __createDetectorMesh(self):
         if self.__geometry is not None:
             if self.__detector is not None:
                 self.__geometry.detector = self.__detector
@@ -197,19 +257,21 @@ class CreateSceneThread(qt.QThread):
             triangle_index += 3
             color_index += 1
 
-        self.__positions_array = positions_array
-        self.__colors_array = colors_array
-
-        self.emitProgressValue(100, force=True)
+        item = mesh.Mesh()
+        item.moveToThread(qt.QApplication.instance().thread())
+        item.setData(position=positions_array,
+                     color=colors_array,
+                     copy=False)
+        self.__detectorItem = item
         return True
 
     def hasGeometry(self):
         return self.__geometry is not None
 
     def getDetectorItem(self):
-        item = mesh.Mesh()
-        item.setData(position=self.__positions_array, color=self.__colors_array)
+        item = self.__detectorItem
         item.setLabel("Detector")
+        self.__detectorItem = None
         return item
 
     def getSampleItem(self):
