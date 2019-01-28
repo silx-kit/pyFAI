@@ -105,12 +105,62 @@ class CreateSceneThread(qt.QThread):
                 self.__isAborted = True
 
     def runProcess(self):
-        result = self.__createDetectorMesh(self)
+        self.emitProgressValue(0, force=True)
+        if hasattr(mesh, "ColormapMesh"):
+            # Since silx 0.10
+            result = self.__createDetectorColormapMesh()
+        else:
+            # silx < 0.10
+            result = self.__createDetectorMesh()
+        self.emitProgressValue(100, force=True)
         return result
 
-    def __createDetectorMesh(self):
-        self.emitProgressValue(0, force=True)
+    def __createDetectorColormapMesh(self):
+        if self.__geometry is not None:
+            if self.__detector is not None:
+                self.__geometry.detector = self.__detector
+            pixels = self.__geometry.calc_pos_zyx(corners=True)
+            pixels = numpy.array(pixels)
+            pixels = numpy.moveaxis(pixels, 0, -1)
+        else:
+            pixels = self.__detector.get_pixel_corners()
 
+        # Merge all pixels together
+        pixels = pixels[...]
+        vertices = numpy.reshape(pixels, (-1, 3))
+
+        if self.__image is not None:
+            pixelValues = self.__image
+            pixelValues = pixelValues.reshape(-1)
+        else:
+            pixelValues = numpy.zeros(vertices.shape[0] // 4)
+
+        values = numpy.empty(shape=(vertices.shape[0]))
+        values[0::4] = pixelValues
+        values[1::4] = pixelValues
+        values[2::4] = pixelValues
+        values[3::4] = pixelValues
+
+        plus = numpy.array([0, 0, 1, 2, 2, 3, 0], dtype=numpy.uint32)
+        indexes = (numpy.atleast_2d(4 * numpy.arange(vertices.shape[0] // 4, dtype=numpy.uint32)).T + plus).ravel()
+        indexes = indexes.astype(numpy.uint32)
+
+        colormap = self.__colormap
+        if colormap is None:
+            colormap = colors.Colormap(name="inferno", normalization=colors.Colormap.LOGARITHM)
+
+        item = mesh.ColormapMesh()
+        item.moveToThread(qt.QApplication.instance().thread())
+        item.setData(mode="triangle_strip",
+                     position=vertices,
+                     value=values,
+                     indices=indexes,
+                     copy=False)
+        item.setColormap(colormap)
+        self.__detectorItem = item
+        return True
+
+    def __createDetectorMesh(self):
         if self.__geometry is not None:
             if self.__detector is not None:
                 self.__geometry.detector = self.__detector
@@ -207,8 +257,6 @@ class CreateSceneThread(qt.QThread):
                      color=colors_array,
                      copy=False)
         self.__detectorItem = item
-
-        self.emitProgressValue(100, force=True)
         return True
 
     def hasGeometry(self):
