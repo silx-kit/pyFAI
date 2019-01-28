@@ -44,7 +44,7 @@ import numpy
 import json
 from ._common import Detector
 from pyFAI.utils import mathutil
-from pyFAI.geometry import Geometry
+from ..geometry import Geometry
 
 import logging
 logger = logging.getLogger(__name__)
@@ -344,11 +344,11 @@ class Xpad_flat(ImXPadS10):
             raise NotImplementedError("Generic Xpad detector does not"
                                       " know the max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
+        # working in dim0 = Y
         for i in range(0, self.max_shape[0], self.module_size[0]):
             mask[i, :] = 1
             mask[i + self.module_size[0] - 1, :] = 1
-        # workinng in dim1 = X
+        # working in dim1 = X
         for i in range(0, self.max_shape[1], self.module_size[1]):
             mask[:, i] = 1
             mask[:, i + self.module_size[1] - 1] = 1
@@ -511,7 +511,7 @@ class Cirpad(ImXPadS10):
     @staticmethod
     def _rotation(md, rot):
         shape = md.shape
-        axe = numpy.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  # A voir si ce n'est pas une entrée
+        axe = numpy.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  #Maybe a parameter
         P = functools.reduce(numpy.dot, [Cirpad._M(numpy.radians(rot[i]), axe[i]) for i in range(len(rot))])
         try:
             nmd = numpy.transpose(numpy.reshape(numpy.tensordot(P, numpy.reshape(numpy.transpose(md), (3, shape[0] * shape[1] * 4)), axes=1), (3, 4, shape[1], shape[0])))
@@ -626,7 +626,7 @@ class Cirpad(ImXPadS10):
             p1.shape = d1.shape
             p2.shape = d2.shape
             p3.shape = d2.shape
-        else:  # TODO verifiedA verifier
+        else:  # TODO verified
             i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
             i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
             delta1 = d1 - i1
@@ -739,7 +739,7 @@ class Cirpad2(Detector):
     @staticmethod
     def _rotation(md, rot):
         shape = md.shape
-        axe = numpy.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  # A voir si ce n'est pas une entrée
+        axe = numpy.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  # Maybe a parameter
         P = functools.reduce(numpy.dot, [Cirpad2._M(numpy.radians(rot[i]), axe[i]) for i in range(len(rot))])
         try:
             nmd = numpy.transpose(numpy.reshape(numpy.tensordot(P, numpy.reshape(numpy.transpose(md), (3, shape[0] * shape[1] * 4)), axes=1), (3, 4, shape[1], shape[0])))
@@ -752,10 +752,9 @@ class Cirpad2(Detector):
         self.modules = list()
         self.modules_geometry = list()
         self.modules_param = list()
-        # module_size = (560 + 6*3 + 20)*0.00013/1000
         deltaZ = 0
         deltaY = 0
-        #init 20 modules as 20 detectors.
+        # init 20 modules as 20 detectors.
         for i in range(20):
             module = Cirpad2Module()
             geometry = Geometry(dist=dist, poni1=poni1, poni2=poni2,
@@ -764,7 +763,7 @@ class Cirpad2(Detector):
             self.modules.append(module)
             self.modules_geometry.append(geometry)
             self.modules_param.append([0.65 + deltaZ, deltaY, 0, 0, numpy.deg2rad(-i * 6.74), 0])
-            deltaZ += 0.0043
+            deltaZ += 0.0043 
             deltaY -= 0.0017
             # deltaZ -= numpy.sin(numpy.deg2rad(-i*6.74))
             # deltaY -= numpy.cos(numpy.deg2rad(-i*6.74))
@@ -850,7 +849,7 @@ class Cirpad2(Detector):
             p1.shape = d1.shape
             p2.shape = d2.shape
             p3.shape = d2.shape
-        else:  # TODO verifiedA verifier
+        else:  # TODO verified
             i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
             i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
             delta1 = d1 - i1
