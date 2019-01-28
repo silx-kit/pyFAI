@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/01/2019"
+__date__ = "28/01/2019"
 __status__ = "production"
 
 import functools
@@ -45,7 +45,6 @@ import numpy
 from collections import OrderedDict
 from ._common import Detector
 from pyFAI.utils import mathutil
-from .. import geometry
 
 import logging
 logger = logging.getLogger(__name__)
@@ -750,6 +749,7 @@ class Cirpad2(Detector):
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6, dist=0, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=self.MAX_SHAPE)
+        from .. import geometry
         self.modules = list()
         self.modules_geometry = list()
         self.modules_param = list()
