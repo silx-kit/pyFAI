@@ -105,6 +105,10 @@ class CreateSceneThread(qt.QThread):
                 self.__isAborted = True
 
     def runProcess(self):
+        result = self.__createDetectorMesh(self)
+        return result
+
+    def __createDetectorMesh(self):
         self.emitProgressValue(0, force=True)
 
         if self.__geometry is not None:
