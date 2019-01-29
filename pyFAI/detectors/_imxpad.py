@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/01/2019"
+__date__ = "28/01/2019"
 __status__ = "production"
 
 import functools
@@ -45,7 +45,6 @@ import numpy
 from collections import OrderedDict
 from ._common import Detector
 from pyFAI.utils import mathutil
-from .. import geometry
 
 import logging
 logger = logging.getLogger(__name__)
@@ -512,7 +511,7 @@ class Cirpad(ImXPadS10):
     @staticmethod
     def _rotation(md, rot):
         shape = md.shape
-        axe = numpy.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  #Maybe a parameter
+        axe = numpy.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  # Maybe a parameter
         P = functools.reduce(numpy.dot, [Cirpad._M(numpy.radians(rot[i]), axe[i]) for i in range(len(rot))])
         try:
             nmd = numpy.transpose(numpy.reshape(numpy.tensordot(P, numpy.reshape(numpy.transpose(md), (3, shape[0] * shape[1] * 4)), axes=1), (3, 4, shape[1], shape[0])))
@@ -536,16 +535,15 @@ class Cirpad(ImXPadS10):
         return pixel_size * size
 
     def _passage(self, corners, rot):
-        shape = corners.shape
         deltaZ, deltaY = 0.0, 0.0
         nmd = self._rotation(corners, rot)
         # Size in mm of the chip in the Y direction (including 10px gap)
-        size_Y = ((560.0 + 3 * 6 + 10)*0.13/1000)
-        for i in range(1, int(round(numpy.abs(rot[2])/6.74))):
+        size_Y = ((560.0 + 3 * 6 + 10) * 0.13 / 1000)
+        for i in range(1, int(round(numpy.abs(rot[2]) / 6.74))):
             deltaZ = deltaZ + numpy.sin(numpy.deg2rad(rot[2]))
-        for i in range(int(round(numpy.abs(rot[2])/6.74))):
-            deltaY = deltaY + numpy.cos(numpy.deg2rad(rot[2] - 6.74*(i+1)))
-        return self._translation(nmd, [size_Y*deltaZ,size_Y*deltaY, 0])
+        for i in range(int(round(numpy.abs(rot[2]) / 6.74))):
+            deltaY = deltaY + numpy.cos(numpy.deg2rad(rot[2] - 6.74 * (i + 1)))
+        return self._translation(nmd, [size_Y * deltaZ, size_Y * deltaY, 0])
 
     def _get_pixel_corners(self):
         pixel_size1 = self._calc_pixels_size(self.MEDIUM_MODULE_SIZE[0],
@@ -582,10 +580,10 @@ class Cirpad(ImXPadS10):
         corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
         corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
 
-        #modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2] * i]) for i in range(20)]
+        # modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2] * i]) for i in range(20)]
         modules = list()
         dz, dy = 0.0, 0.0
-        module_size = ((560.0 + 3 * 6 + 10)*0.13/1000)
+        module_size = ((560.0 + 3 * 6 + 10) * 0.13 / 1000)
         for m in range(20):
             # rotation
             rot = numpy.array(self.ROT)
@@ -593,7 +591,7 @@ class Cirpad(ImXPadS10):
 
             # translation
             dy += numpy.cos(numpy.deg2rad(-rot[2]))
-            u = numpy.array([module_size*dz, module_size*dy, 0])
+            u = numpy.array([module_size * dz, module_size * dy, 0])
             dz -= numpy.sin(numpy.deg2rad(rot[2]))
 
             # compute
@@ -683,7 +681,7 @@ class Cirpad(ImXPadS10):
         return p1, p2, p3
 
 
-class Cirpad2Module(ImXPadS70):
+class _Cirpad2Module(ImXPadS70):
     """
     ImXPad detector: ImXPad s70 detector with 1x7modules
     """
@@ -696,19 +694,17 @@ class Cirpad2Module(ImXPadS70):
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        super(Cirpad2Module, self).__init__(pixel1=pixel1, pixel2=pixel2)
-
-
+        super(_Cirpad2Module, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 class Cirpad2(Detector):
-    MAX_SHAPE = (11200, 120) #max size of the detector as the 20 detector
+    MAX_SHAPE = (11200, 120)  # max size of the detector as the 20 detector
     IS_FLAT = False
     IS_CONTIGUOUS = False
     force_pixel = True
     uniform_pixel = False
     aliases = ["Cirpad2"]
-    MEDIUM_MODULE_SIZE = (560, 120) #size of one module, as one detector
+    MEDIUM_MODULE_SIZE = (560, 120)  # size of one module, as one detector
     MODULE_SIZE = (80, 120)  # number of pixels per chip (y, x)
     PIXEL_SIZE = (130e-6, 130e-6)
     DIFFERENT_PIXEL_SIZE = 2.5
@@ -750,6 +746,7 @@ class Cirpad2(Detector):
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6, dist=0, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=self.MAX_SHAPE)
+        from .. import geometry
         self.modules = list()
         self.modules_geometry = list()
         self.modules_param = list()
@@ -757,14 +754,14 @@ class Cirpad2(Detector):
         deltaY = 0
         # init 20 modules as 20 detectors.
         for i in range(20):
-            module = Cirpad2Module()
+            module = _Cirpad2Module()
             mdgeometry = geometry.Geometry(dist=dist, poni1=poni1, poni2=poni2,
-                                rot1=rot1, rot2=rot2, rot3=rot3,
-                                pixel1=pixel1, pixel2=pixel2, detector=module)
+                                           rot1=rot1, rot2=rot2, rot3=rot3,
+                                           pixel1=pixel1, pixel2=pixel2, detector=module)
             self.modules.append(module)
             self.modules_geometry.append(mdgeometry)
             self.modules_param.append([0.65 + deltaZ, deltaY, 0, 0, numpy.deg2rad(-i * 6.74), 0])
-            deltaZ += 0.0043 
+            deltaZ += 0.0043
             deltaY -= 0.0017
             # deltaZ -= numpy.sin(numpy.deg2rad(-i*6.74))
             # deltaY -= numpy.cos(numpy.deg2rad(-i*6.74))
@@ -778,7 +775,7 @@ class Cirpad2(Detector):
                             ("poni2", self.poni2),
                             ("rot1", self.rot1),
                             ("rot2", self.rot2),
-                            ("rot3",self.rot3)))
+                            ("rot3", self.rot3)))
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)
@@ -826,7 +823,7 @@ class Cirpad2(Detector):
         modules_position = list()
         for param, geometry in zip(self.modules_param, self.modules_geometry):
             zyx = geometry.calc_pos_zyx(d0=0, d1=0, d2=0, param=param, corners=True)
-            modules_position.append(numpy.moveaxis(zyx,0,-1))
+            modules_position.append(numpy.moveaxis(zyx, 0, -1))
             """
             c0 = set_modules_position[i][0,0,0,:]
             c1 = set_modules_position[i][559,0,0,:]
@@ -915,4 +912,3 @@ class Cirpad2(Detector):
             p2 = p2.astype(numpy.float32)
             p3 = p3.astype(numpy.float32)
         return p1, p2, p3
-
