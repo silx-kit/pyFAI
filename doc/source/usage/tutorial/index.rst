@@ -27,6 +27,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    multi-geometry
    MakeCalibrant/make_calibrant
    CCD_Calibration/CCD_calibration
+   Pilatus_Calibration/Pilatus_ID15
    Goniometer/index
    Inpainting/Inpainting
    ThickDetector/index
