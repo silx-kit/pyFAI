@@ -511,19 +511,18 @@ class Calibrant(object):
             return
         tths = []
         dSpacing = self._dSpacing[:] + self._out_dSpacing  # explicit copy
-        self._out_dSpacing = []
-        for ds in dSpacing:
-            try:
+        try:
+            for ds in dSpacing:
                 tth = 2.0 * asin(5.0e9 * self._wavelength / ds)
-            except ValueError:
-                size = len(tths)
-                # remove dSpacing outside of 0..180
-                self._dSpacing = dSpacing[:size]
-                self._out_dSpacing = dSpacing[size:]
-                # avoid turning around...
-                break
-            else:
                 tths.append(tth)
+        except ValueError:
+            size = len(tths)
+            # remove dSpacing outside of 0..180
+            self._dSpacing = dSpacing[:size]
+            self._out_dSpacing = dSpacing[size:]
+        else:
+            self._dSpacing = dSpacing
+            self._out_dSpacing = []
         self._2th = tths
 
     def _calc_dSpacing(self):
