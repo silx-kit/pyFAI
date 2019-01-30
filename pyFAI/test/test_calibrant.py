@@ -88,12 +88,6 @@ class TestCalibrant(unittest.TestCase):
 
     def test_fake(self):
         """test for fake image generation"""
-        with_plot = (logger.getEffectiveLevel() <= logging.DEBUG)
-        if with_plot:
-            from matplotlib import pyplot
-            fig = pyplot.figure()
-            ax = fig.add_subplot(1, 1, 1)
-
         detectors = set(ALL_DETECTORS.values())
         for _idx, detector in enumerate(detectors):
             det = detector()
@@ -108,13 +102,6 @@ class TestCalibrant(unittest.TestCase):
             calibrant.set_wavelength(1e-10)
             img = calibrant.fake_calibration_image(ai)
 
-            if with_plot:
-                ax.cla()
-                ax.set_title(det.name)
-
-                ax.imshow(img, interpolation='nearest')
-                fig.show()
-                six.moves.input("enter> ")
             logger.info("%s min: %s max: %s ", det.name, img.min(), img.max())
             self.assertTrue(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
             self.assertTrue(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
