@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/08/2018"
+__date__ = "30/01/2019"
 
 import unittest
 import logging
@@ -129,6 +129,15 @@ class TestCalibrant(unittest.TestCase):
         self.assertLess(delta.max(), 1e-10, "results are the same")
 
         self.assertEqual(len(calibrant.get_peaks("q_A^-1")), len(ref), "length is OK")
+
+    def test_amount_of_calibrant(self):
+        c = get_calibrant("LaB6")
+        nb = c.count_registered_dSpacing()
+        c.setWavelength_change2th(0.00000000002)
+        c.setWavelength_change2th(0.0000000002)
+        c.setWavelength_change2th(0.00000000002)
+        c.setWavelength_change2th(0.0000000002)
+        self.assertEqual(c.count_registered_dSpacing(), nb)
 
     def test_factory_create_calibrant(self):
         c1 = get_calibrant("LaB6")
