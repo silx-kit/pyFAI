@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/01/2019"
+__date__ = "28/01/2019"
 
 import logging
 import numpy
@@ -292,8 +292,6 @@ def createSaveDialog(parent, title, poni=False, json=False, csv=False):
     dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
 
     builder = FilterBuilder.FilterBuilder()
-    builder.addFileFormat("EDF image files", "edf")
-
     if poni:
         builder.addFileFormat("PONI files", "poni")
     if json:
