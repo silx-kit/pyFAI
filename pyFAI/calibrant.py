@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/08/2018"
+__date__ = "30/01/2019"
 __status__ = "production"
 
 
@@ -325,7 +325,9 @@ class Calibrant(object):
         self._wavelength = wavelength
         self._sem = threading.Semaphore()
         self._2th = []
-        if dSpacing is None:
+        if filename is not None:
+            self._dSpacing = None
+        elif dSpacing is None:
             self._dSpacing = []
         else:
             self._dSpacing = list(dSpacing)
@@ -422,9 +424,15 @@ class Calibrant(object):
         if self._wavelength:
             self._calc_2th()
 
+    def _initialize(self):
+        """Initialize the object if expected."""
+        if self._dSpacing is None:
+            if self._filename:
+                self._load_file()
 
     def count_registered_dSpacing(self):
         """Count of registered dSpacing positons."""
+        self._initialize()
         return len(self._dSpacing) + len(self._out_dSpacing)
 
     def save_dSpacing(self, filename=None):
@@ -432,6 +440,7 @@ class Calibrant(object):
         save the d-spacing to a file
 
         """
+        self._initialize()
         if (filename is None) and (self._filename is not None):
             filename = self._filename
         else:
@@ -442,12 +451,12 @@ class Calibrant(object):
                 f.write("%s\n" % i)
 
     def get_dSpacing(self):
-        if not self._dSpacing and self._filename:
-            self.load_file()
+        self._initialize()
         return self._dSpacing
 
     def set_dSpacing(self, lst):
         self._dSpacing = list(lst)
+        self._out_dSpacing = []
         self._filename = "Modified"
         if self._wavelength:
             self._calc_2th()
@@ -455,6 +464,7 @@ class Calibrant(object):
     dSpacing = property(get_dSpacing, set_dSpacing)
 
     def append_dSpacing(self, value):
+        self._initialize()
         with self._sem:
             delta = [abs(value - v) / v for v in self._dSpacing if v is not None]
             if not delta or min(delta) > epsilon:
@@ -464,6 +474,7 @@ class Calibrant(object):
 
     def append_2th(self, value):
         with self._sem:
+            self._initialize()
             if value not in self._2th:
                 self._2th.append(value)
                 self._2th.sort()
@@ -510,6 +521,7 @@ class Calibrant(object):
 
     def _calc_2th(self):
         """Calculate the 2theta positions for all peaks"""
+        self._initialize()
         if self._wavelength is None:
             logger.error("Cannot calculate 2theta angle without knowing wavelength")
             return
@@ -538,8 +550,8 @@ class Calibrant(object):
     def get_2th(self):
         """Returns the 2theta positions for all peaks (cached)"""
         if not self._2th:
-            ds = self.dSpacing  # forces the file reading if not done
-            if not ds:
+            self._initialize()
+            if not self._dSpacing:
                 logger.error("Not d-spacing for calibrant: %s", self)
             with self._sem:
                 if not self._2th:
