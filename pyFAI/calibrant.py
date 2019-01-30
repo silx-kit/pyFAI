@@ -387,6 +387,7 @@ class Calibrant(object):
 
         :rtype: Calibrant
         """
+        self._initialize()
         return Calibrant(filename=self._filename,
                          dSpacing=self._dSpacing + self._out_dSpacing,
                          wavelength=self._wavelength)
@@ -429,6 +430,8 @@ class Calibrant(object):
         if self._dSpacing is None:
             if self._filename:
                 self._load_file()
+            else:
+                self._dSpacing = []
 
     def count_registered_dSpacing(self):
         """Count of registered dSpacing positons."""
