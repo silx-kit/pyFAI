@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2018"
+__date__ = "31/01/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -391,7 +391,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             fimg = fabio.open(self.inputfiles[0])
             shape = fimg.data.shape
         data = numpy.empty(shape, dtype=numpy.float32)
-        print("Initialization of the Azimuthal Integrator using method %s" % self.method)
+        print("Initialization of the Azimuthal Integrator using method %s" % (self.method, ))
         # enforce initialization of azimuthal integrator
         print(self.ai)
         tth, _I = self.ai.integrate1d(data, self.npt_rad,
