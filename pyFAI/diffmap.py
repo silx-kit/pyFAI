@@ -316,6 +316,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         entry = nxs.new_entry(entry=spath[0], program_name="pyFAI", title="diffmap")
         grp = entry
         for subgrp in spath[1:-2]:
+            entry.attrs["default"] = subgrp
             grp = nxs.new_class(grp, name=subgrp, class_type="NXcollection")
 
         processgrp = nxs.new_class(grp, "pyFAI", class_type="NXprocess")
@@ -341,7 +342,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         for k, v in self.ai.getPyFAI().items():
             processgrp[k] = v
 
-        self.group = nxs.new_class(grp, name=spath[-2], class_type="NXdata")
+        nxdataName = spath[-2]
+        self.group = nxs.new_class(grp, name=nxdataName, class_type="NXdata")
+        grp.attrs["default"] = nxdataName
 
         if posixpath.basename(self.hdf5path) in self.group:
             self.dataset = self.group[posixpath.basename(self.hdf5path)]
