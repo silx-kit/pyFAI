@@ -233,9 +233,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                 raise RuntimeError("No such flat files")
 
         if ocl and options.gpu:
-            self.method = "csr_ocl_%i,%i" % ocl.select_device(type="gpu")
-            config["ai"]["do_OpenCL"] = True
-            config["ai"]["method"] = self.method
+            config["ai"]["opencl_device"] = ocl.select_device(type="gpu")
+            config["ai"]["method"] = "ocl-csr"
 
         self.inputfiles = []
         for fn in args:
