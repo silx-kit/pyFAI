@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2018"
+__date__ = "31/01/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -42,7 +42,9 @@ import time
 import json
 import threading
 import logging
+
 from silx.gui import qt
+from silx.gui import icons
 
 from .matplotlib import pyplot
 from ..utils import int_, str_, get_ui_file
@@ -159,6 +161,10 @@ class DiffMapWidget(qt.QWidget):
         except AttributeError as _error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
+
+        pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
+        self.setWindowIcon(pyfaiIcon)
+
         self.aborted = False
         self.progressBar.setValue(0)
         self.list_model = TreeModel(self, self.list_dataset.as_tree())
