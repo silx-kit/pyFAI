@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2019"
+__date__ = "31/01/2019"
 __docformat__ = 'restructuredtext'
 
 
@@ -218,6 +218,10 @@ class ConfigurationReader(object):
         dim = 2 if do_2d else 1
         method = self._config.pop("method", default)
         target = self._config.pop("opencl_device", None)
+
+        if isinstance(target, list):
+            # Patch list to tuple
+            target = tuple(target)
 
         if method is None:
             method = method_registry.Method(dim, "*", "*", "*", target=None)
