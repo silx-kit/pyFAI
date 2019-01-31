@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/01/2019"
+__date__ = "31/01/2019"
 __satus__ = "production"
 
 import sys
@@ -96,6 +96,16 @@ def integrate_gui(options, args):
         if input_data is None or len(input_data) == 0:
             dialog = qt.QFileDialog(directory=os.getcwd())
             dialog.setWindowTitle("Select images to integrate")
+
+            from pyFAI.gui.utils import FilterBuilder
+            builder = FilterBuilder.FilterBuilder()
+            builder.addImageFormat("EDF image files", "edf")
+            builder.addImageFormat("TIFF image files", "tif tiff")
+            builder.addImageFormat("NumPy binary files", "npy")
+            builder.addImageFormat("CBF files", "cbf")
+            builder.addImageFormat("MarCCD image files", "mccd")
+            dialog.setNameFilters(builder.getFilters())
+
             dialog.setFileMode(qt.QFileDialog.ExistingFiles)
             moveCenterTo(dialog, center)
             result = dialog.exec_()
