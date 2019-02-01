@@ -86,13 +86,14 @@ class IntegrationMethod:
 
         :param [str,Method] method: The requested method
         :param [None,int] dim: If specified, override the dim of the method
-        :param [None,Method] default: If no method found, return this value
-        :rtype: [Method,None]
+        :param [None,IntegrationMethod] default: If no method found, return this value
+        :rtype: [IntegrationMethod,None]
         """
         if method is None:
             return default
         if isinstance(method, str):
             method = cls.parse(method, dim)
+            method = method.method
         elif dim is not None:
             _dim, split, algo, impl, target = method
             method = Method(dim, split, algo, impl, target)
