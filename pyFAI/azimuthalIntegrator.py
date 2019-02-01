@@ -2018,7 +2018,7 @@ class AzimuthalIntegrator(Geometry):
 
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
         result._set_method_called("integrate2d")
-        result._set_compute_engine(method)
+        result._set_compute_engine(str(method))
         result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum_)
@@ -2529,7 +2529,7 @@ class AzimuthalIntegrator(Geometry):
 
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
         result._set_method_called("integrate2d")
-        result._set_compute_engine(method)
+        result._set_compute_engine(str(method))
         result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum_)
@@ -2833,7 +2833,7 @@ class AzimuthalIntegrator(Geometry):
 
         result = Integrate1dResult(res2d.radial, spectrum)
         result._set_method_called("medfilt1d")
-        result._set_compute_engine(method)
+        result._set_compute_engine(str(method))
         result._set_percentile(percentile)
         result._set_npt_azim(npt_azim)
         result._set_unit(unit)
