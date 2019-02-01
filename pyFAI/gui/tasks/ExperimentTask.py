@@ -24,7 +24,6 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
-from pyFAI.gui.helper import model_transform
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
