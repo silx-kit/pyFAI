@@ -199,10 +199,12 @@ if ocl:
         logger.error("Unable to import pyFAI.opencl.azim_hist: %s", error)
         ocl_azim = None
     else:
-        for ids, name in devices.items():
-            IntegrationMethod(1, "no", "histogram", "OpenCL",
-                              class_funct=(ocl_azim.Integrator1d, ocl_azim.Integrator1d.execute),
-                              target=ids, target_name=name[0], target_type=name[1])
+        # TODO: OpenCL+histogram is not yet implemented: https://github.com/silx-kit/pyFAI/issues/1129
+        # for ids, name in devices.items():
+        #     IntegrationMethod(1, "no", "histogram", "OpenCL",
+        #                       class_funct=(ocl_azim.Integrator1d, ocl_azim.Integrator1d.execute),
+        #                       target=ids, target_name=name[0], target_type=name[1])
+        pass
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
     except ImportError as error:
