@@ -73,6 +73,31 @@ class FileEdit(qt.QLineEdit):
         self.__wasModified = False
         super(FileEdit, self).focusInEvent(event)
 
+    def dragEnterEvent(self, event):
+        if self.__model is not None:
+            if event.mimeData().hasFormat("text/uri-list"):
+                event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        mimeData = event.mimeData()
+        if not mimeData.hasUrls():
+            qt.QMessageBox.critical(self, "Drop cancelled", "A file is expected")
+            return
+
+        urls = mimeData.urls()
+        if len(urls) > 1:
+            qt.QMessageBox.critical(self, "Drop cancelled", "A single file is expected")
+            return
+
+        path = urls[0].toLocalFile()
+        previous = self.__model.value()
+        try:
+            self.__model.setValue(path)
+        except Exception as e:
+            qt.QMessageBox.critical(self, "Drop cancelled", str(e))
+            if self.__model.value() is not previous:
+                self.__model.setValue(previous)
+
     def setModel(self, model):
         if self.__model is not None:
             self.__model.changed.disconnect(self.__modelChanged)
