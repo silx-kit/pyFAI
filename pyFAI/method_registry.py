@@ -84,13 +84,15 @@ class IntegrationMethod:
     def select_one_available(cls, method, dim=None, default=None):
         """Select one available method from the requested method.
 
-        :param [str,Method] method: The requested method
+        :param [str,Method,IntegrationMethod] method: The requested method
         :param [None,int] dim: If specified, override the dim of the method
         :param [None,IntegrationMethod] default: If no method found, return this value
         :rtype: [IntegrationMethod,None]
         """
         if method is None:
             return default
+        if isinstance(method, IntegrationMethod):
+            method = method.method
         if isinstance(method, str):
             method = cls.parse(method, dim)
             method = method.method
