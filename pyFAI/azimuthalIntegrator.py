@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/01/2019"
+__date__ = "01/02/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -981,7 +981,11 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
 
-        method = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_1D
+        usedMethod = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_1D
+        if usedMethod != method:
+            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
+        method = usedMethod
+
         assert method.dimension == 1
         unit = units.to_unit(unit)
 
@@ -1661,7 +1665,11 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
 
-        method = IntegrationMethod.parse(method, 2) or self.DEFAULT_METHOD_2D
+        usedMethod = IntegrationMethod.parse(method, 2) or self.DEFAULT_METHOD_2D
+        if usedMethod != method:
+            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
+        method = usedMethod
+
         assert method.dimension == 2
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
@@ -2731,7 +2739,11 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
         unit = units.to_unit(unit)
-        method = IntegrationMethod.parse(method, dim=2)
+        usedMethod = IntegrationMethod.parse(method, dim=2)
+        if usedMethod != method:
+            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
+        method = usedMethod
+
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
             npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
@@ -2869,7 +2881,10 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.NaN
             delta_dummy = None
         unit = units.to_unit(unit)
-        method = IntegrationMethod.parse(method, dim=2)
+        usedMethod = IntegrationMethod.parse(method, dim=2)
+        if usedMethod != method:
+            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
+        method = usedMethod
 
         if "__len__" in dir(thres) and len(thres) > 0:
             sigma_lo = thres[0]
