@@ -983,7 +983,7 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
 
-        usedMethod = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_1D
+        usedMethod = IntegrationMethod.select_one_available(method, dim=1, default=self.DEFAULT_METHOD_1D)
         if usedMethod != method:
             logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
         method = usedMethod
@@ -1667,7 +1667,7 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
 
-        usedMethod = IntegrationMethod.parse(method, 2) or self.DEFAULT_METHOD_2D
+        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
         if usedMethod != method:
             logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
         method = usedMethod
@@ -2741,7 +2741,7 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
         unit = units.to_unit(unit)
-        usedMethod = IntegrationMethod.parse(method, dim=2)
+        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
         if usedMethod != method:
             logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
         method = usedMethod
@@ -2883,7 +2883,7 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.NaN
             delta_dummy = None
         unit = units.to_unit(unit)
-        usedMethod = IntegrationMethod.parse(method, dim=2)
+        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
         if usedMethod != method:
             logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
         method = usedMethod
