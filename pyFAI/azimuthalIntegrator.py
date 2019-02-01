@@ -2754,7 +2754,7 @@ class AzimuthalIntegrator(Geometry):
                                old, npt_azim)
         res2d = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                  flat=flat, dark=dark,
-                                 unit=unit, method=method,
+                                 unit=unit, method=method.method,
                                  dummy=dummy, delta_dummy=delta_dummy,
                                  correctSolidAngle=correctSolidAngle,
                                  polarization_factor=polarization_factor,
