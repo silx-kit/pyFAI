@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/01/2019"
+__date__ = "01/02/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -79,6 +79,27 @@ class IntegrationMethod:
     def list_available(cls):
         """return a list of pretty printed integration method available"""
         return [i.__repr__() for i in cls._registry.values()]
+
+    @classmethod
+    def select_one_available(cls, method, dim=None, default=None):
+        """Select one available method from the requested method.
+
+        :param [str,Method] method: The requested method
+        :param [None,int] dim: If specified, override the dim of the method
+        :param [None,Method] default: If no method found, return this value
+        :rtype: [Method,None]
+        """
+        if method is None:
+            return default
+        if isinstance(method, str):
+            method = cls.parse(method, dim)
+        elif dim is not None:
+            _dim, split, algo, impl, target = method
+            method = Method(dim, split, algo, impl, target)
+        methods = cls.select_method(method=method)
+        if len(methods) == 0:
+            return default
+        return methods[0]
 
     @classmethod
     def select_method(cls, dim=None, split=None, algo=None, impl=None,
