@@ -28,13 +28,14 @@ from pyFAI.gui.helper import model_transform
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/01/2019"
+__date__ = "01/02/2019"
 
-import fabio
 import numpy
 import logging
 from contextlib import contextmanager
+import os.path
 
+import fabio
 import silx.gui.plot
 from silx.gui import qt
 from silx.gui import icons
@@ -84,6 +85,8 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
+
+        self.__loadingImage = False
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
@@ -145,6 +148,8 @@ class ExperimentTask(AbstractCalibrationTask):
         self._energy.setDisplayedUnit(units.Unit.ENERGY)
         self._wavelength.setModel(settings.wavelength())
         self._energy.setModel(settings.wavelength())
+
+        settings.imageFile().changed.connect(self.__imageFileChanged)
 
         settings.image().changed.connect(self.__imageUpdated)
 
@@ -360,6 +365,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
     @contextmanager
     def getImageFromDialog(self, title, forMask=False, previousFile=None):
+        self.__loadingImage = True
         dialog = self.createImageDialog(title, forMask, previousFile=previousFile)
 
         result = dialog.exec_()
@@ -377,7 +383,9 @@ class ExperimentTask(AbstractCalibrationTask):
             # FIXME Display error dialog
             yield None
         except KeyboardInterrupt:
+            self.__loadingImage = False
             raise
+        self.__loadingImage = False
 
     def createCalibrantDialog(self, title):
         dialog = CalibrationContext.instance().createFileDialog(self)
@@ -398,6 +406,24 @@ class ExperimentTask(AbstractCalibrationTask):
             if image is not None:
                 settings.imageFile().setValue(str(image.filename))
                 settings.image().setValue(image.data.copy())
+
+    def __imageFileChanged(self):
+        if self.__loadingImage:
+            return
+        settings = self.model().experimentSettingsModel()
+        filename = settings.imageFile().value()
+        if filename is None:
+            return
+        if not os.path.exists(filename):
+            qt.QMessageBox.critical(self, "File not found", "Image file %s not found" % filename)
+            return
+        try:
+            with fabio.open(filename) as image:
+                data = image.data
+                settings.image().setValue(data)
+        except Exception as e:
+            qt.QMessageBox.critical(self, "IO error", "File %s can't be loaded. %s" % (filename, e))
+            _logger.debug("Backtrace", exc_info=True)
 
     def loadMask(self):
         settings = self.model().experimentSettingsModel()
