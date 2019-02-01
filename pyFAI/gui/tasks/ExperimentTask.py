@@ -63,6 +63,10 @@ class ExperimentTask(AbstractCalibrationTask):
 
         self.initNextStep()
 
+        self._detectorLabel.setAcceptDrops(True)
+        self._image.setAcceptDrops(True)
+        self._mask.setAcceptDrops(True)
+
         self._imageLoader.clicked.connect(self.loadImage)
         self._maskLoader.clicked.connect(self.loadMask)
         self._darkLoader.clicked.connect(self.loadDark)
