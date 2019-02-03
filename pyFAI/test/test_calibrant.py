@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/08/2018"
+__date__ = "30/01/2019"
 
 import unittest
 import logging
@@ -43,7 +43,6 @@ import copy
 import numpy
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
-from ..third_party import six
 from ..calibrant import Calibrant, get_calibrant, Cell, CALIBRANT_FACTORY
 from ..detectors import ALL_DETECTORS
 from ..azimuthalIntegrator import AzimuthalIntegrator
@@ -88,12 +87,6 @@ class TestCalibrant(unittest.TestCase):
 
     def test_fake(self):
         """test for fake image generation"""
-        with_plot = (logger.getEffectiveLevel() <= logging.DEBUG)
-        if with_plot:
-            from matplotlib import pyplot
-            fig = pyplot.figure()
-            ax = fig.add_subplot(1, 1, 1)
-
         detectors = set(ALL_DETECTORS.values())
         for _idx, detector in enumerate(detectors):
             det = detector()
@@ -108,13 +101,6 @@ class TestCalibrant(unittest.TestCase):
             calibrant.set_wavelength(1e-10)
             img = calibrant.fake_calibration_image(ai)
 
-            if with_plot:
-                ax.cla()
-                ax.set_title(det.name)
-
-                ax.imshow(img, interpolation='nearest')
-                fig.show()
-                six.moves.input("enter> ")
             logger.info("%s min: %s max: %s ", det.name, img.min(), img.max())
             self.assertTrue(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
             self.assertTrue(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
@@ -129,6 +115,15 @@ class TestCalibrant(unittest.TestCase):
         self.assertLess(delta.max(), 1e-10, "results are the same")
 
         self.assertEqual(len(calibrant.get_peaks("q_A^-1")), len(ref), "length is OK")
+
+    def test_amount_of_calibrant(self):
+        c = get_calibrant("LaB6")
+        nb = c.count_registered_dSpacing()
+        c.setWavelength_change2th(0.00000000002)
+        c.setWavelength_change2th(0.0000000002)
+        c.setWavelength_change2th(0.00000000002)
+        c.setWavelength_change2th(0.0000000002)
+        self.assertEqual(c.count_registered_dSpacing(), nb)
 
     def test_factory_create_calibrant(self):
         c1 = get_calibrant("LaB6")
