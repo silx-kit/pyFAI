@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2018"
+__date__ = "01/02/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -42,13 +42,16 @@ import time
 import json
 import threading
 import logging
+
 from silx.gui import qt
+from silx.gui import icons
 
 from .matplotlib import pyplot
 from ..utils import int_, str_, get_ui_file
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from .. import worker
+from ..io.integration_config import ConfigurationReader
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
 
@@ -159,6 +162,10 @@ class DiffMapWidget(qt.QWidget):
         except AttributeError as _error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
+
+        pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
+        self.setWindowIcon(pyfaiIcon)
+
         self.aborted = False
         self.progressBar.setValue(0)
         self.list_model = TreeModel(self, self.list_dataset.as_tree())
@@ -439,9 +446,10 @@ class DiffMapWidget(qt.QWidget):
                               npt_rad=config_ai.get("nbpt_rad", 1000),
                               npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
-            print(config_ai)
             diffmap.ai = worker.make_ai(config_ai)
-            diffmap.method = config_ai.get("method", "csr")
+            # TODO: This diffmap configuration file should be cleaned up
+            reader = ConfigurationReader(config_ai)
+            diffmap.method = reader.pop_method("csr")
             diffmap.unit = to_unit(config_ai.get("unit", "2th_deg"))
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data = diffmap.init_ai()

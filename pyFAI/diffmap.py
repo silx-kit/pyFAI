@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2018"
+__date__ = "31/01/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -233,9 +233,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                 raise RuntimeError("No such flat files")
 
         if ocl and options.gpu:
-            self.method = "csr_ocl_%i,%i" % ocl.select_device(type="gpu")
-            config["ai"]["do_OpenCL"] = True
-            config["ai"]["method"] = self.method
+            config["ai"]["opencl_device"] = ocl.select_device(type="gpu")
+            config["ai"]["method"] = "ocl-csr"
 
         self.inputfiles = []
         for fn in args:
@@ -317,6 +316,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         entry = nxs.new_entry(entry=spath[0], program_name="pyFAI", title="diffmap")
         grp = entry
         for subgrp in spath[1:-2]:
+            entry.attrs["default"] = subgrp
             grp = nxs.new_class(grp, name=subgrp, class_type="NXcollection")
 
         processgrp = nxs.new_class(grp, "pyFAI", class_type="NXprocess")
@@ -342,7 +342,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         for k, v in self.ai.getPyFAI().items():
             processgrp[k] = v
 
-        self.group = nxs.new_class(grp, name=spath[-2], class_type="NXdata")
+        nxdataName = spath[-2]
+        self.group = nxs.new_class(grp, name=nxdataName, class_type="NXdata")
+        grp.attrs["default"] = nxdataName
 
         if posixpath.basename(self.hdf5path) in self.group:
             self.dataset = self.group[posixpath.basename(self.hdf5path)]
@@ -391,7 +393,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             fimg = fabio.open(self.inputfiles[0])
             shape = fimg.data.shape
         data = numpy.empty(shape, dtype=numpy.float32)
-        print("Initialization of the Azimuthal Integrator using method %s" % self.method)
+        print("Initialization of the Azimuthal Integrator using method %s" % (self.method, ))
         # enforce initialization of azimuthal integrator
         print(self.ai)
         tth, _I = self.ai.integrate1d(data, self.npt_rad,

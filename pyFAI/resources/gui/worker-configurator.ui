@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>468</width>
-    <height>874</height>
+    <width>451</width>
+    <height>907</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -490,14 +490,7 @@
      <property name="title">
       <string>Processing</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_6" columnstretch="0,0,0,0">
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>Algorithm:</string>
-        </property>
-       </widget>
-      </item>
+     <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
        <widget class="QCheckBox" name="do_poisson">
         <property name="text">
@@ -505,14 +498,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="3">
-       <widget class="QToolButton" name="opencl_config_button">
-        <property name="text">
-         <string>...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" colspan="2">
+      <item row="0" column="1" colspan="3">
        <widget class="QComboBox" name="error_selection">
         <item>
          <property name="text">
@@ -521,21 +507,51 @@
         </item>
        </widget>
       </item>
-      <item row="3" column="1" colspan="2">
-       <widget class="OpenClDeviceLabel" name="opencl_label">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="do_normalization">
+        <property name="toolTip">
+         <string>Perform normalization of the result of the integration, by dividing by this factor</string>
+        </property>
+        <property name="text">
+         <string>Normalization:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="normalization_factor">
+        <property name="toolTip">
+         <string>Normalization factor applied to each integration</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="MethodLabel" name="methodLabel">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <item row="1" column="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>×</string>
         </property>
        </widget>
       </item>
       <item row="1" column="3">
+       <widget class="QLineEdit" name="monitor_name">
+        <property name="toolTip">
+         <string>Monitor name to reach normalization from the header of the input data</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string>Algorithm:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
        <widget class="QToolButton" name="method_config_button">
         <property name="text">
          <string>...</string>
@@ -546,6 +562,27 @@
        <widget class="QLabel" name="opencl_title">
         <property name="text">
          <string>OpenCL device:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
+       <widget class="QToolButton" name="opencl_config_button">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="3">
+       <widget class="MethodLabel" name="methodLabel">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="3">
+       <widget class="OpenClDeviceLabel" name="opencl_label">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>

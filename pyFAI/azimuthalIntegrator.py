@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/01/2019"
+__date__ = "01/02/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -199,10 +199,12 @@ if ocl:
         logger.error("Unable to import pyFAI.opencl.azim_hist: %s", error)
         ocl_azim = None
     else:
-        for ids, name in devices.items():
-            IntegrationMethod(1, "no", "histogram", "OpenCL",
-                              class_funct=(ocl_azim.Integrator1d, ocl_azim.Integrator1d.execute),
-                              target=ids, target_name=name[0], target_type=name[1])
+        # TODO: OpenCL+histogram is not yet implemented: https://github.com/silx-kit/pyFAI/issues/1129
+        # for ids, name in devices.items():
+        #     IntegrationMethod(1, "no", "histogram", "OpenCL",
+        #                       class_funct=(ocl_azim.Integrator1d, ocl_azim.Integrator1d.execute),
+        #                       target=ids, target_name=name[0], target_type=name[1])
+        pass
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
     except ImportError as error:
@@ -981,7 +983,11 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
 
-        method = IntegrationMethod.parse(method) or self.DEFAULT_METHOD_1D
+        usedMethod = IntegrationMethod.select_one_available(method, dim=1, default=self.DEFAULT_METHOD_1D)
+        if usedMethod != method:
+            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
+        method = usedMethod
+
         assert method.dimension == 1
         unit = units.to_unit(unit)
 
@@ -1661,7 +1667,11 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
 
-        method = IntegrationMethod.parse(method, 2) or self.DEFAULT_METHOD_2D
+        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
+        if usedMethod != method:
+            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
+        method = usedMethod
+
         assert method.dimension == 2
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
@@ -2008,7 +2018,7 @@ class AzimuthalIntegrator(Geometry):
 
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
         result._set_method_called("integrate2d")
-        result._set_compute_engine(method)
+        result._set_compute_engine(str(method))
         result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum_)
@@ -2519,7 +2529,7 @@ class AzimuthalIntegrator(Geometry):
 
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
         result._set_method_called("integrate2d")
-        result._set_compute_engine(method)
+        result._set_compute_engine(str(method))
         result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum_)
@@ -2731,7 +2741,11 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
         unit = units.to_unit(unit)
-        method = IntegrationMethod.parse(method, dim=2)
+        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
+        if usedMethod != method:
+            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
+        method = usedMethod
+
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
             npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
@@ -2740,7 +2754,7 @@ class AzimuthalIntegrator(Geometry):
                                old, npt_azim)
         res2d = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                  flat=flat, dark=dark,
-                                 unit=unit, method=method,
+                                 unit=unit, method=method.method,
                                  dummy=dummy, delta_dummy=delta_dummy,
                                  correctSolidAngle=correctSolidAngle,
                                  polarization_factor=polarization_factor,
@@ -2819,7 +2833,7 @@ class AzimuthalIntegrator(Geometry):
 
         result = Integrate1dResult(res2d.radial, spectrum)
         result._set_method_called("medfilt1d")
-        result._set_compute_engine(method)
+        result._set_compute_engine(str(method))
         result._set_percentile(percentile)
         result._set_npt_azim(npt_azim)
         result._set_unit(unit)
@@ -2869,7 +2883,10 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.NaN
             delta_dummy = None
         unit = units.to_unit(unit)
-        method = IntegrationMethod.parse(method, dim=2)
+        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
+        if usedMethod != method:
+            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
+        method = usedMethod
 
         if "__len__" in dir(thres) and len(thres) > 0:
             sigma_lo = thres[0]

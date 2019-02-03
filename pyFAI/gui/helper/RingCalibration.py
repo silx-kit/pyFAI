@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "01/02/2019"
 
 import logging
 import numpy
@@ -116,10 +116,14 @@ class GeometryRefinementContext(object):
             min_setter(minValue)
             max_setter(maxValue)
 
-        if "wavelength" in self.__fixed:
-            deltaS = self.__geoRef.refine2(maxiter, self.__fixed)
-        else:
-            deltaS = self.__geoRef.refine2_wavelength(maxiter, self.__fixed)
+        try:
+            if "wavelength" in self.__fixed:
+                deltaS = self.__geoRef.refine2(maxiter, self.__fixed)
+            else:
+                deltaS = self.__geoRef.refine2_wavelength(maxiter, self.__fixed)
+        except Exception:
+            _logger.error("Error while refining the geometry", exc_info=True)
+            return float("inf")
         return deltaS
 
 

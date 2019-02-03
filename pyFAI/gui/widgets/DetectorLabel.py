@@ -27,12 +27,17 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "11/01/2019"
+__date__ = "01/02/2019"
+
+import logging
 
 from silx.gui import qt
 from silx.utils import html
 
 import pyFAI.detectors
+
+
+_logger = logging.getLogger(__name__)
 
 
 class DetectorLabel(qt.QLabel):
@@ -56,6 +61,40 @@ class DetectorLabel(qt.QLabel):
         super(DetectorLabel, self).__init__(parent)
         self.__model = None
         self.__detector = None
+
+    def dragEnterEvent(self, event):
+        if self.__model is not None:
+            if event.mimeData().hasFormat("text/uri-list"):
+                event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        mimeData = event.mimeData()
+        if not mimeData.hasUrls():
+            qt.QMessageBox.critical(self, "Drop cancelled", "A file is expected")
+            return
+
+        urls = mimeData.urls()
+        if len(urls) > 1:
+            qt.QMessageBox.critical(self, "Drop cancelled", "A single file is expected")
+            return
+
+        try:
+            path = urls[0].toLocalFile()
+            detector = pyFAI.detectors.detector_factory(path)
+        except IOError as e:
+            _logger.error("Error while loading dropped URL %s", e, exc_info=True)
+            qt.QMessageBox.critical(self, "Drop cancelled", str(e))
+            return
+        except Exception as e:
+            _logger.error("Error while reading dropped URL %s", e, exc_info=True)
+            qt.QMessageBox.critical(self, "Drop cancelled", str(e))
+            return
+
+        if self.__model is None:
+            _logger.error("No model defined")
+            return
+
+        self.__model.setDetector(detector)
 
     def __getModelName(self, detector):
         if isinstance(detector, pyFAI.detectors.NexusDetector):

@@ -37,36 +37,192 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2019"
+__date__ = "25/01/2019"
 __status__ = "development"
 
 import logging
 import json
-import os
-import time
-import threading
 import os.path as op
-import numpy
+import time
 
 logger = logging.getLogger(__name__)
 
-import fabio
 from silx.gui import qt
 from silx.gui import icons
 
 from .. import worker as worker_mdl
 from .widgets.WorkerConfigurator import WorkerConfigurator
-from ..io import DefaultAiWriter
-from ..io import HDF5Writer
 from ..io import integration_config
-from ..third_party import six
 from .utils import projecturl
 from ..utils import get_ui_file
+from ..app import integrate
+from .. import containers
+from pyFAI.gui.utils.eventutils import QtProxifier
+
+
+class _ThreadSafeIntegrationProcess(QtProxifier):
+
+    def is_interruption_requested(self):
+        # NOTE: Not thread safe, but it usually do not call anything but only
+        #       returns a boolean
+        result = self._target().is_interruption_requested()
+        return result
+
+    def request_interruption(self):
+        raise RuntimeError("Not supposed to be called")
+
+
+class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
+
+    def __init__(self, parent=None):
+        qt.QDialog.__init__(self, parent=parent)
+        filename = get_ui_file("integration-process.ui")
+        qt.loadUi(filename, self)
+
+        integrate.IntegrationObserver.__init__(self)
+        self.setWindowTitle("Processing...")
+        self.__undisplayedResult = None
+        self._displayResult.toggled.connect(self.__displayResultUpdated)
+        self._plot.setDataMargins(0.05, 0.05, 0.05, 0.05)
+        self.__firstPlot = True
+        self.__lastDisplay = None
+        self._progressBar.setFormat("Preprocessing...")
+        self._cancelButton.clicked.connect(self.__interruptionRequested)
+
+    def __interruptionRequested(self):
+        self.setEnabled(False)
+        self.request_interruption()
+
+    def __resultReceived(self, result):
+        isFiltered = not self._displayResult.isChecked()
+        now = time.time()
+        if self.__lastDisplay is not None:
+            # Display a new result every 500ms, no more
+            if now - self.__lastDisplay < 0.5:
+                isFiltered = True
+        if not isFiltered:
+            self.__undisplayedResult = None
+            self.__lastDisplay = now
+            self.__displayResult(result, resetZoom=self.__firstPlot)
+        else:
+            self.__undisplayedResult = result
+        self.__firstPlot = False
+
+    def __displayResultUpdated(self):
+        self._plot.setVisible(self._displayResult.isChecked())
+        if self._displayResult.isChecked():
+            if self.__undisplayedResult is not None:
+                result = self.__undisplayedResult
+                self.__undisplayedResult = None
+                self.__displayResult(result, True)
+        self.adjustSize()
+
+    def __displayResult(self, result, resetZoom=False):
+        self._plot.clear()
+        if isinstance(result, containers.Integrate1dResult):
+            self._plot.setGraphXLabel("Radial")
+            self._plot.setGraphYLabel("Intensity")
+            self._plot.addHistogram(
+                legend="result1d",
+                align="center",
+                edges=result.radial,
+                color="blue",
+                histogram=result.intensity,
+                resetzoom=False)
+        elif isinstance(result, containers.Integrate2dResult):
+
+            def computeLocation(result):
+                # Assume that axes are linear
+                if result.intensity.shape[1] > 1:
+                    scaleX = (result.radial[-1] - result.radial[0]) / (result.intensity.shape[1] - 1)
+                else:
+                    scaleX = 1.0
+                if result.intensity.shape[0] > 1:
+                    scaleY = (result.azimuthal[-1] - result.azimuthal[0]) / (result.intensity.shape[0] - 1)
+                else:
+                    scaleY = 1.0
+                halfPixel = 0.5 * scaleX, 0.5 * scaleY
+                origin = (result.radial[0] - halfPixel[0], result.azimuthal[0] - halfPixel[1])
+                return origin, (scaleX, scaleY)
+
+            self._plot.setGraphXLabel("Radial")
+            self._plot.setGraphYLabel("Azimuthal")
+            origin, scale = computeLocation(result)
+            self._plot.addImage(
+                legend="result2d",
+                data=result.intensity,
+                origin=origin,
+                scale=scale,
+                resetzoom=False)
+        else:
+            logger.error("Unsupported result type %s", type(result))
+        if resetZoom:
+            self._plot.resetZoom()
+
+    def worker_initialized(self, worker):
+        """
+        Called when the worker is initialized
+
+        :param int data_count: Number of data to integrate
+        """
+        pass
+
+    def processing_started(self, data_count):
+        """
+        Called before starting the full processing.
+
+        :param int data_count: Number of data to integrate
+        """
+        self._progressBar.setRange(0, data_count + 1)
+
+    def processing_data(self, data_id, filename):
+        """
+        Start processing the data `data_id`
+
+        :param int data_id: Id of the data
+        :param str filename: Filename of the data, if any.
+        """
+        self._progressBar.setValue(data_id)
+        if len(filename) > 20:
+            filename = op.basename(filename)
+        self._progressBar.setFormat("%s (%%p%%)..." % filename)
+
+    def data_result(self, data_id, result):
+        self.__resultReceived(result)
+
+    def processing_interrupted(self):
+        self.__was_interrupted = True
+
+    def processing_succeeded(self):
+        self.__was_interrupted = False
+
+    def processing_finished(self):
+        """Called when the full processing is finisehd."""
+        self._progressBar.setValue(self._progressBar.maximum())
+        self.__lastResult = None
+        if self.__was_interrupted:
+            self.reject()
+        else:
+            self.accept()
+
+    def createObserver(self, qtSafe=True):
+        """Returns a processing observer connected to this widget.
+
+        :param bool qtSafe: If True the returned observer can be called from
+            any thread. Else it have to be called from the main Qt thread.
+        :rtype: integrate.IntegrationObserver
+        """
+        if qtSafe:
+            return _ThreadSafeIntegrationProcess(self)
+        else:
+            self
 
 
 class IntegrationDialog(qt.QWidget):
     """Dialog to configure an azimuthal integration.
     """
+
+    batchProcessRequested = qt.Signal()
 
     def __init__(self, input_data=None, output_path=None, json_file=".azimint.json", context=None):
         qt.QWidget.__init__(self)
@@ -89,10 +245,9 @@ class IntegrationDialog(qt.QWidget):
         self.input_data = input_data
         self.output_path = output_path
 
-        self._sem = threading.Semaphore()
         self.json_file = json_file
 
-        self.batch_processing.clicked.connect(self.__batchProcess)
+        self.batch_processing.clicked.connect(self.__fireBatchProcess)
         self.save_json_button.clicked.connect(self.save_config)
         self.quit_button.clicked.connect(self.die)
 
@@ -107,143 +262,8 @@ class IntegrationDialog(qt.QWidget):
         if context is not None:
             self.__context.saveWindowLocationSettings("main-window", self)
 
-    def __batchProcess(self):
-        if self.input_data is None or len(self.input_data) == 0:
-            dialog = qt.QFileDialog(directory=os.getcwd())
-            dialog.setWindowTitle("Select images to integrate")
-            dialog.setFileMode(qt.QFileDialog.ExistingFiles)
-            result = dialog.exec_()
-            if not result:
-                return
-            self.input_data = [str(i) for i in dialog.selectedFiles()]
-            dialog.close()
-
-        self.progressBar.setVisible(True)
-        self.__workerConfigurator.setEnabled(False)
-
-        # Needed to update the display (hide the dialog, display the bar...)
-        app = qt.QApplication.instance()
-        while app.hasPendingEvents():
-            app.processEvents()
-
-        self.proceed()
-
-        qt.QMessageBox.information(self,
-                                   "Integration",
-                                   "Batch processing completed.")
-
-        self.die()
-
-    def proceed(self):
-        with self._sem:
-            out = None
-            config = self.dump()
-            logger.debug("Processing %s", self.input_data)
-            start_time = time.time()
-            if self.input_data is None or len(self.input_data) == 0:
-                logger.warning("No input data to process")
-                return
-
-            elif hasattr(self.input_data, "ndim") and self.input_data.ndim == 3:
-                # We have a numpy array of dim3
-                worker = worker_mdl.Worker()
-                worker.set_config(config)
-                worker.safe = False
-
-                if worker.do_2D():
-                    out = numpy.zeros((self.input_data.shape[0], worker.nbpt_azim, worker.nbpt_rad), dtype=numpy.float32)
-                    for i in range(self.input_data.shape[0]):
-                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                        data = self.input_data[i]
-                        out[i] = worker.process(data)
-                else:
-                    out = numpy.zeros((self.input_data.shape[0], worker.nbpt_rad), dtype=numpy.float32)
-                    for i in range(self.input_data.shape[0]):
-                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                        data = self.input_data[i]
-                        result = worker.process(data)
-                        result = result.T[1]
-                        out[i] = result
-
-            elif hasattr(self.input_data, "__len__"):
-                worker = worker_mdl.Worker()
-                worker.set_config(config)
-                worker.safe = False
-                worker.output = "raw"
-
-                if worker.nbpt_rad is None:
-                    message = "You must provide the number of output radial bins !"
-                    qt.QMessageBox.warning(self, "PyFAI integrate", message)
-                    return {}
-
-                logger.info("Parameters for integration: %s", str(config))
-
-                out = []
-                for i, item in enumerate(self.input_data):
-                    self.progressBar.setValue(100.0 * i / len(self.input_data))
-                    logger.debug("Processing %s", item)
-
-                    numpy_array = False
-                    if isinstance(item, (six.text_type, six.binary_type)) and op.exists(item):
-                        img = fabio.open(item)
-                        multiframe = img.nframes > 1
-
-                        custom_ext = True
-                        if self.output_path:
-                            if os.path.isdir(self.output_path):
-                                outpath = os.path.join(self.output_path, os.path.splitext(os.path.basename(item))[0])
-                            else:
-                                outpath = os.path.abspath(self.output_path)
-                                custom_ext = False
-                        else:
-                            outpath = os.path.splitext(item)[0]
-
-                        if custom_ext:
-                            if multiframe:
-                                outpath = outpath + "_pyFAI.h5"
-                            else:
-                                if worker.do_2D():
-                                    outpath = outpath + ".azim"
-                                else:
-                                    outpath = outpath + ".dat"
-                    else:
-                        logger.warning("Item is not a file ... guessing it is a numpy array")
-                        numpy_array = True
-                        multiframe = False
-
-                    if multiframe:
-                        writer = HDF5Writer(outpath)
-                        writer.init(config)
-
-                        for i in range(img.nframes):
-                            fimg = img.getframe(i)
-                            data = fimg.data
-                            res = worker.process(data=data,
-                                                 metadata=fimg.header,
-                                                 writer=writer
-                                                 )
-                        writer.close()
-                    else:
-                        if numpy_array:
-                            data = item
-                            writer = None
-                            metadata = None
-                        else:
-                            data = img.data
-                            writer = DefaultAiWriter(outpath, worker.ai)
-                            metadata = img.header
-                        res = worker.process(data,
-                                             writer=writer,
-                                             metadata=metadata)
-                        if writer:
-                            writer.close()
-                    out.append(res)
-
-            logger.info("Processing Done in %.3fs !", time.time() - start_time)
-            self.progressBar.setValue(100)
-
-        # TODO: It should return nothing
-        return out
+    def __fireBatchProcess(self):
+        self.batchProcessRequested.emit()
 
     def die(self):
         logger.debug("bye bye")

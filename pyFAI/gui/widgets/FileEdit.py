@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/12/2018"
+__date__ = "01/02/2019"
 
 import logging
 from silx.gui import qt
@@ -43,13 +43,60 @@ class FileEdit(qt.QLineEdit):
     empty string).
     """
 
+    sigValueAccepted = qt.Signal()
+    """Emitted when a file was accepted.
+
+    In case the value is still the same, no signal is sent from the DataModel,
+    but this signal is emitted."""
+
     def __init__(self, parent=None):
         super(FileEdit, self).__init__(parent)
         self.__model = None
         self.__applyedWhenFocusOut = True
+        self.__previousText = None
+        self.__wasModified = False
 
         self.editingFinished.connect(self.__editingFinished)
         self.returnPressed.connect(self.__returnPressed)
+
+    def event(self, event):
+        if event.type() == 207:
+            if self.__previousText != self.text():
+                # TODO: This tries to capture Linux copy-paste using middle mouse
+                # button. But this event do not match exactly what it is intented.
+                # None of the available events capture this special copy-paste.
+                self.__wasModified = True
+        return qt.QLineEdit.event(self, event)
+
+    def focusInEvent(self, event):
+        self.__previousText = self.text()
+        self.__wasModified = False
+        super(FileEdit, self).focusInEvent(event)
+
+    def dragEnterEvent(self, event):
+        if self.__model is not None:
+            if event.mimeData().hasFormat("text/uri-list"):
+                event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        mimeData = event.mimeData()
+        if not mimeData.hasUrls():
+            qt.QMessageBox.critical(self, "Drop cancelled", "A file is expected")
+            return
+
+        urls = mimeData.urls()
+        if len(urls) > 1:
+            qt.QMessageBox.critical(self, "Drop cancelled", "A single file is expected")
+            return
+
+        path = urls[0].toLocalFile()
+        previous = self.__model.value()
+        try:
+            self.__model.setValue(path)
+        except Exception as e:
+            qt.QMessageBox.critical(self, "Drop cancelled", str(e))
+            if self.__model.value() is not previous:
+                self.__model.setValue(previous)
 
     def setModel(self, model):
         if self.__model is not None:
@@ -70,13 +117,18 @@ class FileEdit(qt.QLineEdit):
             self.__cancelText()
             event.accept()
         else:
-            return super(FileEdit, self).keyPressEvent(event)
+            result = super(FileEdit, self).keyPressEvent(event)
+            if event.isAccepted():
+                self.__wasModified = True
+            return result
 
     def __modelChanged(self):
         self.__cancelText()
 
     def __editingFinished(self):
-        if self.__applyedWhenFocusOut:
+        if not self.__wasModified:
+            self.__cancelText()
+        elif self.__applyedWhenFocusOut:
             self.__applyText()
         else:
             self.__cancelText()
@@ -86,6 +138,9 @@ class FileEdit(qt.QLineEdit):
 
     def __applyText(self):
         text = self.text()
+        if text == self.__previousText:
+            self.sigValueAccepted.emit()
+            return
 
         if text.strip() == "":
             value = None
@@ -94,7 +149,10 @@ class FileEdit(qt.QLineEdit):
 
         try:
             self.__model.setValue(value)
-        except ValueError as e:
+            # Avoid sending further signals
+            self.__previousText = text
+            self.sigValueAccepted.emit()
+        except Exception as e:
             _logger.debug(e, exc_info=True)
             self.__cancelText()
 
@@ -107,6 +165,8 @@ class FileEdit(qt.QLineEdit):
             text = value
         old = self.blockSignals(True)
         self.setText(text)
+        # Avoid sending further signals
+        self.__previousText = text
         self.blockSignals(old)
 
     def isApplyedWhenFocusOut(self):

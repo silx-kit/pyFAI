@@ -47,7 +47,7 @@ import sys
 # Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
 
 _numpy_1_12_py2_bug = ((sys.version_info.major == 2) and 
-                       ([1, 12] <= [int(i) for i in numpy.version.version.split(".", 2)[:2]]))
+                       ([1, 12] >= [int(i) for i in numpy.version.version.split(".", 2)[:2]]))
 
 # Imports at the C level
 from .isnan cimport isnan

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/01/2019"
+__date__ = "30/01/2019"
 
 import logging
 import numpy
@@ -292,8 +292,6 @@ def createSaveDialog(parent, title, poni=False, json=False, csv=False):
     dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
 
     builder = FilterBuilder.FilterBuilder()
-    builder.addFileFormat("EDF image files", "edf")
-
     if poni:
         builder.addFileFormat("PONI files", "poni")
     if json:
@@ -616,14 +614,17 @@ class IntegrationPlot(qt.QFrame):
         return self.__plot2d.getDefaultColormap()
 
     def __createPlots(self, parent):
+        margin = 0.02
         plot1d = silx.gui.plot.PlotWidget(parent)
         plot1d.setGraphXLabel("Radial")
         plot1d.setGraphYLabel("Intensity")
         plot1d.setGraphGrid(False)
+        plot1d.setDataMargins(margin, margin, margin, margin)
         plot2d = silx.gui.plot.PlotWidget(parent)
         plot2d.setGraphXLabel("Radial")
         plot2d.setGraphYLabel("Azimuthal")
         plot2d.sigInteractiveModeChanged.connect(self.__syncModeToPlot1d)
+        plot2d.setDataMargins(margin, margin, margin, margin)
 
         handle = plot2d.getWidgetHandle()
         handle.setContextMenuPolicy(qt.Qt.CustomContextMenu)

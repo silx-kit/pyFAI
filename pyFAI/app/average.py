@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "31/01/2019"
 __status__ = "production"
 
 import os
@@ -127,13 +127,13 @@ def parse_algorithms(options):
     result = []
     for method in methods:
         if not average.is_algorithm_name_exists(method):
-            logger.warning("Method name '%s' unknown. Method skipped.")
+            logger.warning("Method name '%s' unknown. Method skipped.", method)
             continue
 
         try:
             algorithm = average.create_algorithm(method, options.cutoff, quantiles)
         except average.AlgorithmCreationError as e:
-            logger.warning("Method skipped: %s", e)
+            logger.warning("Method '%s' skipped: %s", method, e)
             continue
 
         result.append(algorithm)

@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2018"
+__date__ = "11/01/2019"
 
 
 import unittest
@@ -43,9 +43,9 @@ import time
 import fabio
 import gc
 import numpy
-import platform
 import logging
 import shutil
+import platform
 
 logger = logging.getLogger(__name__)
 try:
@@ -60,7 +60,7 @@ if ocl is not None:
     import pyopencl.array
 from .. import load
 from . import utilstest
-from .utilstest import UtilsTest
+from .utilstest import test_options
 from ..utils import mathutil
 from ..utils.decorators import depreclog
 
@@ -68,28 +68,28 @@ from ..utils.decorators import depreclog
 class TestMask(unittest.TestCase):
 
     def setUp(self):
-        if not UtilsTest.opencl:
+        if not test_options.opencl:
             self.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
             self.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
-        self.tmp_dir = os.path.join(UtilsTest.tempdir, "opencl")
+        self.tmp_dir = os.path.join(test_options.tempdir, "opencl")
         if not os.path.isdir(self.tmp_dir):
             os.makedirs(self.tmp_dir)
 
         self.N = 1000
-        self.datasets = [{"img": UtilsTest.getimage("Pilatus1M.edf"),
-                          "poni": UtilsTest.getimage("Pilatus1M.poni"),
+        self.datasets = [{"img": test_options.getimage("Pilatus1M.edf"),
+                          "poni": test_options.getimage("Pilatus1M.poni"),
                           "spline": None},
-                         {"img": UtilsTest.getimage("halfccd.edf"),
-                          "poni": UtilsTest.getimage("halfccd.poni"),
-                          "spline": UtilsTest.getimage("halfccd.spline")},
-                         {"img": UtilsTest.getimage("Frelon2k.edf"),
-                          "poni": UtilsTest.getimage("Frelon2k.poni"),
-                          "spline": UtilsTest.getimage("frelon.spline")},
-                         {"img": UtilsTest.getimage("Pilatus6M.cbf"),
-                          "poni": UtilsTest.getimage("Pilatus6M.poni"),
-                          "spline": None},
+                         {"img": test_options.getimage("halfccd.edf"),
+                          "poni": test_options.getimage("halfccd.poni"),
+                          "spline": test_options.getimage("halfccd.spline")},
+#                          {"img": test_options.getimage("Frelon2k.edf"),
+#                           "poni": test_options.getimage("Frelon2k.poni"),
+#                           "spline": test_options.getimage("frelon.spline")},
+#                          {"img": test_options.getimage("Pilatus6M.cbf"),
+#                           "poni": test_options.getimage("Pilatus6M.poni"),
+#                           "spline": None},
                          ]
         for ds in self.datasets:
             if ds["spline"] is not None:
@@ -111,7 +111,7 @@ class TestMask(unittest.TestCase):
         shutil.rmtree(self.tmp_dir)
         self.tmp_dir = self.N = self.datasets = None
 
-    @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
+    @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_OpenCL(self):
         logger.info("Testing histogram-based algorithm (forward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -139,7 +139,7 @@ class TestMask(unittest.TestCase):
                 del ai, data
                 gc.collect()
 
-    @unittest.skipIf(UtilsTest.low_mem, "test using >500M")
+    @unittest.skipIf(test_options.low_mem, "test using >500M")
     def test_OpenCL_LUT(self):
         logger.info("Testing LUT-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -167,7 +167,7 @@ class TestMask(unittest.TestCase):
                 del ai, data
                 gc.collect()
 
-    @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
+    @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_OpenCL_CSR(self):
         logger.info("Testing CSR-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -204,7 +204,7 @@ class TestSort(unittest.TestCase):
     ws = N // 8
 
     def setUp(self):
-        if not UtilsTest.opencl:
+        if not test_options.opencl:
             self.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
             self.skipTest("OpenCL module (pyopencl) is not present or no device available")
@@ -320,13 +320,20 @@ class TestKahan(unittest.TestCase):
     """
 
     def setUp(self):
-        if not UtilsTest.opencl:
+        if not test_options.opencl:
             self.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
             self.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
         self.ctx = ocl.create_context(devicetype="GPU")
         self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+
+        # this is running 32 bits OpenCL with POCL
+        if (platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4) and
+                self.ctx.devices[0].platform.name == 'Portable Computing Language'):
+            self.args = "-DX87_VOLATILE=volatile"
+        else:
+            self.args = ""
 
     def tearDown(self):
         self.queue = None
@@ -341,18 +348,6 @@ class TestKahan(unittest.TestCase):
         for i in ary:
             sum_ += i
         return sum_
-
-    def check_equal(self, value, reference, label=""):
-        "check except on broken arch"
-        if (platform.machine() in ("i386", "i686") and
-            self.ctx.devices[0].platform.name == 'Portable Computing Language'):
-                if value == reference:
-                    logger.info("%s OK: %s == %s", label, reference, value)
-                else:
-                    logger.info("%s NOT GOOD on broken POCL/i386: %s == %s", label, reference, value)
-        else:
-            self.assertEqual(reference, value, label)
-
 
     def test_kahan(self):
         # simple test
@@ -378,13 +373,13 @@ class TestKahan(unittest.TestCase):
             result[1] = acc.s1;
         }
         """
-        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build()
+        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build(self.args)
         ones_d = pyopencl.array.to_device(self.queue, data)
         res_d = pyopencl.array.zeros(self.queue, 2, numpy.float32)
         evt = prg.summation(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype=numpy.float64)
-        self.check_equal(ref64, res, label="test_kahan")
+        self.assertEqual(ref64, res, "test_kahan")
 
     def test_dot16(self):
         # simple test
@@ -459,13 +454,14 @@ class TestKahan(unittest.TestCase):
         }
 
         """
-        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build()
+
+        prg = pyopencl.Program(self.ctx, read_cl_file("pyfai:openCL/kahan.cl") + src).build(self.args)
         ones_d = pyopencl.array.to_device(self.queue, data)
         res_d = pyopencl.array.zeros(self.queue, 2, numpy.float32)
         evt = prg.test_dot16(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot16")
+        self.assertEqual(ref64, res, "test_dot16")
 
         res_d.fill(0)
         data0 = data[0::2]
@@ -477,7 +473,7 @@ class TestKahan(unittest.TestCase):
         evt = prg.test_dot8(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot8")
+        self.assertEqual(ref64, res, "test_dot8")
 
         res_d.fill(0)
         data0 = data[0::4]
@@ -489,7 +485,7 @@ class TestKahan(unittest.TestCase):
         evt = prg.test_dot4(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot4")
+        self.assertEqual(ref64, res, "test_dot4")
 
         res_d.fill(0)
         data0 = numpy.array([data[0], data[4], data[12]])
@@ -501,7 +497,7 @@ class TestKahan(unittest.TestCase):
         evt = prg.test_dot3(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot3")
+        self.assertEqual(ref64, res, "test_dot3")
 
         res_d.fill(0)
         data0 = numpy.array([data[0], data[14]])
@@ -513,7 +509,8 @@ class TestKahan(unittest.TestCase):
         evt = prg.test_dot2(self.queue, (1,), (1,), ones_d.data, numpy.int32(N), res_d.data)
         evt.wait()
         res = res_d.get().sum(dtype="float64")
-        self.check_equal(ref64, res, label="test_dot2")
+        self.assertEqual(ref64, res, "test_dot2")
+
 
 def suite():
     testsuite = unittest.TestSuite()

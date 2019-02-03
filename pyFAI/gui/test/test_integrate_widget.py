@@ -34,12 +34,11 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2019"
+__date__ = "23/01/2019"
 
 import os
 import sys
 import unittest
-import numpy
 import logging
 
 from silx.gui import qt
@@ -77,77 +76,6 @@ class TestIntegrationDialog(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.app = None
-
-    def test_process_no_data(self):
-        widget = IntegrationDialog(json_file=None)
-        dico = {"nbpt_rad": 2}
-        dico.update(self.base_config)
-        widget.set_config(dico)
-        result = widget.proceed()
-        self.assertIsNone(result)
-
-    def test_process_numpy_1d(self):
-        data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected = [[23.5, 9.9]]
-
-        widget = IntegrationDialog(json_file=None)
-        params = {"do_2D": False,
-                  "nbpt_rad": 2,
-                  "method": ("bbox", "histogram", "cython")}
-        dico = self.base_config.copy()
-        dico.update(params)
-        widget.set_config(dico)
-        widget.set_input_data(numpy.array([data]))
-        result = widget.proceed()
-        numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
-
-    def test_process_numpy_2d(self):
-        data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected = [[[5.6, 4.5], [41.8, 9.3]]]
-        widget = IntegrationDialog(json_file=None)
-        params = {"do_2D": True,
-                  "nbpt_azim": 2,
-                  "nbpt_rad": 2,
-                  "method": ("bbox", "histogram", "cython")}
-        dico = self.base_config.copy()
-        dico.update(params)
-        widget.set_config(dico)
-        widget.set_input_data(numpy.array([data]))
-        result = widget.proceed()
-        numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
-
-    def test_process_array_1d(self):
-        data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected = [[[1.9, 1.9], [23.5, 9.9]]]
-        widget = IntegrationDialog(json_file=None)
-        params = {"do_2D": False,
-                  "nbpt_rad": 2,
-                  "method": ("bbox", "histogram", "cython")}
-        dico = self.base_config.copy()
-        dico.update(params)
-        widget.set_config(dico)
-        widget.set_input_data([data])
-        result = widget.proceed()
-        numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
-
-    def test_process_array_2d(self):
-        data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected = [[[[5.6, 4.5], [41.8, 9.3]], [2.0, 2.0], [-124.5, -124.2]]]
-        widget = IntegrationDialog(json_file=None)
-        params = {"do_2D": True,
-                  "nbpt_azim": 2,
-                  "nbpt_rad": 2,
-                  "method": ("bbox", "histogram", "cython")}
-        dico = self.base_config.copy()
-        dico.update(params)
-        widget.set_config(dico)
-        widget.set_input_data([data])
-        result = widget.proceed()
-        # simplify representation
-        self.assertEqual(len(result), len(expected))
-        self.assertEqual(len(result[0]), len(expected[0]))
-        for i in range(len(result[0])):
-            numpy.testing.assert_array_almost_equal(result[0][i], expected[0][i], decimal=1)
 
     def test_config_flatdark_v1(self):
         dico = {"dark_current": "a,b,c",
