@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2019"
+__date__ = "04/02/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -222,7 +222,7 @@ class HDF5Writer(Writer):
     CONFIG = "pyFAI"
     DATASET_NAME = "data"
 
-    def __init__(self, filename, hpath="data", fast_scan_width=None):
+    def __init__(self, filename, hpath="data", fast_scan_width=None, append_frames=False):
         """
         Constructor of an HDF5 writer:
 
@@ -251,6 +251,8 @@ class HDF5Writer(Writer):
         self.chunk = None
         self.shape = None
         self.ndim = None
+        self._current_frame = None
+        self._append_frames = append_frames
 
     def __repr__(self):
         return "HDF5 writer on file %s:%s %sinitialized" % (self.filename, self.hpath, "" if self._initialized else "un")
@@ -385,12 +387,21 @@ class HDF5Writer(Writer):
                 self.hdf5.close()
                 self.hdf5 = None
 
-    def write(self, data, index=0):
+    def write(self, data, index=None):
         """
         Minimalistic method to limit the overhead.
         :param data: array with intensities or tuple (2th,I) or (I,2th,chi)
         """
         logger.debug("In write, index %s", index)
+        if index is None:
+            if self._append_frames:
+                if self._current_frame is None:
+                    self._current_frame = 0
+                else:
+                    self._current_frame = self._current_frame + 1
+                index = self._current_frame
+            else:
+                index = 0
         radial = None
         azimuthal = None
         if isinstance(data, containers.Integrate1dResult):

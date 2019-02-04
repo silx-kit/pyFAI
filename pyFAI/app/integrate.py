@@ -379,7 +379,7 @@ def process(input_data, output, config, monitor_name, observer):
                     observer.data_result(iitem, result)
         else:
             if multiframe:
-                writer = HDF5Writer(outpath)
+                writer = HDF5Writer(outpath, append_frames=True)
                 writer.init(fai_cfg=config)
 
                 for iframe in range(fabio_image.nframes):
