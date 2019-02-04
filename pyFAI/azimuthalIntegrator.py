@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2019"
+__date__ = "04/02/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2741,10 +2741,7 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
         unit = units.to_unit(unit)
-        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
-        if usedMethod != method:
-            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
-        method = usedMethod
+        method = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
 
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
@@ -2883,10 +2880,7 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.NaN
             delta_dummy = None
         unit = units.to_unit(unit)
-        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
-        if usedMethod != method:
-            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
-        method = usedMethod
+        method = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
 
         if "__len__" in dir(thres) and len(thres) > 0:
             sigma_lo = thres[0]
@@ -3041,6 +3035,8 @@ class AzimuthalIntegrator(Geometry):
         from .ext import inpainting
         dummy = -1
         delta_dummy = 0.9
+        method = IntegrationMethod.select_one_available(method, dim=2,
+                                                        default=self.DEFAULT_METHOD_2D)
 
         assert mask.shape == self.detector.shape
         mask = numpy.ascontiguousarray(mask, numpy.int8)
