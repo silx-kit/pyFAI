@@ -2746,7 +2746,6 @@ class AzimuthalIntegrator(Geometry):
             delta_dummy = None
         unit = units.to_unit(unit)
         method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
-
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
             npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
@@ -2885,7 +2884,6 @@ class AzimuthalIntegrator(Geometry):
             delta_dummy = None
         unit = units.to_unit(unit)
         method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
-
         if "__len__" in dir(thres) and len(thres) > 0:
             sigma_lo = thres[0]
             sigma_hi = thres[-1]
@@ -3039,6 +3037,8 @@ class AzimuthalIntegrator(Geometry):
         from .ext import inpainting
         dummy = -1
         delta_dummy = 0.9
+        method = IntegrationMethod.select_one_available(method, dim=2,
+                                                        default=self.DEFAULT_METHOD_2D)
 
         assert mask.shape == self.detector.shape
         mask = numpy.ascontiguousarray(mask, numpy.int8)

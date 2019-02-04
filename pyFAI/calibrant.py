@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2019"
+__date__ = "04/02/2019"
 __status__ = "production"
 
 
@@ -397,7 +397,7 @@ class Calibrant(object):
         if self._filename:
             name = os.path.splitext(os.path.basename(self._filename))[0]
         name += " Calibrant "
-        if len(self._dSpacing):
+        if len(self.dSpacing):
             name += "with %i reflections " % len(self._dSpacing)
         if self._wavelength:
             name += "at wavelength %s" % self._wavelength

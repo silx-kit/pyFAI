@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "04/02/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -46,6 +46,7 @@ from .containers import Integrate2dResult
 from . import units
 import threading
 import numpy
+from .method_registry import IntegrationMethod
 error = None
 
 
@@ -96,7 +97,8 @@ class MultiGeometry(object):
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
                     normalization_factor=None, all=False,
-                    lst_mask=None, lst_flat=None):
+                    lst_mask=None, lst_flat=None,
+                    method="splitpixel"):
         """Perform 1D azimuthal integration
 
         :param lst_data: list of numpy array
@@ -111,9 +113,12 @@ class MultiGeometry(object):
         :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate1dResult).
         :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
         :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
+        :param method: integration method, a string or a registered method
         :return: 2th/I or a dict with everything depending on "all"
         :rtype: Integrate1dResult, dict
         """
+        method = IntegrationMethod.select_one_available(method, dim=1)
+
         if len(lst_data) == 0:
             raise RuntimeError("List of images cannot be empty")
         if normalization_factor is None:
@@ -140,7 +145,7 @@ class MultiGeometry(object):
                                  polarization_factor=polarization_factor,
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
-                                 method="splitpixel", unit=self.unit, safe=True,
+                                 method=method, unit=self.unit, safe=True,
                                  mask=mask, flat=flat)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count * sac
@@ -182,7 +187,8 @@ class MultiGeometry(object):
                     correctSolidAngle=True,
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
-                    normalization_factor=None, all=False, lst_mask=None, lst_flat=None):
+                    normalization_factor=None, all=False, lst_mask=None,
+                    lst_flat=None, method="splitpixel"):
         """Performs 2D azimuthal integration of multiples frames, one for each geometry
 
         :param lst_data: list of numpy array
@@ -197,6 +203,7 @@ class MultiGeometry(object):
         :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate2dResult).
         :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
         :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
+        :param method: integration method (or its name)
         :return: I/2th/chi or a dict with everything depending on "all"
         :rtype: Integrate2dResult, dict
         """
@@ -216,6 +223,9 @@ class MultiGeometry(object):
             lst_flat = [None] * len(self.ais)
         elif isinstance(lst_flat, numpy.ndarray):
             lst_flat = [lst_flat] * len(self.ais)
+
+        method = IntegrationMethod.select_one_available(method, dim=2)
+
         sum_ = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
         count = numpy.zeros_like(sum_)
         sigma2 = None
@@ -226,7 +236,7 @@ class MultiGeometry(object):
                                  polarization_factor=polarization_factor,
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
-                                 method="splitpixel", unit=self.unit, safe=True,
+                                 method=method, unit=self.unit, safe=True,
                                  mask=mask, flat=flat)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count * sac
