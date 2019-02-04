@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2019"
+__date__ = "04/02/2019"
 __satus__ = "production"
 
 import sys
@@ -301,7 +301,14 @@ def process(input_data, output, config, monitor_name, observer):
             if os.path.isfile(item):
                 valid_data.append(item)
             else:
-                logger.warning("File %s do not exists. File ignored.", item)
+                if "::" in item:
+                    try:
+                        fabio.open(item)
+                        valid_data.append(item)
+                    except Exception:
+                        logger.warning("File %s do not exists. File ignored.", item)
+                else:
+                    logger.warning("File %s do not exists. File ignored.", item)
         elif isinstance(item, fabio.fabioimage.FabioImage):
             valid_data.append(item)
         elif isinstance(item, numpy.ndarray):
