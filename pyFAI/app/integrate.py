@@ -326,8 +326,8 @@ def process(input_data, output, config, monitor_name, observer):
         # TODO rework it as source
         if isinstance(item, six.string_types):
             kind = "filename"
-            filename = item
             fabio_image = fabio.open(item)
+            filename = fabio_image.filename
             multiframe = fabio_image.nframes > 1
         elif isinstance(item, fabio.fabioimage.FabioImage):
             kind = "fabio-image"
