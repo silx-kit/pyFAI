@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2019"
+__date__ = "04/02/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -487,6 +487,18 @@ class AzimuthalIntegrator(Geometry):
             return data / flat, flat
         else:
             return data, None
+
+    def _normalize_method(self, method, dim, default):
+        """
+        :rtype: IntegrationMethod
+        """
+        requested_method = method
+        method = IntegrationMethod.select_one_available(method, dim=dim, default=None, degradable=False)
+        if method is not None:
+            return method
+        method = IntegrationMethod.select_one_available(method, dim=dim, default=default, degradable=True)
+        logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
+        return default
 
     @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd_OpenCL(self, data, npt, filename=None, correctSolidAngle=True,
@@ -983,11 +995,7 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
 
-        usedMethod = IntegrationMethod.select_one_available(method, dim=1, default=self.DEFAULT_METHOD_1D)
-        if usedMethod != method:
-            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
-        method = usedMethod
-
+        method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         assert method.dimension == 1
         unit = units.to_unit(unit)
 
@@ -1667,11 +1675,7 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
 
-        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
-        if usedMethod != method:
-            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
-        method = usedMethod
-
+        method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
         assert method.dimension == 2
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
@@ -2741,10 +2745,7 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
         unit = units.to_unit(unit)
-        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
-        if usedMethod != method:
-            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
-        method = usedMethod
+        method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
 
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
@@ -2883,10 +2884,7 @@ class AzimuthalIntegrator(Geometry):
             dummy = numpy.NaN
             delta_dummy = None
         unit = units.to_unit(unit)
-        usedMethod = IntegrationMethod.select_one_available(method, dim=2, default=self.DEFAULT_METHOD_2D)
-        if usedMethod != method:
-            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
-        method = usedMethod
+        method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
 
         if "__len__" in dir(thres) and len(thres) > 0:
             sigma_lo = thres[0]
