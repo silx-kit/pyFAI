@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2018"
+__date__ = "04/02/2019"
 __status__ = "stable"
 
 
@@ -1023,26 +1023,26 @@ class NexusDetector(Detector):
             name = posixpath.split(det_grp.name)[-1]
             self.aliases = [name.replace("_", " "), det_grp.name]
             if "IS_FLAT" in det_grp:
-                self.IS_FLAT = det_grp["IS_FLAT"].value
+                self.IS_FLAT = det_grp["IS_FLAT"][()]
             if "IS_CONTIGUOUS" in det_grp:
-                self.IS_CONTIGUOUS = det_grp["IS_CONTIGUOUS"].value
+                self.IS_CONTIGUOUS = det_grp["IS_CONTIGUOUS"][()]
             if "flatfield" in det_grp:
-                self.flatfield = det_grp["flatfield"].value
+                self.flatfield = det_grp["flatfield"][()]
             if "darkcurrent" in det_grp:
-                self.darkcurrent = det_grp["darkcurrent"].value
+                self.darkcurrent = det_grp["darkcurrent"][()]
             if "force_pixel" in det_grp:
-                self.force_pixel = det_grp["force_pixel"].value
+                self.force_pixel = det_grp["force_pixel"][()]
             if "binning" in det_grp:
-                self._binning = tuple(i for i in det_grp["binning"].value)
+                self._binning = tuple(i for i in det_grp["binning"][()])
             if "pixel_size" in det_grp:
-                self._pixel1, self._pixel2 = det_grp["pixel_size"].value
+                self._pixel1, self._pixel2 = det_grp["pixel_size"][()]
             for what in ("max_shape", "shape"):
                 if what in det_grp:
-                    self.__setattr__(what, tuple(i for i in det_grp[what].value))
+                    self.__setattr__(what, tuple(i for i in det_grp[what][()]))
             if "mask" in det_grp:
-                self.mask = det_grp["mask"].value
+                self.mask = det_grp["mask"][()]
             if "pixel_corners" in det_grp:
-                self._pixel_corners = det_grp["pixel_corners"].value
+                self._pixel_corners = det_grp["pixel_corners"][()]
                 self.uniform_pixel = False
             else:
                 self.uniform_pixel = True
