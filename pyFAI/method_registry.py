@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2019"
+__date__ = "05/02/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -94,7 +94,10 @@ class IntegrationMethod:
         if method is None:
             return default
         if isinstance(method, IntegrationMethod):
-            method = method.method
+            if dim and method.dimension == dim:
+                return method
+            else:
+                method = method.method
         if isinstance(method, str):
             method = cls.parse(method, dim)
             method = method.method

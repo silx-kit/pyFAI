@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2019"
+__date__ = "05/02/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -496,7 +496,7 @@ class AzimuthalIntegrator(Geometry):
         method = IntegrationMethod.select_one_available(method, dim=dim, default=None, degradable=False)
         if method is not None:
             return method
-        method = IntegrationMethod.select_one_available(method, dim=dim, default=default, degradable=True)
+        method = IntegrationMethod.select_one_available(requested_method, dim=dim, default=default, degradable=True)
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
 
