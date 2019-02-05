@@ -81,15 +81,16 @@ class IntegrationMethod:
         return [i.__repr__() for i in cls._registry.values()]
 
     @classmethod
-    def select_one_available(cls, method, dim=None, default=None):
+    def select_one_available(cls, method, dim=None, default=None, degradable=False):
         """Select one available method from the requested method.
 
         :param [str,Method,IntegrationMethod] method: The requested method
         :param [None,int] dim: If specified, override the dim of the method
         :param [None,IntegrationMethod] default: If no method found, return this value
+        :param bool degradable: If true, it the request do not have available method,
+            it will return method close to it.
         :rtype: [IntegrationMethod,None]
         """
-
         if method is None:
             return default
         if isinstance(method, IntegrationMethod):
@@ -103,7 +104,7 @@ class IntegrationMethod:
         elif dim is not None:
             _dim, split, algo, impl, target = method
             method = Method(dim, split, algo, impl, target)
-        methods = cls.select_method(method=method)
+        methods = cls.select_method(method=method, degradable=degradable)
         if len(methods) == 0:
             return default
         return methods[0]
