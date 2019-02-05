@@ -264,7 +264,7 @@ class HDF5Writer(Writer):
         Initializes the HDF5 file for writing
         :param fai_cfg: the configuration of the worker as a dictionary
         """
-        logger.debug("in init")
+        logger.debug("Init")
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
@@ -410,7 +410,7 @@ class HDF5Writer(Writer):
             self.hdf5.flush()
 
     def close(self):
-        logger.debug("In close")
+        logger.debug("Close")
         if self.hdf5:
             self.flush()
             with self._sem:
@@ -422,7 +422,6 @@ class HDF5Writer(Writer):
         Minimalistic method to limit the overhead.
         :param data: array with intensities or tuple (2th,I) or (I,2th,chi)
         """
-        logger.debug("In write, index %s", index)
         if index is None:
             if self._append_frames:
                 if self._current_frame is None:
@@ -432,6 +431,7 @@ class HDF5Writer(Writer):
                 index = self._current_frame
             else:
                 index = 0
+        logger.debug("Write frame %s", index)
         radial = None
         azimuthal = None
         if isinstance(data, containers.Integrate1dResult):
