@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2019"
+__date__ = "05/02/2019"
 __status__ = "stable"
 
 
@@ -998,6 +998,7 @@ def get_project_configuration(dry_run):
         'pyFAI-calib = pyFAI.app.calib:main',
         'pyFAI-calib2 = pyFAI.app.calib2:main [calib2]',
         'pyFAI-drawmask = pyFAI.app.drawmask:main',
+        'pyFAI-diffmap = pyFAI.app.diff_map:main',
         'pyFAI-integrate = pyFAI.app.integrate:main',
         'pyFAI-recalib = pyFAI.app.recalib:main',
         'pyFAI-saxs = pyFAI.app.saxs:main',

@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2019"
+__date__ = "05/02/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -113,7 +113,7 @@ def from_isotime(text, use_tz=False):
         text = text[0]
     try:
         text = text.decode("ascii")
-    except:
+    except UnicodeError:
         text = str(text)
     if len(text) < 19:
         logger.warning("Not a iso-time string: %s", text)
@@ -264,7 +264,7 @@ class HDF5Writer(Writer):
         Initializes the HDF5 file for writing
         :param fai_cfg: the configuration of the worker as a dictionary
         """
-        logger.debug("in init")
+        logger.debug("Init")
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
@@ -410,7 +410,7 @@ class HDF5Writer(Writer):
             self.hdf5.flush()
 
     def close(self):
-        logger.debug("In close")
+        logger.debug("Close")
         if self.hdf5:
             self.flush()
             with self._sem:
@@ -422,7 +422,6 @@ class HDF5Writer(Writer):
         Minimalistic method to limit the overhead.
         :param data: array with intensities or tuple (2th,I) or (I,2th,chi)
         """
-        logger.debug("In write, index %s", index)
         if index is None:
             if self._append_frames:
                 if self._current_frame is None:
@@ -432,26 +431,27 @@ class HDF5Writer(Writer):
                 index = self._current_frame
             else:
                 index = 0
+        logger.debug("Write frame %s", index)
         radial = None
         azimuthal = None
         if isinstance(data, containers.Integrate1dResult):
-            I = data.intensity
+            intensity = data.intensity
             radial = data.radial
         elif isinstance(data, containers.Integrate2dResult):
-            I = data.intensity
+            intensity = data.intensity
             radial = data.radial
             azimuthal = data.azimuthal
         elif isinstance(data, numpy.ndarray):
-            I = data
+            intensity = data
         elif isinstance(data, (list, tuple)):
             n = len(data)
             if n == 2:
-                radial, I = data
+                radial, intensity = data
             elif n == 3:
                 if data[0].ndim == 2:
-                    I, radial, azimuthal = data
+                    intensity, radial, azimuthal = data
                 else:
-                    radial, I, _error = data
+                    radial, intensity, _error = data
         with self._sem:
             if self.dataset is None:
                 logger.warning("Writer not initialized !")
@@ -464,7 +464,7 @@ class HDF5Writer(Writer):
             else:
                 if index >= self.dataset.shape[0]:
                     self.dataset.resize(index + 1, axis=0)
-                self.dataset[index] = I
+                self.dataset[index] = intensity
             if (not self.has_azimuthal_values) and \
                (azimuthal is not None) and \
                self.azimuthal_values is not None:
