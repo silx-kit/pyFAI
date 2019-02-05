@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2019"
+__date__ = "05/02/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -113,7 +113,7 @@ def from_isotime(text, use_tz=False):
         text = text[0]
     try:
         text = text.decode("ascii")
-    except:
+    except UnicodeError:
         text = str(text)
     if len(text) < 19:
         logger.warning("Not a iso-time string: %s", text)
