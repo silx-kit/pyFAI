@@ -113,7 +113,7 @@ def from_isotime(text, use_tz=False):
         text = text[0]
     try:
         text = text.decode("ascii")
-    except UnicodeError:
+    except (UnicodeError, AttributeError):
         text = str(text)
     if len(text) < 19:
         logger.warning("Not a iso-time string: %s", text)
