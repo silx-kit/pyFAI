@@ -496,7 +496,7 @@ class AzimuthalIntegrator(Geometry):
         method = IntegrationMethod.select_one_available(method, dim=dim, default=None, degradable=False)
         if method is not None:
             return method
-        method = IntegrationMethod.select_one_available(method, dim=dim, default=default, degradable=True)
+        method = IntegrationMethod.select_one_available(requested_method, dim=dim, default=default, degradable=True)
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
 
