@@ -435,23 +435,23 @@ class HDF5Writer(Writer):
         radial = None
         azimuthal = None
         if isinstance(data, containers.Integrate1dResult):
-            I = data.intensity
+            intensity = data.intensity
             radial = data.radial
         elif isinstance(data, containers.Integrate2dResult):
-            I = data.intensity
+            intensity = data.intensity
             radial = data.radial
             azimuthal = data.azimuthal
         elif isinstance(data, numpy.ndarray):
-            I = data
+            intensity = data
         elif isinstance(data, (list, tuple)):
             n = len(data)
             if n == 2:
-                radial, I = data
+                radial, intensity = data
             elif n == 3:
                 if data[0].ndim == 2:
-                    I, radial, azimuthal = data
+                    intensity, radial, azimuthal = data
                 else:
-                    radial, I, _error = data
+                    radial, intensity, _error = data
         with self._sem:
             if self.dataset is None:
                 logger.warning("Writer not initialized !")
@@ -464,7 +464,7 @@ class HDF5Writer(Writer):
             else:
                 if index >= self.dataset.shape[0]:
                     self.dataset.resize(index + 1, axis=0)
-                self.dataset[index] = I
+                self.dataset[index] = intensity
             if (not self.has_azimuthal_values) and \
                (azimuthal is not None) and \
                self.azimuthal_values is not None:
