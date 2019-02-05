@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2019"
+__date__ = "05/02/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -983,10 +983,7 @@ class AzimuthalIntegrator(Geometry):
         if all:
             logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
 
-        usedMethod = IntegrationMethod.select_one_available(method, dim=1, default=self.DEFAULT_METHOD_1D)
-        if usedMethod != method:
-            logger.warning("Method requested '%s' not available. Method '%s' will be used", method, usedMethod)
-        method = usedMethod
+        method = IntegrationMethod.select_one_available(method, dim=1, default=self.DEFAULT_METHOD_1D)
 
         assert method.dimension == 1
         unit = units.to_unit(unit)
