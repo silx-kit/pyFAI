@@ -81,6 +81,8 @@ export LC_ALL=en_US.utf-8
 
 def get_version():
     """Returns current version number from version.py file"""
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    sys.path.append(dirname)
     import version
     return version.strictversion
 
@@ -261,7 +263,7 @@ class BuildMan(Command):
 
     def get_synopsis(self, module_name, env, log_output=False):
         """Execute a script to retrieve the synopsis for help2man
-        :return: synopsis 
+        :return: synopsis
         :rtype: single line string
         """
         import subprocess
