@@ -121,9 +121,9 @@ class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
         maskModel = experimentSettings.maskFile()
         maskModel.setValue(filename)
 
-    def setSelectionMask(self, mask):
+    def setSelectionMask(self, mask, copy=True):
         self.sigMaskChanged.disconnect(self.__emitUserMaskChanged)
-        result = super(_MaskToolsWidget, self).setSelectionMask(mask)
+        result = super(_MaskToolsWidget, self).setSelectionMask(mask, copy=copy)
         self.sigMaskChanged.connect(self.__emitUserMaskChanged)
         return result
 
