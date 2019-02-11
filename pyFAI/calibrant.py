@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2019"
+__date__ = "07/02/2019"
 __status__ = "production"
 
 
@@ -410,7 +410,7 @@ class Calibrant(object):
 
     def load_file(self, filename=None):
         with self._sem:
-            self._load_file(self, filename)
+            self._load_file(filename)
 
     def _load_file(self, filename=None):
         if filename:
