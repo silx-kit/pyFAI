@@ -64,7 +64,7 @@
       <item>
        <widget class="QGroupBox" name="groupBox">
         <property name="title">
-         <string>Experient settings</string>
+         <string>Experiment settings</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="5" column="0">
