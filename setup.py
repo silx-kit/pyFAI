@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/02/2019"
+__date__ = "12/02/2019"
 __status__ = "stable"
 
 
@@ -81,7 +81,10 @@ export LC_ALL=en_US.utf-8
 
 def get_version():
     """Returns current version number from version.py file"""
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, dirname)
     import version
+    sys.path = sys.path[1:]
     return version.strictversion
 
 
@@ -261,7 +264,7 @@ class BuildMan(Command):
 
     def get_synopsis(self, module_name, env, log_output=False):
         """Execute a script to retrieve the synopsis for help2man
-        :return: synopsis 
+        :return: synopsis
         :rtype: single line string
         """
         import subprocess
@@ -659,7 +662,7 @@ class BuildExt(build_ext):
 
             import numpy
             numpy_version = [int(i) for i in numpy.version.short_version.split(".", 2)[:2]]
-            if numpy_version < [1,16]:
+            if numpy_version < [1, 16]:
                 ext.extra_compile_args.append(
                     '''-D'PyMODINIT_FUNC=%s__attribute__((visibility("default"))) %s ' ''' % (extern, return_type))
             else:
