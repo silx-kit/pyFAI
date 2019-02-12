@@ -29,10 +29,9 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/11/2018"
+__date__ = "12/02/2019"
 
 PACKAGE = "pyFAI"
-DATA_KEY = "PYFAI_DATA"
 
 import os
 import sys
@@ -49,6 +48,7 @@ import functools
 from argparse import ArgumentParser
 from ..third_party import six
 from silx.resources import ExternalResources
+from ..directories import testimages
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ class TestOptions(object):
         self.url_base = "http://ftp.edna-site.org/pyFAI/testimages"
         self.resources = ExternalResources(PACKAGE,
                                            timeout=self.timeout,
-                                           env_key=DATA_KEY,
+                                           env_key=testimages,
                                            url_base=self.url_base)
         self.sem = threading.Semaphore()
         self.recompiled = False
