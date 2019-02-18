@@ -30,9 +30,7 @@
 import json
 import os
 import fabio
-import contextlib
 import unittest
-import tempfile
 import numpy
 import shutil
 
@@ -42,6 +40,14 @@ from pyFAI.io import integration_config
 
 
 class TestIntegrateApp(unittest.TestCase):
+
+    def setUp(self):
+        self.tempDir = os.path.join(UtilsTest.tempdir, self.id())
+        os.makedirs(self.tempDir)
+
+    def tearDown(self):
+        shutil.rmtree(self.tempDir)
+        self.tempDir = None
 
     class Options(object):
 
@@ -53,11 +59,26 @@ class TestIntegrateApp(unittest.TestCase):
             self.slow = None
             self.rapid = None
             self.gui = False
-            self.json = ".azimint.json"
+            self.json = None
             self.monitor_key = None
 
-    @contextlib.contextmanager
-    def jsontempfile(self, ponipath, nbpt_azim=1):
+    def get_path(self, filename):
+        path = os.path.join(self.tempDir, filename)
+        return path
+
+    def create_edf_file(self, filename, data, header={}):
+        path = os.path.join(self.tempDir, filename)
+        image = fabio.edfimage.EdfImage(data=data, header=header)
+        image.save(path)
+        return path
+
+    def is_file_exists(self, filename):
+        path = os.path.join(self.tempDir, filename)
+        return os.path.exists(path)
+
+    def create_json(self, ponipath=None, nbpt_azim=1):
+        if ponipath is None:
+            ponipath = UtilsTest.getimage("Pilatus1M.poni")
         data = {"poni": ponipath}
         integration_config.normalize(data, inplace=True)
         data["wavelength"] = 1
@@ -65,106 +86,78 @@ class TestIntegrateApp(unittest.TestCase):
         data["nbpt_azim"] = nbpt_azim
         data["do_2D"] = nbpt_azim > 1
         data["method"] = ("bbox", "histogram", "cython")
-        fd, path = tempfile.mkstemp(prefix="pyfai_", suffix=".json")
-        os.close(fd)
+        path = os.path.join(self.tempDir, "config.json")
         with open(path, 'w') as fp:
             json.dump(data, fp)
-        yield path
-        os.remove(path)
+        return path
 
-    @contextlib.contextmanager
-    def datatempfile(self, data, header):
-        fd, path = tempfile.mkstemp(prefix="pyfai_", suffix=".edf")
-        os.close(fd)
-        img = fabio.edfimage.edfimage(data, header)
-        img.save(path)
-        img = None
-        yield path
-        os.remove(path)
+    def test_path(self):
+        path = os.path.join(self.tempDir)
+        return path
 
-    @contextlib.contextmanager
-    def resulttempfile(self):
-        fd, path = tempfile.mkstemp(prefix="pyfai_", suffix=".out")
-        os.close(fd)
-        os.remove(path)
-        yield path
-        os.remove(path)
+    def create_result_path(self, name="result"):
+        path = os.path.join(self.tempDir, self.id(), name)
+        os.makedirs(path)
+        return path
 
     def test_integrate_default_output_dat(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         options = self.Options()
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        with self.datatempfile(data, {}) as datapath:
-            with self.jsontempfile(ponifile) as jsonpath:
-                options.json = jsonpath
-                pyFAI.app.integrate.integrate_shell(options, [datapath])
-                self.assertTrue(os.path.exists(datapath[:-4] + ".dat"))
+        datapath = self.create_edf_file("data.edf", data)
+        options.json = self.create_json()
+        pyFAI.app.integrate.integrate_shell(options, [datapath])
+        self.assertTrue(os.path.exists(datapath[:-4] + ".dat"))
 
     def test_integrate_default_output_azim(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         options = self.Options()
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        with self.datatempfile(data, {}) as datapath:
-            with self.jsontempfile(ponifile, nbpt_azim=2) as jsonpath:
-                options.json = jsonpath
-                pyFAI.app.integrate.integrate_shell(options, [datapath])
-                self.assertTrue(os.path.exists(datapath[:-4] + ".azim"))
+        datapath = self.create_edf_file("data.edf", data)
+        options.json = self.create_json(nbpt_azim=2)
+        pyFAI.app.integrate.integrate_shell(options, [datapath])
+        self.assertTrue(os.path.exists(datapath[:-4] + ".azim"))
 
     def test_integrate_file_output_dat(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         options = self.Options()
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        with self.datatempfile(data, {}) as datapath:
-            with self.jsontempfile(ponifile) as jsonpath:
-                options.json = jsonpath
-                with self.resulttempfile() as resultpath:
-                    options.output = resultpath
-                    pyFAI.app.integrate.integrate_shell(options, [datapath])
-                    self.assertTrue(os.path.exists(resultpath))
+        datapath = self.create_edf_file("data.edf", data)
+        options.json = self.create_json()
+        options.output = self.create_result_path("foo")
+        pyFAI.app.integrate.integrate_shell(options, [datapath])
+        self.assertTrue(os.path.exists(options.output))
+        result_file = os.path.join(options.output, "data.dat")
+        self.assertTrue(os.path.exists(result_file))
 
     def test_integrate_no_monitor(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         options = self.Options()
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        datapath = self.create_edf_file("data.edf", data)
         expected = numpy.array([[2.0, 17.0], [2.0, 26.0], [2., 0.]])
-        with self.datatempfile(data, {}) as datapath:
-            with self.jsontempfile(ponifile) as jsonpath:
-                options.json = jsonpath
-                with self.resulttempfile() as resultpath:
-                    options.output = resultpath
-                    pyFAI.app.integrate.integrate_shell(options, [datapath])
-                    result = numpy.loadtxt(resultpath)
-                    numpy.testing.assert_almost_equal(result, expected, decimal=1)
+        options.json = self.create_json()
+        pyFAI.app.integrate.integrate_shell(options, [datapath])
+        result = numpy.loadtxt(self.get_path("data.dat"))
+        numpy.testing.assert_almost_equal(result, expected, decimal=1)
 
     def test_integrate_monitor(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         options = self.Options()
         options.monitor_key = "my_mon"
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        datapath = self.create_edf_file("data.edf", data, header={"my_mon": "0.5"})
         expected = numpy.array([[2.0, 33.9], [2.0, 52.0], [2., 0.]])
-        with self.datatempfile(data, {"my_mon": "0.5"}) as datapath:
-            with self.jsontempfile(ponifile) as jsonpath:
-                options.json = jsonpath
-                with self.resulttempfile() as resultpath:
-                    options.output = resultpath
-                    pyFAI.app.integrate.integrate_shell(options, [datapath])
-                    result = numpy.loadtxt(resultpath)
-                    numpy.testing.assert_almost_equal(result, expected, decimal=1)
+        options.json = self.create_json()
+        pyFAI.app.integrate.integrate_shell(options, [datapath])
+        result = numpy.loadtxt(self.get_path("data.dat"))
+        numpy.testing.assert_almost_equal(result, expected, decimal=1)
 
     def test_integrate_counter_monitor(self):
-        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         options = self.Options()
         options.monitor_key = "counter/my_mon"
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        datapath = self.create_edf_file("data.edf", data, header={"counter_mne": "my_mon", "counter_pos": "2.0"})
         expected = numpy.array([[2.0, 8.5], [2.0, 13.0], [2., 0.]])
-        with self.datatempfile(data, {"counter_mne": "my_mon", "counter_pos": "2.0"}) as datapath:
-            with self.jsontempfile(ponifile) as jsonpath:
-                options.json = jsonpath
-                with self.resulttempfile() as resultpath:
-                    options.output = resultpath
-                    pyFAI.app.integrate.integrate_shell(options, [datapath])
-                    result = numpy.loadtxt(resultpath)
-                    numpy.testing.assert_almost_equal(result, expected, decimal=1)
+        options.json = self.create_json()
+        pyFAI.app.integrate.integrate_shell(options, [datapath])
+        result = numpy.loadtxt(self.get_path("data.dat"))
+        numpy.testing.assert_almost_equal(result, expected, decimal=1)
 
 
 class _ResultObserver(pyFAI.app.integrate.IntegrationObserver):
