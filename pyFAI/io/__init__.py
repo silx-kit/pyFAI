@@ -153,7 +153,7 @@ class Writer(object):
         Constructor of the class
         """
         self.filename = filename
-        if os.path.exists(filename):
+        if filename is not None and os.path.exists(filename):
             logger.warning("Destination file %s exists", filename)
         self._sem = threading.Semaphore()
         self.dirname = None
