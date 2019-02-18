@@ -42,6 +42,7 @@ import logging
 import time
 import numpy
 import os.path
+import collections
 import six
 
 import fabio
@@ -52,6 +53,7 @@ logger = logging.getLogger("pyFAI")
 
 import pyFAI.utils
 import pyFAI.worker
+import pyFAI.io
 from pyFAI.io import DefaultAiWriter
 from pyFAI.io import HDF5Writer
 from pyFAI.utils.shell import ProgressBar
@@ -199,20 +201,21 @@ class IntegrationObserver(object):
         """
         pass
 
-    def processing_data(self, data_id, filename):
+    def processing_data(self, data_info):
         """
         Start processing the data `data_id`
 
-        :param int data_id: Id of the data
-        :param str filename: Filename of the data, if any.
+        :param DataInfo data_info: Contains data and metadata from the data
+            to integrate
         """
         pass
 
-    def data_result(self, data_id, result):
+    def data_result(self, data_info, result):
         """
         Called after each data processing, with the result
 
-        :param int data_id: Id of the data
+        :param DataInfo data_info: Contains data and metadata from the data
+            to integrate
         :param object result: Result of the integration.
         """
         pass
@@ -246,22 +249,25 @@ class ShellIntegrationObserver(IntegrationObserver):
     def processing_started(self, data_count):
         self._progress_bar = ProgressBar("Integration", data_count, 20)
 
-    def processing_data(self, data_id, filename=None):
-        if filename:
-            if len(filename) > 100:
-                message = os.path.basename(filename)
+    def processing_data(self, data_info):
+        if data_info.source_filename:
+            if len(data_info.source_filename) > 100:
+                message = os.path.basename(data_info.source_filename)
             else:
-                message = filename
+                message = data_info.source_filename
         else:
             message = ""
-        self._progress_bar.update(data_id + 1, message=message)
+        self._progress_bar.update(data_info.data_id + 1, message=message)
 
     def processing_finished(self):
         self._progress_bar.clear()
 
 
-class InputData(object):
-    """Data access to frames of the input data."""
+DataInfo = collections.namedtuple("DataInfo", "source source_id frame_id fabio_image data_id data header source_filename")
+
+
+class DataSource(object):
+    """Source of data to integrate."""
 
     def __init__(self):
         self._items = []
@@ -272,9 +278,155 @@ class InputData(object):
     def count(self):
         return len(self._items)
 
-    def items(self):
-        for item in self._items:
-            yield item
+    def is_single_multiframe(self):
+        if len(self._items) == 0:
+            return False
+        if len(self._items) > 1:
+            return False
+
+        item = self._items[0]
+        if isinstance(item, six.string_types):
+            with fabio.open(item) as fabio_image:
+                multiframe = fabio_image.nframes > 1
+        elif isinstance(item, fabio.fabioimage.FabioImage):
+            fabio_image = item
+            multiframe = fabio_image.nframes > 1
+        elif isinstance(item, numpy.ndarray):
+            multiframe = len(item.shape) > 2 and len(item)
+        return multiframe
+
+    def is_multiframe(self):
+        if len(self._items) == 0:
+            return False
+        if len(self._items) > 1:
+            return True
+        # FIXME: Should be improved if needed
+        for count, _ in enumerate(self._iter_item_frames()):
+            pass
+        return count > 0
+
+    def _iter_item_frames(self, iitem, start_id, item):
+        if isinstance(item, six.string_types):
+            fabio_image = fabio.open(item)
+            filename = fabio_image.filename
+            was_openned = True
+        elif isinstance(item, fabio.fabioimage.FabioImage):
+            fabio_image = item
+            filename = fabio_image.filename
+            was_openned = False
+        elif isinstance(item, numpy.ndarray):
+            filename = None
+            fabio_image = None
+
+        if fabio_image is not None:
+            if fabio_image.nframes > 1:
+                for iframe in range(fabio_image.nframes):
+                    fimg = fabio_image.getframe(iframe)
+                    yield DataInfo(source=item,
+                                   source_id=iitem,
+                                   frame_id=iframe,
+                                   data_id=start_id + iframe,
+                                   data=fimg.data,
+                                   fabio_image=fimg,
+                                   header=fimg.header,
+                                   source_filename=filename)
+            else:
+                yield DataInfo(source=item,
+                               source_id=iitem,
+                               frame_id=None,
+                               data_id=start_id,
+                               data=fabio_image.data,
+                               fabio_image=fabio_image,
+                               header=fabio_image.header,
+                               source_filename=filename)
+            if was_openned:
+                fabio_image.close()
+        else:
+            if item.ndim == 3:
+                for iframe, data in enumerate(item):
+                    yield DataInfo(source=item,
+                                   source_id=iitem,
+                                   frame_id=iframe,
+                                   data_id=start_id + iframe,
+                                   data=data,
+                                   fabio_image=None,
+                                   header=None,
+                                   source_filename=filename)
+            else:
+                data = item
+                yield DataInfo(source=item,
+                               source_id=iitem,
+                               data_id=start_id,
+                               frame_id=None,
+                               data=data,
+                               fabio_image=None,
+                               header=None,
+                               source_filename=filename)
+
+    def basename(self):
+        """Returns a basename identifying this data source"""
+        if len(self._items) == 0:
+            raise RuntimeError("No ")
+        if len(self._items) == 1:
+            return self._items[0]
+        return os.path.commonprefix(self._items)
+
+    def frames(self):
+        """
+        Iterate all the frames from this data source.
+
+        :rtype: Iterator[DataInfo]
+        """
+        next_id = 0
+        for iitem, item in enumerate(self._items):
+            for data_info in self._iter_item_frames(iitem, next_id, item):
+                yield data_info
+            if data_info.frame_id is not None:
+                next_id += data_info.frame_id
+            next_id += 1
+
+
+class MultiFileWriter(pyFAI.io.Writer):
+    """Broadcast writing to differnet files for each frames"""
+
+    def __init__(self, output_path):
+        super(MultiFileWriter, self).__init__()
+        self._writer = None
+        self._output_path = output_path
+
+    def init(self, fai_cfg=None, lima_cfg=None):
+        self._fai_cfg = fai_cfg
+        self._lima_cfg = lima_cfg
+        self._is_2d = self._fai_cfg.get("do_2D", False) is True
+
+    def prepare_write(self, data_info, engine):
+        if data_info.source_filename:
+            output_name = os.path.splitext(data_info.source_filename)[0]
+        else:
+            output_name = "array_%d" % data_info.data_id
+
+        if self._is_2d:
+            extension = ".azim"
+        else:
+            extension = ".dat"
+
+        output_name = "%s%s" % (output_name, extension)
+
+        if self._output_path:
+            if os.path.isdir(self._output_path):
+                basename = os.path.basename(output_name)
+                outpath = os.path.join(self._output_path, basename)
+            else:
+                outpath = os.path.abspath(self._output_path)
+        else:
+            outpath = output_name
+        self._writer = DefaultAiWriter(outpath, engine)
+        self._writer.init(fai_cfg=self._fai_cfg, lima_cfg=self._lima_cfg)
+
+    def write(self, data):
+        self._writer.write(data)
+        self._writer.close()
+        self._writer = None
 
 
 def process(input_data, output, config, monitor_name, observer):
@@ -312,11 +464,11 @@ def process(input_data, output, config, monitor_name, observer):
         observer.worker_initialized(worker)
 
     # Skip invalide data
-    inputData = InputData()
+    source = DataSource()
     for item in input_data:
         if isinstance(item, six.string_types):
             if os.path.isfile(item):
-                inputData.append(item)
+                source.append(item)
             else:
                 if "::" in item:
                     try:
@@ -324,115 +476,63 @@ def process(input_data, output, config, monitor_name, observer):
                         # It's low cost with HDF5
                         with fabio.open(item):
                             pass
-                        inputData.append(item)
+                        source.append(item)
                     except Exception:
                         logger.warning("File %s do not exists. File ignored.", item)
                 else:
                     logger.warning("File %s do not exists. File ignored.", item)
         elif isinstance(item, fabio.fabioimage.FabioImage):
-            inputData.append(item)
+            source.append(item)
         elif isinstance(item, numpy.ndarray):
-            inputData.append(item)
+            source.append(item)
         else:
             logger.warning("Type %s unsopported. Data ignored.", item)
 
     if observer is not None:
-        observer.processing_started(inputData.count())
+        observer.processing_started(source.count())
 
-    # Integrate files one by one
-    for iitem, item in inputData.items():
+    writer = None
+    if output:
+        if os.path.isdir(output):
+            writer = MultiFileWriter(output)
+        elif output.endswith(".h5") or output.endswith(".hdf5"):
+            writer = HDF5Writer(output)
+        else:
+            output_path = os.path.abspath(output)
+            writer = MultiFileWriter(output_path)
+    else:
+        if source.is_single_multiframe():
+            basename = os.path.splitext(source.basename())[0]
+            output_filename = "%s_pyFAI.h5" % basename
+            writer = HDF5Writer(output_filename)
+        else:
+            output_path = os.path.abspath(".")
+            writer = MultiFileWriter(None)
+
+    writer.init(fai_cfg=config)
+
+    # Integrate all the provided frames one by one
+    for data_info in source.frames():
         logger.debug("Processing %s", item)
 
-        # TODO rework it as source
-        if isinstance(item, six.string_types):
-            kind = "filename"
-            fabio_image = fabio.open(item)
-            filename = fabio_image.filename
-            multiframe = fabio_image.nframes > 1
-        elif isinstance(item, fabio.fabioimage.FabioImage):
-            kind = "fabio-image"
-            fabio_image = item
-            multiframe = fabio_image.nframes > 1
-            filename = fabio_image.filename
-        elif isinstance(item, numpy.ndarray):
-            kind = "numpy-array"
-            filename = None
-            fabio_image = None
-            multiframe = False
-
         if observer is not None:
-            observer.processing_data(iitem + 1, filename=filename)
+            observer.processing_data(data_info)
 
-        if filename:
-            output_name = os.path.splitext(filename)[0]
+        if data_info.fabio_image is not None:
+            normalization_factor = get_monitor_value(data_info.fabio_image, monitor_name)
         else:
-            output_name = "array_%d" % iitem
+            normalization_factor = 1.0
 
-        if multiframe:
-            extension = "_pyFAI.h5"
-        else:
-            if worker.do_2D():
-                extension = ".azim"
-            else:
-                extension = ".dat"
-        output_name = "%s%s" % (output_name, extension)
+        if hasattr(writer, "prepare_write"):
+            writer.prepare_write(data_info, engine=worker.ai)
 
-        if output:
-            if os.path.isdir(output):
-                basename = os.path.basename(output_name)
-                outpath = os.path.join(output, basename)
-            else:
-                outpath = os.path.abspath(output)
-        else:
-            outpath = output_name
-
-        if fabio_image is None:
-            if item.ndim == 3:
-                writer = HDF5Writer(outpath)
-                writer.init(fai_cfg=config)
-                for iframe, data in enumerate(item):
-                    result = worker.process(data=data,
-                                            writer=writer)
-                    if observer is not None:
-                        if observer.is_interruption_requested():
-                            break
-                        observer.data_result(iitem, result)
-            else:
-                data = item
-                writer = DefaultAiWriter(outpath, worker.ai)
-                result = worker.process(data=data,
-                                        writer=writer)
-                if observer is not None:
-                    observer.data_result(iitem, result)
-        else:
-            if multiframe:
-                writer = HDF5Writer(outpath, append_frames=True)
-                writer.init(fai_cfg=config)
-
-                for iframe in range(fabio_image.nframes):
-                    fimg = fabio_image.getframe(iframe)
-                    normalization_factor = get_monitor_value(fimg, monitor_name)
-                    data = fimg.data
-                    result = worker.process(data=data,
-                                            metadata=fimg.header,
-                                            normalization_factor=normalization_factor,
-                                            writer=writer)
-                    if observer is not None:
-                        if observer.is_interruption_requested():
-                            break
-                        observer.data_result(iitem, result)
-                writer.close()
-            else:
-                writer = DefaultAiWriter(outpath, worker.ai)
-
-                normalization_factor = get_monitor_value(fabio_image, monitor_name)
-                data = fabio_image.data
-                result = worker.process(data,
-                                        normalization_factor=normalization_factor,
-                                        writer=writer)
-                if observer is not None:
-                    observer.data_result(iitem, result)
-                writer.close()
+        result = worker.process(data=data_info.data,
+                                normalization_factor=normalization_factor,
+                                writer=writer)
+        if observer is not None:
+            if observer.is_interruption_requested():
+                break
+            observer.data_result(data_info, result)
 
         if observer is not None:
             if observer.is_interruption_requested():
