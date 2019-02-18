@@ -45,58 +45,9 @@ logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 
 import pyFAI.utils.shell
+from pyFAI.utils import logging_utils
 import pyFAI.utils.stringutil
 from pyFAI import average
-
-
-class PrePostEmitStreamHandler(logging.Handler):
-    """Handler to allow to hook a function before and after the emit function.
-
-    The main logging feature is delegated to a sub handler.
-    """
-
-    def __init__(self, handler):
-        self._handler = handler
-
-    def emit(self, record):
-        """
-        Call pre_emit function then delegate the emit to the sub handler.
-
-        :type record: logging.LogRecord
-        """
-        self.pre_emit()
-        self._handler.emit(record)
-        self.post_emit()
-
-    def __getattr__(self, attr):
-        """Reach the attribute from the sub handler and cache it to the current
-        object"""
-        value = getattr(self._handler, attr)
-        setattr(self, attr, value)
-        return value
-
-    def pre_emit(self):
-        pass
-
-    def post_emit(self):
-        pass
-
-
-def set_prepost_emit_callback(logger, pre_callback, post_callback):
-    """Patch the logging system to have a working progress bar without glitch.
-    pyFAI define a default handler then we have to rework it"""
-    # assume there is a logger
-    assert(len(logger.handlers) == 1)
-    root_handler = logger.handlers[0]
-    logger.removeHandler(root_handler)
-    # use our custom handler
-    handler = PrePostEmitStreamHandler(root_handler)
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
-    if pre_callback:
-        handler.pre_emit = pre_callback
-    if post_callback:
-        handler.post_emit = post_callback
 
 
 def parse_algorithms(options):
@@ -284,7 +235,7 @@ def main():
         observer = ShellAverageObserver()
         # clean up the progress bar before displaying a log
         root_logger = logging.getLogger()
-        set_prepost_emit_callback(root_logger, observer.clear, None)
+        logging_utils.set_prepost_emit_callback(root_logger, observer.clear, None)
     else:
         observer = None
 
