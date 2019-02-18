@@ -97,6 +97,13 @@ class TestIntegrateApp(unittest.TestCase):
             json.dump(data, fp)
         return path
 
+    def create_h5_cube_file(self, filename, datapath, data):
+        path = os.path.join(self.tempDir, filename)
+        h5 = h5py.File(path)
+        h5[datapath] = numpy.array(data)
+        h5.close()
+        return path
+
     def test_path(self):
         path = os.path.join(self.tempDir)
         return path
@@ -198,6 +205,18 @@ class TestIntegrateApp(unittest.TestCase):
         options.json = self.create_json()
         options.output = os.path.join(self.test_path(), "result.h5")
         pyFAI.app.integrate.integrate_shell(options, [file1, file2])
+        self.assertTrue(os.path.exists(options.output))
+        h5 = h5py.File(options.output, mode="r")
+        self.assertIsNotNone(h5)
+        self.assertEquals(h5["data/integrate/results/data"].shape[0], 4)
+
+    def test_h5_to_h5(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        file1 = self.create_h5_cube_file("data.h5", "image/data", [data, data, data, data])
+        options.json = self.create_json()
+        options.output = os.path.join(self.test_path(), "result.h5")
+        pyFAI.app.integrate.integrate_shell(options, [file1 + "::image/data"])
         self.assertTrue(os.path.exists(options.output))
         h5 = h5py.File(options.output, mode="r")
         self.assertIsNotNone(h5)
