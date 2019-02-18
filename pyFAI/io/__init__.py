@@ -152,6 +152,8 @@ class Writer(object):
         """
         Constructor of the class
         """
+        # FIXME: Writer interface should have no constructor arguments
+        #     (that's specific to each writers)
         self.filename = filename
         if filename is not None and os.path.exists(filename):
             logger.warning("Destination file %s exists", filename)
