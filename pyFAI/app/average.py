@@ -82,21 +82,21 @@ class PrePostEmitStreamHandler(logging.Handler):
         pass
 
 
-def patch_logging_handler(callback):
+def set_prepost_emit_callback(logger, pre_callback, post_callback):
     """Patch the logging system to have a working progress bar without glitch.
     pyFAI define a default handler then we have to rework it"""
-    # remove the default logging handler
-    # it can come from pyFAI.__init__
-    root_logger = logging.getLogger()
     # assume there is a logger
-    assert(len(root_logger.handlers) == 1)
-    root_handler = root_logger.handlers[0]
-    root_logger.removeHandler(root_handler)
+    assert(len(logger.handlers) == 1)
+    root_handler = logger.handlers[0]
+    logger.removeHandler(root_handler)
     # use our custom handler
     handler = PrePostEmitStreamHandler(root_handler)
-    root_logger.addHandler(handler)
-    root_logger.setLevel(logging.INFO)
-    handler.pre_emit = callback
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+    if pre_callback:
+        handler.pre_emit = pre_callback
+    if post_callback:
+        handler.post_emit = post_callback
 
 
 def parse_algorithms(options):
@@ -283,7 +283,8 @@ def main():
     if options.verbose is not False:
         observer = ShellAverageObserver()
         # clean up the progress bar before displaying a log
-        patch_logging_handler(observer.clear)
+        root_logger = logging.getLogger()
+        set_prepost_emit_callback(root_logger, observer.clear, None)
     else:
         observer = None
 
