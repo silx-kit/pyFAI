@@ -496,7 +496,7 @@ def process(input_data, output, config, monitor_name, observer):
         if os.path.isdir(output):
             writer = MultiFileWriter(output)
         elif output.endswith(".h5") or output.endswith(".hdf5"):
-            writer = HDF5Writer(output)
+            writer = HDF5Writer(output, append_frames=True)
         else:
             output_path = os.path.abspath(output)
             writer = MultiFileWriter(output_path)
@@ -504,7 +504,7 @@ def process(input_data, output, config, monitor_name, observer):
         if source.is_single_multiframe():
             basename = os.path.splitext(source.basename())[0]
             output_filename = "%s_pyFAI.h5" % basename
-            writer = HDF5Writer(output_filename)
+            writer = HDF5Writer(output_filename, append_frames=True)
         else:
             output_path = os.path.abspath(".")
             writer = MultiFileWriter(None)
