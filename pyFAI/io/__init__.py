@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/02/2019"
+__date__ = "18/02/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -489,9 +489,13 @@ class DefaultAiWriter(Writer):
         :param filename: name of the output file
         :param ai: integrator, should provide make_headers method.
         """
+        super(DefaultAiWriter, self).__init__(filename, engine)
         self._filename = filename
         self._engine = engine
         self._already_written = False
+
+    def init(self, fai_cfg=None, lima_cfg=None):
+        pass
 
     def set_filename(self, filename):
         """
