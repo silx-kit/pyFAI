@@ -33,6 +33,7 @@ import fabio
 import unittest
 import numpy
 import shutil
+import h5py
 
 import pyFAI.app.integrate
 from .utilstest import UtilsTest
@@ -68,7 +69,12 @@ class TestIntegrateApp(unittest.TestCase):
 
     def create_edf_file(self, filename, data, header={}):
         path = os.path.join(self.tempDir, filename)
-        image = fabio.edfimage.EdfImage(data=data, header=header)
+        if isinstance(data, list):
+            image = fabio.edfimage.EdfImage(data=data[0], header=header)
+            for d in data[1:]:
+                image.appendFrame(data=d, header=header)
+        else:
+            image = fabio.edfimage.EdfImage(data=data, header=header)
         image.save(path)
         return path
 
@@ -158,6 +164,44 @@ class TestIntegrateApp(unittest.TestCase):
         pyFAI.app.integrate.integrate_shell(options, [datapath])
         result = numpy.loadtxt(self.get_path("data.dat"))
         numpy.testing.assert_almost_equal(result, expected, decimal=1)
+
+    def test_fileseries_to_h5(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        file1 = self.create_edf_file("data1.edf", data)
+        file2 = self.create_edf_file("data2.edf", data)
+        options.json = self.create_json()
+        options.output = os.path.join(self.test_path(), "result.h5")
+        pyFAI.app.integrate.integrate_shell(options, [file1, file2])
+        self.assertTrue(os.path.exists(options.output))
+        h5 = h5py.File(options.output, mode="r")
+        self.assertIsNotNone(h5)
+        self.assertEquals(h5["data/integrate/results/data"].shape[0], 2)
+
+    def test_multiframes_to_h5(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        file1 = self.create_edf_file("data1.edf", [data, data])
+        options.json = self.create_json()
+        options.output = os.path.join(self.test_path(), "result.h5")
+        pyFAI.app.integrate.integrate_shell(options, [file1])
+        self.assertTrue(os.path.exists(options.output))
+        h5 = h5py.File(options.output, mode="r")
+        self.assertIsNotNone(h5)
+        self.assertEquals(h5["data/integrate/results/data"].shape[0], 2)
+
+    def test_multiframes_fileseries_to_h5(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        file1 = self.create_edf_file("data1.edf", [data, data])
+        file2 = self.create_edf_file("data2.edf", [data, data])
+        options.json = self.create_json()
+        options.output = os.path.join(self.test_path(), "result.h5")
+        pyFAI.app.integrate.integrate_shell(options, [file1, file2])
+        self.assertTrue(os.path.exists(options.output))
+        h5 = h5py.File(options.output, mode="r")
+        self.assertIsNotNone(h5)
+        self.assertEquals(h5["data/integrate/results/data"].shape[0], 4)
 
 
 class _ResultObserver(pyFAI.app.integrate.IntegrationObserver):
