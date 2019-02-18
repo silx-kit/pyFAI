@@ -30,7 +30,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2017"
+__date__ = "18/02/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -67,6 +67,8 @@ class ProgressBar:
         self.max_value = max_value
         self.bar_width = bar_width
         self.last_size = 0
+        self._message = ""
+        self._value = 0.0
 
         encoding = None
         if hasattr(sys.stdout, "encoding"):
@@ -94,6 +96,12 @@ class ProgressBar:
         sys.stdout.write('\r' + " " * self.last_size + "\r")
         sys.stdout.flush()
 
+    def display(self):
+        """
+        Display the progress bar to stdout
+        """
+        self.update(self._value, self._message)
+
     def update(self, value, message=""):
         """
         Update the progrss bar with the progress bar's current value.
@@ -108,6 +116,9 @@ class ProgressBar:
         :param message: message displayed after the progress bar
         :type message: str
         """
+        self._message = message
+        self._value = value
+
         coef = (1.0 * value) / self.max_value
         percent = round(coef * 100)
         bar_position = int(coef * self.bar_width)
