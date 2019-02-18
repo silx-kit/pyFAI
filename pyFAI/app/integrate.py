@@ -57,6 +57,7 @@ import pyFAI.io
 from pyFAI.io import DefaultAiWriter
 from pyFAI.io import HDF5Writer
 from pyFAI.utils.shell import ProgressBar
+from pyFAI.utils import logging_utils
 from pyFAI import average
 
 from argparse import ArgumentParser
@@ -261,6 +262,15 @@ class ShellIntegrationObserver(IntegrationObserver):
 
     def processing_finished(self):
         self._progress_bar.clear()
+        self._progress_bar = None
+
+    def hide_info(self):
+        if self._progress_bar is not None:
+            self._progress_bar.clear()
+
+    def show_info(self):
+        if self._progress_bar is not None:
+            self._progress_bar.display()
 
 
 DataInfo = collections.namedtuple("DataInfo", "source source_id frame_id fabio_image data_id data header source_filename")
@@ -555,6 +565,10 @@ def integrate_shell(options, args):
         config = json.load(f)
 
     observer = ShellIntegrationObserver()
+    root_logger = logging.getLogger()
+    logging_utils.set_prepost_emit_callback(root_logger,
+                                            observer.hide_info,
+                                            observer.show_info)
     monitor_name = options.monitor_key
     filenames = args
     output = options.output
