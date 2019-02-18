@@ -166,9 +166,13 @@ class ShellAverageObserver(average.AverageObserver):
     def process_finished(self):
         pass
 
-    def clear(self):
+    def hide_info(self):
         if self.__bar is not None:
             self.__bar.clear()
+
+    def show_info(self):
+        if self.__bar is not None:
+            self.__bar.display()
 
 
 def main():
@@ -235,7 +239,9 @@ def main():
         observer = ShellAverageObserver()
         # clean up the progress bar before displaying a log
         root_logger = logging.getLogger()
-        logging_utils.set_prepost_emit_callback(root_logger, observer.clear, None)
+        logging_utils.set_prepost_emit_callback(root_logger,
+                                                observer.hide_info,
+                                                observer.show_info)
     else:
         observer = None
 
