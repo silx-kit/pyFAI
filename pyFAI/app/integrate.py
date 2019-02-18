@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2019"
+__date__ = "18/02/2019"
 __satus__ = "production"
 
 import sys
@@ -260,6 +260,23 @@ class ShellIntegrationObserver(IntegrationObserver):
         self._progress_bar.clear()
 
 
+class InputData(object):
+    """Data access to frames of the input data."""
+
+    def __init__(self):
+        self._items = []
+
+    def append(self, item):
+        self._items.append(item)
+
+    def count(self):
+        return len(self._items)
+
+    def items(self):
+        for item in self._items:
+            yield item
+
+
 def process(input_data, output, config, monitor_name, observer):
     """
     Integrate a set of data.
@@ -295,32 +312,35 @@ def process(input_data, output, config, monitor_name, observer):
         observer.worker_initialized(worker)
 
     # Skip invalide data
-    valid_data = []
+    inputData = InputData()
     for item in input_data:
         if isinstance(item, six.string_types):
             if os.path.isfile(item):
-                valid_data.append(item)
+                inputData.append(item)
             else:
                 if "::" in item:
                     try:
-                        fabio.open(item)
-                        valid_data.append(item)
+                        # Only check that we can open the file
+                        # It's low cost with HDF5
+                        with fabio.open(item):
+                            pass
+                        inputData.append(item)
                     except Exception:
                         logger.warning("File %s do not exists. File ignored.", item)
                 else:
                     logger.warning("File %s do not exists. File ignored.", item)
         elif isinstance(item, fabio.fabioimage.FabioImage):
-            valid_data.append(item)
+            inputData.append(item)
         elif isinstance(item, numpy.ndarray):
-            valid_data.append(item)
+            inputData.append(item)
         else:
             logger.warning("Type %s unsopported. Data ignored.", item)
 
     if observer is not None:
-        observer.processing_started(len(valid_data))
+        observer.processing_started(inputData.count())
 
     # Integrate files one by one
-    for iitem, item in enumerate(valid_data):
+    for iitem, item in inputData.items():
         logger.debug("Processing %s", item)
 
         # TODO rework it as source
