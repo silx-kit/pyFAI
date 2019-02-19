@@ -4,56 +4,64 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility,
+#                            Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-#
-#  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
-#  in the Software without restriction, including without limitation the rights
-#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#  copies of the Software, and to permit persons to whom the Software is
+#  Permission is hereby granted, free of charge, to any person
+#  obtaining a copy of this software and associated documentation
+#  files (the "Software"), to deal in the Software without
+#  restriction, including without limitation the rights to use, copy,
+#  modify, merge, publish, distribute, sublicense, and/or sell copies
+#  of the Software, and to permit persons to whom the Software is
 #  furnished to do so, subject to the following conditions:
 #  .
 #  The above copyright notice and this permission notice shall be included in
 #  all copies or substantial portions of the Software.
 #  .
-#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#  THE SOFTWARE.
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+#  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+#  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+#  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+#  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+#  ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+#  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#  SOFTWARE.
 
-"""
-Description of the `imXPAD <http://www.imxpad.com/>`_ detectors.
-"""
+from __future__ import (print_function, division, absolute_import,
+                        with_statement)
 
-from __future__ import print_function, division, absolute_import, with_statement
-
-__author__ = "Jerome Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/01/2019"
-__status__ = "production"
-
-import functools
-import numpy
 import json
-from ._common import Detector
-from pyFAI.utils import mathutil
-
 import logging
-logger = logging.getLogger(__name__)
+import math
+import numpy
 
+from collections import OrderedDict, namedtuple
+from numpy import ndarray  # noqa for mypy
+
+from pyFAI.utils import mathutil
+from ._common import Detector
+from ..ext import _geometry
+
+logger = logging.getLogger(__name__)
 
 try:
     from ..ext import bilinear
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     bilinear = None
+
+
+"""
+Description of the `imXPAD <http://www.imxpad.com/>`_ detectors.
+"""
+
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "28/01/2019"
+__status__ = "production"
 
 
 class ImXPadS10(Detector):
@@ -97,9 +105,12 @@ class ImXPadS10(Detector):
         # size[-1] = 1.0
         return pixel_size * size
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
-        self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
+    def __init__(self, pixel1=130e-6, pixel2=130e-6,
+                 max_shape=None, module_size=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2,
+                          max_shape=max_shape)
+        self._pixel_edges = None  # array of size max_shape+1: pixels
+                                  # are contiguous # noqa
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
@@ -114,8 +125,12 @@ class ImXPadS10(Detector):
         Calculate the position of the pixel edges
         """
         if self._pixel_edges is None:
-            pixel_size1 = self._calc_pixels_size(self.max_shape[0], self.module_size[0], self.PIXEL_SIZE[0])
-            pixel_size2 = self._calc_pixels_size(self.max_shape[1], self.module_size[1], self.PIXEL_SIZE[1])
+            pixel_size1 = self._calc_pixels_size(self.max_shape[0],
+                                                 self.module_size[0],
+                                                 self.PIXEL_SIZE[0])
+            pixel_size2 = self._calc_pixels_size(self.max_shape[1],
+                                                 self.module_size[1],
+                                                 self.PIXEL_SIZE[1])
             pixel_edges1 = numpy.zeros(self.max_shape[0] + 1)
             pixel_edges2 = numpy.zeros(self.max_shape[1] + 1)
             pixel_edges1[1:] = numpy.cumsum(pixel_size1)
@@ -142,19 +157,22 @@ class ImXPadS10(Detector):
         return mask.astype(numpy.int8)
 
     def get_pixel_corners(self, d1=None, d2=None):
-        """
-        Calculate the position of the corner of the pixels
+        """Calculate the position of the corner of the pixels
 
-        This should be overwritten by class representing non-contiguous detector (Xpad, ...)
+        This should be overwritten by class representing
+        non-contiguous detector (Xpad, ...)
 
-        Precision float32 is ok: precision of 1µm for a detector size of 1m
+        Precision float32 is ok: precision of 1µm for a detector size
+        of 1m
 
 
         :return:  4D array containing:
                     pixel index (slow dimension)
                     pixel index (fast dimension)
-                    corner index (A, B, C or D), triangles or hexagons can be handled the same way
-                    vertex position (z,y,x)
+                    corner index (A, B, C or D), triangles or hexagons
+                    can be handled the same way vertex position
+                    (z,y,x)
+
         """
 
         if self._pixel_corners is None:
@@ -164,7 +182,9 @@ class ImXPadS10(Detector):
                     p1 = mathutil.expand2d(edges1, self.shape[1] + 1, False)
                     p2 = mathutil.expand2d(edges2, self.shape[0] + 1, True)
                     # p3 = None
-                    self._pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+                    self._pixel_corners = numpy.zeros((self.shape[0],
+                                                       self.shape[1], 4, 3),
+                                                      dtype=numpy.float32)
                     self._pixel_corners[:, :, 0, 1] = p1[:-1, :-1]
                     self._pixel_corners[:, :, 0, 2] = p2[:-1, :-1]
                     self._pixel_corners[:, :, 1, 1] = p1[1:, :-1]
@@ -181,7 +201,8 @@ class ImXPadS10(Detector):
                     #     self._pixel_corners[:, :, 3, 0] = p3[:-1, 1:]
         return self._pixel_corners
 
-    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
+    def calc_cartesian_positions(self, d1=None, d2=None,
+                                 center=True, use_cython=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
         and in meter of a couple of coordinates.
@@ -217,8 +238,10 @@ class ImXPadS10(Detector):
                 # Not +=: do not mangle in place arrays
                 d1 = d1 + 0.5
                 d2 = d2 + 0.5
-            p1 = numpy.interp(d1, numpy.arange(self.max_shape[0] + 1), edges1, edges1[0], edges1[-1])
-            p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
+            p1 = numpy.interp(d1, numpy.arange(self.max_shape[0] + 1),
+                              edges1, edges1[0], edges1[-1])
+            p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1),
+                              edges2, edges2[0], edges2[-1])
         return p1, p2, None
 
     def get_config(self):
@@ -232,7 +255,7 @@ class ImXPadS10(Detector):
                 (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
             dico["max_shape"] = self.max_shape
         if ((self.module_size is not None) and
-                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
+                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):  # noqa
             dico["module_size"] = self.module_size
         return dico
 
@@ -271,7 +294,9 @@ class ImXPadS70(ImXPadS10):
     BORDER_SIZE_RELATIVE = 2.5
     force_pixel = True
     aliases = ["Imxpad S70"]
-    PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
+
+    # array of size max_shape+1: pixels are contiguous
+    PIXEL_EDGES = None  # type: ndarray
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -307,8 +332,10 @@ class Xpad_flat(ImXPadS10):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6,
+                 max_shape=None, module_size=None):
+        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2,
+                                        max_shape=max_shape)
         self._pixel_corners = None
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
@@ -316,16 +343,20 @@ class Xpad_flat(ImXPadS10):
             self.module_size = module_size
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+        return "Detector %s\t PixelSize= %.3e, %.3e m" %\
+            (self.name, self.pixel1, self.pixel2)
 
     def calc_pixels_edges(self):
-        """
-        Calculate the position of the pixel edges, specific to the S540, d5 detector
+        """Calculate the position of the pixel edges, specific to the S540, d5
+        detector
         """
         if self._pixel_edges is None:
-            # all pixel have the same size along the vertical axis, some pixels are larger along the horizontal one
+            # all pixel have the same size along the vertical axis,
+            # some pixels are larger along the horizontal one
             pixel_size1 = numpy.ones(self.max_shape[0]) * self._pixel1
-            pixel_size2 = self._calc_pixels_size(self.max_shape[1], self.module_size[1], self._pixel2)
+            pixel_size2 = self._calc_pixels_size(self.max_shape[1],
+                                                 self.module_size[1],
+                                                 self._pixel2)
             pixel_edges1 = numpy.zeros(self.max_shape[0] + 1)
             pixel_edges2 = numpy.zeros(self.max_shape[1] + 1)
             pixel_edges1[1:] = numpy.cumsum(pixel_size1)
@@ -343,17 +374,18 @@ class Xpad_flat(ImXPadS10):
             raise NotImplementedError("Generic Xpad detector does not"
                                       " know the max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
+        # working in dim0 = Y
         for i in range(0, self.max_shape[0], self.module_size[0]):
             mask[i, :] = 1
             mask[i + self.module_size[0] - 1, :] = 1
-        # workinng in dim1 = X
+        # working in dim1 = X
         for i in range(0, self.max_shape[1], self.module_size[1]):
             mask[:, i] = 1
             mask[:, i + self.module_size[1] - 1] = 1
         return mask
 
-    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
+    def calc_cartesian_positions(self, d1=None, d2=None,
+                                 center=True, use_cython=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
         and in meter of a couple of coordinates.
@@ -374,15 +406,22 @@ class Xpad_flat(ImXPadS10):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                d1 = mathutil.expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = mathutil.expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+                d1 = mathutil.expand2d(
+                    numpy.arange(self.shape[0]).astype(numpy.float32),
+                    self.shape[1], False)
+                d2 = mathutil.expand2d(
+                    numpy.arange(self.shape[1]).astype(numpy.float32),
+                    self.shape[0], True)
         corners = self.get_pixel_corners()
         if center:
-            # note += would make an increment in place which is bad (segfault !)
+            # note += would make an increment in place which is bad
+            # (segfault !)
             d1 = d1 + 0.5
             d2 = d2 + 0.5
         if bilinear and use_cython:
-            p1, p2, _p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+            p1, p2, _p3 = bilinear.calc_cartesian_positions(d1.ravel(),
+                                                            d2.ravel(),
+                                                            corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
         else:
@@ -417,20 +456,23 @@ class Xpad_flat(ImXPadS10):
         return p1, p2, None
 
     def get_pixel_corners(self):
-        """
-        Calculate the position of the corner of the pixels
+        """Calculate the position of the corner of the pixels
 
         :return:  4D array containing:
-                    pixel index (slow dimension)
-                    pixel index (fast dimension)
-                    corner index (A, B, C or D), triangles or hexagons can be handled the same way
-                    vertex position (z,y,x)
+                    - pixel index (slow dimension)
+                    - pixel index (fast dimension)
+                    - corner index (A, B, C or D), triangles or
+                      hexagons can be handled the same way
+                    - vertex position (z,y,x)
+
         """
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
                     pixel_size1 = numpy.ones(self.max_shape[0]) * self._pixel1
-                    pixel_size2 = self._calc_pixels_size(self.max_shape[1], self.module_size[1], self._pixel2)
+                    pixel_size2 = self._calc_pixels_size(self.max_shape[1],
+                                                         self.module_size[1],
+                                                         self._pixel2)
                     # half pixel offset
                     pixel_center1 = pixel_size1 / 2.0  # half pixel offset
                     pixel_center2 = pixel_size2 / 2.0
@@ -439,11 +481,13 @@ class Xpad_flat(ImXPadS10):
                     pixel_center2[1:] += numpy.cumsum(pixel_size2[:-1])
                     # gaps
                     for i in range(self.max_shape[0] // self.module_size[0]):
-                        pixel_center1[i * self.module_size[0]:
-                                      (i + 1) * self.module_size[0]] += i * self.MODULE_GAP[0]
+                        y = i * self.module_size[0]
+                        x = (i + 1) * self.module_size[0]
+                        pixel_center1[y, x] += i * self.MODULE_GAP[0]
                     for i in range(self.max_shape[1] // self.module_size[1]):
-                        pixel_center2[i * self.module_size[1]:
-                                      (i + 1) * self.module_size[1]] += i * self.MODULE_GAP[1]
+                        y = i * self.module_size[1]
+                        x = (i + 1) * self.module_size[1]
+                        pixel_center2[y, x] += i * self.MODULE_GAP[1]
 
                     pixel_center1.shape = -1, 1
                     pixel_center1.strides = pixel_center1.strides[0], 0
@@ -457,7 +501,8 @@ class Xpad_flat(ImXPadS10):
                     pixel_size2.shape = 1, -1
                     pixel_size2.strides = 0, pixel_size2.strides[1]
 
-                    corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+                    corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3),
+                                          dtype=numpy.float32)
                     corners[:, :, 0, 1] = pixel_center1 - pixel_size1 / 2.0
                     corners[:, :, 0, 2] = pixel_center2 - pixel_size2 / 2.0
                     corners[:, :, 1, 1] = pixel_center1 + pixel_size1 / 2.0
@@ -470,18 +515,39 @@ class Xpad_flat(ImXPadS10):
         return self._pixel_corners
 
 
-class Cirpad(ImXPadS10):
-    MAX_SHAPE = (11200, 120)
+class _CirpadModule(ImXPadS70):
+    """
+    ImXPad detector: ImXPad s70 detector with 1x7modules
+    """
+    MODULE_SIZE = (80, 120)  # number of pixels per module (y, x)
+    MAX_SHAPE = (560, 120)  # max size of the detector
+    PIXEL_SIZE = (130e-6, 130e-6)
+    BORDER_SIZE_RELATIVE = 2.5
+    force_pixel = True
+    aliases = ["CirpadModule"]
+
+    # array of size max_shape+1: pixels are contiguous
+    PIXEL_EDGES = None  # type: ndarray
+
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        super(_CirpadModule, self).__init__(pixel1=pixel1, pixel2=pixel2)
+
+
+CirpadCalib = namedtuple("CirpadCalib", "dest poni1 poni2 rot1 rot2 rot3")
+
+
+class Cirpad(Detector):
+    MAX_SHAPE = (11200, 120)  # max size of the detector as the 20 detector
     IS_FLAT = False
     IS_CONTIGUOUS = False
     force_pixel = True
     uniform_pixel = False
-    aliases = ["CirPAD", "XCirpad"]
-    MEDIUM_MODULE_SIZE = (560, 120)
-    MODULE_SIZE = (80, 120)  # number of pixels per module (y, x)
+    aliases = ["Cirpad"]
+    MEDIUM_MODULE_SIZE = (560, 120)  # size of one module, as one detector
+    MODULE_SIZE = (80, 120)  # number of pixels per chip (y, x)
     PIXEL_SIZE = (130e-6, 130e-6)
     DIFFERENT_PIXEL_SIZE = 2.5
-    ROT = [0, 0, -6.74]
+    NB_MODULES = 20
 
     # static functions used in order to define the Cirpad
     @staticmethod
@@ -507,23 +573,43 @@ class Cirpad(ImXPadS10):
                  u[1] * u[2] * one_minus_c + u[0] * s,
                  c + u[2] ** 2 * one_minus_c]]
 
-    @staticmethod
-    def _rotation(md, rot):
-        shape = md.shape
-        axe = numpy.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  # A voir si ce n'est pas une entrée
-        P = functools.reduce(numpy.dot, [Cirpad._M(numpy.radians(rot[i]), axe[i]) for i in range(len(rot))])
-        try:
-            nmd = numpy.transpose(numpy.reshape(numpy.tensordot(P, numpy.reshape(numpy.transpose(md), (3, shape[0] * shape[1] * 4)), axes=1), (3, 4, shape[1], shape[0])))
-        except IndexError:
-            nmd = numpy.transpose(numpy.tensordot(P, numpy.transpose(md), axes=1))
-        return(nmd)
+    def _calibs(self):
+        """A calibration with a theoretical CirPAd description.  This
+        calibration can be used as an initial guess for real
+        calibration.
+        """
+        calibs = []  # type: List[CirpadCalib]
+        alpha = math.radians(6.74)
+        d = 0.64234  # center to first module distance
+        m = 0.07514 + 2*0.42e-3 + 5*.13e-3
+        dz = 0.0
+        dy = 0.0
+        calibs = [CirpadCalib(d, 0, 0, 0, 0, 0)]
+        for i in range(1, self.NB_MODULES):
+            dz += m * math.sin((i-1) * alpha)
+            dy += m * math.cos((i-1) * alpha)
+            zi = d - dz
+            yi = dy
+            z = zi * math.cos(i * -alpha) - yi * math.sin(i * -alpha)
+            y = zi * math.sin(i * -alpha) + yi * math.cos(i * -alpha)
+            calibs.append(CirpadCalib(z, -y, 0, 0, i * -alpha, 0))
+        return calibs
 
-    @staticmethod
-    def _translation(md, u):
-        return md + u
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, calibs=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2,
+                          max_shape=self.MAX_SHAPE)
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        if calibs is None:
+            self._calibs = self._calibs()
+        else:
+            self._calibs = calibs
+        self.modules = [_CirpadModule() for i in range(self.NB_MODULES)]
+
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+        :return: dict with param for serialization
+        """
+        return OrderedDict((("calibs", self._calibs)))
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)
@@ -533,56 +619,21 @@ class Cirpad(ImXPadS10):
             size[i * module_size] = self.DIFFERENT_PIXEL_SIZE
         return pixel_size * size
 
-    def _passage(self, corners, rot):
-        shape = corners.shape
-        deltaX, deltaY = 0.0, 0.0
-        nmd = self._rotation(corners, rot)
-        # Size in mm of the chip in the Y direction (including 10px gap)
-        size_Y = ((560.0 + 3 * 6 + 20)*0.13/1000)
-        for i in range(1, int(round(numpy.abs(rot[2])/6.74))):
-            deltaX = deltaX + numpy.sin(numpy.deg2rad(-rot[2] -6.74*(i)))
-        for i in range(int(round(numpy.abs(rot[2])/6.74))):
-            deltaY = deltaY + numpy.cos(numpy.deg2rad(-rot[2] - 6.74*(i+1)))
-        return self._translation(nmd, [size_Y*deltaX,size_Y*deltaY, 0])
-
     def _get_pixel_corners(self):
-        pixel_size1 = self._calc_pixels_size(self.MEDIUM_MODULE_SIZE[0],
-                                             self.MODULE_SIZE[0],
-                                             self.PIXEL_SIZE[0])
-        pixel_size2 = (numpy.ones(self.MEDIUM_MODULE_SIZE[1]) * self.PIXEL_SIZE[1]).astype(numpy.float32)
-        # half pixel offset
-        pixel_center1 = pixel_size1 / 2.0  # half pixel offset
-        pixel_center2 = pixel_size2 / 2.0
-        # size of all preceeding pixels
-        pixel_center1[1:] += numpy.cumsum(pixel_size1[:-1])
-        pixel_center2[1:] += numpy.cumsum(pixel_size2[:-1])
+        corners = self.modules[0].get_pixel_corners()
+        p1 = corners[...,1]
+        p2 = corners[...,2]
+        p3 = corners[...,0]  # 0 is normal here
 
-        pixel_center1.shape = -1, 1
-        pixel_center1.strides = pixel_center1.strides[0], 0
+        # Seeks params for each module of the Cirpad.
+        modules = []  # type: List[_CirpadModule]
+        for calib in self._calibs:
+            zyx = _geometry.calc_pos_zyx(*calib, p1, p2, p3)
+            modules.append(numpy.moveaxis(zyx, 0, -1))
 
-        pixel_center2.shape = 1, -1
-        pixel_center2.strides = 0, pixel_center2.strides[1]
-
-        pixel_size1.shape = -1, 1
-        pixel_size1.strides = pixel_size1.strides[0], 0
-
-        pixel_size2.shape = 1, -1
-        pixel_size2.strides = 0, pixel_size2.strides[1]
-
-        # Position of the first module
-        corners = numpy.zeros((self.MEDIUM_MODULE_SIZE[0], self.MEDIUM_MODULE_SIZE[1], 4, 3), dtype=numpy.float32)
-        corners[:, :, 0, 1] = pixel_center1 - pixel_size1 / 2.0
-        corners[:, :, 0, 2] = pixel_center2 - pixel_size2 / 2.0
-        corners[:, :, 1, 1] = pixel_center1 + pixel_size1 / 2.0
-        corners[:, :, 1, 2] = pixel_center2 - pixel_size2 / 2.0
-        corners[:, :, 2, 1] = pixel_center1 + pixel_size1 / 2.0
-        corners[:, :, 2, 2] = pixel_center2 + pixel_size2 / 2.0
-        corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
-        corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
-
-        modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2] * i]) for i in range(20)]
         result = numpy.concatenate(modules, axis=0)
-        result = numpy.ascontiguousarray(result, result.dtype)
+        result = numpy.ascontiguousarray(result)
+
         return result
 
     def get_pixel_corners(self):
@@ -592,22 +643,30 @@ class Cirpad(ImXPadS10):
                     self._pixel_corners = self._get_pixel_corners()
         return self._pixel_corners
 
-    # TODO !!!
-    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
+    # TODO this method should be identical for all 3D detectors !!!
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True,
+                                 use_cython=True):
         if (d1 is None) or d2 is None:
-            d1 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[0]).astype(numpy.float32), self.MAX_SHAPE[1], False)
-            d2 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[1]).astype(numpy.float32), self.MAX_SHAPE[0], True)
+            d1 = mathutil.expand2d(
+                numpy.arange(self.MAX_SHAPE[0]).astype(numpy.float32),
+                self.MAX_SHAPE[1], False)
+            d2 = mathutil.expand2d(
+                numpy.arange(self.MAX_SHAPE[1]).astype(numpy.float32),
+                self.MAX_SHAPE[0], True)
         corners = self.get_pixel_corners()
         if center:
             # avoid += It modifies in place and segfaults
             d1 = d1 + 0.5
             d2 = d2 + 0.5
         if False and use_cython:
-            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners, is_flat=False)
+            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(),
+                                                           d2.ravel(),
+                                                           corners,
+                                                           is_flat=False)
             p1.shape = d1.shape
             p2.shape = d2.shape
             p3.shape = d2.shape
-        else:  # TODO verifiedA verifier
+        else:  # TODO verified
             i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
             i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
             delta1 = d1 - i1
