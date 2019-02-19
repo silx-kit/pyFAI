@@ -97,11 +97,12 @@ class TestIntegrateApp(unittest.TestCase):
             json.dump(data, fp)
         return path
 
-    def create_h5_cube_file(self, filename, datapath, data):
+    def create_h5_cube_file(self, filename, datapath, data, monitor=None):
         path = os.path.join(self.tempDir, filename)
-        h5 = h5py.File(path)
-        h5[datapath] = numpy.array(data)
-        h5.close()
+        with h5py.File(path) as h5:
+            h5[datapath] = numpy.array(data)
+            if monitor is not None:
+                h5["/monitor/data"] = numpy.array(monitor)
         return path
 
     def test_path(self):
@@ -171,6 +172,28 @@ class TestIntegrateApp(unittest.TestCase):
         pyFAI.app.integrate.integrate_shell(options, [datapath])
         result = numpy.loadtxt(self.get_path("data.dat"))
         numpy.testing.assert_almost_equal(result, expected, decimal=1)
+
+    def test_integrate_with_hdf5_monitor(self):
+        options = self.Options()
+        options.monitor_key = "counter/my_mon"
+        coef = numpy.array([2.0, 4.0, 10.0, -20.0])
+        data = numpy.array([[0, 0], [0, 100], [0, 0]]) * coef.reshape(-1, 1, 1)
+        file1 = self.create_h5_cube_file("data.h5", "image/data",
+                                         data=data,
+                                         monitor=coef)
+        expected = numpy.array([17.0, 26.0, 0.0])
+        options.json = self.create_json()
+        options.monitor_key = "/monitor/data"
+        options.output = os.path.join(self.test_path(), "result.h5")
+
+        pyFAI.app.integrate.integrate_shell(options, [file1 + "::image/data"])
+        self.assertTrue(os.path.exists(options.output))
+        with h5py.File(options.output, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            result = h5["data/integrate/results/data"]
+            self.assertEquals(result.shape[0], 4)
+            for iframe in range(result.shape[0]):
+                numpy.testing.assert_almost_equal(result[iframe], expected, decimal=1)
 
     def test_fileseries_to_h5(self):
         options = self.Options()
