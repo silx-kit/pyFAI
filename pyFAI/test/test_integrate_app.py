@@ -181,9 +181,9 @@ class TestIntegrateApp(unittest.TestCase):
         options.output = os.path.join(self.test_path(), "result.h5")
         pyFAI.app.integrate.integrate_shell(options, [file1, file2])
         self.assertTrue(os.path.exists(options.output))
-        h5 = h5py.File(options.output, mode="r")
-        self.assertIsNotNone(h5)
-        self.assertEquals(h5["data/integrate/results/data"].shape[0], 2)
+        with h5py.File(options.output, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            self.assertEquals(h5["data/integrate/results/data"].shape[0], 2)
 
     def test_multiframes_to_h5(self):
         options = self.Options()
@@ -193,9 +193,9 @@ class TestIntegrateApp(unittest.TestCase):
         options.output = os.path.join(self.test_path(), "result.h5")
         pyFAI.app.integrate.integrate_shell(options, [file1])
         self.assertTrue(os.path.exists(options.output))
-        h5 = h5py.File(options.output, mode="r")
-        self.assertIsNotNone(h5)
-        self.assertEquals(h5["data/integrate/results/data"].shape[0], 2)
+        with h5py.File(options.output, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            self.assertEquals(h5["data/integrate/results/data"].shape[0], 2)
 
     def test_multiframes_fileseries_to_h5(self):
         options = self.Options()
@@ -206,9 +206,9 @@ class TestIntegrateApp(unittest.TestCase):
         options.output = os.path.join(self.test_path(), "result.h5")
         pyFAI.app.integrate.integrate_shell(options, [file1, file2])
         self.assertTrue(os.path.exists(options.output))
-        h5 = h5py.File(options.output, mode="r")
-        self.assertIsNotNone(h5)
-        self.assertEquals(h5["data/integrate/results/data"].shape[0], 4)
+        with h5py.File(options.output, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            self.assertEquals(h5["data/integrate/results/data"].shape[0], 4)
 
     def test_h5_to_h5(self):
         options = self.Options()
@@ -218,9 +218,9 @@ class TestIntegrateApp(unittest.TestCase):
         options.output = os.path.join(self.test_path(), "result.h5")
         pyFAI.app.integrate.integrate_shell(options, [file1 + "::image/data"])
         self.assertTrue(os.path.exists(options.output))
-        h5 = h5py.File(options.output, mode="r")
-        self.assertIsNotNone(h5)
-        self.assertEquals(h5["data/integrate/results/data"].shape[0], 4)
+        with h5py.File(options.output, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            self.assertEquals(h5["data/integrate/results/data"].shape[0], 4)
 
 
 class _ResultObserver(pyFAI.app.integrate.IntegrationObserver):
