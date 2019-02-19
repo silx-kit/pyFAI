@@ -106,6 +106,45 @@ def _get_monitor_value_from_edf(image, monitor_key):
     return monitor
 
 
+def _get_monitor_value_from_hdf5(image, monitor_key):
+    """Return the monitor value from an HDF5 image using an header key.
+
+    The monotor_key is a path from the image path containing:
+
+    - A dataset containing a scalar (a constant monitor)
+    - A dataset containing a vector of values (it must containes enougth values
+        than the amount of frames)
+
+    :param fabio.fabioimage.FabioImage image: Image containing the header
+    :param str monitor_key: Key identify the path of the monitor
+    :return: returns the monitor else raise a MonitorNotFound
+    :rtype: float
+    :raise MonitorNotFound: when the expected monitor is not found on the
+        header
+    """
+    if monitor_key not in image.hdf5:
+        raise MonitorNotFound("Monitor path '%s' not found" % (monitor_key))
+
+    monitor_dataset = image.hdf5[monitor_key]
+    if not hasattr(monitor_dataset, "dtype"):
+        raise MonitorNotFound("Monitor path '%s' is not a datatset" % (monitor_key))
+
+    if monitor_dataset.dtype.kind not in "fiu":
+        raise MonitorNotFound("Monitor path '%s' does not contain a numerical value" % (monitor_key))
+
+    if monitor_dataset.shape == tuple():
+        # A constant monitor
+        return monitor_dataset[()]
+
+    if len(monitor_dataset.shape) != 1:
+        raise MonitorNotFound("Monitor path '%s' expect a vector of values" % (monitor_key))
+
+    if image.currentframe >= monitor_dataset.size:
+        raise MonitorNotFound("Monitor path '%s' does not provide enougth values" % (monitor_key))
+
+    return monitor_dataset[image.currentframe]
+
+
 def get_monitor_value(image, monitor_key):
     """Return the monitor value from an image using an header key.
 
@@ -123,5 +162,7 @@ def get_monitor_value(image, monitor_key):
         return _get_monitor_value_from_edf(image, monitor_key)
     elif isinstance(image, fabio.numpyimage.NumpyImage):
         return _get_monitor_value_from_edf(image, monitor_key)
+    elif isinstance(image, fabio.hdf5image.Hdf5Image):
+        return _get_monitor_value_from_hdf5(image, monitor_key)
     else:
         raise Exception("File format '%s' unsupported" % type(image))
