@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "19/02/2019"
 
 import unittest
 import numpy
@@ -217,72 +217,10 @@ class TestAverageAlgorithmFactory(unittest.TestCase):
         self.assertRaises(average.AlgorithmCreationError, average.create_algorithm, "not_existing")
 
 
-class TestAverageMonitorName(unittest.TestCase):
-
-    def setUp(self):
-        header = {
-            "mon1": "100",
-            "bad": "foo",
-            "counter_pos": "12 13 14 foo",
-            "counter_mne": "mon2 mon3 mon4 mon5",
-            "bad_size_pos": "foo foo foo",
-            "bad_size_mne": "mon2 mon3 mon4 mon5",
-            "mne_not_exists_pos": "12 13 14 foo",
-            "pos_not_exists_mne": "mon2 mon3 mon4 mon5",
-        }
-        self.image = fabio.numpyimage.numpyimage(numpy.array([]), header)
-
-    def test_monitor(self):
-        result = average._get_monitor_value_from_edf(self.image, "mon1")
-        self.assertEquals(100, result)
-
-    def test_monitor_in_counter(self):
-        result = average._get_monitor_value_from_edf(self.image, "counter/mon3")
-        self.assertEquals(13, result)
-
-    def test_bad_monitor(self):
-        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "bad")
-
-    def test_bad_monitor_in_counter(self):
-        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "counter/mon5")
-
-    def test_bad_counter_syntax(self):
-        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "counter/mon5/1")
-
-    def test_missing_monitor(self):
-        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "not_exists")
-
-    def test_missing_counter(self):
-        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "not_exists/mon")
-
-    def test_missing_counter_monitor(self):
-        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "counter/not_exists")
-
-    def test_missing_counter_mne(self):
-        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "mne_not_exists/mon")
-
-    def test_missing_counter_pos(self):
-        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "pos_not_exists/mon")
-
-    def test_missing_counter_pos_element(self):
-        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "bad_size/mon")
-
-    def test_edf_file_motor(self):
-        image = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
-        result = average._get_monitor_value_from_edf(image, "motor/lx")
-        self.assertEqual(result, -0.2)
-
-    def test_edf_file_key(self):
-        image = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
-        result = average._get_monitor_value_from_edf(image, "scan_no")
-        self.assertEqual(result, 19)
-
-
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestAverage))
-    testsuite.addTest(loader(TestAverageMonitorName))
     return testsuite
 
 

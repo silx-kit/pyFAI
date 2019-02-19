@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2019"
+__date__ = "19/02/2019"
 __satus__ = "production"
 
 import sys
@@ -58,7 +58,7 @@ from pyFAI.io import DefaultAiWriter
 from pyFAI.io import HDF5Writer
 from pyFAI.utils.shell import ProgressBar
 from pyFAI.utils import logging_utils
-from pyFAI import average
+from pyFAI.utils import header_utils
 
 from argparse import ArgumentParser
 
@@ -163,9 +163,9 @@ def get_monitor_value(image, monitor_key):
     if monitor_key is None or monitor_key == "":
         return 1.0
     try:
-        monitor = average.get_monitor_value(image, monitor_key)
+        monitor = header_utils.get_monitor_value(image, monitor_key)
         return monitor
-    except average.MonitorNotFound:
+    except header_utils.MonitorNotFound:
         logger.warning("Monitor %s not found. No normalization applied.", monitor_key)
         return 1.0
     except Exception as e:
