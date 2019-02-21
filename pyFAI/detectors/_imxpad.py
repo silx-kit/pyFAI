@@ -31,6 +31,17 @@
 from __future__ import (print_function, division, absolute_import,
                         with_statement)
 
+"""
+Description of the `imXPAD <http://www.imxpad.com/>`_ detectors.
+"""
+
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "28/01/2019"
+__status__ = "production"
+
 import json
 import logging
 import math
@@ -50,19 +61,6 @@ try:
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     bilinear = None
-
-
-"""
-Description of the `imXPAD <http://www.imxpad.com/>`_ detectors.
-"""
-
-__author__ = "Jerome Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2019"
-__status__ = "production"
-
 
 class ImXPadS10(Detector):
     """
@@ -483,11 +481,13 @@ class Xpad_flat(ImXPadS10):
                     for i in range(self.max_shape[0] // self.module_size[0]):
                         y = i * self.module_size[0]
                         x = (i + 1) * self.module_size[0]
-                        pixel_center1[y, x] += i * self.MODULE_GAP[0]
+                        pixel_center1[x] += i * self.MODULE_GAP[0]
+                        pixel_center1[y] += i * self.MODULE_GAP[0]
                     for i in range(self.max_shape[1] // self.module_size[1]):
                         y = i * self.module_size[1]
                         x = (i + 1) * self.module_size[1]
-                        pixel_center2[y, x] += i * self.MODULE_GAP[1]
+                        pixel_center2[x] += i * self.MODULE_GAP[1]
+                        pixel_center2[y] += i * self.MODULE_GAP[1]
 
                     pixel_center1.shape = -1, 1
                     pixel_center1.strides = pixel_center1.strides[0], 0
@@ -609,7 +609,7 @@ class Cirpad(Detector):
         """Return the configuration with arguments to the constructor
         :return: dict with param for serialization
         """
-        return OrderedDict((("calibs", self._calibs)))
+        return OrderedDict("calibs", self._calibs)
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)
