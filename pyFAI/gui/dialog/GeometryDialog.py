@@ -164,12 +164,12 @@ class GeometryDialog(qt.QDialog):
 
         :param bool readOnly: True to enable the read-only mode.
         """
-        self._pyfaiDistance.isReadOnly()
-        self._pyfaiPoni1.isReadOnly()
-        self._pyfaiPoni2.isReadOnly()
-        self._pyfaiRotation1.isReadOnly()
-        self._pyfaiRotation2.isReadOnly()
-        self._pyfaiRotation3.isReadOnly()
+        self._pyfaiDistance.setReadOnly(readOnly)
+        self._pyfaiPoni1.setReadOnly(readOnly)
+        self._pyfaiPoni2.setReadOnly(readOnly)
+        self._pyfaiRotation1.setReadOnly(readOnly)
+        self._pyfaiRotation2.setReadOnly(readOnly)
+        self._pyfaiRotation3.setReadOnly(readOnly)
 
     def __createPyfaiGeometry(self):
         geometry = self.__geometry
