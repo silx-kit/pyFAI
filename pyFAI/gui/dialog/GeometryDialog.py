@@ -49,6 +49,7 @@ class GeometryDialog(qt.QDialog):
 
         self.__geometry = GeometryModel()
         self.__detector = None
+        self.__originalGeometry = None
 
         # Connect buttons
         self._buttonBox.rejected.connect(self.reject)
@@ -128,12 +129,21 @@ class GeometryDialog(qt.QDialog):
         self._fit2dTiltPlan.setModel(self.__fit2dTiltPlan)
 
         self.__geometry.changed.connect(self.__updateFid2dModel)
+        self.__geometry.changed.connect(self.__updateButtons)
         self._pyfaiDistance.setModel(self.__geometry.distance())
         self._pyfaiPoni1.setModel(self.__geometry.poni1())
         self._pyfaiPoni2.setModel(self.__geometry.poni2())
         self._pyfaiRotation1.setModel(self.__geometry.rotation1())
         self._pyfaiRotation2.setModel(self.__geometry.rotation2())
         self._pyfaiRotation3.setModel(self.__geometry.rotation3())
+
+    def accept(self):
+        self.__originalGeometry = None
+        return qt.QDialog.accept(self)
+
+    def reject(self):
+        self.__originalGeometry = None
+        return qt.QDialog.reject(self)
 
     def isReadOnly(self):
         """
@@ -220,6 +230,23 @@ class GeometryDialog(qt.QDialog):
         self.__fit2dTilt.setValue(tilt)
         self.__fit2dTiltPlan.setValue(tiltPlan)
 
+    def __resetToOriginalGeometry(self):
+        if self.__originalGeometry is None:
+            return
+        self.__geometry.setFrom(self.__originalGeometry)
+
+    def __updateButtons(self):
+        """Update the state of the dialog's buttons"""
+        haveChanges = self.__geometry != self.__originalGeometry
+        if haveChanges:
+            types = qt.QDialogButtonBox.Ok | qt.QDialogButtonBox.Cancel | qt.QDialogButtonBox.Reset
+            self._buttonBox.setStandardButtons(types)
+            resetButton = self._buttonBox.button(qt.QDialogButtonBox.Reset)
+            resetButton.clicked.connect(self.__resetToOriginalGeometry)
+        else:
+            types = qt.QDialogButtonBox.Close
+            self._buttonBox.setStandardButtons(types)
+
     def setDetector(self, detector):
         """Set the used detector.
 
@@ -236,7 +263,11 @@ class GeometryDialog(qt.QDialog):
         assert(isinstance(geometryModel, GeometryModel))
         if self.__geometry is geometryModel:
             return
+        self.__originalGeometry = geometryModel
+        self.__geometry.changed.disconnect(self.__updateButtons)
         self.__geometry.setFrom(geometryModel)
+        self.__geometry.changed.connect(self.__updateButtons)
+        self.__updateButtons()
 
     def geometryModel(self):
         """Returns the geometry model
