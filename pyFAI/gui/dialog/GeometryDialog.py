@@ -52,6 +52,7 @@ class GeometryDialog(qt.QDialog):
         self.__fit2dGeometry = Fit2dGeometryModel()
         self.__detector = None
         self.__originalGeometry = None
+        self.__updatingModel = False
 
         # Connect buttons
         self._buttonBox.rejected.connect(self.reject)
@@ -125,14 +126,16 @@ class GeometryDialog(qt.QDialog):
         self._fit2dTilt.setModel(self.__fit2dGeometry.tilt())
         self._fit2dTiltPlan.setModel(self.__fit2dGeometry.tiltPlan())
 
-        self.__geometry.changed.connect(self.__updateFid2dModel)
-        self.__geometry.changed.connect(self.__updateButtons)
         self._pyfaiDistance.setModel(self.__geometry.distance())
         self._pyfaiPoni1.setModel(self.__geometry.poni1())
         self._pyfaiPoni2.setModel(self.__geometry.poni2())
         self._pyfaiRotation1.setModel(self.__geometry.rotation1())
         self._pyfaiRotation2.setModel(self.__geometry.rotation2())
         self._pyfaiRotation3.setModel(self.__geometry.rotation3())
+
+        self.__geometry.changed.connect(self.__updateFit2dFromPyfai)
+        self.__fit2dGeometry.changed.connect(self.__updatePyfaiFromFit2d)
+        self.__geometry.changed.connect(self.__updateButtons)
 
     def accept(self):
         self.__originalGeometry = None
@@ -168,6 +171,12 @@ class GeometryDialog(qt.QDialog):
         self._pyfaiRotation2.setReadOnly(readOnly)
         self._pyfaiRotation3.setReadOnly(readOnly)
 
+        self._fit2dDistance.setReadOnly(readOnly)
+        self._fit2dCenterX.setReadOnly(readOnly)
+        self._fit2dCenterY.setReadOnly(readOnly)
+        self._fit2dTilt.setReadOnly(readOnly)
+        self._fit2dTiltPlan.setReadOnly(readOnly)
+
     def __createPyfaiGeometry(self):
         geometry = self.__geometry
         if not geometry.isValid():
@@ -189,7 +198,66 @@ class GeometryDialog(qt.QDialog):
                           wavelength=wavelength)
         return result
 
-    def __updateFid2dModel(self):
+    def __updatePyfaiFromFit2d(self):
+        if self.__updatingModel:
+            return
+        self.__updatingModel = True
+        geometry = self.__fit2dGeometry
+        error = None
+        distance = None
+        poni1 = None
+        poni2 = None
+        rotation1 = None
+        rotation2 = None
+        rotation3 = None
+
+        if geometry is None:
+            error = "No geometry to compute pyFAI geometry."
+            pass
+        elif not geometry.isValid():
+            error = "The current geometry is not valid to compute the pyFAI one."
+        elif self.__detector is None:
+            error = "No detector defined. It is needed to compute the pyFAI geometry."
+            self._fit2dError.setText("")
+        else:
+            pyFAIGeometry = Geometry(detector=self.__detector)
+            try:
+                f2d_distance = geometry.distance().value()
+                f2d_centerX = geometry.centerX().value()
+                f2d_centerY = geometry.centerY().value()
+                f2d_tiltPlan = geometry.tiltPlan().value()
+                f2d_tilt = geometry.tilt().value()
+                pyFAIGeometry.setFit2D(directDist=f2d_distance,
+                                       centerX=f2d_centerX,
+                                       centerY=f2d_centerY,
+                                       tilt=f2d_tilt,
+                                       tiltPlanRotation=f2d_tiltPlan)
+            except Exception:
+                error = "This geometry can't be modelized with pyFAI."
+            else:
+                distance = pyFAIGeometry.dist
+                poni1 = pyFAIGeometry.poni1
+                poni2 = pyFAIGeometry.poni2
+                rotation1 = pyFAIGeometry.rot1
+                rotation2 = pyFAIGeometry.rot2
+                rotation3 = pyFAIGeometry.rot3
+
+        self._fit2dError.setVisible(error is not None)
+        self._fit2dError.setText(error)
+        self.__geometry.lockSignals()
+        self.__geometry.distance().setValue(distance)
+        self.__geometry.poni1().setValue(poni1)
+        self.__geometry.poni2().setValue(poni2)
+        self.__geometry.rotation1().setValue(rotation1)
+        self.__geometry.rotation2().setValue(rotation2)
+        self.__geometry.rotation3().setValue(rotation3)
+        self.__geometry.unlockSignals()
+        self.__updatingModel = False
+
+    def __updateFit2dFromPyfai(self):
+        if self.__updatingModel:
+            return
+        self.__updatingModel = True
         geometry = self.__geometry
         error = None
         distance = None
@@ -228,6 +296,7 @@ class GeometryDialog(qt.QDialog):
         self.__fit2dGeometry.tilt().setValue(tilt)
         self.__fit2dGeometry.tiltPlan().setValue(tiltPlan)
         self.__fit2dGeometry.unlockSignals()
+        self.__updatingModel = False
 
     def __resetToOriginalGeometry(self):
         if self.__originalGeometry is None:
@@ -252,7 +321,7 @@ class GeometryDialog(qt.QDialog):
         This information is needed to display the Fit2D geometry.
         """
         self.__detector = detector
-        self.__updateFid2dModel()
+        self.__updateFit2dFromPyfai()
 
     def setGeometryModel(self, geometryModel):
         """Set the geometry to display.
