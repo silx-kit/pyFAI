@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "21/02/2019"
 
 from silx.gui import qt
 
@@ -47,11 +47,12 @@ class GeometryDialog(qt.QDialog):
         filename = get_ui_file("geometry-dialog.ui")
         qt.loadUi(filename, self)
 
-        self.__geometry = None
+        self.__geometry = GeometryModel()
         self.__detector = None
 
-        # Connect close button
+        # Connect buttons
         self._buttonBox.rejected.connect(self.reject)
+        self._buttonBox.accepted.connect(self.accept)
 
         # Create shared units
         angleUnit = DataModel()
@@ -125,6 +126,40 @@ class GeometryDialog(qt.QDialog):
         self._fit2dCenterY.setModel(self.__fit2dCenterY)
         self._fit2dTilt.setModel(self.__fit2dTilt)
         self._fit2dTiltPlan.setModel(self.__fit2dTiltPlan)
+
+        self.__geometry.changed.connect(self.__updateFid2dModel)
+        self._pyfaiDistance.setModel(self.__geometry.distance())
+        self._pyfaiPoni1.setModel(self.__geometry.poni1())
+        self._pyfaiPoni2.setModel(self.__geometry.poni2())
+        self._pyfaiRotation1.setModel(self.__geometry.rotation1())
+        self._pyfaiRotation2.setModel(self.__geometry.rotation2())
+        self._pyfaiRotation3.setModel(self.__geometry.rotation3())
+
+    def isReadOnly(self):
+        """
+        Returns True if the dialog is in read only.
+
+        In read-only mode, the geometry is displayed, but the user can't edited
+        it.
+
+        By default, this returns false.
+
+        :rtype: bool
+        """
+        return self._pyfaiDistance.isReadOnly()
+
+    def setReadOnly(self, readOnly):
+        """
+        Enable or disable the read-only mode.
+
+        :param bool readOnly: True to enable the read-only mode.
+        """
+        self._pyfaiDistance.isReadOnly()
+        self._pyfaiPoni1.isReadOnly()
+        self._pyfaiPoni2.isReadOnly()
+        self._pyfaiRotation1.isReadOnly()
+        self._pyfaiRotation2.isReadOnly()
+        self._pyfaiRotation3.isReadOnly()
 
     def __createPyfaiGeometry(self):
         geometry = self.__geometry
@@ -201,18 +236,7 @@ class GeometryDialog(qt.QDialog):
         assert(isinstance(geometryModel, GeometryModel))
         if self.__geometry is geometryModel:
             return
-        if self.__geometry is not None:
-            self.__geometry.changed.disconnect(self.__updateFid2dModel)
-        self.__geometry = geometryModel
-        if self.__geometry is not None:
-            self.__geometry.changed.connect(self.__updateFid2dModel)
-        self._pyfaiDistance.setModel(self.__geometry.distance())
-        self._pyfaiPoni1.setModel(self.__geometry.poni1())
-        self._pyfaiPoni2.setModel(self.__geometry.poni2())
-        self._pyfaiRotation1.setModel(self.__geometry.rotation1())
-        self._pyfaiRotation2.setModel(self.__geometry.rotation2())
-        self._pyfaiRotation3.setModel(self.__geometry.rotation3())
-        self.__updateFid2dModel()
+        self.__geometry.setFrom(geometryModel)
 
     def geometryModel(self):
         """Returns the geometry model
