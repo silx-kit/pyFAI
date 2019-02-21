@@ -241,10 +241,16 @@ class IntegrationDialog(qt.QWidget):
             context.restoreWindowLocationSettings("main-window", self)
 
         self.__workerConfigurator = WorkerConfigurator(self._holder)
-        layout = qt.QVBoxLayout(self._holder)
+        self.__content = qt.QWidget(self)
+        layout = qt.QVBoxLayout(self.__content)
         layout.addWidget(self.__workerConfigurator)
-        layout.setContentsMargins(0, 0, 0, 0)
-        self._holder.setLayout(layout)
+
+        self._holder.setWidget(self.__content)
+        self._holder.minimumSizeHint = self.__minimumScrollbarSizeHint
+        size = self.__content.minimumSizeHint()
+        self._holder.setMaximumHeight(size.height() + 2)
+        size = self.minimumSizeHint() - self._holder.minimumSizeHint() + size
+        self.setMaximumHeight(size.height() + 2)
 
         self.input_data = input_data
         self.output_path = output_path
@@ -257,6 +263,12 @@ class IntegrationDialog(qt.QWidget):
 
         if self.json_file is not None:
             self.restore(self.json_file)
+
+    def __minimumScrollbarSizeHint(self):
+        size = self.__content.minimumSizeHint()
+        extend = self.style().pixelMetric(qt.QStyle.PM_ScrollBarExtent)
+        size = qt.QSize(size.width() + extend, 100)
+        return size
 
     def closeEvent(self, event):
         context = self.__context
