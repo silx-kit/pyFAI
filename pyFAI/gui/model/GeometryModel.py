@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/06/2017"
+__date__ = "21/02/2019"
 
 from .AbstractModel import AbstractModel
 from .DataModel import DataModel
@@ -52,6 +52,25 @@ class GeometryModel(AbstractModel):
         self.__rotation1.changed.connect(self.wasChanged)
         self.__rotation2.changed.connect(self.wasChanged)
         self.__rotation3.changed.connect(self.wasChanged)
+
+    def __eq__(self, other):
+        if not isinstance(other, GeometryModel):
+            return False
+        if self.__distance.value() != other.distance().value():
+            return False
+        if self.__wavelength.value() != other.wavelength().value():
+            return False
+        if self.__poni1.value() != other.poni1().value():
+            return False
+        if self.__poni2.value() != other.poni2().value():
+            return False
+        if self.__rotation1.value() != other.rotation1().value():
+            return False
+        if self.__rotation2.value() != other.rotation2().value():
+            return False
+        if self.__rotation3.value() != other.rotation3().value():
+            return False
+        return True
 
     def isValid(self):
         if not self.__distance.isValid():
