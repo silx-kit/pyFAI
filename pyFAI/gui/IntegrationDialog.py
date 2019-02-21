@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2019"
+__date__ = "21/02/2019"
 __status__ = "development"
 
 import logging
@@ -254,9 +254,6 @@ class IntegrationDialog(qt.QWidget):
         self.batch_processing.clicked.connect(self.__fireBatchProcess)
         self.save_json_button.clicked.connect(self.save_config)
         self.quit_button.clicked.connect(self.die)
-
-        self.progressBar.setVisible(False)
-        self.progressBar.setValue(0)
 
         if self.json_file is not None:
             self.restore(self.json_file)
