@@ -126,3 +126,9 @@ class GeometryModel(AbstractModel):
         self.rotation2().setValue(geometry.rotation2().value())
         self.rotation3().setValue(geometry.rotation3().value())
         self.unlockSignals()
+
+    def __str__(self):
+        values = [self.distance(), self.wavelength(), self.poni1(), self.poni2(),
+                  self.rotation1(), self.rotation2(), self.rotation3()]
+        values = [str(v.value()) for v in values]
+        return "GeometryModel(%s)" % ",".join(values)
