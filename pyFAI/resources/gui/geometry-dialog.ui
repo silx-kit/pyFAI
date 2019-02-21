@@ -446,6 +446,21 @@
    <header>pyFAI.gui.widgets.UnitLabel</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>_pyfaiDistance</tabstop>
+  <tabstop>_pyfaiPoni1</tabstop>
+  <tabstop>_pyfaiPoni2</tabstop>
+  <tabstop>_pyfaiRotation1</tabstop>
+  <tabstop>_pyfaiRotation2</tabstop>
+  <tabstop>_pyfaiRotation3</tabstop>
+  <tabstop>_fit2dDistance</tabstop>
+  <tabstop>_fit2dCenterX</tabstop>
+  <tabstop>_fit2dCenterY</tabstop>
+  <tabstop>_fit2dTilt</tabstop>
+  <tabstop>_fit2dTiltPlan</tabstop>
+  <tabstop>_buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
