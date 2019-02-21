@@ -35,6 +35,7 @@ from pyFAI.utils import get_ui_file
 from ..utils import units
 from ..model.DataModel import DataModel
 from ..model.GeometryModel import GeometryModel
+from ..model.Fit2dGeometryModel import Fit2dGeometryModel
 from pyFAI.geometry import Geometry
 
 
@@ -48,6 +49,7 @@ class GeometryDialog(qt.QDialog):
         qt.loadUi(filename, self)
 
         self.__geometry = GeometryModel()
+        self.__fit2dGeometry = Fit2dGeometryModel()
         self.__detector = None
         self.__originalGeometry = None
 
@@ -117,16 +119,11 @@ class GeometryDialog(qt.QDialog):
         # self._fit2dTiltPlanUnit.setUnitEditable(True)
 
         # Connect fit2d model-widget
-        self.__fit2dDistance = DataModel()
-        self.__fit2dCenterX = DataModel()
-        self.__fit2dCenterY = DataModel()
-        self.__fit2dTilt = DataModel()
-        self.__fit2dTiltPlan = DataModel()
-        self._fit2dDistance.setModel(self.__fit2dDistance)
-        self._fit2dCenterX.setModel(self.__fit2dCenterX)
-        self._fit2dCenterY.setModel(self.__fit2dCenterY)
-        self._fit2dTilt.setModel(self.__fit2dTilt)
-        self._fit2dTiltPlan.setModel(self.__fit2dTiltPlan)
+        self._fit2dDistance.setModel(self.__fit2dGeometry.distance())
+        self._fit2dCenterX.setModel(self.__fit2dGeometry.centerX())
+        self._fit2dCenterY.setModel(self.__fit2dGeometry.centerY())
+        self._fit2dTilt.setModel(self.__fit2dGeometry.tilt())
+        self._fit2dTiltPlan.setModel(self.__fit2dGeometry.tiltPlan())
 
         self.__geometry.changed.connect(self.__updateFid2dModel)
         self.__geometry.changed.connect(self.__updateButtons)
@@ -224,11 +221,13 @@ class GeometryDialog(qt.QDialog):
 
         self._fit2dError.setVisible(error is not None)
         self._fit2dError.setText(error)
-        self.__fit2dDistance.setValue(distance)
-        self.__fit2dCenterX.setValue(centerX)
-        self.__fit2dCenterY.setValue(centerY)
-        self.__fit2dTilt.setValue(tilt)
-        self.__fit2dTiltPlan.setValue(tiltPlan)
+        self.__fit2dGeometry.lockSignals()
+        self.__fit2dGeometry.distance().setValue(distance)
+        self.__fit2dGeometry.centerX().setValue(centerX)
+        self.__fit2dGeometry.centerY().setValue(centerY)
+        self.__fit2dGeometry.tilt().setValue(tilt)
+        self.__fit2dGeometry.tiltPlan().setValue(tiltPlan)
+        self.__fit2dGeometry.unlockSignals()
 
     def __resetToOriginalGeometry(self):
         if self.__originalGeometry is None:
