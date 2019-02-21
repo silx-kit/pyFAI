@@ -72,11 +72,17 @@ class GeometryModel(AbstractModel):
             return False
         return True
 
-    def isValid(self):
+    def isValid(self, checkWaveLength=True):
+        """Check if all the modele have a meaning.
+
+        :param bool checkWaveLength: If true (default) the wavelength is
+            checked
+        """
         if not self.__distance.isValid():
             return False
-        if not self.__wavelength.isValid():
-            return False
+        if checkWaveLength:
+            if not self.__wavelength.isValid():
+                return False
         if not self.__poni1.isValid():
             return False
         if not self.__poni2.isValid():
