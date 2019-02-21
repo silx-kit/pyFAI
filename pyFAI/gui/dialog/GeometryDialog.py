@@ -214,11 +214,10 @@ class GeometryDialog(qt.QDialog):
         if geometry is None:
             error = "No geometry to compute pyFAI geometry."
             pass
-        elif not geometry.isValid():
-            error = "The current geometry is not valid to compute the pyFAI one."
         elif self.__detector is None:
             error = "No detector defined. It is needed to compute the pyFAI geometry."
-            self._fit2dError.setText("")
+        elif not geometry.isValid():
+            error = "The current geometry is not valid to compute the pyFAI one."
         else:
             pyFAIGeometry = Geometry(detector=self.__detector)
             try:
@@ -269,11 +268,10 @@ class GeometryDialog(qt.QDialog):
         if geometry is None:
             error = "No geometry to compute Fit2D geometry."
             pass
-        elif not geometry.isValid():
-            error = "The current geometry is not valid to compute the Fit2D one."
         elif self.__detector is None:
             error = "No detector defined. It is needed to compute the Fit2D geometry."
-            self._fit2dError.setText("")
+        elif not geometry.isValid():
+            error = "The current geometry is not valid to compute the Fit2D one."
         else:
             pyFAIGeometry = self.__createPyfaiGeometry()
             try:
