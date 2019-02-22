@@ -219,7 +219,12 @@ class HDF5Writer(Writer):
     CONFIG = "config"
     DATASET_NAME = "data"
 
-    def __init__(self, filename, hpath="data", fast_scan_width=None, append_frames=False):
+    MODE_ERROR = "error"
+    MODE_DELETE = "delete"
+    MODE_APPEND = "append"
+    MODE_OVERWRITE = "overwrite"
+
+    def __init__(self, filename, hpath="data", fast_scan_width=None, append_frames=False, mode=MODE_ERROR):
         """
         Constructor of an HDF5 writer:
 
@@ -252,9 +257,61 @@ class HDF5Writer(Writer):
         self.ndim = None
         self._current_frame = None
         self._append_frames = append_frames
+        self._mode = mode
 
     def __repr__(self):
         return "HDF5 writer on file %s:%s %sinitialized" % (self.filename, self.hpath, "" if self._initialized else "un")
+
+    def _find_unused_name(self, prefix):
+        if prefix not in self.hdf5:
+            return prefix
+        for i in range(2, 1000):
+            name = prefix + str(i)
+            if name not in self.hdf5:
+                return name
+        raise IOError("No entry name available")
+
+    def _require_entry(self, name, mode):
+        """
+        Load and return the entry while will contains the data processing.
+
+        According to modes, this function will delete and recreate the file,
+        or append the data to a new entry, or overwrite the existing entry.
+        """
+        if h5py is None:
+            logger.error("No h5py library, no chance")
+            raise RuntimeError("No h5py library, no chance")
+
+        try:
+            if mode == self.MODE_DELETE:
+                self.hdf5 = h5py.File(self.filename, mode="w")
+            else:
+                self.hdf5 = h5py.File(self.filename, mode="a")
+        except IOError:  # typically a corrupted HDF5 file !
+            if mode == self.MODE_DELETE:
+                logger.error("File can't be read. File %s deleted.", self.filename)
+                os.unlink(self.filename)
+                self.hdf5 = h5py.File(self.filename)
+            else:
+                raise
+
+        if name in self.hdf5:
+            if mode == self.MODE_DELETE:
+                self.hdf5.close()
+                logger.warning("File already contains an entry. File %s deleted.", self.filename)
+                os.unlink(self.filename)
+                self.hdf5 = h5py.File(self.filename)
+            elif mode == self.MODE_APPEND:
+                name = self._find_unused_name(name)
+            elif mode == self.MODE_OVERWRITE:
+                del self.hdf5[name]
+            elif mode == self.MODE_ERROR:
+                raise IOError("Entry name %s::%s already exists" % (self.filename, name))
+            else:
+                assert(False)
+
+        entry = self.hdf5.require_group(name)
+        return entry
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
@@ -265,22 +322,16 @@ class HDF5Writer(Writer):
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
-                # TODO: this is Debug statement
                 open("fai_cfg.debug.json", "w").write(json.dumps(self.fai_cfg, indent=4))
                 open("lima_cfg.debug.json", "w").write(json.dumps(self.lima_cfg, indent=4))
-            self.fai_cfg["nbpt_rad"] = self.fai_cfg.get("nbpt_rad", 1000)
-            if h5py is None:
-                logger.error("No h5py library, no chance")
-                raise RuntimeError("No h5py library, no chance")
 
-            try:
-                self.hdf5 = h5py.File(self.filename)
-            except IOError:  # typically a corrupted HDF5 file !
-                os.unlink(self.filename)
-                self.hdf5 = h5py.File(self.filename)
+            self.fai_cfg["nbpt_rad"] = self.fai_cfg.get("nbpt_rad", 1000)
+
+            self.entry = self._require_entry(self.hpath, self._mode)
+            self.hpath = self.entry.name
+
             self.hdf5.attrs["default"] = numpy.string_(self.hpath)
 
-            self.entry = self.hdf5.require_group(self.hpath)
             self.entry.attrs["NX_class"] = numpy.string_("NXentry")
             self.entry.attrs["default"] = numpy.string_("integrate/results")
 
