@@ -128,7 +128,7 @@ def integrate_gui(options, args):
         class QtProcess(qt.QThread):
             def run(self):
                 observer = dialog.createObserver(qtSafe=True)
-                process(input_data, window.output_path, config, options.monitor_key, observer)
+                process(input_data, window.output_path, config, options.monitor_key, observer, options.write_mode)
 
         qtProcess = QtProcess()
         qtProcess.start()
@@ -513,7 +513,7 @@ class Statistics(object):
         return self._execution
 
 
-def process(input_data, output, config, monitor_name, observer):
+def process(input_data, output, config, monitor_name, observer, write_mode):
     """
     Integrate a set of data.
 
@@ -521,7 +521,7 @@ def process(input_data, output, config, monitor_name, observer):
     :param str output: Filename of directory output
     :param dict config: Dictionary to configure `pyFAI.worker.Worker`
     :param IntegrationObserver observer: Observer of the processing
-    :param:
+    :param str write_mode: Specify options to deal with IO errors
     """
     statistics = Statistics()
     statistics.execution_started()
@@ -582,7 +582,7 @@ def process(input_data, output, config, monitor_name, observer):
         if os.path.isdir(output):
             writer = MultiFileWriter(output)
         elif output.endswith(".h5") or output.endswith(".hdf5"):
-            writer = HDF5Writer(output, append_frames=True)
+            writer = HDF5Writer(output, append_frames=True, mode=write_mode)
         else:
             output_path = os.path.abspath(output)
             writer = MultiFileWriter(output_path)
@@ -590,12 +590,19 @@ def process(input_data, output, config, monitor_name, observer):
         if source.is_single_multiframe():
             basename = os.path.splitext(source.basename())[0]
             output_filename = "%s_pyFAI.h5" % basename
-            writer = HDF5Writer(output_filename, append_frames=True)
+            writer = HDF5Writer(output_filename, append_frames=True, mode=write_mode)
         else:
             output_path = os.path.abspath(".")
             writer = MultiFileWriter(None)
 
-    writer.init(fai_cfg=config)
+    try:
+        writer.init(fai_cfg=config)
+    except IOError as e:
+        logger.error("Error while creating the writer: " + str(e.args[0]))
+        logger.error("Processing cancelled")
+        logger.info("To write HDF5, convenient options can be provided to decide what to do.")
+        logger.info("Options: --delete (always delete the file) --append (create a new entry) --overwrite (overwrite this entry)")
+        return 1
 
     # Integrate all the provided frames one by one
     for data_info in source.frames():
@@ -656,7 +663,7 @@ def integrate_shell(options, args):
     monitor_name = options.monitor_key
     filenames = args
     output = options.output
-    return process(filenames, output, config, monitor_name, observer)
+    return process(filenames, output, config, monitor_name, observer, options.write_mode)
 
 
 def _main(args):
@@ -716,6 +723,18 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                         On EDF files, values from 'counter_pos' can be accessed \
                         by using the expected mnemonic. \
                         For example 'counter/bmon'.")
+    parser.add_argument("--delete",
+                        dest="delete_mode",
+                        action="store_true",
+                        help="Delete the destination file if exists (HDF5 output)")
+    parser.add_argument("--append",
+                        dest="append_mode",
+                        action="store_true",
+                        help="Append the processing to the destination file using an available group (HDF5 output)")
+    parser.add_argument("--overwrite",
+                        dest="overwrite_mode",
+                        action="store_true",
+                        help="Overwrite the entry of the destination file if it already exists (HDF5 output)")
     options = parser.parse_args(args)
 
     # Analysis arguments and options
@@ -728,6 +747,15 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
 
     if options.debug:
         logging.root.setLevel(logging.DEBUG)
+
+    write_mode = HDF5Writer.MODE_ERROR
+    if options.delete_mode:
+        write_mode = HDF5Writer.MODE_DELETE
+    elif options.append_mode:
+        write_mode = HDF5Writer.MODE_APPEND
+    elif options.overwrite_mode:
+        write_mode = HDF5Writer.MODE_OVERWRITE
+    options.write_mode = write_mode
 
     if options.gui:
         result = integrate_gui(options, args)
