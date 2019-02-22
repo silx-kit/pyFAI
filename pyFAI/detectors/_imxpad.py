@@ -533,7 +533,7 @@ class _CirpadModule(ImXPadS70):
         super(_CirpadModule, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
-CirpadCalib = namedtuple("CirpadCalib", "dest poni1 poni2 rot1 rot2 rot3")
+CirpadCalib = namedtuple("CirpadCalib", "dist poni1 poni2 rot1 rot2 rot3")
 
 
 class Cirpad(Detector):
@@ -631,8 +631,8 @@ class Cirpad(Detector):
         # Seeks params for each module of the Cirpad.
         modules = []  # type: List[_CirpadModule]
         for calib in self._calibs:
-            zyx = _geometry.calc_pos_zyx(calib[0], calib[1], calib[2],
-                                         calib[3], calib[4], calib[5], p1, p2, p3)
+            zyx = _geometry.calc_pos_zyx(calib.dist, calib.poni1, calib.poni2,
+                                         calib.rot1, calib.rot2, calib.rot3, p1, p2, p3)
             modules.append(numpy.moveaxis(zyx, 0, -1))
 
         result = numpy.concatenate(modules, axis=0)
