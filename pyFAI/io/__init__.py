@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2019"
+__date__ = "22/02/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -333,23 +333,21 @@ class HDF5Writer(Writer):
                 self.fast_motor = self.entry.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
                 self.fast_motor.attrs["long_name"] = numpy.string_("Fast motor position")
                 self.fast_motor.attrs["interpretation"] = numpy.string_("scalar")
-                self.fast_motor.attrs["axis"] = numpy.string_("1")
-                self.radial_values.attrs["axis"] = numpy.string_("2")
                 if do_2D:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 4
-                    self.azimuthal_values.attrs["axis"] = numpy.string_("3")
+                    self.nxdata.attrs["axis"] = [u".", u"fast", u"chi", u"radial"]
                 else:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
+                    self.nxdata.attrs["axis"] = [u".", u"fast", u"radial"]
             else:
-                self.radial_values.attrs["axis"] = numpy.string_("1")
                 if do_2D:
+                    self.nxdata.attrs["axis"] = [u".", u"chi", u"radial"]
                     chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
-                    self.azimuthal_values.attrs["axis"] = numpy.string_("2")
                 else:
-                    self.nxdata.attrs["axis"] = numpy.string_("radial")
+                    self.nxdata.attrs["axis"] = [u".", u"radial"]
                     chunk = 1, self.fai_cfg["nbpt_rad"]
                     self.ndim = 2
 
