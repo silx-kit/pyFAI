@@ -610,8 +610,8 @@ class Cirpad(Detector):
         :return: dict with param for serialization
         """
         dico = OrderedDict()
-        for i in range(self.NB_MODULES):
-            dico['calib{}'.format(i)] = self._calibs[i] 
+        for i, calib in enumerate(self._calibs):
+            dico['calib{}'.format(i)] = calib
         return dico
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
