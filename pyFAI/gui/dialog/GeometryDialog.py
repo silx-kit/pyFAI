@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/02/2019"
+__date__ = "22/02/2019"
 
 from silx.gui import qt
 
@@ -136,6 +136,16 @@ class GeometryDialog(qt.QDialog):
         self.__geometry.changed.connect(self.__updateFit2dFromPyfai)
         self.__fit2dGeometry.changed.connect(self.__updatePyfaiFromFit2d)
         self.__geometry.changed.connect(self.__updateButtons)
+
+        # NOTE: All the buttons have to be create here.
+        # Changing available buttons on the focus event create a segfault
+        types = (qt.QDialogButtonBox.Ok | qt.QDialogButtonBox.Cancel |
+                 qt.QDialogButtonBox.Reset | qt.QDialogButtonBox.Close)
+        self._buttonBox.setStandardButtons(types)
+        resetButton = self._buttonBox.button(qt.QDialogButtonBox.Reset)
+        resetButton.clicked.connect(self.__resetToOriginalGeometry)
+
+        self.__updateButtons()
 
     def accept(self):
         self.__originalGeometry = None
@@ -304,14 +314,15 @@ class GeometryDialog(qt.QDialog):
     def __updateButtons(self):
         """Update the state of the dialog's buttons"""
         haveChanges = self.__geometry != self.__originalGeometry
+        existing = [qt.QDialogButtonBox.Ok, qt.QDialogButtonBox.Cancel, qt.QDialogButtonBox.Reset, qt.QDialogButtonBox.Close]
         if haveChanges:
-            types = qt.QDialogButtonBox.Ok | qt.QDialogButtonBox.Cancel | qt.QDialogButtonBox.Reset
-            self._buttonBox.setStandardButtons(types)
-            resetButton = self._buttonBox.button(qt.QDialogButtonBox.Reset)
-            resetButton.clicked.connect(self.__resetToOriginalGeometry)
+            available = set([qt.QDialogButtonBox.Ok, qt.QDialogButtonBox.Cancel, qt.QDialogButtonBox.Reset])
         else:
-            types = qt.QDialogButtonBox.Close
-            self._buttonBox.setStandardButtons(types)
+            available = set([qt.QDialogButtonBox.Close])
+        for buttonType in existing:
+            button = self._buttonBox.button(buttonType)
+            isVisible = buttonType in available
+            button.setVisible(isVisible)
 
     def setDetector(self, detector):
         """Set the used detector.
