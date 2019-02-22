@@ -57,12 +57,7 @@ import posixpath
 import sys
 import threading
 import time
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    OrderedDict = dict
-
+from collections import OrderedDict
 
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
