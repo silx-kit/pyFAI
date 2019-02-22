@@ -375,7 +375,7 @@ class HDF5Writer(Writer):
                 self.dataset.attrs["interpretation"] = numpy.string_("spectrum")
             self.dataset.attrs["signal"] = numpy.string_("1")
             self.chunk = chunk
-            self.shape = chunk
+            self.shape = shape
             name = "Mapping " if self.fast_scan_width else "Scanning "
             name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
             name += " experiment"
@@ -434,13 +434,16 @@ class HDF5Writer(Writer):
         logger.debug("Write frame %s", index)
         radial = None
         azimuthal = None
+        error = None
         if isinstance(data, containers.Integrate1dResult):
             intensity = data.intensity
             radial = data.radial
+            error = data.sigma
         elif isinstance(data, containers.Integrate2dResult):
             intensity = data.intensity
             radial = data.radial
             azimuthal = data.azimuthal
+            error = data.sigma
         elif isinstance(data, numpy.ndarray):
             intensity = data
         elif isinstance(data, (list, tuple)):
@@ -451,7 +454,7 @@ class HDF5Writer(Writer):
                 if data[0].ndim == 2:
                     intensity, radial, azimuthal = data
                 else:
-                    radial, intensity, _error = data
+                    radial, intensity, error = data
         with self._sem:
             if self.dataset is None:
                 logger.warning("Writer not initialized !")
@@ -479,6 +482,18 @@ class HDF5Writer(Writer):
                self.radial_values is not None:
                 self.radial_values[:] = radial
                 self.has_radial_values = True
+            if error is not None:
+                dataset_error = self._require_errors(dtype=error.dtype)
+                dataset_error[index] = error
+
+    def _require_errors(self, dtype):
+        """Returns the dataset to store result error."""
+        result = self.nxdata.require_dataset("errors",
+                                             shape=self.shape,
+                                             dtype=dtype,
+                                             chunks=self.chunk,
+                                             maxshape=(None,) + self.chunk[1:])
+        return result
 
 
 class DefaultAiWriter(Writer):
