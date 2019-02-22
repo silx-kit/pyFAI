@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2019"
+__date__ = "22/02/2019"
 __satus__ = "production"
 
 import sys
@@ -43,6 +43,7 @@ import time
 import numpy
 import os.path
 import collections
+import contextlib
 import six
 
 import fabio
@@ -279,8 +280,9 @@ DataInfo = collections.namedtuple("DataInfo", "source source_id frame_id fabio_i
 class DataSource(object):
     """Source of data to integrate."""
 
-    def __init__(self):
+    def __init__(self, statistics):
         self._items = []
+        self._statistics = statistics
 
     def append(self, item):
         self._items.append(item)
@@ -317,7 +319,8 @@ class DataSource(object):
 
     def _iter_item_frames(self, iitem, start_id, item):
         if isinstance(item, six.string_types):
-            fabio_image = fabio.open(item)
+            with self._statistics.time_reading():
+                fabio_image = fabio.open(item)
             filename = fabio_image.filename
             was_openned = True
         elif isinstance(item, fabio.fabioimage.FabioImage):
@@ -331,21 +334,25 @@ class DataSource(object):
         if fabio_image is not None:
             if fabio_image.nframes > 1:
                 for iframe in range(fabio_image.nframes):
-                    fimg = fabio_image.getframe(iframe)
+                    with self._statistics.time_reading():
+                        fimg = fabio_image.getframe(iframe)
+                        data = fimg.data[...]
                     yield DataInfo(source=item,
                                    source_id=iitem,
                                    frame_id=iframe,
                                    data_id=start_id + iframe,
-                                   data=fimg.data,
+                                   data=data,
                                    fabio_image=fimg,
                                    header=fimg.header,
                                    source_filename=filename)
             else:
+                with self._statistics.time_reading():
+                    data = fabio_image.data[...]
                 yield DataInfo(source=item,
                                source_id=iitem,
                                frame_id=None,
                                data_id=start_id,
-                               data=fabio_image.data,
+                               data=data,
                                fabio_image=fabio_image,
                                header=fabio_image.header,
                                source_filename=filename)
@@ -354,6 +361,8 @@ class DataSource(object):
         else:
             if item.ndim == 3:
                 for iframe, data in enumerate(item):
+                    with self._statistics.time_reading():
+                        data = data[...]
                     yield DataInfo(source=item,
                                    source_id=iitem,
                                    frame_id=iframe,
@@ -364,6 +373,8 @@ class DataSource(object):
                                    source_filename=filename)
             else:
                 data = item
+                with self._statistics.time_reading():
+                    data = data[...]
                 yield DataInfo(source=item,
                                source_id=iitem,
                                data_id=start_id,
@@ -439,6 +450,69 @@ class MultiFileWriter(pyFAI.io.Writer):
         self._writer = None
 
 
+class Statistics(object):
+    """Instrument the application to collect statistics."""
+
+    def __init__(self):
+        self._timer = None
+        self._first_processing = 0
+        self._processing = 0
+        self._reading = 0
+        self._frames = 0
+        self._execution = 0
+
+    def execution_started(self):
+        self._start_time = time.time()
+
+    def execution_stopped(self):
+        t = time.time()
+        self._execution = t - self._start_time
+
+    @contextlib.contextmanager
+    def time_processing(self):
+        t1 = time.time()
+        yield
+        t2 = time.time()
+        processing = t2 - t1
+        if self._processing == 0:
+            self._first_processing = processing
+        self._processing += processing
+        self._frames += 1
+
+    @contextlib.contextmanager
+    def time_reading(self):
+        t1 = time.time()
+        yield
+        t2 = time.time()
+        reading = t2 - t1
+        self._reading += reading
+
+    def processing_per_frame(self):
+        """Average time spend to process a frame"""
+        if self._frames < 2:
+            return self._first_processing
+        return (self._processing - self._first_processing) / (self._frames - 1)
+
+    def preprocessing(self):
+        """Try to extract the preprocessing time"""
+        if self._frames < 2:
+            return float("NaN")
+        return self._first_processing - self.processing_per_frame()
+
+    def reading_per_frame(self):
+        """Average time spend to read a frame"""
+        return self._reading / self._frames
+
+    def total_reading(self):
+        return self._reading
+
+    def total_processing(self):
+        return self._processing
+
+    def total_execution(self):
+        return self._execution
+
+
 def process(input_data, output, config, monitor_name, observer):
     """
     Integrate a set of data.
@@ -449,6 +523,9 @@ def process(input_data, output, config, monitor_name, observer):
     :param IntegrationObserver observer: Observer of the processing
     :param:
     """
+    statistics = Statistics()
+    statistics.execution_started()
+
     worker = pyFAI.worker.Worker()
     worker_config = config.copy()
 
@@ -468,13 +545,12 @@ def process(input_data, output, config, monitor_name, observer):
         logger.warning("Configuration key '%s' from json is unused", key)
 
     worker.safe = False  # all processing are expected to be the same.
-    start_time = time.time()
 
     if observer is not None:
         observer.worker_initialized(worker)
 
     # Skip invalide data
-    source = DataSource()
+    source = DataSource(statistics=statistics)
     for item in input_data:
         if isinstance(item, six.string_types):
             if os.path.isfile(item):
@@ -536,9 +612,11 @@ def process(input_data, output, config, monitor_name, observer):
         if hasattr(writer, "prepare_write"):
             writer.prepare_write(data_info, engine=worker.ai)
 
-        result = worker.process(data=data_info.data,
-                                normalization_factor=normalization_factor,
-                                writer=writer)
+        with statistics.time_processing():
+            result = worker.process(data=data_info.data,
+                                    normalization_factor=normalization_factor,
+                                    writer=writer)
+
         if observer is not None:
             if observer.is_interruption_requested():
                 break
@@ -555,7 +633,13 @@ def process(input_data, output, config, monitor_name, observer):
         else:
             observer.processing_succeeded()
         observer.processing_finished()
-    logger.info("Processing done in %.3fs !", (time.time() - start_time))
+
+    statistics.execution_stopped()
+
+    logger.info("[First frame] Preprocessing time: %.0fms", statistics.preprocessing() * 1000)
+    logger.info("[Per frames] Reading time: %.0fms; Processing time: %.0fms", statistics.reading_per_frame() * 1000, statistics.processing_per_frame() * 1000)
+    logger.info("[Total] Reading time: %.3fs; Processing time: %.3fs", statistics.total_reading(), statistics.total_processing())
+    logger.info("Execution done in %.3fs !", statistics.total_execution())
     return 0
 
 
