@@ -481,12 +481,12 @@ class Xpad_flat(ImXPadS10):
                     for i in range(self.max_shape[0] // self.module_size[0]):
                         y = i * self.module_size[0]
                         x = (i + 1) * self.module_size[0]
-                        pixel_center1[x] += i * self.MODULE_GAP[0]
+                        pixel_center1[x - 1] += i * self.MODULE_GAP[0]
                         pixel_center1[y] += i * self.MODULE_GAP[0]
                     for i in range(self.max_shape[1] // self.module_size[1]):
                         y = i * self.module_size[1]
                         x = (i + 1) * self.module_size[1]
-                        pixel_center2[x] += i * self.MODULE_GAP[1]
+                        pixel_center2[x - 1] += i * self.MODULE_GAP[1]
                         pixel_center2[y] += i * self.MODULE_GAP[1]
 
                     pixel_center1.shape = -1, 1
@@ -595,7 +595,7 @@ class Cirpad(Detector):
             calibs.append(CirpadCalib(z, -y, 0, 0, i * -alpha, 0))
         return calibs
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, calibs=None):
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, calibs=None, **kwargs):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2,
                           max_shape=self.MAX_SHAPE)
 
@@ -609,7 +609,10 @@ class Cirpad(Detector):
         """Return the configuration with arguments to the constructor
         :return: dict with param for serialization
         """
-        return OrderedDict("calibs", self._calibs)
+        dico = OrderedDict()
+        for i in range(self.NB_MODULES):
+            dico['calib{}'.format(i)] = self._calibs[i] 
+        return dico
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)
@@ -628,7 +631,8 @@ class Cirpad(Detector):
         # Seeks params for each module of the Cirpad.
         modules = []  # type: List[_CirpadModule]
         for calib in self._calibs:
-            zyx = _geometry.calc_pos_zyx(*calib, p1, p2, p3)
+            zyx = _geometry.calc_pos_zyx(calib[0], calib[1], calib[2],
+                                         calib[3], calib[4], calib[5], p1, p2, p3)
             modules.append(numpy.moveaxis(zyx, 0, -1))
 
         result = numpy.concatenate(modules, axis=0)
