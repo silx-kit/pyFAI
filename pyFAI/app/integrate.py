@@ -485,6 +485,9 @@ class MultiFileWriter(pyFAI.io.Writer):
         self._writer.close()
         self._writer = None
 
+    def close(self):
+        pass
+
 
 class Statistics(object):
     """Instrument the application to collect statistics."""
@@ -669,6 +672,8 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
         observer.data_result(data_info, result)
         if observer.is_interruption_requested():
             break
+
+    writer.close()
 
     if observer.is_interruption_requested():
         logger.info("Processing was aborted")
