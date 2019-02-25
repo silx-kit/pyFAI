@@ -464,6 +464,9 @@ class MultiFileWriter(pyFAI.io.Writer):
         else:
             extension = ".dat"
 
+        if data_info.frame_id is not None:
+            output_name = "%s_%04d" % (output_name, data_info.frame_id)
+
         output_name = "%s%s" % (output_name, extension)
 
         if self._output_path:
