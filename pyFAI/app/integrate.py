@@ -443,10 +443,13 @@ class DataSource(object):
 class MultiFileWriter(pyFAI.io.Writer):
     """Broadcast writing to differnet files for each frames"""
 
-    def __init__(self, output_path):
+    def __init__(self, output_path, mode=HDF5Writer.MODE_ERROR):
         super(MultiFileWriter, self).__init__()
+        if mode in [HDF5Writer.MODE_OVERWRITE, HDF5Writer.MODE_APPEND]:
+            raise ValueError("Mode %s unsupported" % mode)
         self._writer = None
         self._output_path = output_path
+        self._mode = mode
 
     def init(self, fai_cfg=None, lima_cfg=None):
         self._fai_cfg = fai_cfg
@@ -477,6 +480,10 @@ class MultiFileWriter(pyFAI.io.Writer):
                 outpath = os.path.abspath(self._output_path)
         else:
             outpath = output_name
+
+        if os.path.exists(outpath):
+            if self._mode == HDF5Writer.MODE_DELETE:
+                os.unlink(outpath)
         self._writer = DefaultAiWriter(outpath, engine)
         self._writer.init(fai_cfg=self._fai_cfg, lima_cfg=self._lima_cfg)
 
@@ -623,12 +630,12 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     writer = None
     if output:
         if os.path.isdir(output):
-            writer = MultiFileWriter(output)
+            writer = MultiFileWriter(output, mode=write_mode)
         elif output.endswith(".h5") or output.endswith(".hdf5"):
             writer = HDF5Writer(output, append_frames=True, mode=write_mode)
         else:
             output_path = os.path.abspath(output)
-            writer = MultiFileWriter(output_path)
+            writer = MultiFileWriter(output_path, mode=write_mode)
     else:
         if source.is_single_multiframe():
             basename = os.path.splitext(source.basename())[0]
@@ -636,7 +643,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
             writer = HDF5Writer(output_filename, append_frames=True, mode=write_mode)
         else:
             output_path = os.path.abspath(".")
-            writer = MultiFileWriter(None)
+            writer = MultiFileWriter(None, mode=write_mode)
 
     try:
         writer.init(fai_cfg=config)
@@ -767,7 +774,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     parser.add_argument("--delete",
                         dest="delete_mode",
                         action="store_true",
-                        help="Delete the destination file if exists (HDF5 output)")
+                        help="Delete the destination file if already exists")
     parser.add_argument("--append",
                         dest="append_mode",
                         action="store_true",
