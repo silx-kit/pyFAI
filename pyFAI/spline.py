@@ -611,7 +611,7 @@ class Spline(object):
                 self.zeros()
             else:
                 self.read(self.filename)
-        logger.info("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm", center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize)
+        logger.info(u"center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm", center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize)
         if timing:
             startTime = time.time()
         distance = 1.0e6 * distanceSampleDetector  # from meters to microns
