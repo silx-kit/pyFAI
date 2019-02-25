@@ -30,7 +30,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2019"
+__date__ = "25/02/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -81,7 +81,11 @@ class ProgressBar:
             self.progress_char = '#'
         else:
             try:
-                self.progress_char = u'\u25A0'
+                import datetime
+                if str(datetime.datetime.now())[5:10] == "02-14":
+                    self.progress_char = u'\u2665'
+                else:
+                    self.progress_char = u'\u25A0'
                 _byte = codecs.encode(self.progress_char, encoding)
             except (ValueError, TypeError, LookupError):
                 # In case the char is not supported by the encoding,
