@@ -122,7 +122,10 @@ class ProgressBar:
         self._message = message
         self._value = value
 
-        coef = (1.0 * value) / self.max_value
+        if self.max_value == 0:
+            coef = 1.0
+        else:
+            coef = (1.0 * value) / self.max_value
         percent = round(coef * 100)
         bar_position = int(coef * self.bar_width)
         if bar_position > self.bar_width:
