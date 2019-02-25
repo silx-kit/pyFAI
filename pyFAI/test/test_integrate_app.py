@@ -62,6 +62,7 @@ class TestIntegrateApp(unittest.TestCase):
             self.gui = False
             self.json = None
             self.monitor_key = None
+            self.write_mode = None
 
     def get_path(self, filename):
         path = os.path.join(self.tempDir, filename)
