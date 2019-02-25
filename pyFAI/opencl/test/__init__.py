@@ -24,14 +24,17 @@
 
 __authors__ = ["J. Kieffer"]
 __license__ = "MIT"
-__date__ = "29/11/2016"
+__date__ = "25/02/2019"
 
 import unittest
-from . import test_addition
+from ...test.utilstest import UtilsTest
 
 
 def suite():
     testSuite = unittest.TestSuite()
-    testSuite.addTests(test_addition.suite())
+
+    if UtilsTest.opencl:
+        from . import test_addition
+        testSuite.addTests(test_addition.suite())
 
     return testSuite
