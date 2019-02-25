@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/02/2019"
+__date__ = "25/02/2019"
 __status__ = "development"
 
 import logging
@@ -175,13 +175,17 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         """
         self._progressBar.setRange(0, data_count + 1)
 
-    def processing_data(self, data_info):
+    def processing_data(self, data_info, approximate_count=None):
         """
-        Start processing the data `data_id`
+        Start processing the data `data_info`
 
-        :param FrameInfo data_info: Contains data and metadata from the frame
+        :param DataInfo data_info: Contains data and metadata from the data
             to integrate
+        :param int approximate_count: If set, the amount of total data to
+            process have changed
         """
+        if approximate_count is not None:
+            self._progressBar.setRange(0, approximate_count + 1)
         self._progressBar.setValue(data_info.data_id)
         if data_info.source_filename is None:
             filename = ""

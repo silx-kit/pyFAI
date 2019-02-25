@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/02/2019"
+__date__ = "25/02/2019"
 __satus__ = "production"
 
 import sys
@@ -203,12 +203,14 @@ class IntegrationObserver(object):
         """
         pass
 
-    def processing_data(self, data_info):
+    def processing_data(self, data_info, approximate_count=None):
         """
-        Start processing the data `data_id`
+        Start processing the data `data_info`
 
         :param DataInfo data_info: Contains data and metadata from the data
             to integrate
+        :param int approximate_count: If set, the amount of total data to
+            process have changed
         """
         pass
 
@@ -251,7 +253,7 @@ class ShellIntegrationObserver(IntegrationObserver):
     def processing_started(self, data_count):
         self._progress_bar = ProgressBar("Integration", data_count, 20)
 
-    def processing_data(self, data_info):
+    def processing_data(self, data_info, approximate_count=None):
         if data_info.source_filename:
             if len(data_info.source_filename) > 100:
                 message = os.path.basename(data_info.source_filename)
@@ -259,7 +261,9 @@ class ShellIntegrationObserver(IntegrationObserver):
                 message = data_info.source_filename
         else:
             message = ""
-        self._progress_bar.update(data_info.data_id + 1, message=message)
+        self._progress_bar.update(data_info.data_id + 1,
+                                  message=message,
+                                  max_value=approximate_count)
 
     def processing_finished(self):
         self._progress_bar.clear()
@@ -639,7 +643,8 @@ def process(input_data, output, config, monitor_name, observer, write_mode):
     for data_info in source.frames():
         logger.debug("Processing %s", item)
 
-        observer.processing_data(data_info)
+        observer.processing_data(data_info,
+                                 approximate_count=source.approximate_count())
 
         if data_info.fabio_image is not None:
             normalization_factor = get_monitor_value(data_info.fabio_image, monitor_name)
