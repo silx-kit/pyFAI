@@ -526,6 +526,10 @@ def process(input_data, output, config, monitor_name, observer, write_mode):
     statistics = Statistics()
     statistics.execution_started()
 
+    if observer is None:
+        # Create a null observer to avoid to deal with None
+        observer = IntegrationObserver()
+
     worker = pyFAI.worker.Worker()
     worker_config = config.copy()
 
@@ -546,8 +550,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode):
 
     worker.safe = False  # all processing are expected to be the same.
 
-    if observer is not None:
-        observer.worker_initialized(worker)
+    observer.worker_initialized(worker)
 
     # Skip invalide data
     source = DataSource(statistics=statistics)
@@ -574,8 +577,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode):
         else:
             logger.warning("Type %s unsopported. Data ignored.", item)
 
-    if observer is not None:
-        observer.processing_started(source.count())
+    observer.processing_started(source.approximate_count())
 
     writer = None
     if output:
@@ -608,8 +610,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode):
     for data_info in source.frames():
         logger.debug("Processing %s", item)
 
-        if observer is not None:
-            observer.processing_data(data_info)
+        observer.processing_data(data_info)
 
         if data_info.fabio_image is not None:
             normalization_factor = get_monitor_value(data_info.fabio_image, monitor_name)
@@ -624,22 +625,18 @@ def process(input_data, output, config, monitor_name, observer, write_mode):
                                     normalization_factor=normalization_factor,
                                     writer=writer)
 
-        if observer is not None:
-            if observer.is_interruption_requested():
-                break
-            observer.data_result(data_info, result)
-
-        if observer is not None:
-            if observer.is_interruption_requested():
-                break
-
-    if observer is not None:
         if observer.is_interruption_requested():
-            logger.info("Processing was aborted")
-            observer.processing_interrupted()
-        else:
-            observer.processing_succeeded()
-        observer.processing_finished()
+            break
+        observer.data_result(data_info, result)
+        if observer.is_interruption_requested():
+            break
+
+    if observer.is_interruption_requested():
+        logger.info("Processing was aborted")
+        observer.processing_interrupted()
+    else:
+        observer.processing_succeeded()
+    observer.processing_finished()
 
     statistics.execution_stopped()
 
