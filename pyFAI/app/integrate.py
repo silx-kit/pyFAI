@@ -513,7 +513,7 @@ class Statistics(object):
     def execution_started(self):
         self._start_time = time.time()
 
-    def execution_stopped(self):
+    def execution_finished(self):
         t = time.time()
         self._execution = t - self._start_time
 
@@ -692,7 +692,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
         observer.processing_succeeded()
     observer.processing_finished()
 
-    statistics.execution_stopped()
+    statistics.execution_finished()
 
     logger.info("[First frame] Preprocessing time: %.0fms", statistics.preprocessing() * 1000)
     logger.info("[Per frames] Reading time: %.0fms; Processing time: %.0fms", statistics.reading_per_frame() * 1000, statistics.processing_per_frame() * 1000)
