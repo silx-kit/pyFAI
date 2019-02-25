@@ -56,12 +56,9 @@ class ProgressBar:
 
             Title [■■■■■■      ]  50%  Message
 
-        :param title: Title displayed before the progress bar
-        :type title: str
-        :param max_value: The maximum value of the progress bar
-        :type max_value: float
-        :param bar_width: Size of the progressbar in the screen
-        :type bar_width: int
+        :param str title: Title displayed before the progress bar
+        :param float max_value: The maximum value of the progress bar
+        :param int bar_width: Size of the progressbar in the screen
         """
         self.title = title
         self.max_value = max_value
@@ -115,10 +112,8 @@ class ProgressBar:
         first and then the content of the progress bar. The cursor is
         at the begining of the line.
 
-        :param value: progress bar's current value
-        :type value: float
-        :param message: message displayed after the progress bar
-        :type message: str
+        :param float value: progress bar's current value
+        :param str message: message displayed after the progress bar
         """
         self._message = message
         self._value = value
