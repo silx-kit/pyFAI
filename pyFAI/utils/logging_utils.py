@@ -35,10 +35,11 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2019"
+__date__ = "25/02/2019"
 
 
 import logging
+import contextlib
 
 
 class PrePostEmitStreamHandler(logging.Handler):
@@ -76,16 +77,32 @@ class PrePostEmitStreamHandler(logging.Handler):
 
 def set_prepost_emit_callback(logger, pre_callback, post_callback):
     """Patch the logging system to have a working progress bar without glitch.
-    pyFAI define a default handler then we have to rework it"""
+    pyFAI define a default handler then we have to rework it
+
+    :return: The new handler
+    """
     # assume there is a logger
     assert(len(logger.handlers) == 1)
-    root_handler = logger.handlers[0]
-    logger.removeHandler(root_handler)
+    previous_handler = logger.handlers[0]
+    logger.removeHandler(previous_handler)
     # use our custom handler
-    handler = PrePostEmitStreamHandler(root_handler)
+    handler = PrePostEmitStreamHandler(previous_handler)
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
     if pre_callback:
         handler.pre_emit = pre_callback
     if post_callback:
         handler.post_emit = post_callback
+    return handler
+
+
+@contextlib.contextmanager
+def prepost_emit_callback(logger, pre_callback, post_callback):
+    """Context manager to add pre/post emit callback to a logger"""
+    patched_handler = set_prepost_emit_callback(logger, pre_callback, post_callback)
+    yield
+    previous_handler = patched_handler._handler
+    logger.removeHandler(patched_handler)
+    # use the previous handler
+    logger.addHandler(previous_handler)
+    logger.setLevel(logging.INFO)
