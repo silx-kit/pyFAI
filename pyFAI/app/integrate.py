@@ -255,7 +255,10 @@ class ShellIntegrationObserver(IntegrationObserver):
 
     def processing_data(self, data_info, approximate_count=None):
         if data_info.source_filename:
-            if len(data_info.source_filename) > 100:
+            if data_info.data_id == 0 and data_info.frame_id in [0, None]:
+                # While we can't execute independantly the preprocessing
+                message = "Preprocessing"
+            elif len(data_info.source_filename) > 100:
                 message = os.path.basename(data_info.source_filename)
             else:
                 message = data_info.source_filename
