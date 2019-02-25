@@ -707,14 +707,16 @@ def integrate_shell(options, args):
         config = json.load(f)
 
     observer = ShellIntegrationObserver()
-    root_logger = logging.getLogger()
-    logging_utils.set_prepost_emit_callback(root_logger,
-                                            observer.hide_info,
-                                            observer.show_info)
-    monitor_name = options.monitor_key
-    filenames = args
-    output = options.output
-    return process(filenames, output, config, monitor_name, observer, options.write_mode)
+    default_logger = logging.getLogger()
+    with logging_utils.prepost_emit_callback(default_logger,
+                                             observer.hide_info,
+                                             observer.show_info):
+        monitor_name = options.monitor_key
+        filenames = args
+        output = options.output
+        result = process(filenames, output, config, monitor_name, observer, options.write_mode)
+
+    return result
 
 
 def _main(args):
