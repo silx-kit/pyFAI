@@ -534,6 +534,8 @@ class Statistics(object):
 
     def reading_per_frame(self):
         """Average time spend to read a frame"""
+        if self._frames == 0:
+            return float("NaN")
         return self._reading / self._frames
 
     def total_reading(self):
