@@ -548,7 +548,7 @@ class Statistics(object):
         return self._execution
 
 
-def process(input_data, output, config, monitor_name, observer, write_mode):
+def process(input_data, output, config, monitor_name, observer, write_mode=HDF5Writer.MODE_ERROR):
     """
     Integrate a set of data.
 
