@@ -283,9 +283,33 @@ class DataSource(object):
     def __init__(self, statistics):
         self._items = []
         self._statistics = statistics
+        self._frames_per_items = []
 
     def append(self, item):
         self._items.append(item)
+
+    def approximate_count(self):
+        """Returns the number of frames contained in the data source.
+
+        To speed up the processing time, this value could be approximate.
+        Especially with file series, and EDF multiframes.
+
+        :type: int"""
+        if len(self._items) == 0:
+            return 0
+        known_frames = sum(self._frames_per_items)
+        missing_items = len(self._items) - len(self._frames_per_items)
+        if missing_items <= 0:
+            # NOTE: Precondition, a feeded _frames_per_items will not be edited in between
+            return known_frames
+
+        if known_frames != 0:
+            averate_frame_per_item = known_frames / len(self._frames_per_items)
+        else:
+            averate_frame_per_item = 1
+
+        result = known_frames + missing_items * averate_frame_per_item
+        return result
 
     def count(self):
         return len(self._items)
@@ -332,7 +356,9 @@ class DataSource(object):
             fabio_image = None
 
         if fabio_image is not None:
+            # TODO: Reach nframes here could slow down the reading
             if fabio_image.nframes > 1:
+                self._frames_per_items.append(fabio_image.nframes)
                 for iframe in range(fabio_image.nframes):
                     with self._statistics.time_reading():
                         fimg = fabio_image.getframe(iframe)
@@ -346,6 +372,7 @@ class DataSource(object):
                                    header=fimg.header,
                                    source_filename=filename)
             else:
+                self._frames_per_items.append(iitem)
                 with self._statistics.time_reading():
                     data = fabio_image.data[...]
                 yield DataInfo(source=item,
@@ -360,6 +387,7 @@ class DataSource(object):
                 fabio_image.close()
         else:
             if item.ndim == 3:
+                self._frames_per_items.append(len(item))
                 for iframe, data in enumerate(item):
                     with self._statistics.time_reading():
                         data = data[...]
@@ -372,6 +400,7 @@ class DataSource(object):
                                    header=None,
                                    source_filename=filename)
             else:
+                self._frames_per_items.append(1)
                 data = item
                 with self._statistics.time_reading():
                     data = data[...]
