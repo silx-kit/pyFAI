@@ -103,7 +103,7 @@ class ProgressBar:
         """
         self.update(self._value, self._message)
 
-    def update(self, value, message=""):
+    def update(self, value, message="", max_value=None):
         """
         Update the progrss bar with the progress bar's current value.
 
@@ -114,7 +114,11 @@ class ProgressBar:
 
         :param float value: progress bar's current value
         :param str message: message displayed after the progress bar
+        :param float max_value: If not none, update the maximum value of the
+            progress bar
         """
+        if max_value is not None:
+            self.max_value = max_value
         self._message = message
         self._value = value
 
