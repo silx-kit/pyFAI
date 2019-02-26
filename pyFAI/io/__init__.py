@@ -59,6 +59,7 @@ import threading
 import time
 from collections import OrderedDict
 
+from pyFAI.third_party import six
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
 from .. import version
@@ -400,20 +401,23 @@ class HDF5Writer(Writer):
                 if do_2D:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 4
-                    self.nxdata.attrs["axis"] = [u".", u"fast", u"chi", u"radial"]
+                    axis_definition = [u".", u"fast", u"chi", u"radial"]
                 else:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
-                    self.nxdata.attrs["axis"] = [u".", u"fast", u"radial"]
+                    axis_definition = [u".", u"fast", u"radial"]
             else:
                 if do_2D:
-                    #self.nxdata.attrs["axis"] = [u".", u"chi", u"radial"]
+                    axis_definition = [u".", u"chi", u"radial"]
                     chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
                 else:
-                    #self.nxdata.attrs["axis"] = [u".", u"radial"]
+                    axis_definition = [u".", u"radial"]
                     chunk = 1, self.fai_cfg["nbpt_rad"]
                     self.ndim = 2
+
+            utf8vlen_dtype = h5py.special_dtype(vlen=six.text_type)
+            self.nxdata.attrs["axis"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
 
             if self.DATASET_NAME in self.nxdata:
                 del self.nxdata[self.DATASET_NAME]
