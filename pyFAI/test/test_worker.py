@@ -316,6 +316,10 @@ class TestWorkerConfig(unittest.TestCase):
         numpy.save(cls.c, ones * 3)
         numpy.save(cls.d, ones * 4)
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.directory)
+
     def test_flatdark(self):
         config = {"version": 2,
                   "application": "pyfai-integrate",
@@ -335,9 +339,6 @@ class TestWorkerConfig(unittest.TestCase):
         self.assertTrue(numpy.isclose(worker.ai.detector.get_darkcurrent()[0, 0], (1 + 2 + 3) / 3))
         self.assertTrue(numpy.isclose(worker.ai.detector.get_flatfield()[0, 0], (1 + 2 + 4) / 3))
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.directory)
 
 
 def suite():
