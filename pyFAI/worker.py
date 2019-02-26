@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2019"
+__date__ = "26/02/2019"
 __status__ = "development"
 
 import threading
@@ -97,6 +97,7 @@ import fabio
 
 logger = logging.getLogger(__name__)
 
+from .third_party import six
 from . import average
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
@@ -168,7 +169,7 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
         apply_process = config.pop("do_mask", True)
         if filename and os.path.exists(filename) and apply_process:
             try:
-                data = fabio.open(filename).data
+                data = _read_image_data(filename)
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
@@ -204,6 +205,19 @@ def _normalize_filenames(filenames):
     raise TypeError("Unsupported type %s for a list of filenames" % type(filenames))
 
 
+def _read_image_data(image_path):
+    """
+    Returns a numpy.array image from a file name.
+
+    :param str image_path: Path of the image file
+    :rtype: numpy.ndarray
+    """
+    if fabio is None:
+        raise RuntimeError("FabIO is missing")
+    with fabio.open(image_path) as image:
+        return image.data
+
+
 def _reduce_images(filenames, method="mean"):
     """
     Reduce a set of filenames using a reduction method
@@ -213,10 +227,8 @@ def _reduce_images(filenames, method="mean"):
     """
     if len(filenames) == 0:
         return None
-    if fabio is None:
-        raise RuntimeError("FabIO is missing")
     if len(filenames) == 1:
-        return fabio.open(filenames[0]).data.astype(numpy.float32)
+        return _read_image_data(filenames[0]).astype(numpy.float32)
     else:
         return average.average_images(filenames, filter_=method, fformat=None, threshold=0)
 
@@ -472,7 +484,7 @@ class Worker(object):
         apply_process = config.pop("do_mask", True)
         if filename and os.path.exists(filename) and apply_process:
             try:
-                data = fabio.open(filename).data
+                data = _read_image_data(filename)
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
