@@ -260,6 +260,75 @@ class TestIntegrateApp(unittest.TestCase):
             self.assertIsNotNone(h5)
             self.assertEquals(h5["my/entry/integrate/results/data"].shape[0], 2)
 
+    def test_write_h5_delete_mode(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        file1 = self.create_edf_file("data1.edf", data)
+        options.json = self.create_json()
+        options.write_mode = pyFAI.app.integrate.HDF5Writer.MODE_DELETE
+        options.output = os.path.join(self.test_path(), "result.h5")
+        with h5py.File(options.output, mode="w") as h5:
+            # Store something
+            h5["entry_0000"] = 10
+        pyFAI.app.integrate.integrate_shell(options, [file1])
+        self.assertTrue(os.path.exists(options.output))
+        with h5py.File(options.output, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            self.assertEquals(h5["/entry_0000/integrate/results/data"].shape[0], 1)
+
+    def test_write_h5_overwrite_mode(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        file1 = self.create_edf_file("data1.edf", data)
+        options.json = self.create_json()
+        options.write_mode = pyFAI.app.integrate.HDF5Writer.MODE_OVERWRITE
+        options.output = os.path.join(self.test_path(), "result.h5")
+        with h5py.File(options.output, mode="w") as h5:
+            # Store something
+            h5["entry_0000"] = 10
+            h5["my_entry"] = 10
+        pyFAI.app.integrate.integrate_shell(options, [file1])
+        self.assertTrue(os.path.exists(options.output))
+        with h5py.File(options.output, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            self.assertEquals(h5["/entry_0000/integrate/results/data"].shape[0], 1)
+            self.assertEquals(h5["/my_entry"][()], 10)
+
+    def test_write_h5_append_mode(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        file1 = self.create_edf_file("data1.edf", data)
+        options.json = self.create_json()
+        options.write_mode = pyFAI.app.integrate.HDF5Writer.MODE_APPEND
+        options.output = os.path.join(self.test_path(), "result.h5")
+        with h5py.File(options.output, mode="w") as h5:
+            # Store something
+            h5["entry_0000"] = 10
+        pyFAI.app.integrate.integrate_shell(options, [file1])
+        self.assertTrue(os.path.exists(options.output))
+        with h5py.File(options.output, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            self.assertEquals(h5["/entry_0000"][()], 10)
+            self.assertEquals(h5["/entry_0001/integrate/results/data"].shape[0], 1)
+
+    def test_write_h5_error_mode(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        file1 = self.create_edf_file("data1.edf", data)
+        options.json = self.create_json()
+        options.write_mode = pyFAI.app.integrate.HDF5Writer.MODE_ERROR
+        options.output = os.path.join(self.test_path(), "result.h5")
+        with h5py.File(options.output, mode="w") as h5:
+            # Store something
+            h5["entry_0000"] = 10
+        result = pyFAI.app.integrate.integrate_shell(options, [file1])
+        self.assertNotEqual(result, 0)
+        self.assertTrue(os.path.exists(options.output))
+        with h5py.File(options.output, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            self.assertEquals(h5["/entry_0000"][()], 10)
+            self.assertNotIn("/entry_0001", h5)
+
 
 class _ResultObserver(pyFAI.app.integrate.IntegrationObserver):
 
