@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2019"
+__date__ = "21/02/2019"
 __status__ = "development"
 
 import logging
@@ -94,7 +94,7 @@ class WorkerConfigurator(qt.QWidget):
         self.load_detector.clicked.connect(self.selectDetector)
         self.opencl_config_button.clicked.connect(self.selectOpenclDevice)
         self.method_config_button.clicked.connect(self.selectMethod)
-        self.show_geometry.clicked.connect(self.showGeometry)
+        self.show_geometry.clicked.connect(self.selectGeometry)
 
         # connect file selection windows
         self.file_import.clicked.connect(self.__selectFile)
@@ -432,11 +432,17 @@ class WorkerConfigurator(qt.QWidget):
         self._radialRangeUnit.setText(symbol)
         self._radialRangeUnit.setToolTip(toolTip)
 
-    def showGeometry(self):
+    def selectGeometry(self):
         dialog = GeometryDialog(self)
         dialog.setGeometryModel(self.__geometryModel)
         dialog.setDetector(self.__detector)
-        dialog.exec_()
+        result = dialog.exec_()
+        if result:
+            geometry = dialog.geometryModel()
+            if geometry.isValid(checkWaveLength=False):
+                self.__geometryModel.setFrom(geometry)
+            else:
+                qt.QMessageBox.critical(self, "Geometry ignored", "Provided geometry is not consistent")
 
     def selectOpenclDevice(self):
         dialog = OpenClDeviceDialog(self)

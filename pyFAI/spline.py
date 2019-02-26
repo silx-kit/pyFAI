@@ -36,7 +36,7 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "05/10/2018"
+__date__ = "25/02/2019"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -415,12 +415,12 @@ class Spline(object):
                 y_unordered[y_order] = numpy.arange(size)
 
         y_disp_array = fitpack.bisplev(x, y,
-                                     [self.ySplineKnotsX,
-                                      self.ySplineKnotsY,
-                                      self.ySplineCoeff,
-                                      self.splineOrder,
-                                      self.splineOrder],
-                                     dx=0, dy=0)
+                                       [self.ySplineKnotsX,
+                                        self.ySplineKnotsY,
+                                        self.ySplineCoeff,
+                                        self.splineOrder,
+                                        self.splineOrder],
+                                       dx=0, dy=0)
         if list_of_points and x.ndim == 1:
             if size > 1:
                 return y_disp_array[x_unordered, y_unordered]
@@ -611,7 +611,7 @@ class Spline(object):
                 self.zeros()
             else:
                 self.read(self.filename)
-        logger.info("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm", center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize)
+        logger.info(u"center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm", center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize)
         if timing:
             startTime = time.time()
         distance = 1.0e6 * distanceSampleDetector  # from meters to microns
@@ -621,13 +621,16 @@ class Spline(object):
         sinf = numpy.sin(numpy.radians(tiltAngle))
 
         # x and y are tilted in C/Fortran representation
-        x = lambda i, j: j - center[0] - 0.5
-        y = lambda i, j: i - center[1] - 0.5
+        def compute_x(_, j):
+            return j - center[0] - 0.5
 
-        iPos = numpy.fromfunction(x,
+        def compute_y(i, _):
+            return i - center[1] - 0.5
+
+        iPos = numpy.fromfunction(compute_x,
                                   (int(self.ymax - self.ymin + 1),
                                    int(self.xmax - self.xmin + 1)))
-        jPos = numpy.fromfunction(y,
+        jPos = numpy.fromfunction(compute_y,
                                   (int(self.ymax - self.ymin + 1),
                                    int(self.xmax - self.xmin + 1)))
 

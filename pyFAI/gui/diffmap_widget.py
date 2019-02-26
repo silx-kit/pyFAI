@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2019"
+__date__ = "22/02/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -441,6 +441,8 @@ class DiffMapWidget(qt.QWidget):
         with self.processing_sem:
             config = self.dump()
             config_ai = config.get("ai", {})
+            config_ai = config_ai.copy()
+
             diffmap = DiffMap(npt_fast=config.get("fast_motor_points", 1),
                               npt_slow=config.get("slow_motor_points", 1),
                               npt_rad=config_ai.get("nbpt_rad", 1000),

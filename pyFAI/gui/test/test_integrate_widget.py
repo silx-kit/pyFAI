@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2019"
+__date__ = "25/02/2019"
 
 import os
 import sys
@@ -42,7 +42,6 @@ import unittest
 import logging
 
 from silx.gui import qt
-from ...gui.IntegrationDialog import IntegrationDialog
 from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
 from pyFAI.test.utilstest import UtilsTest
 from pyFAI.io import integration_config
