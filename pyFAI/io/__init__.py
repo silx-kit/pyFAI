@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/02/2019"
+__date__ = "26/02/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -216,7 +216,7 @@ class HDF5Writer(Writer):
     """
     Class allowing to write HDF5 Files.
     """
-    CONFIG = "config"
+    CONFIG = "configuration"
     DATASET_NAME = "data"
 
     MODE_ERROR = "error"
@@ -224,16 +224,22 @@ class HDF5Writer(Writer):
     MODE_APPEND = "append"
     MODE_OVERWRITE = "overwrite"
 
-    def __init__(self, filename, hpath="data", fast_scan_width=None, append_frames=False, mode=MODE_ERROR):
+    def __init__(self, filename, hpath=None, entry_template=None, fast_scan_width=None, append_frames=False, mode=MODE_ERROR):
         """
         Constructor of an HDF5 writer:
 
-        :param filename: name of the file
-        :param hpath: name of the group: it will contain data (2-4D dataset), [tth|q|r] and pyFAI, group containing the configuration
-        :param fast_scan_width: set it to define the width of
+        :param str filename: name of the file
+        :param str hpath: Name of the entry group that will contains the NXprocess.
+        :param str entry_template: Formattable template to create a new entry (if hpath is not specified)
+        :param int fast_scan_width: set it to define the width of
         """
         Writer.__init__(self, filename)
+        if entry_template is None:
+            entry_template = "entry_{num:04}"
+        self._entry_template = entry_template
+
         self.hpath = hpath
+
         self.fast_scan_width = None
         if fast_scan_width is not None:
             try:
@@ -262,17 +268,24 @@ class HDF5Writer(Writer):
     def __repr__(self):
         return "HDF5 writer on file %s:%s %sinitialized" % (self.filename, self.hpath, "" if self._initialized else "un")
 
-    def _find_unused_name(self, prefix):
-        if prefix not in self.hdf5:
-            return prefix
-        for i in range(2, 1000):
-            name = prefix + str(i)
+    def _find_unused_name(self, prefix=None):
+        if prefix is not None:
+            template = prefix + "_{num:04}"
+        else:
+            template = self._entry_template
+
+        for i in range(1, 9999):
+            name = template.format(num=i)
             if name not in self.hdf5:
                 return name
         raise IOError("No entry name available")
 
-    def _require_entry(self, name, mode):
+    def _require_main_entry(self, mode):
         """
+        Create and return the main entry used to store the data processing.
+
+        Update `self.hpath` is needed.
+
         Load and return the entry while will contains the data processing.
 
         According to modes, this function will delete and recreate the file,
@@ -295,6 +308,10 @@ class HDF5Writer(Writer):
             else:
                 raise
 
+        name = self.hpath
+        if name is None:
+            name = self._entry_template.format(num=0)
+
         if name in self.hdf5:
             if mode == self.MODE_DELETE:
                 self.hdf5.close()
@@ -302,7 +319,7 @@ class HDF5Writer(Writer):
                 os.unlink(self.filename)
                 self.hdf5 = h5py.File(self.filename)
             elif mode == self.MODE_APPEND:
-                name = self._find_unused_name(name)
+                name = self._find_unused_name(self.hpath)
             elif mode == self.MODE_OVERWRITE:
                 del self.hdf5[name]
             elif mode == self.MODE_ERROR:
@@ -311,6 +328,7 @@ class HDF5Writer(Writer):
                 assert(False)
 
         entry = self.hdf5.require_group(name)
+        self.hpath = name
         return entry
 
     def init(self, fai_cfg=None, lima_cfg=None):
@@ -327,26 +345,26 @@ class HDF5Writer(Writer):
 
             self.fai_cfg["nbpt_rad"] = self.fai_cfg.get("nbpt_rad", 1000)
 
-            self.entry = self._require_entry(self.hpath, self._mode)
-            self.hpath = self.entry.name
+            self.entry = self._require_main_entry(self._mode)
 
-            self.hdf5.attrs["default"] = numpy.string_(self.hpath)
+            self.hdf5.attrs["default"] = u"%s" % self.hpath
 
-            self.entry.attrs["NX_class"] = numpy.string_("NXentry")
-            self.entry.attrs["default"] = numpy.string_("integrate/results")
+            self.entry.attrs["NX_class"] = u"NXentry"
+            self.entry.attrs["default"] = u"integrate/results"
 
             self.process = self.entry.require_group("integrate")
-            self.process.attrs["NX_class"] = numpy.string_("NXprocess")
-            self.process["program"] = numpy.string_("PyFAI")
-            self.process["version"] = numpy.string_(version)
-            self.process.attrs["default"] = numpy.string_("results")
+            self.process.attrs["NX_class"] = u"NXprocess"
+            self.process["program"] = u"PyFAI"
+            self.process["version"] = u"%s" % version
+            self.process.attrs["default"] = u"results"
 
             self.nxdata = self.process.require_group("results")
-            self.nxdata.attrs["NX_class"] = numpy.string_("NXdata")
-            self.nxdata.attrs["signal"] = numpy.string_(self.DATASET_NAME)
+            self.nxdata.attrs["NX_class"] = u"NXdata"
+            self.nxdata.attrs["signal"] = u"%s" % self.DATASET_NAME
 
             self.config = self.process.require_group(self.CONFIG)
-            self.config.attrs["desc"] = numpy.string_("PyFAI worker configuration")
+            self.config.attrs["NX_class"] = u"NXcollection"
+            self.config.attrs["desc"] = u"PyFAI worker configuration"
             for key, value in self.fai_cfg.items():
                 if value is None:
                     continue
@@ -362,23 +380,23 @@ class HDF5Writer(Writer):
             rad_name, rad_unit = str(self.fai_cfg.get("unit", "2th_deg")).split("_", 1)
 
             self.radial_values = self.nxdata.require_dataset("radial", (self.fai_cfg["nbpt_rad"],), numpy.float32)
-            self.radial_values.attrs["unit"] = numpy.string_(rad_unit)
-            self.radial_values.attrs["interpretation"] = numpy.string_("scalar")
-            self.radial_values.attrs["name"] = numpy.string_(rad_name)
-            self.radial_values.attrs["long_name"] = numpy.string_("Diffraction radial direction")
+            self.radial_values.attrs["unit"] = u"%s" % rad_unit
+            self.radial_values.attrs["interpretation"] = u"scalar"
+            self.radial_values.attrs["name"] = u"%s" % rad_name
+            self.radial_values.attrs["long_name"] = u"Diffraction radial direction"
 
             do_2D = self.fai_cfg.get("do_2D", self.fai_cfg.get("nbpt_azim", 0) > 0)
 
             if do_2D:
                 self.azimuthal_values = self.nxdata.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
-                self.azimuthal_values.attrs["unit"] = numpy.string_("deg")
-                self.azimuthal_values.attrs["interpretation"] = numpy.string_("scalar")
-                self.azimuthal_values.attrs["long_name"] = numpy.string_("Azimuthal angle")
+                self.azimuthal_values.attrs["unit"] = u"deg"
+                self.azimuthal_values.attrs["interpretation"] = u"scalar"
+                self.azimuthal_values.attrs["long_name"] = u"Azimuthal angle"
 
             if self.fast_scan_width:
                 self.fast_motor = self.entry.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
-                self.fast_motor.attrs["long_name"] = numpy.string_("Fast motor position")
-                self.fast_motor.attrs["interpretation"] = numpy.string_("scalar")
+                self.fast_motor.attrs["long_name"] = u"Fast motor position"
+                self.fast_motor.attrs["interpretation"] = u"scalar"
                 if do_2D:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 4
@@ -389,11 +407,11 @@ class HDF5Writer(Writer):
                     self.nxdata.attrs["axis"] = [u".", u"fast", u"radial"]
             else:
                 if do_2D:
-                    self.nxdata.attrs["axis"] = [u".", u"chi", u"radial"]
+                    #self.nxdata.attrs["axis"] = [u".", u"chi", u"radial"]
                     chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
                 else:
-                    self.nxdata.attrs["axis"] = [u".", u"radial"]
+                    #self.nxdata.attrs["axis"] = [u".", u"radial"]
                     chunk = 1, self.fai_cfg["nbpt_rad"]
                     self.ndim = 2
 
@@ -414,20 +432,20 @@ class HDF5Writer(Writer):
             self.dataset = self.nxdata.require_dataset(self.DATASET_NAME, shape, dtype=dtype, chunks=chunk,
                                                        maxshape=(None,) + chunk[1:])
             if do_2D:
-                self.nxdata.attrs["interpretation"] = numpy.string_("image")
-                self.dataset.attrs["interpretation"] = numpy.string_("image")
+                self.nxdata.attrs["interpretation"] = u"image"
+                self.dataset.attrs["interpretation"] = u"image"
             else:
-                self.nxdata.attrs["interpretation"] = numpy.string_("image")
-                self.dataset.attrs["interpretation"] = numpy.string_("spectrum")
-            self.dataset.attrs["signal"] = numpy.string_("1")
+                self.nxdata.attrs["interpretation"] = u"image"
+                self.dataset.attrs["interpretation"] = u"spectrum"
+
             self.chunk = chunk
             self.shape = shape
             name = "Mapping " if self.fast_scan_width else "Scanning "
             name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
             name += " experiment"
-            self.entry["title"] = numpy.string_(name)
-            self.entry["start_time"] = numpy.string_(get_isotime())
-            self.process["start_time"] = numpy.string_(get_isotime())
+            self.entry["title"] = u"%s" % name
+            self.entry["start_time"] = u"%s" % get_isotime()
+            self.process["start_time"] = u"%s" % get_isotime()
 
     def flush(self, radial=None, azimuthal=None):
         """
@@ -450,9 +468,9 @@ class HDF5Writer(Writer):
                 else:
                     logger.warning("Unable to assign azimuthal axis position")
             if self.process is not None:
-                self.process["end_time"] = numpy.string_(get_isotime())
+                self.process["end_time"] = u"%s" % get_isotime()
             if self.entry is not None:
-                self.entry["end_time"] = numpy.string_(get_isotime())
+                self.entry["end_time"] = u"%s" % get_isotime()
             self.hdf5.flush()
 
     def close(self):
