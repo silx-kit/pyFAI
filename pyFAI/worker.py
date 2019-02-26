@@ -94,6 +94,7 @@ import logging
 import json
 import numpy
 import fabio
+import silx.io
 
 logger = logging.getLogger(__name__)
 
@@ -214,10 +215,17 @@ def _read_image_data(image_path):
     """
     if fabio is None:
         raise RuntimeError("FabIO is missing")
-    if not os.path.exists(image_path):
-        raise RuntimeError("Filename '%s' does not exist" % image_path)
-    with fabio.open(image_path) as image:
-        return image.data
+    if os.path.exists(image_path):
+        with fabio.open(image_path) as image:
+            return image.data
+    if image_path.startswith("silx:") or image_path.startswith("fabio:"):
+        data = silx.io.get_data(image_path)
+        if len(data.shape) != 2:
+            raise RuntimeError("Path identify a %dd-array, but a 2d is array is expected" % (image_path, len(data.shape)))
+        if data.dtype.kind not in "fui":
+            raise RuntimeError("Path identify an %s-kind array, but a numerical kind is expected" % (image_path, data.dtype.kind))
+        return data
+    raise RuntimeError("Path '%s' is not supported or missing")
 
 
 def _reduce_images(filenames, method="mean"):
