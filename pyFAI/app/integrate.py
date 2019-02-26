@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2019"
+__date__ = "26/02/2019"
 __satus__ = "production"
 
 import sys
@@ -632,10 +632,14 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
 
     writer = None
     if output:
+        if "::" in output:
+            output, entry_path = output.split("::", 1)
+        else:
+            entry_path = None
         if os.path.isdir(output):
             writer = MultiFileWriter(output, mode=write_mode)
         elif output.endswith(".h5") or output.endswith(".hdf5"):
-            writer = HDF5Writer(output, append_frames=True, mode=write_mode)
+            writer = HDF5Writer(output, hpath=entry_path, append_frames=True, mode=write_mode)
         else:
             output_path = os.path.abspath(output)
             writer = MultiFileWriter(output_path, mode=write_mode)

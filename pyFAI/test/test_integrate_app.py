@@ -246,6 +246,20 @@ class TestIntegrateApp(unittest.TestCase):
             self.assertIsNotNone(h5)
             self.assertEquals(h5["entry_0000/integrate/results/data"].shape[0], 4)
 
+    def test_fileseries_to_h5_entry(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        file1 = self.create_edf_file("data1.edf", data)
+        file2 = self.create_edf_file("data2.edf", data)
+        options.json = self.create_json()
+        output_file = os.path.join(self.test_path(), "result.h5")
+        options.output = output_file + "::my/entry"
+        pyFAI.app.integrate.integrate_shell(options, [file1, file2])
+        self.assertTrue(os.path.exists(output_file))
+        with h5py.File(output_file, mode="r") as h5:
+            self.assertIsNotNone(h5)
+            self.assertEquals(h5["my/entry/integrate/results/data"].shape[0], 2)
+
 
 class _ResultObserver(pyFAI.app.integrate.IntegrationObserver):
 
