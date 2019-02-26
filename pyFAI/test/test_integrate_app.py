@@ -191,7 +191,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            result = h5["data/integrate/results/data"]
+            result = h5["entry_0000/integrate/results/data"]
             self.assertEquals(result.shape[0], 4)
             for iframe in range(result.shape[0]):
                 numpy.testing.assert_almost_equal(result[iframe], expected, decimal=1)
@@ -207,7 +207,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["data/integrate/results/data"].shape[0], 2)
+            self.assertEquals(h5["entry_0000/integrate/results/data"].shape[0], 2)
 
     def test_multiframes_to_h5(self):
         options = self.Options()
@@ -219,7 +219,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["data/integrate/results/data"].shape[0], 2)
+            self.assertEquals(h5["entry_0000/integrate/results/data"].shape[0], 2)
 
     def test_multiframes_fileseries_to_h5(self):
         options = self.Options()
@@ -232,7 +232,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["data/integrate/results/data"].shape[0], 4)
+            self.assertEquals(h5["entry_0000/integrate/results/data"].shape[0], 4)
 
     def test_h5_to_h5(self):
         options = self.Options()
@@ -244,7 +244,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["data/integrate/results/data"].shape[0], 4)
+            self.assertEquals(h5["entry_0000/integrate/results/data"].shape[0], 4)
 
 
 class _ResultObserver(pyFAI.app.integrate.IntegrationObserver):
