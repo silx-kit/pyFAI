@@ -167,7 +167,7 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
     if read_maps:
         filename = config.pop("mask_file", "")
         apply_process = config.pop("do_mask", True)
-        if filename and os.path.exists(filename) and apply_process:
+        if filename and apply_process:
             try:
                 data = _read_image_data(filename)
             except Exception as error:
@@ -214,6 +214,8 @@ def _read_image_data(image_path):
     """
     if fabio is None:
         raise RuntimeError("FabIO is missing")
+    if not os.path.exists(image_path):
+        raise RuntimeError("Filename '%s' does not exist" % image_path)
     with fabio.open(image_path) as image:
         return image.data
 
@@ -482,7 +484,7 @@ class Worker(object):
         # Do it here before reading the AI to be able to catch the io
         filename = config.pop("mask_file", "")
         apply_process = config.pop("do_mask", True)
-        if filename and os.path.exists(filename) and apply_process:
+        if filename and apply_process:
             try:
                 data = _read_image_data(filename)
             except Exception as error:
