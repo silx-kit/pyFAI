@@ -34,14 +34,15 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2019"
+__date__ = "26/02/2019"
 
 
 import unittest
 import numpy
 import logging
 import os.path
-from .. import units, worker
+from .. import units
+from .. import worker as worker_mdl
 from ..worker import Worker, PixelwiseWorker
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
@@ -263,21 +264,21 @@ class TestWorker(unittest.TestCase):
 
         # Without error propagation
         # Numpy path
-        worker.USE_CYTHON = False
+        worker_mdl.USE_CYTHON = False
         pww = PixelwiseWorker(dark=dark, flat=flat, dummy=-5, dtype="float64")
         res_np = pww.process(raw, normalization_factor=6.0)
         err = abs(res_np - signal / 6.0).max()
         self.assertLess(err, precision, "Numpy calculation are OK: %s" % err)
 
         # Cython path
-        worker.USE_CYTHON = True
+        worker_mdl.USE_CYTHON = True
         res_cy = pww.process(raw, normalization_factor=7.0)
         err = abs(res_cy - signal / 7.0).max()
         self.assertLess(err, precision, "Cython calculation are OK: %s" % err)
 
         # With Poissonian errors
         # Numpy path
-        worker.USE_CYTHON = False
+        worker_mdl.USE_CYTHON = False
         pww = PixelwiseWorker(dark=dark)
         res_np, err_np = pww.process(raw, variance=ref, normalization_factor=2.0)
         delta_res = abs(res_np - ref / 2.0).max()
@@ -287,7 +288,7 @@ class TestWorker(unittest.TestCase):
         self.assertLess(delta_err, precision, "Numpy error calculation are OK: %s" % err)
 
         # Cython path
-        worker.USE_CYTHON = True
+        worker_mdl.USE_CYTHON = True
         res_cy, err_cy = pww.process(raw, variance=ref, normalization_factor=2.0)
         delta_res = abs(res_cy - ref / 2.0).max()
         delta_err = abs(err_cy - numpy.sqrt(ref) / 2.0).max()
