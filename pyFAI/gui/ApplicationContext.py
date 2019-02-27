@@ -174,11 +174,6 @@ class ApplicationContext(object):
         self.__configureDialog(dialog)
 
         if previousFile is not None:
-            if os.path.exists(previousFile):
-                if os.path.isdir(previousFile):
-                    directory = previousFile
-                else:
-                    directory = os.path.dirname(previousFile)
-                dialog.setDirectory(directory)
+            dialog.selectUrl(previousFile)
 
         return dialog
