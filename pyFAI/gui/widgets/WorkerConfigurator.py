@@ -213,7 +213,7 @@ class WorkerConfigurator(qt.QWidget):
             filenames = filenames.strip()
             if filenames == "":
                 return None
-            return [name.strip() for name in filenames.split(",")]
+            return [name.strip() for name in filenames.split("|")]
 
         config = collections.OrderedDict()
 
@@ -357,7 +357,7 @@ class WorkerConfigurator(qt.QWidget):
             if filenames is None:
                 return ""
             if isinstance(filenames, list):
-                return ",".join(filenames)
+                return "|".join(filenames)
             filenames = filenames.strip()
             return filenames
 
