@@ -60,6 +60,7 @@ class ApplicationContext(object):
         assert(ApplicationContext.__instance is None)
         self.__parent = None
         self.__dialogStates = {}
+        self.__dialogGeometry = {}
         self.__settings = settings
         ApplicationContext.__instance = self
 
@@ -135,9 +136,13 @@ class ApplicationContext(object):
             dialog.setDirectory(currentDirectory)
         else:
             dialog.restoreState(dialogState)
+        geometry = self.__dialogGeometry.get(type(dialog), None)
+        if geometry is not None:
+            dialog.setGeometry(geometry)
 
     def __saveDialogState(self, dialog):
         self.__dialogStates[type(dialog)] = dialog.saveState()
+        self.__dialogGeometry[type(dialog)] = dialog.geometry()
 
     def createFileDialog(self, parent, previousFile=None):
         """Create a file dialog configured with a default path.
