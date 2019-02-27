@@ -216,14 +216,20 @@
        </widget>
       </item>
       <item row="1" column="4">
-       <widget class="QToolButton" name="file_dark_current">
+       <widget class="LoadImageToolButton" name="file_dark_current">
+        <property name="toolTip">
+         <string>Select a dark current file</string>
+        </property>
         <property name="text">
          <string>...</string>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
-       <widget class="QToolButton" name="file_flat_field">
+       <widget class="LoadImageToolButton" name="file_flat_field">
+        <property name="toolTip">
+         <string>Select a flat field file</string>
+        </property>
         <property name="text">
          <string>...</string>
         </property>
@@ -250,7 +256,10 @@
        </widget>
       </item>
       <item row="0" column="4">
-       <widget class="QToolButton" name="file_mask_file">
+       <widget class="LoadImageToolButton" name="file_mask_file">
+        <property name="toolTip">
+         <string>Select a mask file</string>
+        </property>
         <property name="text">
          <string>...</string>
         </property>
@@ -629,6 +638,11 @@
    <class>MethodLabel</class>
    <extends>QLabel</extends>
    <header>pyFAI.gui.widgets.MethodLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>LoadImageToolButton</class>
+   <extends>QToolButton</extends>
+   <header>pyFAI.gui.widgets.LoadImageToolButton</header>
   </customwidget>
  </customwidgets>
  <resources/>
