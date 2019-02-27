@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/12/2018"
+__date__ = "27/02/2019"
 
 import numpy
 from .DataModel import DataModel
@@ -52,3 +52,29 @@ class ImageModel(DataModel):
                 # Filter same images
                 return
         super(ImageModel, self).setValue(value)
+
+
+class ImageFilenameModel(DataModel):
+    """Model storing an image using it's filename."""
+
+    def hasFilename(self):
+        """True if this model contains a filename.
+
+        :rtype: bool
+        """
+        return self.value() is not None
+
+    def filename(self):
+        """Returns the filename associated with this model.
+
+        :rtype: Union[None,str]
+        """
+        return self.value()
+
+    def setFilename(self, filename):
+        """
+        Set a filename to this model
+
+        :param str filename: The new filename
+        """
+        return self.setValue(filename)
