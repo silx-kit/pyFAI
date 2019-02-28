@@ -192,32 +192,46 @@ class FileEdit(qt.QLineEdit):
 
     def __applyFilename(self, filename):
         model = self.__model
-        if isinstance(model, ImageFromFilenameModel):
-            if filename is not None:
-                try:
-                    with fabio.open(filename) as image:
-                        data = image.data
-                except Exception as e:
-                    message = "Filename '%s' not supported.<br />%s", (filename, str(e))
-                    qt.QMessageBox.critical(self, "Loading image error", message)
-                    _logger.error("Error while loading %s" % filename)
-                    _logger.debug("Backtrace", exc_info=True)
-                    return
-            else:
-                data, filename = None, None
-            with model.lockContext():
-                model.setValue(data)
-                model.setFilename(filename)
-                model.setSynchronized(True)
+        errorInfo = None
+        try:
+            # Avoid reentrant signal from model
+            model.changed.disconnect(self.__modelChanged)
+            # Avoid focuslost if a message is displayed
+            self.editingFinished.disconnect(self.__editingFinished)
 
-        elif isinstance(model, (DataModel, ImageFilenameModel)):
-            previous = self.__model.value()
-            try:
-                model.setValue(filename)
-            except Exception as e:
-                message = "Filename '%s' not supported.<br />%s", (filename, str(e))
-                qt.QMessageBox.critical(self, "Unsupported filename", message)
-                if model.value() is not previous:
-                    model.setValue(previous)
-        else:
-            assert(False)
+            if isinstance(model, ImageFromFilenameModel):
+                if filename is not None:
+                    try:
+                        with fabio.open(filename) as image:
+                            data = image.data
+                    except Exception as e:
+                        message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
+                        title = "Loading image error"
+                        errorInfo = title, message
+                        _logger.error("Error while loading %s" % filename)
+                        _logger.debug("Backtrace", exc_info=True)
+                        data = None
+                else:
+                    data, filename = None, None
+                with model.lockContext():
+                    model.setValue(data)
+                    model.setFilename(filename)
+                    model.setSynchronized(True)
+                if errorInfo is not None:
+                    title, message = errorInfo
+                    qt.QMessageBox.critical(self, title, message)
+
+            elif isinstance(model, (DataModel, ImageFilenameModel)):
+                previous = model.value()
+                try:
+                    model.setValue(filename)
+                except Exception as e:
+                    if model.value() is not previous:
+                        model.setValue(previous)
+                    message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
+                    qt.QMessageBox.critical(self, "Unsupported filename", message)
+            else:
+                assert(False)
+        finally:
+            model.changed.connect(self.__modelChanged)
+            self.editingFinished.connect(self.__editingFinished)
