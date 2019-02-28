@@ -27,13 +27,18 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/02/2019"
+__date__ = "28/02/2019"
 
+import fabio
 import os
+import logging
+
+_logger = logging.getLogger(__name__)
 
 from silx.gui import qt
 
 from ..model.ImageModel import ImageFilenameModel
+from ..model.ImageModel import ImageFromFilenameModel
 from ..ApplicationContext import ApplicationContext
 from ..utils.FilterBuilder import FilterBuilder
 
@@ -71,7 +76,20 @@ class _LoadImageFromFileDialogAction(qt.QAction):
         result = dialog.exec_()
         if result:
             filename = dialog.selectedFiles()[0]
-            self.parent()._setFilename(filename)
+            if self.parent()._isDataSupported():
+                try:
+                    with fabio.open(filename) as image:
+                        data = image.data
+                except Exception as e:
+                    message = "Filename '%s' not supported.<br />%s", (filename, str(e))
+                    qt.QMessageBox.critical(self, "Loading image error", message)
+                    _logger.error("Error while loading '%s'" % filename)
+                    _logger.debug("Backtrace", exc_info=True)
+                    return
+            else:
+                data = None
+
+            self.parent()._setValue(filename=filename, data=data)
 
 
 class _LoadImageFromImageDialogAction(qt.QAction):
@@ -94,7 +112,8 @@ class _LoadImageFromImageDialogAction(qt.QAction):
         result = dialog.exec_()
         if result:
             url = dialog.selectedUrl()
-            self.parent()._setFilename(url)
+            data = dialog.selectedImage()
+            self.parent()._setValue(filename=url, data=data)
 
 
 class LoadImageToolButton(qt.QToolButton):
@@ -127,18 +146,38 @@ class LoadImageToolButton(qt.QToolButton):
         enabledState = self.__model is not None and self.__isEnabled
         qt.QToolButton.setEnabled(self, enabledState)
 
-    def _setFilename(self, filename):
+    def _setValue(self, filename, data=None):
+        """Update the model with this new parameters.
+
+        :param str filename: A filename
+        :param data numpy.ndarray: The associated data
+        """
         if self.__model is None:
             return
-        if isinstance(self.__model, ImageFilenameModel):
-            self.__model.setFilename(filename)
-        else:
-            return self.__model.setValue(filename)
+        model = self.__model
+        with model.lockContext():
+            if isinstance(model, ImageFilenameModel):
+                model.setFilename(filename)
+            elif isinstance(model, ImageFromFilenameModel):
+                model.setFilename(filename)
+                model.setValue(data)
+                model.setSynchronized(True)
+            else:
+                model.setValue(filename)
+
+    def _isDataSupported(self):
+        """Returns true if the model supports the image data.
+
+        :rtype: bool
+        """
+        if isinstance(self.__model, ImageFromFilenameModel):
+            return True
+        return False
 
     def filename(self):
         if self.__model is None:
             return None
-        if isinstance(self.__model, ImageFilenameModel):
+        if isinstance(self.__model, ImageFromFilenameModel):
             return self.__model.filename()
         return self.__model.value()
 
