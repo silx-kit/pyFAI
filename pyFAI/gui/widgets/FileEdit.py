@@ -24,13 +24,20 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
+from pyFAI.gui.model.ImageModel import ImageFilenameModel
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "28/02/2019"
 
 import logging
+
+import fabio
 from silx.gui import qt
+
+from ..model.DataModel import DataModel
+from ..model.ImageModel import ImageFromFilenameModel
+
 
 _logger = logging.getLogger(__name__)
 
@@ -175,13 +182,39 @@ class FileEdit(qt.QLineEdit):
     """
 
     def __getFilename(self):
-        return self.__model.value()
+        model = self.__model
+        if isinstance(model, (ImageFromFilenameModel, ImageFilenameModel)):
+            return self.__model.filename()
+        elif isinstance(model, DataModel):
+            return self.__model.value()
+        else:
+            assert(False)
 
     def __applyFilename(self, filename):
-        previous = self.__model.value()
-        try:
-            self.__model.setValue(filename)
-        except Exception as e:
-            qt.QMessageBox.critical(self, "Filename '%s' not supported: %s", (filename, str(e)))
-            if self.__model.value() is not previous:
-                self.__model.setValue(previous)
+        model = self.__model
+        if isinstance(model, ImageFromFilenameModel):
+            try:
+                with fabio.open(filename) as image:
+                    data = image.data
+            except Exception as e:
+                message = "Filename '%s' not supported.<br />%s", (filename, str(e))
+                qt.QMessageBox.critical(self, "Loading image error", message)
+                _logger.error("Error while loading %s" % filename)
+                _logger.debug("Backtrace", exc_info=True)
+            else:
+                with model.lockContext():
+                    model.setValue(data)
+                    model.setFilename(filename)
+                    model.setSynchronized(True)
+
+        elif isinstance(model, (DataModel, ImageFilenameModel)):
+            previous = self.__model.value()
+            try:
+                model.setValue(filename)
+            except Exception as e:
+                message = "Filename '%s' not supported.<br />%s", (filename, str(e))
+                qt.QMessageBox.critical(self, "Unsupported filename", message)
+                if model.value() is not previous:
+                    model.setValue(previous)
+        else:
+            assert(False)
