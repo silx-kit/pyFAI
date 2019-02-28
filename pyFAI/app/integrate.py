@@ -396,7 +396,7 @@ class DataSource(object):
                                    header=fimg.header,
                                    source_filename=filename)
             else:
-                self._frames_per_items.append(iitem)
+                self._frames_per_items.append(1)
                 with self._statistics.time_reading():
                     data = fabio_image.data[...]
                 yield DataInfo(source=item,
