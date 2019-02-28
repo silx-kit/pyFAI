@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/02/2019"
+__date__ = "28/02/2019"
 
 import logging
 from silx.gui import qt
@@ -90,13 +90,7 @@ class FileEdit(qt.QLineEdit):
             return
 
         path = urls[0].toLocalFile()
-        previous = self.__model.value()
-        try:
-            self.__model.setValue(path)
-        except Exception as e:
-            qt.QMessageBox.critical(self, "Drop cancelled", str(e))
-            if self.__model.value() is not previous:
-                self.__model.setValue(previous)
+        self.__applyFilename(path)
 
     def setModel(self, model):
         if self.__model is not None:
@@ -148,7 +142,7 @@ class FileEdit(qt.QLineEdit):
             value = text
 
         try:
-            self.__model.setValue(value)
+            self.__applyFilename(value)
             # Avoid sending further signals
             self.__previousText = text
             self.sigValueAccepted.emit()
@@ -158,7 +152,7 @@ class FileEdit(qt.QLineEdit):
 
     def __cancelText(self):
         """Reset the edited value to the original one"""
-        value = self.__model.value()
+        value = self.__getFilename()
         if value is None:
             text = ""
         else:
@@ -179,3 +173,15 @@ class FileEdit(qt.QLineEdit):
     """Apply the current edited value to the widget when it lose the
     focus. By default the previous value is displayed.
     """
+
+    def __getFilename(self):
+        return self.__model.value()
+
+    def __applyFilename(self, filename):
+        previous = self.__model.value()
+        try:
+            self.__model.setValue(filename)
+        except Exception as e:
+            qt.QMessageBox.critical(self, "Filename '%s' not supported: %s", (filename, str(e)))
+            if self.__model.value() is not previous:
+                self.__model.setValue(previous)
