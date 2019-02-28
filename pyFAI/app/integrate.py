@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2019"
+__date__ = "28/02/2019"
 __satus__ = "production"
 
 import sys
@@ -249,9 +249,25 @@ class ShellIntegrationObserver(IntegrationObserver):
     def __init__(self):
         super(ShellIntegrationObserver, self).__init__()
         self._progress_bar = None
+        self.__previous_sigint_callback = None
+
+    def __signal_handler(self, sig, frame):
+        logger.warning("Abort requested (please wait until end of the program execution)")
+        self.request_interruption()
+
+    def __connect_interrupt(self):
+        import signal
+        previous = signal.signal(signal.SIGINT, self.__signal_handler)
+        self.__previous_sigint_callback = previous
+
+    def __disconnect_interrupt(self):
+        import signal
+        previous = self.__previous_sigint_callback
+        signal.signal(signal.SIGINT, previous)
 
     def processing_started(self, data_count):
         self._progress_bar = ProgressBar("Integration", data_count, 20)
+        self.__connect_interrupt()
 
     def processing_data(self, data_info, approximate_count=None):
         if data_info.source_filename:
@@ -269,6 +285,7 @@ class ShellIntegrationObserver(IntegrationObserver):
                                   max_value=approximate_count)
 
     def processing_finished(self):
+        self.__disconnect_interrupt()
         self._progress_bar.clear()
         self._progress_bar = None
 
@@ -690,7 +707,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     writer.close()
 
     if observer.is_interruption_requested():
-        logger.info("Processing was aborted")
+        logger.error("Processing was aborted")
         observer.processing_interrupted()
     else:
         observer.processing_succeeded()
