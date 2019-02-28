@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "28/02/2019"
 __status__ = "production"
 
 import logging
@@ -384,9 +384,11 @@ def setup_model(model, options):
 
     if options.mask:
         try:
-            settings.maskFile().setValue(options.mask)
-            with fabio.open(options.mask) as mask:
-                settings.mask().setValue(mask.data)
+            with settings.mask().lockContext() as model:
+                model.setFilename(options.mask)
+                with fabio.open(options.mask) as mask:
+                    model.setValue(mask.data)
+                model.setSynchronized(True)
         except Exception as e:
             displayExceptionBox("Error while loading the mask", e)
 
@@ -395,9 +397,11 @@ def setup_model(model, options):
     elif len(args) == 1:
         image_file = args[0]
         try:
-            settings.imageFile().setValue(image_file)
-            with fabio.open(image_file) as image:
-                settings.image().setValue(image.data)
+            with settings.image().lockContext() as model:
+                model.setFilename(options.mask)
+                with fabio.open(image_file) as image:
+                    model.setValue(image.data)
+                model.setSynchronized(True)
         except Exception as e:
             displayExceptionBox("Error while loading the image", e)
     else:
