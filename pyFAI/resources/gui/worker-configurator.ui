@@ -550,9 +550,12 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QLineEdit" name="monitor_name">
+       <widget class="MonitorNameEdit" name="monitor_name">
         <property name="toolTip">
          <string>Monitor name to reach normalization from the header of the input data</string>
+        </property>
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
@@ -643,6 +646,11 @@
    <class>LoadImageToolButton</class>
    <extends>QToolButton</extends>
    <header>pyFAI.gui.widgets.LoadImageToolButton</header>
+  </customwidget>
+  <customwidget>
+   <class>MonitorNameEdit</class>
+   <extends>QLineEdit</extends>
+   <header>pyFAI.gui.widgets.MonitorNameEdit</header>
   </customwidget>
  </customwidgets>
  <resources/>
