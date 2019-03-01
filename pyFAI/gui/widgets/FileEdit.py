@@ -84,19 +84,27 @@ class FileEdit(qt.QLineEdit):
         if self.__model is not None:
             if event.mimeData().hasFormat("text/uri-list"):
                 event.acceptProposedAction()
+            elif event.mimeData().hasFormat("application/x-silx-uri"):
+                event.acceptProposedAction()
 
     def dropEvent(self, event):
         mimeData = event.mimeData()
-        if not mimeData.hasUrls():
+        if mimeData.hasFormat("application/x-silx-uri"):
+            byteString = event.mimeData().data("application/x-silx-uri")
+            path = byteString.data().decode("utf-8")
+        elif mimeData.hasUrls():
+            urls = mimeData.urls()
+            if len(urls) > 1:
+                qt.QMessageBox.critical(self, "Drop cancelled", "A single file is expected")
+                return
+            path = urls[0].toLocalFile()
+        else:
             qt.QMessageBox.critical(self, "Drop cancelled", "A file is expected")
             return
 
-        urls = mimeData.urls()
-        if len(urls) > 1:
-            qt.QMessageBox.critical(self, "Drop cancelled", "A single file is expected")
-            return
-
-        path = urls[0].toLocalFile()
+        old = self.blockSignals(True)
+        self.setText(path)
+        self.blockSignals(old)
         self.__applyFilename(path)
 
     def setModel(self, model):
