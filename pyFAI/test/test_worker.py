@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2019"
+__date__ = "01/03/2019"
 
 
 import unittest
@@ -341,21 +341,6 @@ class TestWorkerConfig(unittest.TestCase):
         worker.process(data=data)
         self.assertTrue(numpy.isclose(worker.ai.detector.get_darkcurrent()[0, 0], (1 + 2 + 3) / 3))
         self.assertTrue(numpy.isclose(worker.ai.detector.get_flatfield()[0, 0], (1 + 2 + 4) / 3))
-
-    def test_readimagedata_imagepath(self):
-        abs_a = os.path.abspath(self.a)
-        image = worker_mdl._read_image_data(abs_a)
-        self.assertIsNotNone(image)
-
-    def test_readimagedata_silxurl(self):
-        abs_a = os.path.abspath(self.a)
-        url = DataUrl(abs_a).path()
-        image = worker_mdl._read_image_data(url)
-        self.assertIsNotNone(image)
-
-    def test_readimagedata_notexisting(self):
-        with self.assertRaises(Exception):
-            worker_mdl._read_image_data("fooobar.not.existing")
 
 
 def suite():

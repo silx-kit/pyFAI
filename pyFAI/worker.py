@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2019"
+__date__ = "01/03/2019"
 __status__ = "development"
 
 import threading
@@ -93,8 +93,6 @@ import os.path
 import logging
 import json
 import numpy
-import fabio
-import silx.io
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +102,7 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
 from .io import integration_config
+import pyFAI.io.image
 from .engines.preproc import preproc as preproc_numpy
 try:
     from .ext.preproc import preproc
@@ -170,7 +169,7 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
         apply_process = config.pop("do_mask", True)
         if filename and apply_process:
             try:
-                data = _read_image_data(filename)
+                data = pyFAI.io.image.read_image_data(filename)
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
@@ -206,28 +205,6 @@ def _normalize_filenames(filenames):
     raise TypeError("Unsupported type %s for a list of filenames" % type(filenames))
 
 
-def _read_image_data(image_path):
-    """
-    Returns a numpy.array image from a file name.
-
-    :param str image_path: Path of the image file
-    :rtype: numpy.ndarray
-    """
-    if fabio is None:
-        raise RuntimeError("FabIO is missing")
-    if os.path.exists(image_path):
-        with fabio.open(image_path) as image:
-            return image.data
-    if image_path.startswith("silx:") or image_path.startswith("fabio:"):
-        data = silx.io.get_data(image_path)
-        if len(data.shape) != 2:
-            raise RuntimeError("Path identify a %dd-array, but a 2d is array is expected" % (image_path, len(data.shape)))
-        if data.dtype.kind not in "fui":
-            raise RuntimeError("Path identify an %s-kind array, but a numerical kind is expected" % (image_path, data.dtype.kind))
-        return data
-    raise RuntimeError("Path '%s' is not supported or missing")
-
-
 def _reduce_images(filenames, method="mean"):
     """
     Reduce a set of filenames using a reduction method
@@ -238,7 +215,7 @@ def _reduce_images(filenames, method="mean"):
     if len(filenames) == 0:
         return None
     if len(filenames) == 1:
-        return _read_image_data(filenames[0]).astype(numpy.float32)
+        return pyFAI.io.image.read_image_data(filenames[0]).astype(numpy.float32)
     else:
         return average.average_images(filenames, filter_=method, fformat=None, threshold=0)
 
@@ -494,7 +471,7 @@ class Worker(object):
         apply_process = config.pop("do_mask", True)
         if filename and apply_process:
             try:
-                data = _read_image_data(filename)
+                data = pyFAI.io.image.read_image_data(filename)
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
