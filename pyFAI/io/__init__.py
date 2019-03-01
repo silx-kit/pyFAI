@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2019"
+__date__ = "01/03/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -482,6 +482,16 @@ class HDF5Writer(Writer):
         if self.hdf5:
             self.flush()
             with self._sem:
+                # Remove any links to HDF5 file
+                self.entry = None
+                self.nxdata = None
+                self.config = None
+                self.process = None
+                self.dataset = None
+                self.radial_values = None
+                self.azimuthal_values = None
+                self.fast_motor = None
+                # Close the file
                 self.hdf5.close()
                 self.hdf5 = None
 
