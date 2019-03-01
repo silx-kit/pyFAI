@@ -202,7 +202,7 @@
        </widget>
       </item>
       <item row="2" column="1" colspan="3">
-       <widget class="QLineEdit" name="flat_field">
+       <widget class="FileEdit" name="flat_field">
         <property name="toolTip">
          <string>File containing the flat-field image</string>
         </property>
@@ -266,14 +266,14 @@
        </widget>
       </item>
       <item row="0" column="1" colspan="3">
-       <widget class="QLineEdit" name="mask_file">
+       <widget class="FileEdit" name="mask_file">
         <property name="toolTip">
          <string>File containing the image of the mask</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1" colspan="3">
-       <widget class="QLineEdit" name="dark_current">
+       <widget class="FileEdit" name="dark_current">
         <property name="toolTip">
          <string>File containing the dark image</string>
         </property>
@@ -651,6 +651,11 @@
    <class>MonitorNameEdit</class>
    <extends>QLineEdit</extends>
    <header>pyFAI.gui.widgets.MonitorNameEdit</header>
+  </customwidget>
+  <customwidget>
+   <class>FileEdit</class>
+   <extends>QLineEdit</extends>
+   <header>pyFAI.gui.widgets.FileEdit</header>
   </customwidget>
  </customwidgets>
  <resources/>

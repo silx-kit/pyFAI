@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/02/2019"
+__date__ = "01/03/2019"
 __status__ = "development"
 
 import logging
@@ -111,12 +111,15 @@ class WorkerConfigurator(qt.QWidget):
         self.file_import.clicked.connect(self.__selectFile)
 
         # Connect mask/dark/flat
+        self.mask_file.setModel(self.__model.maskFileModel)
         self.file_mask_file.setDialogTitle("Open a mask image")
         self.file_mask_file.setModel(self.__model.maskFileModel)
         self.__model.maskFileModel.changed.connect(self.__maskFileChanged)
+        self.dark_current.setModel(self.__model.darkFileModel)
         self.file_dark_current.setDialogTitle("Open a dark image")
         self.file_dark_current.setModel(self.__model.darkFileModel)
         self.__model.darkFileModel.changed.connect(self.__darkFileChanged)
+        self.flat_field.setModel(self.__model.flatFileModel)
         self.file_flat_field.setDialogTitle("Open a flatfield image")
         self.file_flat_field.setModel(self.__model.flatFileModel)
         self.__model.flatFileModel.changed.connect(self.__flatFileChanged)
@@ -524,30 +527,18 @@ class WorkerConfigurator(qt.QWidget):
         if model.hasFilename():
             self.do_mask.setChecked(True)
             self.__updateDisabledStates()
-        value = model.filename()
-        if value is None:
-            value = ""
-        self.mask_file.setText(value)
 
     def __darkFileChanged(self):
         model = self.__model.darkFileModel
         if model.hasFilename():
             self.do_dark.setChecked(True)
             self.__updateDisabledStates()
-        value = model.filename()
-        if value is None:
-            value = ""
-        self.dark_current.setText(value)
 
     def __flatFileChanged(self):
         model = self.__model.flatFileModel
         if model.hasFilename():
             self.do_flat.setChecked(True)
             self.__updateDisabledStates()
-        value = model.filename()
-        if value is None:
-            value = ""
-        self.flat_field.setText(value)
 
     def loadFromJsonFile(self, filename):
         """Initialize the widget using a json file."""
