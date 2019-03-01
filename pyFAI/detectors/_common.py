@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2019"
+__date__ = "01/03/2019"
 __status__ = "stable"
 
 
@@ -232,7 +232,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
             (self.name, self.splineFile, self._pixel1, self._pixel2)
 
     def __copy__(self):
-        ":return: a shallow copy of itself"
+        """
+        Copy this detector.
+
+        :rtype: Detector
+        :return: A copy of this detector
+        """
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                      "_darkcurrent_crc", "flatfiles", "darkfiles"]
@@ -245,7 +250,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
         return new
 
     def __deepcopy__(self, memo=None):
-        ":return: a deep copy of itself"
+        """
+        Copy this detector all of the sub referenced objects.
+
+        :rtype: Detector
+        :return: A copy of this detector
+        """
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                      "_darkcurrent_crc", "flatfiles", "darkfiles"]
