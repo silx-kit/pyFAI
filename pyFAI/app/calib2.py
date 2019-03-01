@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/02/2019"
+__date__ = "01/03/2019"
 __status__ = "production"
 
 import logging
@@ -44,8 +44,7 @@ logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 import pyFAI.resources
 import pyFAI.calibrant
 import pyFAI.detectors
-
-import fabio
+import pyFAI.io.image
 
 
 try:
@@ -386,8 +385,8 @@ def setup_model(model, options):
         try:
             with settings.mask().lockContext() as model:
                 model.setFilename(options.mask)
-                with fabio.open(options.mask) as mask:
-                    model.setValue(mask.data)
+                data = pyFAI.io.image.read_image_data(options.mask)
+                model.setValue(data)
                 model.setSynchronized(True)
         except Exception as e:
             displayExceptionBox("Error while loading the mask", e)
@@ -399,8 +398,7 @@ def setup_model(model, options):
         try:
             with settings.image().lockContext() as model:
                 model.setFilename(options.mask)
-                with fabio.open(image_file) as image:
-                    model.setValue(image.data)
+                data = pyFAI.io.image.read_image_data(image_file)
                 model.setSynchronized(True)
         except Exception as e:
             displayExceptionBox("Error while loading the image", e)

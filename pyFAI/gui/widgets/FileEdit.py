@@ -27,16 +27,16 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2019"
+__date__ = "01/03/2019"
 
 import logging
 
-import fabio
 from silx.gui import qt
 
 from ..model.DataModel import DataModel
 from ..model.ImageModel import ImageFromFilenameModel
 from ..model.ImageModel import ImageFilenameModel
+import pyFAI.io.image
 
 
 _logger = logging.getLogger(__name__)
@@ -202,8 +202,7 @@ class FileEdit(qt.QLineEdit):
             if isinstance(model, ImageFromFilenameModel):
                 if filename is not None:
                     try:
-                        with fabio.open(filename) as image:
-                            data = image.data
+                        data = pyFAI.io.image.read_image_data(filename)
                     except Exception as e:
                         message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
                         title = "Loading image error"
