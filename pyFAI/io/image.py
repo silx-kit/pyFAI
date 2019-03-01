@@ -54,7 +54,7 @@ def read_image_data(image_path):
         with fabio.open(image_path) as image:
             data = image.data
     else:
-        raise IOError("Data from path '%s' is not supported or missing")
+        raise IOError("Data from path '%s' is not supported or missing" % image_path)
 
     if len(data.shape) != 2:
         raise TypeError("Path identify a %dd-array, but a 2d is array is expected" % (image_path, len(data.shape)))
