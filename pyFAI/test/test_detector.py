@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2018"
+__date__ = "01/03/2019"
 
 import os
 import tempfile
@@ -43,8 +43,10 @@ import numpy
 import time
 import logging
 logger = logging.getLogger(__name__)
+from .. import detectors
 from ..detectors import detector_factory, ALL_DETECTORS
 from .. import io
+from .utilstest import UtilsTest
 
 
 class TestDetector(unittest.TestCase):
@@ -279,6 +281,15 @@ class TestDetector(unittest.TestCase):
         self.assertTrue(abs(n1 - c1).max() < 1e-6, "cartesian coord1 cython == numpy")
         self.assertTrue(abs(n2 - c2).max() < 1e-6, "cartesian coord2 cython == numpy")
         self.assertTrue(abs(n3 - c3).max() < 1e-6, "cartesian coord3 cython == numpy")
+
+    def test_nexus_copy(self):
+        filename = os.path.join(UtilsTest.tempdir, self.id() + ".h5")
+        detector = detectors.ImXPadS10()
+        detector.save(filename)
+        detector = detectors.NexusDetector(filename)
+        import copy
+        cloned = copy.copy(detector)
+        numpy.testing.assert_array_almost_equal(detector.get_pixel_corners(), cloned.get_pixel_corners())
 
 
 def suite():
