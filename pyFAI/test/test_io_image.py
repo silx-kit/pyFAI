@@ -42,6 +42,7 @@ import logging
 import os.path
 import shutil
 import numpy
+import h5py
 
 from silx.io.url import DataUrl
 
@@ -60,10 +61,16 @@ class TestReadImage(unittest.TestCase):
         os.makedirs(cls.directory)
 
         cls.a = os.path.join(cls.directory, "a.npy")
+        cls.b = os.path.join(cls.directory, "b.h5")
 
         cls.shape = (2, 2)
         ones = numpy.ones(shape=cls.shape)
         numpy.save(cls.a, ones)
+
+        with h5py.File(cls.b) as h5:
+            h5["/image"] = ones
+            h5["/number"] = 10
+            h5["/group/foo"] = 10
 
     @classmethod
     def tearDownClass(cls):
@@ -83,6 +90,11 @@ class TestReadImage(unittest.TestCase):
     def test_not_existing_file(self):
         with self.assertRaises(Exception):
             image_mdl.read_image_data("fooobar.not.existing")
+
+    def test_fabio_hdf5_file(self):
+        abs_b = os.path.abspath(self.b)
+        image = image_mdl.read_image_data(abs_b + "::/image")
+        self.assertIsNotNone(image)
 
 
 def suite():

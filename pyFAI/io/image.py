@@ -49,6 +49,10 @@ def read_image_data(image_path):
             data = image.data
     elif image_path.startswith("silx:") or image_path.startswith("fabio:"):
         data = silx.io.get_data(image_path)
+    elif "::" in image_path:
+        # Could be a fabio path
+        with fabio.open(image_path) as image:
+            data = image.data
     else:
         raise IOError("Data from path '%s' is not supported or missing")
 
