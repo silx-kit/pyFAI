@@ -24,7 +24,6 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
-from pyFAI.gui.model.ImageModel import ImageFilenameModel
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
@@ -37,6 +36,7 @@ from silx.gui import qt
 
 from ..model.DataModel import DataModel
 from ..model.ImageModel import ImageFromFilenameModel
+from ..model.ImageModel import ImageFilenameModel
 
 
 _logger = logging.getLogger(__name__)
