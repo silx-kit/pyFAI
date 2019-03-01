@@ -383,11 +383,11 @@ def setup_model(model, options):
 
     if options.mask:
         try:
-            with settings.mask().lockContext() as model:
-                model.setFilename(options.mask)
+            with settings.mask().lockContext() as image_model:
+                image_model.setFilename(options.mask)
                 data = pyFAI.io.image.read_image_data(options.mask)
-                model.setValue(data)
-                model.setSynchronized(True)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
         except Exception as e:
             displayExceptionBox("Error while loading the mask", e)
 
@@ -396,10 +396,11 @@ def setup_model(model, options):
     elif len(args) == 1:
         image_file = args[0]
         try:
-            with settings.image().lockContext() as model:
-                model.setFilename(options.mask)
+            with settings.image().lockContext() as image_model:
+                image_model.setFilename(image_file)
                 data = pyFAI.io.image.read_image_data(image_file)
-                model.setSynchronized(True)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
         except Exception as e:
             displayExceptionBox("Error while loading the image", e)
     else:
