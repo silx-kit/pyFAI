@@ -1005,6 +1005,27 @@ class NexusDetector(Detector):
     """
     Class representing a 2D detector loaded from a NeXus file
     """
+
+    _ATTRIBUTES_TO_CLONE = [
+        "aliases",
+        "IS_FLAT",
+        "IS_CONTIGUOUS",
+        "flatfield",
+        "darkcurrent",
+        "force_pixel",
+        "_binning",
+        "_pixel1",
+        "_pixel2",
+        "_pixel_corners",
+        "_binning",
+        "_filename",
+        "shape",
+        "mask",
+        "uniform_pixel",
+        "shape",
+        "max_shape",
+    ]
+
     def __init__(self, filename=None):
         Detector.__init__(self)
         self.uniform_pixel = True
@@ -1081,6 +1102,24 @@ class NexusDetector(Detector):
         return self._filename
 
     filename = property(get_filename)
+
+    def __copy__(self):
+        cloned = self.__class__()
+        for name in self._ATTRIBUTES_TO_CLONE:
+            if hasattr(self, name):
+                value = getattr(self, name)
+                setattr(cloned, name, value)
+        return cloned
+
+    def __deepcopy__(self):
+        import copy
+        cloned = self.__class__()
+        for name in self._ATTRIBUTES_TO_CLONE:
+            if hasattr(self, name):
+                value = getattr(self, name)
+                value = copy.deepcopy(value)
+                setattr(cloned, name, value)
+        return cloned
 
     @classmethod
     def sload(cls, filename):
