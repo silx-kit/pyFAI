@@ -676,6 +676,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
         logger.error("Processing cancelled")
         logger.info("To write HDF5, convenient options can be provided to decide what to do.")
         logger.info("Options: --delete (always delete the file) --append (create a new entry) --overwrite (overwrite this entry)")
+        writer.close()
         return 1
 
     # Integrate all the provided frames one by one
