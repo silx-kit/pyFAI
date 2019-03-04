@@ -710,8 +710,10 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     if observer.is_interruption_requested():
         logger.error("Processing was aborted")
         observer.processing_interrupted()
+        result = 2
     else:
         observer.processing_succeeded()
+        result = 0
     observer.processing_finished()
 
     statistics.execution_finished()
@@ -720,7 +722,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     logger.info("[Per frames] Reading time: %.0fms; Processing time: %.0fms", statistics.reading_per_frame() * 1000, statistics.processing_per_frame() * 1000)
     logger.info("[Total] Reading time: %.3fs; Processing time: %.3fs", statistics.total_reading(), statistics.total_processing())
     logger.info("Execution done in %.3fs !", statistics.total_execution())
-    return 0
+    return result
 
 
 def integrate_shell(options, args):
