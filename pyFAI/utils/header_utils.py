@@ -159,6 +159,7 @@ def get_monitor_value(image, monitor_key):
         return Exception("No monitor defined")
 
     if fabio.version_info[0:2] < (0, 9):
+        # FIXME: Remove this dead code by upgrading the dependancy to fabio>=0.9
         if isinstance(image, fabio.edfimage.EdfImage):
             return _get_monitor_value_from_edf(image, monitor_key)
         elif isinstance(image, fabio.numpyimage.NumpyImage):
