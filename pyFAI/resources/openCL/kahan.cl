@@ -68,13 +68,18 @@ static inline float2 compensated_sum(float2 a, float2 b)
     return (float2)(target, err);
 }
 
-// calculate a * b with error compensation
+// calculate a * b with error compensation:
+// see http://perso.ens-lyon.fr/nicolas.louvet/TheseLouvet07.pdf page 33
 static inline float2 compensated_mul(float2 a, float2 b)
 {
-    float2 tmp;
-    tmp = kahan_sum((float2)(a.s0*b.s0, a.s0*b.s1), a.s1*b.s0);
-    tmp = kahan_sum(tmp, a.s1*b.s1);
-    return tmp;
+    float ll = a.s1*b.s1;
+    float x = fma(a.s0, b.s0, fma(a.s1, b.s0, fma(a.s0, b.s1, ll)));
+    return (float2)(x,
+           ll - (((x - a.s0*b.s0) - a.s1*b.s0) - a.s0*b.s1));
+    //formerly:
+    //    float2 tmp;
+    //    tmp = kahan_sum((float2)(a.s0*b.s0, a.s0*b.s1), a.s1*b.s0);
+    //    tmp = kahan_sum(tmp, a.s1*b.s1);
 }
 
 // calculate 1/a  with error compensation (Needs validation)

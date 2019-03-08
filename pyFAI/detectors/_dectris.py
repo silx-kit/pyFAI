@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2018"
+__date__ = "05/03/2019"
 __status__ = "production"
 
 
@@ -212,7 +212,7 @@ class Eiger500k(Eiger):
     """
     Eiger 1M detector
     """
-    MAX_SHAPE = (512, 1030)
+    MAX_SHAPE = (514, 1030)
     aliases = ["Eiger 500k"]
 
 
