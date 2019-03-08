@@ -30,7 +30,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2017"
+__date__ = "25/02/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -56,17 +56,16 @@ class ProgressBar:
 
             Title [■■■■■■      ]  50%  Message
 
-        :param title: Title displayed before the progress bar
-        :type title: str
-        :param max_value: The maximum value of the progress bar
-        :type max_value: float
-        :param bar_width: Size of the progressbar in the screen
-        :type bar_width: int
+        :param str title: Title displayed before the progress bar
+        :param float max_value: The maximum value of the progress bar
+        :param int bar_width: Size of the progressbar in the screen
         """
         self.title = title
         self.max_value = max_value
         self.bar_width = bar_width
         self.last_size = 0
+        self._message = ""
+        self._value = 0.0
 
         encoding = None
         if hasattr(sys.stdout, "encoding"):
@@ -79,7 +78,11 @@ class ProgressBar:
             self.progress_char = '#'
         else:
             try:
-                self.progress_char = u'\u25A0'
+                import datetime
+                if str(datetime.datetime.now())[5:10] == "02-14":
+                    self.progress_char = u'\u2665'
+                else:
+                    self.progress_char = u'\u25A0'
                 _byte = codecs.encode(self.progress_char, encoding)
             except (ValueError, TypeError, LookupError):
                 # In case the char is not supported by the encoding,
@@ -94,7 +97,13 @@ class ProgressBar:
         sys.stdout.write('\r' + " " * self.last_size + "\r")
         sys.stdout.flush()
 
-    def update(self, value, message=""):
+    def display(self):
+        """
+        Display the progress bar to stdout
+        """
+        self.update(self._value, self._message)
+
+    def update(self, value, message="", max_value=None):
         """
         Update the progrss bar with the progress bar's current value.
 
@@ -103,12 +112,20 @@ class ProgressBar:
         first and then the content of the progress bar. The cursor is
         at the begining of the line.
 
-        :param value: progress bar's current value
-        :type value: float
-        :param message: message displayed after the progress bar
-        :type message: str
+        :param float value: progress bar's current value
+        :param str message: message displayed after the progress bar
+        :param float max_value: If not none, update the maximum value of the
+            progress bar
         """
-        coef = (1.0 * value) / self.max_value
+        if max_value is not None:
+            self.max_value = max_value
+        self._message = message
+        self._value = value
+
+        if self.max_value == 0:
+            coef = 1.0
+        else:
+            coef = (1.0 * value) / self.max_value
         percent = round(coef * 100)
         bar_position = int(coef * self.bar_width)
         if bar_position > self.bar_width:

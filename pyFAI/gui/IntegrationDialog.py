@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/01/2019"
+__date__ = "25/02/2019"
 __status__ = "development"
 
 import logging
@@ -175,19 +175,27 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         """
         self._progressBar.setRange(0, data_count + 1)
 
-    def processing_data(self, data_id, filename):
+    def processing_data(self, data_info, approximate_count=None):
         """
-        Start processing the data `data_id`
+        Start processing the data `data_info`
 
-        :param int data_id: Id of the data
-        :param str filename: Filename of the data, if any.
+        :param DataInfo data_info: Contains data and metadata from the data
+            to integrate
+        :param int approximate_count: If set, the amount of total data to
+            process have changed
         """
-        self._progressBar.setValue(data_id)
-        if len(filename) > 20:
-            filename = op.basename(filename)
+        if approximate_count is not None:
+            self._progressBar.setRange(0, approximate_count + 1)
+        self._progressBar.setValue(data_info.data_id)
+        if data_info.source_filename is None:
+            filename = ""
+        elif len(data_info.source_filename) > 20:
+            filename = op.basename(data_info.source_filename)
+        else:
+            filename = data_info.source_filename
         self._progressBar.setFormat("%s (%%p%%)..." % filename)
 
-    def data_result(self, data_id, result):
+    def data_result(self, data_info, result):
         self.__resultReceived(result)
 
     def processing_interrupted(self):
@@ -237,10 +245,16 @@ class IntegrationDialog(qt.QWidget):
             context.restoreWindowLocationSettings("main-window", self)
 
         self.__workerConfigurator = WorkerConfigurator(self._holder)
-        layout = qt.QVBoxLayout(self._holder)
+        self.__content = qt.QWidget(self)
+        layout = qt.QVBoxLayout(self.__content)
         layout.addWidget(self.__workerConfigurator)
-        layout.setContentsMargins(0, 0, 0, 0)
-        self._holder.setLayout(layout)
+
+        self._holder.setWidget(self.__content)
+        self._holder.minimumSizeHint = self.__minimumScrollbarSizeHint
+        size = self.__content.minimumSizeHint()
+        self._holder.setMaximumHeight(size.height() + 2)
+        size = self.minimumSizeHint() - self._holder.minimumSizeHint() + size
+        self.setMaximumHeight(size.height() + 2)
 
         self.input_data = input_data
         self.output_path = output_path
@@ -251,11 +265,14 @@ class IntegrationDialog(qt.QWidget):
         self.save_json_button.clicked.connect(self.save_config)
         self.quit_button.clicked.connect(self.die)
 
-        self.progressBar.setVisible(False)
-        self.progressBar.setValue(0)
-
         if self.json_file is not None:
             self.restore(self.json_file)
+
+    def __minimumScrollbarSizeHint(self):
+        size = self.__content.minimumSizeHint()
+        extend = self.style().pixelMetric(qt.QStyle.PM_ScrollBarExtent)
+        size = qt.QSize(size.width() + extend, 100)
+        return size
 
     def closeEvent(self, event):
         context = self.__context

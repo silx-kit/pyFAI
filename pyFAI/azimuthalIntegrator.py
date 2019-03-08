@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/02/2019"
+__date__ = "25/02/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -176,7 +176,11 @@ else:
     # IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr",
     #                   class_funct=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate))
 
-from .opencl import ocl
+try:
+    from .opencl import ocl
+except ImportError:
+    ocl = None
+
 if ocl:
     devices_list = []
     devtype_list = []

@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2019"
+__date__ = "25/02/2019"
 __status__ = "stable"
 
 import os
@@ -47,9 +47,11 @@ import pyFAI
 
 if not pyFAI.use_opencl:
     pyopencl = None
+    ocl = None
 elif os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
     logger.info("Use of OpenCL has been disables from environment variable: PYFAI_OPENCL=0")
     pyopencl = None
+    ocl = None
 else:
     from silx.opencl.common import *
     from .. import resources

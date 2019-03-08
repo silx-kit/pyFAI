@@ -39,9 +39,6 @@
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
         </widget>
        </item>
        <item row="1" column="0">
@@ -132,9 +129,6 @@
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
         </widget>
        </item>
        <item row="5" column="1">
@@ -144,9 +138,6 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -158,9 +149,6 @@
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
         </widget>
        </item>
        <item row="6" column="1">
@@ -171,9 +159,6 @@
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
         </widget>
        </item>
        <item row="0" column="1">
@@ -183,9 +168,6 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -250,9 +232,6 @@
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
         </widget>
        </item>
        <item row="0" column="0">
@@ -269,9 +248,6 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -316,9 +292,6 @@
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
         </widget>
        </item>
        <item row="6" column="0">
@@ -331,9 +304,6 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -384,9 +354,6 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -464,6 +431,21 @@
    <header>pyFAI.gui.widgets.UnitLabel</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>_pyfaiDistance</tabstop>
+  <tabstop>_pyfaiPoni1</tabstop>
+  <tabstop>_pyfaiPoni2</tabstop>
+  <tabstop>_pyfaiRotation1</tabstop>
+  <tabstop>_pyfaiRotation2</tabstop>
+  <tabstop>_pyfaiRotation3</tabstop>
+  <tabstop>_fit2dDistance</tabstop>
+  <tabstop>_fit2dCenterX</tabstop>
+  <tabstop>_fit2dCenterY</tabstop>
+  <tabstop>_fit2dTilt</tabstop>
+  <tabstop>_fit2dTiltPlan</tabstop>
+  <tabstop>_buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
