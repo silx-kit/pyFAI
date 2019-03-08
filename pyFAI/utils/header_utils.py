@@ -35,7 +35,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2019"
+__date__ = "08/03/2019"
 
 
 import logging
@@ -158,11 +158,19 @@ def get_monitor_value(image, monitor_key):
     if monitor_key is None:
         return Exception("No monitor defined")
 
-    if isinstance(image, fabio.edfimage.EdfImage):
-        return _get_monitor_value_from_edf(image, monitor_key)
-    elif isinstance(image, fabio.numpyimage.NumpyImage):
-        return _get_monitor_value_from_edf(image, monitor_key)
-    elif isinstance(image, fabio.hdf5image.Hdf5Image):
-        return _get_monitor_value_from_hdf5(image, monitor_key)
+    if fabio.version_info[0:2] < (0, 9):
+        if isinstance(image, fabio.edfimage.EdfImage):
+            return _get_monitor_value_from_edf(image, monitor_key)
+        elif isinstance(image, fabio.numpyimage.NumpyImage):
+            return _get_monitor_value_from_edf(image, monitor_key)
+        elif isinstance(image, fabio.hdf5image.Hdf5Image):
+            return _get_monitor_value_from_hdf5(image, monitor_key)
     else:
-        raise Exception("File format '%s' unsupported" % type(image))
+        if isinstance(image, (fabio.edfimage.EdfImage, fabio.edfimage.EdfFrame)):
+            return _get_monitor_value_from_edf(image, monitor_key)
+        elif isinstance(image, fabio.numpyimage.NumpyImage):
+            return _get_monitor_value_from_edf(image, monitor_key)
+        elif isinstance(image, (fabio.hdf5image.Hdf5Image, fabio.hdf5image.Hdf5Frame)):
+            return _get_monitor_value_from_hdf5(image, monitor_key)
+
+    raise Exception("File format '%s' unsupported" % type(image))
