@@ -27,10 +27,17 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/02/2019"
+__date__ = "01/03/2019"
 
 import logging
+
 from silx.gui import qt
+
+from ..model.DataModel import DataModel
+from ..model.ImageModel import ImageFromFilenameModel
+from ..model.ImageModel import ImageFilenameModel
+import pyFAI.io.image
+
 
 _logger = logging.getLogger(__name__)
 
@@ -77,26 +84,28 @@ class FileEdit(qt.QLineEdit):
         if self.__model is not None:
             if event.mimeData().hasFormat("text/uri-list"):
                 event.acceptProposedAction()
+            elif event.mimeData().hasFormat("application/x-silx-uri"):
+                event.acceptProposedAction()
 
     def dropEvent(self, event):
         mimeData = event.mimeData()
-        if not mimeData.hasUrls():
+        if mimeData.hasFormat("application/x-silx-uri"):
+            byteString = event.mimeData().data("application/x-silx-uri")
+            path = byteString.data().decode("utf-8")
+        elif mimeData.hasUrls():
+            urls = mimeData.urls()
+            if len(urls) > 1:
+                qt.QMessageBox.critical(self, "Drop cancelled", "A single file is expected")
+                return
+            path = urls[0].toLocalFile()
+        else:
             qt.QMessageBox.critical(self, "Drop cancelled", "A file is expected")
             return
 
-        urls = mimeData.urls()
-        if len(urls) > 1:
-            qt.QMessageBox.critical(self, "Drop cancelled", "A single file is expected")
-            return
-
-        path = urls[0].toLocalFile()
-        previous = self.__model.value()
-        try:
-            self.__model.setValue(path)
-        except Exception as e:
-            qt.QMessageBox.critical(self, "Drop cancelled", str(e))
-            if self.__model.value() is not previous:
-                self.__model.setValue(previous)
+        old = self.blockSignals(True)
+        self.setText(path)
+        self.blockSignals(old)
+        self.__applyFilename(path)
 
     def setModel(self, model):
         if self.__model is not None:
@@ -148,7 +157,7 @@ class FileEdit(qt.QLineEdit):
             value = text
 
         try:
-            self.__model.setValue(value)
+            self.__applyFilename(value)
             # Avoid sending further signals
             self.__previousText = text
             self.sigValueAccepted.emit()
@@ -158,7 +167,7 @@ class FileEdit(qt.QLineEdit):
 
     def __cancelText(self):
         """Reset the edited value to the original one"""
-        value = self.__model.value()
+        value = self.__getFilename()
         if value is None:
             text = ""
         else:
@@ -179,3 +188,57 @@ class FileEdit(qt.QLineEdit):
     """Apply the current edited value to the widget when it lose the
     focus. By default the previous value is displayed.
     """
+
+    def __getFilename(self):
+        model = self.__model
+        if isinstance(model, (ImageFromFilenameModel, ImageFilenameModel)):
+            return self.__model.filename()
+        elif isinstance(model, DataModel):
+            return self.__model.value()
+        else:
+            assert(False)
+
+    def __applyFilename(self, filename):
+        model = self.__model
+        errorInfo = None
+        try:
+            # Avoid reentrant signal from model
+            model.changed.disconnect(self.__modelChanged)
+            # Avoid focuslost if a message is displayed
+            self.editingFinished.disconnect(self.__editingFinished)
+
+            if isinstance(model, ImageFromFilenameModel):
+                if filename is not None:
+                    try:
+                        data = pyFAI.io.image.read_image_data(filename)
+                    except Exception as e:
+                        message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
+                        title = "Loading image error"
+                        errorInfo = title, message
+                        _logger.error("Error while loading %s" % filename)
+                        _logger.debug("Backtrace", exc_info=True)
+                        data = None
+                else:
+                    data, filename = None, None
+                with model.lockContext():
+                    model.setValue(data)
+                    model.setFilename(filename)
+                    model.setSynchronized(True)
+                if errorInfo is not None:
+                    title, message = errorInfo
+                    qt.QMessageBox.critical(self, title, message)
+
+            elif isinstance(model, (DataModel, ImageFilenameModel)):
+                previous = model.value()
+                try:
+                    model.setValue(filename)
+                except Exception as e:
+                    if model.value() is not previous:
+                        model.setValue(previous)
+                    message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
+                    qt.QMessageBox.critical(self, "Unsupported filename", message)
+            else:
+                assert(False)
+        finally:
+            model.changed.connect(self.__modelChanged)
+            self.editingFinished.connect(self.__editingFinished)

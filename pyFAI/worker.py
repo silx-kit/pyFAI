@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2019"
+__date__ = "01/03/2019"
 __status__ = "development"
 
 import threading
@@ -93,15 +93,16 @@ import os.path
 import logging
 import json
 import numpy
-import fabio
 
 logger = logging.getLogger(__name__)
 
+from .third_party import six
 from . import average
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
 from .io import integration_config
+import pyFAI.io.image
 from .engines.preproc import preproc as preproc_numpy
 try:
     from .ext.preproc import preproc
@@ -166,9 +167,9 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
     if read_maps:
         filename = config.pop("mask_file", "")
         apply_process = config.pop("do_mask", True)
-        if filename and os.path.exists(filename) and apply_process:
+        if filename and apply_process:
             try:
-                data = fabio.open(filename).data
+                data = pyFAI.io.image.read_image_data(filename)
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
@@ -177,20 +178,20 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
         filename = config.pop("dark_current", "")
         apply_process = config.pop("do_dark", True)
         if filename and apply_process:
-            filenames = _read_filenames(filename)
+            filenames = _normalize_filenames(filename)
             ai.set_darkfiles(filenames)
 
         filename = config.pop("flat_field", "")
         apply_process = config.pop("do_flat", True)
         if filename and apply_process:
-            filenames = _read_filenames(filename)
+            filenames = _normalize_filenames(filename)
             ai.set_flatfiles(filenames)
 
     return ai
 
 
-def _read_filenames(filenames):
-    """Returns a list of strings from a comma separated string list or a list.
+def _normalize_filenames(filenames):
+    """Returns a list of strings from a string or a list of strings.
 
     :rtype: List[str]
     """
@@ -198,8 +199,10 @@ def _read_filenames(filenames):
         return []
     if isinstance(filenames, list):
         return filenames
-    # It's a single filename
-    return [filenames]
+    if isinstance(filenames, six.string_types):
+        # It's a single filename
+        return [filenames]
+    raise TypeError("Unsupported type %s for a list of filenames" % type(filenames))
 
 
 def _reduce_images(filenames, method="mean"):
@@ -211,10 +214,8 @@ def _reduce_images(filenames, method="mean"):
     """
     if len(filenames) == 0:
         return None
-    if fabio is None:
-        raise RuntimeError("FabIO is missing")
     if len(filenames) == 1:
-        return fabio.open(filenames[0]).data.astype(numpy.float32)
+        return pyFAI.io.image.read_image_data(filenames[0]).astype(numpy.float32)
     else:
         return average.average_images(filenames, filter_=method, fformat=None, threshold=0)
 
@@ -468,9 +469,9 @@ class Worker(object):
         # Do it here before reading the AI to be able to catch the io
         filename = config.pop("mask_file", "")
         apply_process = config.pop("do_mask", True)
-        if filename and os.path.exists(filename) and apply_process:
+        if filename and apply_process:
             try:
-                data = fabio.open(filename).data
+                data = pyFAI.io.image.read_image_data(filename)
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
@@ -480,7 +481,7 @@ class Worker(object):
         filename = config.pop("dark_current", "")
         apply_process = config.pop("do_dark", True)
         if filename and apply_process:
-            filenames = _read_filenames(filename)
+            filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
             self.ai.detector.set_darkcurrent(data)
@@ -490,7 +491,7 @@ class Worker(object):
         filename = config.pop("flat_field", "")
         apply_process = config.pop("do_flat", True)
         if filename and apply_process:
-            filenames = _read_filenames(filename)
+            filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
             self.ai.detector.set_flatfield(data)

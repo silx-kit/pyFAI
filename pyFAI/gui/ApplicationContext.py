@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/01/2019"
+__date__ = "27/02/2019"
 
 import weakref
 import logging
@@ -59,7 +59,8 @@ class ApplicationContext(object):
     def __init__(self, settings=None):
         assert(ApplicationContext.__instance is None)
         self.__parent = None
-        self.__dialogState = None
+        self.__dialogStates = {}
+        self.__dialogGeometry = {}
         self.__settings = settings
         ApplicationContext.__instance = self
 
@@ -128,6 +129,21 @@ class ApplicationContext(object):
             return None
         return self.__parent()
 
+    def __configureDialog(self, dialog):
+        dialogState = self.__dialogStates.get(type(dialog), None)
+        if dialogState is None:
+            currentDirectory = os.getcwd()
+            dialog.setDirectory(currentDirectory)
+        else:
+            dialog.restoreState(dialogState)
+        geometry = self.__dialogGeometry.get(type(dialog), None)
+        if geometry is not None:
+            dialog.setGeometry(geometry)
+
+    def __saveDialogState(self, dialog):
+        self.__dialogStates[type(dialog)] = dialog.saveState()
+        self.__dialogGeometry[type(dialog)] = dialog.geometry()
+
     def createFileDialog(self, parent, previousFile=None):
         """Create a file dialog configured with a default path.
 
@@ -135,11 +151,7 @@ class ApplicationContext(object):
         """
         dialog = qt.QFileDialog(parent)
         dialog.finished.connect(functools.partial(self.__saveDialogState, dialog))
-        if self.__dialogState is None:
-            currentDirectory = os.getcwd()
-            dialog.setDirectory(currentDirectory)
-        else:
-            dialog.restoreState(self.__dialogState)
+        self.__configureDialog(dialog)
 
         if previousFile is not None:
             if os.path.exists(previousFile):
@@ -151,5 +163,17 @@ class ApplicationContext(object):
 
         return dialog
 
-    def __saveDialogState(self, dialog):
-        self.__dialogState = dialog.saveState()
+    def createImageFileDialog(self, parent, previousFile=None):
+        """Create an image file dialog configured with a default path.
+
+        :rtype: silx.gui.dialog.ImageFileDialog.ImageFileDialog
+        """
+        from silx.gui.dialog.ImageFileDialog import ImageFileDialog
+        dialog = ImageFileDialog(parent)
+        dialog.finished.connect(functools.partial(self.__saveDialogState, dialog))
+        self.__configureDialog(dialog)
+
+        if previousFile is not None:
+            dialog.selectUrl(previousFile)
+
+        return dialog

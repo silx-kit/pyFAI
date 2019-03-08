@@ -34,20 +34,24 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2019"
+__date__ = "01/03/2019"
 
 
 import unittest
-import numpy
 import logging
 import os.path
-from .. import units, worker
+import shutil
+import numpy
+
+from silx.io.url import DataUrl
+
+from .. import units
+from .. import worker as worker_mdl
 from ..worker import Worker, PixelwiseWorker
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
 from . import utilstest
-import shutil
 
 
 logger = logging.getLogger(__name__)
@@ -263,21 +267,21 @@ class TestWorker(unittest.TestCase):
 
         # Without error propagation
         # Numpy path
-        worker.USE_CYTHON = False
+        worker_mdl.USE_CYTHON = False
         pww = PixelwiseWorker(dark=dark, flat=flat, dummy=-5, dtype="float64")
         res_np = pww.process(raw, normalization_factor=6.0)
         err = abs(res_np - signal / 6.0).max()
         self.assertLess(err, precision, "Numpy calculation are OK: %s" % err)
 
         # Cython path
-        worker.USE_CYTHON = True
+        worker_mdl.USE_CYTHON = True
         res_cy = pww.process(raw, normalization_factor=7.0)
         err = abs(res_cy - signal / 7.0).max()
         self.assertLess(err, precision, "Cython calculation are OK: %s" % err)
 
         # With Poissonian errors
         # Numpy path
-        worker.USE_CYTHON = False
+        worker_mdl.USE_CYTHON = False
         pww = PixelwiseWorker(dark=dark)
         res_np, err_np = pww.process(raw, variance=ref, normalization_factor=2.0)
         delta_res = abs(res_np - ref / 2.0).max()
@@ -287,7 +291,7 @@ class TestWorker(unittest.TestCase):
         self.assertLess(delta_err, precision, "Numpy error calculation are OK: %s" % err)
 
         # Cython path
-        worker.USE_CYTHON = True
+        worker_mdl.USE_CYTHON = True
         res_cy, err_cy = pww.process(raw, variance=ref, normalization_factor=2.0)
         delta_res = abs(res_cy - ref / 2.0).max()
         delta_err = abs(err_cy - numpy.sqrt(ref) / 2.0).max()
@@ -315,6 +319,10 @@ class TestWorkerConfig(unittest.TestCase):
         numpy.save(cls.c, ones * 3)
         numpy.save(cls.d, ones * 4)
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.directory)
+
     def test_flatdark(self):
         config = {"version": 2,
                   "application": "pyfai-integrate",
@@ -333,10 +341,6 @@ class TestWorkerConfig(unittest.TestCase):
         worker.process(data=data)
         self.assertTrue(numpy.isclose(worker.ai.detector.get_darkcurrent()[0, 0], (1 + 2 + 3) / 3))
         self.assertTrue(numpy.isclose(worker.ai.detector.get_flatfield()[0, 0], (1 + 2 + 4) / 3))
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.directory)
 
 
 def suite():

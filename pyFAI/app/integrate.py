@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2019"
+__date__ = "28/02/2019"
 __satus__ = "production"
 
 import sys
@@ -249,9 +249,25 @@ class ShellIntegrationObserver(IntegrationObserver):
     def __init__(self):
         super(ShellIntegrationObserver, self).__init__()
         self._progress_bar = None
+        self.__previous_sigint_callback = None
+
+    def __signal_handler(self, sig, frame):
+        logger.warning("Abort requested (please wait until end of the program execution)")
+        self.request_interruption()
+
+    def __connect_interrupt(self):
+        import signal
+        previous = signal.signal(signal.SIGINT, self.__signal_handler)
+        self.__previous_sigint_callback = previous
+
+    def __disconnect_interrupt(self):
+        import signal
+        previous = self.__previous_sigint_callback
+        signal.signal(signal.SIGINT, previous)
 
     def processing_started(self, data_count):
         self._progress_bar = ProgressBar("Integration", data_count, 20)
+        self.__connect_interrupt()
 
     def processing_data(self, data_info, approximate_count=None):
         if data_info.source_filename:
@@ -269,6 +285,7 @@ class ShellIntegrationObserver(IntegrationObserver):
                                   max_value=approximate_count)
 
     def processing_finished(self):
+        self.__disconnect_interrupt()
         self._progress_bar.clear()
         self._progress_bar = None
 
@@ -379,7 +396,7 @@ class DataSource(object):
                                    header=fimg.header,
                                    source_filename=filename)
             else:
-                self._frames_per_items.append(iitem)
+                self._frames_per_items.append(1)
                 with self._statistics.time_reading():
                     data = fabio_image.data[...]
                 yield DataInfo(source=item,
@@ -659,6 +676,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
         logger.error("Processing cancelled")
         logger.info("To write HDF5, convenient options can be provided to decide what to do.")
         logger.info("Options: --delete (always delete the file) --append (create a new entry) --overwrite (overwrite this entry)")
+        writer.close()
         return 1
 
     # Integrate all the provided frames one by one
@@ -690,10 +708,12 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     writer.close()
 
     if observer.is_interruption_requested():
-        logger.info("Processing was aborted")
+        logger.error("Processing was aborted")
         observer.processing_interrupted()
+        result = 2
     else:
         observer.processing_succeeded()
+        result = 0
     observer.processing_finished()
 
     statistics.execution_finished()
@@ -702,7 +722,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     logger.info("[Per frames] Reading time: %.0fms; Processing time: %.0fms", statistics.reading_per_frame() * 1000, statistics.processing_per_frame() * 1000)
     logger.info("[Total] Reading time: %.3fs; Processing time: %.3fs", statistics.total_reading(), statistics.total_processing())
     logger.info("Execution done in %.3fs !", statistics.total_execution())
-    return 0
+    return result
 
 
 def integrate_shell(options, args):

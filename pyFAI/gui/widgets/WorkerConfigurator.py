@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/02/2019"
+__date__ = "01/03/2019"
 __status__ = "development"
 
 import logging
@@ -57,10 +57,19 @@ from ..model.DataModel import DataModel
 from ..utils import units
 from ...utils import stringutil
 from ..utils import FilterBuilder
+from ..model.ImageModel import ImageFilenameModel
 from ..utils import validators
 from ...io.ponifile import PoniFile
 from ...io import integration_config
 from ... import method_registry
+
+
+class _WorkerModel(object):
+
+    def __init__(self):
+        self.maskFileModel = ImageFilenameModel()
+        self.darkFileModel = ImageFilenameModel()
+        self.flatFileModel = ImageFilenameModel()
 
 
 class WorkerConfigurator(qt.QWidget):
@@ -72,6 +81,8 @@ class WorkerConfigurator(qt.QWidget):
         qt.QWidget.__init__(self, parent)
         filename = get_ui_file("worker-configurator.ui")
         qt.loadUi(filename, self)
+
+        self.__model = _WorkerModel()
 
         self.__openclDevice = None
         self.__method = None
@@ -96,11 +107,23 @@ class WorkerConfigurator(qt.QWidget):
         self.method_config_button.clicked.connect(self.selectMethod)
         self.show_geometry.clicked.connect(self.selectGeometry)
 
-        # connect file selection windows
+        # Connect file selection windows
         self.file_import.clicked.connect(self.__selectFile)
-        self.file_mask_file.clicked.connect(self.__selectMaskFile)
-        self.file_dark_current.clicked.connect(self.__selectDarkCurrent)
-        self.file_flat_field.clicked.connect(self.__selectFlatField)
+
+        # Connect mask/dark/flat
+        self.mask_file.setModel(self.__model.maskFileModel)
+        self.file_mask_file.setDialogTitle("Open a mask image")
+        self.file_mask_file.setModel(self.__model.maskFileModel)
+        self.__model.maskFileModel.changed.connect(self.__maskFileChanged)
+        self.dark_current.setModel(self.__model.darkFileModel)
+        self.file_dark_current.setDialogTitle("Open a dark image")
+        self.file_dark_current.setModel(self.__model.darkFileModel)
+        self.__model.darkFileModel.changed.connect(self.__darkFileChanged)
+        self.flat_field.setModel(self.__model.flatFileModel)
+        self.file_flat_field.setDialogTitle("Open a flatfield image")
+        self.file_flat_field.setModel(self.__model.flatFileModel)
+        self.__model.flatFileModel.changed.connect(self.__flatFileChanged)
+
         self.do_2D.toggled.connect(self.__dimChanged)
 
         npt_validator = qt.QIntValidator()
@@ -193,7 +216,7 @@ class WorkerConfigurator(qt.QWidget):
             filenames = filenames.strip()
             if filenames == "":
                 return None
-            return [name.strip() for name in filenames.split(",")]
+            return [name.strip() for name in filenames.split("|")]
 
         config = collections.OrderedDict()
 
@@ -337,7 +360,7 @@ class WorkerConfigurator(qt.QWidget):
             if filenames is None:
                 return ""
             if isinstance(filenames, list):
-                return ",".join(filenames)
+                return "|".join(filenames)
             filenames = filenames.strip()
             return filenames
 
@@ -348,9 +371,9 @@ class WorkerConfigurator(qt.QWidget):
                       "val_dummy": lambda a: self.val_dummy.setText(str_(a)),
                       "delta_dummy": lambda a: self.delta_dummy.setText(str_(a)),
                       "do_mask": self.do_mask.setChecked,
-                      "mask_file": lambda a: self.mask_file.setText(str_(a)),
-                      "dark_current": lambda a: self.dark_current.setText(normalizeFiles(a)),
-                      "flat_field": lambda a: self.flat_field.setText(normalizeFiles(a)),
+                      "mask_file": lambda a: self.__model.maskFileModel.setFilename(str_(a)),
+                      "dark_current": lambda a: self.__model.darkFileModel.setFilename(normalizeFiles(a)),
+                      "flat_field": lambda a: self.__model.flatFileModel.setFilename(normalizeFiles(a)),
                       "polarization_factor": self.polarization_factor.setValue,
                       "nbpt_rad": lambda a: self.nbpt_rad.setText(str_(a)),
                       "nbpt_azim": lambda a: self.nbpt_azim.setText(str_(a)),
@@ -499,26 +522,23 @@ class WorkerConfigurator(qt.QWidget):
         else:
             logger.error("File %s unsupported", filename)
 
-    def __selectMaskFile(self):
-        logger.debug("select_maskfile")
-        maskfile = self.getOpenFileName("Open a mask image")
-        if maskfile:
-            self.mask_file.setText(maskfile or "")
+    def __maskFileChanged(self):
+        model = self.__model.maskFileModel
+        if model.hasFilename():
             self.do_mask.setChecked(True)
+            self.__updateDisabledStates()
 
-    def __selectDarkCurrent(self):
-        logger.debug("select_darkcurrent")
-        darkcurrent = self.getOpenFileName("Open a dark image")
-        if darkcurrent:
-            self.dark_current.setText(str_(darkcurrent))
+    def __darkFileChanged(self):
+        model = self.__model.darkFileModel
+        if model.hasFilename():
             self.do_dark.setChecked(True)
+            self.__updateDisabledStates()
 
-    def __selectFlatField(self):
-        logger.debug("select_flatfield")
-        flatfield = self.getOpenFileName("Open a flatfield image")
-        if flatfield:
-            self.flat_field.setText(str_(flatfield))
+    def __flatFileChanged(self):
+        model = self.__model.flatFileModel
+        if model.hasFilename():
             self.do_flat.setChecked(True)
+            self.__updateDisabledStates()
 
     def loadFromJsonFile(self, filename):
         """Initialize the widget using a json file."""

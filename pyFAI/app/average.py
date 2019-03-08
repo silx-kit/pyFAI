@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2019"
+__date__ = "01/03/2019"
 __status__ = "production"
 
 import os
@@ -96,6 +96,25 @@ def parse_algorithms(options):
     return result
 
 
+def cleanup_input_paths(input_paths):
+    """Clean up filename using :: to access to data inside file.
+
+    :returns: Returns a list of paths without directory separator inside the filename
+    location.
+    """
+    result = []
+    for path in input_paths:
+        if "::" in path:
+            if not os.path.exists(path):
+                filename, datapath = path.split("::", 1)
+                datapath = datapath.replace("/", "_")
+                datapath = datapath.replace("\\", "_")
+                datapath = datapath.strip("_")
+                path = filename + "__" + datapath
+        result.append(path)
+    return result
+
+
 def parse_writer(input_images, options, algorithms):
     """Return a writer by using information from the command line"""
     output = options.output
@@ -115,8 +134,10 @@ def parse_writer(input_images, options, algorithms):
         suffix += "_{image_count}_files.{file_format}"
         template = prefix + "{method_name}" + suffix
 
+    input_paths = cleanup_input_paths(input_images)
+
     formats = {
-        "common_prefix": os.path.commonprefix(input_images),
+        "common_prefix": os.path.commonprefix(input_paths),
         "image_count": len(input_images),
         "cutoff": options.cutoff,
         "file_format": file_format,

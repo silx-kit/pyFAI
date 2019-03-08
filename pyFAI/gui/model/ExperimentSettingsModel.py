@@ -27,40 +27,37 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/12/2018"
+__date__ = "28/02/2019"
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
 from .CalibrantModel import CalibrantModel
 from .DataModel import DataModel
 from .MaskedImageModel import MaskedImageModel
-from .ImageModel import ImageModel
+from .ImageModel import ImageFromFilenameModel
 
 
 class ExperimentSettingsModel(AbstractModel):
 
     def __init__(self, parent=None):
         super(ExperimentSettingsModel, self).__init__(parent)
-        self.__image = ImageModel()
-        self.__mask = ImageModel()
+        self.__image = ImageFromFilenameModel()
+        self.__mask = ImageFromFilenameModel()
         self.__maskedImage = MaskedImageModel(None, self.__image, self.__mask)
+        self.__dark = ImageFromFilenameModel()
         self.__isDetectorMask = True
 
-        self.__dark = ImageModel()
-        self.__imageFile = DataModel()
-        self.__maskFile = DataModel()
-        self.__darkFile = DataModel()
         self.__wavelength = DataModel()
         self.__polarizationFactor = DataModel()
         self.__calibrantModel = CalibrantModel()
         self.__detectorModel = DetectorModel()
 
         self.__image.changed.connect(self.wasChanged)
+        self.__image.filenameChanged.connect(self.wasChanged)
         self.__mask.changed.connect(self.wasChanged)
+        self.__mask.filenameChanged.connect(self.wasChanged)
         self.__dark.changed.connect(self.wasChanged)
-        self.__imageFile.changed.connect(self.wasChanged)
-        self.__maskFile.changed.connect(self.wasChanged)
-        self.__darkFile.changed.connect(self.wasChanged)
+        self.__dark.filenameChanged.connect(self.wasChanged)
         self.__wavelength.changed.connect(self.wasChanged)
         self.__polarizationFactor.changed.connect(self.wasChanged)
         self.__calibrantModel.changed.connect(self.wasChanged)
@@ -71,7 +68,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__mask.changed.connect(self.__notAnymoreADetectorMask)
 
     def __updateDetectorMask(self):
-        if self.maskFile().value() is not None:
+        if self.mask().filename() is not None:
             # It exists a custom mask
             return
 
@@ -142,15 +139,6 @@ class ExperimentSettingsModel(AbstractModel):
 
     def dark(self):
         return self.__dark
-
-    def imageFile(self):
-        return self.__imageFile
-
-    def maskFile(self):
-        return self.__maskFile
-
-    def darkFile(self):
-        return self.__darkFile
 
     def wavelength(self):
         return self.__wavelength

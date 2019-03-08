@@ -202,7 +202,7 @@
        </widget>
       </item>
       <item row="2" column="1" colspan="3">
-       <widget class="QLineEdit" name="flat_field">
+       <widget class="FileEdit" name="flat_field">
         <property name="toolTip">
          <string>File containing the flat-field image</string>
         </property>
@@ -216,14 +216,20 @@
        </widget>
       </item>
       <item row="1" column="4">
-       <widget class="QToolButton" name="file_dark_current">
+       <widget class="LoadImageToolButton" name="file_dark_current">
+        <property name="toolTip">
+         <string>Select a dark current file</string>
+        </property>
         <property name="text">
          <string>...</string>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
-       <widget class="QToolButton" name="file_flat_field">
+       <widget class="LoadImageToolButton" name="file_flat_field">
+        <property name="toolTip">
+         <string>Select a flat field file</string>
+        </property>
         <property name="text">
          <string>...</string>
         </property>
@@ -250,21 +256,24 @@
        </widget>
       </item>
       <item row="0" column="4">
-       <widget class="QToolButton" name="file_mask_file">
+       <widget class="LoadImageToolButton" name="file_mask_file">
+        <property name="toolTip">
+         <string>Select a mask file</string>
+        </property>
         <property name="text">
          <string>...</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1" colspan="3">
-       <widget class="QLineEdit" name="mask_file">
+       <widget class="FileEdit" name="mask_file">
         <property name="toolTip">
          <string>File containing the image of the mask</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1" colspan="3">
-       <widget class="QLineEdit" name="dark_current">
+       <widget class="FileEdit" name="dark_current">
         <property name="toolTip">
          <string>File containing the dark image</string>
         </property>
@@ -541,9 +550,12 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QLineEdit" name="monitor_name">
+       <widget class="MonitorNameEdit" name="monitor_name">
         <property name="toolTip">
          <string>Monitor name to reach normalization from the header of the input data</string>
+        </property>
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
@@ -629,6 +641,21 @@
    <class>MethodLabel</class>
    <extends>QLabel</extends>
    <header>pyFAI.gui.widgets.MethodLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>LoadImageToolButton</class>
+   <extends>QToolButton</extends>
+   <header>pyFAI.gui.widgets.LoadImageToolButton</header>
+  </customwidget>
+  <customwidget>
+   <class>MonitorNameEdit</class>
+   <extends>QLineEdit</extends>
+   <header>pyFAI.gui.widgets.MonitorNameEdit</header>
+  </customwidget>
+  <customwidget>
+   <class>FileEdit</class>
+   <extends>QLineEdit</extends>
+   <header>pyFAI.gui.widgets.FileEdit</header>
   </customwidget>
  </customwidgets>
  <resources/>
