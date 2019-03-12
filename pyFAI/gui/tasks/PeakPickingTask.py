@@ -107,8 +107,7 @@ class _PeakSelectionTableView(qt.QTableView):
         self.setItemDelegateForColumn(2, ringDelegate)
         self.setItemDelegateForColumn(3, toolDelegate)
 
-        # self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
-        self.setSelectionMode(qt.QAbstractItemView.NoSelection)
+        self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
         self.setVerticalScrollMode(qt.QAbstractItemView.ScrollPerPixel)
         self.setShowGrid(False)
@@ -254,6 +253,10 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
     def columnCount(self, parent=qt.QModelIndex()):
         return 4
+
+    def peakObject(self, index):
+        peakModel = self.__peakSelectionModel[index.row()]
+        return peakModel
 
     def data(self, index=qt.QModelIndex(), role=qt.Qt.DisplayRole):
         peakModel = self.__peakSelectionModel[index.row()]
@@ -669,6 +672,17 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         toolBar.addSeparator()
 
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("silx:gui/icons/add-shape-vertical"))
+        action.setText("+")
+        action.setCheckable(True)
+        action.setChecked(True)
+        action.setToolTip("Create always a new ring when a peak is picked")
+        toolBar.addAction(action)
+        self.__createNewRingOption = action
+
+        toolBar.addSeparator()
+
         # Load peak selection as file
         loadPeaksFromFile = qt.QAction(self)
         icon = icons.getQIcon('document-open')
@@ -810,14 +824,23 @@ class PeakPickingTask(AbstractCalibrationTask):
             points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] == 0, points)
             points = list(points)
 
-        if len(points) > 0:
+        if len(points) == 0:
+            return
+
+        createNewRing = False
+        indexes = self.__peakSelectionView.selectedIndexes()
+        if len(indexes) == 0:
+            createNewRing = True
+
+        peakSelectionModel = self.model().peakSelectionModel()
+        if createNewRing or self.__createNewRingOption.isChecked():
             # reach bigger ring
-            peakSelectionModel = self.model().peakSelectionModel()
             ringNumbers = [p.ringNumber() for p in peakSelectionModel]
             if ringNumbers == []:
                 lastRingNumber = 0
             else:
                 lastRingNumber = max(ringNumbers)
+            ringNumber = lastRingNumber + 1
 
             if self.__ringSelectionMode.isChecked() or self.__arcSelectionMode.isChecked():
                 ringNumber = lastRingNumber + 1
@@ -828,17 +851,28 @@ class PeakPickingTask(AbstractCalibrationTask):
                 points = points[0:1]
             else:
                 raise ValueError("Picking mode unknown")
+        else:
+            indexes = self.__peakSelectionView.selectedIndexes()
+            assert(len(indexes))
+            index = indexes[0]
+            model = self.__peakSelectionView.model()
+            index = model.index(index.row(), 0)
+            peak = model.peakObject(index)
+            ringNumber = peak.ringNumber()
 
-            peakModel = model_transform.createRing(points, peakSelectionModel)
-            peakModel.setRingNumber(ringNumber)
-            oldState = self.__copyPeaks(self.__undoStack)
+        peakModel = model_transform.createRing(points, peakSelectionModel)
+        peakModel.setRingNumber(ringNumber)
+        oldState = self.__copyPeaks(self.__undoStack)
+        if createNewRing:
             peakSelectionModel.append(peakModel)
-            newState = self.__copyPeaks(self.__undoStack)
-            command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
-            command.setText("add peak %s" % peakModel.name())
-            command.setRedoInhibited(True)
-            self.__undoStack.push(command)
-            command.setRedoInhibited(False)
+        else:
+            peak.mergeCoords(peakModel.coords())
+        newState = self.__copyPeaks(self.__undoStack)
+        command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
+        command.setText("add peak %s" % peakModel.name())
+        command.setRedoInhibited(True)
+        self.__undoStack.push(command)
+        command.setRedoInhibited(False)
 
     def __removePeak(self, peakModel):
         oldState = self.__copyPeaks(self.__undoStack)
