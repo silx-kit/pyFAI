@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/11/2018"
+__date__ = "12/03/2019"
 
 from .AbstractModel import AbstractModel
 
@@ -66,6 +66,16 @@ class PeakModel(AbstractModel):
 
     def setCoords(self, coords):
         self.__coords = coords
+        self.wasChanged()
+
+    def mergeCoords(self, coords):
+        """Merge new coords to the current list of coords.
+
+        Duplicated values are removed from the new coords, and the is added
+        the end of the previous list.
+        """
+        new_coords = set(coords) - set(self.__coords)
+        self.__coords += list(new_coords)
         self.wasChanged()
 
     def ringNumber(self):
