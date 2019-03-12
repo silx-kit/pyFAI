@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "12/03/2019"
 
 import logging
 import numpy
@@ -39,6 +39,7 @@ from silx.gui import icons
 import silx.gui.plot
 from silx.gui.plot.tools import PositionInfo
 
+from pyFAI.third_party import six
 import pyFAI.utils
 import pyFAI.massif
 import pyFAI.control_points
@@ -690,13 +691,24 @@ class PeakPickingTask(AbstractCalibrationTask):
         toolBar.addSeparator()
         style = qt.QApplication.style()
 
+        def createIcon(identifiyers):
+            for i in identifiyers:
+                if isinstance(i, six.string_types):
+                    if qt.QIcon.hasThemeIcon(i):
+                        return qt.QIcon.fromTheme(i)
+                elif isinstance(i, qt.QIcon):
+                    return i
+                else:
+                    return style.standardIcon(i)
+            return qt.QIcon()
+
         action = self.__undoStack.createUndoAction(self, "Undo")
-        icon = style.standardIcon(qt.QStyle.SP_ArrowBack)
+        icon = createIcon(["edit-undo", qt.QStyle.SP_ArrowBack])
         action.setIcon(icon)
         toolBar.addAction(action)
 
         action = self.__undoStack.createRedoAction(self, "Redo")
-        icon = style.standardIcon(qt.QStyle.SP_ArrowForward)
+        icon = createIcon(["edit-redo", qt.QStyle.SP_ArrowForward])
         action.setIcon(icon)
         toolBar.addAction(action)
 
