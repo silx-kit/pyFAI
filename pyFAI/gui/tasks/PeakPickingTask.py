@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "12/03/2019"
+__date__ = "13/03/2019"
 
 import logging
 import numpy
@@ -518,6 +518,151 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
         model.removeRow(persistantIndex.row(), persistantIndex.parent())
 
 
+class _RingSelectionBehaviour(qt.QObject):
+    """Manage behaviour relative to ring selection.
+
+    This ensure coherence between many widgets.
+
+    - If "always new ring" activated
+        - The spinner is diabled
+        - The spinner have to display the number of the next ring created.
+        - The spinner value is decorelated from the hilighted ring
+            of the table view
+    - Else
+        - The spinner is enabled
+        - The value of the spinner have to be consistant with the hilighted
+            ring from the table view.
+    """
+
+    def __init__(self, parent,
+                 peakSelectionModel,
+                 spinnerRing,
+                 newRingOption,
+                 ringSelectionModel):
+        qt.QObject.__init__(self, parent)
+        self.__peakSelectionModel = peakSelectionModel
+        self.__spinnerRing = spinnerRing
+        self.__newRingOption = newRingOption
+        self.__ringSelectionModel = ringSelectionModel
+
+        self.__peakSelectionModel.changed.connect(self.__peaksHaveChanged)
+        self.__spinnerRing.valueChanged.connect(self.__spinerRingChanged)
+        self.__newRingOption.toggled.connect(self.__newRingToggeled)
+        if self.__ringSelectionModel is not None:
+            self.__ringSelectionModel.selectionChanged.connect(self.__ringSelectionChanged)
+
+        self.__initState()
+
+    def clear(self):
+        self.__peakSelectionModel.changed.disconnect(self.__peaksHaveChanged)
+        self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
+        self.__newRingOption.toggled.disconnect(self.__newRingToggeled)
+        if self.__ringSelectionModel is not None:
+            self.__ringSelectionModel.selectionChanged.disconnect(self.__ringSelectionChanged)
+
+    def __initState(self):
+        self.__newRingToggeled()
+
+    def __peaksHaveChanged(self):
+        if self.__newRingOption.isChecked():
+            self.__updateNewRing()
+
+        if not self.__ringSelectionModel.hasSelection():
+            # Update the model selection if nothing was selected
+            # TODO: It would be good to remove the timer,
+            #       but this event is generated before the update of the model
+            qt.QTimer.singleShot(0, self.__spinerRingChanged)
+
+    def __updateNewRing(self):
+        createNewRing = False
+        indexes = self.__ringSelectionModel.selectedIndexes()
+        if len(indexes) == 0:
+            createNewRing = True
+
+        peakSelectionModel = self.__peakSelectionModel
+        if createNewRing or self.__newRingOption.isChecked():
+            # reach bigger ring
+            ringNumbers = [p.ringNumber() for p in peakSelectionModel]
+            if ringNumbers == []:
+                lastRingNumber = 0
+            else:
+                lastRingNumber = max(ringNumbers)
+            ringNumber = lastRingNumber + 1
+        else:
+            assert(len(indexes))
+            index = indexes[0]
+            model = self.__ringSelectionModel.model()
+            index = model.index(index.row(), 0)
+            peak = model.peakObject(index)
+            ringNumber = peak.ringNumber()
+
+        self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
+        self.__spinnerRing.setValue(ringNumber)
+        self.__spinnerRing.valueChanged.connect(self.__spinerRingChanged)
+
+    def ringNumber(self):
+        """Returns the targetted ring.
+
+        :rtype: int
+        """
+        return self.__spinnerRing.value()
+
+    def __ringSelectionChanged(self):
+        if self.__newRingOption.isChecked():
+            # The spinner already display the number of the new ring
+            return
+
+        self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
+        try:
+            indexes = self.__ringSelectionModel.selectedIndexes()
+            model = self.__ringSelectionModel.model()
+            if len(indexes) == 0:
+                pass
+            else:
+                index = indexes[0]
+                peak = model.peakObject(index)
+                ringNumber = peak.ringNumber()
+                self.__spinnerRing.setValue(ringNumber)
+        finally:
+            self.__spinnerRing.valueChanged.connect(self.__spinerRingChanged)
+
+    def __spinerRingChanged(self):
+        """Called when the spinner displaying the selected ring changes."""
+        ringNumber = self.__spinnerRing.value()
+        if self.__ringSelectionModel is None:
+            return
+
+        model = self.__ringSelectionModel.model()
+        self.__ringSelectionModel.selectionChanged.disconnect(self.__ringSelectionChanged)
+        try:
+            for i in range(model.rowCount()):
+                index = model.index(i, 0)
+                peak = model.peakObject(index)
+                if peak.ringNumber() == ringNumber:
+                    break
+            else:
+                i = None
+            if i is not None:
+                index = i
+                indexStart = model.index(index, 0)
+                indexEnd = model.index(index, model.columnCount() - 1)
+                selection = qt.QItemSelection(indexStart, indexEnd)
+                self.__ringSelectionModel.select(selection, qt.QItemSelectionModel.ClearAndSelect)
+            else:
+                self.__ringSelectionModel.clear()
+        finally:
+            self.__ringSelectionModel.selectionChanged.connect(self.__ringSelectionChanged)
+
+    def __newRingToggeled(self):
+        """Called when the new ring option is toggled."""
+        newRingActivated = self.__newRingOption.isChecked()
+        self.__spinnerRing.setEnabled(not newRingActivated)
+        if self.__newRingOption.isChecked():
+            self.__updateNewRing()
+        else:
+            self.__ringSelectionChanged()
+
+
 class PeakPickingTask(AbstractCalibrationTask):
 
     def _initGui(self):
@@ -567,6 +712,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
 
+        self.__ringSelection = None
         self.__massif = None
         self.__massifReconstructed = None
 
@@ -680,6 +826,12 @@ class PeakPickingTask(AbstractCalibrationTask):
         action.setToolTip("Create always a new ring when a peak is picked")
         toolBar.addAction(action)
         self.__createNewRingOption = action
+
+        spiner = qt.QSpinBox(self)
+        spiner.setRange(1, 9999)
+        spiner.setToolTip("Ring to edit")
+        toolBar.addWidget(spiner)
+        self.__selectedRingNumber = spiner
 
         toolBar.addSeparator()
 
@@ -827,43 +979,16 @@ class PeakPickingTask(AbstractCalibrationTask):
         if len(points) == 0:
             return
 
-        createNewRing = False
-        indexes = self.__peakSelectionView.selectedIndexes()
-        if len(indexes) == 0:
-            createNewRing = True
+        if self.__peakSelectionMode.isChecked():
+            points = points[0:1]
 
         peakSelectionModel = self.model().peakSelectionModel()
-        if createNewRing or self.__createNewRingOption.isChecked():
-            # reach bigger ring
-            ringNumbers = [p.ringNumber() for p in peakSelectionModel]
-            if ringNumbers == []:
-                lastRingNumber = 0
-            else:
-                lastRingNumber = max(ringNumbers)
-            ringNumber = lastRingNumber + 1
-
-            if self.__ringSelectionMode.isChecked() or self.__arcSelectionMode.isChecked():
-                ringNumber = lastRingNumber + 1
-            elif self.__peakSelectionMode.isChecked():
-                if lastRingNumber == 0:
-                    lastRingNumber = 1
-                ringNumber = lastRingNumber
-                points = points[0:1]
-            else:
-                raise ValueError("Picking mode unknown")
-        else:
-            indexes = self.__peakSelectionView.selectedIndexes()
-            assert(len(indexes))
-            index = indexes[0]
-            model = self.__peakSelectionView.model()
-            index = model.index(index.row(), 0)
-            peak = model.peakObject(index)
-            ringNumber = peak.ringNumber()
-
+        ringNumber = self.__ringSelection.ringNumber()
         peakModel = model_transform.createRing(points, peakSelectionModel)
         peakModel.setRingNumber(ringNumber)
         oldState = self.__copyPeaks(self.__undoStack)
-        if createNewRing:
+        peak = peakSelectionModel.peakFromRingNumber(ringNumber)
+        if peak is None:
             peakSelectionModel.append(peakModel)
         else:
             peak.mergeCoords(peakModel.coords())
@@ -1039,6 +1164,13 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         self.__imageUpdated()
         self.__peakSelectionChanged()
+        if self.__ringSelection is not None:
+            self.__ringSelection.clear()
+        self.__ringSelection = _RingSelectionBehaviour(self,
+                                                       self.model().peakSelectionModel(),
+                                                       self.__selectedRingNumber,
+                                                       self.__createNewRingOption,
+                                                       self.__peakSelectionView.selectionModel())
 
     def __peakSelectionChanged(self):
         peakCount = self.model().peakSelectionModel().peakCount()
