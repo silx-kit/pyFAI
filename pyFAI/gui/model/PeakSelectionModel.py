@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/12/2018"
+__date__ = "13/03/2019"
 
 from silx.gui import qt
 from .AbstractModel import AbstractModel
@@ -57,7 +57,10 @@ class PeakSelectionModel(AbstractModel):
         return len(self.__peaks)
 
     def peakCount(self):
-        """Returns the amout of peak selected throug all the groups"""
+        """Returns the amout of peak selected throug all the groups
+
+        :rtype: int
+        """
         count = 0
         for peaks in self:
             count += len(peaks)
