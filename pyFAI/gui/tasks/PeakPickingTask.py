@@ -819,7 +819,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         toolBar.addSeparator()
 
         action = qt.QAction(self)
-        action.setIcon(icons.getQIcon("silx:gui/icons/add-shape-vertical"))
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/new-ring"))
         action.setText("+")
         action.setCheckable(True)
         action.setChecked(True)
