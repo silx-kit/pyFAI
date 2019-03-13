@@ -943,7 +943,10 @@ class PeakPickingTask(AbstractCalibrationTask):
         else:
             assert(False)
 
-    def __plotClicked(self, x, y):
+    def __findPeaks(self, x, y):
+        """
+        Returns peaks around the location x, y
+        """
         image = self.model().experimentSettingsModel().image().value()
         massif = self.__getMassif()
         if massif is None:
@@ -976,11 +979,26 @@ class PeakPickingTask(AbstractCalibrationTask):
             points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] == 0, points)
             points = list(points)
 
-        if len(points) == 0:
-            return
+        return points
+
+    def __findSinglePeak(self, x, y):
+        """
+        Returns a single peak a location x, y
+        """
+        points = self.__findPeaks(x, y)
+        if len(points) > 1:
+            points = points[0:1]
+        return points
+
+    def __plotClicked(self, x, y):
 
         if self.__peakSelectionMode.isChecked():
-            points = points[0:1]
+            points = self.__findSinglePeak(x, y)
+        else:
+            points = self.__findPeaks(x, y)
+
+        if len(points) == 0:
+            return
 
         peakSelectionModel = self.model().peakSelectionModel()
         ringNumber = self.__ringSelection.ringNumber()
