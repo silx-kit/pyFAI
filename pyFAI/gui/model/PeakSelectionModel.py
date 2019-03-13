@@ -73,6 +73,19 @@ class PeakSelectionModel(AbstractModel):
     def __getitem__(self, index):
         return self.__peaks[index]
 
+    def peakFromRingNumber(self, ringNumber):
+        """
+        Returns a peak model from it's ring number.
+
+        If no peaks where found, returns `None`.
+
+        :rtype: Union[PeakModel,None]
+        """
+        for p in self.__peaks:
+            if p.ringNumber() == ringNumber:
+                return p
+        return None
+
     def append(self, peak):
         self.__peaks.append(peak)
         peak.changed.connect(self.__contentWasChanged)
