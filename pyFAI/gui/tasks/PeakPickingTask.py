@@ -564,18 +564,24 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
             return super(_PeakToolItemDelegate, self).createEditor(parent, option, index)
 
         editor = qt.QToolBar(parent=parent)
-        editor.setIconSize(qt.QSize(32, 32))
+        editor.setIconSize(qt.QSize(20, 20))
         editor.setStyleSheet("QToolBar { border: 0px }")
-        editor.setMinimumSize(32, 32)
-        editor.setMaximumSize(32, 32)
-        editor.setSizePolicy(qt.QSizePolicy.Fixed, qt.QSizePolicy.Fixed)
+
+        persistantIndex = qt.QPersistentModelIndex(index)
+
+        extract = qt.QAction(editor)
+        extract.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
+        extract.triggered.connect(functools.partial(self.__extractPeak, persistantIndex))
+        editor.addAction(extract)
 
         remove = qt.QAction(editor)
         remove.setIcon(icons.getQIcon("pyfai:gui/icons/remove-peak"))
-        remove._customSignal = None
-        persistantIndex = qt.QPersistentModelIndex(index)
         remove.triggered.connect(functools.partial(self.__removePeak, persistantIndex))
         editor.addAction(remove)
+
+        editor.setMinimumSize(editor.sizeHint())
+        editor.setMaximumSize(editor.sizeHint())
+        editor.setSizePolicy(qt.QSizePolicy.Fixed, qt.QSizePolicy.Fixed)
         return editor
 
     def updateEditorGeometry(self, editor, option, index):
@@ -587,6 +593,26 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
         :param qt.QIndex index: Index of the data to display
         """
         editor.setGeometry(option.rect)
+
+    def getTask(self):
+        """
+        :rtype: PeakPickingTask
+        """
+        widget = self
+        while widget is not None:
+            if isinstance(widget, PeakPickingTask):
+                return widget
+            widget = widget.parent()
+        raise TypeError("PeakPickingTask not found")
+
+    def __extractPeak(self, persistantIndex, checked):
+        if not persistantIndex.isValid():
+            return
+        model = persistantIndex.model()
+        peak = model.peakObject(persistantIndex)
+        task = self.getTask()
+        if task is not None:
+            task.extractRingLater(peak)
 
     def __removePeak(self, persistantIndex, checked):
         if not persistantIndex.isValid():
@@ -1232,6 +1258,15 @@ class PeakPickingTask(AbstractCalibrationTask):
         return state
 
     def __autoExtractRingsLater(self):
+        self.__filterRing = None
+        self.__plot.setProcessing()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        self._extract.setWaiting(True)
+        # Wait for Qt repaint first
+        qt.QTimer.singleShot(1, self.__autoExtractRings)
+
+    def extractRingLater(self, ring):
+        self.__filterRing = ring
         self.__plot.setProcessing()
         qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
         self._extract.setWaiting(True)
@@ -1319,18 +1354,27 @@ class PeakPickingTask(AbstractCalibrationTask):
         # update the gui
         oldState = self.__copyPeaks(self.__undoStack)
         peakSelectionModel = self.model().peakSelectionModel()
-        peakSelectionModel.clear()
-        for ringNumber in sorted(newPeaks.keys()):
-            coords = newPeaks[ringNumber]
-            peakModel = model_transform.createRing(coords, peakSelectionModel)
-            peakModel.setRingNumber(ringNumber)
-            peakSelectionModel.append(peakModel)
+        if self.__filterRing is None:
+            peakSelectionModel.clear()
+            for ringNumber in sorted(newPeaks.keys()):
+                coords = newPeaks[ringNumber]
+                peakModel = model_transform.createRing(coords, peakSelectionModel)
+                peakModel.setRingNumber(ringNumber)
+                peakSelectionModel.append(peakModel)
+        else:
+            coords = newPeaks.get(self.__filterRing.ringNumber(), [])
+            self.__filterRing.setCoords(coords)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
-        command.setText("extract rings")
+        if self.__filterRing is None:
+            command.setText("extract rings")
+        else:
+            command.setText("extract ring %d" % self.__filterRing.ringNumber())
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
+
+        self.__filterRing = None
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
