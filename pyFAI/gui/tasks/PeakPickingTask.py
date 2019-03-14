@@ -570,11 +570,13 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
         persistantIndex = qt.QPersistentModelIndex(index)
 
         extract = qt.QAction(editor)
+        extract.setToolTip("Re-extract peaks from this ring")
         extract.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
         extract.triggered.connect(functools.partial(self.__extractPeak, persistantIndex))
         editor.addAction(extract)
 
         remove = qt.QAction(editor)
+        remove.setToolTip("Remove this group of peaks")
         remove.setIcon(icons.getQIcon("pyfai:gui/icons/remove-peak"))
         remove.triggered.connect(functools.partial(self.__removePeak, persistantIndex))
         editor.addAction(remove)
@@ -1336,10 +1338,17 @@ class PeakPickingTask(AbstractCalibrationTask):
         else:
             assert(False)
 
+        if self.__filterRing is None:
+            ringNumbers = None
+        else:
+            ringNumbers = [self.__filterRing.ringNumber() - 1]
+
+        # TODO: maxRings should be removed, not very accurate way to reach for rings
         newPeaksRaw = extractor.extract(peaks=peaks,
                                         geometryModel=geometryModel,
                                         method="massif",
                                         maxRings=maxRings,
+                                        ringNumbers=ringNumbers,
                                         pointPerDegree=pointPerDegree)
 
         # split peaks per rings

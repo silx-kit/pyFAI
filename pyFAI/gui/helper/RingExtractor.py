@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/11/2018"
+__date__ = "14/03/2019"
 
 import logging
 import numpy
@@ -137,14 +137,20 @@ class RingExtractor(object):
             detector=self.__detector)
         return geoRef
 
-    def extract(self, peaks=None, geometryModel=None, method="massif", maxRings=None, pointPerDegree=1.0):
+    def extract(self, peaks=None, geometryModel=None, method="massif", maxRings=None, ringNumbers=None, pointPerDegree=1.0):
         """
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed.
 
-        # FIXME pts_per_deg
+        :param List[int] ringNumbers: If set, extraction will only be done on
+            rings number contained in this list (the number 0 identify the first
+            ring)
         """
         assert(numpy.logical_xor(peaks is not None, geometryModel is not None))
+
+        if ringNumbers is None:
+            ringNumbers = []
+        ringNumbers = set(ringNumbers)
 
         if peaks is not None:
             # Energy from from experiment settings
@@ -196,6 +202,8 @@ class RingExtractor(object):
         ms = marchingsquares.MarchingSquaresMergeImpl(ttha, self.__mask, use_minmax_cache=True)
 
         for i in range(tth.size):
+            if i not in ringNumbers:
+                continue
             if rings >= maxRings:
                 break
             mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
