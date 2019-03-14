@@ -768,6 +768,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         layout = qt.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         self._ringToolBarHolder.setLayout(layout)
+        toolBar = self.__createMainRingToolBar()
+        layout.addWidget(toolBar)
         toolBar = self.__createRingToolBar()
         layout.addWidget(toolBar)
 
@@ -861,69 +863,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         except KeyboardInterrupt:
             raise
 
-    def __createRingToolBar(self):
+    def __createMainRingToolBar(self):
         toolBar = qt.QToolBar(self)
-
-        action = qt.QAction(self)
-        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-full-ring"))
-        action.setText("Ring")
-        action.setCheckable(True)
-        action.setToolTip("Extract peaks, beyond masked values")
-        toolBar.addAction(action)
-        self.__ringSelectionMode = action
-
-        action = qt.QAction(self)
-        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
-        action.setText("Arc")
-        action.setCheckable(True)
-        action.setToolTip("Extract contiguous peaks")
-        toolBar.addAction(action)
-        self.__arcSelectionMode = action
-
-        action = qt.QAction(self)
-        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
-        action.setText("Arc")
-        action.setCheckable(True)
-        action.setToolTip("Extract contiguous peaks")
-        toolBar.addAction(action)
-        self.__peakSelectionMode = action
-
-        toolBar.addSeparator()
-
-        action = qt.QAction(self)
-        action.setIcon(icons.getQIcon("pyfai:gui/icons/new-ring"))
-        action.setText("+")
-        action.setCheckable(True)
-        action.setChecked(True)
-        action.setToolTip("Create always a new ring when a peak is picked")
-        toolBar.addAction(action)
-        self.__createNewRingOption = action
-
-        spiner = qt.QSpinBox(self)
-        spiner.setRange(1, 9999)
-        spiner.setToolTip("Ring to edit")
-        toolBar.addWidget(spiner)
-        self.__selectedRingNumber = spiner
-
-        toolBar.addSeparator()
-
-        action = qt.QAction(self)
-        action.setIcon(icons.getQIcon("silx:gui/icons/draw-rubber"))
-        action.setText("Rubber")
-        action.setCheckable(True)
-        action.setToolTip("Select a set of peaks to remove")
-        toolBar.addAction(action)
-        self.__erasorMode = action
-
-        action = qt.QAction(self)
-        action.setIcon(icons.getQIcon("silx:gui/icons/draw-brush"))
-        action.setText("Brush")
-        action.setCheckable(True)
-        action.setToolTip("Select a set of peaks to change ring")
-        toolBar.addAction(action)
-        self.__brushMode = action
-
-        toolBar.addSeparator()
 
         # Load peak selection as file
         loadPeaksFromFile = qt.QAction(self)
@@ -967,6 +908,70 @@ class PeakPickingTask(AbstractCalibrationTask):
         icon = createIcon(["edit-redo", qt.QStyle.SP_ArrowForward])
         action.setIcon(icon)
         toolBar.addAction(action)
+
+        return toolBar
+
+    def __createRingToolBar(self):
+        toolBar = qt.QToolBar(self)
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-full-ring"))
+        action.setText("Ring")
+        action.setCheckable(True)
+        action.setToolTip("Extract peaks, beyond masked values")
+        toolBar.addAction(action)
+        self.__ringSelectionMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
+        action.setText("Arc")
+        action.setCheckable(True)
+        action.setToolTip("Extract contiguous peaks")
+        toolBar.addAction(action)
+        self.__arcSelectionMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
+        action.setText("Arc")
+        action.setCheckable(True)
+        action.setToolTip("Extract contiguous peaks")
+        toolBar.addAction(action)
+        self.__peakSelectionMode = action
+
+        toolBar.addSeparator()
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("silx:gui/icons/draw-brush"))
+        action.setText("Brush")
+        action.setCheckable(True)
+        action.setToolTip("Change the ring number to a set of already identified peaks")
+        toolBar.addAction(action)
+        self.__brushMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("silx:gui/icons/draw-rubber"))
+        action.setText("Rubber")
+        action.setCheckable(True)
+        action.setToolTip("Remove a set of already identified peaks")
+        toolBar.addAction(action)
+        self.__erasorMode = action
+
+        toolBar.addSeparator()
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/new-ring"))
+        action.setText("+")
+        action.setCheckable(True)
+        action.setChecked(True)
+        action.setToolTip("Create always a new ring when a peak is picked")
+        toolBar.addAction(action)
+        self.__createNewRingOption = action
+
+        spiner = qt.QSpinBox(self)
+        spiner.setRange(1, 9999)
+        spiner.setToolTip("Ring to edit")
+        toolBar.addWidget(spiner)
+        self.__selectedRingNumber = spiner
 
         mode = qt.QActionGroup(self)
         mode.setExclusive(True)
