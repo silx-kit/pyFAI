@@ -400,7 +400,10 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     def removePeak(self, peakModel):
         legend = "marker" + peakModel.name()
-        self.removeMarker(legend=legend)
+        try:
+            self.removeMarker(legend=legend)
+        except Exception:
+            pass
         legend = "coord" + peakModel.name()
         self.removeCurve(legend=legend)
 
@@ -410,10 +413,11 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         points = peakModel.coords()
         name = peakModel.name()
 
-        y, x = points[0]
-        self.addMarker(x=x, y=y,
-                       legend="marker" + name,
-                       text=name)
+        if len(points) != 0:
+            y, x = points[0]
+            self.addMarker(x=x, y=y,
+                           legend="marker" + name,
+                           text=name)
         y = list(map(lambda p: p[0], points))
         x = list(map(lambda p: p[1], points))
         self.addCurve(x=x, y=y,
