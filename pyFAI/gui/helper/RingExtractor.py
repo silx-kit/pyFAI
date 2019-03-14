@@ -148,9 +148,8 @@ class RingExtractor(object):
         """
         assert(numpy.logical_xor(peaks is not None, geometryModel is not None))
 
-        if ringNumbers is None:
-            ringNumbers = []
-        ringNumbers = set(ringNumbers)
+        if ringNumbers is not None:
+            ringNumbers = set(ringNumbers)
 
         if peaks is not None:
             # Energy from from experiment settings
@@ -202,8 +201,9 @@ class RingExtractor(object):
         ms = marchingsquares.MarchingSquaresMergeImpl(ttha, self.__mask, use_minmax_cache=True)
 
         for i in range(tth.size):
-            if i not in ringNumbers:
-                continue
+            if ringNumbers is not None:
+                if i not in ringNumbers:
+                    continue
             if rings >= maxRings:
                 break
             mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
