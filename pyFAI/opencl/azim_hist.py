@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "11/01/2019"
+__date__ = "14/03/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -51,6 +51,11 @@ import logging
 import threading
 import numpy
 from . import concatenate_cl_kernel, get_x87_volatile_option
+from . import processing
+EventDescription = processing.EventDescription
+OpenclProcessing = processing.OpenclProcessing
+BufferDescription = processing.BufferDescription
+from ..utils import calc_checksum
 from . import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -760,3 +765,129 @@ class Integrator1d(object):
                'size': self.nData,
                'context': (self._ctx is not None)}
         return out
+
+
+class OCL_Histogram1d(OpenclProcessing):
+    """Class in charge of performing histogram calculation in OpenCL using
+    atomic_add
+
+    It also performs the preprocessing using the preproc kernel
+    """
+    BLOCK_SIZE = 32
+    buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("flat", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("polarization", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
+               ]
+    kernel_files = ["pyfai:openCL/kahan.cl",
+                    "pyfai:openCL/preprocess.cl",
+                    "pyfai:openCL/memset.cl",
+                    "pyfai:openCL/ocl_histo.cl"
+                    ]
+    mapping = {numpy.int8: "s8_to_float",
+               numpy.uint8: "u8_to_float",
+               numpy.int16: "s16_to_float",
+               numpy.uint16: "u16_to_float",
+               numpy.uint32: "u32_to_float",
+               numpy.int32: "s32_to_float"
+               }
+
+    def __init__(self, position, checksum=None, empty=None,
+                 ctx=None, devicetype="all", platformid=None, deviceid=None,
+                 block_size=None, profile=False):
+        """
+        :param position: array with the radial position of every single pixel. Same as image size
+        :param checksum: pre-calculated checksum of the position array to prevent re-calculating it :)
+        :param empty: value to be assigned to bins without contribution from any pixel
+        :param ctx: actual working context, left to None for automatic
+                    initialization from device type or platformid/deviceid
+        :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
+        :param platformid: integer with the platform_identifier, as given by clinfo
+        :param deviceid: Integer with the device identifier, as given by clinfo
+        :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
+        :param profile: switch on profiling to be able to profile at the kernel level,
+                        store profiling elements (makes code slightly slower)
+        """
+        OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
+                                  platformid=platformid, deviceid=deviceid,
+                                  block_size=block_size, profile=profile)
+        self.size = position.size
+        self.empty = numpy.float32(empty or 0.0)
+
+        if not checksum:
+            checksum = calc_checksum(self._data)
+        self.on_device = {"positions": checksum,
+                          "dark": None,
+                          "flat": None,
+                          "polarization": None,
+                          "solidangle": None,
+                          "absorption": None}
+
+        if block_size is None:
+            block_size = self.BLOCK_SIZE
+
+        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
+        self.workgroup_size = {}
+        self.wdim_bins = (self.bins * self.BLOCK_SIZE),
+        self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+
+        self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
+                        for i in self.__class__.buffers]
+
+        self.buffers += [BufferDescription("data", self.data_size, numpy.float32, mf.READ_ONLY),
+                         BufferDescription("indices", self.data_size, numpy.int32, mf.READ_ONLY),
+                         BufferDescription("indptr", (self.bins + 1), numpy.int32, mf.READ_ONLY),
+                         BufferDescription("sum_data", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         ]
+        try:
+            self.set_profiling(profile)
+            self.allocate_buffers()
+            self.compile_kernels()
+            self.set_kernel_arguments()
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
+            raise MemoryError(error)
+        self.send_buffer(self._data, "data")
+        self.send_buffer(self._indices, "indices")
+        self.send_buffer(self._indptr, "indptr")
+
+    def __copy__(self):
+        """Shallow copy of the object
+
+        :return: copy of the object
+        """
+        return self.__class__((self._data, self._indices, self._indptr),
+                              self.size,
+                              checksum=self.on_device.get("data"),
+                              empty=self.empty,
+                              ctx=self.ctx,
+                              block_size=self.block_size,
+                              profile=self.profile)
+
+    def __deepcopy__(self, memo=None):
+        """deep copy of the object
+
+        :return: deepcopy of the object
+        """
+        if memo is None:
+            memo = {}
+        new_csr = self._data.copy(), self._indices.copy(), self._indptr.copy()
+        memo[id(self._data)] = new_csr[0]
+        memo[id(self._indices)] = new_csr[1]
+        memo[id(self._indptr)] = new_csr[2]
+        new_obj = self.__class__(new_csr, self.size,
+                                 checksum=self.on_device.get("data"),
+                                 empty=self.empty,
+                                 ctx=self.ctx,
+                                 block_size=self.block_size,
+                                 profile=self.profile)
+        memo[id(self)] = new_obj
+        return new_obj
