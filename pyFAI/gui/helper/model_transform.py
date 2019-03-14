@@ -57,12 +57,14 @@ def createControlPoints(model):
     return controlPoints
 
 
-def filterControlPoints(filterCallback, peakSelectionModel):
+def filterControlPoints(filterCallback, peakSelectionModel, removedPeaks=None):
     """Filter each peaks of the model using a callbackl
 
     :param Callable[int,int,bool] filter: Filter returning true is the
         peak have to stay in the result.
     :param PeakSelectionModel peakSelectionModel: Model to filter
+    :param List[Tuple[int,int]] removedPeaks: Provide a list to feed it with
+        removed peaks from the model.
     """
     peakSelectionModel.lockSignals()
     for peakGroup in peakSelectionModel:
@@ -72,6 +74,8 @@ def filterControlPoints(filterCallback, peakSelectionModel):
             if filterCallback(coord[0], coord[1]):
                 newCoords.append(coord)
             else:
+                if removedPeaks is not None:
+                    removedPeaks.append(coord)
                 changed = True
         if changed:
             peakGroup.setCoords(newCoords)
