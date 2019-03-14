@@ -764,6 +764,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__plot.setStatusBar(statusBar)
 
         self.__plot.sigPeakPicked.connect(self.__onPickPicked)
+        self.__plot.sigShapeErased.connect(self.__onShapeErased)
 
         self._extract.setEnabled(False)
         self._extract.clicked.connect(self.__autoExtractRingsLater)
@@ -874,13 +875,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         toolBar.addAction(action)
         self.__peakSelectionMode = action
 
-        mode = qt.QActionGroup(self)
-        mode.setExclusive(True)
-        mode.addAction(self.__ringSelectionMode)
-        mode.addAction(self.__arcSelectionMode)
-        mode.addAction(self.__peakSelectionMode)
-        self.__arcSelectionMode.setChecked(True)
-
         toolBar.addSeparator()
 
         action = qt.QAction(self)
@@ -897,6 +891,16 @@ class PeakPickingTask(AbstractCalibrationTask):
         spiner.setToolTip("Ring to edit")
         toolBar.addWidget(spiner)
         self.__selectedRingNumber = spiner
+
+        toolBar.addSeparator()
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("silx:gui/icons/draw-rubber"))
+        action.setText("Rubber")
+        action.setCheckable(True)
+        action.setToolTip("Remove peaks from the selection")
+        toolBar.addAction(action)
+        self.__erasorMode = action
 
         toolBar.addSeparator()
 
@@ -943,7 +947,26 @@ class PeakPickingTask(AbstractCalibrationTask):
         action.setIcon(icon)
         toolBar.addAction(action)
 
+        mode = qt.QActionGroup(self)
+        mode.setExclusive(True)
+        mode.addAction(self.__ringSelectionMode)
+        mode.addAction(self.__arcSelectionMode)
+        mode.addAction(self.__peakSelectionMode)
+        mode.addAction(self.__erasorMode)
+        mode.triggered.connect(self.__requestChangeMode)
+        self.__arcSelectionMode.setChecked(True)
+
         return toolBar
+
+    def __requestChangeMode(self, action):
+        if action is self.__erasorMode:
+            self.__plot.setPeakInteractiveMode(_PeakPickingPlot.ERASOR_MODE)
+        elif (action is self.__ringSelectionMode or
+              action is self.__arcSelectionMode or
+              action is self.__peakSelectionMode):
+            self.__plot.setPeakInteractiveMode(_PeakPickingPlot.PEAK_SELECTION_MODE)
+        else:
+            assert(False)
 
     def __createPlotToolBar(self, plot):
         from silx.gui.plot import tools
@@ -1075,6 +1098,33 @@ class PeakPickingTask(AbstractCalibrationTask):
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
+
+    def __onShapeErased(self, shape):
+        """
+        Callback when erasing peaks is requested.
+
+        :param Shape shape: A shape containing peaks to erase
+        """
+        if shape.getType() == "rectangle":
+            points = shape.getPoints()
+            minCoord = points.min(axis=0)
+            maxCoord = points.max(axis=0)
+
+            def erasePeaksFromRect(x, y):
+                return not (minCoord[1] < x < maxCoord[1] and
+                            minCoord[0] < y < maxCoord[0])
+
+            oldState = self.__copyPeaks(self.__undoStack)
+            peakSelectionModel = self.model().peakSelectionModel()
+            model_transform.filterControlPoints(erasePeaksFromRect, peakSelectionModel)
+            newState = self.__copyPeaks(self.__undoStack)
+            command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
+            command.setText("erase peaks with rubber tool")
+            command.setRedoInhibited(True)
+            self.__undoStack.push(command)
+            command.setRedoInhibited(False)
+        else:
+            assert(False)
 
     def __removePeak(self, peakModel):
         oldState = self.__copyPeaks(self.__undoStack)
