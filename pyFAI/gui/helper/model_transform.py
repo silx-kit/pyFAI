@@ -57,6 +57,27 @@ def createControlPoints(model):
     return controlPoints
 
 
+def filterControlPoints(filterCallback, peakSelectionModel):
+    """Filter each peaks of the model using a callbackl
+
+    :param Callable[int,int,bool] filter: Filter returning true is the
+        peak have to stay in the result.
+    :param PeakSelectionModel peakSelectionModel: Model to filter
+    """
+    peakSelectionModel.lockSignals()
+    for peakGroup in peakSelectionModel:
+        changed = False
+        newCoords = []
+        for coord in peakGroup.coords():
+            if filterCallback(coord[0], coord[1]):
+                newCoords.append(coord)
+            else:
+                changed = True
+        if changed:
+            peakGroup.setCoords(newCoords)
+    peakSelectionModel.unlockSignals()
+
+
 def createRing(points, peakSelectionModel, context=None):
     """Create a new ring from a group of points"""
 
