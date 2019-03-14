@@ -309,12 +309,16 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     PEAK_SELECTION_MODE = 0
     ERASOR_MODE = 1
+    BRUSH_MODE = 2
 
     sigPeakPicked = qt.Signal(int, int)
     """Emitted when a mouse interaction requesteing a peak selection."""
 
     sigShapeErased = qt.Signal(object)
     """Emitted when a mouse interaction requesteing to erase peaks on shape."""
+
+    sigShapeBrushed = qt.Signal(object)
+    """Emitted when a mouse interaction requesteing to brush peaks on shape."""
 
     def __init__(self, parent):
         super(_PeakPickingPlot, self).__init__(parent=parent)
@@ -353,6 +357,9 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         elif mode == self.ERASOR_MODE:
             color = "black"
             self.setInteractiveMode('draw', shape='rectangle', source=self, color=color)
+        elif mode == self.BRUSH_MODE:
+            color = "black"
+            self.setInteractiveMode('draw', shape='rectangle', source=self, color=color)
         else:
             assert(False)
 
@@ -371,7 +378,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
                 x, y, button = event["col"], event["row"], event["button"]
                 if button == "left":
                     self.__plotClicked(x, y)
-        elif self.__mode == self.ERASOR_MODE:
+        elif self.__mode in [self.ERASOR_MODE, self.BRUSH_MODE]:
             if event['event'] == 'drawingFinished':
                 # Convert from plot to array coords
                 ox, oy = 0, 0
@@ -393,7 +400,12 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
                 shape = Shape('rectangle')
                 points = numpy.array([[col, row], [col + width, row + height]])
                 shape.setPoints(points, copy=False)
-                self.sigShapeErased.emit(shape)
+                if self.__mode == self.ERASOR_MODE:
+                    self.sigShapeErased.emit(shape)
+                elif self.__mode == self.BRUSH_MODE:
+                    self.sigShapeBrushed.emit(shape)
+                else:
+                    assert(False)
         else:
             assert(False)
 
