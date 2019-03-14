@@ -38,6 +38,7 @@ from silx.gui import qt
 from silx.gui import icons
 import silx.gui.plot
 from silx.gui.plot.tools import PositionInfo
+from silx.gui.plot.items.shape import Shape
 
 from pyFAI.third_party import six
 import pyFAI.utils
@@ -306,8 +307,14 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
 class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
+    PEAK_SELECTION_MODE = 0
+    ERASOR_MODE = 1
+
     sigPeakPicked = qt.Signal(int, int)
     """Emitted when a mouse interaction requesteing a peak selection."""
+
+    sigShapeErased = qt.Signal(object)
+    """Emitted when a mouse interaction requesteing to erase peaks on shape."""
 
     def __init__(self, parent):
         super(_PeakPickingPlot, self).__init__(parent=parent)
@@ -317,6 +324,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__peakSelectionModel = None
         self.__callbacks = {}
         self.__processing = None
+        self.__mode = self.PEAK_SELECTION_MODE
 
         self.sigPlotSignal.connect(self.__onPlotEvent)
 
@@ -335,6 +343,19 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
 
+    def setPeakInteractiveMode(self, mode):
+        if self.__mode == mode:
+            return
+        self.__mode = mode
+
+        if mode == self.PEAK_SELECTION_MODE:
+            self.setInteractiveMode('zoom')
+        elif mode == self.ERASOR_MODE:
+            color = "black"
+            self.setInteractiveMode('draw', shape='rectangle', source=self, color=color)
+        else:
+            assert(False)
+
     def eventFilter(self, widget, event):
         if event.type() == qt.QEvent.Enter:
             self.setCursor(qt.Qt.CrossCursor)
@@ -345,10 +366,36 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         return False
 
     def __onPlotEvent(self, event):
-        if event["event"] == "imageClicked":
-            x, y, button = event["col"], event["row"], event["button"]
-            if button == "left":
-                self.__plotClicked(x, y)
+        if self.__mode == self.PEAK_SELECTION_MODE:
+            if event["event"] == "imageClicked":
+                x, y, button = event["col"], event["row"], event["button"]
+                if button == "left":
+                    self.__plotClicked(x, y)
+        elif self.__mode == self.ERASOR_MODE:
+            if event['event'] == 'drawingFinished':
+                # Convert from plot to array coords
+                ox, oy = 0, 0
+                sx, sy = 1.0, 1.0
+
+                height = int(abs(event['height'] / sy))
+                width = int(abs(event['width'] / sx))
+
+                row = int((event['y'] - oy) / sy)
+                if sy < 0:
+                    row -= height
+
+                col = int((event['x'] - ox) / sx)
+                if sx < 0:
+                    col -= width
+
+                # Use a shape in case we generalize it
+                # FIXME: This code should be done in silx
+                shape = Shape('rectangle')
+                points = numpy.array([[col, row], [col + width, row + height]])
+                shape.setPoints(points, copy=False)
+                self.sigShapeErased.emit(shape)
+        else:
+            assert(False)
 
     def __plotClicked(self, x, y):
         self.sigPeakPicked.emit(x, y)
