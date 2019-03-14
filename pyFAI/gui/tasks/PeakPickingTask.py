@@ -777,6 +777,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         self.__plot.sigPeakPicked.connect(self.__onPickPicked)
         self.__plot.sigShapeErased.connect(self.__onShapeErased)
+        self.__plot.sigShapeBrushed.connect(self.__onShapeBrushed)
 
         self._extract.setEnabled(False)
         self._extract.clicked.connect(self.__autoExtractRingsLater)
@@ -910,9 +911,17 @@ class PeakPickingTask(AbstractCalibrationTask):
         action.setIcon(icons.getQIcon("silx:gui/icons/draw-rubber"))
         action.setText("Rubber")
         action.setCheckable(True)
-        action.setToolTip("Remove peaks from the selection")
+        action.setToolTip("Select a set of peaks to remove")
         toolBar.addAction(action)
         self.__erasorMode = action
+
+        action = qt.QAction(self)
+        action.setIcon(icons.getQIcon("silx:gui/icons/draw-brush"))
+        action.setText("Brush")
+        action.setCheckable(True)
+        action.setToolTip("Select a set of peaks to change ring")
+        toolBar.addAction(action)
+        self.__brushMode = action
 
         toolBar.addSeparator()
 
@@ -965,6 +974,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         mode.addAction(self.__arcSelectionMode)
         mode.addAction(self.__peakSelectionMode)
         mode.addAction(self.__erasorMode)
+        mode.addAction(self.__brushMode)
         mode.triggered.connect(self.__requestChangeMode)
         self.__arcSelectionMode.setChecked(True)
 
@@ -973,6 +983,8 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __requestChangeMode(self, action):
         if action is self.__erasorMode:
             self.__plot.setPeakInteractiveMode(_PeakPickingPlot.ERASOR_MODE)
+        elif action is self.__brushMode:
+            self.__plot.setPeakInteractiveMode(_PeakPickingPlot.BRUSH_MODE)
         elif (action is self.__ringSelectionMode or
               action is self.__arcSelectionMode or
               action is self.__peakSelectionMode):
@@ -1110,6 +1122,48 @@ class PeakPickingTask(AbstractCalibrationTask):
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
+
+    def __onShapeBrushed(self, shape):
+        """
+        Callback when brushing peaks is requested.
+
+        :param Shape shape: A shape containing peaks to erase
+        """
+        if shape.getType() == "rectangle":
+            points = shape.getPoints()
+            minCoord = points.min(axis=0)
+            maxCoord = points.max(axis=0)
+
+            def erasePeaksFromRect(x, y):
+                return not (minCoord[1] < x < maxCoord[1] and
+                            minCoord[0] < y < maxCoord[0])
+
+            brushedPeaks = []
+            oldState = self.__copyPeaks(self.__undoStack)
+            peakSelectionModel = self.model().peakSelectionModel()
+            model_transform.filterControlPoints(erasePeaksFromRect,
+                                                peakSelectionModel,
+                                                removedPeaks=brushedPeaks)
+            if len(brushedPeaks) == 0:
+                _logger.debug("No peak to brush")
+                return
+            ringNumber = self.__ringSelection.ringNumber()
+            peak = peakSelectionModel.peakFromRingNumber(ringNumber)
+            if peak is None:
+                peakModel = model_transform.createRing(brushedPeaks, peakSelectionModel)
+                peakModel.setRingNumber(ringNumber)
+                peakSelectionModel.append(peakModel)
+            else:
+                peak.mergeCoords(brushedPeaks)
+
+            newState = self.__copyPeaks(self.__undoStack)
+            command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
+            command.setText("erase peaks with rubber tool")
+            command.setRedoInhibited(True)
+            self.__undoStack.push(command)
+            command.setRedoInhibited(False)
+        else:
+            assert(False)
 
     def __onShapeErased(self, shape):
         """
