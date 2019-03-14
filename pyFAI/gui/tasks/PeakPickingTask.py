@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/03/2019"
+__date__ = "14/03/2019"
 
 import logging
 import numpy
@@ -306,6 +306,9 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
 class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
+    sigPeakPicked = qt.Signal(int, int)
+    """Emitted when a mouse interaction requesteing a peak selection."""
+
     def __init__(self, parent):
         super(_PeakPickingPlot, self).__init__(parent=parent)
         self.setKeepDataAspectRatio(True)
@@ -314,6 +317,8 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__peakSelectionModel = None
         self.__callbacks = {}
         self.__processing = None
+
+        self.sigPlotSignal.connect(self.__onPlotEvent)
 
         markerModel = CalibrationContext.instance().getCalibrationModel().markerModel()
         self.__markerManager = MarkerManager(self, markerModel, pixelBasedPlot=True)
@@ -338,6 +343,15 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             self.unsetCursor()
             return True
         return False
+
+    def __onPlotEvent(self, event):
+        if event["event"] == "imageClicked":
+            x, y, button = event["col"], event["row"], event["button"]
+            if button == "left":
+                self.__plotClicked(x, y)
+
+    def __plotClicked(self, x, y):
+        self.sigPeakPicked.emit(x, y)
 
     def __plotContextMenu(self, pos):
         plot = self
@@ -698,7 +712,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         statusBar = self.__createPlotStatusBar(self.__plot)
         self.__plot.setStatusBar(statusBar)
 
-        self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
+        self.__plot.sigPeakPicked.connect(self.__onPickPicked)
 
         self._extract.setEnabled(False)
         self._extract.clicked.connect(self.__autoExtractRingsLater)
@@ -906,12 +920,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         statusBar.addWidget(info)
         return statusBar
 
-    def __onPlotEvent(self, event):
-        if event["event"] == "imageClicked":
-            x, y, button = event["col"], event["row"], event["button"]
-            if button == "left":
-                self.__plotClicked(x, y)
-
     def __invalidateMassif(self):
         self.__massif = None
         self.__massifReconstructed = None
@@ -990,7 +998,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             points = points[0:1]
         return points
 
-    def __plotClicked(self, x, y):
+    def __onPickPicked(self, x, y):
 
         if self.__peakSelectionMode.isChecked():
             points = self.__findSinglePeak(x, y)
