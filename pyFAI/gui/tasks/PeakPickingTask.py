@@ -809,8 +809,14 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__plot.sigShapeErased.connect(self.__onShapeErased)
         self.__plot.sigShapeBrushed.connect(self.__onShapeBrushed)
 
+        action = qt.QAction(self)
+        action.setText("Auto-extract rings")
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
+        action.triggered.connect(self.__autoExtractRingsLater)
+        self._extract.addAction(action)
+
         self._extract.setEnabled(False)
-        self._extract.clicked.connect(self.__autoExtractRingsLater)
+        self._extract.setDefaultAction(action)
 
         validator = validators.DoubleValidator(self)
         self._numberOfPeakPerDegree.lineEdit().setValidator(validator)
@@ -1259,11 +1265,26 @@ class PeakPickingTask(AbstractCalibrationTask):
             state.append(copy)
         return state
 
+    def _extract_setWaiting_update(self, icon):
+        self._extract.setIcon(icon)
+
+    def _extract_setWaiting(self, isWaiting):
+        if isWaiting:
+            self.__waitingIcon = icons.getWaitIcon()
+            self.__waitingIcon.register(self._extract)
+            self.__waitingIcon.iconChanged.connect(self._extract_setWaiting_update)
+            self._extract.setIcon(self.__waitingIcon.currentIcon())
+        else:
+            self.__waitingIcon.iconChanged.disconnect(self._extract_setWaiting_update)
+            self.__waitingIcon.unregister(self._extract)
+            self.__waitingIcon = None
+            self._extract.setIcon(self._extract.defaultAction().icon())
+
     def __autoExtractRingsLater(self):
         self.__filterRing = None
         self.__plot.setProcessing()
         qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
-        self._extract.setWaiting(True)
+        self._extract_setWaiting(True)
         # Wait for Qt repaint first
         qt.QTimer.singleShot(1, self.__autoExtractRings)
 
@@ -1271,7 +1292,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__filterRing = ring
         self.__plot.setProcessing()
         qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
-        self._extract.setWaiting(True)
+        self._extract_setWaiting(True)
         # Wait for Qt repaint first
         qt.QTimer.singleShot(1, self.__autoExtractRings)
 
@@ -1281,7 +1302,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         finally:
             self.__plot.unsetProcessing()
             qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
+            self._extract_setWaiting(False)
 
     def __autoExtractRingsCompute(self):
         maxRings = self._maxRingToExtract.value()
@@ -1297,19 +1318,19 @@ class PeakPickingTask(AbstractCalibrationTask):
         if detector is None:
             self.__plot.unsetProcessing()
             qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
+            self._extract_setWaiting(False)
             qt.QMessageBox.critical(self, "Error", "No detector defined")
             return
         if calibrant is None:
             self.__plot.unsetProcessing()
             qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
+            self._extract_setWaiting(False)
             qt.QMessageBox.critical(self, "Error", "No calibrant defined")
             return
         if wavelength is None:
             self.__plot.unsetProcessing()
             qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
+            self._extract_setWaiting(False)
             qt.QMessageBox.critical(self, "Error", "No wavelength defined")
             return
 
