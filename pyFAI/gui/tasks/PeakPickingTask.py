@@ -1114,9 +1114,15 @@ class PeakPickingTask(AbstractCalibrationTask):
                 return not (minCoord[1] < x < maxCoord[1] and
                             minCoord[0] < y < maxCoord[0])
 
+            removedPeaks = []
             oldState = self.__copyPeaks(self.__undoStack)
             peakSelectionModel = self.model().peakSelectionModel()
-            model_transform.filterControlPoints(erasePeaksFromRect, peakSelectionModel)
+            model_transform.filterControlPoints(erasePeaksFromRect,
+                                                peakSelectionModel,
+                                                removedPeaks=removedPeaks)
+            if len(removedPeaks) == 0:
+                _logger.debug("No peak to remove")
+                return
             newState = self.__copyPeaks(self.__undoStack)
             command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
             command.setText("erase peaks with rubber tool")
