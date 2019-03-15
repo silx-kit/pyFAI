@@ -46,7 +46,7 @@
  * - array_s8: Pointer to global memory with the input data as signed8 array
  * - array_float:  Pointer to global memory with the output data as float array
  */
-__kernel void
+kernel void
 s8_to_float(__global char  *array_s8,
             __global float *array_float
 )
@@ -64,7 +64,7 @@ s8_to_float(__global char  *array_s8,
  * - array_u8: Pointer to global memory with the input data as unsigned8 array
  * - array_float:  Pointer to global memory with the output data as float array
  */
-__kernel void
+kernel void
 u8_to_float(__global unsigned char  *array_u8,
             __global float *array_float
 )
@@ -82,7 +82,7 @@ u8_to_float(__global unsigned char  *array_u8,
  * - array_s16: Pointer to global memory with the input data as signed16 array
  * - array_float:  Pointer to global memory with the output data as float array
  */
-__kernel void
+kernel void
 s16_to_float(__global short *array_s16,
              __global float *array_float
 )
@@ -100,7 +100,7 @@ s16_to_float(__global short *array_s16,
  * - array_u16: Pointer to global memory with the input data as unsigned16 array
  * - array_float:  Pointer to global memory with the output data as float array
  */
-__kernel void
+kernel void
 u16_to_float(__global unsigned short  *array_u16,
              __global float *array_float
 )
@@ -117,7 +117,7 @@ u16_to_float(__global unsigned short  *array_u16,
  * - array_u32: Pointer to global memory with the input data as unsigned32 array
  * - array_float:  Pointer to global memory with the output data as float array
  */
-__kernel void
+kernel void
 u32_to_float(__global unsigned int  *array_u32,
              __global float *array_float
 )
@@ -134,7 +134,7 @@ u32_to_float(__global unsigned int  *array_u32,
  * - array_int:  Pointer to global memory with the data as unsigned32 array
  * - array_float:  Pointer to global memory with the data float array
  */
-__kernel void
+kernel void
 s32_to_float(__global int  *array_int,
              __global float  *array_float
 )
@@ -196,16 +196,13 @@ static float3 _preproc3(const __global float  *image,
                         const          float  delta_dummy,
                         const          float  normalization_factor)
 {
-    size_t i= get_global_id(0);
+    size_t i = get_global_id(0);
     float3 result = (float3)(0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
         if ((!do_mask) || (!mask[i]))
         {
-            result.s0 = image[i];
-            if (variance != 0)
-                result.s1 = variance[i];
-            result.s2 = normalization_factor;
+            result = (float3)(image[i], variance[i], normalization_factor);
             if ( (!do_dummy)
                   ||((delta_dummy != 0.0f) && (fabs(result.s0-dummy) > delta_dummy))
                   ||((delta_dummy == 0.0f) && (result.s0 != dummy)))
@@ -293,16 +290,12 @@ static float4 _preproc4(const __global float  *image,
                         const          float  normalization_factor)
 {
     size_t i= get_global_id(0);
-    float4 result = (float3)(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
         if ((!do_mask) || (!mask[i]))
         {
-            result.s0 = image[i];
-            result.s3 = 1.0f
-            if (variance != 0.0f)
-                result.s1 = variance[i];
-            result.s2 = normalization_factor;
+            result = (float4)(image[i], variance[i], normalization_factor, 1.0f);
             if ( (!do_dummy)
                   ||((delta_dummy != 0.0f) && (fabs(result.s0-dummy) > delta_dummy))
                   ||((delta_dummy == 0.0f) && (result.s0 != dummy)))
@@ -328,7 +321,7 @@ static float4 _preproc4(const __global float  *image,
                 if (do_absorption)
                     result.s2 *= absorption[i];
                 if (isnan(result.s0) || isnan(result.s1) || isnan(result.s2) || (result.s2 == 0.0f))
-                    result = (float3)(0.0f, 0.0f, 0.0f, 0.0f);
+                    result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
             }
             else
             {
@@ -372,7 +365,7 @@ static float4 _preproc4(const __global float  *image,
  *
 **/
 
-__kernel void
+kernel void
 corrections(const __global float  *image,
             const          char   do_dark,
             const __global float  *dark,
@@ -398,25 +391,25 @@ corrections(const __global float  *image,
     if (i < NIMAGE)
     {
         result = _preproc3(image,
-                            0,
-                            do_dark,
-                            dark,
-                            0,
-                            0,
-                            do_flat,
-                            flat,
-                            do_solidangle,
-                            solidangle,
-                            do_polarization,
-                            polarization,
-                            do_absorption,
-                            absorption,
-                            do_mask,
-                            mask,
-                            do_dummy,
-                            dummy,
-                            delta_dummy,
-                            normalization_factor);
+                           image,
+                           do_dark,
+                           dark,
+                           0,
+                           dark,
+                           do_flat,
+                           flat,
+                           do_solidangle,
+                           solidangle,
+                           do_polarization,
+                           polarization,
+                           do_absorption,
+                           absorption,
+                           do_mask,
+                           mask,
+                           do_dummy,
+                           dummy,
+                           delta_dummy,
+                           normalization_factor);
         if (result.s2 != 0.0f)
             output[i] = result.s0 / result.s2;
         else
@@ -454,7 +447,7 @@ corrections(const __global float  *image,
  *
  *
 **/
-__kernel void
+kernel void
 corrections2(const __global float  *image,
              const          char   do_dark,
              const __global float  *dark,
@@ -480,7 +473,7 @@ corrections2(const __global float  *image,
     if (i < NIMAGE)
     {
         result = _preproc3(image,
-                            0,
+                           image,
                             do_dark,
                             dark,
                             0,
@@ -684,7 +677,7 @@ corrections4Poisson( const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    float3 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
         result = _preproc4(image,
@@ -765,7 +758,7 @@ corrections4(const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    float3 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
         result = _preproc4( image,

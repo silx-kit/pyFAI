@@ -125,15 +125,75 @@ kernel void histogram_1d_preproc(global float* position,
                                  float mini,
                                  float maxi)
 {
-    int id = get_global_id(0);
+    size_t id = get_global_id(0);
     if (id<size)
-    {
+    {// pixel in the image
         int target = (int) (nbins * (position[id] - mini) / (maxi-mini));
-        atomicAdd_g_kahan(&histo_sig[target], weight[id].s0);
-        atomicAdd_g_kahan(&histo_var[target], weight[id].s1);
-        atomicAdd_g_kahan(&histo_nrm[target], weight[id].s2);
-        atomicAdd_g_kahan(&histo_cnt[target], weight[id].s3);
+        if (target >= 0) && (target < nbins)
+        {
+            float4 value = weight[id];
+            atomicAdd_g_kahan(&histo_sig[target], value.s0);
+            atomicAdd_g_kahan(&histo_var[target], value.s1);
+            atomicAdd_g_kahan(&histo_nrm[target], value.s2);
+            atomicAdd_g_kahan(&histo_cnt[target], value.s3);
+        } // else discard value
     }
     return;
 }
+
+/**
+ * \brief Calculate the 2D weighted histogram of positions for preprocessed data
+ *
+ * - radial: array of position in the radial direction
+ * - azimuthal: array of position in the azimuthal direction
+ * - weight: array of weights containing: signal, variance, normalization, count
+ * - histo_sig: contains the resulting histogram for the signal
+ * - histo_var: contains the resulting histogram for the variance
+ * - histo_nrm: contains the resulting histogram for the normalization
+ * - histo_cnt: contains the resulting histogram for the pixel count
+ * - size: of the image/weights/positions
+ * - nbins_radial: size of histograms
+ * - mini: lower bound of the histogram
+ * - maxi: upper boubd of the histogram (excluded)
+ *
+ * This is a 1D histogram
+ */
+
+kernel void histogram_2d_preproc(global float* radial,
+                                 global float* azimuthal,
+                                 global float4* weight,
+                                 global float2* histo_sig,
+                                 global float2* histo_var,
+                                 global float2* histo_nrm,
+                                 global float2* histo_cnt,
+                                 int size,
+                                 int nbins_rad,
+                                 int nbins_azim,
+                                 float mini_rad,
+                                 float maxi_rad,
+                                 float mini_azim,
+                                 float maxi_azim,)
+{
+    int id = get_global_id(0);
+    if (id<size)
+    {// we are in the image
+        int target_rad = (int) (nbins_rad * (radial[id] - mini_rad) / (maxi_rad-mini_rad));
+        if ((target_rad >= 0) && (target_rad < nbins_rad))
+        {
+            int target_azim = (int) (nbins_azim * (azimuthal[id] - mini_azim) / (maxi_azim-mini_azim));
+            if ((target_azim >= 0) && (target_azim < nbins_azim))
+            {
+                int target = ...
+            }
+
+            atomicAdd_g_kahan(&histo_sig[target], weight[id].s0);
+            atomicAdd_g_kahan(&histo_var[target], weight[id].s1);
+            atomicAdd_g_kahan(&histo_nrm[target], weight[id].s2);
+            atomicAdd_g_kahan(&histo_cnt[target], weight[id].s3);
+
+        }
+    }
+    return;
+}
+
 
