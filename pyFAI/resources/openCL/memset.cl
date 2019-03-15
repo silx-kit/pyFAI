@@ -50,10 +50,10 @@
  * - array1: float Pointer to global memory with the outCount array
  * - array2: float Pointer to global memory with the outData array
  */
-__kernel void
-memset_out(__global float *array0,
-           __global float *array1,
-           __global float *array2
+kernel void
+memset_out(global float *array0,
+           global float *array1,
+           global float *array2
 )
 {
   int i = get_global_id(0);
@@ -63,5 +63,32 @@ memset_out(__global float *array0,
     array0[i] = 0.0f;
     array1[i] = 0.0f;
     array2[i] = 0.0f;
+  }
+}
+
+/**
+ * \brief Sets the values of 4 float output arrays to zero.
+ *
+ * Gridsize = size of arrays + padding.
+ *
+ * - array0: float Pointer to global memory with the outMerge array
+ * - array1: float Pointer to global memory with the outCount array
+ * - array2: float Pointer to global memory with the outData array
+ * - array3: float Pointer to global memory with the outData array
+ */
+kernel void
+memset_4(global float *array0,
+         global float *array1,
+         global float *array2,
+         global float *array3)
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if (i < NBINS)
+  {
+    array0[i] = 0.0f;
+    array1[i] = 0.0f;
+    array2[i] = 0.0f;
+    array3[i] = 0.0f;
   }
 }

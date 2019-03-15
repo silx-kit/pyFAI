@@ -42,13 +42,18 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "14/03/2019"
+__date__ = "15/03/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
 import logging
 import threading
+from collections import OrderedDict, namedtuple
+
+Integrate1dtpl = namedtuple("Integrate1dtpl", "position signal variance normalization count")
+Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal signal variance normalization count")
+
 import numpy
 from . import concatenate_cl_kernel, get_x87_volatile_option
 from . import processing
@@ -56,7 +61,7 @@ EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
 from ..utils import calc_checksum
-from . import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
+from . import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers, kernel_workgroup_size
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
@@ -774,7 +779,7 @@ class OCL_Histogram1d(OpenclProcessing):
     It also performs the preprocessing using the preproc kernel
     """
     BLOCK_SIZE = 32
-    buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+    buffers = [BufferDescription("preproc", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
@@ -799,11 +804,12 @@ class OCL_Histogram1d(OpenclProcessing):
                numpy.int32: "s32_to_float"
                }
 
-    def __init__(self, position, checksum=None, empty=None,
+    def __init__(self, position, bins, checksum=None, empty=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """
         :param position: array with the radial position of every single pixel. Same as image size
+        :param bins: number of bins on which to histogram
         :param checksum: pre-calculated checksum of the position array to prevent re-calculating it :)
         :param empty: value to be assigned to bins without contribution from any pixel
         :param ctx: actual working context, left to None for automatic
@@ -818,12 +824,16 @@ class OCL_Histogram1d(OpenclProcessing):
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
                                   block_size=block_size, profile=profile)
-        self.size = position.size
+        self.bins = numpy.int32(bins)
+        self.size = numpy.int32(position.size)
         self.empty = numpy.float32(empty or 0.0)
+
+        self.mini = numpy.float32(numpy.min(position))
+        self.maxi = numpy.float32(numpy.max(position) * (1.0 + numpy.finfo(numpy.float32).eps))
 
         if not checksum:
             checksum = calc_checksum(self._data)
-        self.on_device = {"positions": checksum,
+        self.on_device = {"position": checksum,
                           "dark": None,
                           "flat": None,
                           "polarization": None,
@@ -841,12 +851,10 @@ class OCL_Histogram1d(OpenclProcessing):
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
 
-        self.buffers += [BufferDescription("data", self.data_size, numpy.float32, mf.READ_ONLY),
-                         BufferDescription("indices", self.data_size, numpy.int32, mf.READ_ONLY),
-                         BufferDescription("indptr", (self.bins + 1), numpy.int32, mf.READ_ONLY),
-                         BufferDescription("sum_data", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
+        self.buffers += [BufferDescription("histo_signal", self.bins * 2, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("histo_variance", self.bins * 2, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("histo_normalization", self.bins * 2, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("histo_count", self.bins * 2, numpy.float32, mf.WRITE_ONLY),
                          ]
         try:
             self.set_profiling(profile)
@@ -855,18 +863,16 @@ class OCL_Histogram1d(OpenclProcessing):
             self.set_kernel_arguments()
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
-        self.send_buffer(self._data, "data")
-        self.send_buffer(self._indices, "indices")
-        self.send_buffer(self._indptr, "indptr")
+        self.send_buffer(position, "position", checksum)
 
     def __copy__(self):
         """Shallow copy of the object
 
         :return: copy of the object
         """
-        return self.__class__((self._data, self._indices, self._indptr),
-                              self.size,
-                              checksum=self.on_device.get("data"),
+        return self.__class__(self.position,
+                              self.bins,
+                              checksum=self.on_device.get("position"),
                               empty=self.empty,
                               ctx=self.ctx,
                               block_size=self.block_size,
@@ -879,11 +885,9 @@ class OCL_Histogram1d(OpenclProcessing):
         """
         if memo is None:
             memo = {}
-        new_csr = self._data.copy(), self._indices.copy(), self._indptr.copy()
-        memo[id(self._data)] = new_csr[0]
-        memo[id(self._indices)] = new_csr[1]
-        memo[id(self._indptr)] = new_csr[2]
-        new_obj = self.__class__(new_csr, self.size,
+        position = self.position.copy()
+        memo[id(self.position)] = position
+        new_obj = self.__class__(position, self.bins,
                                  checksum=self.on_device.get("data"),
                                  empty=self.empty,
                                  ctx=self.ctx,
@@ -891,3 +895,314 @@ class OCL_Histogram1d(OpenclProcessing):
                                  profile=self.profile)
         memo[id(self)] = new_obj
         return new_obj
+
+    def compile_kernels(self, kernel_file=None):
+        """Call the OpenCL compiler
+        
+        :param kernel_file: path to the kernel (by default use the one in the resources directory)
+        """
+        # concatenate all needed source files into a single openCL module
+        kernel_file = kernel_file or self.kernel_files[-1]
+        kernels = self.kernel_files[:-1] + [kernel_file]
+
+        try:
+            default_compiler_options = self.get_compiler_options(x87_volatile=True)
+        except AttributeError:  # Silx version too old
+            logger.warning("Please upgrade to silx v0.10+")
+            default_compiler_options = get_x87_volatile_option(self.ctx)
+        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
+                          (self.bins, self.size, self.BLOCK_SIZE)
+        if default_compiler_options:
+            compile_options += " " + default_compiler_options
+        OpenclProcessing.compile_kernels(self, kernels, compile_options)
+        for kernel_name, kernel in self.kernels.get_kernels().items():
+            wg = kernel_workgroup_size(self.program, kernel)
+            self.workgroup_size[kernel_name] = (min(wg, self.BLOCK_SIZE),)  # this is a tuple
+
+    def set_kernel_arguments(self):
+        """Tie arguments of OpenCL kernel-functions to the actual kernels
+
+        """
+        self.cl_kernel_args["correction4"] = OrderedDict((("image", self.cl_mem["image"]),
+                                                          ("variance", self.cl_mem["variance"]),
+                                                          ("do_dark", numpy.int8(0)),
+                                                          ("dark", self.cl_mem["dark"]),
+                                                          ("do_dark_variance", numpy.int8(0)),
+                                                          ("dark_variance", self.cl_mem["dark_variance"]),
+                                                          ("do_flat", numpy.int8(0)),
+                                                          ("flat", self.cl_mem["flat"]),
+                                                          ("do_solidangle", numpy.int8(0)),
+                                                          ("solidangle", self.cl_mem["solidangle"]),
+                                                          ("do_polarization", numpy.int8(0)),
+                                                          ("polarization", self.cl_mem["polarization"]),
+                                                          ("do_absorption", numpy.int8(0)),
+                                                          ("absorption", self.cl_mem["absorption"]),
+                                                          ("do_mask", numpy.int8(0)),
+                                                          ("mask", self.cl_mem["mask"]),
+                                                          ("do_dummy", numpy.int8(0)),
+                                                          ("dummy", numpy.float32(0)),
+                                                          ("delta_dummy", numpy.float32(0)),
+                                                          ("normalization_factor", numpy.float32(1.0)),
+                                                          ("output", self.cl_mem["output"])))
+
+        self.cl_kernel_args["histogram_1d_preproc"] = OrderedDict((("position", self.cl_mem["position"]),
+                                                                   ("weight", self.cl_mem["weight"]),
+                                                                   ("histo_signal", self.cl_mem["histo_sig"]),
+                                                                   ("histo_variance", self.cl_mem["histo_variance"]),
+                                                                   ("histo_count", self.cl_mem["histo_count"]),
+                                                                   ("histo_normalization", self.cl_mem["histo_normalization"]),
+                                                                   ("size", self.size),
+                                                                   ("nbins", self.nbins),
+                                                                   ("mini", self.mini),
+                                                                   ("maxi", self.maxi)))
+        # TODO: write this kernel !
+        self.cl_kernel_args["histogram_postproc"] = OrderedDict((("histo_signal", self.cl_mem["histo_sig"]),
+                                                                   ("histo_variance", self.cl_mem["histo_variance"]),
+                                                                   ("histo_count", self.cl_mem["histo_count"]),
+                                                                   ("histo_normalization", self.cl_mem["histo_normalization"]),
+                                                                   ("nbins", self.nbins),
+                                                                   ("empty", self.empty)
+                                                                   ("intensities", self.cl_mem["intensities"]),
+                                                                   ("sigma", self.cl_mem["sigma"])))
+
+        self.cl_kernel_args["memset_4"] = OrderedDict(((i, self.cl_mem[i]) for i in ("histo_signal", "histo_variance", "histo_normalization", "histo_count")))
+        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+
+    def send_buffer(self, data, dest, checksum=None):
+        """Send a numpy array to the device, including the cast on the device if possible
+
+        :param data: numpy array with data
+        :param dest: name of the buffer as registered in the class
+        """
+
+        dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
+        events = []
+        if isinstance(data, pyopencl.array.Array):
+            if (data.dtype == dest_type):
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
+                events.append(EventDescription("copy D->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                events += [EventDescription("copy raw D->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
+        else:
+            # Assume it is a numpy array
+            if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
+                events.append(EventDescription("copy H->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                events += [EventDescription("copy raw H->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
+        if self.profile:
+            self.events += events
+        if checksum is not None:
+            self.on_device[dest] = checksum
+
+    def integrate(self, data, dark=None,
+                  dummy=None, delta_dummy=None,
+                  variance=None, dark_variance=None,
+                  flat=None, solidangle=None, polarization=None, absorption=None,
+                  dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                  polarization_checksum=None, absorption_checksum=None,
+                  preprocess_only=False, safe=True,
+                  normalization_factor=1.0, bin_range=None,
+                  histo_signal=None, histo_variance=None,
+                  histo_normalization=None, histo_count=None):
+        """
+        Performing azimuthal integration, the preprocessing is:
+
+        .. math::
+
+            Signal= (data - dark) 
+            Variance= (variance + dark_variance)
+            Normalization= (normalization_factor * flat * solidangle * polarization * absorption)
+            Count= 1 per valid pixel
+            
+        Integration is performed using the histograms (based on atomic adds
+
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidangle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
+        :param normalization_factor: divide raw signal by this value
+        :param bin_range: provide lower and upper bound for position
+        :param histo_signal: destination array or pyopencl array for sum of signals
+        :param histo_normalization: destination array or pyopencl array for sum of normalization
+        :param histo_count: destination array or pyopencl array for counting pixels 
+        
+        :return: bin_positions, averaged data, histogram of signal, histogram of variance, histogram of normalization, count of pixels
+        """
+        events = []
+        with self.sem:
+            self.send_buffer(data, "image")
+            wg = self.workgroup_size["memset_4"]
+            wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
+            memset = self.kernels.memset_4(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_4"].values()))
+            events.append(EventDescription("memset_4", memset))
+            kw_correction = self.cl_kernel_args["correction4"]
+            kw_histogram = self.cl_kernel_args["histogram_1d_preproc"]
+
+            if variance is None:
+                kw_correction["variance"] = self.cl_mem["image"]
+            else:
+                self.send_buffer(variance, "variance")
+                kw_correction["variance"] = self.cl_mem["variance"]
+
+            if dummy is not None:
+                do_dummy = numpy.int8(1)
+                dummy = numpy.float32(dummy)
+                if delta_dummy is None:
+                    delta_dummy = numpy.float32(0.0)
+                else:
+                    delta_dummy = numpy.float32(abs(delta_dummy))
+            else:
+                do_dummy = numpy.int8(0)
+                dummy = numpy.float32(self.empty)
+                delta_dummy = numpy.float32(0.0)
+
+            kw_correction["do_dummy"] = do_dummy
+            kw_correction["dummy"] = dummy
+            kw_correction["delta_dummy"] = delta_dummy
+            kw_correction["normalization_factor"] = numpy.float32(normalization_factor)
+
+            if dark is not None:
+                do_dark = numpy.int8(1)
+                # TODO: what is do_checksum=False and image not on device ...
+                if not dark_checksum:
+                    dark_checksum = calc_checksum(dark, safe)
+                if dark_checksum != self.on_device["dark"]:
+                    self.send_buffer(dark, "dark", dark_checksum)
+            else:
+                do_dark = numpy.int8(0)
+            kw_correction["do_dark"] = do_dark
+
+            if dark_variance is None:
+                kw_correction["do_dark_variance"] = numpy.int8(0)
+            else:
+                kw_correction["do_dark_variance"] = numpy.int8(1)
+
+            if flat is not None:
+                do_flat = numpy.int8(1)
+                if not flat_checksum:
+                    flat_checksum = calc_checksum(flat, safe)
+                if self.on_device["flat"] != flat_checksum:
+                    self.send_buffer(flat, "flat", flat_checksum)
+            else:
+                do_flat = numpy.int8(0)
+            kw_correction["do_flat"] = do_flat
+
+            if solidangle is not None:
+                do_solidangle = numpy.int8(1)
+                if not solidangle_checksum:
+                    solidangle_checksum = calc_checksum(solidangle, safe)
+                if solidangle_checksum != self.on_device["solidangle"]:
+                    self.send_buffer(solidangle, "solidangle", solidangle_checksum)
+            else:
+                do_solidangle = numpy.int8(0)
+            kw_correction["do_solidangle"] = do_solidangle
+
+            if polarization is not None:
+                do_polarization = numpy.int8(1)
+                if not polarization_checksum:
+                    polarization_checksum = calc_checksum(polarization, safe)
+                if polarization_checksum != self.on_device["polarization"]:
+                    self.send_buffer(polarization, "polarization", polarization_checksum)
+            else:
+                do_polarization = numpy.int8(0)
+            kw_correction["do_polarization"] = do_polarization
+
+            if absorption is not None:
+                do_absorption = numpy.int8(1)
+                if not absorption_checksum:
+                    absorption_checksum = calc_checksum(absorption, safe)
+                if absorption_checksum != self.on_device["absorption"]:
+                    self.send_buffer(absorption, "absorption", absorption_checksum)
+            else:
+                do_absorption = numpy.int8(0)
+            kw_correction["do_absorption"] = do_absorption
+
+            wg = self.workgroup_size["correction4"]
+            ev = self.kernels.correction4(self.queue, self.wdim_data, wg, *list(kw_correction.values()))
+            events.append(EventDescription("correction4", ev))
+
+            if preprocess_only:
+                image = numpy.empty(data.shape + (4,), dtype=numpy.float32)
+                ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
+                events.append(EventDescription("copy D->H image", ev))
+                if self.profile:
+                    self.events += events
+                ev.wait()
+                return image
+
+            if bin_range:
+                mini = numpy.float32(min(bin_range))
+                maxi = numpy.float32(max(bin_range) * (1.0 + numpy.finfo(numpy.float32).eps))
+            else:
+                mini = self.mini
+                maxi = self.maxi
+
+
+
+            wg = self.workgroup_size["histogram_1d_preproc"][0]
+            wdim_size = (self.size + wg - 1) & ~(wg - 1),
+            integrate = self.kernels.csr_integrate(self.queue, wdim_size, (wg,), *kw_histogram.values())
+            events.append(EventDescription("histogram_1d_preproc", integrate))
+
+            if histo_signal is None:
+                histo_signal = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                histo_signal = histo_signal.data
+            if histo_normalization is None:
+                histo_normalization = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                histo_normalization = histo_normalization.data
+            if histo_variance is None:
+                histo_variance = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                histo_variance = histo_normalization.data
+            if histo_count is None:
+                histo_count = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                histo_count = histo_count.data
+
+            ev = pyopencl.enqueue_copy(self.queue, histo_signal, self.cl_mem["histo_signal"])
+            events.append(EventDescription("copy D->H histo_signal", ev))
+            ev = pyopencl.enqueue_copy(self.queue, histo_variance, self.cl_mem["histo_variance"])
+            events.append(EventDescription("copy D->H histo_variance", ev))
+            ev = pyopencl.enqueue_copy(self.queue, histo_normalization, self.cl_mem["histo_normalization"])
+            events.append(EventDescription("copy D->H histo_normalization", ev))
+            ev = pyopencl.enqueue_copy(self.queue, histo_count, self.cl_mem["histo_count"])
+            events.append(EventDescription("copy D->H histo_count", ev))
+            delta = (maxi - mini) / self.bins
+            positions = numpy.linspace(mini + 0.5 * delta, maxi - 0.5 * delta, self.bins)
+            ev.wait()
+
+        if self.profile:
+            self.events += events
+
+        return Integrate1dtpl(positions, intensities, sigma, histo_signal, histo_variance, histo_normalization, histo_count)
+
+    # Name of the default "process" method
+    __call__ = integrate
