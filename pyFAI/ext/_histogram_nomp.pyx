@@ -34,9 +34,11 @@ __license__ = "MIY"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
+include "regrid_common.pxi"
+
 from libc.math cimport floor, sqrt
 import logging
-logger = logging.getLogger(__name__ + "_nomp")
+logger = logging.getLogger(__name__)
 
 
 @cython.cdivision(True)

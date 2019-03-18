@@ -34,12 +34,15 @@ __license__ = "MIT"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
+include "regrid_common.pxi"
+
 import cython
 from cython.parallel cimport prange
 from libc.math cimport floor, sqrt
-from openmp cimport omp_set_num_threads, omp_get_max_threads, omp_get_thread_num
+cimport pyFAI.ext._openmp as _openmp
+
 import logging
-logger = logging.getLogger(__name__ + "_omp")
+logger = logging.getLogger(__name__)
 
 
 @cython.cdivision(True)
@@ -96,8 +99,8 @@ def histogram(cnumpy.ndarray pos not None,
     delta = (max0 - min0) / float(bins)
 
     if not nthread:
-        nthread = omp_get_max_threads()
-    omp_set_num_threads(<int> nthread)
+        nthread = _openmp.omp_get_max_threads()
+    _openmp.omp_set_num_threads(<int> nthread)
     cdef:
         acc_t[:, ::1] big_count = numpy.zeros((nthread, bins), dtype=acc_d)
         acc_t[:, ::1] big_data = numpy.zeros((nthread, bins), dtype=acc_d)
@@ -113,7 +116,7 @@ def histogram(cnumpy.ndarray pos not None,
             bin = < int > fbin
             if bin < 0 or bin >= bins:
                 continue
-            thread = omp_get_thread_num()
+            thread = _openmp.omp_get_thread_num()
             big_count[thread, bin] += 1.0
             big_data[thread, bin] += d
 
@@ -273,8 +276,8 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
         bins1 = 1
 
     if not nthread:
-        nthread = omp_get_max_threads()
-    omp_set_num_threads(<int> nthread)
+        nthread = _openmp.omp_get_max_threads()
+    _openmp.omp_set_num_threads(<int> nthread)
     
     cdef:
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
@@ -312,7 +315,7 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
             bin1 = < int > floor(fbin1)
             if (bin0 < 0) or (bin1 < 0) or (bin0 >= bins0) or (bin1 >= bins1):
                 continue
-            thread = omp_get_thread_num()
+            thread = _openmp.omp_get_thread_num()
             for c in range(nchan):
                 big[thread, bin0, bin1, c] += data[i, c]
             if nchan < 4:
