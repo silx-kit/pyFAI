@@ -35,9 +35,9 @@ __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 
-cimport pyFAI.ext._openmp as _openmp
+from pyFAI.ext._histogram_omp import _COMPILED_WITH_OPENMP
 
-if _openmp.COMPILED_WITH_OPENMP:
+if _COMPILED_WITH_OPENMP:
     from pyFAI.ext._histogram_omp import *
 else:
     from pyFAI.ext._histogram_nomp import *

@@ -45,6 +45,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+_COMPILED_WITH_OPENMP = _openmp.COMPILED_WITH_OPENMP
+
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)

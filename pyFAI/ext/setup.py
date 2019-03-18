@@ -74,7 +74,6 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('splitPixelFull'),
         create_extension_config('splitPixelFullLUT'),
         create_extension_config('splitBBox'),
-        create_extension_config('histogram', can_use_openmp=True),
         create_extension_config('splitBBoxLUT', can_use_openmp=True),
         create_extension_config('splitBBoxCSR', can_use_openmp=True),
         create_extension_config('splitPixelFullCSR', can_use_openmp=True),
