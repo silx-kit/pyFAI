@@ -66,6 +66,8 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('ext', parent_package, top_path)
 
     ext_modules = [
+        create_extension_config('_histogram_nomp'),
+        create_extension_config('_histogram_omp', can_use_openmp=True),
         create_extension_config("_geometry", can_use_openmp=True),
         create_extension_config("reconstruct", can_use_openmp=True),
         create_extension_config('splitPixel'),
