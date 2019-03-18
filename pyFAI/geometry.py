@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "18/03/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1091,6 +1091,7 @@ class Geometry(object):
         SA = pix1*pix2/dist^2 * cos(incidence)^3
 
         """
+        shape = self.get_shape(shape)
         if order is True:
             self._dssa_order = 3.0
         else:
