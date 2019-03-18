@@ -829,7 +829,8 @@ class SourceDistWithCython(sdist):
             self.extensions,
             compiler_directives={'embedsignature': True,
                                  'language_level': 3},
-            force=True
+            force=True,
+            compile_time_env={"HAVE_OPENMP": False}
         )
 
 ################################################################################
