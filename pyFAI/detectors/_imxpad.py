@@ -52,7 +52,6 @@ from numpy import ndarray  # noqa for mypy
 
 from pyFAI.utils import mathutil
 from ._common import Detector
-from ..ext import _geometry
 
 logger = logging.getLogger(__name__)
 
@@ -609,10 +608,10 @@ class Cirpad(Detector):
         """Return the configuration with arguments to the constructor
         :return: dict with param for serialization
         """
-        dico = OrderedDict()
+        config = {}
         for i, calib in enumerate(self._calibs):
-            dico['calib{}'.format(i)] = calib
-        return dico
+            config["calib{}".format(i)] = calib._asdict()
+        return config
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)
@@ -627,6 +626,10 @@ class Cirpad(Detector):
         p1 = corners[...,1]
         p2 = corners[...,2]
         p3 = corners[...,0]  # 0 is normal here
+
+        #import _geoemtry only where it is needed
+
+        from ..ext import _geometry
 
         # Seeks params for each module of the Cirpad.
         modules = []  # type: List[_CirpadModule]
