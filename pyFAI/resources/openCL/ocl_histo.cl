@@ -34,7 +34,7 @@
 
 #pragma OPENCL EXTENSION cl_khr_int64_base_atomics: enable
 
-inline void atomicAdd_g_f(volatile __global float *addr, float val)
+inline void atomic_add_global_float(volatile __global float *addr, float val)
 {
    union {
        unsigned int u32;
@@ -50,7 +50,7 @@ inline void atomicAdd_g_f(volatile __global float *addr, float val)
 }
 
 
-inline void atomicAdd_g_kahan(volatile global float2 *addr, float val)
+inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
 {
    union {
        unsigned long u64;
@@ -83,16 +83,20 @@ inline void atomicAdd_g_kahan(volatile global float2 *addr, float val)
 kernel void histogram_1d(global float* position,
                          global float* weight,
                          global float* histo,
-                         int size,
-                         int nbins,
+                         unsigned int size,
+                         unsigned int nbins,
                          float mini,
                          float maxi)
 {
-    int id = get_global_id(0);
-    if (id<size)
-    {
-        int target = (int) (nbins * (position[id] - mini) / (maxi-mini));
-        atomicAdd_g_f(&histo[target], weight[id]);
+    unsigned int idx = get_global_id(0);
+    if (idx<size)
+    {// pixel in the image
+        float pvalue = position[idx];
+        if ((pvalue>=mini) && (pvalue<maxi))
+        {// position in range
+            unsigned int target = (unsigned int) (nbins * (pvalue - mini) / (maxi-mini));
+            atomic_add_global_float(&histo[target], weight[idx]);
+        }// else discard value
     }
     return;
 }
@@ -105,7 +109,7 @@ kernel void histogram_1d(global float* position,
  * - histo_sig: contains the resulting histogram for the signal
  * - histo_var: contains the resulting histogram for the variance
  * - histo_nrm: contains the resulting histogram for the normalization
- * - histo_cnt: contains the resulting histogram for the pixel count
+ * - histo_cnt: contains the resulting histogram for the pixel count -> as integrers
  * - size: of the image/weights/position
  * - nbins: size of histograms
  * - mini: lower bound of the histogram
@@ -115,27 +119,28 @@ kernel void histogram_1d(global float* position,
  */
 
 kernel void histogram_1d_preproc(global float* position,
-                                 global float4* weight,
+                                 global float4* weights,
                                  global float2* histo_sig,
                                  global float2* histo_var,
                                  global float2* histo_nrm,
-                                 global float2* histo_cnt,
+                                 global unsigned int* histo_cnt,
                                  int size,
                                  int nbins,
                                  float mini,
                                  float maxi)
 {
-    size_t id = get_global_id(0);
-    if (id<size)
+    unsigned int idx = get_global_id(0);
+    if (idx<size)
     {// pixel in the image
-        int target = (int) (nbins * (position[id] - mini) / (maxi-mini));
-        if (target >= 0) && (target < nbins)
-        {
-            float4 value = weight[id];
-            atomicAdd_g_kahan(&histo_sig[target], value.s0);
-            atomicAdd_g_kahan(&histo_var[target], value.s1);
-            atomicAdd_g_kahan(&histo_nrm[target], value.s2);
-            atomicAdd_g_kahan(&histo_cnt[target], value.s3);
+        float pvalue = position[idx];
+        if ((pvalue>=mini)&&(pvalue<maxi))
+        { // position in range
+            unsigned int target = (unsigned int) (nbins * (position[idx] - mini) / (maxi-mini));
+            float4 value = weights[idx];
+            atomic_add_global_kahan(&histo_sig[target], value.s0);
+            atomic_add_global_kahan(&histo_var[target], value.s1);
+            atomic_add_global_kahan(&histo_nrm[target], value.s2);
+            atomic_add(&histo_cnt[target], (unsigned int)(value.s3 + 0.5f));
         } // else discard value
     }
     return;
@@ -159,41 +164,109 @@ kernel void histogram_1d_preproc(global float* position,
  * This is a 1D histogram
  */
 
-kernel void histogram_2d_preproc(global float* radial,
-                                 global float* azimuthal,
-                                 global float4* weight,
-                                 global float2* histo_sig,
-                                 global float2* histo_var,
-                                 global float2* histo_nrm,
-                                 global float2* histo_cnt,
-                                 int size,
-                                 int nbins_rad,
-                                 int nbins_azim,
+kernel void histogram_2d_preproc(global float * radial,
+                                 global float * azimuthal,
+                                 global float4 * weights,
+                                 global float2 * histo_sig,
+                                 global float2 * histo_var,
+                                 global float2 * histo_nrm,
+                                 global unsigned int * histo_cnt,
+                                 unsigned int size,
+                                 unsigned int nbins_rad,
+                                 unsigned int nbins_azim,
                                  float mini_rad,
                                  float maxi_rad,
                                  float mini_azim,
-                                 float maxi_azim,)
+                                 float maxi_azim)
 {
-    int id = get_global_id(0);
-    if (id<size)
+    unsigned int idx = get_global_id(0);
+    if (idx<size)
     {// we are in the image
-        int target_rad = (int) (nbins_rad * (radial[id] - mini_rad) / (maxi_rad-mini_rad));
-        if ((target_rad >= 0) && (target_rad < nbins_rad))
-        {
-            int target_azim = (int) (nbins_azim * (azimuthal[id] - mini_azim) / (maxi_azim-mini_azim));
-            if ((target_azim >= 0) && (target_azim < nbins_azim))
-            {
-                int target = ...
-            }
-
-            atomicAdd_g_kahan(&histo_sig[target], weight[id].s0);
-            atomicAdd_g_kahan(&histo_var[target], weight[id].s1);
-            atomicAdd_g_kahan(&histo_nrm[target], weight[id].s2);
-            atomicAdd_g_kahan(&histo_cnt[target], weight[id].s3);
-
+        float rvalue = radial[idx];
+        float avalue = azimuthal[idx];
+        if ((rvalue>=mini_rad)&&(rvalue<maxi_azim)&&
+            (avalue>mini_azim)&&(avalue<maxi_azim))
+        { //pixel position is the range
+            unsigned int target_rad = (unsigned int) (nbins_rad * (radial[idx] - mini_rad) / (maxi_rad-mini_rad));
+            unsigned int target_azim = (unsigned int) (nbins_azim * (azimuthal[idx] - mini_azim) / (maxi_azim-mini_azim));
+            unsigned int target = target_rad * nbins_azim + target_azim;
+            float4 value = weights[idx];
+            atomic_add_global_kahan(&histo_sig[target], value.s0);
+            atomic_add_global_kahan(&histo_var[target], value.s1);
+            atomic_add_global_kahan(&histo_nrm[target], value.s2);
+            atomic_add(&histo_cnt[target], (unsigned int) (value.s3 + 0.5f));
         }
     }
-    return;
 }
 
 
+/**
+ * \brief Sets the values of 4 float output arrays to zero.
+ *
+ * Gridsize = size of arrays + padding.
+ *
+ * - array0: float2 array
+ * - array1: float2 array
+ * - array2: float2 array
+ * - array3: integer array ... global memory with the outData array
+ * - nbins :
+ */
+kernel void
+memset_histograms(global float2 *histo_sig,
+                  global float2 *histo_var,
+                  global float2 *histo_nrm,
+                  global int *histo_cnt,
+                  unsigned int nbins)
+{
+  unsigned int idx = get_global_id(0);
+  //Global memory guard for padding
+  if (idx < nbins)
+  {
+     histo_sig[idx] = (float2)(0.0f, 0.0f);
+     histo_var[idx] = (float2)(0.0f, 0.0f);
+     histo_nrm[idx] = (float2)(0.0f, 0.0f);
+     histo_cnt[idx] = 0;
+  }
+}
+
+/*
+ * \brief Post-process the various histogram arrays to export intensity and errors
+ *
+ * param:
+ *  - histo_sig: sum of signal among bins
+ *  - histo_var: sum of variance among bins
+ *  - histo_nrm: sum of normalization amoung bins
+ *  - histo_cnt: number of pixels per bins
+ *  - nbin: number of bins
+ *  - empty: value for empty bins (i.e. nrm=0 or cnt=0)
+ *  - intensities: result array with sig/norm
+ *  - errors: result array with standard deviation
+ */
+
+kernel void
+histogram_postproc(global float2 * histo_sig,
+                   global float2 * histo_var,
+                   global float2 * histo_nrm,
+                   global unsigned int * histo_cnt,
+                   unsigned int nbins,
+                   float empty,
+                   global float *intensities,
+                   global float *errors)
+{
+    unsigned int idx = get_global_id(0);
+    //Global memory guard for padding
+    if (idx < nbins)
+    {
+        float nrm = histo_nrm[idx].s0 + histo_nrm[idx].s1;
+        if ((histo_cnt[idx]==0) || (nrm == 0.0f))
+        {
+            intensities[idx] = empty;
+            errors[idx] = empty;
+        }
+        else
+        {
+            intensities[idx] = (histo_sig[idx].s0 + histo_sig[idx].s1) / nrm;
+            errors[idx] = sqrt(histo_var[idx].s0 + histo_var[idx].s1)/ nrm;
+        }
+    }
+}

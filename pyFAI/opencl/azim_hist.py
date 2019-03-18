@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "15/03/2019"
+__date__ = "18/03/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -793,7 +793,6 @@ class OCL_Histogram1d(OpenclProcessing):
                ]
     kernel_files = ["pyfai:openCL/kahan.cl",
                     "pyfai:openCL/preprocess.cl",
-                    "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_histo.cl"
                     ]
     mapping = {numpy.int8: "s8_to_float",
@@ -832,7 +831,7 @@ class OCL_Histogram1d(OpenclProcessing):
         self.maxi = numpy.float32(numpy.max(position) * (1.0 + numpy.finfo(numpy.float32).eps))
 
         if not checksum:
-            checksum = calc_checksum(self._data)
+            checksum = calc_checksum(position)
         self.on_device = {"position": checksum,
                           "dark": None,
                           "flat": None,
