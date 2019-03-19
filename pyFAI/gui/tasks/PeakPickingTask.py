@@ -832,9 +832,17 @@ class PeakPickingTask(AbstractCalibrationTask):
         selectAction = self._extract.addDefaultAction(action)
         selectAction.triggered.connect(self.__updateOptionToExtractMoreRings)
         self.__updateOptionToExtractMoreRings()
+        moreAction = action
+
+        action = qt.QAction(self)
+        action.setText("Merge rings and sort")
+        action.setToolTip("Merge the groups using the same ring number and sort them")
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
+        action.triggered.connect(self.__cleanUpRings)
+        self._extract.addAction(action)
 
         self._extract.setEnabled(False)
-        self._extract.setDefaultAction(action)
+        self._extract.setDefaultAction(moreAction)
 
         validator = validators.DoubleValidator(self)
         self._numberOfPeakPerDegree.lineEdit().setValidator(validator)
@@ -1465,6 +1473,33 @@ class PeakPickingTask(AbstractCalibrationTask):
         command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
         text = thread.userData("TEXT")
         command.setText(text)
+        command.setRedoInhibited(True)
+        self.__undoStack.push(command)
+        command.setRedoInhibited(False)
+
+    def __cleanUpRings(self):
+        """Clean up the picked rings"""
+        oldState = self.__copyPeaks(self.__undoStack)
+        peakSelectionModel = self.model().peakSelectionModel()
+
+        peaks = {}
+        for p in peakSelectionModel:
+            ringNumber = p.ringNumber()
+            if ringNumber in peaks:
+                peaks[ringNumber].append(p)
+            else:
+                peaks[ringNumber] = [p]
+
+        peakSelectionModel.clear()
+        for ringNumber in sorted(peaks.keys()):
+            peak = peaks[ringNumber][0]
+            for p in peaks[ringNumber][1:]:
+                peak.mergeCoords(p.coords())
+            peakSelectionModel.append(peak)
+
+        newState = self.__copyPeaks(self.__undoStack)
+        command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
+        command.setText("Clean up")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
