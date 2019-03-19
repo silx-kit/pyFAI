@@ -84,7 +84,6 @@ class TestOclHistogram(unittest.TestCase):
         tests the 1d histogram kernel
         """
         from ..azim_hist import OCL_Histogram1d
-        r = self.ai.array_from_unit(unit="r_mm")
         data = numpy.ones(self.ai.detector.shape)
         tth = self.ai.array_from_unit(unit="2th_deg")
         npt = 500
@@ -125,25 +124,49 @@ class TestOclHistogram(unittest.TestCase):
         tests the addition  kernel
         """
         from ..azim_hist import OCL_Histogram2d
-        r = self.ai.array_from_unit(unit="r_mm")
-        npt = (300, 36)
-        return
-        ref = self.ai._integrate2d_legacy(r, *npt, unit="2th_deg", method="numpy")
-        integrator = OCL_Histogram2d(self.ai.array_from_unit(unit="2th_deg"), npt)
+        data = numpy.ones(self.ai.detector.shape)
+        tth = self.ai.array_from_unit(unit="2th_deg")
+        chi = numpy.degrees(self.ai.chiArray())
+        solidangle = self.ai.solidAngleArray()
 
-        res = integrator(r, solidangle=self.ai.solidAngleArray())
+        mini_rad = numpy.float32(tth.min())
+        maxi_rad = numpy.float32(tth.max() * (1.0 + numpy.finfo(numpy.float32).eps))
+        mini_azim = numpy.float32(chi.min())
+        maxi_azim = numpy.float32(chi.max() * (1.0 + numpy.finfo(numpy.float32).eps))
+        range = [[mini_rad, maxi_rad], [mini_azim, maxi_azim]]
+
+        npt = (300, 36)
+        ref = self.ai._integrate2d_legacy(data, *npt, unit="2th_deg", method="numpy")
+        integrator = OCL_Histogram2d(tth, chi, *npt)
+
+        res = integrator(data, solidangle=solidangle)
 
         # Start with smth easy: the position
-        self.assertTrue(numpy.allclose(res[0], ref[0]), "position are the same")
+        self.assertTrue(numpy.allclose(res.radial, ref.radial), "radial position are the same")
+        self.assertTrue(numpy.allclose(res.azimuthal, ref.azimuthal), "azimuthal position are the same")
         # A bit harder: the count of pixels
-        delta = ref.count - res.count
+        delta = ref.count - res.count.T
         self.assertLessEqual(delta.max(), 2, "counts are almost the same")
-        self.assertEqual(delta.sum(), 0, "as much + and -")
+        self.assertLessEqual(delta.sum(), 1, "as much + and -")
 
         # Intensities are not that different:
-        delta = ref.intensity - res.intensity
+        delta = ref.intensity - res.intensity.T
         self.assertLessEqual(delta.max(), 1e-3, "intensity is almost the same")
         self.assertLessEqual((delta[1:-1] + delta[:-2] + delta[2:]).max(), 1e-3, "intensity is almost the same")
+
+        # histogram of normalization
+        ref = numpy.histogram2d(tth.ravel(), chi.ravel(), npt, range=range, weights=solidangle.ravel())[0]
+        sig = res.normalization.sum(axis=-1, dtype="float64")
+        err = abs((sig - ref).sum())
+        self.assertLess(err, 1, "normalization content is the same: %s<1e-5" % err)
+        self.assertLess(abs(gaussian_filter1d(sig - ref, 9)).max(), 1.5, "normalization, after smoothing is flat")
+
+        # histogram of signal
+        ref = numpy.histogram2d(tth.ravel(), chi.ravel(), npt, range=range, weights=data.ravel())[0]
+        sig = res.signal.sum(axis=-1, dtype="float64")
+        err = abs((sig - ref).sum())
+        self.assertLess(err, 9e-5, "signal content is the same: %s" % err)
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
