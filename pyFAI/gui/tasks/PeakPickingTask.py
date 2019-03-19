@@ -811,9 +811,11 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         action = qt.QAction(self)
         action.setText("Auto-extract rings")
+        action.setToolTip("Remove all the rings and extract it again")
         action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
         action.triggered.connect(self.__autoExtractRings)
-        self._extract.addDefaultAction(action)
+        selectAction = self._extract.addDefaultAction(action)
+        selectAction.triggered.connect(self.__updateOptionToExtractAgain)
 
         action = qt.QAction(self)
         action.setText("Auto-extract already picked rings")
@@ -821,6 +823,15 @@ class PeakPickingTask(AbstractCalibrationTask):
         action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
         action.triggered.connect(self.__autoExtractExistingRings)
         self._extract.addDefaultAction(action)
+
+        action = qt.QAction(self)
+        action.setText("Auto-extract more rings")
+        action.setToolTip("Extract new rings after the last picked one")
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
+        action.triggered.connect(self.__autoExtractMoreRings)
+        selectAction = self._extract.addDefaultAction(action)
+        selectAction.triggered.connect(self.__updateOptionToExtractMoreRings)
+        self.__updateOptionToExtractMoreRings()
 
         self._extract.setEnabled(False)
         self._extract.setDefaultAction(action)
@@ -1272,13 +1283,15 @@ class PeakPickingTask(AbstractCalibrationTask):
             state.append(copy)
         return state
 
-    def _createRingExtractor(self, ring, existingRings=False):
+    def _createRingExtractor(self, ring=None, existingRings=False, moreRings=None):
         """Create a ring extractor according to some params.
 
         :param Union[int,None] ring: If set the extraction is only executed on
             a single ring
         :param bool existingRings: If true, the extractor is configured to only
             extract existing rings
+        :param Union[int,None] moreRings: If defined, extract more rings that
+            was not yet extracted
         """
         extractor = RingExtractorThread(self)
         experimentSettings = self.model().experimentSettingsModel()
@@ -1288,7 +1301,12 @@ class PeakPickingTask(AbstractCalibrationTask):
         FROM_PEAKS = 0
         FROM_FIT = 1
 
-        if existingRings:
+        if moreRings is not None:
+            peaksModel = self.model().peakSelectionModel()
+            ringNumbers = [p.ringNumber() for p in peaksModel]
+            maxRing = max(ringNumbers)
+            ringNumbers = list(range(maxRing + 1, maxRing + 1 + moreRings))
+        elif existingRings:
             peaksModel = self.model().peakSelectionModel()
             ringNumbers = [p.ringNumber() for p in peaksModel]
             ringNumbers = set(ringNumbers)
@@ -1321,6 +1339,7 @@ class PeakPickingTask(AbstractCalibrationTask):
     EXTRACT_ALL = "extract-all"
     EXTRACT_SINGLE = "extract-single"
     EXTRACT_EXISTING = "extract-existing"
+    EXTRACT_MORE = "extract-more"
 
     def __autoExtractRings(self):
         thread = self._createRingExtractor(ring=None)
@@ -1332,7 +1351,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         thread.start()
 
     def __autoExtractExistingRings(self):
-        thread = self._createRingExtractor(ring=None, existingRings=True)
+        thread = self._createRingExtractor(existingRings=True)
         thread.setUserData("ROLE", self.EXTRACT_EXISTING)
         thread.setUserData("TEXT", "extract existing rings")
         thread.started.connect(self.__extractionStarted)
@@ -1341,7 +1360,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         thread.start()
 
     def autoExtractSingleRing(self, ring):
-        thread = self._createRingExtractor(ring=None)
+        thread = self._createRingExtractor(ring=ring)
         thread.setUserData("ROLE", self.EXTRACT_SINGLE)
         thread.setUserData("TEXT", "extract ring %d" % ring.ringNumber())
         thread.setUserData("RING", ring)
@@ -1349,6 +1368,28 @@ class PeakPickingTask(AbstractCalibrationTask):
         thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
         thread.finished.connect(thread.deleteLater)
         thread.start()
+
+    def __autoExtractMoreRings(self):
+        value = self._moreRingToExtract.value()
+        thread = self._createRingExtractor(moreRings=value)
+        thread.setUserData("ROLE", self.EXTRACT_MORE)
+        thread.setUserData("TEXT", "extract %s more rings" % value)
+        thread.started.connect(self.__extractionStarted)
+        thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
+
+    def __updateOptionToExtractAgain(self):
+        self._moreRingToExtractTitle.setVisible(False)
+        self._moreRingToExtract.setVisible(False)
+        self._maxRingToExtractTitle.setVisible(True)
+        self._maxRingToExtract.setVisible(True)
+
+    def __updateOptionToExtractMoreRings(self):
+        self._moreRingToExtractTitle.setVisible(True)
+        self._moreRingToExtract.setVisible(True)
+        self._maxRingToExtractTitle.setVisible(False)
+        self._maxRingToExtract.setVisible(False)
 
     def __extractionStarted(self):
         self.__plot.setProcessing()
@@ -1405,6 +1446,13 @@ class PeakPickingTask(AbstractCalibrationTask):
                 peakModel.setName(prevousRing.name())
                 peakModel.setColor(prevousRing.color())
                 peakModel.setRingNumber(prevousRing.ringNumber())
+                peakSelectionModel.append(peakModel)
+        elif role == self.EXTRACT_MORE:
+            # Append the extracted rings to the current ones
+            for ringNumber in sorted(newPeaks.keys()):
+                coords = newPeaks[ringNumber]
+                peakModel = model_transform.createRing(coords, peakSelectionModel)
+                peakModel.setRingNumber(ringNumber)
                 peakSelectionModel.append(peakModel)
         elif role == self.EXTRACT_SINGLE:
             # Only update coord of a single ring
