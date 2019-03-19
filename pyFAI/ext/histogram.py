@@ -35,9 +35,9 @@ __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 
-include "regrid_common.pxi"
+from pyFAI.ext._histogram_omp import _COMPILED_WITH_OPENMP
 
-IF HAVE_OPENMP:
-    include "histogram_omp.pxi"
-ELSE:
-    include "histogram_nomp.pxi"
+if _COMPILED_WITH_OPENMP:
+    from pyFAI.ext._histogram_omp import *
+else:
+    from pyFAI.ext._histogram_nomp import *
