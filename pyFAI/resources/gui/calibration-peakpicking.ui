@@ -80,7 +80,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QToolButton" name="_extract">
+          <widget class="ChoiceToolButton" name="_extract">
            <property name="sizePolicy">
             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -98,6 +98,9 @@
            </property>
            <property name="toolButtonStyle">
             <enum>Qt::ToolButtonTextBesideIcon</enum>
+           </property>
+           <property name="arrowType">
+            <enum>Qt::NoArrow</enum>
            </property>
           </widget>
          </item>
@@ -214,6 +217,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ChoiceToolButton</class>
+   <extends>QToolButton</extends>
+   <header>pyFAI.gui.widgets.ChoiceToolButton</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
