@@ -1290,81 +1290,47 @@ class PeakPickingTask(AbstractCalibrationTask):
             self._extract.setWaiting(False)
 
     def __autoExtractRingsCompute(self):
-        maxRings = self._maxRingToExtract.value()
-        pointPerDegree = self._numberOfPeakPerDegree.value()
 
-        # extract peaks from settings info and current peaks
-        image = self.model().experimentSettingsModel().image().value()
-        mask = self.model().experimentSettingsModel().mask().value()
-        calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
-        detector = self.model().experimentSettingsModel().detector()
-        wavelength = self.model().experimentSettingsModel().wavelength().value()
-
-        if detector is None:
-            self.__plot.unsetProcessing()
-            qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
-            qt.QMessageBox.critical(self, "Error", "No detector defined")
-            return
-        if calibrant is None:
-            self.__plot.unsetProcessing()
-            qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
-            qt.QMessageBox.critical(self, "Error", "No calibrant defined")
-            return
-        if wavelength is None:
-            self.__plot.unsetProcessing()
-            qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
-            qt.QMessageBox.critical(self, "Error", "No wavelength defined")
-            return
-
-        extractor = RingExtractor(image, mask, calibrant, detector, wavelength)
+        extractor = RingExtractor()
+        experimentSettings = self.model().experimentSettingsModel()
+        extractor.setExperimentSettings(experimentSettings, copy=False)
 
         # Constant dependant of the ui file
         FROM_PEAKS = 0
         FROM_FIT = 1
-
-        geometrySourceIndex = self._geometrySource.currentIndex()
-        if geometrySourceIndex == FROM_PEAKS:
-            # FIXME numpy array can be allocated first
-            peaks = []
-            for peakModel in self.model().peakSelectionModel():
-                ringNumber = peakModel.ringNumber()
-                for coord in peakModel.coords():
-                    peaks.append([coord[0], coord[1], ringNumber - 1])
-            peaks = numpy.array(peaks)
-            geometryModel = None
-        elif geometrySourceIndex == FROM_FIT:
-            peaks = None
-            geometryModel = self.model().fittedGeometry()
-            if not geometryModel.isValid():
-                _logger.error("The fitted model is not valid. Extraction cancelled.")
-                return
-        else:
-            assert(False)
 
         if self.__filterRing is None:
             ringNumbers = None
         else:
             ringNumbers = [self.__filterRing.ringNumber() - 1]
 
+        maxRings = self._maxRingToExtract.value()
+        pointPerDegree = self._numberOfPeakPerDegree.value()
         # TODO: maxRings should be removed, not very accurate way to reach for rings
-        newPeaksRaw = extractor.extract(peaks=peaks,
-                                        geometryModel=geometryModel,
-                                        method="massif",
-                                        maxRings=maxRings,
-                                        ringNumbers=ringNumbers,
-                                        pointPerDegree=pointPerDegree)
+        extractor.setMaxRings(maxRings)
+        extractor.setRingNumbers(ringNumbers)
+        extractor.setPointPerDegree(pointPerDegree)
 
-        # split peaks per rings
-        newPeaks = {}
-        for peak in newPeaksRaw:
-            y, x, ringNumber = peak
-            ringNumber = int(ringNumber) + 1
-            if ringNumber not in newPeaks:
-                newPeaks[ringNumber] = []
-            newPeaks[ringNumber].append((y, x))
+        geometrySourceIndex = self._geometrySource.currentIndex()
+        if geometrySourceIndex == FROM_PEAKS:
+            peaksModel = self.model().peakSelectionModel()
+            geometryModel = None
+        elif geometrySourceIndex == FROM_FIT:
+            peaksModel = None
+            geometryModel = self.model().fittedGeometry()
+        else:
+            assert(False)
+        try:
+            extractor.process(peaksModel=peaksModel, geometryModel=geometryModel)
+        except ValueError as e:
+            _logger.debug("Backtrace", exc_info=True)
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
+            qt.QMessageBox.critical(self, "Error", e.args[0])
+            return
+
+        newPeaks = extractor.resultPeaks()
 
         # update the gui
         oldState = self.__copyPeaks(self.__undoStack)

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/03/2019"
+__date__ = "19/03/2019"
 
 import logging
 import numpy
@@ -42,16 +42,62 @@ _logger = logging.getLogger(__name__)
 
 
 class RingExtractor(object):
+    """Job to process data and collect peaks according to a diffraction ring
+    modelization.
+    """
 
-    def __init__(self, image, mask, calibrant, detector, wavelength):
+    def __init__(self):
+        """Constructor"""
+        self.__image = None
+        self.__mask = None
+        self.__calibrant = None
+        self.__detector = None
+        self.__wavelength = None
+        self.__geoRef = None
+
+        self.__maxRings = None
+        self.__ringNumbers = None
+        self.__pointPerDegree = None
+
+    def setMaxRings(self, maxRings):
+        """Set max ring to extract"""
+        self.__maxRings = maxRings
+
+    def setRingNumbers(self, ringNumbers):
+        """Specify a set of rings to extract"""
+        self.__ringNumbers = ringNumbers
+
+    def setPointPerDegree(self, pointPerDegree):
+        """Specify the amount of peak to extract per degree"""
+        self.__pointPerDegree = pointPerDegree
+
+    def setExperimentSettings(self, experimentSettings, copy):
+        """
+        Set the experiment data.
+
+        :param ..model.ExperimentSettingsModel.ExperimentSettingsModel experimentSettings:
+            Contains the modelization of the problem
+        :param bool copy: If true copy the data for a thread safe processing
+        """
+        image = experimentSettings.image().value()
+        mask = experimentSettings.mask().value()
+        calibrant = experimentSettings.calibrantModel().calibrant()
+        detector = experimentSettings.detector()
+        wavelength = experimentSettings.wavelength().value()
+
+        if copy:
+            if image is not None:
+                image = image.copy()
+            if mask is not None:
+                mask = mask.copy()
+
         self.__image = image
         self.__mask = mask
         self.__calibrant = calibrant
-        self.__calibrant.setWavelength_change2th(wavelength)
-        # self.__calibrant.set_wavelength(wavelength)
+        if self.__calibrant is not None:
+            self.__calibrant.setWavelength_change2th(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
-        self.__geoRef = None
 
     def __initGeoRef(self):
         """
@@ -137,7 +183,53 @@ class RingExtractor(object):
             detector=self.__detector)
         return geoRef
 
-    def extract(self, peaks=None, geometryModel=None, method="massif", maxRings=None, ringNumbers=None, pointPerDegree=1.0):
+    def process(self, peaksModel=None, geometryModel=None):
+        """Extract the peaks.
+
+        :raises ValueError: If a mandatory setting is not initialized.
+        """
+        if self.__detector is None:
+            raise ValueError("No detector defined")
+        if self.__calibrant is None:
+            raise ValueError("No calibrant defined")
+        if self.__wavelength is None:
+            raise ValueError("No wavelength defined")
+
+        if peaksModel is not None and geometryModel is not None:
+            raise ValueError("Computation have to be done from peaks or from geometry")
+
+        if peaksModel is not None:
+            # FIXME numpy array can be allocated first
+            peaks = []
+            for peakModel in peaksModel:
+                ringNumber = peakModel.ringNumber()
+                for coord in peakModel.coords():
+                    peaks.append([coord[0], coord[1], ringNumber - 1])
+            peaks = numpy.array(peaks)
+            geometryModel = None
+        elif geometryModel is not None:
+            peaks = None
+            if not geometryModel.isValid():
+                raise ValueError("The fitted model is not valid. Extraction cancelled.")
+
+        result = self._extract(peaks=peaks, geometryModel=geometryModel)
+        self.__newPeaksRaw = result
+
+    def resultPeaks(self):
+        """Returns the extracted peaks.
+
+        :rtype: dict
+        """
+        newPeaks = {}
+        for peak in self.__newPeaksRaw:
+            y, x, ringNumber = peak
+            ringNumber = int(ringNumber) + 1
+            if ringNumber not in newPeaks:
+                newPeaks[ringNumber] = []
+            newPeaks[ringNumber].append((y, x))
+        return newPeaks
+
+    def _extract(self, peaks=None, geometryModel=None):
         """
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed.
@@ -147,6 +239,10 @@ class RingExtractor(object):
             ring)
         """
         assert(numpy.logical_xor(peaks is not None, geometryModel is not None))
+        method = "massif"
+        maxRings = self.__maxRings
+        ringNumbers = self.__ringNumbers
+        pointPerDegree = self.__pointPerDegree
 
         if ringNumbers is not None:
             ringNumbers = set(ringNumbers)
