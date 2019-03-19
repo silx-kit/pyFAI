@@ -815,6 +815,13 @@ class PeakPickingTask(AbstractCalibrationTask):
         action.triggered.connect(self.__autoExtractRings)
         self._extract.addDefaultAction(action)
 
+        action = qt.QAction(self)
+        action.setText("Auto-extract already picked rings")
+        action.setToolTip("Duplicated rings will be removed")
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
+        action.triggered.connect(self.__autoExtractExistingRings)
+        self._extract.addDefaultAction(action)
+
         self._extract.setEnabled(False)
         self._extract.setDefaultAction(action)
 
@@ -1265,11 +1272,13 @@ class PeakPickingTask(AbstractCalibrationTask):
             state.append(copy)
         return state
 
-    def _createRingExtractor(self, ring):
+    def _createRingExtractor(self, ring, existingRings=False):
         """Create a ring extractor according to some params.
 
         :param Union[int,None] ring: If set the extraction is only executed on
             a single ring
+        :param bool existingRings: If true, the extractor is configured to only
+            extract existing rings
         """
         extractor = RingExtractorThread(self)
         experimentSettings = self.model().experimentSettingsModel()
@@ -1279,10 +1288,16 @@ class PeakPickingTask(AbstractCalibrationTask):
         FROM_PEAKS = 0
         FROM_FIT = 1
 
-        if ring is None:
+        if existingRings:
+            peaksModel = self.model().peakSelectionModel()
+            ringNumbers = [p.ringNumber() for p in peaksModel]
+            ringNumbers = set(ringNumbers)
+            ringNumbers = list(ringNumbers)
+            ringNumbers = sorted(ringNumbers)
+        elif ring is None:
             ringNumbers = None
         else:
-            ringNumbers = [ring.ringNumber() - 1]
+            ringNumbers = [ring.ringNumber()]
 
         maxRings = self._maxRingToExtract.value()
         pointPerDegree = self._numberOfPeakPerDegree.value()
@@ -1305,11 +1320,21 @@ class PeakPickingTask(AbstractCalibrationTask):
 
     EXTRACT_ALL = "extract-all"
     EXTRACT_SINGLE = "extract-single"
+    EXTRACT_EXISTING = "extract-existing"
 
     def __autoExtractRings(self):
         thread = self._createRingExtractor(ring=None)
         thread.setUserData("ROLE", self.EXTRACT_ALL)
         thread.setUserData("TEXT", "extract rings")
+        thread.started.connect(self.__extractionStarted)
+        thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
+
+    def __autoExtractExistingRings(self):
+        thread = self._createRingExtractor(ring=None, existingRings=True)
+        thread.setUserData("ROLE", self.EXTRACT_EXISTING)
+        thread.setUserData("TEXT", "extract existing rings")
         thread.started.connect(self.__extractionStarted)
         thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
         thread.finished.connect(thread.deleteLater)
@@ -1362,13 +1387,27 @@ class PeakPickingTask(AbstractCalibrationTask):
         peakSelectionModel = self.model().peakSelectionModel()
         role = thread.userData("ROLE")
         if role == self.EXTRACT_ALL:
+            # Remove everything and recreate everything
             peakSelectionModel.clear()
             for ringNumber in sorted(newPeaks.keys()):
                 coords = newPeaks[ringNumber]
                 peakModel = model_transform.createRing(coords, peakSelectionModel)
                 peakModel.setRingNumber(ringNumber)
                 peakSelectionModel.append(peakModel)
+        elif role == self.EXTRACT_EXISTING:
+            # Remove everything and recreate everything with the same name/color...
+            ringNumbers = sorted(newPeaks.keys())
+            peaks = [peakSelectionModel.peakFromRingNumber(n) for n in ringNumbers]
+            peakSelectionModel.clear()
+            for prevousRing in peaks:
+                coords = newPeaks[prevousRing.ringNumber()]
+                peakModel = model_transform.createRing(coords, peakSelectionModel)
+                peakModel.setName(prevousRing.name())
+                peakModel.setColor(prevousRing.color())
+                peakModel.setRingNumber(prevousRing.ringNumber())
+                peakSelectionModel.append(peakModel)
         elif role == self.EXTRACT_SINGLE:
+            # Only update coord of a single ring
             ringObject = thread.userData("RING")
             coords = newPeaks.get(ringObject.ringNumber(), [])
             ringObject.setCoords(coords)

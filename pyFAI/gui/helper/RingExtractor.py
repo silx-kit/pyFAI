@@ -117,8 +117,14 @@ class RingExtractorThread(qt.QThread):
         self.__maxRings = maxRings
 
     def setRingNumbers(self, ringNumbers):
-        """Specify a set of rings to extract"""
-        self.__ringNumbers = ringNumbers
+        """Specify a set of rings to extract
+
+        :param List[int] ringNumbers: List of number (1 is the 1st ring)
+        """
+        if ringNumbers is None:
+            self.__ringNumbers = None
+        else:
+            self.__ringNumbers = [n - 1 for n in ringNumbers]
 
     def setPointPerDegree(self, pointPerDegree):
         """Specify the amount of peak to extract per degree"""
