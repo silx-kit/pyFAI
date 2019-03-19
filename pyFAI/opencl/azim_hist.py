@@ -1548,14 +1548,23 @@ class OCL_Histogram2d(OCL_Histogram1d):
                 ev.wait()
                 return image
 
-            if bin_range:
-                mini = numpy.float32(min(bin_range))
-                maxi = numpy.float32(max(bin_range) * (1.0 + numpy.finfo(numpy.float32).eps))
+            if radial_range:
+                mini_rad = numpy.float32(min(radial_range))
+                maxi_rad = numpy.float32(max(radial_range) * (1.0 + numpy.finfo(numpy.float32).eps))
             else:
-                mini = self.mini
-                maxi = self.maxi
-            kw_histogram["mini"] = mini
-            kw_histogram["maxi"] = maxi
+                mini_rad = self.mini_rad
+                maxi_rad = self.maxi_rad
+            kw_histogram["mini_rad"] = mini_rad
+            kw_histogram["maxi_rad"] = maxi_rad
+
+            if azimuthal_range:
+                mini_azim = numpy.float32(min(azimuthal_range))
+                maxi_azim = numpy.float32(max(azimuthal_range) * (1.0 + numpy.finfo(numpy.float32).eps))
+            else:
+                mini_azim = self.mini_azim
+                maxi_azim = self.maxi_azim
+            kw_histogram["mini_azim"] = mini_azim
+            kw_histogram["maxi_azim"] = maxi_azim
 
             histogram = self.kernels.histogram_2d_preproc(self.queue, self.wdim_data, self.workgroup_size["histogram_2d_preproc"],
                                                           *kw_histogram.values())

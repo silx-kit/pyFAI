@@ -85,11 +85,13 @@ class TestOclHistogram(unittest.TestCase):
         """
         from ..azim_hist import OCL_Histogram1d
         r = self.ai.array_from_unit(unit="r_mm")
+        data = numpy.ones(self.ai.detector.shape)
+        tth = self.ai.array_from_unit(unit="2th_deg")
         npt = 500
-        ref = self.ai._integrate1d_legacy(r, npt, unit="2th_deg", method="numpy")
-        integrator = OCL_Histogram1d(self.ai.array_from_unit(unit="2th_deg"), npt)
-
-        res = integrator(r, solidangle=self.ai.solidAngleArray())
+        ref = self.ai._integrate1d_legacy(data, npt, unit="2th_deg", method="numpy")
+        integrator = OCL_Histogram1d(tth, npt)
+        solidangle = self.ai.solidAngleArray()
+        res = integrator(data, solidangle=solidangle)
 
         # Start with smth easy: the position
         self.assertTrue(numpy.allclose(res[0], ref[0]), "position are the same")
@@ -104,16 +106,18 @@ class TestOclHistogram(unittest.TestCase):
         self.assertLessEqual((delta[1:-1] + delta[:-2] + delta[2:]).max(), 1e-3, "intensity is almost the same")
 
         # histogram of normalization
-        ref = numpy.histogram(r, npt, weights=self.ai.solidAngleArray())[0]
+        ref = numpy.histogram(tth, npt, weights=solidangle)[0]
         sig = res.normalization.sum(axis=-1, dtype="float64")
-        self.assertLess(abs((sig - ref).sum()), 1e-5, "normalization content is the same")
+        err = abs((sig - ref).sum())
+        self.assertLess(err, 1e-5, "normalization content is the same: %s<1e-5" % err)
         self.assertLess(abs(gaussian_filter1d(sig - ref, 9)).max(), 1.5, "normalization, after smoothing is flat")
 
         # histogram of signal
-        ref = numpy.histogram(r, npt, weights=r)[0]
+        ref = numpy.histogram(tth, npt, weights=data)[0]
         sig = res.signal.sum(axis=-1, dtype="float64")
-        self.assertLess(abs((sig - ref).sum()), 1e-4, "signal content is the same")
-        self.assertLess(abs(gaussian_filter1d(sig / ref - 1, 9)).max(), 0.02, "signal, after smoothing is flat")
+        print(abs((sig - ref).sum()), abs(gaussian_filter1d(sig / ref - 1, 9)).max())
+        self.assertLess(abs((sig - ref).sum()), 9e-5, "signal content is the same")
+        self.assertLess(abs(gaussian_filter1d(sig / ref - 1, 9)).max(), 2e-5, "signal, after smoothing is flat")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_histogram2d(self):
