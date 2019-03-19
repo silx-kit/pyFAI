@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "18/03/2019"
+__date__ = "19/03/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -1407,7 +1407,8 @@ class OCL_Histogram2d(OCL_Histogram1d):
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
                   preprocess_only=False, safe=True,
-                  normalization_factor=1.0, bin_range=None,
+                  normalization_factor=1.0,
+                  radial_range=None, azimuthal_range=None,
                   histo_signal=None, histo_variance=None,
                   histo_normalization=None, histo_count=None,
                   intensities=None, errors=None):
