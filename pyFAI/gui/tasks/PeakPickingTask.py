@@ -45,7 +45,7 @@ import pyFAI.utils
 import pyFAI.massif
 import pyFAI.control_points
 from .AbstractCalibrationTask import AbstractCalibrationTask
-from ..helper.RingExtractor import RingExtractor
+from ..helper.RingExtractor import RingExtractorThread
 from ..helper.SynchronizeRawView import SynchronizeRawView
 from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 from ..CalibrationContext import CalibrationContext
@@ -614,7 +614,7 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
         peak = model.peakObject(persistantIndex)
         task = self.getTask()
         if task is not None:
-            task.extractRingLater(peak)
+            task.autoExtractSingleRing(peak)
 
     def __removePeak(self, persistantIndex, checked):
         if not persistantIndex.isValid():
@@ -812,7 +812,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         action = qt.QAction(self)
         action.setText("Auto-extract rings")
         action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
-        action.triggered.connect(self.__autoExtractRingsLater)
+        action.triggered.connect(self.__autoExtractRings)
         self._extract.addDefaultAction(action)
 
         self._extract.setEnabled(False)
@@ -1265,33 +1265,13 @@ class PeakPickingTask(AbstractCalibrationTask):
             state.append(copy)
         return state
 
-    def __autoExtractRingsLater(self):
-        self.__filterRing = None
-        self.__plot.setProcessing()
-        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
-        self._extract.setWaiting(True)
-        # Wait for Qt repaint first
-        qt.QTimer.singleShot(1, self.__autoExtractRings)
+    def _createRingExtractor(self, ring):
+        """Create a ring extractor according to some params.
 
-    def extractRingLater(self, ring):
-        self.__filterRing = ring
-        self.__plot.setProcessing()
-        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
-        self._extract.setWaiting(True)
-        # Wait for Qt repaint first
-        qt.QTimer.singleShot(1, self.__autoExtractRings)
-
-    def __autoExtractRings(self):
-        try:
-            self.__autoExtractRingsCompute()
-        finally:
-            self.__plot.unsetProcessing()
-            qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
-
-    def __autoExtractRingsCompute(self):
-
-        extractor = RingExtractor()
+        :param Union[int,None] ring: If set the extraction is only executed on
+            a single ring
+        """
+        extractor = RingExtractorThread(self)
         experimentSettings = self.model().experimentSettingsModel()
         extractor.setExperimentSettings(experimentSettings, copy=False)
 
@@ -1299,10 +1279,10 @@ class PeakPickingTask(AbstractCalibrationTask):
         FROM_PEAKS = 0
         FROM_FIT = 1
 
-        if self.__filterRing is None:
+        if ring is None:
             ringNumbers = None
         else:
-            ringNumbers = [self.__filterRing.ringNumber() - 1]
+            ringNumbers = [ring.ringNumber() - 1]
 
         maxRings = self._maxRingToExtract.value()
         pointPerDegree = self._numberOfPeakPerDegree.value()
@@ -1314,48 +1294,93 @@ class PeakPickingTask(AbstractCalibrationTask):
         geometrySourceIndex = self._geometrySource.currentIndex()
         if geometrySourceIndex == FROM_PEAKS:
             peaksModel = self.model().peakSelectionModel()
-            geometryModel = None
+            extractor.setPeaksModel(peaksModel)
         elif geometrySourceIndex == FROM_FIT:
-            peaksModel = None
             geometryModel = self.model().fittedGeometry()
+            extractor.setGeometryModel(geometryModel)
         else:
             assert(False)
-        try:
-            extractor.process(peaksModel=peaksModel, geometryModel=geometryModel)
-        except ValueError as e:
-            _logger.debug("Backtrace", exc_info=True)
+
+        return extractor
+
+    EXTRACT_ALL = "extract-all"
+    EXTRACT_SINGLE = "extract-single"
+
+    def __autoExtractRings(self):
+        thread = self._createRingExtractor(ring=None)
+        thread.setUserData("ROLE", self.EXTRACT_ALL)
+        thread.setUserData("TEXT", "extract rings")
+        thread.started.connect(self.__extractionStarted)
+        thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
+
+    def autoExtractSingleRing(self, ring):
+        thread = self._createRingExtractor(ring=None)
+        thread.setUserData("ROLE", self.EXTRACT_SINGLE)
+        thread.setUserData("TEXT", "extract ring %d" % ring.ringNumber())
+        thread.setUserData("RING", ring)
+        thread.started.connect(self.__extractionStarted)
+        thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
+
+    def __extractionStarted(self):
+        self.__plot.setProcessing()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        self._extract.setWaiting(True)
+
+    def __extractionFinishedSafe(self, thread):
+        """
+        Compute the result of the processing
+
+        :param RingExtractorThread thread: A ring ring extractor processing
+        """
+        if thread.isAborted():
             self.__plot.unsetProcessing()
             qt.QApplication.restoreOverrideCursor()
             self._extract.setWaiting(False)
-            qt.QMessageBox.critical(self, "Error", e.args[0])
+            qt.QMessageBox.critical(self, "Error", thread.errorString())
             return
+        try:
+            self.__extractionFinished(thread)
+        finally:
+            self.__plot.unsetProcessing()
+            qt.QApplication.restoreOverrideCursor()
+            self._extract.setWaiting(False)
 
-        newPeaks = extractor.resultPeaks()
+    def __extractionFinished(self, thread):
+        """
+        Compute the result of the processing
+
+        :param RingExtractorThread thread: A ring ring extractor processing
+        """
+        newPeaks = thread.resultPeaks()
 
         # update the gui
         oldState = self.__copyPeaks(self.__undoStack)
         peakSelectionModel = self.model().peakSelectionModel()
-        if self.__filterRing is None:
+        role = thread.userData("ROLE")
+        if role == self.EXTRACT_ALL:
             peakSelectionModel.clear()
             for ringNumber in sorted(newPeaks.keys()):
                 coords = newPeaks[ringNumber]
                 peakModel = model_transform.createRing(coords, peakSelectionModel)
                 peakModel.setRingNumber(ringNumber)
                 peakSelectionModel.append(peakModel)
+        elif role == self.EXTRACT_SINGLE:
+            ringObject = thread.userData("RING")
+            coords = newPeaks.get(ringObject.ringNumber(), [])
+            ringObject.setCoords(coords)
         else:
-            coords = newPeaks.get(self.__filterRing.ringNumber(), [])
-            self.__filterRing.setCoords(coords)
+            assert(False)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
-        if self.__filterRing is None:
-            command.setText("extract rings")
-        else:
-            command.setText("extract ring %d" % self.__filterRing.ringNumber())
+        text = thread.userData("TEXT")
+        command.setText(text)
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
-
-        self.__filterRing = None
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).

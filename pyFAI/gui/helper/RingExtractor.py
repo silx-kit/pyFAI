@@ -31,6 +31,8 @@ __date__ = "19/03/2019"
 
 import logging
 import numpy
+
+from silx.gui import qt
 from silx.image import marchingsquares
 
 import pyFAI.utils
@@ -41,13 +43,15 @@ from ..peak_picker import PeakPicker
 _logger = logging.getLogger(__name__)
 
 
-class RingExtractor(object):
+class RingExtractorThread(qt.QThread):
     """Job to process data and collect peaks according to a diffraction ring
     modelization.
     """
 
-    def __init__(self):
+    def __init__(self, parent):
         """Constructor"""
+        super(RingExtractorThread, self).__init__(parent=parent)
+
         self.__image = None
         self.__mask = None
         self.__calibrant = None
@@ -58,6 +62,55 @@ class RingExtractor(object):
         self.__maxRings = None
         self.__ringNumbers = None
         self.__pointPerDegree = None
+        self.__peaksModel = None
+        self.__geometryModel = None
+
+        self.__error = None
+        self.__keys = {}
+
+    def errorString(self):
+        """Returns the error message in case of failure"""
+        return self.__error
+
+    def isAborted(self):
+        """
+        Returns whether the theard was aborted or not.
+
+        .. note:: Aborted thead are not finished theads.
+        """
+        return self.__isAborted
+
+    def run(self):
+        self.__isAborted = False
+        try:
+            result = self.runProcess()
+        except Exception as e:
+            _logger.error("Backtrace", exc_info=True)
+            self.__error = str(e)
+            self.__isAborted = True
+        else:
+            if not result:
+                self.__error = "Task was aborted"
+                self.__isAborted = True
+
+    def setUserData(self, name, value):
+        """Store key-value information from caller to be retrived when the
+        processing finish."""
+        self.__keys[name] = value
+
+    def userData(self, name):
+        """Returns a stored user data."""
+        return self.__keys[name]
+
+    def setPeaksModel(self, peaksModel):
+        """Define a set of peaks as source of the diffraction ring
+        modelization"""
+        self.__peaksModel = peaksModel
+
+    def setGeometryModel(self, geometryModel):
+        """Define a geometry model as source of the diffraction ring
+        modelization"""
+        self.__geometryModel = geometryModel
 
     def setMaxRings(self, maxRings):
         """Set max ring to extract"""
@@ -183,10 +236,12 @@ class RingExtractor(object):
             detector=self.__detector)
         return geoRef
 
-    def process(self, peaksModel=None, geometryModel=None):
+    def runProcess(self):
         """Extract the peaks.
 
         :raises ValueError: If a mandatory setting is not initialized.
+        :rtype: bool
+        :returns: True if successed
         """
         if self.__detector is None:
             raise ValueError("No detector defined")
@@ -194,6 +249,9 @@ class RingExtractor(object):
             raise ValueError("No calibrant defined")
         if self.__wavelength is None:
             raise ValueError("No wavelength defined")
+
+        peaksModel = self.__peaksModel
+        geometryModel = self.__geometryModel
 
         if peaksModel is not None and geometryModel is not None:
             raise ValueError("Computation have to be done from peaks or from geometry")
@@ -214,6 +272,7 @@ class RingExtractor(object):
 
         result = self._extract(peaks=peaks, geometryModel=geometryModel)
         self.__newPeaksRaw = result
+        return True
 
     def resultPeaks(self):
         """Returns the extracted peaks.
