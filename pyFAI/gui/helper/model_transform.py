@@ -58,7 +58,7 @@ def createControlPoints(model):
 
 
 def filterControlPoints(filterCallback, peakSelectionModel, removedPeaks=None):
-    """Filter each peaks of the model using a callbackl
+    """Filter each peaks of the model using a callback
 
     :param Callable[int,int,bool] filter: Filter returning true is the
         peak have to stay in the result.
@@ -82,12 +82,10 @@ def filterControlPoints(filterCallback, peakSelectionModel, removedPeaks=None):
     peakSelectionModel.unlockSignals()
 
 
-def createRing(points, peakSelectionModel, context=None):
-    """Create a new ring from a group of points"""
-
-    if context is None:
-        context = CalibrationContext.instance()
-
+def _findUnusedId(peakSelectionModel):
+    """
+    :rtype: int
+    """
     # reach the bigger name
     names = ["% 8s" % p.name() for p in peakSelectionModel]
     if len(names) > 0:
@@ -98,8 +96,13 @@ def createRing(points, peakSelectionModel, context=None):
             number = number * 26 + (ord(c) - ord('a'))
     else:
         number = -1
-    number = number + 1
+    return number + 1
 
+
+def _convertIdToName(number):
+    """
+    :rtype: str
+    """
     # compute the next one
     name = ""
     if number == 0:
@@ -110,7 +113,20 @@ def createRing(points, peakSelectionModel, context=None):
             c = n % 26
             n = n // 26
             name = chr(c + ord('a')) + name
+    return name
 
+
+def createRing(points, peakSelectionModel, context=None):
+    """Create a new ring from a group of points
+
+    :rtype: PeakModel
+    """
+
+    if context is None:
+        context = CalibrationContext.instance()
+
+    number = _findUnusedId(peakSelectionModel)
+    name = _convertIdToName(number)
     color = context.getMarkerColor(number)
 
     # TODO: color and name should be removed from the model
