@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/03/2019"
+__date__ = "20/03/2019"
 
 from .AbstractModel import AbstractModel
 
@@ -40,6 +40,7 @@ class PeakModel(AbstractModel):
         self.__color = None
         self.__coords = []
         self.__ringNumber = None
+        self.__isEnabled = True
 
     def __len__(self):
         return len(self.__coords)
@@ -52,6 +53,25 @@ class PeakModel(AbstractModel):
 
     def setName(self, name):
         self.__name = name
+        self.wasChanged()
+
+    def isEnabled(self):
+        """
+        True if this group have to be taken into acount.
+
+        :rtype: bool
+        """
+        return self.__isEnabled
+
+    def setEnabled(self, isEnabled):
+        """
+        Set if this group have to be taken into acount.
+
+        :param bool isEnabled: True to enable this group.
+        """
+        if self.__isEnabled == isEnabled:
+            return
+        self.__isEnabled = isEnabled
         self.wasChanged()
 
     def color(self):
@@ -92,4 +112,5 @@ class PeakModel(AbstractModel):
         peakModel.setColor(self.color())
         peakModel.setCoords(list(self.coords()))
         peakModel.setRingNumber(self.ringNumber())
+        peakModel.setEnabled(self.isEnabled())
         return peakModel
