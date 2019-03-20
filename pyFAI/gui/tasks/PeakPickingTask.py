@@ -885,6 +885,13 @@ class PeakPickingTask(AbstractCalibrationTask):
         self._extract.addDefaultAction(action)
 
         action = qt.QAction(self)
+        action.setText("Auto-extract all reachable rings")
+        action.setToolTip("Remove all the rings and extract everything possible")
+        action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
+        action.triggered.connect(self.__autoExtractReachableRings)
+        self._extract.addDefaultAction(action)
+
+        action = qt.QAction(self)
         action.setText("Auto-extract more rings")
         action.setToolTip("Extract new rings after the last picked one")
         action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
@@ -1362,7 +1369,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             state.append(copy)
         return state
 
-    def _createRingExtractor(self, ring=None, existingRings=False, moreRings=None):
+    def _createRingExtractor(self, ring=None, existingRings=False, reachableRings=False, moreRings=None):
         """Create a ring extractor according to some params.
 
         :param Union[int,None] ring: If set the extraction is only executed on
@@ -1371,6 +1378,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             extract existing rings
         :param Union[int,None] moreRings: If defined, extract more rings that
             was not yet extracted
+        :param bool reachableRings: If true, reach all reachable rings
         """
         extractor = RingExtractorThread(self)
         experimentSettings = self.model().experimentSettingsModel()
@@ -1380,25 +1388,30 @@ class PeakPickingTask(AbstractCalibrationTask):
         FROM_PEAKS = 0
         FROM_FIT = 1
 
-        if moreRings is not None:
+        if reachableRings:
+            maxRings = None
+            ringNumbers = None
+        elif moreRings is not None:
+            maxRings = None
             peaksModel = self.model().peakSelectionModel()
             ringNumbers = [p.ringNumber() for p in peaksModel]
             maxRing = max(ringNumbers)
             ringNumbers = list(range(maxRing + 1, maxRing + 1 + moreRings))
         elif existingRings:
+            maxRings = None
             peaksModel = self.model().peakSelectionModel()
             ringNumbers = [p.ringNumber() for p in peaksModel]
             ringNumbers = set(ringNumbers)
             ringNumbers = list(ringNumbers)
             ringNumbers = sorted(ringNumbers)
         elif ring is None:
+            maxRings = self._maxRingToExtract.value()
             ringNumbers = None
         else:
+            maxRings = self._maxRingToExtract.value()
             ringNumbers = [ring.ringNumber()]
 
-        maxRings = self._maxRingToExtract.value()
         pointPerDegree = self._numberOfPeakPerDegree.value()
-        # TODO: maxRings should be removed, not very accurate way to reach for rings
         extractor.setMaxRings(maxRings)
         extractor.setRingNumbers(ringNumbers)
         extractor.setPointPerDegree(pointPerDegree)
@@ -1424,6 +1437,15 @@ class PeakPickingTask(AbstractCalibrationTask):
         thread = self._createRingExtractor(ring=None)
         thread.setUserData("ROLE", self.EXTRACT_ALL)
         thread.setUserData("TEXT", "extract rings")
+        thread.started.connect(self.__extractionStarted)
+        thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
+
+    def __autoExtractReachableRings(self):
+        thread = self._createRingExtractor(reachableRings=True)
+        thread.setUserData("ROLE", self.EXTRACT_ALL)
+        thread.setUserData("TEXT", "extract reachable rings")
         thread.started.connect(self.__extractionStarted)
         thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
         thread.finished.connect(thread.deleteLater)
