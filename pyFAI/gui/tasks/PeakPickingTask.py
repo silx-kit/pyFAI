@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/03/2019"
+__date__ = "20/03/2019"
 
 import logging
 import numpy
@@ -105,9 +105,10 @@ class _PeakSelectionTableView(qt.QTableView):
         palette.setColor(qt.QPalette.Base, palette.base().color())
         ringDelegate.setPalette(palette)
         toolDelegate = _PeakToolItemDelegate(self)
-        self.setItemDelegateForColumn(2, ringDelegate)
-        self.setItemDelegateForColumn(3, toolDelegate)
+        self.setItemDelegateForColumn(_PeakSelectionTableModel.ColumnRingNumber, ringDelegate)
+        self.setItemDelegateForColumn(_PeakSelectionTableModel.ColumnControl, toolDelegate)
 
+        self.setEditTriggers(qt.QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
         self.setVerticalScrollMode(qt.QAbstractItemView.ScrollPerPixel)
@@ -161,10 +162,11 @@ class _PeakSelectionTableView(qt.QTableView):
             setResizeMode = header.setResizeMode
         else:
             setResizeMode = header.setSectionResizeMode
-        setResizeMode(0, qt.QHeaderView.Stretch)
-        setResizeMode(1, qt.QHeaderView.ResizeToContents)
-        setResizeMode(2, qt.QHeaderView.ResizeToContents)
-        setResizeMode(3, qt.QHeaderView.Fixed)
+        setResizeMode(_PeakSelectionTableModel.ColumnName, qt.QHeaderView.Stretch)
+        setResizeMode(_PeakSelectionTableModel.ColumnPeaksCount, qt.QHeaderView.ResizeToContents)
+        setResizeMode(_PeakSelectionTableModel.ColumnRingNumber, qt.QHeaderView.ResizeToContents)
+        setResizeMode(_PeakSelectionTableModel.ColumnEnabled, qt.QHeaderView.ResizeToContents)
+        setResizeMode(_PeakSelectionTableModel.ColumnControl, qt.QHeaderView.Fixed)
 
     def __onRowRemoved(self, parent, start, end):
         self.updateGeometry()
@@ -173,14 +175,14 @@ class _PeakSelectionTableView(qt.QTableView):
         self.__openPersistantViewOnRowInserted(parent, start, end)
         self.updateGeometry()
         # It have to be done only on the 3, else the layout is wrong
-        self.resizeColumnToContents(3)
+        self.resizeColumnToContents(_PeakSelectionTableModel.ColumnControl)
 
     def __openPersistantViewOnRowInserted(self, parent, start, end):
         model = self.model()
         for row in range(start, end):
-            index = model.index(row, 2, qt.QModelIndex())
+            index = model.index(row, _PeakSelectionTableModel.ColumnRingNumber, qt.QModelIndex())
             self.openPersistentEditor(index)
-            index = model.index(row, 3, qt.QModelIndex())
+            index = model.index(row, _PeakSelectionTableModel.ColumnControl, qt.QModelIndex())
             self.openPersistentEditor(index)
 
     def __openPersistantViewOnModelReset(self):
@@ -195,6 +197,14 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
     requestRingChange = qt.Signal(object, int)
 
     requestRemovePeak = qt.Signal(object)
+
+    requestChangeEnable = qt.Signal(object, bool)
+
+    ColumnName = 0
+    ColumnPeaksCount = 1
+    ColumnRingNumber = 2
+    ColumnEnabled = 3
+    ColumnControl = 4
 
     def __init__(self, parent, peakSelectionModel):
         assert isinstance(parent, PeakPickingTask)
@@ -233,19 +243,27 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
             return None
         if role != qt.Qt.DisplayRole:
             return super(_PeakSelectionTableModel, self).headerData(section, orientation, role)
-        if section == 0:
+        if section == self.ColumnName:
             return "Name"
-        if section == 1:
+        elif section == self.ColumnPeaksCount:
             return "Peaks"
-        if section == 2:
+        elif section == self.ColumnRingNumber:
             return "Ring number"
+        elif section == self.ColumnEnabled:
+            return "Enabled"
+        elif section == self.ColumnControl:
+            return ""
         return None
 
     def flags(self, index):
-        if index.column() == 2:
-            return (qt.Qt.ItemIsEditable |
-                    qt.Qt.ItemIsEnabled |
+        column = index.column()
+        if column == self.ColumnRingNumber:
+            return (qt.Qt.ItemIsEnabled |
                     qt.Qt.ItemIsSelectable)
+        elif column == self.ColumnEnabled:
+            return (qt.Qt.ItemIsEnabled |
+                    qt.Qt.ItemIsSelectable |
+                    qt.Qt.ItemIsUserCheckable)
         return (qt.Qt.ItemIsEnabled |
                 qt.Qt.ItemIsSelectable)
 
@@ -253,16 +271,24 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
         return len(self.__peakSelectionModel)
 
     def columnCount(self, parent=qt.QModelIndex()):
-        return 4
+        return 5
 
     def peakObject(self, index):
         peakModel = self.__peakSelectionModel[index.row()]
         return peakModel
 
     def data(self, index=qt.QModelIndex(), role=qt.Qt.DisplayRole):
+        if not index.isValid():
+            return False
         peakModel = self.__peakSelectionModel[index.row()]
         column = index.column()
-        if role == qt.Qt.DecorationRole:
+        if role == qt.Qt.CheckStateRole:
+            if column == self.ColumnEnabled:
+                if peakModel.isEnabled():
+                    return qt.Qt.Checked
+                else:
+                    return qt.Qt.Unchecked
+        elif role == qt.Qt.DecorationRole:
             if column == 0:
                 color = peakModel.color()
                 pixmap = qt.QPixmap(16, 16)
@@ -271,13 +297,14 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
                 return icon
             else:
                 return None
-        if role == qt.Qt.DisplayRole or role == qt.Qt.EditRole:
-            if column == 0:
+        elif role == qt.Qt.DisplayRole or role == qt.Qt.EditRole:
+            if column == self.ColumnName:
                 return peakModel.name()
-            if column == 1:
+            elif column == self.ColumnPeaksCount:
                 return len(peakModel.coords())
-            if column == 2:
+            elif column == self.ColumnRingNumber:
                 return peakModel.ringNumber()
+            return ""
         return None
 
     def setData(self, index, value, role=qt.Qt.EditRole):
@@ -285,9 +312,18 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
             return False
         peakModel = self.__peakSelectionModel[index.row()]
         column = index.column()
-        if column == 2:
-            self.requestRingChange.emit(peakModel, value)
-            return True
+        if role == qt.Qt.CheckStateRole:
+            if column == self.ColumnEnabled:
+                if value == qt.Qt.Checked:
+                    isChecked = True
+                else:
+                    isChecked = False
+                self.requestChangeEnable.emit(peakModel, isChecked)
+                return True
+        elif role == qt.Qt.EditRole:
+            if column == self.ColumnRingNumber:
+                self.requestRingChange.emit(peakModel, value)
+                return True
         return False
 
     def removeRows(self, row, count, parent=qt.QModelIndex()):
@@ -471,6 +507,8 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF(), 0.5])
         points = peakModel.coords()
         name = peakModel.name()
+        if not peakModel.isEnabled():
+            numpyColor = numpy.array([0.5, 0.5, 0.5, 0.5])
 
         if len(points) != 0:
             y, x = points[0]
@@ -1273,6 +1311,17 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
 
+    def __setRingEnable(self, peakModel, value):
+        oldState = self.__copyPeaks(self.__undoStack)
+        peakModel.setEnabled(value)
+        newState = self.__copyPeaks(self.__undoStack)
+        command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+        action = "enable" if value else "disable"
+        command.setText("%s ring %s" % (action, peakModel.name()))
+        command.setRedoInhibited(True)
+        self.__undoStack.push(command)
+        command.setRedoInhibited(False)
+
     def __setRingNumber(self, peakModel, value):
         oldState = self.__copyPeaks(self.__undoStack)
         peakModel.setRingNumber(value)
@@ -1566,6 +1615,7 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __initPeakSelectionView(self, model):
         tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())
         tableModel.requestRingChange.connect(self.__setRingNumber)
+        tableModel.requestChangeEnable.connect(self.__setRingEnable)
         tableModel.requestRemovePeak.connect(self.__removePeak)
         self.__peakSelectionView.setModel(tableModel)
 
