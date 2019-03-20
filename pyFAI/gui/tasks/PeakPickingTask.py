@@ -1437,15 +1437,19 @@ class PeakPickingTask(AbstractCalibrationTask):
         role = thread.userData("ROLE")
         if role == self.EXTRACT_ALL:
             # Remove everything and recreate everything
+            disabledRings = set([p.ringNumber() for p in peakSelectionModel if not p.isEnabled()])
             peakSelectionModel.clear()
             for ringNumber in sorted(newPeaks.keys()):
                 coords = newPeaks[ringNumber]
                 peakModel = model_transform.createRing(coords, peakSelectionModel)
                 peakModel.setRingNumber(ringNumber)
+                if ringNumber in disabledRings:
+                    peakModel.setEnabled(False)
                 peakSelectionModel.append(peakModel)
         elif role == self.EXTRACT_EXISTING:
             # Remove everything and recreate everything with the same name/color...
             ringNumbers = sorted(newPeaks.keys())
+            disabledRings = set([p.ringNumber() for p in peakSelectionModel if not p.isEnabled()])
             peaks = [peakSelectionModel.peakFromRingNumber(n) for n in ringNumbers]
             peakSelectionModel.clear()
             for prevousRing in peaks:
@@ -1454,6 +1458,8 @@ class PeakPickingTask(AbstractCalibrationTask):
                 peakModel.setName(prevousRing.name())
                 peakModel.setColor(prevousRing.color())
                 peakModel.setRingNumber(prevousRing.ringNumber())
+                if prevousRing.ringNumber() in disabledRings:
+                    peakModel.setEnabled(False)
                 peakSelectionModel.append(peakModel)
         elif role == self.EXTRACT_MORE:
             # Append the extracted rings to the current ones
@@ -1463,7 +1469,7 @@ class PeakPickingTask(AbstractCalibrationTask):
                 peakModel.setRingNumber(ringNumber)
                 peakSelectionModel.append(peakModel)
         elif role == self.EXTRACT_SINGLE:
-            # Only update coord of a single ring
+            # Update coord of a single ring
             ringObject = thread.userData("RING")
             coords = newPeaks.get(ringObject.ringNumber(), [])
             ringObject.setCoords(coords)

@@ -51,6 +51,8 @@ def createControlPoints(model):
     wavelength = model.experimentSettingsModel().wavelength().value()
     controlPoints = ControlPoints(calibrant=calibrant, wavelength=wavelength)
     for peakModel in model.peakSelectionModel():
+        if not peakModel.isEnabled():
+            continue
         ringNumber = peakModel.ringNumber() - 1
         points = peakModel.coords()
         controlPoints.append(points=points, ring=ringNumber)
