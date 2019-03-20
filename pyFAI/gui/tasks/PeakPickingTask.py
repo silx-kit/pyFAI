@@ -363,6 +363,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
         self.__peakSelectionModel = None
         self.__callbacks = {}
+        self.__selectedPeak = None
         self.__processing = None
         self.__mode = self.PEAK_SELECTION_MODE
 
@@ -398,6 +399,13 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             self.setInteractiveMode('draw', shape='rectangle', source=self, color=color)
         else:
             assert(False)
+
+    def setSelectedPeak(self, name):
+        if self.__selectedPeak == name:
+            return
+        self.__selectedPeak = name
+        for peakModel in self.__peakSelectionModel:
+            self.updatePeak(peakModel)
 
     def eventFilter(self, widget, event):
         if event.type() == qt.QEvent.Enter:
@@ -509,6 +517,11 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         name = peakModel.name()
         if not peakModel.isEnabled():
             numpyColor = numpy.array([0.5, 0.5, 0.5, 0.5])
+
+        if self.__selectedPeak is None:
+            pass
+        elif name != self.__selectedPeak:
+            numpyColor[3] = 0.25
 
         if len(points) != 0:
             y, x = points[0]
@@ -681,7 +694,8 @@ class _RingSelectionBehaviour(qt.QObject):
                  peakSelectionModel,
                  spinnerRing,
                  newRingOption,
-                 ringSelectionModel):
+                 ringSelectionModel,
+                 plot):
         qt.QObject.__init__(self, parent)
         self.__peakSelectionModel = peakSelectionModel
         self.__spinnerRing = spinnerRing
@@ -693,6 +707,8 @@ class _RingSelectionBehaviour(qt.QObject):
         self.__newRingOption.toggled.connect(self.__newRingToggeled)
         if self.__ringSelectionModel is not None:
             self.__ringSelectionModel.selectionChanged.connect(self.__ringSelectionChanged)
+
+        self.__plot = plot
 
         self.__initState()
 
@@ -751,23 +767,29 @@ class _RingSelectionBehaviour(qt.QObject):
         return self.__spinnerRing.value()
 
     def __ringSelectionChanged(self):
-        if self.__newRingOption.isChecked():
-            # The spinner already display the number of the new ring
-            return
+        indexes = self.__ringSelectionModel.selectedIndexes()
+        model = self.__ringSelectionModel.model()
+        if len(indexes) == 0:
+            peak = None
+        else:
+            index = indexes[0]
+            peak = model.peakObject(index)
 
-        self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
-        try:
-            indexes = self.__ringSelectionModel.selectedIndexes()
-            model = self.__ringSelectionModel.model()
-            if len(indexes) == 0:
-                pass
-            else:
-                index = indexes[0]
-                peak = model.peakObject(index)
-                ringNumber = peak.ringNumber()
-                self.__spinnerRing.setValue(ringNumber)
-        finally:
-            self.__spinnerRing.valueChanged.connect(self.__spinerRingChanged)
+        if peak is not None:
+            name = peak.name()
+            self.__plot.setSelectedPeak(name)
+        else:
+            self.__plot.setSelectedPeak(None)
+
+        if not self.__newRingOption.isChecked():
+            # It have to be updated
+            if peak is not None:
+                self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
+                try:
+                    ringNumber = peak.ringNumber()
+                    self.__spinnerRing.setValue(ringNumber)
+                finally:
+                    self.__spinnerRing.valueChanged.connect(self.__spinerRingChanged)
 
     def __spinerRingChanged(self):
         """Called when the spinner displaying the selected ring changes."""
@@ -1601,7 +1623,8 @@ class PeakPickingTask(AbstractCalibrationTask):
                                                        self.model().peakSelectionModel(),
                                                        self.__selectedRingNumber,
                                                        self.__createNewRingOption,
-                                                       self.__peakSelectionView.selectionModel())
+                                                       self.__peakSelectionView.selectionModel(),
+                                                       self.__plot)
 
     def __peakSelectionChanged(self):
         peakCount = self.model().peakSelectionModel().peakCount()
