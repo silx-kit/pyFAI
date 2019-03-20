@@ -897,7 +897,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         action = qt.QAction(self)
         action.setText("Merge rings and sort")
         action.setToolTip("Merge the groups using the same ring number and sort them")
-        action.setIcon(icons.getQIcon("pyfai:gui/icons/extract-ring"))
+        action.setIcon(icons.getQIcon("silx:gui/icons/draw-brush"))
         action.triggered.connect(self.__cleanUpRings)
         self._extract.addAction(action)
 
