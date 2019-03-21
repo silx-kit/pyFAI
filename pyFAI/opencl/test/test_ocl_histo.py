@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2019"
+__date__ = "21/03/2019"
 
 import logging
 import numpy
@@ -68,6 +68,10 @@ class TestOclHistogram(unittest.TestCase):
                 cls.PROFILE = False
                 cls.queue = pyopencl.CommandQueue(cls.ctx)
             cls.max_valid_wg = 0
+            if "cl_khr_int64_base_atomics" in cls.ctx.devices[0].extensions:
+                cls.precise = True
+            else:
+                cls.precise = False
         cls.ai = AzimuthalIntegrator(detector="Pilatus100k")
 
     @classmethod
@@ -88,7 +92,7 @@ class TestOclHistogram(unittest.TestCase):
         tth = self.ai.array_from_unit(unit="2th_deg")
         npt = 500
         ref = self.ai._integrate1d_legacy(data, npt, unit="2th_deg", method="numpy")
-        integrator = OCL_Histogram1d(tth, npt)
+        integrator = OCL_Histogram1d(tth, npt, devicetype="cpu")
         solidangle = self.ai.solidAngleArray()
         res = integrator(data, solidangle=solidangle)
 
@@ -108,7 +112,8 @@ class TestOclHistogram(unittest.TestCase):
         ref = numpy.histogram(tth, npt, weights=solidangle)[0]
         sig = res.normalization.sum(axis=-1, dtype="float64")
         err = abs((sig - ref).sum())
-        self.assertLess(err, 1e-5, "normalization content is the same: %s<1e-5" % err)
+        epsilon = 1e-5 if self.precise else 3e-3
+        self.assertLess(err, epsilon, "normalization content is the same: %s<%s" % (err, epsilon))
         self.assertLess(abs(gaussian_filter1d(sig - ref, 9)).max(), 1.5, "normalization, after smoothing is flat")
 
         # histogram of signal
@@ -137,7 +142,7 @@ class TestOclHistogram(unittest.TestCase):
 
         npt = (300, 36)
         ref = self.ai._integrate2d_legacy(data, *npt, unit="2th_deg", method="numpy")
-        integrator = OCL_Histogram2d(tth, chi, *npt)
+        integrator = OCL_Histogram2d(tth, chi, *npt, devicetype="cpu")
 
         res = integrator(data, solidangle=solidangle)
 
