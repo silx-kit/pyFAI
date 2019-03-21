@@ -416,6 +416,32 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             return True
         return False
 
+    def event(self, event):
+        """
+        Dispatch Qt events to the widget.
+
+        :param qt.QEvent event: Event from Qt
+        """
+        if event.type() == qt.QEvent.ToolTip:
+            handle = self.getWidgetHandle()
+            pos = handle.mapFromGlobal(event.globalPos())
+            coord = self.pixelToData(pos.x(), pos.y())
+            # About 4 pixels (screen relative)
+            coord2 = self.pixelToData(pos.x() + 1, pos.y() + 1)
+            ratio = abs(coord[0] - coord2[0]), abs(coord[1] - coord2[1])
+            threshold = 2 * (ratio[0] + ratio[1])
+            peak = self.__peakSelectionModel.closestGroup((coord[1], coord[0]), threshold=threshold)
+            if peak is not None:
+                message = "Group name: %s\nRing number: %d"
+                message = message % (peak.name(), peak.ringNumber())
+                qt.QToolTip.showText(event.globalPos(), message)
+            else:
+                qt.QToolTip.hideText()
+                event.ignore()
+
+            return True
+        return super(_PeakPickingPlot, self).event(event)
+
     def __onPlotEvent(self, event):
         if self.__mode == self.PEAK_SELECTION_MODE:
             if event["event"] == "imageClicked":
