@@ -556,12 +556,12 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             symbol = '+'
 
         if len(points) != 0:
-            y, x = points[0]
+            y, x = points[0] + 0.5
             self.addMarker(x=x, y=y,
                            legend="marker" + name,
                            text=name)
-        yy = points[:, 0]
-        xx = points[:, 1]
+        yy = points[:, 0] + 0.5
+        xx = points[:, 1] + 0.5
         self.addCurve(x=xx, y=yy,
                       legend="coord" + name,
                       linestyle=' ',
