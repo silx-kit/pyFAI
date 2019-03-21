@@ -115,11 +115,10 @@ def filterControlPoints(filterCallback, peakSelectionModel, removedPeaks=None):
     peakSelectionModel.unlockSignals()
 
 
-def _findUnusedId(peakSelectionModel):
+def _findUnusedName(peakSelectionModel):
     """
-    :rtype: int
+    :rtype: str
     """
-    # reach the bigger name
     names = ["% 8s" % p.name() for p in peakSelectionModel]
     if len(names) > 0:
         names = list(sorted(names))
@@ -129,13 +128,8 @@ def _findUnusedId(peakSelectionModel):
             number = number * 26 + (ord(c) - ord('a'))
     else:
         number = -1
-    return number + 1
+    number = number + 1
 
-
-def _convertIdToName(number):
-    """
-    :rtype: str
-    """
     # compute the next one
     name = ""
     if number == 0:
@@ -149,26 +143,24 @@ def _convertIdToName(number):
     return name
 
 
-def createRing(points, peakSelectionModel, context=None):
+def createRing(points, peakSelectionModel, ringNumber=None, context=None):
     """Create a new ring from a group of points
 
     :rtype: PeakModel
     """
-
     if context is None:
         context = CalibrationContext.instance()
 
-    number = _findUnusedId(peakSelectionModel)
-    name = _convertIdToName(number)
-    color = context.getMarkerColor(number)
+    name = _findUnusedName(peakSelectionModel)
+    if ringNumber is None:
+        ringNumber = 1
+    color = context.getMarkerColor(ringNumber - 1)
 
-    # TODO: color and name should be removed from the model
-    # TODO: As result this function should be removed
     peakModel = PeakModel(peakSelectionModel)
     peakModel.setName(name)
     peakModel.setColor(color)
     peakModel.setCoords(points)
-    peakModel.setRingNumber(1)
+    peakModel.setRingNumber(ringNumber)
 
     return peakModel
 
@@ -189,8 +181,10 @@ def initPeaksFromControlPoints(peakSelectionModel, controlPoints, context=None):
     peakSelectionModel.clear()
     for label in controlPoints.get_labels():
         group = controlPoints.get(lbl=label)
+        color = context.getMarkerColor(group.ring)
         peakModel = createRing(group.points, peakSelectionModel=peakSelectionModel, context=context)
         peakModel.setRingNumber(group.ring + 1)
+        peakModel.setColor(color)
         peakModel.setName(label)
         peakSelectionModel.append(peakModel)
 

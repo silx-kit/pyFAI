@@ -1296,8 +1296,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         peakSelectionModel = self.model().peakSelectionModel()
         ringNumber = self.__ringSelection.ringNumber()
         points = numpy.array(points)
-        peakModel = model_transform.createRing(points, peakSelectionModel)
-        peakModel.setRingNumber(ringNumber)
+        peakModel = model_transform.createRing(points, peakSelectionModel, ringNumber=ringNumber)
         oldState = self.__copyPeaks(self.__undoStack)
         peak = peakSelectionModel.peakFromRingNumber(ringNumber)
         if peak is None:
@@ -1339,8 +1338,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             ringNumber = self.__ringSelection.ringNumber()
             peak = peakSelectionModel.peakFromRingNumber(ringNumber)
             if peak is None:
-                peakModel = model_transform.createRing(brushedPeaks, peakSelectionModel)
-                peakModel.setRingNumber(ringNumber)
+                peakModel = model_transform.createRing(brushedPeaks, peakSelectionModel, ringNumber=ringNumber)
                 peakSelectionModel.append(peakModel)
             else:
                 peak.mergeCoords(brushedPeaks)
@@ -1410,7 +1408,11 @@ class PeakPickingTask(AbstractCalibrationTask):
 
     def __setRingNumber(self, peakModel, value):
         oldState = self.__copyPeaks(self.__undoStack)
-        peakModel.setRingNumber(value)
+        context = CalibrationContext.instance()
+        color = context.getMarkerColor(value - 1)
+        with peakModel.lockContext():
+            peakModel.setRingNumber(value)
+            peakModel.setColor(color)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
         command.setText("update ring number of %s" % peakModel.name())
@@ -1591,8 +1593,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             peakSelectionModel.clear()
             for ringNumber in sorted(newPeaks.keys()):
                 coords = newPeaks[ringNumber]
-                peakModel = model_transform.createRing(coords, peakSelectionModel)
-                peakModel.setRingNumber(ringNumber)
+                peakModel = model_transform.createRing(coords, peakSelectionModel, ringNumber=ringNumber)
                 if ringNumber in disabledRings:
                     peakModel.setEnabled(False)
                 peakSelectionModel.append(peakModel)
@@ -1604,10 +1605,9 @@ class PeakPickingTask(AbstractCalibrationTask):
             peakSelectionModel.clear()
             for prevousRing in peaks:
                 coords = newPeaks[prevousRing.ringNumber()]
-                peakModel = model_transform.createRing(coords, peakSelectionModel)
+                ringNumber = prevousRing.ringNumber()
+                peakModel = model_transform.createRing(coords, peakSelectionModel, ringNumber=ringNumber)
                 peakModel.setName(prevousRing.name())
-                peakModel.setColor(prevousRing.color())
-                peakModel.setRingNumber(prevousRing.ringNumber())
                 if prevousRing.ringNumber() in disabledRings:
                     peakModel.setEnabled(False)
                 peakSelectionModel.append(peakModel)
@@ -1615,8 +1615,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             # Append the extracted rings to the current ones
             for ringNumber in sorted(newPeaks.keys()):
                 coords = newPeaks[ringNumber]
-                peakModel = model_transform.createRing(coords, peakSelectionModel)
-                peakModel.setRingNumber(ringNumber)
+                peakModel = model_transform.createRing(coords, peakSelectionModel, ringNumber=ringNumber)
                 peakSelectionModel.append(peakModel)
         elif role == self.EXTRACT_SINGLE:
             # Update coord of a single ring
