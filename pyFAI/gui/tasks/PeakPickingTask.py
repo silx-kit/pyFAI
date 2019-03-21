@@ -301,7 +301,7 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
             if column == self.ColumnName:
                 return peakModel.name()
             elif column == self.ColumnPeaksCount:
-                return len(peakModel.coords())
+                return len(peakModel)
             elif column == self.ColumnRingNumber:
                 return peakModel.ringNumber()
             return ""
@@ -559,9 +559,9 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             self.addMarker(x=x, y=y,
                            legend="marker" + name,
                            text=name)
-        y = list(map(lambda p: p[0], points))
-        x = list(map(lambda p: p[1], points))
-        self.addCurve(x=x, y=y,
+        yy = points[:, 0]
+        xx = points[:, 1]
+        self.addCurve(x=xx, y=yy,
                       legend="coord" + name,
                       linestyle=' ',
                       selectable=False,
@@ -1271,6 +1271,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         peakSelectionModel = self.model().peakSelectionModel()
         ringNumber = self.__ringSelection.ringNumber()
+        points = numpy.array(points)
         peakModel = model_transform.createRing(points, peakSelectionModel)
         peakModel.setRingNumber(ringNumber)
         oldState = self.__copyPeaks(self.__undoStack)
@@ -1278,7 +1279,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         if peak is None:
             peakSelectionModel.append(peakModel)
         else:
-            peak.mergeCoords(peakModel.coords())
+            peak.mergeCoords(peakModel)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
         command.setText("add peak %s" % peakModel.name())
@@ -1310,6 +1311,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             if len(brushedPeaks) == 0:
                 _logger.debug("No peak to brush")
                 return
+            brushedPeaks = numpy.array(brushedPeaks)
             ringNumber = self.__ringSelection.ringNumber()
             peak = peakSelectionModel.peakFromRingNumber(ringNumber)
             if peak is None:
@@ -1595,7 +1597,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         elif role == self.EXTRACT_SINGLE:
             # Update coord of a single ring
             ringObject = thread.userData("RING")
-            coords = newPeaks.get(ringObject.ringNumber(), [])
+            empty = numpy.empty(shape=(0, 2))
+            coords = newPeaks.get(ringObject.ringNumber(), empty)
             ringObject.setCoords(coords)
         else:
             assert(False)
@@ -1624,7 +1627,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         for ringNumber in sorted(peaks.keys()):
             peak = peaks[ringNumber][0]
             for p in peaks[ringNumber][1:]:
-                peak.mergeCoords(p.coords())
+                peak.mergeCoords(p)
             peakSelectionModel.append(peak)
 
         newState = self.__copyPeaks(self.__undoStack)

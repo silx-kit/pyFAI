@@ -32,7 +32,7 @@ from __future__ import absolute_import, division, print_function
 
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2018"
+__date__ = "21/03/2019"
 
 import sys
 import os
@@ -79,12 +79,14 @@ def suite():
         test_suite.addTest(SkipGuiTest(reason=reason))
         return test_suite
 
+    from . import test_model
     from . import test_integrate_widget
     from . import test_scripts
     from . import test_calibration
     from . import test_detector_dialog
     from ..utils import test as test_utils
     test_suite = unittest.TestSuite()
+    test_suite.addTest(test_model.suite())
     test_suite.addTest(test_integrate_widget.suite())
     test_suite.addTest(test_scripts.suite())
     test_suite.addTest(test_calibration.suite())

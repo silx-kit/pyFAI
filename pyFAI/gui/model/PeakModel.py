@@ -42,7 +42,6 @@ class PeakModel(AbstractModel):
         self.__coords = []
         self.__ringNumber = None
         self.__isEnabled = True
-        self.__numpyCoords = None
 
     def __len__(self):
         return len(self.__coords)
@@ -84,11 +83,35 @@ class PeakModel(AbstractModel):
         self.wasChanged()
 
     def coords(self):
+        """
+        Returns coords as numpy array.
+
+        The first index identify a coord, the seconf identify the coord
+        dimensions.
+
+        List of axis/ord can be reached like that.
+
+        .. code-block::
+
+            coords = group.coords()
+            yy = coords[:, 0]
+            xx = coords[:, 1]
+        """
         return self.__coords
 
     def setCoords(self, coords):
+        """
+        Set coords as numpy array.
+
+        :param numpy.ndarray coords: Array of coords (1st dimension is the
+            index of the coord; the second dimension contains y as first index,
+            and x as second index).
+        """
+        assert(isinstance(coords, numpy.ndarray))
+        assert(len(coords.shape) == 2)
+        assert(coords.shape[1] == 2)
+        coords.flags['WRITEABLE'] = False
         self.__coords = coords
-        self.__numpyCoords = None
         self.wasChanged()
 
     def mergeCoords(self, coords):
@@ -96,10 +119,34 @@ class PeakModel(AbstractModel):
 
         Duplicated values are removed from the new coords, and the is added
         the end of the previous list.
+
+        :param [numpy.ndarray,PeakModel] coords:
         """
-        new_coords = set(coords) - set(self.__coords)
-        self.__coords += list(new_coords)
-        self.__numpyCoords = None
+        if isinstance(coords, PeakModel):
+            coords = coords.coords()
+        assert(isinstance(coords, numpy.ndarray))
+        assert(len(coords.shape) == 2)
+        assert(coords.shape[1] == 2)
+
+        # Shortcuts
+        if len(coords) == 0:
+            return
+        if len(self.__coords) == 0:
+            self.setCoords(coords)
+            return
+
+        # Convert to structured array to use setdiff1d
+        dtype = self.__coords.dtype.descr * self.__coords.shape[1]
+        previous_coords = self.__coords.view(dtype)
+        new_coords = coords.view(dtype)
+        new_coords = numpy.setdiff1d(previous_coords, new_coords)
+        if len(new_coords) == 0:
+            return
+        new_coords = new_coords.view(self.__coords.dtype)
+        print(self.__coords)
+        print(new_coords)
+        print(self.__coords.shape, new_coords.shape)
+        self.__coords = numpy.vstack((self.__coords, new_coords))
         self.wasChanged()
 
     def ringNumber(self):
@@ -114,7 +161,7 @@ class PeakModel(AbstractModel):
         peakModel = PeakModel(parent)
         peakModel.setName(self.name())
         peakModel.setColor(self.color())
-        peakModel.setCoords(list(self.coords()))
+        peakModel.setCoords(self.coords())
         peakModel.setRingNumber(self.ringNumber())
         peakModel.setEnabled(self.isEnabled())
         return peakModel
@@ -128,8 +175,7 @@ class PeakModel(AbstractModel):
         """
         if len(self.__coords) == 0:
             return None
-        if self.__numpyCoords is None:
-            self.__numpyCoords = numpy.array(self.__coords)
+        coords = self.coords()
         coord = numpy.array(coord)
-        distances = numpy.linalg.norm(self.__numpyCoords - coord, axis=1)
+        distances = numpy.linalg.norm(coords - coord, axis=1)
         return distances.min()

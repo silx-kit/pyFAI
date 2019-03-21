@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/03/2019"
+__date__ = "21/03/2019"
 
 import logging
 import numpy
@@ -39,6 +39,7 @@ import pyFAI.utils
 from pyFAI.geometryRefinement import GeometryRefinement
 from pyFAI.geometry import Geometry
 from ..peak_picker import PeakPicker
+from . import model_transform
 
 _logger = logging.getLogger(__name__)
 
@@ -263,14 +264,9 @@ class RingExtractorThread(qt.QThread):
             raise ValueError("Computation have to be done from peaks or from geometry")
 
         if peaksModel is not None:
-            # FIXME numpy array can be allocated first
-            peaks = []
-            for peakModel in peaksModel:
-                ringNumber = peakModel.ringNumber()
-                for coord in peakModel.coords():
-                    peaks.append([coord[0], coord[1], ringNumber - 1])
-            peaks = numpy.array(peaks)
+            peaks = model_transform.createPeaksArray(peaksModel)
             geometryModel = None
+
         elif geometryModel is not None:
             peaks = None
             if not geometryModel.isValid():
@@ -285,13 +281,20 @@ class RingExtractorThread(qt.QThread):
 
         :rtype: dict
         """
+        if len(self.__newPeaksRaw) == 0:
+            return {}
+
+        # Index to result per ring number
+        raw = numpy.array(self.__newPeaksRaw)
         newPeaks = {}
-        for peak in self.__newPeaksRaw:
-            y, x, ringNumber = peak
+        ringNumbers = numpy.unique(raw[:, 2])
+        countPeaks = 0
+        for ringNumber in ringNumbers:
+            coords = raw[raw[:, 2] == ringNumber][:, 0:2]
             ringNumber = int(ringNumber) + 1
-            if ringNumber not in newPeaks:
-                newPeaks[ringNumber] = []
-            newPeaks[ringNumber].append((y, x))
+            newPeaks[ringNumber] = coords
+            countPeaks += len(coords)
+        assert(countPeaks == len(raw))
         return newPeaks
 
     def _extract(self, peaks=None, geometryModel=None):

@@ -32,6 +32,8 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 
 
+import numpy
+
 from pyFAI.control_points import ControlPoints
 from pyFAI.gui.model.CalibrationModel import CalibrationModel
 from pyFAI.gui.model.PeakSelectionModel import PeakSelectionModel
@@ -59,6 +61,31 @@ def createControlPoints(model):
     return controlPoints
 
 
+def createPeaksArray(model):
+    """Create a contiguous peak array containing (y, x, ring number)
+
+    :param PeakSelectionModel model: A set of selected peaks
+    :rtype: numpy.ndarray
+    """
+    if not isinstance(model, PeakSelectionModel):
+        raise TypeError("Unexpected model type")
+
+    count = 0
+    for group in model:
+        count += len(group)
+    pos = 0
+    peaks = numpy.empty(shape=(count, 3), dtype=float)
+    for group in model:
+        if not group.isEnabled():
+            continue
+        end = pos + len(group)
+        peaks[pos:end, 0:2] = group.coords()
+        peaks[pos:end, 2] = group.ringNumber() - 1
+        pos = end
+    peaks = numpy.array(peaks)
+    return peaks
+
+
 def filterControlPoints(filterCallback, peakSelectionModel, removedPeaks=None):
     """Filter each peaks of the model using a callback
 
@@ -80,6 +107,10 @@ def filterControlPoints(filterCallback, peakSelectionModel, removedPeaks=None):
                     removedPeaks.append(coord)
                 changed = True
         if changed:
+            if len(newCoords) == 0:
+                newCoords = numpy.empty(shape=(0, 2))
+            else:
+                newCoords = numpy.array(newCoords)
             peakGroup.setCoords(newCoords)
     peakSelectionModel.unlockSignals()
 
