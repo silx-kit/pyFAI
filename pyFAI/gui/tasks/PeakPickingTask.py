@@ -760,6 +760,22 @@ class _RingSelectionBehaviour(qt.QObject):
         self.__plot = plot
         self.__initState()
 
+    def selectRing(self, ringNumber):
+        """Select one of the rings.
+
+        The tools are updated to edit/create this ring.
+
+        :param int ringNumber: The ring number to select
+        """
+        if self.__newRingOption.isChecked():
+            self.__newRingOption.trigger()
+        self.__spinnerRing.setValue(ringNumber)
+
+    def toggleNewRing(self):
+        """Toggle the "new ring" modificator.
+        """
+        self.__newRingOption.trigger()
+
     def clear(self):
         self.__peakSelectionModel.changed.disconnect(self.__peaksHaveChanged)
         self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
@@ -981,6 +997,29 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__ringSelection = None
         self.__massif = None
         self.__massifReconstructed = None
+
+        for i, key in enumerate(range(qt.Qt.Key_0, qt.Qt.Key_9 + 1)):
+            if i == 0:
+                i = 10
+            action = qt.QAction(self)
+            action.setText("Select ring %d" % i)
+
+            def selectRing(ringNumber):
+                self.__ringSelection.selectRing(ringNumber)
+            action.triggered.connect(functools.partial(selectRing, i))
+            action.setShortcut(qt.QKeySequence(key))
+            self.addAction(action)
+
+        action = qt.QAction(self)
+        action.setText("Toggle new tring tool")
+        action.triggered.connect(lambda: self.__ringSelection.toggleNewRing())
+        action.setShortcut(qt.QKeySequence(qt.Qt.Key_Plus))
+        self.addAction(action)
+        action = qt.QAction(self)
+        action.setText("Toggle new tring tool")
+        action.triggered.connect(lambda: self.__ringSelection.toggleNewRing())
+        action.setShortcut(qt.QKeySequence(qt.Qt.Key_Equal))
+        self.addAction(action)
 
     def __createSavePeakDialog(self):
         dialog = CalibrationContext.instance().createFileDialog(self)
