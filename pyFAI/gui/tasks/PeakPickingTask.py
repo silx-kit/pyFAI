@@ -112,6 +112,7 @@ class _PeakSelectionTableView(qt.QTableView):
         self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
         self.setVerticalScrollMode(qt.QAbstractItemView.ScrollPerPixel)
+        self.setVerticalScrollBarPolicy(qt.Qt.ScrollBarAlwaysOn)
         self.setShowGrid(False)
         self.setWordWrap(False)
         # NoFrame glitchies on Debian8 Qt5
