@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/03/2019"
+__date__ = "21/03/2019"
 
 import logging
 import numpy
@@ -519,9 +519,14 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             numpyColor = numpy.array([0.5, 0.5, 0.5, 0.5])
 
         if self.__selectedPeak is None:
-            pass
-        elif name != self.__selectedPeak:
-            numpyColor[3] = 0.25
+            # Nothing selected
+            symbol = 'o'
+        elif name == self.__selectedPeak:
+            # Selected marker
+            symbol = 'o'
+        else:
+            # Unselected marker
+            symbol = '+'
 
         if len(points) != 0:
             y, x = points[0]
@@ -534,7 +539,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
                       legend="coord" + name,
                       linestyle=' ',
                       selectable=False,
-                      symbol='o',
+                      symbol=symbol,
                       color=numpyColor,
                       resetzoom=False)
 
