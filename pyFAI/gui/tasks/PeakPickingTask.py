@@ -423,7 +423,10 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     def eventFilter(self, widget, event):
         if event.type() == qt.QEvent.Enter:
-            self.setCursor(qt.Qt.CrossCursor)
+            if self.__mode == self.PEAK_SELECTION_MODE:
+                self.setCursor(qt.Qt.CrossCursor)
+            else:
+                self.setCursor(qt.Qt.ArrowCursor)
             return True
         elif event.type() == qt.QEvent.Leave:
             self.unsetCursor()
