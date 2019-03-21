@@ -32,23 +32,24 @@
 .
  */
 
-#pragma OPENCL EXTENSION cl_khr_int64_base_atomics: enable
 
-inline void atomic_add_global_float(volatile __global float *addr, float val)
+inline void atomic_add_global_float(volatile global float *addr, float val)
 {
    union {
-       unsigned int u32;
-       float        f32;
+       uint  u32;
+       float f32;
    } next, expected, current;
    current.f32    = *addr;
    do {
        expected.f32 = current.f32;
        next.f32     = expected.f32 + val;
-       current.u32  = atomic_cmpxchg( (volatile __global unsigned int *)addr,
+       current.u32  = atomic_cmpxchg( (volatile global uint *)addr,
                                       expected.u32, next.u32);
    } while( current.u32 != expected.u32 );
 }
 
+#ifdef cl_khr_int64_base_atomics
+#pragma OPENCL EXTENSION cl_khr_int64_base_atomics: enable
 
 inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
 {
@@ -64,6 +65,24 @@ inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
                                       expected.u64, next.u64);
    } while( current.u64 != expected.u64 );
 }
+#else
+#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics: enable
+
+inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
+{
+   union {
+       uint2   u64;
+       float2 f64;
+   } next, expected, current;
+   current.f64    = *addr;
+   do {
+       expected.f64 = current.f64;
+       next.f64     = kahan_sum(expected.f64, val);
+       current.u64.s0  = atomic_cmpxchg( (volatile global uint *)addr,
+                                        expected.u64.s0, next.u64.s0);
+   } while( current.u64.s0 != expected.u64.s0 );
+}
+#endif
 
 /**
  * \brief Calculate the 1D weighted histogram of positions
@@ -78,7 +97,6 @@ inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
  *
  * This is a 1D histogram
  */
-
 
 kernel void histogram_1d(global float* position,
                          global float* weight,
