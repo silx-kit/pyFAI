@@ -27,8 +27,9 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/03/2019"
+__date__ = "21/03/2019"
 
+import numpy
 from .AbstractModel import AbstractModel
 
 
@@ -41,6 +42,7 @@ class PeakModel(AbstractModel):
         self.__coords = []
         self.__ringNumber = None
         self.__isEnabled = True
+        self.__numpyCoords = None
 
     def __len__(self):
         return len(self.__coords)
@@ -86,6 +88,7 @@ class PeakModel(AbstractModel):
 
     def setCoords(self, coords):
         self.__coords = coords
+        self.__numpyCoords = None
         self.wasChanged()
 
     def mergeCoords(self, coords):
@@ -96,6 +99,7 @@ class PeakModel(AbstractModel):
         """
         new_coords = set(coords) - set(self.__coords)
         self.__coords += list(new_coords)
+        self.__numpyCoords = None
         self.wasChanged()
 
     def ringNumber(self):
@@ -114,3 +118,18 @@ class PeakModel(AbstractModel):
         peakModel.setRingNumber(self.ringNumber())
         peakModel.setEnabled(self.isEnabled())
         return peakModel
+
+    def distanceTo(self, coord):
+        """Returns the smallest distance to this coord.
+
+        None is retruned if the group contains no peaks.
+
+        :param Tuple[float,float] coord: Distance to mesure
+        """
+        if len(self.__coords) == 0:
+            return None
+        if self.__numpyCoords is None:
+            self.__numpyCoords = numpy.array(self.__coords)
+        coord = numpy.array(coord)
+        distances = numpy.linalg.norm(self.__numpyCoords - coord, axis=1)
+        return distances.min()
