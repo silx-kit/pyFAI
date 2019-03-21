@@ -126,6 +126,19 @@ class _PeakSelectionTableView(qt.QTableView):
         self.setPalette(palette)
         self.setFrameShape(qt.QFrame.Panel)
 
+    def mousePressEvent(self, event):
+        """
+        :param qt.QMouseEvent event: Qt event
+        """
+        index = self.indexAt(event.pos())
+        if index.isValid():
+            selectionModel = self.selectionModel()
+            if selectionModel.isSelected(index):
+                selectionModel.clear()
+                event.accept()
+                return
+        return super(_PeakSelectionTableView, self).mousePressEvent(event)
+
     def setModel(self, model):
         if self.model() is not None:
             m = self.model()
