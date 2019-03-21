@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2018"
+__date__ = "21/03/2019"
 __status__ = "production"
 
 import sys
@@ -61,9 +61,9 @@ class Massif(object):
 
     def __init__(self, data=None, mask=None):
         """Constructor of the class...
-        
+
         :param data: 2D array or filename (discouraged)
-        :param mask: array with non zero for invalid data 
+        :param mask: array with non zero for invalid data
         """
         if isinstance(data, six.string_types) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
@@ -304,7 +304,7 @@ class Massif(object):
 
     def get_labeled_massif(self, pattern=None, reconstruct=True):
         """
-        :param pattern: 3x3 matrix 
+        :param pattern: 3x3 matrix
         :param reconstruct: if False, split massif at masked position, else reconstruct missing part.
         :return: an image composed of int with a different value for each massif
         """
