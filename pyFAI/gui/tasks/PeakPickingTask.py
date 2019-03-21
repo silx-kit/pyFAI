@@ -752,9 +752,9 @@ class _RingSelectionBehaviour(qt.QObject):
         self.__newRingOption.toggled.connect(self.__newRingToggeled)
         if self.__ringSelectionModel is not None:
             self.__ringSelectionModel.selectionChanged.connect(self.__ringSelectionChanged)
+            self.__ringSelectionModel.selectionChanged.connect(self.__hightlightedRingChnaged)
 
         self.__plot = plot
-
         self.__initState()
 
     def clear(self):
@@ -763,6 +763,7 @@ class _RingSelectionBehaviour(qt.QObject):
         self.__newRingOption.toggled.disconnect(self.__newRingToggeled)
         if self.__ringSelectionModel is not None:
             self.__ringSelectionModel.selectionChanged.disconnect(self.__ringSelectionChanged)
+            self.__ringSelectionModel.selectionChanged.disconnect(self.__hightlightedRingChnaged)
 
     def __initState(self):
         self.__newRingToggeled()
@@ -811,7 +812,7 @@ class _RingSelectionBehaviour(qt.QObject):
         """
         return self.__spinnerRing.value()
 
-    def __ringSelectionChanged(self):
+    def __hightlightedRingChnaged(self):
         indexes = self.__ringSelectionModel.selectedIndexes()
         model = self.__ringSelectionModel.model()
         if len(indexes) == 0:
@@ -825,6 +826,15 @@ class _RingSelectionBehaviour(qt.QObject):
             self.__plot.setSelectedPeak(name)
         else:
             self.__plot.setSelectedPeak(None)
+
+    def __ringSelectionChanged(self):
+        indexes = self.__ringSelectionModel.selectedIndexes()
+        model = self.__ringSelectionModel.model()
+        if len(indexes) == 0:
+            peak = None
+        else:
+            index = indexes[0]
+            peak = model.peakObject(index)
 
         if not self.__newRingOption.isChecked():
             # It have to be updated
