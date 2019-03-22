@@ -49,6 +49,8 @@ class RingExtractorThread(qt.QThread):
     modelization.
     """
 
+    sigProcessLocationChanged = qt.Signal(object)
+
     def __init__(self, parent):
         """Constructor"""
         super(RingExtractorThread, self).__init__(parent=parent)
@@ -297,6 +299,9 @@ class RingExtractorThread(qt.QThread):
         assert(countPeaks == len(raw))
         return newPeaks
 
+    def _updateProcessingLocation(self, mask):
+        self.sigProcessLocationChanged.emit(mask)
+
     def _extract(self, peaks=None, geometryModel=None):
         """
         Performs an automatic keypoint extraction:
@@ -374,6 +379,7 @@ class RingExtractorThread(qt.QThread):
             size = mask.sum(dtype=int)
             if (size > 0):
                 rings += 1
+                self._updateProcessingLocation(mask)
                 sub_data = peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)

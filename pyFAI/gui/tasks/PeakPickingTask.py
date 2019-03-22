@@ -36,6 +36,7 @@ import os
 
 from silx.gui import qt
 from silx.gui import icons
+from silx.gui import colors
 import silx.gui.plot
 from silx.gui.plot.tools import PositionInfo
 from silx.gui.plot.items.shape import Shape
@@ -374,6 +375,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__selectedPeak = None
         self.__processing = None
         self.__mode = self.PEAK_SELECTION_MODE
+        self.__mask = None
 
         self.sigPlotSignal.connect(self.__onPlotEvent)
 
@@ -579,6 +581,32 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
                       symbol=symbol,
                       color=numpyColor,
                       resetzoom=False)
+
+    def setProcessingLocation(self, mask):
+        """Update the processing location over the image.
+
+        :param numpy.ndarray mask: Mask of the location.
+        """
+        if mask is None:
+            mask = numpy.empty(shape=(0, 0))
+
+        if self.__mask is None:
+            print(mask.shape)
+            self.addImage(mask,
+                          legend="processing-mask",
+                          selectable=False,
+                          copy=False,
+                          z=-0.5,
+                          resetzoom=False)
+            self.__mask = self.getImage("processing-mask")
+            colormap = colors.Colormap(name=None,
+                                       colors=((0., 0., 0., 0.), (1., 1., 1., 0.5)),
+                                       vmin=0,
+                                       vmax=1)
+            self.__mask.setColormap(colormap)
+
+        mask = mask.astype(numpy.uint8)
+        self.__mask.setData(mask)
 
     def updatePeak(self, peakModel):
         self.removePeak(peakModel)
@@ -1480,6 +1508,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         extractor = RingExtractorThread(self)
         experimentSettings = self.model().experimentSettingsModel()
         extractor.setExperimentSettings(experimentSettings, copy=False)
+        extractor.sigProcessLocationChanged.connect(self.__autoExtractLocationChanged)
 
         # Constant dependant of the ui file
         FROM_PEAKS = 0
@@ -1577,6 +1606,9 @@ class PeakPickingTask(AbstractCalibrationTask):
         thread.finished.connect(thread.deleteLater)
         thread.start()
 
+    def __autoExtractLocationChanged(self, mask):
+        self.__plot.setProcessingLocation(mask)
+
     def __updateOptionToExtractAgain(self):
         self._moreRingToExtractTitle.setVisible(False)
         self._moreRingToExtract.setVisible(False)
@@ -1601,6 +1633,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         :param RingExtractorThread thread: A ring ring extractor processing
         """
         if thread.isAborted():
+            self.__plot.setProcessingLocation(None)
             self.__plot.unsetProcessing()
             qt.QApplication.restoreOverrideCursor()
             self._extract.setWaiting(False)
@@ -1609,6 +1642,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         try:
             self.__extractionFinished(thread)
         finally:
+            self.__plot.setProcessingLocation(None)
             self.__plot.unsetProcessing()
             qt.QApplication.restoreOverrideCursor()
             self._extract.setWaiting(False)
