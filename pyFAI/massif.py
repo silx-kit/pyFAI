@@ -74,6 +74,8 @@ class Massif(object):
                 self.data = data.astype("float32")
             except Exception as error:
                 logger.error("Unable to understand this type of data %s: %s", data, error)
+        self.log_info = True
+        """If true, more information is displayed in the logger relative to picking."""
         self.mask = mask
         self._cleaned_data = None
         self._bilin = Bilinear(self.data)
@@ -133,11 +135,13 @@ class Massif(object):
         """
         region = self.calculate_massif(x)
         if region is None:
-            logger.error("You picked a background point at %s", x)
+            if self.log_info:
+                logger.error("You picked a background point at %s", x)
             return []
         xinit = self.nearest_peak(x)
         if xinit is None:
-            logger.error("Unable to find peak in the vinicy of %s", x)
+            if self.log_info:
+                logger.error("Unable to find peak in the vinicy of %s", x)
             return []
         else:
             if not region[int(xinit[0] + 0.5), int(xinit[1] + 0.5)]:
