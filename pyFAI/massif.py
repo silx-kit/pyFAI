@@ -170,7 +170,8 @@ class Massif(object):
                 nbFailure += 1
                 continue
             if (region2[int(xopt[0] + 0.5), int(xopt[1] + 0.5)]) and not (xopt in listpeaks):
-                stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
+                if stdout:
+                    stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
                 listpeaks.append(xopt)
                 nbFailure = 0
             else:
