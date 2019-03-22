@@ -935,6 +935,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         # Insert the plot on the layout
         holder = self._plotHolder
+        self.__extractionThread = None
         self.__plot = _PeakPickingPlot(parent=holder)
         self.__plot.setObjectName("plot-picking")
         holderLayout = qt.QVBoxLayout(holder)
@@ -1563,48 +1564,43 @@ class PeakPickingTask(AbstractCalibrationTask):
         thread = self._createRingExtractor(ring=None)
         thread.setUserData("ROLE", self.EXTRACT_ALL)
         thread.setUserData("TEXT", "extract rings")
-        thread.started.connect(self.__extractionStarted)
-        thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
-        thread.finished.connect(thread.deleteLater)
-        thread.start()
+        self.__startExtractThread(thread)
 
     def __autoExtractReachableRings(self):
         thread = self._createRingExtractor(reachableRings=True)
         thread.setUserData("ROLE", self.EXTRACT_ALL)
         thread.setUserData("TEXT", "extract reachable rings")
-        thread.started.connect(self.__extractionStarted)
-        thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
-        thread.finished.connect(thread.deleteLater)
-        thread.start()
+        self.__startExtractThread(thread)
 
     def __autoExtractExistingRings(self):
         thread = self._createRingExtractor(existingRings=True)
         thread.setUserData("ROLE", self.EXTRACT_EXISTING)
         thread.setUserData("TEXT", "extract existing rings")
-        thread.started.connect(self.__extractionStarted)
-        thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
-        thread.finished.connect(thread.deleteLater)
-        thread.start()
+        self.__startExtractThread(thread)
 
     def autoExtractSingleRing(self, ring):
         thread = self._createRingExtractor(ring=ring)
         thread.setUserData("ROLE", self.EXTRACT_SINGLE)
         thread.setUserData("TEXT", "extract ring %d" % ring.ringNumber())
         thread.setUserData("RING", ring)
-        thread.started.connect(self.__extractionStarted)
-        thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
-        thread.finished.connect(thread.deleteLater)
-        thread.start()
+        self.__startExtractThread(thread)
 
     def __autoExtractMoreRings(self):
         value = self._moreRingToExtract.value()
         thread = self._createRingExtractor(moreRings=value)
         thread.setUserData("ROLE", self.EXTRACT_MORE)
         thread.setUserData("TEXT", "extract %s more rings" % value)
+        self.__startExtractThread(thread)
+
+    def __startExtractThread(self, thread):
+        if self.__extractionThread is not None:
+            _logger.error("A task to extract rings is already processing")
+            return
         thread.started.connect(self.__extractionStarted)
         thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
         thread.finished.connect(thread.deleteLater)
         thread.start()
+        self.__extractionThread = thread
 
     def __autoExtractLocationChanged(self, mask):
         self.__plot.setProcessingLocation(mask)
@@ -1638,6 +1634,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             qt.QApplication.restoreOverrideCursor()
             self._extract.setWaiting(False)
             qt.QMessageBox.critical(self, "Error", thread.errorString())
+            self.__extractionThread = None
             return
         try:
             self.__extractionFinished(thread)
@@ -1646,6 +1643,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             self.__plot.unsetProcessing()
             qt.QApplication.restoreOverrideCursor()
             self._extract.setWaiting(False)
+            self.__extractionThread = None
 
     def __extractionFinished(self, thread):
         """
