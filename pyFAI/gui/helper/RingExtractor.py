@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/03/2019"
+__date__ = "22/03/2019"
 
 import logging
 import numpy
@@ -371,14 +371,9 @@ class RingExtractorThread(qt.QThread):
             if rings >= maxRings:
                 break
             mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
-            # if self.mask is not None:
-            #     mask = numpy.logical_and(mask, numpy.logical_not(self.mask))
             size = mask.sum(dtype=int)
             if (size > 0):
                 rings += 1
-                peakPicker.massif_contour(mask)
-                # if self.gui:
-                #     update_fig(self.peakPicker.fig)
                 sub_data = peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
@@ -389,12 +384,11 @@ class RingExtractorThread(qt.QThread):
                     upper_limit = mean
                     mask2 = numpy.logical_and(peakPicker.data > upper_limit, mask)
                     size2 = mask2.sum()
-                # length of the arc:
                 # Coords in points are y, x
                 points = ms.find_pixels(tth[i])
 
                 seeds = set((i[0], i[1]) for i in points if mask2[i[0], i[1]])
-                # max number of points: 360 points for a full circle
+                # Max number of points: 360 points for a full circle
                 azimuthal = chia[points[:, 0].clip(0, peakPicker.data.shape[0]), points[:, 1].clip(0, peakPicker.data.shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
                 keep = int(nb_deg_azim * pointPerDegree)
@@ -408,11 +402,6 @@ class RingExtractorThread(qt.QThread):
                 _logger.info(msg, i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min)
                 _res = peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
 
-        # self.peakPicker.points.save(self.basename + ".npt")
-        # if self.weighted:
-        #     self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
-        # else:
-        #     self.data = peakPicker.points.getList()
         return peakPicker.points.getList()
 
     def toGeometryModel(self, model):
