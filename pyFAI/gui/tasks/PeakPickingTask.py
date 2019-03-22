@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/03/2019"
+__date__ = "22/03/2019"
 
 import logging
 import numpy
@@ -57,12 +57,6 @@ from ..helper import model_transform
 
 
 _logger = logging.getLogger(__name__)
-
-
-class _DummyStdOut(object):
-
-    def write(self, text):
-        pass
 
 
 class _PeakSelectionUndoCommand(qt.QUndoCommand):
@@ -1270,10 +1264,12 @@ class PeakPickingTask(AbstractCalibrationTask):
         if self.__ringSelectionMode.isChecked():
             if self.__massifReconstructed is None:
                 self.__massifReconstructed = self.__createMassif(reconstruct=True)
+            self.__massifReconstructed.log_info = False
             return self.__massifReconstructed
         elif self.__arcSelectionMode.isChecked() or self.__peakSelectionMode.isChecked():
             if self.__massif is None:
                 self.__massif = self.__createMassif()
+            self.__massif.log_info = False
             return self.__massif
         else:
             assert(False)
@@ -1287,7 +1283,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         if massif is None:
             # Nothing to pick
             return
-        points = massif.find_peaks([y, x], stdout=_DummyStdOut())
+        points = massif.find_peaks([y, x], stdout=None)
         if len(points) == 0:
             # toleration
             toleration = 3
@@ -1306,7 +1302,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             coord = numpy.argmax(data)
             coord = numpy.unravel_index(coord, data.shape)
             y, x = ymin + coord[0], xmin + coord[1]
-            points = massif.find_peaks([y, x], stdout=_DummyStdOut())
+            points = massif.find_peaks([y, x], stdout=None)
 
         # filter peaks from the mask
         mask = self.model().experimentSettingsModel().mask().value()
