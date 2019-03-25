@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2019"
+__date__ = "21/03/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -203,12 +203,13 @@ if ocl:
         logger.error("Unable to import pyFAI.opencl.azim_hist: %s", error)
         ocl_azim = None
     else:
-        # TODO: OpenCL+histogram is not yet implemented: https://github.com/silx-kit/pyFAI/issues/1129
-        # for ids, name in devices.items():
-        #     IntegrationMethod(1, "no", "histogram", "OpenCL",
-        #                       class_funct=(ocl_azim.Integrator1d, ocl_azim.Integrator1d.execute),
-        #                       target=ids, target_name=name[0], target_type=name[1])
-        pass
+        for ids, name in devices.items():
+            IntegrationMethod(1, "no", "histogram", "OpenCL",
+                              class_funct=(ocl_azim.OCL_Histogram1d, ocl_azim.OCL_Histogram1d.integrate),
+                              target=ids, target_name=name[0], target_type=name[1])
+            IntegrationMethod(2, "no", "histogram", "OpenCL",
+                              class_funct=(ocl_azim.OCL_Histogram2d, ocl_azim.OCL_Histogram2d.integrate),
+                              target=ids, target_name=name[0], target_type=name[1])
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
     except ImportError as error:
@@ -1505,54 +1506,142 @@ class AzimuthalIntegrator(Geometry):
         Early stage prototype
         """
 
+        method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
+        assert method.dimension == 1
+        unit = units.to_unit(unit)
+        empty = dummy if dummy is not None else self._empty
+        shape = data.shape
+
+        if correctSolidAngle:
+            solidangle = self.solidAngleArray(shape, correctSolidAngle)
+        else:
+            solidangle = None
+
+        if polarization_factor is None:
+            polarization = polarization_checksum = None
+        else:
+            polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
+
+        if dark is None:
+            dark = self.detector.darkcurrent
+            if dark is None:
+                has_dark = False
+            else:
+                has_dark = "from detector"
+        else:
+            has_dark = "provided"
+
+        if flat is None:
+            flat = self.detector.flatfield
+            if dark is None:
+                has_flat = False
+            else:
+                has_flat = "from detector"
+        else:
+            has_flat = "provided"
+
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
             error_model = error_model.lower()
             if error_model == "poisson":
-                if dark is None:
-                    variance = numpy.ascontiguousarray(abs(data), numpy.float32)
-                else:
-                    variance = abs(data) + abs(dark)
+                variance = numpy.ascontiguousarray(data, numpy.float32)
 
-        kwargs = {"npt": npt,
-                  "error_model": None,
-                  "variance": None,
-                  "correctSolidAngle": False,
-                  "polarization_factor": None,
-                  "flat": None,
-                  "radial_range": radial_range,
-                  "azimuth_range": azimuth_range,
-                  "mask": mask,
-                  "dummy": dummy,
-                  "delta_dummy": delta_dummy,
-                  "method": method,
-                  "unit": unit,
-                  }
+        if method.method[1:4] == ("no", "histogram", "opencl"):
+            if method not in self.engines:
+                # instanciated the engine
+                engine = self.engines[method] = Engine()
+            else:
+                engine = self.engines[method]
+            with engine.lock:
+                # Validate that the engine used is the proper one
+                integr = engine.engine
+                reset = None
+                if integr is None:
+                    reset = "of first initialization"
+                if (not reset) and safe:
+                    if integr.unit != unit:
+                        reset = "unit was changed"
+                    if integr.bins != npt:
+                        reset = "number of points changed"
+                    if integr.size != data.size:
+                        reset = "input image size changed"
+                    if integr.empty != empty:
+                        reset = "empty value changed "
+                if reset:
+                    logger.info("ai.integrate1d: Resetting integrator because %s", reset)
+                    pos0 = self.array_from_unit(shape, "center", unit, scale=False)
 
-        normalization_image = numpy.ones(data.shape) * normalization_factor
-        if correctSolidAngle:
-            normalization_image *= self.solidAngleArray(self.detector.shape)
+                    try:
+                        integr = method.class_funct.klass(pos0,
+                                                          npt,
+                                                          empty=empty,
+                                                          unit=unit,
+                                                          platformid=method.target[0],
+                                                          deviceid=method.target[1])
+                    except MemoryError:
+                        logger.warning("MemoryError: falling back on default forward implementation")
+                        self.reset_engines()
+                        method = self.DEFAULT_METHOD_1D
+                    else:
+                        engine.set_engine(integr)
+                TODO: use those results 
+                integr(data, dark=dark,
+                       dummy=dummy, delta_dummy=delta_dummy,
+                       variance=variance,
+                       flat=flat, solidangle=solidangle,
+                       polarization=polarization, polarization_checksum=polarization_checksum,
+                       normalization_factor=normalization_factor,
+                       bin_range=None)
+        else:
+            if variance is not None:
+                assert variance.size == data.size
+            elif error_model:
+                error_model = error_model.lower()
+                if error_model == "poisson":
+                    if dark is None:
+                        variance = numpy.ascontiguousarray(abs(data), numpy.float32)
+                    else:
+                        variance = abs(data) + abs(dark)
 
-        if polarization_factor:
-            normalization_image *= self.polarization(self.detector.shape, factor=polarization_factor)
+            kwargs = {"npt": npt,
+                      "error_model": None,
+                      "variance": None,
+                      "correctSolidAngle": False,
+                      "polarization_factor": None,
+                      "flat": None,
+                      "radial_range": radial_range,
+                      "azimuth_range": azimuth_range,
+                      "mask": mask,
+                      "dummy": dummy,
+                      "delta_dummy": delta_dummy,
+                      "method": method,
+                      "unit": unit,
+                      }
 
-        if flat is not None:
-            normalization_image *= flat
+            normalization_image = numpy.ones(data.shape) * normalization_factor
+            if correctSolidAngle:
+                normalization_image *= self.solidAngleArray(self.detector.shape)
 
-        norm = self.integrate1d(normalization_image, **kwargs)
-        signal = self.integrate1d(data, dark=dark, ** kwargs)
-        sigma2 = self.integrate1d(variance, **kwargs)
-        result = Integrate1dResult(norm.radial,
-                                   signal.sum / norm.sum,
-                                   numpy.sqrt(sigma2.sum) / norm.sum)
-        result._set_method_called("integrate1d_ng")
-        result._set_compute_engine(norm.compute_engine)
-        result._set_unit(signal.unit)
-        result._set_sum_signal(signal.sum)
-        result._set_sum_normalization(norm.sum)
-        result._set_sum_variance(sigma2.sum)
-        result._set_count(signal.count)
+            if polarization_factor:
+                normalization_image *= self.polarization(self.detector.shape, factor=polarization_factor)
+
+            if flat is not None:
+                normalization_image *= flat
+
+            norm = self.integrate1d(normalization_image, **kwargs)
+            signal = self.integrate1d(data, dark=dark, ** kwargs)
+            sigma2 = self.integrate1d(variance, **kwargs)
+            result = Integrate1dResult(norm.radial,
+                                       signal.sum / norm.sum,
+                                       numpy.sqrt(sigma2.sum) / norm.sum)
+            result._set_method_called("integrate1d_ng")
+            result._set_compute_engine(norm.compute_engine)
+            result._set_unit(signal.unit)
+            result._set_sum_signal(signal.sum)
+            result._set_sum_normalization(norm.sum)
+            result._set_sum_variance(sigma2.sum)
+            result._set_count(signal.count)
         return result
 
     def integrate_radial(self, data, npt, npt_rad=100,
