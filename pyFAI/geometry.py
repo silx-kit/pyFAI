@@ -31,6 +31,9 @@
 * calculating the geometry, i.e. the position in the detector space of each pixel of the detector
 * manages caches to store intermediate results
 
+NOTA: The Geometry class is not a "transformation class" which would take a 
+detector and transform it. It is rather a description of the experimental setup.  
+
 """
 
 from __future__ import division, print_function
@@ -39,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/03/2019"
+__date__ = "21/03/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -77,10 +80,14 @@ PolarizationDescription = namedtuple("PolarizationDescription",
 
 
 class Geometry(object):
-    """
-    This class is an azimuthal integrator based on P. Boesecke's geometry and
-    histogram algorithm by Manolo S. del Rio and V.A Sole
-
+    """This class is the parent-class of azimuthal integrator.
+    
+    This class contains a detector (using composition) which provides the 
+    position of all pixels, or only a limited set of pixel indices.
+    The Geometry class is responsible for translating/rotating those pixel to 
+    their position in reference to the sample position.  
+    The description of the experimental setup is inspired by the work of P. Boesecke
+    
     Detector is assumed to be corrected from "raster orientation" effect.
     It is not addressed here but rather in the Detector object or at read time.
     Considering there is no tilt:
@@ -96,7 +103,7 @@ class Geometry(object):
 
     Demonstration of the equation done using Mathematica:
 
-    .. literalinclude:: ../../mathematica/geometry.txt
+    .. literalinclude:: ../../doc/mathematica/geometry.txt
         :language: mathematica
     """
     _LAST_POLARIZATION = "last_polarization"
