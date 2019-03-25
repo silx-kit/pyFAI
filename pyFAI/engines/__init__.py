@@ -30,12 +30,19 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2018"
+__date__ = "19/03/2019"
 __status__ = "development"
 
 import logging
 logger = logging.getLogger(__name__)
 from threading import Semaphore
+
+from collections import namedtuple
+
+Integrate1dResult = namedtuple("Integrate1dResult", ["bins", "intensity", "propagated"])
+Integrate2dResult = namedtuple("Integrate2dResult", ["intensity", "bins0", "bins1", "propagated"])
+Integrate1dWithErrorResult = namedtuple("Integrate1dWithErrorResult", ["bins", "intensity", "error", "propagated"])
+Integrate2dWithErrorResult = namedtuple("Integrate2dWithErrorResult", ["intensity", "error", "bins0", "bins1", "propagated"])
 
 
 class Engine(object):

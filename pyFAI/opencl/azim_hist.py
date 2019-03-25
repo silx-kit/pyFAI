@@ -804,7 +804,7 @@ class OCL_Histogram1d(OpenclProcessing):
                numpy.int32: "s32_to_float"
                }
 
-    def __init__(self, position, bins, checksum=None, empty=None,
+    def __init__(self, position, bins, checksum=None, empty=None, unit=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """
@@ -812,6 +812,7 @@ class OCL_Histogram1d(OpenclProcessing):
         :param bins: number of bins on which to histogram
         :param checksum: pre-calculated checksum of the position array to prevent re-calculating it :)
         :param empty: value to be assigned to bins without contribution from any pixel
+        :param unit: just a place_holder for the units of position.
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
@@ -827,10 +828,10 @@ class OCL_Histogram1d(OpenclProcessing):
         if "cl_khr_int64_base_atomics" not in self.ctx.devices[0].extensions:
             logger.warning("64-bit atomics are missing on device %s, falling back on 32-bit atomics. Loss of precision is to be expected, you are warned  !!!" %
                            (self.ctx.devices[0].name))
+        self.unit = unit
         self.bins = numpy.uint32(bins)
         self.size = numpy.uint32(position.size)
-        self.empty = numpy.float32(empty or 0.0)
-
+        self.empty = numpy.float32(empty) if empty is not None else numpy.float32(0.0)
         self.mini = numpy.float32(numpy.min(position))
         self.maxi = numpy.float32(numpy.max(position) * (1.0 + numpy.finfo(numpy.float32).eps))
 
@@ -1270,7 +1271,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
     def __init__(self, radial, azimuthal,
                  bins_radial, bins_azimuthal,
                  checksum_radial=None, checksum_azimuthal=None,
-                 empty=None,
+                 empty=None, unit=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """
@@ -1294,11 +1295,12 @@ class OCL_Histogram2d(OCL_Histogram1d):
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
                                   block_size=block_size, profile=profile)
+        self.unit = unit
         self.bins_radial = numpy.uint32(bins_radial)
         self.bins_azimuthal = numpy.uint32(bins_azimuthal)
         self.bins = numpy.uint32(bins_radial * bins_azimuthal)
         self.size = numpy.uint32(radial.size)
-        self.empty = numpy.float32(empty or 0.0)
+        self.empty = numpy.float32(empty) if empty is not None else numpy.float32(0.0)
 
         self.mini_rad = numpy.float32(numpy.min(radial))
         self.maxi_rad = numpy.float32(numpy.max(radial) * (1.0 + numpy.finfo(numpy.float32).eps))
