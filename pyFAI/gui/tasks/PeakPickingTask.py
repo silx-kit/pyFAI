@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/03/2019"
+__date__ = "26/03/2019"
 
 import logging
 import numpy
@@ -55,6 +55,7 @@ from ..helper import ProcessingWidget
 from ..utils import FilterBuilder
 from ..utils import validators
 from ..helper import model_transform
+from pyFAI.gui.widgets.ColoredCheckBox import ColoredCheckBox
 
 
 _logger = logging.getLogger(__name__)
@@ -100,8 +101,10 @@ class _PeakSelectionTableView(qt.QTableView):
         palette.setColor(qt.QPalette.Base, palette.base().color())
         ringDelegate.setPalette(palette)
         toolDelegate = _PeakToolItemDelegate(self)
+        enabledDelegate = _PeakEnabledItemDelegate(self)
         self.setItemDelegateForColumn(_PeakSelectionTableModel.ColumnRingNumber, ringDelegate)
         self.setItemDelegateForColumn(_PeakSelectionTableModel.ColumnControl, toolDelegate)
+        self.setItemDelegateForColumn(_PeakSelectionTableModel.ColumnEnabled, enabledDelegate)
 
         self.setEditTriggers(qt.QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
@@ -193,6 +196,8 @@ class _PeakSelectionTableView(qt.QTableView):
             self.openPersistentEditor(index)
             index = model.index(row, _PeakSelectionTableModel.ColumnControl, qt.QModelIndex())
             self.openPersistentEditor(index)
+            index = model.index(row, _PeakSelectionTableModel.ColumnEnabled, qt.QModelIndex())
+            self.openPersistentEditor(index)
 
     def __openPersistantViewOnModelReset(self):
         model = self.model()
@@ -259,20 +264,12 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
         elif section == self.ColumnRingNumber:
             return "Ring number"
         elif section == self.ColumnEnabled:
-            return "Enabled"
+            return ""
         elif section == self.ColumnControl:
             return ""
         return None
 
     def flags(self, index):
-        column = index.column()
-        if column == self.ColumnRingNumber:
-            return (qt.Qt.ItemIsEnabled |
-                    qt.Qt.ItemIsSelectable)
-        elif column == self.ColumnEnabled:
-            return (qt.Qt.ItemIsEnabled |
-                    qt.Qt.ItemIsSelectable |
-                    qt.Qt.ItemIsUserCheckable)
         return (qt.Qt.ItemIsEnabled |
                 qt.Qt.ItemIsSelectable)
 
@@ -291,13 +288,7 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
             return False
         peakModel = self.__peakSelectionModel[index.row()]
         column = index.column()
-        if role == qt.Qt.CheckStateRole:
-            if column == self.ColumnEnabled:
-                if peakModel.isEnabled():
-                    return qt.Qt.Checked
-                else:
-                    return qt.Qt.Unchecked
-        elif role == qt.Qt.DecorationRole:
+        if role == qt.Qt.DecorationRole:
             if column == 0:
                 color = peakModel.color()
                 pixmap = qt.QPixmap(16, 16)
@@ -676,6 +667,47 @@ class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
         :param qt.QIndex index: Index of the data to display
         """
         editor.setGeometry(option.rect)
+
+
+class _PeakEnabledItemDelegate(qt.QStyledItemDelegate):
+
+    def createEditor(self, parent, option, index):
+        if not index.isValid():
+            return super(_PeakToolItemDelegate, self).createEditor(parent, option, index)
+
+        persistantIndex = qt.QPersistentModelIndex(index)
+
+        editor = ColoredCheckBox(parent=parent)
+        editor.toggled.connect(functools.partial(self.__toggleEnabled, persistantIndex))
+
+        return editor
+
+    def setEditorData(self, editor, index):
+        """
+        :param qt.QWidget editor: Editor widget
+        :param qt.QIndex index: Index of the data to display
+        """
+        model = index.model()
+        peak = model.peakObject(index)
+        old = editor.blockSignals(True)
+        editor.setChecked(peak.isEnabled())
+        editor.blockSignals(old)
+        editor.setBoxColor(peak.color())
+
+    def __toggleEnabled(self, index):
+        model = index.model()
+        peak = model.peakObject(index)
+        newValue = not peak.isEnabled()
+        newValue = qt.Qt.Checked if newValue else qt.Qt.Unchecked
+        model.setData(index, newValue, role=qt.Qt.CheckStateRole)
+
+    def updateEditorGeometry(self, editor, option, index):
+        # Center the widget to the cell
+        size = editor.sizeHint()
+        half = size / 2
+        halfPoint = qt.QPoint(half.width(), half.height())
+        pos = option.rect.center() - halfPoint
+        editor.move(pos)
 
 
 class _PeakToolItemDelegate(qt.QStyledItemDelegate):
