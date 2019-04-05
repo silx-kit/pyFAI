@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/01/2019"
+__date__ = "05/04/2019"
 
 import logging
 import numpy
@@ -251,6 +251,9 @@ class CalibrationContext(ApplicationContext):
         colors = self.markerColorList()
         color = colors[index % len(colors)]
         "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+
+    def disabledMarkerColor(self):
+        return qt.QColor(128, 128, 128)
 
     def markerColorList(self):
         colormap = self.getRawColormap()

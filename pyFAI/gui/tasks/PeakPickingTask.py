@@ -533,11 +533,12 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     def addPeak(self, peakModel):
         color = peakModel.color()
+        if not peakModel.isEnabled():
+            context = CalibrationContext.instance()
+            color = context.disabledMarkerColor()
         numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF(), 0.5])
         points = peakModel.coords()
         name = peakModel.name()
-        if not peakModel.isEnabled():
-            numpyColor = numpy.array([0.5, 0.5, 0.5, 0.5])
 
         if self.__selectedPeak is None:
             # Nothing selected
