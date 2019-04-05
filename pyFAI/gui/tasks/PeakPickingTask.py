@@ -796,6 +796,7 @@ class _RingSelectionBehaviour(qt.QObject):
         self.__ringSelectionModel = ringSelectionModel
 
         self.__peakSelectionModel.changed.connect(self.__peaksHaveChanged)
+        self.__peakSelectionModel.structureChanged.connect(self.__peaksStructureHaveChanged)
         self.__spinnerRing.valueChanged.connect(self.__spinerRingChanged)
         self.__newRingOption.toggled.connect(self.__newRingToggeled)
         if self.__ringSelectionModel is not None:
@@ -823,6 +824,7 @@ class _RingSelectionBehaviour(qt.QObject):
 
     def clear(self):
         self.__peakSelectionModel.changed.disconnect(self.__peaksHaveChanged)
+        self.__peakSelectionModel.structureChanged.disconnect(self.__peaksStructureHaveChanged)
         self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
         self.__newRingOption.toggled.disconnect(self.__newRingToggeled)
         if self.__ringSelectionModel is not None:
@@ -831,6 +833,9 @@ class _RingSelectionBehaviour(qt.QObject):
 
     def __initState(self):
         self.__newRingToggeled()
+
+    def __peaksStructureHaveChanged(self):
+        self.__plot.setSelectedPeak(None)
 
     def __peaksHaveChanged(self):
         if self.__newRingOption.isChecked():
