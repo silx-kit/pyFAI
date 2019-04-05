@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/03/2019"
+__date__ = "05/04/2019"
 
 import logging
 
@@ -55,6 +55,7 @@ class ColoredCheckBox(qt.QCheckBox):
         if self.__color is not None:
             palette.setBrush(qt.QPalette.Normal, qt.QPalette.Base, self.__color)
             palette.setBrush(qt.QPalette.Disabled, qt.QPalette.Base, self.__color)
+            palette.setBrush(qt.QPalette.Inactive, qt.QPalette.Base, self.__color)
         self.initStyleOption(option)
         option.palette = palette
 
