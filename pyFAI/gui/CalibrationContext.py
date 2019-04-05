@@ -257,8 +257,13 @@ class CalibrationContext(ApplicationContext):
             resource = "pyfai:/gui/styles/%s.json" % name
             path = silx.resources.resource_filename(resource)
             if os.path.exists(path):
-                with open(path) as fp:
-                    style = json.load(fp)
+                try:
+                    with open(path) as fp:
+                        style = json.load(fp)
+                except Exception as e:
+                    _logger.debug("Backtrace", exc_info=True)
+                    _logger.error(e)
+                    style = {}
             else:
                 _logger.debug("Resource %s not found", resource)
                 style = {}
