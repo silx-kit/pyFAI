@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/03/2019"
+__date__ = "05/04/2019"
 
 import logging
 import numpy
@@ -214,10 +214,10 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
     requestChangeEnable = qt.Signal(object, bool)
 
-    ColumnName = 0
-    ColumnPeaksCount = 1
-    ColumnRingNumber = 2
-    ColumnEnabled = 3
+    ColumnEnabled = 0
+    ColumnName = 1
+    ColumnPeaksCount = 2
+    ColumnRingNumber = 3
     ColumnControl = 4
 
     def __init__(self, parent, peakSelectionModel):
@@ -288,16 +288,7 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
             return False
         peakModel = self.__peakSelectionModel[index.row()]
         column = index.column()
-        if role == qt.Qt.DecorationRole:
-            if column == 0:
-                color = peakModel.color()
-                pixmap = qt.QPixmap(16, 16)
-                pixmap.fill(color)
-                icon = qt.QIcon(pixmap)
-                return icon
-            else:
-                return None
-        elif role == qt.Qt.DisplayRole or role == qt.Qt.EditRole:
+        if role == qt.Qt.DisplayRole or role == qt.Qt.EditRole:
             if column == self.ColumnName:
                 return peakModel.name()
             elif column == self.ColumnPeaksCount:
