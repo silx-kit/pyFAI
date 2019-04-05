@@ -574,7 +574,6 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             mask = numpy.empty(shape=(0, 0))
 
         if self.__mask is None:
-            print(mask.shape)
             self.addImage(mask,
                           legend="processing-mask",
                           selectable=False,
