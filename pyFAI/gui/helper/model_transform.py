@@ -182,7 +182,8 @@ def initPeaksFromControlPoints(peakSelectionModel, controlPoints, context=None):
     for label in controlPoints.get_labels():
         group = controlPoints.get(lbl=label)
         color = context.getMarkerColor(group.ring)
-        peakModel = createRing(group.points, peakSelectionModel=peakSelectionModel, context=context)
+        points = numpy.array(group.points)
+        peakModel = createRing(points, peakSelectionModel=peakSelectionModel, context=context)
         peakModel.setRingNumber(group.ring + 1)
         peakModel.setColor(color)
         peakModel.setName(label)
