@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/04/2019"
+__date__ = "08/04/2019"
 
 import logging
 import numpy
@@ -1112,7 +1112,7 @@ class PeakPickingTask(AbstractCalibrationTask):
                 self.__undoStack.push(command)
                 command.setRedoInhibited(False)
             except Exception as e:
-                _logger.error(e.args[0])
+                _logger.error(str(e))
                 _logger.error("Backtrace", exc_info=True)
                 # FIXME Display error dialog
             except KeyboardInterrupt:
@@ -1132,7 +1132,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             controlPoints = model_transform.createControlPoints(self.model())
             controlPoints.save(filename)
         except Exception as e:
-            _logger.error(e.args[0])
+            _logger.error(str(e))
             _logger.error("Backtrace", exc_info=True)
             # FIXME Display error dialog
         except KeyboardInterrupt:
