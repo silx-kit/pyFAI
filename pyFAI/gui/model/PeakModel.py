@@ -145,6 +145,7 @@ class PeakModel(AbstractModel):
         if len(new_coords) == 0:
             return
         new_coords = new_coords.view(self.__coords.dtype)
+        new_coords.shape = -1, 2
         self.__coords = numpy.vstack((self.__coords, new_coords))
         self.__coords = numpy.ascontiguousarray(self.__coords)
         self.wasChanged()
