@@ -110,6 +110,7 @@ class PeakModel(AbstractModel):
         assert(isinstance(coords, numpy.ndarray))
         assert(len(coords.shape) == 2)
         assert(coords.shape[1] == 2)
+        coords = numpy.ascontiguousarray(coords)
         coords.flags['WRITEABLE'] = False
         self.__coords = coords
         self.wasChanged()
@@ -138,12 +139,14 @@ class PeakModel(AbstractModel):
         # Convert to structured array to use setdiff1d
         dtype = self.__coords.dtype.descr * self.__coords.shape[1]
         previous_coords = self.__coords.view(dtype)
+        coords = numpy.ascontiguousarray(coords)
         new_coords = coords.view(dtype)
         new_coords = numpy.setdiff1d(previous_coords, new_coords)
         if len(new_coords) == 0:
             return
         new_coords = new_coords.view(self.__coords.dtype)
         self.__coords = numpy.vstack((self.__coords, new_coords))
+        self.__coords = numpy.ascontiguousarray(self.__coords)
         self.wasChanged()
 
     def ringNumber(self):
