@@ -141,7 +141,7 @@ class PeakModel(AbstractModel):
         previous_coords = self.__coords.view(dtype)
         coords = numpy.ascontiguousarray(coords)
         new_coords = coords.view(dtype)
-        new_coords = numpy.setdiff1d(previous_coords, new_coords)
+        new_coords = numpy.setdiff1d(new_coords, previous_coords)
         if len(new_coords) == 0:
             return
         new_coords = new_coords.view(self.__coords.dtype)
