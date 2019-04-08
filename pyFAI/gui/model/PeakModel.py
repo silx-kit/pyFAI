@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/03/2019"
+__date__ = "08/04/2019"
 
 import numpy
 from .AbstractModel import AbstractModel
@@ -143,9 +143,6 @@ class PeakModel(AbstractModel):
         if len(new_coords) == 0:
             return
         new_coords = new_coords.view(self.__coords.dtype)
-        print(self.__coords)
-        print(new_coords)
-        print(self.__coords.shape, new_coords.shape)
         self.__coords = numpy.vstack((self.__coords, new_coords))
         self.wasChanged()
 
