@@ -1177,11 +1177,15 @@ class PeakPickingTask(AbstractCalibrationTask):
             return qt.QIcon()
 
         action = self.__undoStack.createUndoAction(self, "Undo")
+        action.setShortcut(qt.QKeySequence.Undo)
+        action.setShortcutVisibleInContextMenu(True)
         icon = createIcon(["edit-undo", qt.QStyle.SP_ArrowBack])
         action.setIcon(icon)
         toolBar.addAction(action)
 
         action = self.__undoStack.createRedoAction(self, "Redo")
+        action.setShortcut(qt.QKeySequence.Redo)
+        action.setShortcutVisibleInContextMenu(True)
         icon = createIcon(["edit-redo", qt.QStyle.SP_ArrowForward])
         action.setIcon(icon)
         toolBar.addAction(action)
