@@ -995,6 +995,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__plot.sigPeakPicked.connect(self.__onPickPicked)
         self.__plot.sigShapeErased.connect(self.__onShapeErased)
         self.__plot.sigShapeBrushed.connect(self.__onShapeBrushed)
+        self.__plot.sigInteractiveModeChanged.connect(self.__onPlotModeChanged)
 
         action = qt.QAction(self)
         action.setText("Extract rings until")
@@ -1073,6 +1074,18 @@ class PeakPickingTask(AbstractCalibrationTask):
         action.triggered.connect(lambda: self.__ringSelection.toggleNewRing())
         action.setShortcut(qt.QKeySequence(qt.Qt.Key_Equal))
         self.addAction(action)
+
+    def __onPlotModeChanged(self, owner):
+        if owner is None:
+            return
+        # TODO: This condition should not be reached like that
+        if owner is not self.__plot:
+            # Here a default plot tool is triggered
+            # Set back the default tool
+            if (not self.__arcSelectionMode.isChecked() and
+                    not self.__ringSelectionMode.isChecked() and
+                    not self.__peakSelectionMode.isChecked()):
+                self.__arcSelectionMode.trigger()
 
     def __createSavePeakDialog(self):
         dialog = CalibrationContext.instance().createFileDialog(self)
