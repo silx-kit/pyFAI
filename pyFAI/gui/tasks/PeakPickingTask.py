@@ -1675,22 +1675,23 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         :param RingExtractorThread thread: A ring ring extractor processing
         """
+        errorMessage = None
         if thread.isAborted():
-            self.__plot.setProcessingLocation(None)
-            self.__plot.unsetProcessing()
-            qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
-            qt.QMessageBox.critical(self, "Error", thread.errorString())
-            self.__extractionThread = None
-            return
-        try:
-            self.__extractionFinished(thread)
-        finally:
-            self.__plot.setProcessingLocation(None)
-            self.__plot.unsetProcessing()
-            qt.QApplication.restoreOverrideCursor()
-            self._extract.setWaiting(False)
-            self.__extractionThread = None
+            errorMessage = thread.errorString()
+        else:
+            try:
+                self.__extractionFinished(thread)
+            except Exception as e:
+                _logger.debug("Backtrace", exc_info=True)
+                errorMessage = str(e)
+
+        self.__plot.setProcessingLocation(None)
+        self.__plot.unsetProcessing()
+        qt.QApplication.restoreOverrideCursor()
+        self._extract.setWaiting(False)
+        if errorMessage is not None:
+            qt.QMessageBox.critical(self, "Error", errorMessage)
+        self.__extractionThread = None
 
     def __extractionFinished(self, thread):
         """
