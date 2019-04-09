@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/04/2019"
+__date__ = "09/04/2019"
 
 import logging
 import numpy
@@ -55,7 +55,8 @@ from ..helper import ProcessingWidget
 from ..utils import FilterBuilder
 from ..utils import validators
 from ..helper import model_transform
-from pyFAI.gui.widgets.ColoredCheckBox import ColoredCheckBox
+from ..widgets.ColoredCheckBox import ColoredCheckBox
+from ..widgets.AdvancedSpinBox import AdvancedSpinBox
 
 
 _logger = logging.getLogger(__name__)
@@ -616,9 +617,10 @@ class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
         if not index.isValid():
             return super(_SpinBoxItemDelegate, self).createEditor(parent, option, index)
 
-        editor = qt.QSpinBox(parent=parent)
+        editor = AdvancedSpinBox(parent=parent)
         if self.__palette is not None:
             editor.setPalette(self.__palette)
+        editor.setMouseWheelEnabled(False)
         editor.setMinimum(1)
         editor.setMaximum(999)
         editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
