@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/03/2019"
+__date__ = "11/04/2019"
 
 import unittest
 import logging
@@ -47,6 +47,8 @@ except ImportError:
     from silx.gui.test import utils as testutils
 
 from ..model.PeakModel import PeakModel
+from ..model.ListModel import ListModel
+from ..model.DataModel import DataModel
 
 
 _logger = logging.getLogger(__name__)
@@ -70,10 +72,72 @@ class TestPeakModelization(testutils.TestCaseQt):
         self.assertEqual(result, 0)
 
 
+class TestListModel(testutils.TestCaseQt):
+
+    def test_add(self):
+        listModel = ListModel()
+        listener = testutils.SignalListener()
+        listModel.changed[object].connect(listener.partial("changed"))
+        listModel.structureChanged.connect(listener.partial("structureChanged"))
+        listModel.contentChanged.connect(listener.partial("contentChanged"))
+        data = DataModel()
+        listModel.append(data)
+        self.assertEqual(len(listModel), 1)
+        self.assertEqual(len([args for args in listener.arguments() if args[0] == "structureChanged"]), 1)
+        self.assertEqual(len([args for args in listener.arguments() if args[0] == "contentChanged"]), 0)
+        self.assertEqual(len([args for args in listener.arguments() if args[0] == "changed"]), 1)
+        events = [args for args in listener.arguments() if args[0] == "changed"][0][1]
+        self.assertTrue(events.hasStructuralEvents())
+        self.assertTrue(events.hasOnlyStructuralEvents())
+        self.assertFalse(events.hasUpdateEvents())
+        self.assertFalse(events.hasOnlyUpdateEvents())
+
+    def test_remove(self):
+        listModel = ListModel()
+        data = DataModel()
+        listModel.append(DataModel())
+        listModel.append(data)
+        listModel.append(DataModel())
+        listener = testutils.SignalListener()
+        listModel.changed[object].connect(listener.partial("changed"))
+        listModel.structureChanged.connect(listener.partial("structureChanged"))
+        listModel.contentChanged.connect(listener.partial("contentChanged"))
+        listModel.remove(data)
+        self.assertEqual(len(listModel), 2)
+        self.assertEqual(len([args for args in listener.arguments() if args[0] == "structureChanged"]), 1)
+        self.assertEqual(len([args for args in listener.arguments() if args[0] == "contentChanged"]), 0)
+        self.assertEqual(len([args for args in listener.arguments() if args[0] == "changed"]), 1)
+        events = [args for args in listener.arguments() if args[0] == "changed"][0][1]
+        self.assertTrue(events.hasStructuralEvents())
+        self.assertTrue(events.hasOnlyStructuralEvents())
+        self.assertFalse(events.hasUpdateEvents())
+        self.assertFalse(events.hasOnlyUpdateEvents())
+
+    def test_change(self):
+        listModel = ListModel()
+        data = DataModel()
+        listModel.append(data)
+        listener = testutils.SignalListener()
+        listModel.changed[object].connect(listener.partial("changed"))
+        listModel.structureChanged.connect(listener.partial("structureChanged"))
+        listModel.contentChanged.connect(listener.partial("contentChanged"))
+        data.setValue(666)
+        self.assertEqual(len(listModel), 1)
+        self.assertEqual(len([args for args in listener.arguments() if args[0] == "structureChanged"]), 0)
+        self.assertEqual(len([args for args in listener.arguments() if args[0] == "contentChanged"]), 1)
+        self.assertEqual(len([args for args in listener.arguments() if args[0] == "changed"]), 1)
+        events = [args for args in listener.arguments() if args[0] == "changed"][0][1]
+        self.assertFalse(events.hasStructuralEvents())
+        self.assertFalse(events.hasOnlyStructuralEvents())
+        self.assertTrue(events.hasUpdateEvents())
+        self.assertTrue(events.hasOnlyUpdateEvents())
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestPeakModelization))
+    testsuite.addTest(loader(TestListModel))
     return testsuite
 
 
