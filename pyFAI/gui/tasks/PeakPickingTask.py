@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/04/2019"
+__date__ = "16/04/2019"
 
 import logging
 import numpy
@@ -1191,14 +1191,12 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         action = self.__undoStack.createUndoAction(self, "Undo")
         action.setShortcut(qt.QKeySequence.Undo)
-        action.setShortcutVisibleInContextMenu(True)
         icon = createIcon(["edit-undo", qt.QStyle.SP_ArrowBack])
         action.setIcon(icon)
         toolBar.addAction(action)
 
         action = self.__undoStack.createRedoAction(self, "Redo")
         action.setShortcut(qt.QKeySequence.Redo)
-        action.setShortcutVisibleInContextMenu(True)
         icon = createIcon(["edit-redo", qt.QStyle.SP_ArrowForward])
         action.setIcon(icon)
         toolBar.addAction(action)
