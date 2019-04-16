@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
+/*##########################################################################
 #
-#    Project: silx
-#             https://github.com/silx-kit/silx
+# Copyright (C) 2019 European Synchrotron Radiation Facility
 #
-#    Copyright (C) 2012-2016  European Synchrotron Radiation Facility, Grenoble, France
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -21,20 +19,26 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+#
+# ###########################################################################*/
+#ifndef __PYFAI_OPENMP_H__
+#define __PYFAI_OPENMP_H__
 
-__authors__ = ["J. Kieffer"]
-__license__ = "MIT"
-__date__ = "25/02/2019"
+#ifdef _OPENMP
+#include "omp.h"
 
-import unittest
-from ...test.utilstest import UtilsTest
+static const int COMPILED_WITH_OPENMP = 1;
 
+#else
 
-def suite():
-    testSuite = unittest.TestSuite()
+static const int COMPILED_WITH_OPENMP = 0;
 
-    if UtilsTest.opencl:
-        from . import test_addition
-        testSuite.addTests(test_addition.suite())
+#define omp_set_num_threads(a)
+#define omp_get_num_threads() (1)
+#define omp_get_max_threads()(1)
+#define omp_get_thread_num() (0)
+#define omp_get_num_procs() (1)
 
-    return testSuite
+#endif /*_OPENMP*/
+
+#endif /*__PYFAI_OPENMP_H__*/

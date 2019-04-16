@@ -26,79 +26,81 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
+"Test suite for worker"
 
-"""Test suite for worker"""
+from __future__ import absolute_import, division, print_function
 
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2019"
+__date__ = "01/03/2019"
 
-import os
-import sys
+
 import unittest
 import logging
+import os.path
+import shutil
+import numpy
+import h5py
 
-from silx.gui import qt
-from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
-from pyFAI.test.utilstest import UtilsTest
-from pyFAI.io import integration_config
+from silx.io.url import DataUrl
+
+from ..io import image as image_mdl
+from . import utilstest
 
 
 logger = logging.getLogger(__name__)
 
 
-class TestIntegrationDialog(unittest.TestCase):
+class TestReadImage(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.app = None
-        if sys.platform.startswith('linux') and not os.environ.get('DISPLAY', ''):
-            # On linux and no DISPLAY available (e.g., ssh without -X)
-            logger.warning('pyFAI.integrate_widget tests disabled (DISPLAY env. variable not set)')
-            cls.app = None
-        elif qt is not None:
-            cls.app = qt.QApplication([])
+        cls.directory = os.path.join(utilstest.test_options.tempdir, cls.__name__)
+        os.makedirs(cls.directory)
 
-        config = {"poni": UtilsTest.getimage("Pilatus1M.poni")}
-        integration_config.normalize(config, inplace=True)
-        cls.base_config = config
+        cls.a = os.path.join(cls.directory, "a.npy")
+        cls.b = os.path.join(cls.directory, "b.h5")
 
-    def setUp(self):
-        if qt is None:
-            self.skipTest("Qt is not available")
-        if self.__class__.app is None:
-            self.skipTest("DISPLAY env. is not set")
+        cls.shape = (2, 2)
+        ones = numpy.ones(shape=cls.shape)
+        numpy.save(cls.a, ones)
+
+        with h5py.File(cls.b) as h5:
+            h5["/image"] = ones
+            h5["/number"] = 10
+            h5["/group/foo"] = 10
 
     @classmethod
     def tearDownClass(cls):
-        cls.app = None
+        shutil.rmtree(cls.directory)
 
-    def test_config_flatdark_v1(self):
-        dico = {"dark_current": "a,b,c",
-                "flat_field": "a,b,d"}
-        widget = WorkerConfigurator()
-        widget.setConfig(dico)
-        dico = widget.getConfig()
-        self.assertEqual(dico["dark_current"], ["a", "b", "c"])
-        self.assertEqual(dico["flat_field"], ["a", "b", "d"])
+    def test_image_path(self):
+        abs_a = os.path.abspath(self.a)
+        image = image_mdl.read_image_data(abs_a)
+        self.assertIsNotNone(image)
 
-    def test_config_flatdark_v2(self):
-        dico = {"dark_current": ["a", "b", "c"],
-                "flat_field": ["a", "b", "d"]}
-        widget = WorkerConfigurator()
-        widget.setConfig(dico)
-        dico = widget.getConfig()
-        self.assertEqual(dico["dark_current"], ["a", "b", "c"])
-        self.assertEqual(dico["flat_field"], ["a", "b", "d"])
+    def test_silx_url(self):
+        abs_a = os.path.abspath(self.a)
+        url = DataUrl(abs_a).path()
+        image = image_mdl.read_image_data(url)
+        self.assertIsNotNone(image)
+
+    def test_not_existing_file(self):
+        with self.assertRaises(Exception):
+            image_mdl.read_image_data("fooobar.not.existing")
+
+    def test_fabio_hdf5_file(self):
+        abs_b = os.path.abspath(self.b)
+        image = image_mdl.read_image_data(abs_b + "::/image")
+        self.assertIsNotNone(image)
 
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(loader(TestIntegrationDialog))
+    testsuite.addTest(loader(TestReadImage))
     return testsuite
 
 

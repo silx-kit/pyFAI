@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "12/02/2019"
 __status__ = "development"
 
 import os
@@ -57,29 +57,15 @@ logger = logging.getLogger(__name__)
 PYFAI_DATA = "/usr/share/pyFAI"
 
 # testimage contains the directory name where
-data_dir = None
+data_dir = ""
 if "PYFAI_DATA" in os.environ:
     data_dir = os.environ.get("PYFAI_DATA")
     if not os.path.exists(data_dir):
         logger.warning("data directory %s does not exist", data_dir)
 elif os.path.isdir(PYFAI_DATA):
     data_dir = PYFAI_DATA
-else:
-    data_dir = ""
 
 # testimages contains the directory name where test images are located
-testimages = None
+testimages = "pyFAI_testdata"
 if "PYFAI_TESTIMAGES" in os.environ:
     testimages = os.environ.get("PYFAI_TESTIMAGES")
-    if not os.path.exists(testimages):
-        logger.warning("testimage directory %s does not exist", testimages)
-else:
-    testimages = os.path.join(data_dir, "testimages")
-    if not os.path.isdir(testimages):
-        # create a temporary folder
-        testimages = os.path.join(tempfile.gettempdir(), "pyFAI_testimages_%s" % (getpass.getuser()))
-        if not os.path.exists(testimages):
-            try:
-                os.makedirs(testimages)
-            except OSError as err:
-                logger.warning("Creating test_directory %s ended in error %s, probably a race condition", testimages, err)

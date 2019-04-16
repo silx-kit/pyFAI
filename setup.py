@@ -2,7 +2,7 @@
 # coding: utf8
 # /*##########################################################################
 #
-# Copyright (C) 2015-2018 European Synchrotron Radiation Facility
+# Copyright (c) 2015-2019 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2019"
+__date__ = "12/02/2019"
 __status__ = "stable"
 
 
@@ -81,7 +81,10 @@ export LC_ALL=en_US.utf-8
 
 def get_version():
     """Returns current version number from version.py file"""
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, dirname)
     import version
+    sys.path = sys.path[1:]
     return version.strictversion
 
 
@@ -111,10 +114,10 @@ classifiers = ["Development Status :: 5 - Production/Stable",
                "Topic :: Scientific/Engineering :: Physics"
                ]
 
+
 # ########## #
 # version.py #
 # ########## #
-
 
 class build_py(_build_py):
     """
@@ -134,6 +137,7 @@ class build_py(_build_py):
 class PyTest(Command):
     """Command to start tests running the script: run_tests.py"""
     user_options = []
+
     description = "Execute the unittests"
 
     def initialize_options(self):
@@ -172,7 +176,9 @@ if sphinx is None:
 
 class BuildMan(Command):
     """Command to build man pages"""
+
     description = "Build man pages of the provided entry points"
+
     user_options = []
 
     def initialize_options(self):
@@ -261,7 +267,7 @@ class BuildMan(Command):
 
     def get_synopsis(self, module_name, env, log_output=False):
         """Execute a script to retrieve the synopsis for help2man
-        :return: synopsis 
+        :return: synopsis
         :rtype: single line string
         """
         import subprocess
@@ -509,7 +515,7 @@ class Build(_build):
                 # By default Xcode5 & XCode6 do not support OpenMP, Xcode4 is OK.
                 osx = tuple([int(i) for i in platform.mac_ver()[0].split(".")])
                 if osx >= (10, 8):
-                    logger.warning("OpenMP support ignored. Your platform do not support it")
+                    logger.warning("OpenMP support ignored. Your platform does not support it.")
                     use_openmp = False
 
         # Remove attributes used by distutils parsing
@@ -576,7 +582,7 @@ class BuildExt(build_ext):
 
     LINK_ARGS_CONVERTER = {'-fopenmp': ''}
 
-    description = 'Build pyFAI extensions'
+    description = 'Build extensions'
 
     def finalize_options(self):
         build_ext.finalize_options(self)
@@ -626,7 +632,6 @@ class BuildExt(build_ext):
                 compiler_directives={'embedsignature': True,
                                      'language_level': 3},
                 force=self.force_cython,
-                compile_time_env={"HAVE_OPENMP": self.use_openmp}
             )
             ext.sources = patched_exts[0].sources
 
@@ -659,7 +664,7 @@ class BuildExt(build_ext):
 
             import numpy
             numpy_version = [int(i) for i in numpy.version.short_version.split(".", 2)[:2]]
-            if numpy_version < [1,16]:
+            if numpy_version < [1, 16]:
                 ext.extra_compile_args.append(
                     '''-D'PyMODINIT_FUNC=%s__attribute__((visibility("default"))) %s ' ''' % (extern, return_type))
             else:
@@ -807,7 +812,7 @@ class SourceDistWithCython(sdist):
     without suppport of OpenMP.
     """
 
-    description = "Create a source distribution including cythonozed files (tarball, zip file, etc.)"
+    description = "Create a source distribution including cythonized files (tarball, zip file, etc.)"
 
     def finalize_options(self):
         sdist.finalize_options(self)
@@ -823,9 +828,8 @@ class SourceDistWithCython(sdist):
             self.extensions,
             compiler_directives={'embedsignature': True,
                                  'language_level': 3},
-            force=True
+            force=True,
         )
-
 
 ################################################################################
 # Debian source tree
@@ -948,9 +952,17 @@ class PyFaiTestData(Command):
 
 def get_project_configuration(dry_run):
     """Returns project arguments for setup"""
+    # Use installed numpy version as minimal required version
+    # This is useful for wheels to advertise the numpy version they were built with
+    if dry_run:
+        numpy_requested_version = ""
+    else:
+        from numpy.version import version as numpy_version
+        numpy_requested_version = ">=%s" % numpy_version
+        logger.info("Install requires: numpy %s", numpy_requested_version)
 
     install_requires = [
-        "numpy",
+        "numpy%s" % numpy_requested_version,
         # h5py was removed from dependencies cause it creates an issue with
         # Debian 8. Pip is not aware that h5py is installed and pkg_resources
         # check dependencies and in this case raise an exception
@@ -966,8 +978,7 @@ def get_project_configuration(dry_run):
 
     setup_requires = [
         "setuptools",
-        "numpy",
-        "cython"]
+        "numpy"]
 
     package_data = {
         'pyFAI.resources': [
@@ -998,6 +1009,7 @@ def get_project_configuration(dry_run):
         'pyFAI-calib = pyFAI.app.calib:main',
         'pyFAI-calib2 = pyFAI.app.calib2:main [calib2]',
         'pyFAI-drawmask = pyFAI.app.drawmask:main',
+        'pyFAI-diffmap = pyFAI.app.diff_map:main',
         'pyFAI-integrate = pyFAI.app.integrate:main',
         'pyFAI-recalib = pyFAI.app.recalib:main',
         'pyFAI-saxs = pyFAI.app.saxs:main',
@@ -1018,6 +1030,7 @@ def get_project_configuration(dry_run):
         build_ext=BuildExt,
         build_man=BuildMan,
         clean=CleanCommand,
+        sdist=SourceDistWithCython,
         debian_src=sdist_debian,
         testimages=PyFaiTestData,
     )
@@ -1048,11 +1061,11 @@ def get_project_configuration(dry_run):
                         long_description=get_readme(),
                         install_requires=install_requires,
                         setup_requires=setup_requires,
+                        extras_require=extras_require,
                         cmdclass=cmdclass,
                         package_data=package_data,
                         zip_safe=False,
                         entry_points=entry_points,
-                        extras_require=extras_require,
                         )
     return setup_kwargs
 
@@ -1071,7 +1084,7 @@ def setup_package():
                         'clean', '--name')))
 
     if dry_run:
-        # DRY_RUN implies actions which do not require dependancies, like NumPy
+        # DRY_RUN implies actions which do not require dependencies, like NumPy
         try:
             from setuptools import setup
             logger.info("Use setuptools.setup")
@@ -1083,10 +1096,11 @@ def setup_package():
             from setuptools import setup
         except ImportError:
             from numpy.distutils.core import setup
-            logger.info("Use numpydistutils.setup")
+            logger.info("Use numpy.distutils.setup")
 
     setup_kwargs = get_project_configuration(dry_run)
     setup(**setup_kwargs)
+
 
 if __name__ == "__main__":
     setup_package()

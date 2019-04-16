@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/10/2018"
+__date__ = "19/02/2019"
 __status__ = "production"
 
 import logging
@@ -49,6 +49,7 @@ from scipy.optimize.optimize import fminbound
 
 from .third_party import six
 from .utils import stringutil
+from .utils import header_utils
 
 from ._version import calc_hexversion
 if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4, 0, "dev", 5)):
@@ -455,88 +456,6 @@ def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)
     return output
 
 
-class MonitorNotFound(Exception):
-    """Raised when monitor information in not found or is not valid."""
-    pass
-
-
-def _get_monitor_value_from_edf(image, monitor_key):
-    """Return the monitor value from an EDF image using an header key.
-
-    Take care of the counter and motor syntax using for example 'counter/bmon'
-    which reach 'bmon' value from 'counter_pos' key using index from
-    'counter_mne' key.
-
-    :param fabio.fabioimage.FabioImage image: Image containing the header
-    :param str monitor_key: Key containing the monitor
-    :return: returns the monitor else raise a MonitorNotFound
-    :rtype: float
-    :raise MonitorNotFound: when the expected monitor is not found on the
-        header
-    """
-    keys = image.header
-
-    if "/" in monitor_key:
-        base_key, mnemonic = monitor_key.split('/', 1)
-
-        mnemonic_values_key = base_key + "_mne"
-        mnemonic_values = keys.get(mnemonic_values_key, None)
-        if mnemonic_values is None:
-            raise MonitorNotFound("Monitor mnemonic key '%s' not found in the header" % (mnemonic_values_key))
-
-        mnemonic_values = mnemonic_values.split()
-        pos_values_key = base_key + "_pos"
-        pos_values = keys.get(pos_values_key)
-        if pos_values is None:
-            raise MonitorNotFound("Monitor pos key '%s' not found in the header" % (pos_values_key))
-
-        pos_values = pos_values.split()
-
-        try:
-            index = mnemonic_values.index(mnemonic)
-        except ValueError:
-            logger.debug("Exception", exc_info=1)
-            raise MonitorNotFound("Monitor mnemonic '%s' not found in the header key '%s'" % (mnemonic, mnemonic_values_key))
-
-        if index >= len(pos_values):
-            raise MonitorNotFound("Monitor value '%s' not found in '%s'. Not enougth values." % (pos_values_key))
-
-        monitor = pos_values[index]
-
-    else:
-        if monitor_key not in keys:
-            raise MonitorNotFound("Monitor key '%s' not found in the header" % (monitor_key))
-        monitor = keys[monitor_key]
-
-    try:
-        monitor = float(monitor)
-    except ValueError as _e:
-        logger.debug("Exception", exc_info=1)
-        raise MonitorNotFound("Monitor value '%s' is not valid" % (monitor))
-    return monitor
-
-
-def get_monitor_value(image, monitor_key):
-    """Return the monitor value from an image using an header key.
-
-    :param fabio.fabioimage.FabioImage image: Image containing the header
-    :param str monitor_key: Key containing the monitor
-    :return: returns the monitor else raise an exception
-    :rtype: float
-    :raise MonitorNotFound: when the expected monitor is not found on the
-        header
-    """
-    if monitor_key is None:
-        return Exception("No monitor defined")
-
-    if isinstance(image, fabio.edfimage.EdfImage):
-        return _get_monitor_value_from_edf(image, monitor_key)
-    elif isinstance(image, fabio.numpyimage.numpyimage):
-        return _get_monitor_value_from_edf(image, monitor_key)
-    else:
-        raise Exception("File format '%s' unsupported" % type(image))
-
-
 def _normalize_image_stack(image_stack):
     """
     Convert input data to a list of 2D numpy arrays or a stack
@@ -880,9 +799,9 @@ class Average(object):
             corrected_image /= self._flat
         if self._monitor_key is not None:
             try:
-                monitor = get_monitor_value(fabio_image, self._monitor_key)
+                monitor = header_utils.get_monitor_value(fabio_image, self._monitor_key)
                 corrected_image /= monitor
-            except MonitorNotFound as e:
+            except header_utils.MonitorNotFound as e:
                 logger.warning("Monitor not found in filename '%s', data skipped. Cause: %s", fabio_image.filename, str(e))
                 return None
         return numpy.ascontiguousarray(corrected_image, numpy.float32)

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2019"
+__date__ = "01/03/2019"
 __status__ = "production"
 
 import os
@@ -45,54 +45,9 @@ logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 
 import pyFAI.utils.shell
+from pyFAI.utils import logging_utils
 import pyFAI.utils.stringutil
 from pyFAI import average
-
-
-class PreEmitStreamHandler(logging.Handler):
-    """Handler allowing to hook a function before the emit function.
-
-    The main logging feature is delegated to a sub handler.
-    """
-
-    def __init__(self, handler):
-        self._handler = handler
-
-    def emit(self, record):
-        """
-        Call pre_emit function then delegate the emit to the sub handler.
-
-        :type record: logging.LogRecord
-        """
-        self.pre_emit()
-        self._handler.emit(record)
-
-    def __getattr__(self, attr):
-        """Reach the attribute from the sub handler and cache it to the current
-        object"""
-        value = getattr(self._handler, attr)
-        setattr(self, attr, value)
-        return value
-
-    def pre_emit(self):
-        pass
-
-
-def patch_logging_handler(callback):
-    """Patch the logging system to have a working progress bar with out glitch.
-    pyFAI define a default handler then we have to rework it"""
-    # remove the default logging handler
-    # it can come from pyFAI.__init__
-    root_logger = logging.getLogger()
-    # assume there is a logger
-    assert(len(root_logger.handlers) == 1)
-    root_handler = root_logger.handlers[0]
-    root_logger.removeHandler(root_handler)
-    # use our custom handler
-    handler = PreEmitStreamHandler(root_handler)
-    root_logger.addHandler(handler)
-    root_logger.setLevel(logging.INFO)
-    handler.pre_emit = callback
 
 
 def parse_algorithms(options):
@@ -141,6 +96,25 @@ def parse_algorithms(options):
     return result
 
 
+def cleanup_input_paths(input_paths):
+    """Clean up filename using :: to access to data inside file.
+
+    :returns: Returns a list of paths without directory separator inside the filename
+    location.
+    """
+    result = []
+    for path in input_paths:
+        if "::" in path:
+            if not os.path.exists(path):
+                filename, datapath = path.split("::", 1)
+                datapath = datapath.replace("/", "_")
+                datapath = datapath.replace("\\", "_")
+                datapath = datapath.strip("_")
+                path = filename + "__" + datapath
+        result.append(path)
+    return result
+
+
 def parse_writer(input_images, options, algorithms):
     """Return a writer by using information from the command line"""
     output = options.output
@@ -160,8 +134,10 @@ def parse_writer(input_images, options, algorithms):
         suffix += "_{image_count}_files.{file_format}"
         template = prefix + "{method_name}" + suffix
 
+    input_paths = cleanup_input_paths(input_images)
+
     formats = {
-        "common_prefix": os.path.commonprefix(input_images),
+        "common_prefix": os.path.commonprefix(input_paths),
         "image_count": len(input_images),
         "cutoff": options.cutoff,
         "file_format": file_format,
@@ -211,9 +187,13 @@ class ShellAverageObserver(average.AverageObserver):
     def process_finished(self):
         pass
 
-    def clear(self):
+    def hide_info(self):
         if self.__bar is not None:
             self.__bar.clear()
+
+    def show_info(self):
+        if self.__bar is not None:
+            self.__bar.display()
 
 
 def main():
@@ -279,7 +259,10 @@ def main():
     if options.verbose is not False:
         observer = ShellAverageObserver()
         # clean up the progress bar before displaying a log
-        patch_logging_handler(observer.clear)
+        root_logger = logging.getLogger()
+        logging_utils.set_prepost_emit_callback(root_logger,
+                                                observer.hide_info,
+                                                observer.show_info)
     else:
         observer = None
 

@@ -64,7 +64,7 @@
       <item>
        <widget class="QGroupBox" name="groupBox">
         <property name="title">
-         <string>Experient settings</string>
+         <string>Experiment settings</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="5" column="0">
@@ -248,7 +248,10 @@
         </property>
         <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0">
          <item row="0" column="2">
-          <widget class="QToolButton" name="_imageLoader">
+          <widget class="LoadImageToolButton" name="_imageLoader">
+           <property name="toolTip">
+            <string>Load an image to calibrate</string>
+           </property>
            <property name="text">
             <string>...</string>
            </property>
@@ -272,7 +275,10 @@
           </widget>
          </item>
          <item row="5" column="2">
-          <widget class="QToolButton" name="_darkLoader">
+          <widget class="LoadImageToolButton" name="_darkLoader">
+           <property name="toolTip">
+            <string>Load a dark current file</string>
+           </property>
            <property name="text">
             <string>...</string>
            </property>
@@ -300,7 +306,10 @@
           </widget>
          </item>
          <item row="4" column="2">
-          <widget class="QToolButton" name="_maskLoader">
+          <widget class="LoadImageToolButton" name="_maskLoader">
+           <property name="toolTip">
+            <string>Load a mask file</string>
+           </property>
            <property name="text">
             <string>...</string>
            </property>
@@ -406,9 +415,19 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>DetectorLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.DetectorLabel</header>
+  </customwidget>
+  <customwidget>
    <class>QuantityEdit</class>
    <extends>QLineEdit</extends>
    <header>pyFAI.gui.widgets.QuantityEdit</header>
+  </customwidget>
+  <customwidget>
+   <class>LoadImageToolButton</class>
+   <extends>QToolButton</extends>
+   <header>pyFAI.gui.widgets.LoadImageToolButton</header>
   </customwidget>
   <customwidget>
    <class>FileEdit</class>
@@ -430,11 +449,6 @@
    <class>ElidedLabel</class>
    <extends>QLabel</extends>
    <header>pyFAI.gui.widgets.ElidedLabel</header>
-  </customwidget>
-  <customwidget>
-   <class>DetectorLabel</class>
-   <extends>QLabel</extends>
-   <header>pyFAI.gui.widgets.DetectorLabel</header>
   </customwidget>
  </customwidgets>
  <resources/>

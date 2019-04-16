@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
+# /*##########################################################################
 #
-#    Project: silx
-#             https://github.com/silx-kit/silx
+# Copyright (C) 2019 European Synchrotron Radiation Facility
 #
-#    Copyright (C) 2012-2016  European Synchrotron Radiation Facility, Grenoble, France
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -21,20 +19,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+#
+# ###########################################################################*/
 
-__authors__ = ["J. Kieffer"]
-__license__ = "MIT"
-__date__ = "25/02/2019"
-
-import unittest
-from ...test.utilstest import UtilsTest
-
-
-def suite():
-    testSuite = unittest.TestSuite()
-
-    if UtilsTest.opencl:
-        from . import test_addition
-        testSuite.addTests(test_addition.suite())
-
-    return testSuite
+cdef extern from "src/openmp.h":
+    const int COMPILED_WITH_OPENMP
+    void omp_set_num_threads(int) nogil
+    int omp_get_num_threads() nogil
+    int omp_get_max_threads() nogil
+    int omp_get_thread_num() nogil
+    int omp_get_num_procs() nogil

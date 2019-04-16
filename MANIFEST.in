@@ -7,7 +7,7 @@ global-exclude .ipynb_checkpoints
 global-exclude *.h5
 global-exclude *.npz
 recursive-include package/debian? *
-recursive-include pyFAI/ext  *.c *.h *.pyx *.pxd *.pxi
+recursive-include pyFAI/ext  *.cpp *.c *.h *.pyx *.pxd *.pxi
 recursive-include pyFAI *.py
 recursive-exclude pyFAI *.pyc
 recursive-include pyFAI/resources/openCL *.cl *.h

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "28/02/2019"
 
 import logging
 import os.path
@@ -84,10 +84,10 @@ class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
         experimentSettings = model.experimentSettingsModel()
 
         # Reach from the previous mask
-        previousFile = experimentSettings.maskFile().value()
+        previousFile = experimentSettings.mask().filename()
         directory = self.__extractDirectory(previousFile)
         if directory is None:
-            previousFile = experimentSettings.imageFile().value()
+            previousFile = experimentSettings.image().filename()
             directory = self.__extractDirectory(previousFile)
         if directory is None:
             directory = os.getcwd()
@@ -118,12 +118,13 @@ class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
     def __maskFilenameUpdated(self, filename):
         model = CalibrationContext.instance().getCalibrationModel()
         experimentSettings = model.experimentSettingsModel()
-        maskModel = experimentSettings.maskFile()
-        maskModel.setValue(filename)
+        with experimentSettings.mask().lockContext() as mask:
+            mask.setFilename(filename)
+            mask.setSynchronized(True)
 
-    def setSelectionMask(self, mask):
+    def setSelectionMask(self, mask, copy=True):
         self.sigMaskChanged.disconnect(self.__emitUserMaskChanged)
-        result = super(_MaskToolsWidget, self).setSelectionMask(mask)
+        result = super(_MaskToolsWidget, self).setSelectionMask(mask, copy=copy)
         self.sigMaskChanged.connect(self.__emitUserMaskChanged)
         return result
 

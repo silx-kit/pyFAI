@@ -27,14 +27,11 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/02/2019"
+__date__ = "28/02/2019"
 
 import numpy
 import logging
-from contextlib import contextmanager
-import os.path
 
-import fabio
 import silx.gui.plot
 from silx.gui import qt
 from silx.gui import icons
@@ -66,9 +63,10 @@ class ExperimentTask(AbstractCalibrationTask):
         self._image.setAcceptDrops(True)
         self._mask.setAcceptDrops(True)
 
-        self._imageLoader.clicked.connect(self.loadImage)
-        self._maskLoader.clicked.connect(self.loadMask)
-        self._darkLoader.clicked.connect(self.loadDark)
+        self._imageLoader.setDialogTitle("Load calibration image")
+        self._maskLoader.setDialogTitle("Load mask image")
+        self._darkLoader.setDialogTitle("Load dark image")
+
         self._customDetector.clicked.connect(self.__customDetector)
 
         self.__plot = self.__createPlot(parent=self._imageHolder)
@@ -88,8 +86,6 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
-
-        self.__loadingImage = False
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
@@ -141,9 +137,12 @@ class ExperimentTask(AbstractCalibrationTask):
 
         self._calibrant.setModel(settings.calibrantModel())
         self._detectorLabel.setDetectorModel(settings.detectorModel())
-        self._image.setModel(settings.imageFile())
-        self._mask.setModel(settings.maskFile())
-        self._dark.setModel(settings.darkFile())
+        self._image.setModel(settings.image())
+        self._imageLoader.setModel(settings.image())
+        self._mask.setModel(settings.mask())
+        self._maskLoader.setModel(settings.mask())
+        self._dark.setModel(settings.dark())
+        self._darkLoader.setModel(settings.dark())
 
         self._wavelength.setModelUnit(units.Unit.METER_WL)
         self._wavelength.setDisplayedUnit(units.Unit.ANGSTROM)
@@ -151,8 +150,6 @@ class ExperimentTask(AbstractCalibrationTask):
         self._energy.setDisplayedUnit(units.Unit.ENERGY)
         self._wavelength.setModel(settings.wavelength())
         self._energy.setModel(settings.wavelength())
-
-        settings.imageFile().changed.connect(self.__imageFileChanged)
 
         settings.image().changed.connect(self.__imageUpdated)
 
@@ -366,30 +363,6 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
         return dialog
 
-    @contextmanager
-    def getImageFromDialog(self, title, forMask=False, previousFile=None):
-        self.__loadingImage = True
-        dialog = self.createImageDialog(title, forMask, previousFile=previousFile)
-
-        result = dialog.exec_()
-        if not result:
-            yield None
-            return
-
-        filename = dialog.selectedFiles()[0]
-        try:
-            with fabio.open(filename) as image:
-                yield image
-        except Exception as e:
-            _logger.error(e.args[0])
-            _logger.debug("Backtrace", exc_info=True)
-            # FIXME Display error dialog
-            yield None
-        except KeyboardInterrupt:
-            self.__loadingImage = False
-            raise
-        self.__loadingImage = False
-
     def createCalibrantDialog(self, title):
         dialog = CalibrationContext.instance().createFileDialog(self)
         dialog.setWindowTitle(title)
@@ -401,48 +374,6 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setNameFilters(builder.getFilters())
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
         return dialog
-
-    def loadImage(self):
-        settings = self.model().experimentSettingsModel()
-        previousFile = settings.imageFile().value()
-        with self.getImageFromDialog("Load calibration image", previousFile=previousFile) as image:
-            if image is not None:
-                settings.imageFile().setValue(str(image.filename))
-                settings.image().setValue(image.data.copy())
-
-    def __imageFileChanged(self):
-        if self.__loadingImage:
-            return
-        settings = self.model().experimentSettingsModel()
-        filename = settings.imageFile().value()
-        if filename is None:
-            return
-        if not os.path.exists(filename):
-            qt.QMessageBox.critical(self, "File not found", "Image file %s not found" % filename)
-            return
-        try:
-            with fabio.open(filename) as image:
-                data = image.data
-                settings.image().setValue(data)
-        except Exception as e:
-            qt.QMessageBox.critical(self, "IO error", "File %s can't be loaded. %s" % (filename, e))
-            _logger.debug("Backtrace", exc_info=True)
-
-    def loadMask(self):
-        settings = self.model().experimentSettingsModel()
-        previousFile = settings.maskFile().value()
-        with self.getImageFromDialog("Load mask image", previousFile=previousFile, forMask=True) as image:
-            if image is not None:
-                settings.maskFile().setValue(image.filename)
-                settings.mask().setValue(image.data)
-
-    def loadDark(self):
-        settings = self.model().experimentSettingsModel()
-        previousFile = settings.darkFile().value()
-        with self.getImageFromDialog("Load dark image", previousFile=previousFile) as image:
-            if image is not None:
-                settings.darkFile().setValue(image.filename)
-                settings.dark().setValue(image.data)
 
     def loadCalibrant(self):
         dialog = self.createCalibrantDialog("Load calibrant file")

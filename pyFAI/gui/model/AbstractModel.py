@@ -27,8 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/12/2018"
+__date__ = "28/02/2019"
 
+
+import contextlib
 from silx.gui import qt
 
 
@@ -56,7 +58,23 @@ class AbstractModel(qt.QObject):
             self.changed.emit()
             return True
 
+    def isLocked(self):
+        """Returns True if the events are locked.
+
+        :rtype: bool
+        """
+        return self.__isLocked > 0
+
+    @contextlib.contextmanager
+    def lockContext(self):
+        """Context manager to lock and unlock signals."""
+        self.lockSignals()
+        yield self
+        self.unlockSignals()
+
     def lockSignals(self):
+        """Lock the change events
+        """
         self.__isLocked = self.__isLocked + 1
 
     def unlockSignals(self):

@@ -34,7 +34,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2017"
+__date__ = "01/03/2019"
 
 import sys
 import os
@@ -44,6 +44,18 @@ import unittest
 from . import utilstest
 # not importing test_all here to prevent premature initialization of UtilsTest
 # and preventing the test skipping
+
+
+# Issue https://github.com/silx-kit/fabio/pull/291
+# Relative to fabio 0.8
+import fabio
+if fabio.hdf5image.Hdf5Image.close.__module__ != "fabio.hdf5image":
+    def close(self):
+        if self.hdf5 is not None:
+            self.hdf5.close()
+            self.hdf5 = None
+            self.dataset = None
+    fabio.hdf5image.Hdf5Image.close = close
 
 
 def suite():
