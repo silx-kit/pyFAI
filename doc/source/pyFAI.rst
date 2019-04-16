@@ -89,11 +89,13 @@ Geometry
 
    geometry
 
+
 Geometry conversion
 ...................
 
+.. _geometryConversion:
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    geometry_conversion
 
