@@ -89,6 +89,14 @@ Geometry
 
    geometry
 
+Geometry conversion
+...................
+
+.. toctree::
+   :maxdepth: 2
+
+   geometry_conversion
+
 Calibration
 ...........
 

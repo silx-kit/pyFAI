@@ -117,6 +117,5 @@ incident beam orthogonal to the detector's surface.
 
 There is also a tutorial :ref:`tutorials` on the geometry which explains in detail
 the orientations of the different rotations used by pyFAI.
-
-
-
+If you wish to convert your own geometry into the one of pyFAI or *vice-versa*,
+please refer to :ref:`GeometryConversion` document.
