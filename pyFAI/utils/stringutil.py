@@ -31,7 +31,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "10/04/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -91,6 +91,36 @@ def latex_to_unicode(string):
     string = string.replace("log10", u"log₁₀")
     string = string.replace("^{*2}", u"d*²")
     return string
+
+
+def to_scientific_unicode(value, digits=3):
+    """Convert a float value into a string using scientific notation and
+    superscript unicode character.
+
+    This avoid using HTML in some case, when Qt widget does not support it.
+
+    :param float value: Value to convert to displayable string
+    :param int digits: Number of digits expected (`3` means `1.000`).
+    """
+    value = ("%%0.%de" % digits) % value
+    value, power10 = value.split("e")
+    power = ""
+    for p in power10:
+        if p == "-":
+            power += u"\u207B"
+        elif p == "+":
+            power += u"\u207A"
+        elif p == "1":
+            power += u"\u00B9"
+        elif p == "2":
+            power += u"\u00B2"
+        elif p == "3":
+            power += u"\u00B3"
+        else:
+            v = ord(p) - ord("0")
+            power += chr(0x2070 + v)
+    value = value + u"\u00B710" + power
+    return value
 
 
 _TRUE_STRINGS = set(["yes", "true", "1"])
