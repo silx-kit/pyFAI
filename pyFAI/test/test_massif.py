@@ -34,24 +34,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2018"
+__date__ = "22/03/2019"
 
 
 import unittest
 import numpy
 import logging
-import fabio
-import io
-import six
-from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
-
-from ..third_party import six
-from .. import load, detectors
 from ..massif import Massif
+
 
 class TestMassif(unittest.TestCase):
 
@@ -99,13 +92,8 @@ class TestMassif(unittest.TestCase):
         mask = numpy.zeros_like(self.mask)
         mask[5:45, 5:45] = 1
         peaks = massif.peaks_from_area(mask)
-        print(peaks)
-        if six.PY2:
-            stdout = io.BytesIO()
-        else:
-            stdout = io.StringIO()
         if peaks:
-            massif.find_peaks([int(i) for i in peaks[0]], stdout=stdout)
+            massif.find_peaks([int(i) for i in peaks[0]], stdout=None)
         massif.get_median_data()
 
 

@@ -32,6 +32,8 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 
 
+import numpy
+
 from pyFAI.control_points import ControlPoints
 from pyFAI.gui.model.CalibrationModel import CalibrationModel
 from pyFAI.gui.model.PeakSelectionModel import PeakSelectionModel
@@ -51,19 +53,72 @@ def createControlPoints(model):
     wavelength = model.experimentSettingsModel().wavelength().value()
     controlPoints = ControlPoints(calibrant=calibrant, wavelength=wavelength)
     for peakModel in model.peakSelectionModel():
+        if not peakModel.isEnabled():
+            continue
         ringNumber = peakModel.ringNumber() - 1
         points = peakModel.coords()
         controlPoints.append(points=points, ring=ringNumber)
     return controlPoints
 
 
-def createRing(points, peakSelectionModel, context=None):
-    """Create a new ring from a group of points"""
+def createPeaksArray(model):
+    """Create a contiguous peak array containing (y, x, ring number)
 
-    if context is None:
-        context = CalibrationContext.instance()
+    :param PeakSelectionModel model: A set of selected peaks
+    :rtype: numpy.ndarray
+    """
+    if not isinstance(model, PeakSelectionModel):
+        raise TypeError("Unexpected model type")
 
-    # reach the bigger name
+    count = 0
+    for group in model:
+        count += len(group)
+    pos = 0
+    peaks = numpy.empty(shape=(count, 3), dtype=float)
+    for group in model:
+        if not group.isEnabled():
+            continue
+        end = pos + len(group)
+        peaks[pos:end, 0:2] = group.coords()
+        peaks[pos:end, 2] = group.ringNumber() - 1
+        pos = end
+    peaks = numpy.array(peaks)
+    return peaks
+
+
+def filterControlPoints(filterCallback, peakSelectionModel, removedPeaks=None):
+    """Filter each peaks of the model using a callback
+
+    :param Callable[int,int,bool] filter: Filter returning true is the
+        peak have to stay in the result.
+    :param PeakSelectionModel peakSelectionModel: Model to filter
+    :param List[Tuple[int,int]] removedPeaks: Provide a list to feed it with
+        removed peaks from the model.
+    """
+    peakSelectionModel.lockSignals()
+    for peakGroup in peakSelectionModel:
+        changed = False
+        newCoords = []
+        for coord in peakGroup.coords():
+            if filterCallback(coord[0], coord[1]):
+                newCoords.append(coord)
+            else:
+                if removedPeaks is not None:
+                    removedPeaks.append(coord)
+                changed = True
+        if changed:
+            if len(newCoords) == 0:
+                newCoords = numpy.empty(shape=(0, 2))
+            else:
+                newCoords = numpy.array(newCoords)
+            peakGroup.setCoords(newCoords)
+    peakSelectionModel.unlockSignals()
+
+
+def _findUnusedName(peakSelectionModel):
+    """
+    :rtype: str
+    """
     names = ["% 8s" % p.name() for p in peakSelectionModel]
     if len(names) > 0:
         names = list(sorted(names))
@@ -85,16 +140,27 @@ def createRing(points, peakSelectionModel, context=None):
             c = n % 26
             n = n // 26
             name = chr(c + ord('a')) + name
+    return name
 
-    color = context.getMarkerColor(number)
 
-    # TODO: color and name should be removed from the model
-    # TODO: As result this function should be removed
+def createRing(points, peakSelectionModel, ringNumber=None, context=None):
+    """Create a new ring from a group of points
+
+    :rtype: PeakModel
+    """
+    if context is None:
+        context = CalibrationContext.instance()
+
+    name = _findUnusedName(peakSelectionModel)
+    if ringNumber is None:
+        ringNumber = 1
+    color = context.getMarkerColor(ringNumber - 1)
+
     peakModel = PeakModel(peakSelectionModel)
     peakModel.setName(name)
     peakModel.setColor(color)
     peakModel.setCoords(points)
-    peakModel.setRingNumber(1)
+    peakModel.setRingNumber(ringNumber)
 
     return peakModel
 
@@ -115,8 +181,11 @@ def initPeaksFromControlPoints(peakSelectionModel, controlPoints, context=None):
     peakSelectionModel.clear()
     for label in controlPoints.get_labels():
         group = controlPoints.get(lbl=label)
-        peakModel = createRing(group.points, peakSelectionModel=peakSelectionModel, context=context)
+        color = context.getMarkerColor(group.ring)
+        points = numpy.array(group.points)
+        peakModel = createRing(points, peakSelectionModel=peakSelectionModel, context=context)
         peakModel.setRingNumber(group.ring + 1)
+        peakModel.setColor(color)
         peakModel.setName(label)
         peakSelectionModel.append(peakModel)
 
