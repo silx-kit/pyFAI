@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/01/2019"
+__date__ = "21/03/2019"
 
 import logging
 import numpy
@@ -893,16 +893,12 @@ class GeometryTask(AbstractCalibrationTask):
         if wavelength is None:
             return None
 
-        if len(self.model().peakSelectionModel()) == 0:
+        peaksModel = self.model().peakSelectionModel()
+
+        if len(peaksModel) == 0:
             return None
 
-        peaks = []
-        for peakModel in self.model().peakSelectionModel():
-            ringNumber = peakModel.ringNumber()
-            for coord in peakModel.coords():
-                peaks.append([coord[0], coord[1], ringNumber - 1])
-        peaks = numpy.array(peaks)
-
+        peaks = model_transform.createPeaksArray(peaksModel)
         calibration = RingCalibration(image,
                                       mask,
                                       calibrant,
@@ -945,15 +941,9 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __initGeometryFromPeaks(self):
         if self.__peaksInvalidated:
-            # recompute the geometry from the peaks
-            # FIXME numpy array can be allocated first
-            peaks = []
-            for peakModel in self.model().peakSelectionModel():
-                ringNumber = peakModel.ringNumber()
-                for coord in peakModel.coords():
-                    peaks.append([coord[0], coord[1], ringNumber - 1])
-            peaks = numpy.array(peaks)
-
+            # Recompute the geometry from the peaks
+            peaksModel = self.model().peakSelectionModel()
+            peaks = model_transform.createPeaksArray(peaksModel)
             calibration = self.__getCalibration()
             if calibration is None:
                 return

@@ -25,14 +25,17 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/01/2019"
+__date__ = "05/04/2019"
 
 import logging
 import numpy
+import json
+import os.path
 
 from silx.gui import qt
 from silx.gui.dialog.ColormapDialog import ColormapDialog
 from silx.gui.colors import Colormap
+import silx.resources
 
 from .model.CalibrationModel import CalibrationModel
 from .model.DataModel import DataModel
@@ -77,6 +80,7 @@ class CalibrationContext(ApplicationContext):
         self.__wavelengthUnit = DataModel()
         self.__wavelengthUnit.setValue(units.Unit.ANGSTROM)
         self.__markerColors = {}
+        self.__cacheStyles = {}
 
         self.sigStyleChanged = self.__rawColormap.sigChanged
 
@@ -247,16 +251,55 @@ class CalibrationContext(ApplicationContext):
         color = [color, color, color]
         return qt.QColor(color[0], color[1], color[2])
 
+    def _getStyle(self, name):
+        style = self.__cacheStyles.get(name, None)
+        if style is None:
+            resource = "pyfai:/gui/styles/%s.json" % name
+            path = silx.resources.resource_filename(resource)
+            if os.path.exists(path):
+                try:
+                    with open(path) as fp:
+                        style = json.load(fp)
+                except Exception as e:
+                    _logger.debug("Backtrace", exc_info=True)
+                    _logger.error(e)
+                    style = {}
+            else:
+                _logger.debug("Resource %s not found", resource)
+                style = {}
+            self.__cacheStyles[name] = style
+        return style
+
+    def getCurrentStyle(self):
+        colormap = self.getRawColormap()
+        name = colormap['name']
+        style = self._getStyle(name)
+        return style
+
     def getHtmlMarkerColor(self, index):
         colors = self.markerColorList()
         color = colors[index % len(colors)]
         "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
 
+    def disabledMarkerColor(self):
+        style = self.getCurrentStyle()
+        color = style.get("disabled-marker", None)
+        if color is None:
+            color = [128, 128, 128]
+        return qt.QColor(*color)
+
     def markerColorList(self):
         colormap = self.getRawColormap()
         name = colormap['name']
         if name not in self.__markerColors:
-            colors = self.createMarkerColors()
+            style = self.getCurrentStyle()
+            if "markers" in style:
+                colors = []
+                for c in style["markers"]:
+                    c = qt.QColor(c[0], c[1], c[2])
+                    colors.append(c)
+            else:
+                colors = self.createMarkerColors()
             self.__markerColors[name] = colors
         else:
             colors = self.__markerColors[name]
