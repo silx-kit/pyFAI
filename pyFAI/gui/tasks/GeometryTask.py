@@ -776,6 +776,8 @@ class GeometryTask(AbstractCalibrationTask):
         defaultConstraintsButton.clicked.connect(self.__setDefaultConstraints)
         saxsConstraintsButton.clicked.connect(self.__setSaxsConstraints)
 
+        self._geometryHistoryCombo.currentIndexChanged.connect(self.__geometryPickedFromHistory)
+
     def __setDefaultConstraints(self):
         """Apply default contraints imposed by the refinment process"""
         calibrationModel = self.model()
@@ -1073,6 +1075,21 @@ class GeometryTask(AbstractCalibrationTask):
 
         geometry = calibration.getPyfaiGeometry()
         self.__plot.markerManager().updatePhysicalMarkerPixels(geometry)
+
+    def __geometryPickedFromHistory(self, index=None):
+        item = self._geometryHistoryCombo.currentItem()
+        if item is None:
+            return
+
+        # Unselect the selection
+        old = self._geometryHistoryCombo.blockSignals(True)
+        self._geometryHistoryCombo.setCurrentIndex(-1)
+        self._geometryHistoryCombo.blockSignals(old)
+
+        # Apply the selected geometry
+        geometry = self.model().fittedGeometry()
+        pickedGeometry = item.geometry()
+        geometry.setFrom(pickedGeometry)
 
     def __updateDisplay(self):
         calibration = self.__getCalibration()
