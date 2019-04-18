@@ -633,6 +633,14 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __initGeometry(self):
         self.__initGeometryFromPeaks()
+
+        # Save this geometry into the history
+        calibration = self.__getCalibration()
+        geometry = self.model().fittedGeometry()
+        rms = None if calibration is None else calibration.getRms()
+        geometryHistory = self.model().geometryHistoryModel()
+        geometryHistory.appendGeometry("Init", datetime.datetime.now(), geometry, rms)
+
         self.__formatResidual()
         self.__unsetProcessing()
 
@@ -642,9 +650,14 @@ class GeometryTask(AbstractCalibrationTask):
             self.__unsetProcessing()
             return
         self.__initGeometryFromPeaks()
-        # write result to the fitted model
-        model = self.model().fittedGeometry()
-        calibration.toGeometryModel(model)
+        # write result to the fitted geometry
+        geometry = self.model().fittedGeometry()
+        calibration.toGeometryModel(geometry)
+
+        # Save this geometry into the history
+        geometryHistory = self.model().geometryHistoryModel()
+        geometryHistory.appendGeometry("Reset", datetime.datetime.now(), geometry, calibration.getRms())
+
         self.__formatResidual()
         self.__unsetProcessing()
 
@@ -669,6 +682,10 @@ class GeometryTask(AbstractCalibrationTask):
         # write result to the fitted model
         geometry = self.model().fittedGeometry()
         calibration.toGeometryModel(geometry)
+
+        # Save this geometry into the history
+        geometryHistory = self.model().geometryHistoryModel()
+        geometryHistory.appendGeometry("Fitting", datetime.datetime.now(), geometry, calibration.getRms())
 
         self._fitButton.setWaiting(False)
         self.__fitting = False
@@ -707,10 +724,6 @@ class GeometryTask(AbstractCalibrationTask):
             return
         model = self.model().fittedGeometry()
         if model.isValid():
-            # Save this geometry into the history
-            geometryHistory = self.model().geometryHistoryModel()
-            geometryHistory.appendGeometry(datetime.datetime.now(), model, calibration.getRms())
-
             resetResidual = self.__fitting is not True
             calibration.fromGeometryModel(model, resetResidual=resetResidual)
             self.__updateDisplay()

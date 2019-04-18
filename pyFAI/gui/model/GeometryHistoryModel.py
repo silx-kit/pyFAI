@@ -43,7 +43,7 @@ class StoredGeometry(AbstractModel):
     :param float rms:
     """
 
-    def __init__(self, parent, time, geometry, rms):
+    def __init__(self, parent, label, time, geometry, rms):
         super(StoredGeometry, self).__init__(parent=parent)
         # Store this values in a compact format
         d = geometry.distance().value()
@@ -54,6 +54,7 @@ class StoredGeometry(AbstractModel):
         r2 = geometry.rotation2().value()
         r3 = geometry.rotation3().value()
         self.__geometry = (d, w, p1, p2, r1, r2, r3)
+        self.__label = label
         self.__rms = rms
         self.__time = time
 
@@ -72,6 +73,12 @@ class StoredGeometry(AbstractModel):
         geometry.rotation3().setValue(r3)
         return geometry
 
+    def label(self):
+        """
+        :rtype: str
+        """
+        return self.__label
+
     def rms(self):
         """
         :rtype: float
@@ -87,10 +94,11 @@ class StoredGeometry(AbstractModel):
 
 class GeometryHistoryModel(ListModel):
 
-    def appendGeometry(self, time, geometry, rms):
+    def appendGeometry(self, label, time, geometry, rms):
         """
+        :param str label: Named geometry
         :param datetime.datetime time: time of the record
         :param GeometryModel geometry: Geometry to store
         :param float rms: Root mean share of this geometry
         """
-        self.append(StoredGeometry(self, time, geometry, rms))
+        self.append(StoredGeometry(self, label, time, geometry, rms))

@@ -42,13 +42,22 @@ _logger = logging.getLogger(__name__)
 class _GeometryListModel(qt.QAbstractItemModel):
 
     TimeColumn = 0
-    RmsColumn = 1
+    LabelColumn = 1
+    RmsColumn = 2
 
     def __init__(self, parent, historyModel):
         qt.QAbstractItemModel.__init__(self, parent=parent)
         self.__data = []
         self.__historyModel = historyModel
         self.__historyModel.changed[object].connect(self.__historyChanged)
+
+    def item(self, index):
+        """
+        Returns an item from an index.
+        """
+        if not index.isValid():
+            return None
+        return self.__historyModel[index.row()]
 
     def __historyChanged(self, events):
         if events.hasOnlyStructuralEvents():
@@ -82,7 +91,7 @@ class _GeometryListModel(qt.QAbstractItemModel):
         return len(self.__historyModel)
 
     def columnCount(self, parent=qt.QModelIndex()):
-        return 2
+        return 3
 
     def data(self, index, role=qt.Qt.DisplayRole):
         if not index.isValid():
@@ -92,11 +101,16 @@ class _GeometryListModel(qt.QAbstractItemModel):
         if role == qt.Qt.DisplayRole:
             column = index.column()
             if column == self.RmsColumn:
-                value = stringutil.to_scientific_unicode(item.rms())
+                rms = item.rms()
+                if rms is None:
+                    return "n/a"
+                value = stringutil.to_scientific_unicode(rms)
                 return value
             elif column == self.TimeColumn:
                 time = item.time()
                 return time.strftime("%Hh%M %Ss")
+            elif column == self.LabelColumn:
+                return item.label()
             else:
                 return ""
 
@@ -121,6 +135,11 @@ class GeometryHistoryComboBox(AdvancedComboBox):
         elif role == qt.Qt.DecorationRole:
             return None
         return None
+
+    def currentItem(self):
+        model = self.model()
+        index = model.index(self.currentIndex(), 0)
+        return model.item(index)
 
     def setHistoryModel(self, historyModel):
         model = _GeometryListModel(self, historyModel)
