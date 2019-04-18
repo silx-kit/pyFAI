@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/03/2019"
+__date__ = "18/04/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1585,14 +1585,28 @@ class AzimuthalIntegrator(Geometry):
                         method = self.DEFAULT_METHOD_1D
                     else:
                         engine.set_engine(integr)
-                TODO: use those results 
-                integr(data, dark=dark,
-                       dummy=dummy, delta_dummy=delta_dummy,
-                       variance=variance,
-                       flat=flat, solidangle=solidangle,
-                       polarization=polarization, polarization_checksum=polarization_checksum,
-                       normalization_factor=normalization_factor,
-                       bin_range=None)
+                intpl = integr(data, dark=dark,
+                               dummy=dummy, delta_dummy=delta_dummy,
+                               variance=variance,
+                               flat=flat, solidangle=solidangle,
+                               polarization=polarization, polarization_checksum=polarization_checksum,
+                               normalization_factor=normalization_factor,
+                               bin_range=None)
+            if variance is None:
+                result = Integrate1dResult(intpl.position, intpl.intensity)
+            else:
+                result = Integrate1dResult(intpl.position,
+                                           intpl.intensity,
+                                           intpl.error)
+            result._set_method_called("integrate1d_ng")
+            result._set_compute_engine(integr.__class__.__name__)
+            result._set_unit(integr.unit)
+            result._set_sum_signal(intpl.signal)
+            result._set_sum_normalization(intpl.normalization)
+            if variance is not None:
+                result._set_sum_variance(intpl.variance)
+            result._set_count(intpl.count)
+
         else:
             if variance is not None:
                 assert variance.size == data.size

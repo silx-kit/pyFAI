@@ -42,19 +42,17 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "21/03/2019"
+__date__ = "18/04/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
 import logging
 import threading
-from collections import OrderedDict, namedtuple
-
-Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity error signal variance normalization count")
-Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity error signal variance normalization count")
-
+from collections import OrderedDict
 import numpy
+
+from ..containers import Integrate1dtpl, Integrate2dtpl
 from . import concatenate_cl_kernel, get_x87_volatile_option
 from . import processing
 EventDescription = processing.EventDescription
@@ -826,8 +824,10 @@ class OCL_Histogram1d(OpenclProcessing):
                                   platformid=platformid, deviceid=deviceid,
                                   block_size=block_size, profile=profile)
         if "cl_khr_int64_base_atomics" not in self.ctx.devices[0].extensions:
-            logger.warning("64-bit atomics are missing on device %s, falling back on 32-bit atomics. Loss of precision is to be expected, you are warned  !!!" %
-                           (self.ctx.devices[0].name))
+            logger.warning("Apparently 64-bit atomics are missing on device %s, "
+                           "possibly falling back on 32-bit atomics (loss of precision)"
+                           " but it can be present and not declared as Nvidia does",
+                           self.ctx.devices[0].name)
         self.unit = unit
         self.bins = numpy.uint32(bins)
         self.size = numpy.uint32(position.size)
