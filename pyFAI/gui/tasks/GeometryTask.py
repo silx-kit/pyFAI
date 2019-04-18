@@ -38,6 +38,7 @@ from silx.gui import icons
 import silx.gui.plot
 
 import pyFAI.utils
+from pyFAI.utils import stringutil
 from .AbstractCalibrationTask import AbstractCalibrationTask
 from ..helper.RingCalibration import RingCalibration
 from ..helper.SynchronizeRawView import SynchronizeRawView
@@ -678,23 +679,23 @@ class GeometryTask(AbstractCalibrationTask):
         if calibration is None:
             text = ""
         else:
-            previousRms = calibration.getPreviousRms()
             rms = calibration.getRms()
             if rms is not None:
                 angleUnit = CalibrationContext.instance().getAngleUnit().value()
                 rms = units.convert(rms, units.Unit.RADIAN, angleUnit)
-                text = '%.6e' % rms
+                text = stringutil.to_scientific_unicode(rms, digits=4)
+                previousRms = calibration.getPreviousRms()
                 if previousRms is not None:
                     previousRms = units.convert(previousRms, units.Unit.RADIAN, angleUnit)
                     if numpy.isclose(rms, previousRms):
-                        diff = "(no changes)"
+                        diff = "no changes"
                     else:
-                        diff = '(%+.2e)' % (rms - previousRms)
+                        diff = stringutil.to_scientific_unicode(rms - previousRms, digits=2)
                         if rms < previousRms:
                             diff = '<font color="green">%s</font>' % diff
                         else:
                             diff = '<font color="red">%s</font>' % diff
-                    text = '%s %s' % (text, diff)
+                    text = '%s (%s)' % (text, diff)
                 text = "%s %s" % (text, angleUnit.symbol)
             else:
                 text = ""
