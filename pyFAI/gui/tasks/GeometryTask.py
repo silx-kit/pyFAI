@@ -27,10 +27,11 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/03/2019"
+__date__ = "18/04/2019"
 
 import logging
 import numpy
+import datetime
 
 from silx.gui import qt
 from silx.gui import icons
@@ -1021,8 +1022,9 @@ class GeometryTask(AbstractCalibrationTask):
 
         calibration.refine()
         # write result to the fitted model
-        model = self.model().fittedGeometry()
-        calibration.toGeometryModel(model)
+        geometry = self.model().fittedGeometry()
+        calibration.toGeometryModel(geometry)
+
         self._fitButton.setWaiting(False)
         self.__fitting = False
         self.__unsetProcessing()
@@ -1060,6 +1062,10 @@ class GeometryTask(AbstractCalibrationTask):
             return
         model = self.model().fittedGeometry()
         if model.isValid():
+            # Save this geometry into the history
+            geometryHistory = self.model().geometryHistoryModel()
+            geometryHistory.appendGeometry(datetime.datetime.now(), model, calibration.getRms())
+
             resetResidual = self.__fitting is not True
             calibration.fromGeometryModel(model, resetResidual=resetResidual)
             self.__updateDisplay()
@@ -1105,6 +1111,7 @@ class GeometryTask(AbstractCalibrationTask):
 
     def _updateModel(self, model):
         self.__synchronizeRawView.registerModel(model.rawPlotView())
+        self._geometryHistoryCombo.setHistoryModel(model.geometryHistoryModel())
         settings = model.experimentSettingsModel()
         settings.maskedImage().changed.connect(self.__imageUpdated)
         settings.wavelength().changed.connect(self.__invalidateWavelength)
