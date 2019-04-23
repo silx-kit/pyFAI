@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/04/2019"
+__date__ = "23/04/2019"
 __status__ = "development"
 
 import logging
@@ -47,13 +47,24 @@ else:
 from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
-def histogram1d_engine(pos0, pos1, npt, raw,
-                       variance=None, dark=None,
-                       flat=None, solidangle=None,
-                       polarisation=None, absorption=None
-
+def histogram1d_engine(pos0, pos1, npt,
+                       raw,
+                       dark=None,
+                       flat=None,
+                       solidangle=None,
+                       polarization=None,
+                       absorption=None,
+                       mask=None,
+                       dummy=None,
+                       delta_dummy=None,
+                       normalization_factor=1.0,
+                       empty=None,
+                       split_result=False,
+                       variance=None,
+                       dark_variance=None,
+                       poissonian=False,
                        ):
-    """All the calculations performed in pure numpy histograms after preproc
+    """Implementation of rebinning engine using pure numpy histograms
     
     :param pos0: radial position array
     :param pos1: azimuthal position array
@@ -63,5 +74,5 @@ def histogram1d_engine(pos0, pos1, npt, raw,
     :param dark: the dark-current to subtract  
     
     """
-    # WIP
+    # TODO
     return Integrate1dtpl(positions, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)
