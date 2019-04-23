@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/04/2019"
+__date__ = "23/04/2019"
 
 import logging
 
@@ -124,7 +124,8 @@ class GeometryHistoryComboBox(AdvancedComboBox):
     def __displayedData(self, widget, row, role=qt.Qt.DisplayRole):
         if row == -1:
             if role == qt.Qt.DisplayRole:
-                return "No history"
+                # Displayed when nothing is selected
+                return ""
             return None
         if role == qt.Qt.DisplayRole:
             model = widget.model()
