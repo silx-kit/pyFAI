@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/04/2019"
+__date__ = "23/04/2019"
 
 from silx.gui import icons
 
@@ -219,6 +219,9 @@ class ConstraintsPopup(qt.QFrame):
 
 class FitParamView(qt.QObject):
 
+    sigValueAccepted = qt.Signal()
+    """Emitted when a quantity was accepted."""
+
     _iconVariableFixed = None
     _iconVariableConstrained = None
     _iconVariableConstrainedOut = None
@@ -234,6 +237,7 @@ class FitParamView(qt.QObject):
         self.__labelWidget.setText("%s:" % label)
         self.__quantity = QuantityEdit(parent)
         self.__quantity.setAlignment(qt.Qt.AlignRight)
+        self.__quantity.sigValueAccepted.connect(self.__fireValueAccepted)
         self.__unit = UnitLabel(parent)
         self.__unit.setUnitEditable(True)
         self.__min = qt.QToolButton(parent)
@@ -290,6 +294,9 @@ class FitParamView(qt.QObject):
             self._iconConstraintMax = icons.getQIcon("pyfai:gui/icons/constraint-max")
         if self._iconConstraintNoMax is None:
             self._iconConstraintNoMax = icons.getQIcon("pyfai:gui/icons/constraint-no-max")
+
+    def __fireValueAccepted(self):
+        self.sigValueAccepted.emit()
 
     def __createDropConstraint(self):
         popup = ConstraintsPopup(self.__quantity)
