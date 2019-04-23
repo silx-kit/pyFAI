@@ -47,7 +47,7 @@ else:
 from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
-def histogram1d_engine(pos0, pos1, npt,
+def histogram1d_engine(radial, npt,
                        raw,
                        dark=None,
                        flat=None,
@@ -66,13 +66,36 @@ def histogram1d_engine(pos0, pos1, npt,
                        ):
     """Implementation of rebinning engine using pure numpy histograms
     
-    :param pos0: radial position array
-    :param pos1: azimuthal position array
+    :param radial: radial position 2D array (same shape as raw)   
     :param npt: number of points to integrate over
-    :param raw: the actual raw image to integrate
-    :param variance: the variance associate to the raw data  
-    :param dark: the dark-current to subtract  
+    :param mask: 2d array of int/bool: non-null where data should be ignored
+    :param dummy: value of invalid data
+    :param delta_dummy: precision for invalid data
+    :param dark: array containing the value of the dark noise, to be subtracted
+    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
+    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility
+    :param polarization: Correction for polarization of the incident beam
+    :param absorption: Correction for absorption in the sensor volume
+    :param normalization_factor: final value is divided by this
+    :param empty: value to be given for empty bins
+    :param variance: provide an estimation of the variance
+    :param dark_variance: provide an estimation of the variance of the dark_current,
+    :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
+
+
+    All calculation are performed in single precision floating point (32 bits).
+
+    NaN are always considered as invalid values
+
+    if neither empty nor dummy is provided, empty pixels are 0.
     
+    Nota: "radial_range" and "azimuthal_range" have to be integrated into the 
+          mask prior to the call of this function 
+    
+    :return: Integrate1dtpl named tuple containing: 
+            position, average intensity, std on intensity, 
+            plus the various histograms on signal, variance, normalization and count.  
+                                               
     """
     # TODO
     return Integrate1dtpl(positions, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)
