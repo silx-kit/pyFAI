@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/04/2019"
+__date__ = "23/04/2019"
 
 import unittest
 import os
@@ -528,7 +528,12 @@ class TestIntergrationNextGeneration(unittest.TestCase):
         det = detector_factory("Pilatus100k")
         data = numpy.random.random(det.shape)
         ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
-        res = ai._integrate1d_ng(data, 100, method=("no", "histogram", "opencl"))
+        method = ("no", "histogram", "opencl")
+        actual_method = ai._normalize_method(method=method, dim=1, default=ai.DEFAULT_METHOD_1D).method[1:4]
+        if actual_method != method:
+            reason = "Skipping TestIntergrationNextGeneration.test_ocl_histo as OpenCL method not available"
+            self.skipTest(reason)
+        res = ai._integrate1d_ng(data, 100, method=method)
         self.assertEqual(res.compute_engine, "OCL_Histogram1d")
         self.assertEqual(str(res.unit), "q_nm^-1")
 
