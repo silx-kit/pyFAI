@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/04/2019"
+__date__ = "23/04/2019"
 
 import logging
 import numpy
@@ -381,6 +381,14 @@ class GeometryTask(AbstractCalibrationTask):
         self.__rotation2 = FitParamView(self, "Rotation 2", units.Unit.RADIAN, userAngleUnit)
         self.__rotation3 = FitParamView(self, "Rotation 3", units.Unit.RADIAN, userAngleUnit)
 
+        self.__wavelength.sigValueAccepted.connect(self.__geometryCustomed)
+        self.__distance.sigValueAccepted.connect(self.__geometryCustomed)
+        self.__poni1.sigValueAccepted.connect(self.__geometryCustomed)
+        self.__poni2.sigValueAccepted.connect(self.__geometryCustomed)
+        self.__rotation1.sigValueAccepted.connect(self.__geometryCustomed)
+        self.__rotation2.sigValueAccepted.connect(self.__geometryCustomed)
+        self.__rotation3.sigValueAccepted.connect(self.__geometryCustomed)
+
         self.__distance.setDefaultConstraintsModel(self.__defaultConstraints.distance())
         self.__wavelength.setDefaultConstraintsModel(self.__defaultConstraints.wavelength())
         self.__poni1.setDefaultConstraintsModel(self.__defaultConstraints.poni1())
@@ -685,7 +693,7 @@ class GeometryTask(AbstractCalibrationTask):
 
         # Save this geometry into the history
         geometryHistory = self.model().geometryHistoryModel()
-        geometryHistory.appendGeometry("Fitting", datetime.datetime.now(), geometry, calibration.getRms())
+        geometryHistory.appendGeometry("Fitted", datetime.datetime.now(), geometry, calibration.getRms())
 
         self._fitButton.setWaiting(False)
         self.__fitting = False
@@ -717,6 +725,24 @@ class GeometryTask(AbstractCalibrationTask):
             else:
                 text = ""
         self._currentResidual.setText(text)
+
+    def __geometryCustomed(self):
+        """
+        Called when the geometry is manually customed.
+        """
+        # Save this geometry into the history
+        geometry = self.model().fittedGeometry()
+        geometryHistory = self.model().geometryHistoryModel()
+        if len(geometryHistory) > 0:
+            # Avoid duplication when it is possible
+            last = geometryHistory[-1]
+            if last.geometry() == geometry:
+                return
+
+        calibration = self.__getCalibration()
+        rms = None if calibration is None else calibration.getRms()
+        now = datetime.datetime.now()
+        geometryHistory.appendGeometry("Customed", now, geometry, rms)
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
