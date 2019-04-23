@@ -27,8 +27,9 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/03/2019"
+__date__ = "08/04/2019"
 
+import numpy
 from .AbstractModel import AbstractModel
 
 
@@ -40,6 +41,7 @@ class PeakModel(AbstractModel):
         self.__color = None
         self.__coords = []
         self.__ringNumber = None
+        self.__isEnabled = True
 
     def __len__(self):
         return len(self.__coords)
@@ -54,6 +56,25 @@ class PeakModel(AbstractModel):
         self.__name = name
         self.wasChanged()
 
+    def isEnabled(self):
+        """
+        True if this group have to be taken into acount.
+
+        :rtype: bool
+        """
+        return self.__isEnabled
+
+    def setEnabled(self, isEnabled):
+        """
+        Set if this group have to be taken into acount.
+
+        :param bool isEnabled: True to enable this group.
+        """
+        if self.__isEnabled == isEnabled:
+            return
+        self.__isEnabled = isEnabled
+        self.wasChanged()
+
     def color(self):
         return self.__color
 
@@ -62,9 +83,35 @@ class PeakModel(AbstractModel):
         self.wasChanged()
 
     def coords(self):
+        """
+        Returns coords as numpy array.
+
+        The first index identify a coord, the seconf identify the coord
+        dimensions.
+
+        List of axis/ord can be reached like that.
+
+        .. code-block::
+
+            coords = group.coords()
+            yy = coords[:, 0]
+            xx = coords[:, 1]
+        """
         return self.__coords
 
     def setCoords(self, coords):
+        """
+        Set coords as numpy array.
+
+        :param numpy.ndarray coords: Array of coords (1st dimension is the
+            index of the coord; the second dimension contains y as first index,
+            and x as second index).
+        """
+        assert(isinstance(coords, numpy.ndarray))
+        assert(len(coords.shape) == 2)
+        assert(coords.shape[1] == 2)
+        coords = numpy.ascontiguousarray(coords)
+        coords.flags['WRITEABLE'] = False
         self.__coords = coords
         self.wasChanged()
 
@@ -73,9 +120,34 @@ class PeakModel(AbstractModel):
 
         Duplicated values are removed from the new coords, and the is added
         the end of the previous list.
+
+        :param [numpy.ndarray,PeakModel] coords:
         """
-        new_coords = set(coords) - set(self.__coords)
-        self.__coords += list(new_coords)
+        if isinstance(coords, PeakModel):
+            coords = coords.coords()
+        assert(isinstance(coords, numpy.ndarray))
+        assert(len(coords.shape) == 2)
+        assert(coords.shape[1] == 2)
+
+        # Shortcuts
+        if len(coords) == 0:
+            return
+        if len(self.__coords) == 0:
+            self.setCoords(coords)
+            return
+
+        # Convert to structured array to use setdiff1d
+        dtype = self.__coords.dtype.descr * self.__coords.shape[1]
+        previous_coords = self.__coords.view(dtype)
+        coords = numpy.ascontiguousarray(coords)
+        new_coords = coords.view(dtype)
+        new_coords = numpy.setdiff1d(new_coords, previous_coords)
+        if len(new_coords) == 0:
+            return
+        new_coords = new_coords.view(self.__coords.dtype)
+        new_coords.shape = -1, 2
+        self.__coords = numpy.vstack((self.__coords, new_coords))
+        self.__coords = numpy.ascontiguousarray(self.__coords)
         self.wasChanged()
 
     def ringNumber(self):
@@ -90,6 +162,21 @@ class PeakModel(AbstractModel):
         peakModel = PeakModel(parent)
         peakModel.setName(self.name())
         peakModel.setColor(self.color())
-        peakModel.setCoords(list(self.coords()))
+        peakModel.setCoords(self.coords())
         peakModel.setRingNumber(self.ringNumber())
+        peakModel.setEnabled(self.isEnabled())
         return peakModel
+
+    def distanceTo(self, coord):
+        """Returns the smallest distance to this coord.
+
+        None is retruned if the group contains no peaks.
+
+        :param Tuple[float,float] coord: Distance to mesure
+        """
+        if len(self.__coords) == 0:
+            return None
+        coords = self.coords()
+        coord = numpy.array(coord)
+        distances = numpy.linalg.norm(coords - coord, axis=1)
+        return distances.min()

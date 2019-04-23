@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "16/04/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1249,28 +1249,32 @@ class Geometry(object):
         :return: dict with parameters compatible with fit2D geometry
         """
         with self._sem:
-            cosTilt = cos(self._rot1) * cos(self._rot2)
-            sinTilt = sqrt(1 - cosTilt * cosTilt)
+            cos_tilt = cos(self._rot1) * cos(self._rot2)
+            sin_tilt = sqrt(1.0 - cos_tilt * cos_tilt)
+            tan_tilt = sin_tilt / cos_tilt
             # This is tilt plane rotation
-            if sinTilt != 0:
-                cosTpr = max(-1, min(1, -cos(self._rot2) * sin(self._rot1) / sinTilt))
-                sinTpr = sin(self._rot2) / sinTilt
-            else:  # undefined, does not seem to matter as not tilted
-                cosTpr = 1.0
-                sinTpr = 0.0
-            directDist = 1.0e3 * self._dist / cosTilt
-            tilt = degrees(arccos(cosTilt))
-            if sinTpr < 0:
-                tpr = -degrees(arccos(cosTpr))
-            else:
-                tpr = degrees(arccos(cosTpr))
+            if sin_tilt == 0:
+                # tilt plan rotation is undefined when there is no tilt!, does not matter
+                cos_tilt = 1.0
+                sin_tilt = 0.0
+                cos_tpr = 1.0
+                sin_tpr = 0.0
 
-            centerX = (self._poni2 + self._dist * sinTilt / cosTilt * cosTpr)\
-                / self.pixel2
-            if abs(tilt) < 1e-5:
+            else:
+                cos_tpr = max(-1.0, min(1.0, -cos(self._rot2) * sin(self._rot1) / sin_tilt))
+                sin_tpr = sin(self._rot2) / sin_tilt
+            directDist = 1.0e3 * self._dist / cos_tilt
+            tilt = degrees(arccos(cos_tilt))
+            if sin_tpr < 0:
+                tpr = -degrees(arccos(cos_tpr))
+            else:
+                tpr = degrees(arccos(cos_tpr))
+
+            centerX = (self._poni2 + self._dist * tan_tilt * cos_tpr) / self.pixel2
+            if abs(tilt) < 1e-5:  # in degree
                 centerY = (self._poni1) / self.pixel1
             else:
-                centerY = (self._poni1 + self._dist * sinTilt / cosTilt * sinTpr) / self.pixel1
+                centerY = (self._poni1 + self._dist * tan_tilt * sin_tpr) / self.pixel1
             out = self.detector.getFit2D()
             out["directDist"] = directDist
             out["centerX"] = centerX
@@ -1304,10 +1308,10 @@ class Geometry(object):
         """
         with self._sem:
             try:
-                cosTilt = cos(radians(tilt))
-                sinTilt = sin(radians(tilt))
-                cosTpr = cos(radians(tiltPlanRotation))
-                sinTpr = sin(radians(tiltPlanRotation))
+                cos_tilt = cos(radians(tilt))
+                sin_tilt = sin(radians(tilt))
+                cos_tpr = cos(radians(tiltPlanRotation))
+                sin_tpr = sin(radians(tiltPlanRotation))
             except AttributeError as error:
                 logger.error(("Got strange results with tilt=%s"
                               " and tiltPlanRotation=%s: %s") %
@@ -1319,20 +1323,18 @@ class Geometry(object):
                     self.detector.pixel2 = pixelX * 1.0e-6
             else:
                 self.detector.set_splineFile(splineFile)
-            self._dist = directDist * cosTilt * 1.0e-3
-            self._poni1 = centerY * self.pixel1\
-                - directDist * sinTilt * sinTpr * 1.0e-3
-            self._poni2 = centerX * self.pixel2\
-                - directDist * sinTilt * cosTpr * 1.0e-3
-            rot2 = numpy.arcsin(sinTilt * sinTpr)  # or pi-
-            rot1 = numpy.arccos(min(1.0, max(-1.0, (cosTilt / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt)))))  # + or -
-            if cosTpr * sinTilt > 0:
+            self._dist = directDist * cos_tilt * 1.0e-3
+            self._poni1 = centerY * self.pixel1 - directDist * sin_tilt * sin_tpr * 1.0e-3
+            self._poni2 = centerX * self.pixel2 - directDist * sin_tilt * cos_tpr * 1.0e-3
+            rot2 = numpy.arcsin(sin_tilt * sin_tpr)  # or pi-
+            rot1 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt / numpy.sqrt(1.0 - (sin_tpr * sin_tilt) ** 2)))))  # + or -
+            if cos_tpr * sin_tilt > 0:
                 rot1 = -rot1
-            assert abs(cosTilt - cos(rot1) * cos(rot2)) < 1e-6
-            if tilt == 0:
+            assert abs(cos_tilt - cos(rot1) * cos(rot2)) < 1e-6
+            if tilt == 0.0:
                 rot3 = 0
             else:
-                rot3 = numpy.arccos(min(1.0, max(-1.0, (cosTilt * cosTpr * sinTpr - cosTpr * sinTpr) / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt))))  # + or -
+                rot3 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt * cos_tpr * sin_tpr - cos_tpr * sin_tpr) / numpy.sqrt(10 - sin_tpr * sin_tpr * sin_tilt * sin_tilt))))  # + or -
                 rot3 = numpy.pi / 2.0 - rot3
             self._rot1 = rot1
             self._rot2 = rot2

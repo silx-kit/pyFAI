@@ -1,0 +1,715 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+\title{Conversion between \texttt{pyFAI} and \texttt{ImageD11}
+  detector geometry parameters} \author{J. Kieffer and C. Detlefs}
+\date{\today} \maketitle
+
+\section{Introduction}
+
+The purpose of this note is to compare how \texttt{pyFAI} and
+\texttt{ImageD11} treat the detector position. In particular, we
+derive how ``PONI'' detector parameters refined with \texttt{pyFAI}
+can be transformed into \texttt{ImageD11} parameters.
+
+In both packages, the transformation from pixel space to 3D laboratory
+coordinates is carried out in 4 steps:
+\begin{itemize}
+\item Transformation from ``pixel space'' to the ``detector
+  coordinate system''. The detector coordinate system is a 3D
+  coordinate system centered on the (0,0) pixel of the detector.
+\item Correction for linear offsets, i.e.~the position of the (0,0)
+  pixel relative to the beam axis.
+\item Correction for the origin/diffractometer-to-detector
+  distance. The sample and diffractometer center of rotation are
+  assumed to be located at the origin.
+\item A series of rotations for the detector coordinate system
+  relative to the laboratory coordinates.
+\end{itemize}
+
+Unfortunately, the conventions chosen by \texttt{pyFAI} and
+\texttt{ImageD11} differ. For example, \texttt{pyFAI} applies the
+origin-to-detector distance correction before rotations, whereas
+\texttt{ImageD11} applies it after rotations. Furthermore, they employ
+different coordinate systems.
+
+\section{Detector}
+
+We consider a pixelated 2D imaging detector. In ``pixel space'', the
+position of a given pixel is given by the horizontal and vertical
+pixel numbers, $d_H$ and $d_V$. We assume that looking along the beam
+axis into the detector, $d_H$ increases towards the right (towards the
+center of the synchrotron) and $d_V$ towards the top. For clarity, we
+assign the unit $\mathrm{px}$ to these coordinates.
+
+The pixel numbers $d_H$ and $d_V$ are transformed into 3D ``detector''
+coordinates by a function $D$:
+\begin{align}
+  \vec{p}
+  & =
+  D\left(d_H, d_V\right).
+\end{align}
+This function will account for the detector's pixel size and the
+orientation and direction of pixel rows and columns relative to the
+detector coordinate system. Furthermore it may apply a distortion
+correction. This, however, is beyond the scope of this note.
+
+Limiting ourselves to linear functions, $D$ takes the form of a matrix
+with two columns and three rows. We will see below that the different
+choices of laboratory coordinate systems yield different $D$-matrices
+for \texttt{pyFAI} and \texttt{ImageD11}. We assume that the pixels
+have a constant horizontal and vertical size, $\mathrm{pxsize}_H$ and
+$\mathrm{pxsize}_V$. Both are given in units of length per
+pixel. \texttt{pyFAI} specifically defines the unit of length as
+meter, we will therefore use pixel sizes in units of
+$\mathrm{m}/\mathrm{px}$ throughout this note.
+
+The position and orientation of this detector relative to the
+laboratory coordinates are described below.
+
+\section{Geometry definition of \texttt{pyFAI}}
+
+\subsection{Coordinates}
+
+\texttt{pyFAI} uses a coordinate system where the first axis (1) is
+vertically up ($y$), the second axis (2) is horizontal ($x$)
+towards the ring center (starboard), and the third axis (3) along the
+beam ($z$). Note that in this order (1, 2, 3) is a right-handed coordinate
+system, which makes $xyz$ in the usual order a left-handed coordinate
+system!
+
+\subsection{Units}
+
+All dimensions in \texttt{pyFAI} are in meter and all rotation are in
+radians.
+
+\subsection{Parameters}
+
+\texttt{pyFAI} describes the position and orientation of the detector
+by six variables, collectively called the PONI, for point of normal
+incidence. In addition, a detector calibration is provided in the
+PONI-file to convert pixel coordinates into real-space
+coordinates. Here we limit our discussion to the simplest case, i.e.~a
+pixel size as discussed above.
+
+\begin{description}
+\item[Rotations:] $\theta_1$, $\theta_2$ and $\theta_3$ describe the
+  detector's orientation relative to the laboratory coordinate system.
+
+\item[Offsets:] $\mathrm{poni}_1$ and $\mathrm{poni}_2$ describe the
+  offsets of pixel (0,0) relative to the ``point of normal
+  incidence''. In the absence of rotations the point of normal
+  incidence is defined by the intersection of the direct beam beam
+  axis with the detector.
+
+\item[Distance:] $L$ describes the distance from the origin of the
+  laboratory system to the point of normal incidence.
+\end{description}
+
+\subsection{Detector}
+
+The transformation from pixel space to \texttt{pyFAI} detector
+coordinates is given by
+
+\begin{align}
+  \begin{bmatrix} p_1 \\ p_2 \\ p_3 \end{bmatrix}
+  & =
+  \begin{bmatrix}
+    0 & \mathrm{pxsize}_V \\
+    \mathrm{pxsize}_H & 0 \\
+    0 & 0
+  \end{bmatrix}
+  \cdot
+  \begin{bmatrix} d_H \\ d_V \end{bmatrix}
+  \\
+  D_{\mathtt{pyFAI}}
+  & = 
+  \begin{bmatrix}
+    0 & \mathrm{pxsize}_V \\
+    \mathrm{pxsize}_H & 0 \\
+    0 & 0
+  \end{bmatrix}.
+  \label{eq-dmatrixpyFAI}
+\end{align}
+
+\subsection{Offsets}
+
+The PONI parameters are: a distance $L$, the vertical ($y$) and
+horizontal ($x$) coordinates of the point of normal incidence in
+meters, $\mathrm{poni}_1$ and $\mathrm{poni}_2$. The inversion of the
+$x$ and $y$ axes is due to the arrangement of the detector data, with
+$x$-rows being the ``slow'' axis and $y$-columns the ``fast''
+axis. Extra care has to be taken with the signs of the rotations when
+converting form this coordinate system to another.
+
+\texttt{pyFAI} applies both the offset correction and the
+origin-to-detector distance after the transformation from pixel space
+to the detector system, but before rotations,
+
+Let $L$ be the distance from the origin/sample/diffractometer center
+of rotation. In the absence of any detector rotations, $L$ is taken
+along $p_3$ (beam axis, $z$), $p_1$ along the $y$-axis (vertical)
+and $p_2$ along the $x$-axis (horizontal). Then the laboratory
+coordinates before rotation are
+
+\begin{align}
+  \begin{bmatrix}
+    p_1 \\ p_2 \\ p_3
+  \end{bmatrix}
+  & =
+  D_{\mathtt{pyFAI}} \cdot \begin{bmatrix} d_H \\ d_V \end{bmatrix}
+  +
+  \begin{bmatrix} -\mathrm{poni}_1 \\ -\mathrm{poni}_2 \\ L \end{bmatrix}.
+\end{align}
+
+\subsection{Rotations}
+
+The detector rotations are taken about the origin of the coordinate
+system (sample position). We define the following right-handed
+rotation matrices:
+
+\begin{align}
+  \mathrm{R}_1(\theta_1)
+  & =
+  \begin{bmatrix}
+    1 & 0 & 0 \\
+    0 & \cos(\theta_1) & -\sin(\theta_1) \\
+    0 & \sin(\theta_1) & \cos(\theta_1)
+  \end{bmatrix}
+  \label{eq-rot1}
+  \\
+  \mathrm{R}_2(\theta_2)
+  & =
+  \begin{bmatrix}
+    \cos(\theta_2) & 0 & \sin(\theta_2) \\
+    0 & 1 & 0 \\
+    -\sin(\theta_2) & 0 & \cos(\theta_2)
+  \end{bmatrix}
+  \label{eq-rot2}
+  \\
+  \mathrm{R}_3(\theta_3)
+  & =
+  \begin{bmatrix}
+    \cos(\theta_3) & -\sin(\theta_3) & 0\\
+    \sin(\theta_3) & \cos(\theta_3) & 0\\
+    0 & 0 & 1  
+  \end{bmatrix}.
+  \label{eq-rot3}
+\end{align}
+
+The rotations 1 and 2 in \texttt{pyFAI} are left handed, i.e.~the sign
+of $\theta_1$ and $\theta_2$ is inverted. 
+
+The combined \texttt{pyFAI} rotation matrix is then
+\begin{align}
+  R_{\mathtt{pyFAI}}(\theta_1, \theta_2, \theta_3)
+  & =
+  R_3(\theta_3) \cdot R_2(-\theta_2) \cdot R_1(-\theta_1)
+\end{align}
+
+which yields the final  laboratory coordinates after rotation
+
+\begin{align}
+  \begin{bmatrix}
+    t_1 \\ t_2 \\ t_3
+  \end{bmatrix}
+  & =
+  R_{\mathtt{pyFAI}}(\theta_1, \theta_2, \theta_3)
+  \cdot
+  \begin{bmatrix} p_1 \\ p_2 \\ p_3 \end{bmatrix}
+  \label{eq-tpyFAI}
+  \\
+  & =
+  R_{\mathtt{pyFAI}}(\theta_1, \theta_2, \theta_3)
+  \cdot
+  \left(
+  D_{\mathtt{pyFAI}} \cdot \begin{bmatrix} d_H \\ d_V \end{bmatrix}
+  + \begin{bmatrix} -\mathrm{poni}_1 \\ -\mathrm{poni}_2 \\ L \end{bmatrix}
+  \right)
+  \\
+  & =
+  R_{\mathtt{pyFAI}}(\theta_1, \theta_2, \theta_3)
+  \cdot
+  \left(
+  \begin{bmatrix}
+    0 & \mathrm{pxsize}_V \\
+    \mathrm{pxsize}_H & 0 \\
+    0 & 0
+  \end{bmatrix}
+  \cdot \begin{bmatrix} d_H \\ d_V \end{bmatrix}
+  + \begin{bmatrix} -\mathrm{poni}_1 \\ -\mathrm{poni}_2 \\ L \end{bmatrix}
+  \right).
+\end{align}
+
+\subsection{Inversion: Finding where a scattered beam hits the detector}
+
+For a 3DXRD-type simulation, we have to determine the pixel where a
+scattered ray intercepts the detector. Let $A$ be the scattering
+center of a ray within a sample volume (grain, sub-grain or
+voxel). The Bragg condition and grain orientation pre-define the
+direction of the scattered beam, $\vec{k}$. The coordinates
+$A_{1,2,3}$ and $k_{1,2,3}$ are specified in the laboratory system.
+
+The inversion eq.~\ref{eq-tpyFAI} is straight-forward:
+
+\begin{align}
+  R_1(\theta_1)\cdot R_2(\theta_2) \cdot R_3(-\theta_3) \cdot
+  \begin{bmatrix} t_1 \\ t_2 \\ t_3
+  \end{bmatrix}
+  & =
+  \begin{bmatrix} p_1 \\ p_2 \\ L \end{bmatrix}
+  \label{eq-find-alpha}
+  \\
+  \begin{bmatrix}
+    t_1 \\ t_2 \\ t_3
+  \end{bmatrix}
+  & =
+  \begin{bmatrix}
+    A_1  \\ A_2 \\ A_3 
+  \end{bmatrix}
+  + \alpha
+  \begin{bmatrix}
+    k_1 \\ k_2 \\ k_3
+  \end{bmatrix}.
+\end{align}
+
+The third line ($\ldots = L$) of eq.~\ref{eq-find-alpha} is then used
+to determine the free parameter $\alpha$, which in turn is used in the
+first and second lines to find $p_{1,2}$ and thus $d_{1,2}$.
+
+As the most trivial example we consider the case of no rotations,
+$\theta_1 = \theta_2 = \theta_3 = 0$. Then
+
+\begin{align}
+  A_3 + \alpha k_3 & = L \\
+  \alpha & = \frac{L-A_3}{k_3} \\
+  p_1 & = A_1 + (L-A_3) \frac{k_1}{k_3} \\
+  p_2 & = A_2 + (L-A_3) \frac{k_2}{k_3}.
+\end{align}
+
+We see also that when all rotations are zero, $(\mathrm{poni}_1,
+\mathrm{poni_2})$ are the real space coordinates of the direct beam
+($A_{1,2,3}=k_{1,2}=0$) .
+
+\section{Geometry definition of \texttt{ImageD11}}
+
+For maximum convenience, \texttt{ImageD11} defines almost everything
+differently than \texttt{pyFAI}.
+
+\subsection{Coordinates}
+
+\texttt{ImageD11} uses the ID06 coordinate system
+with $x$ along the beam, $y$ to port (away from the ring center), and
+$z$ up.
+
+\subsection{Units}
+
+As the problem is somewhat scale-invariant, \texttt{ImageD11}
+allows a free choice of the unit of length, which we will call $X$
+here. The same unit has to be used for all translations, and for the
+pixel size of the detector. The default used in the code appears to be
+$X = 1\,\mathrm{\mu m}$, but it might as well be Planck lengths,
+millimeters, inches, meters, tlalcuahuitl, furlongs, nautical miles,
+light years, kparsec, or whatever else floats your boat. The only
+requirement is that you can actually measure and express the detector
+pixel size and COR-to-detector distance in your units of choice. Since
+we want to compare to \texttt{pyFAI}, we choose $X=1\,\mathrm{m}$.
+
+Rotations are given in radians.
+
+\subsection{Parameters}
+
+\texttt{ImageD11} defines the detector geometry via the
+following parameters:
+
+\begin{description}
+\item[Beam center:] $y_{\mathrm{center}}$ and $z_{\mathrm{center}}$
+  define the position of the direct beam on the detector. Contrary to
+  \texttt{pyFAI}, the beam center is given in pixel space, in units of
+  $\mathrm{px}$.
+
+\item[Pixel size:] The horizontal and vertical pixel size are defined
+  by $y_{\mathrm{size}}$ and $z_{\mathrm{size}}$ in
+  ${X}/{\mathrm{px}}$. With the right choice of the unit of length
+  $X$, these corresponds directly to the pixel sizes
+  $\mathrm{pxsize}_H$ and $\mathrm{pxsize}_V$ defined above.
+
+\item[Detector flip matrix:] $O = \begin{bmatrix} o_{11} & o_{12}
+  \\ o_{21} & o_{22} \end{bmatrix}$. This matrix takes care of
+  correcting typical problems with the way pixel coordinates are
+  arranged on the detector. If, e.g., the detector is rotated by
+  $90^{\circ}$, then $O=\begin{bmatrix} 0 & 1 \\ -1 &
+  0\end{bmatrix}$. If left and right (or up and down) are inverted on
+  the detector, then $o_{22} = -1$ ($o_{11}=-1$).
+  
+\item[Rotations:] Detector tilts $t_x$, $t_y$, and $t_z$, in
+  $\mathrm{rad}$. The center of rotation is the point where the direct
+  beam intersects the detector.
+  
+\item[Distance:] $\Delta$, in units $X$, is the distance between the origin
+  to the point where the direct beam intersects the detector.  Note
+  that this is again different from the definition of \texttt{pyFAI}.
+\end{description}
+
+It appears that these conventions where defined under the assumption
+that the detector is more or less centered in the direct beam, and
+that the detector tilts are small.
+
+\subsection{Transformation}
+
+The implementation in the code \texttt{transform.py} is using the
+following equations:
+
+\begin{align}
+  R_{\mathtt{ImageD11}}(\theta_x, \theta_y, \theta_z)
+  & =
+  R_1(\theta_x) \cdot R_2(\theta_y) \cdot R_3(\theta_z)
+  \\
+  \begin{bmatrix}
+    p_z \\ p_y
+  \end{bmatrix}
+  & =
+  \begin{bmatrix}
+    o_{11} & o_{12}
+    \\ o_{21} & o_{22}
+  \end{bmatrix}
+  \cdot
+  \begin{bmatrix}
+    (d_z - z_{\mathrm{center}}) z_{\mathrm{size}} \\
+    (d_y - y_{\mathrm{center}}) y_{\mathrm{size}}
+  \end{bmatrix}
+  \label{eq-p}
+  \\
+  \begin{bmatrix}
+    t_x \\ t_y \\ t_z
+  \end{bmatrix}
+  & =
+  R_{\mathtt{ImageD11}}(\theta_x, \theta_y, \theta_z)
+  \cdot
+  \begin{bmatrix}
+    0 \\ p_y \\ p_z
+  \end{bmatrix}
+  +
+  \begin{bmatrix}
+    \Delta \\ 0 \\ 0
+  \end{bmatrix}
+  \label{eq-tImageD11}
+\end{align}
+Note that the order of $y$ and $z$ is not the same in eqs.~\ref{eq-p}
+and \ref{eq-tImageD11}.
+
+By combining the detector flip matrix $O$ and the pixel size into a
+detector $D$ matrix, this can be written as
+
+\begin{align}
+  D_{\mathtt{ImageD11}}
+  & = 
+  \begin{bmatrix}
+    0 & 0 \\
+    y_{\mathrm{size}} o_{22} & z_{\mathrm{size}} o_{21} \\
+    y_{\mathrm{size}} o_{12} & z_{\mathrm{size}} o_{11}
+  \end{bmatrix}
+  \label{eq-DImageD11}
+  \\
+  \begin{bmatrix} p_x \\ p_y \\ p_z \end{bmatrix}
+  & =
+  D_{\mathtt{ImageD11}} \cdot
+  \begin{bmatrix}
+    d_H - y_{\mathrm{center}} \\
+    d_V - z_{\mathrm{center}}
+  \end{bmatrix}
+\end{align}
+
+\section{Conversion}
+
+Assume that the same detector geometry is described by the two
+notations. How can the parameters be converted from one to the other?
+
+\subsection{Detector $D$-matrix}
+
+The pixel size is the same in both notations, $y_{\mathrm{size}} =
+\mathrm{pxsize}_H$ and $z_{\mathrm{size}} = \mathrm{pxsize}_V$.
+
+As \texttt{pyFAI} does not allow for detector flipping, $o_{11}=1$,
+$o_{22}=-1$ (because the sign of the horizontal axis is inverted
+between \texttt{ImageD11} and \texttt{pyFAI}) and $o_{12}=o_{21}=0$.
+For the detector setup described above, with $d_V$ increasing to the
+top and $d_H$ increasing towards the center of the synchrotron
+(i.e.~opposite to the positive $y$-direction), eq.~\ref{eq-DImageD11}
+becomes
+
+\begin{align}
+  D_{\mathtt{ImageD11}}
+  & =
+  \begin{bmatrix}
+    0 & 0 \\ -\mathrm{pxsize}_H & 0 \\ 0 & \mathrm{pxsize}_V
+  \end{bmatrix}.
+  \label{eq-dmatrixImageD11}
+\end{align}
+
+\subsection{Coordinates}
+
+Both notations use the same sign for the vertical and beam axes. The
+sign of the horizontal transverse axis, however, is inverted.
+
+The transformation between the different coordinate systems is then
+achieved by
+\begin{align}
+  G & =
+  \begin{bmatrix}
+    0 & 0 & 1 \\ 0 & -1 & 0 \\ 1 & 0 & 0
+  \end{bmatrix}
+  \\
+  t_{\mathtt{ImageD11}}
+  & =
+  G \cdot
+  t_{\mathtt{pyFAI}},
+  \label{eq-coordconv}
+\end{align}
+where $t_{\mathtt{ImageD11}}$ is given by eq.~\ref{eq-tImageD11}, and
+$t_{\mathtt{pyFAI}}$ is given by eq.~\ref{eq-tpyFAI}. The matrix $G$
+performs the change of axes ($x \leftrightarrow z$, $y \leftrightarrow
+-y$) and has the convenient property $G^2 = 1$.
+
+Substituting these equations into eq.~\ref{eq-coordconv}, one can them
+attempt to convert \texttt{pyFAI} parameters into \texttt{ImageD11}
+parameters and vice versa.
+
+\begin{align}
+  R_{\mathtt{ImageD11}}
+  \cdot
+  D_{\mathtt{ImageD11}}
+  &
+  \cdot
+  \begin{bmatrix}
+    d_H - y_{\mathrm{center}} \\
+    d_V - z_{\mathrm{center}} 
+  \end{bmatrix}
+  +
+  \begin{bmatrix} \Delta \\ 0 \\ 0 \end{bmatrix}
+  \nonumber \\
+  = &
+  G \cdot
+  R_{\mathtt{pyFAI}}
+  \cdot
+  \left(
+  D_{\mathtt{pyFAI}}
+  \cdot
+  \begin{bmatrix} d_H \\ d_V \end{bmatrix}
+  +
+  \begin{bmatrix} -\mathrm{poni}_1 \\ -\mathrm{poni}_2 \\ L \end{bmatrix}
+  \right)
+  \label{eq-transformation}
+\end{align}
+
+\subsection{Rotations}
+
+Take an arbitrary vector $d$ with $d_{\mathtt{ImageD11}}
+= \begin{bmatrix} a \\ b \\ c \end{bmatrix}$. We first transform this
+into the \texttt{pyFAI} coordinate system by multiplication with $G$,
+and then apply an arbitrary rotation matrix, once in before (in
+\texttt{pyFAI} coordinates, $R_{\mathtt{pyFAI}}$) and once after the
+transformation (in \texttt{ImageD11} coordinates,
+$R_{\mathtt{ImageD11}}$).
+
+\begin{align}
+    d_{\mathtt{pyFAI}}
+    & =
+    G \cdot d_{\mathtt{ImageD11}}
+    = \begin{bmatrix} c \\ -b \\ a \end{bmatrix}
+    \\
+    R_{\mathtt{pyFAI}} \cdot d_{\mathtt{pyFAI}}
+    & =
+    R_{\mathtt{pyFAI}} \cdot G \cdot d_{\mathtt{ImageD11}}
+    \\
+    & = G \cdot R_{\mathtt{ImageD11}} \cdot d_{\mathtt{ImageD11}}.
+\end{align}
+
+Comparing the last two lines, we find that with
+
+\begin{align}
+  R_{\mathtt{pyFAI}} \cdot G
+  & =
+  G \cdot R_{\mathtt{ImageD11}} 
+\end{align}
+the transformation is applicable for each and any vector $d$.  Because
+$G^{-1} = G$ this transformation can also be applied to a series of
+rotations: $G \cdot R \cdot R' = (G \cdot R \cdot G) \cdot (G \cdot R'
+\cdot G) \cdot G$.
+
+Applying this to the rotations matrices defined in
+eqs.~\ref{eq-rot1}--\ref{eq-rot3} shows, unsurprisingly, that this
+coordinate transformation is an exchange of rotation axes $x$ and
+$y$, and a change of sign for $y$.
+
+\begin{align}
+  G \cdot R_1(\theta) \cdot G & = R_3(\theta) \\
+  G \cdot R_2(\theta) \cdot G & = R_2(-\theta) \\
+  G \cdot R_3(\theta) \cdot G & = R_1(\theta)
+\end{align}
+
+Applying this transformation to the \texttt{pyFAI} rotation matrix can
+comparing to the \texttt{ImageD11} rotation matrix, we see
+\begin{align}
+  G \cdot R_{\mathtt{pyFAI}}(\theta_1, \theta_2, \theta_3)
+  \cdot G
+  & =
+  G R_3(\theta_3) \cdot R_2(-\theta_2) \cdot R_1(-\theta_1)
+  \cdot G
+  \\
+  & =
+  R_1(\theta_3) \cdot R_2(\theta_2) \cdot R_3(-\theta_1)
+  \\
+  & =
+  R_{\mathtt{ImageD11}}(\theta_x, \theta_y, \theta_z)
+  \\
+  & = 
+  R_1(\theta_x) \cdot R_2(\theta_y) \cdot R_3(-\theta_z)
+\end{align}
+
+We find that, by divine intervention\footnote{May his noodly
+  appendages forever touch you!} and despite all the efforts to choose
+incompatible conventions, \emph{the effective order of rotations is
+  actually the same between \texttt{ImageD11} and
+  \texttt{pyFAI}}. Consequently, there is a direct correspondence with
+only a change of sign between $\theta_z$ and $\theta_1$:
+
+\begin{align}
+  \theta_x & = \theta_3
+  \label{eq-thetax}
+  \\
+  \theta_y & = \theta_2
+  \label{eq-thetay}
+  \\
+  \theta_z & = -\theta_1
+  \label{eq-thetaz}
+\end{align}
+
+\subsection{Translations and offsets}
+
+Inserting eqs.~\ref{eq-thetax}--\ref{eq-thetaz}
+into \ref{eq-transformation}, we find
+
+\begin{align}
+  \begin{bmatrix} \Delta \\ 0 \\ 0 \end{bmatrix}
+  = &
+  G \cdot
+  R_{\mathtt{pyFAI}}
+  \cdot
+  \left(
+  D_{\mathtt{pyFAI}}
+  \cdot
+  \begin{bmatrix} d_H \\ d_V \end{bmatrix}
+  +
+  \begin{bmatrix} -\mathrm{poni}_1 \\ -\mathrm{poni}_2 \\ L \end{bmatrix}
+  \right)
+  \nonumber \\ &
+  -
+  R_{\mathtt{ImageD11}}
+  \cdot
+  D_{\mathtt{ImageD11}}
+  \cdot
+  \begin{bmatrix}
+    d_H - y_{\mathrm{center}} \\
+    d_V - z_{\mathrm{center}} 
+  \end{bmatrix}
+  \\
+  = &
+  R_{\mathtt{ImageD11}}
+  \cdot
+  G \cdot
+  \left(
+  \begin{bmatrix}
+    \mathrm{pxsize}_V d_V \\ \mathrm{pxsize}_H d_H \\ 0
+  \end{bmatrix}
+  +
+  \begin{bmatrix} -\mathrm{poni}_1 \\ -\mathrm{poni}_2 \\ L \end{bmatrix}
+  \right)
+  \nonumber \\ &
+  -
+  R_{\mathtt{ImageD11}}
+  \cdot
+  \begin{bmatrix}
+    0 \\
+    -\mathrm{pxsize}_H (d_H - y_{\mathrm{center}}) \\
+    \mathrm{pxsize}_V (d_V - z_{\mathrm{center}}) 
+  \end{bmatrix}
+  \\
+  = &
+  R_{\mathtt{ImageD11}}
+  \cdot
+  \left(
+  \begin{bmatrix}
+    L
+    \\
+    \mathrm{poni}_2 - \mathrm{pxsize}_H d_H
+    \\
+    -\mathrm{poni}_1 + \mathrm{pxsize}_V d_V
+  \end{bmatrix}
+  -
+  \begin{bmatrix}
+    0 \\
+    -\mathrm{pxsize}_H (d_H - y_{\mathrm{center}}) \\
+    \mathrm{pxsize}_V (d_V - z_{\mathrm{center}}) 
+  \end{bmatrix}
+  \right)
+  \\
+  = &
+  R_{\mathtt{ImageD11}}
+  \cdot
+  \begin{bmatrix}
+    L
+    \\
+    \mathrm{poni}_2 - \mathrm{pxsize}_H y_{\mathrm{center}}
+    \\
+    -\mathrm{poni}_1 + \mathrm{pxsize}_V z_{\mathrm{center}}
+  \end{bmatrix}.
+\end{align}
+
+%For the simplest case of all rotations being zero, $\Delta = L$,
+%$y_{\mathrm{center}} = \mathrm{poni}_2 / \mathrm{pxsize}_H$, and
+%$z_{\mathrm{center}} = -\mathrm{poni}_1 / \mathrm{pxsize}_V$.
+
+With a little help from our friend Mathematica, we find for the
+conversion from \texttt{pyFAI} to \texttt{ImageD11}
+
+\begin{align}
+  \Delta
+  & =
+  \frac{L}{\cos(\theta_1) \cos(\theta_2)}
+  \\
+  y_{\mathrm{center}}
+  & =
+  \frac{1}{\mathrm{pxsize}_H}
+  \left(
+  \mathrm{poni}_2 - L \tan(\theta_1)
+  \right)
+  \\
+  z_{\mathrm{center}}
+  & =
+  \frac{1}{\mathrm{pxsize}_V}
+  \left(
+  \mathrm{poni}_1 + L \frac{\tan(\theta_2)}{\cos(\theta_1)}
+  \right),
+\end{align}
+
+and for the conversion from \texttt{ImageD11} to \texttt{pyFAI}
+
+\begin{align}
+  L
+  & =
+  \Delta \cos(\theta_y) \cos(\theta_z)
+  \\
+  \mathrm{poni}_1
+  & =
+  -\Delta \sin(\theta_y) + \mathrm{pxsize}_V z_{\mathrm{center}}
+  \\
+  \mathrm{poni}_2
+  & =
+  -\Delta \cos(\theta_y) \sin(\theta_z) + \mathrm{pxsize}_H y_{\mathrm{center}}.
+\end{align}
+
+\end{document}

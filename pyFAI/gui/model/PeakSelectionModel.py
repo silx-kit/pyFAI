@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/03/2019"
+__date__ = "21/03/2019"
 
 from silx.gui import qt
 from .AbstractModel import AbstractModel
@@ -129,3 +129,23 @@ class PeakSelectionModel(AbstractModel):
 
     def index(self, peak):
         return self.__peaks.index(peak)
+
+    def closestGroup(self, coord, threshold=None):
+        """Returns the closest group from coord.
+
+        :param Tuple[float,float]: Position coord to search around.
+        :param float threshold: If specified, filter out groups when the
+            distance is highter than this value.
+        """
+        closestGroup = None
+        closestDistance = None
+        for p in self.__peaks:
+            distance = p.distanceTo(coord)
+            if distance is None:
+                continue
+            if closestDistance is None or distance < closestDistance:
+                closestDistance = distance
+                closestGroup = p
+        if closestDistance is not None and closestDistance > threshold:
+            return None
+        return closestGroup
