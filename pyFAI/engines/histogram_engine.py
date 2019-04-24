@@ -63,19 +63,21 @@ def histogram1d_engine(radial, npt,
                        variance=None,
                        dark_variance=None,
                        poissonian=False,
+                       radial_range=None
                        ):
     """Implementation of rebinning engine using pure numpy histograms
     
     :param radial: radial position 2D array (same shape as raw)   
     :param npt: number of points to integrate over
-    :param mask: 2d array of int/bool: non-null where data should be ignored
-    :param dummy: value of invalid data
-    :param delta_dummy: precision for invalid data
+    :param raw: 2D array with the raw signal
     :param dark: array containing the value of the dark noise, to be subtracted
     :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
     :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility
     :param polarization: Correction for polarization of the incident beam
     :param absorption: Correction for absorption in the sensor volume
+    :param mask: 2d array of int/bool: non-null where data should be ignored
+    :param dummy: value of invalid data
+    :param delta_dummy: precision for invalid data
     :param normalization_factor: final value is divided by this
     :param empty: value to be given for empty bins
     :param variance: provide an estimation of the variance
@@ -83,19 +85,48 @@ def histogram1d_engine(radial, npt,
     :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
 
 
-    All calculation are performed in single precision floating point (32 bits).
-
     NaN are always considered as invalid values
 
-    if neither empty nor dummy is provided, empty pixels are 0.
+    if neither empty nor dummy is provided, empty pixels are left at 0.
     
-    Nota: "radial_range" and "azimuthal_range" have to be integrated into the 
-          mask prior to the call of this function 
+    Nota: "azimuthal_range" has to be integrated into the 
+           mask prior to the call of this function 
     
     :return: Integrate1dtpl named tuple containing: 
             position, average intensity, std on intensity, 
             plus the various histograms on signal, variance, normalization and count.  
                                                
     """
-    # TODO
+    prep = preproc(raw,
+                   dark=dark,
+                   flat=flat,
+                   solidangle=solidangle,
+                   polarization=polarization,
+                   absorption=absorption,
+                   mask=mask,
+                   dummy=dummy,
+                   delta_dummy=delta_dummy,
+                   normalization_factor=normalization_factor,
+                   split_result=True,
+                   variance=variance,
+                   dark_variance=dark_variance,
+                   poissonian=poissonian,
+                   empty=0
+                   )
+    print(prep.dtype, prep.shape)
+    radial = radial.ravel()
+    prep.shape = -1, 4
+    histo_signal, position = numpy.histogram(radial, npt, weights=prep[0], range=radial_range)
+    histo_variance, position = numpy.histogram(radial, npt, weights=prep[1], range=radial_range)
+    histo_normalization, position = numpy.histogram(radial, npt, weights=prep[2], range=radial_range)
+    histo_count, position = numpy.histogram(radial, npt, weights=prep[3], range=radial_range)
+    positions = (position[1:] + position[:-1]) / 2.0
+    with numpy.errstate(divide='ignore'):
+        intensity = histo_variance / histo_normalization
+        error = numpy.sqrt(histo_variance) / histo_normalization
+    empty_bins = numpy.where(histo_count == 0)
+    if dummy is not None:
+        empty = dummy
+    intensity[empty_bins] = empty
+    error[empty_bins] = empty
     return Integrate1dtpl(positions, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)

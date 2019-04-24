@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/04/2019"
+__date__ = "23/04/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -57,14 +57,8 @@ error = None
 
 from .method_registry import IntegrationMethod
 
-# Register numpy integrators which are fail-safe
-IntegrationMethod(1, "no", "histogram", "python", old_method="numpy",
-                  class_funct=(None, numpy.histogram))
-IntegrationMethod(2, "no", "histogram", "python", old_method="numpy",
-                  class_funct=(None, numpy.histogram2d))
-
 from .engines.preproc import preproc as preproc_np
-
+from .engines import histogram_engine
 
 try:
     from .ext.preproc import preproc as preproc_cy
@@ -73,6 +67,13 @@ except ImportError as err:
     preproc = preproc_np
 else:
     preproc = preproc_cy
+
+# Register numpy integrators which are fail-safe
+IntegrationMethod(1, "no", "histogram", "python", old_method="numpy",
+                  class_funct=(None, histogram_engine.histogram1d_engine))
+IntegrationMethod(2, "no", "histogram", "python", old_method="numpy",
+                  class_funct=(None, numpy.histogram2d))
+
 
 try:
     from .ext import histogram
