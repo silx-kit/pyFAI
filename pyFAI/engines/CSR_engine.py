@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/11/2018"
+__date__ = "19/03/2019"
 __status__ = "development"
 
 import logging
@@ -45,12 +45,7 @@ except ImportError as err:
 else:
     preproc = preproc_cy
 
-from collections import namedtuple
-
-Integrate1dResult = namedtuple("Integrate1dResult", ["bins", "signal", "propagated"])
-Integrate2dResult = namedtuple("Integrate2dResult", ["signal", "bins0", "bins1", "propagated"])
-Integrate1dWithErrorResult = namedtuple("Integrate1dWithErrorResult", ["bins", "signal", "error", "propagated"])
-Integrate2dWithErrorResult = namedtuple("Integrate2dWithErrorResult", ["signal", "error", "bins0", "bins1", "propagated"])
+from . import Integrate1dResult, Integrate2dResult, Integrate1dWithErrorResult, Integrate2dWithErrorResult
 
 
 class CSRIntegrator(object):

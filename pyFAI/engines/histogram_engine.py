@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2019 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,7 @@
 #  THE SOFTWARE.
 
 
-"""This sub-module contains various rebinning and pre-processing engines
-defined at the Python level. 
+"""simple histogram rebinning engine implemented in pure python (with the help of numpy !) 
 """
 
 from __future__ import absolute_import, print_function, with_statement
@@ -30,32 +29,39 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2019"
+__date__ = "18/04/2019"
 __status__ = "development"
 
 import logging
 logger = logging.getLogger(__name__)
-from threading import Semaphore
+import numpy
+from .preproc import preproc as preproc_np
+try:
+    from ..ext.preproc import preproc as preproc_cy
+except ImportError as err:
+    logger.warning("ImportError pyFAI.ext.preproc %s", err)
+    preproc = preproc_np
+else:
+    preproc = preproc_cy
 
-from collections import namedtuple
-
-Integrate1dResult = namedtuple("Integrate1dResult", ["bins", "intensity", "propagated"])
-Integrate2dResult = namedtuple("Integrate2dResult", ["intensity", "bins0", "bins1", "propagated"])
-Integrate1dWithErrorResult = namedtuple("Integrate1dWithErrorResult", ["bins", "intensity", "error", "propagated"])
-Integrate2dWithErrorResult = namedtuple("Integrate2dWithErrorResult", ["intensity", "error", "bins0", "bins1", "propagated"])
+from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
-class Engine(object):
-    """This class defines a regrid-engine with its locking mechanism"""
-    def __init__(self, engine=None):
-        """Constructor of the class"""
-        self.lock = Semaphore()
-        self.engine = engine
+def histogram1d_engine(pos0, pos1, npt, raw,
+                       variance=None, dark=None,
+                       flat=None, solidangle=None,
+                       polarisation=None, absorption=None
 
-    def reset(self):
-        with self.lock:
-            self.engine = None
-
-    def set_engine(self, engine):
-        "should be called from a locked region"
-        self.engine = engine
+                       ):
+    """All the calculations performed in pure numpy histograms after preproc
+    
+    :param pos0: radial position array
+    :param pos1: azimuthal position array
+    :param npt: number of points to integrate over
+    :param raw: the actual raw image to integrate
+    :param variance: the variance associate to the raw data  
+    :param dark: the dark-current to subtract  
+    
+    """
+    # WIP
+    return Integrate1dtpl(positions, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)

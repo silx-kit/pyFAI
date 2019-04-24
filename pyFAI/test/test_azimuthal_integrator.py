@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2018"
+__date__ = "23/04/2019"
 
 import unittest
 import os
@@ -53,7 +53,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
 if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
-from pyFAI import units
+from pyFAI import units, detector_factory
 from ..utils import mathutil
 from ..third_party import six
 from pyFAI.utils.decorators import depreclog
@@ -522,6 +522,22 @@ class TestSetter(unittest.TestCase):
         self.assertTrue(abs(self.ai.darkcurrent - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Dark array is OK")
 
 
+class TestIntergrationNextGeneration(unittest.TestCase):
+
+    def test_ocl_histo(self):
+        det = detector_factory("Pilatus100k")
+        data = numpy.random.random(det.shape)
+        ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
+        method = ("no", "histogram", "opencl")
+        actual_method = ai._normalize_method(method=method, dim=1, default=ai.DEFAULT_METHOD_1D).method[1:4]
+        if actual_method != method:
+            reason = "Skipping TestIntergrationNextGeneration.test_ocl_histo as OpenCL method not available"
+            self.skipTest(reason)
+        res = ai._integrate1d_ng(data, 100, method=method)
+        self.assertEqual(res.compute_engine, "OCL_Histogram1d")
+        self.assertEqual(str(res.unit), "q_nm^-1")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
@@ -531,6 +547,7 @@ def suite():
     # Consumes a lot of memory
     # testsuite.addTest(loader(TestAzimPilatus))
     testsuite.addTest(loader(TestSaxs))
+    testsuite.addTest(loader(TestIntergrationNextGeneration))
     return testsuite
 
 

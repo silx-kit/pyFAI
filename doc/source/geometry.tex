@@ -1,0 +1,317 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+\section{Geometry definition of \texttt{pyFAI}}
+
+All dimentions are in meter and all rotation are in radians.
+
+\texttt{pyFAI} describes the position and orientation of the detector
+by six variables, collectively called the PONI, for point of normal
+incidence. In addition, a detector calibration is provided in the
+PONI-file to convert pixel coordinates into real-space coordinates. In
+the simplest case this is a pixel size.  
+
+\texttt{pyFAI} uses a coordinate system where the first axis (1)  is 
+vertically up (or $y$), the second axis (2) is horizontal ($x$) towards the ring
+center (starboard), and the third axis (3) along the beam $z$. Note that
+in this order (1,2,3) is a right-handed coordinate system, which makes
+$xyz$ in the usual order a left-handed coordinate system!
+
+The PONI parameters are: a distance $L$, the $y$ and $x$ coordinates
+of the point of normal incidence in meters, $\mathrm{poni}_{1,2}$, and
+3 detector rotations, $\theta_{1,2,3}$ about the $y$, $x$ and $z$
+axes. The inversion of the $x$ and $y$ axes is due to the arrangement
+of the detector data, with $x$-rows being the ``slow'' axis and
+$y$-columns the ``fast'' axis. Extra care has to be taken with the
+signs of the rotations when converting form this coordinate system to
+another.
+
+The detector rotations are taken about the origin of the coordinate
+system (sample position). They are represented by the rotation
+matrices:
+
+\begin{align}
+  \mathrm{R}_1(\theta_1)
+  & =
+  \begin{bmatrix}
+    1 & 0 & 0 \\
+    0 & \cos(\theta_1) & \sin(\theta_1) \\
+    0 & -\sin(\theta_1) & \cos(\theta_1)
+  \end{bmatrix}
+  \\
+  \mathrm{R}_2(\theta_2)
+  & =
+  \begin{bmatrix}
+    \cos(\theta_2) & 0 & -\sin(\theta_2) \\
+    0 & 1 & 0 \\
+    \sin(\theta_2) & 0 & \cos(\theta_2)
+  \end{bmatrix}
+  \\
+  \mathrm{R}_3(\theta_3)
+  & =
+  \begin{bmatrix}
+    \cos(\theta_3) & -\sin(\theta_3) & 0\\
+    \sin(\theta_3) & \cos(\theta_3) & 0\\
+    0 & 0 & 1  
+  \end{bmatrix}
+  \\
+  R(\theta_1, \theta_2, \theta_3)
+  & =
+  R_3(\theta_3) \cdot R_2(\theta_2) \cdot R_1(\theta_1)
+\end{align}
+
+Let $P$ be a point on the detector at pixel coordinates $(d_1, d_2)$
+in units $\mathrm{px}$. In the most simple case (in the absence of
+distortions) these are converted into coordinates in units of meters
+by multiplication with a scaling factor ``pixel size''
+($\mathrm{pxsize}_{1,2}$m in units of $\mathrm{m}/\mathrm{px}$) and
+subsequent subtraction of an offset ($\mathrm{poni}_{1,2}$, in units of
+meters and yielding the coordinates $(p_1, p_2)$ in meters.
+
+\begin{align}
+  p_1 & = \mathrm{pxsize}_1 d_1 - \mathrm{poni}_1 \\
+  p_2 & = \mathrm{pxsize}_2 d_2 - \mathrm{poni}_2
+\end{align}
+
+Let $L$ be the distance from the
+origin/sample/diffractometer center of rotation. In the absence of any
+detector rotations, $L$ is taken along $z$, $p_1$ along the $x$-axis
+(horizontal) and $p_2$ along the $y$ axis (vertical). Then, in the
+``detector coordinate system''
+
+\begin{align}
+  P & = \begin{bmatrix} p_1 \\ p_2 \\ L \end{bmatrix}
+\end{align}
+
+The coordinates in the laboratory system are obtained by
+multiplication with the rotation matrix $R$
+
+\begin{align}
+  \begin{bmatrix} t_1 \\ t_2 \\ t_3 \end{bmatrix}
+  = &
+  R_{\mathtt{pyFAI}}(\theta_1, \theta_2, \theta_3) \cdot P
+  \\
+  = &
+  R_3(\theta_3) \cdot R_2(\theta_2) \cdot R_1(\theta_1) \cdot
+  \begin{bmatrix}
+    \mathrm{pxsize}_1 d_1 - \mathrm{poni}_1 \\
+    \mathrm{pxsize}_2 d_2 - \mathrm{poni}_2 \\
+    L
+  \end{bmatrix}
+  \\
+  = &
+  R_3(\theta_3) \cdot R_2(\theta_2) \cdot R_1(\theta_1)
+  \nonumber \\ &
+  \cdot
+  \left(
+  \begin{bmatrix}
+    \mathrm{pxsize}_1 & 0 & 0 \\
+    0 & \mathrm{pxsize}_2 & 0 \\
+    0 & 0 & 1
+  \end{bmatrix}
+  \cdot
+  \begin{bmatrix}
+    d_1 \\
+    d_2 \\
+    0
+  \end{bmatrix}
+  +
+  \begin{bmatrix}
+    - \mathrm{poni}_1 \\
+    - \mathrm{poni}_2 \\
+    L
+  \end{bmatrix}
+  \right)
+  \label{eq-tpyFAI}
+\end{align}
+
+The inversion is straight-forward:
+
+\begin{align}
+  R_1(-\theta_1)\cdot R_2(-\theta_2) \cdot R_3(-\theta_3) \cdot
+  \begin{bmatrix} t_1 \\ t_2 \\ t_3
+  \end{bmatrix}
+  & =
+  \begin{bmatrix} p_1 \\ p_2 \\ L \end{bmatrix}
+  \label{eq-find-alpha}
+  \\
+  \begin{bmatrix}
+    t_1 \\ t_2 \\ t_3
+  \end{bmatrix}
+  & =
+  \begin{bmatrix}
+    A_1  \\ A_2 \\ A_3 
+  \end{bmatrix}
+  + \alpha
+  \begin{bmatrix}
+    k_1 \\ k_2 \\ k_3
+  \end{bmatrix},
+\end{align}
+where $A_{1,2,3}$ are the coordinates, in the laboratory system, of
+the scattering center (grain, sub-grain or voxel), and $k_{1,2,3}$ is
+the direction of the scattered beam. The third line ($\ldots = L$) of
+eq.~\ref{eq-find-alpha} is then used to determine the free parameter
+$\alpha$, which in turn is used in the first and second lines to find
+$p_{1,2}$ and thus $d_{1,2}$.
+
+As the most trivial example we consider the case of no rotations,
+$\theta_1 = \theta_2 = \theta_3 = 0$. Then
+
+\begin{align}
+  A_3 + \alpha k_3 & = L \\
+  \alpha & = \frac{L-A_3}{k_3} \\
+  p_1 & = A_1 + (L-A_3) \frac{k_1}{k_3} \\
+  p_2 & = A_2 + (L-A_3) \frac{k_2}{k_3}.
+\end{align}
+
+We see also that when all rotations are zero, $(\mathrm{poni}_1,
+\mathrm{poni_2})$ are the real space coordinates of the direct beam
+($A_{1,2,3}=k_{1,2}=0$) .
+
+\section{Geometry definition of \texttt{ImageD11}}
+
+For maximum convenience, \texttt{ImageD11} defines almost everything
+differently than \texttt{pyFAI}.
+
+Coordinate system: \texttt{ImageD11} uses the ID06 coordinate system
+with $x$ along the beam, $y$ to port (away from the ring center), and
+$z$ up.
+
+Units: As the system is somewhat scale-invariant, \texttt{ImageD11}
+allows a free choice of the unit of length, which we will call $X$
+here. The same unit has to be used for all translations, and for the
+pixel size of the detector. The default used in the code appears to be
+$X = 1\,\mathrm{\mu m}$, but it might as well be Planck lengths,
+millimeters, inches, meters, tlalcuahuitl, furlongs, nautical miles,
+light years, kparsec, or whatever else floats your boat. The only
+requirement is that you can actually measure and express the detector
+pixel size and COR-to-detector distance in your units of choice.
+
+Parameters: \texttt{ImageD11} defines the detector geometry via the
+following parameters:
+
+\begin{itemize}
+\item Beam center $y_{\mathrm{center}}$ and $z_{\mathrm{center}}$:
+  Position of the direct beam on the detector, in $\mathrm{px}$.
+\item Pixel size $y_{\mathrm{size}}$ and $z_{\mathrm{size}}$ in
+  ${X}/{\mathrm{px}}$.
+\item Detector tilts $t_x$, $t_y$, and $t_z$, in $\mathrm{rad}$. The
+  center of rotation is the point where the direct beam intersects the
+  detector.
+\item Distance $D$, in units $X$, between the origin to the point
+  where the direct beam intersects the detector.
+\item Detector flip matrix $O = \begin{bmatrix} o_{11} & o_{12}
+  \\ o_{21} & o_{22} \end{bmatrix}$. This matrix takes care of
+  correcting typical problems with the way pixel coordinates are
+  arranged on the detector. If, e.g., the detector is rotated by
+  $90^{\circ}$, then $O=\begin{bmatrix} 0 & 1 \\ -1 &
+  0\end{bmatrix}$. If left and right (or up and down) are inverted on the
+  detector, then $o_{22} = -1$ ($o_{11}=-1$). 
+\end{itemize}
+
+It appears that these conventions where defined under the assumption
+that the detector is more or less centered in the direct beam, and
+that the detector tilts are small.
+
+The implementation in the code \texttt{transform.py} is using the
+following equations:
+
+\begin{align}
+  R_{\mathtt{ImageD11}}(\theta_x, \theta_y, \theta_z)
+  & =
+  R_1(\theta_x) \cdot R_2(\theta_y) \cdot R_3(\theta_z)
+  \\
+  \begin{bmatrix}
+    p_z \\ p_y
+  \end{bmatrix}
+  & =
+  \begin{bmatrix}
+    o_{11} & o_{12}
+    \\ o_{21} & o_{22}
+  \end{bmatrix}
+  \cdot
+  \begin{bmatrix}
+    (d_z - z_{\mathrm{center}}) z_{\mathrm{size}} \\
+    (d_y - y_{\mathrm{center}}) y_{\mathrm{size}}
+  \end{bmatrix}
+  \label{eq-p}
+  \\
+  \begin{bmatrix}
+    t_x \\ t_y \\ t_z
+  \end{bmatrix}
+  & =
+  R_{\mathtt{ImageD11}}(\theta_x, \theta_y, \theta_z)
+  \cdot
+  \begin{bmatrix}
+    0 \\ p_y \\ p_z
+  \end{bmatrix}
+  +
+  \begin{bmatrix}
+    D \\ 0 \\ 0
+  \end{bmatrix}
+  \label{eq-t}
+\end{align}
+Note that the order of $y$ and $z$ is not the same in eqs.~\ref{eq-p} and \ref{eq-t}.
+
+The same could be achieved more easily by
+
+\begin{align}
+  \begin{bmatrix}
+    t_x \\ t_y \\ t_z
+  \end{bmatrix}
+  & =
+  R_{\mathtt{ImageD11}}(\theta_x, \theta_y, \theta_z)
+  \cdot
+  \begin{bmatrix}
+    1 & 0 & 0 \\
+    0 & y_{\mathrm{size}} o_{22} & z_{\mathrm{size}} o_{21} \\
+    0 & y_{\mathrm{size}} o_{12} & z_{\mathrm{size}} o_{11}
+  \end{bmatrix}
+  \cdot
+  \begin{bmatrix}
+    D \\ p_y - y_{\mathrm{center}} \\ p_z - z_{\mathrm{center}}
+  \end{bmatrix}.
+  \label{eq-tImageD11}
+\end{align}
+
+\section{Conversion}
+
+The transformation between the different coordinate systems is
+achieved by
+\begin{align}
+  t_{\mathtt{ImageD11}}
+  =
+  \begin{bmatrix}
+    0 & 0 & 1 \\ 0 & -1 & 0 \\ 1 & 0 & 0
+  \end{bmatrix}
+  t_{\mathtt{pyFAI}},
+  \label{eq-coordconv}
+\end{align}
+where $t_{\mathtt{ImageD11}}$ is given by eq.~\ref{eq-tImageD11}, and
+$t_{\mathtt{pyFAI}}$ is given by eq.~\ref{eq-tpyFAI}. Substituting
+these equations into eq.~\ref{eq-coordconv}, one can them attempt to
+convert \texttt{pyFAI} parameters into \texttt{ImageD11} parameters
+and vice versa. As \texttt{pyFAI} does not allow for detector
+flipping, $o_{11}=o_{22}=1$ and $o_{12}=o_{21}=0$. Furthermore,
+$\mathrm{pxsize}_1 = z_{\mathrm{size}}$ and $\mathrm{pxsize}_2 =
+y_{\mathrm{size}}$. Because we assume that both equations describe the
+same pixel, twice in detector coordinates and twice in real-space
+coordinates, $p_y = p_2$ and $p_z = p_1$.
+
+CHECK IF $p_y = p_2$ or $p_y = - p_2$/$o_{22}=-1$ DUE TO
+\texttt{pyFAI} LEFT HANDED COORDINATE SYSTEM!!!
+
+For the translations, the equivalence is tractable by setting $p_1 =
+p_2 = p_y = p_z = 0$. One obtains 3 equations that are coupled via the
+rotation matrices --- as the center of rotations are different, there
+should be a noticeable influence of the distance on the offsets. In
+general, $D \geq L$ with $D=L$ only for $\theta_1=\theta_2=0$
+($\theta_y = \theta_z = 0$. Because the rotations are applied in
+different order one can not assume, \emph{a priori}, that the angles
+are the same! (If at least two tilt angles are small, this may be a
+good approximation)
+
+\end{document}
