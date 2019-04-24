@@ -1,9 +1,13 @@
 :Author: Jérôme Kieffer
-:Date: 19/12/2018
+:Date: 24/04/2019
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
+
+0.17.1 24/04/2019
+-----------------
+* fix build with numpy 1.16
 
 0.17.0 19/12/2018
 -----------------
