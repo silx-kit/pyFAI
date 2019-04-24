@@ -67,6 +67,7 @@ class CSRIntegrator(object):
         self.empty = empty
         self.bins = None
         self._csr = None
+        self._csr2 = None
         self.lut_size = 0  # actually nnz
         self.data = None
         self.indices = None
@@ -85,6 +86,7 @@ class CSRIntegrator(object):
         self.indptr = indptr
         self.lut_size = len(indices)
         self._csr = csr_matrix((data, indices, indptr))
+        self._csr2 = csr_matrix((data * data, indices, indptr))  # contains the coef squared, used for variance propagation
         self.bins = len(indptr) - 1
 
     def integrate(self,
@@ -132,7 +134,10 @@ class CSRIntegrator(object):
                        variance=variance,
                        dtype=numpy.float32)
         prep.shape = numpy.prod(shape), -1
-        return self._csr.dot(prep)
+        res = self._csr.dot(prep)
+        if variance is not None:
+            res[:, 1] = self._csr2.dot(prep[:, 1])
+        return res
 
 
 class CsrIntegrator1d(CSRIntegrator):
