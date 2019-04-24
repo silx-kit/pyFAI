@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2019"
+__date__ = "24/04/2019"
 __status__ = "development"
 
 import logging
@@ -45,7 +45,7 @@ except ImportError as err:
 else:
     preproc = preproc_cy
 
-from . import Integrate1dResult, Integrate2dResult, Integrate1dWithErrorResult, Integrate2dWithErrorResult
+from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
 class CSRIntegrator(object):
@@ -202,25 +202,22 @@ class CsrIntegrator1d(CSRIntegrator):
         trans = CSRIntegrator.integrate(self, signal, variance, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
+        signal = trans[:, 0]
+        variance = trans[:, 1]
+        normalization = trans[:, 2]
+        count = trans[..., -1]  # should be 3
+        mask = (normalization == 0)
         with numpy.errstate(divide='ignore', invalid='ignore'):
-            norm = trans[:, 2]
-            intensity = trans[:, 0] / norm
-            mask = norm == 0
+            intensity = signal / normalization
             intensity[mask] = self.empty
             if do_variance:
-                error = numpy.sqrt(trans[:, 1]) / norm
+                error = numpy.sqrt(variance) / normalization
                 error[mask] = self.empty
-
-        if do_variance:
-            result = Integrate1dWithErrorResult(self.bin_centers,
-                                                intensity,
-                                                error,
-                                                trans)
-        else:
-            result = Integrate1dResult(self.bin_centers,
-                                       intensity,
-                                       trans)
-        return result
+            else:
+                variance = error = None
+        return Integrate1dtpl(self.bin_centers,
+                              intensity, error,
+                              signal, variance, normalization, count)
 
 
 class CsrIntegrator2d(CSRIntegrator):
@@ -293,24 +290,21 @@ class CsrIntegrator2d(CSRIntegrator):
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         trans.shape = self.bins + (-1,)
+
+        signal = trans[..., 0]
+        variance = trans[..., 1]
+        normalization = trans[..., 2]
+        count = trans[..., -1]  # should be 3
+        mask = (normalization == 0)
         with numpy.errstate(divide='ignore', invalid='ignore'):
-            norm = trans[..., 2]
-            intensity = trans[..., 0] / norm
-            mask = norm == 0
+            intensity = signal / normalization
             intensity[mask] = self.empty
             if do_variance:
-                error = numpy.sqrt(trans[..., 1]) / norm
+                error = numpy.sqrt(variance) / normalization
                 error[mask] = self.empty
+            else:
+                variance = error = None
+        return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
+                              intensity, error,
+                              signal, variance, normalization, count)
 
-        if do_variance:
-            result = Integrate2dWithErrorResult(intensity,
-                                                error,
-                                                self.bin_centers0,
-                                                self.bin_centers1,
-                                                trans)
-        else:
-            result = Integrate2dResult(intensity,
-                                       self.bin_centers0,
-                                       self.bin_centers1,
-                                       trans)
-        return result
