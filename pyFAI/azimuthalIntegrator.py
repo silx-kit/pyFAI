@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/04/2019"
+__date__ = "25/04/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1546,9 +1546,48 @@ class AzimuthalIntegrator(Geometry):
         elif error_model:
             error_model = error_model.lower()
             if error_model == "poisson":
-                variance = numpy.ascontiguousarray(data, numpy.float32)
+                if dark is None:
+                    variance = numpy.ascontiguousarray(abs(data), numpy.float32)
+                else:
+                    variance = abs(data) + abs(dark)
 
-        if method.method[1:4] == ("no", "histogram", "opencl"):
+        if method.method[1:4] == ("no", "histogram", "python"):
+            integr = method.class_funct.function  # should be histogram_engine.histogram1d_engine
+            if azimuth_range:
+                chi_min, chi_max = azimuth_range
+                chi = self.chiArray(shape)
+                azim_mask = numpy.logical_or(chi > chi_max, chi < chi_min)
+                if mask is None:
+                    mask = azim_mask
+                else:
+                    mask = numpy.logical_or(mask, azim_mask)
+            radial = self.array_from_unit(shape, "center", unit, scale=False)
+
+            intpl = integr(radial, npt, data,
+                           dark=dark,
+                           dummy=dummy, delta_dummy=delta_dummy,
+                           variance=variance,
+                           flat=flat, solidangle=solidangle,
+                           polarization=polarization,
+                           normalization_factor=normalization_factor,
+                           mask=mask,
+                           radial_range=radial_range)
+
+            if variance is None:
+                result = Integrate1dResult(intpl.position, intpl.intensity)
+            else:
+                result = Integrate1dResult(intpl.position,
+                                           intpl.intensity,
+                                           intpl.error)
+            result._set_compute_engine(integr.__name__)
+            result._set_unit(unit)
+            result._set_sum_signal(intpl.signal)
+            result._set_sum_normalization(intpl.normalization)
+            if variance is not None:
+                result._set_sum_variance(intpl.variance)
+            result._set_count(intpl.count)
+
+        elif method.method[1:4] == ("no", "histogram", "opencl"):
             if method not in self.engines:
                 # instanciated the engine
                 engine = self.engines[method] = Engine()
@@ -1599,7 +1638,6 @@ class AzimuthalIntegrator(Geometry):
                 result = Integrate1dResult(intpl.position,
                                            intpl.intensity,
                                            intpl.error)
-            result._set_method_called("integrate1d_ng")
             result._set_compute_engine(integr.__class__.__name__)
             result._set_unit(integr.unit)
             result._set_sum_signal(intpl.signal)
@@ -1607,18 +1645,8 @@ class AzimuthalIntegrator(Geometry):
             if variance is not None:
                 result._set_sum_variance(intpl.variance)
             result._set_count(intpl.count)
-
         else:
-            if variance is not None:
-                assert variance.size == data.size
-            elif error_model:
-                error_model = error_model.lower()
-                if error_model == "poisson":
-                    if dark is None:
-                        variance = numpy.ascontiguousarray(abs(data), numpy.float32)
-                    else:
-                        variance = abs(data) + abs(dark)
-
+            # Fallback method ...
             kwargs = {"npt": npt,
                       "error_model": None,
                       "variance": None,
@@ -1645,18 +1673,18 @@ class AzimuthalIntegrator(Geometry):
                 normalization_image *= flat
 
             norm = self.integrate1d(normalization_image, **kwargs)
-            signal = self.integrate1d(data, dark=dark, ** kwargs)
-            sigma2 = self.integrate1d(variance, **kwargs)
+            signal = self._integrate1d_legacy(data, dark=dark, ** kwargs)
+            sigma2 = self._integrate1d_legacy(variance, **kwargs)
             result = Integrate1dResult(norm.radial,
                                        signal.sum / norm.sum,
                                        numpy.sqrt(sigma2.sum) / norm.sum)
-            result._set_method_called("integrate1d_ng")
             result._set_compute_engine(norm.compute_engine)
             result._set_unit(signal.unit)
             result._set_sum_signal(signal.sum)
             result._set_sum_normalization(norm.sum)
             result._set_sum_variance(sigma2.sum)
             result._set_count(signal.count)
+        result._set_method_called("integrate1d_ng")
         return result
 
     def integrate_radial(self, data, npt, npt_rad=100,

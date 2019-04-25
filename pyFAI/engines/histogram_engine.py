@@ -29,12 +29,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2019"
+__date__ = "25/04/2019"
 __status__ = "development"
 
 import logging
 logger = logging.getLogger(__name__)
 import numpy
+from ..utils import EPS32
 from .preproc import preproc as preproc_np
 try:
     from ..ext.preproc import preproc as preproc_cy
@@ -107,7 +108,7 @@ def histogram1d_engine(radial, npt,
                    dummy=dummy,
                    delta_dummy=delta_dummy,
                    normalization_factor=normalization_factor,
-                   split_result=True,
+                   split_result=4,
                    variance=variance,
                    dark_variance=dark_variance,
                    poissonian=poissonian,
@@ -116,6 +117,9 @@ def histogram1d_engine(radial, npt,
     radial = radial.ravel()
     prep.shape = -1, 4
     assert prep.shape[0] == radial.size
+    if radial_range is None:
+        radial_range = (radial.min(), radial.max() * EPS32)
+
     histo_signal, position = numpy.histogram(radial, npt, weights=prep[:, 0], range=radial_range)
     if variance is not None or poissonian:
         histo_variance, position = numpy.histogram(radial, npt, weights=prep[:, 1], range=radial_range)
@@ -125,7 +129,7 @@ def histogram1d_engine(radial, npt,
     histo_count, position = numpy.histogram(radial, npt, weights=prep[:, 3], range=radial_range)
     positions = (position[1:] + position[:-1]) / 2.0
     with numpy.errstate(divide='ignore'):
-        intensity = histo_variance / histo_normalization
+        intensity = histo_signal / histo_normalization
         if histo_variance is None:
             error = None
         else:
@@ -201,7 +205,7 @@ def histogram2d_engine(radial, azimuthal, npt,
                    dummy=dummy,
                    delta_dummy=delta_dummy,
                    normalization_factor=normalization_factor,
-                   split_result=True,
+                   split_result=4,
                    variance=variance,
                    dark_variance=dark_variance,
                    poissonian=poissonian,
@@ -223,7 +227,7 @@ def histogram2d_engine(radial, azimuthal, npt,
     bins_azim = (position_azim[1:] + position_azim[:-1]) / 2.0
     bins_rad = (position_rad[1:] + position_rad[:-1]) / 2.0
     with numpy.errstate(divide='ignore'):
-        intensity = histo_variance / histo_normalization
+        intensity = histo_signal / histo_normalization
         if histo_variance is None:
             error = None
         else:
