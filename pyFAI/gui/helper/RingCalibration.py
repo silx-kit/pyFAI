@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/02/2019"
+__date__ = "25/04/2019"
 
 import logging
 import numpy
@@ -137,7 +137,6 @@ class RingCalibration(object):
         self.__detector = detector
         self.__wavelength = wavelength
         self.__rms = None
-        self.__previousRms = None
         self.__defaultConstraints = None
 
         self.__init(peaks, method)
@@ -226,7 +225,6 @@ class RingCalibration(object):
         geoRef.setParams(parameters)
 
         self.__rms = rms
-        self.__previousRms = None
 
         peakPicker = PeakPicker(data=self.__image,
                                 calibrant=self.__calibrant,
@@ -264,7 +262,6 @@ class RingCalibration(object):
         self.__calibrant.set_wavelength(self.__wavelength)
         self.__peakPicker.points.setWavelength_change2th(self.__wavelength)
 
-        self.__previousRms = self.__rms
         residual = previous_residual = float("+inf")
 
         print("Initial residual: %s" % previous_residual)
@@ -294,13 +291,6 @@ class RingCalibration(object):
         if self.__rms is None:
             self.__rms = self.__computeRms()
         return self.__rms
-
-    def getPreviousRms(self):
-        """Returns the previous RMS computed before the last fitting.
-
-        The unit is the radian.
-        """
-        return self.__previousRms
 
     def getTwoThetaArray(self):
         """
@@ -400,7 +390,6 @@ class RingCalibration(object):
         self.__geoRef.rot2 = model.rotation2().value()
         self.__geoRef.rot3 = model.rotation3().value()
         if resetResidual:
-            self.__previousRms = None
             self.__rms = None
 
     def toGeometryConstraintsModel(self, contraintsModel, reachFromGeoRef=True):
