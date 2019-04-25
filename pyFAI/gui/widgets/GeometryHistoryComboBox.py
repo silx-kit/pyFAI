@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/04/2019"
+__date__ = "25/04/2019"
 
 import logging
 
@@ -120,6 +120,7 @@ class GeometryHistoryComboBox(AdvancedComboBox):
     def __init__(self, parent=None):
         super(GeometryHistoryComboBox, self).__init__(parent)
         self.setDisplayedDataCallback(self.__displayedData)
+        self.setUpdateCurrentIndexEnabled(False)
 
     def __displayedData(self, widget, row, role=qt.Qt.DisplayRole):
         if row == -1:
