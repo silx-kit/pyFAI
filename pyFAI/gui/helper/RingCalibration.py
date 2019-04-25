@@ -396,8 +396,7 @@ class RingCalibration(object):
         self.__geoRef.rot1 = model.rotation1().value()
         self.__geoRef.rot2 = model.rotation2().value()
         self.__geoRef.rot3 = model.rotation3().value()
-        if resetResidual:
-            self.__rms = None
+        self.__geoRef.reset()
 
     def toGeometryConstraintsModel(self, contraintsModel, reachFromGeoRef=True):
         if reachFromGeoRef is False:
