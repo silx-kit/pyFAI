@@ -910,8 +910,13 @@ class GeometryTask(AbstractCalibrationTask):
         self._geometryHistoryCombo.blockSignals(old)
 
         # Apply the selected geometry
-        geometry = self.model().fittedGeometry()
+        calibration = self.__getCalibration()
+        if calibration is None:
+            return
+
         pickedGeometry = item.geometry()
+        calibration.fromGeometryModel(pickedGeometry, resetResidual=True)
+        geometry = self.model().fittedGeometry()
         geometry.setFrom(pickedGeometry)
 
     def _updateModel(self, model):
