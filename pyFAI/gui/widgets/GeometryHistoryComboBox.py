@@ -34,6 +34,7 @@ import logging
 from silx.gui import qt
 from pyFAI.utils import stringutil
 from .AdvancedComboBox import AdvancedComboBox
+from ..utils import units
 
 
 _logger = logging.getLogger(__name__)
@@ -50,6 +51,10 @@ class _GeometryListModel(qt.QAbstractItemModel):
         self.__data = []
         self.__historyModel = historyModel
         self.__historyModel.changed[object].connect(self.__historyChanged)
+        self.__angleUnit = None
+
+    def setAngleUnit(self, angleUnit):
+        self.__angleUnit = angleUnit
 
     def item(self, index):
         """
@@ -104,6 +109,9 @@ class _GeometryListModel(qt.QAbstractItemModel):
                 rms = item.rms()
                 if rms is None:
                     return "n/a"
+                if self.__angleUnit is not None:
+                    angleUnit = self.__angleUnit.value()
+                    rms = units.convert(rms, units.Unit.RADIAN, angleUnit)
                 value = stringutil.to_scientific_unicode(rms)
                 return value
             elif column == self.TimeColumn:
@@ -121,6 +129,7 @@ class GeometryHistoryComboBox(AdvancedComboBox):
         super(GeometryHistoryComboBox, self).__init__(parent)
         self.setDisplayedDataCallback(self.__displayedData)
         self.setUpdateCurrentIndexEnabled(False)
+        self.__angleUnit = None
 
     def __displayedData(self, widget, row, role=qt.Qt.DisplayRole):
         if row == -1:
@@ -143,8 +152,15 @@ class GeometryHistoryComboBox(AdvancedComboBox):
         index = model.index(self.currentIndex(), 0)
         return model.item(index)
 
+    def setAngleUnit(self, angleUnit):
+        self.__angleUnit = angleUnit
+        model = self.model()
+        if isinstance(model, _GeometryListModel):
+            model.setAngleUnit(angleUnit)
+
     def setHistoryModel(self, historyModel):
         model = _GeometryListModel(self, historyModel)
+        model.setAngleUnit(self.__angleUnit)
         self.setModel(model)
 
         tableView = qt.QTableView(self)
