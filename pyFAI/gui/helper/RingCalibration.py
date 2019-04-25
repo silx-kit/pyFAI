@@ -143,7 +143,6 @@ class RingCalibration(object):
         self.__calibrant.set_wavelength(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
-        self.__rms = None
         self.__defaultConstraints = None
 
         self.__init(peaks, method)
@@ -231,8 +230,6 @@ class RingCalibration(object):
         _score, parameters, rms = scores[0]
         geoRef.setParams(parameters)
 
-        self.__rms = rms
-
         peakPicker = PeakPicker(data=self.__image,
                                 calibrant=self.__calibrant,
                                 wavelength=self.__wavelength,
@@ -256,12 +253,6 @@ class RingCalibration(object):
     def getPyfaiGeometry(self):
         return self.__geoRef
 
-    def __computeRms(self):
-        if self.__geoRef is None:
-            return None
-        chi2 = self.__geoRef.chi2()
-        return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
-
     def refine(self, max_iter=500, seconds=10):
         """
         Contains the common geometry refinement part
@@ -283,7 +274,6 @@ class RingCalibration(object):
             previous_residual = residual
             count += 1
 
-        self.__rms = residual
         print("Final residual: %s (after %s iterations)" % (residual, count))
 
         self.__geoRef.del_ttha()
@@ -295,9 +285,10 @@ class RingCalibration(object):
 
         The unit is the radian.
         """
-        if self.__rms is None:
-            self.__rms = self.__computeRms()
-        return self.__rms
+        if self.__geoRef is None:
+            return None
+        chi2 = self.__geoRef.chi2()
+        return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
 
     def getTwoThetaArray(self):
         """
