@@ -189,6 +189,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.getYAxis().sigLimitsChanged.connect(self.__axesChanged)
         self.sigPlotSignal.connect(self.__plotSignalReceived)
         self.__axisOfCurrentView = None
+        self.__state = None
         self.__tth = None
         self.__rings = []
         self.__ringItems = {}
@@ -207,6 +208,13 @@ class _RingPlot(silx.gui.plot.PlotWidget):
 
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
+
+    def setCalibrationState(self, state):
+        if self.__state is not None:
+            self.__state.changed.disconnect(self.__updateDisplay)
+        self.__state = state
+        if self.__state is not None:
+            self.__state.changed.connect(self.__updateDisplay)
 
     def eventFilter(self, widget, event):
         if event.type() == qt.QEvent.Leave:
@@ -395,14 +403,72 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__ringItems[ringAngle] = items
         return items
 
-    def setRings(self, rings, tth=None):
-        self.__tth = tth
-        self.__rings = rings
+    def __cleanupRings(self):
         for items in self.__ringItems.values():
             for item in items:
                 self.removeCurve(item.getLegend())
         self.__ringItems = {}
+        self.__tth = None
+        self.__rings = []
+
+    def __cleanupMarkers(self):
+        try:
+            self.removeMarker(legend="center")
+        except Exception:
+            pass
+        try:
+            self.removeMarker(legend="poni")
+        except Exception:
+            pass
+
+    def __updateMarkers(self):
+        state = self.__state
+        center = state.getBeamCenter()
+        if center is None:
+            try:
+                self.removeMarker(legend="center")
+            except Exception:
+                pass
+        else:
+            color = CalibrationContext.instance().getMarkerColor(0, mode="html")
+            self.addMarker(
+                text="Beam",
+                y=center[0],
+                x=center[1],
+                legend="center",
+                color=color,
+                symbol="+")
+
+        poni = state.getPoni()
+        if poni is None:
+            try:
+                self.removeMarker(legend="poni")
+            except Exception:
+                pass
+        else:
+            color = CalibrationContext.instance().getMarkerColor(0, mode="html")
+            self.addMarker(
+                text="PONI",
+                y=poni[0],
+                x=poni[1],
+                legend="poni",
+                color=color,
+                symbol="+")
+
+    def __updateDisplay(self):
+        """Update the display when the calibration state was updated."""
+        state = self.__state
+        if state.isEmpty():
+            self.__cleanupRings()
+            self.__cleanupMarkers()
+            return
+
+        rings = state.getRings()
+        tth = state.getTwoThetaArray()
+        self.__tth = tth
+        self.__rings = rings
         self.__updateRings()
+        self.__updateMarkers()
 
     def unsetProcessing(self):
         if self.__processing is not None:
@@ -419,6 +485,12 @@ class GeometryTask(AbstractCalibrationTask):
         icon = icons.getQIcon("pyfai:gui/icons/task-fit-geometry")
         self.setWindowIcon(icon)
 
+        self.__calibrationState = CalibrationState(self)
+        self.__calibration = None
+        self.__peaksInvalidated = False
+        self.__fitting = False
+        self.__wavelengthInvalidated = False
+
         self.initNextStep()
         self.widgetShow.connect(self.__widgetShow)
 
@@ -426,6 +498,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.__plot.setObjectName("plot-fit")
         self.__plot.sigMouseMove.connect(self.__mouseMoved)
         self.__plot.sigMouseLeave.connect(self.__mouseLeft)
+        self.__plot.setCalibrationState(self.__calibrationState)
 
         layout = qt.QVBoxLayout(self._imageHolder)
         layout.addWidget(self.__plot)
@@ -476,11 +549,6 @@ class GeometryTask(AbstractCalibrationTask):
         self._fitButton.clicked.connect(self.__fitGeometryLater)
         self._fitButton.setDisabledWhenWaiting(True)
         self._resetButton.clicked.connect(self.__resetGeometryLater)
-        self.__calibrationState = CalibrationState(self)
-        self.__calibration = None
-        self.__peaksInvalidated = False
-        self.__fitting = False
-        self.__wavelengthInvalidated = False
 
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
@@ -498,6 +566,9 @@ class GeometryTask(AbstractCalibrationTask):
         saxsConstraintsButton.clicked.connect(self.__setSaxsConstraints)
 
         self._geometryHistoryCombo.currentIndexChanged.connect(self.__geometryPickedFromHistory)
+
+        self.__calibrationState.changed.connect(self.__updateResidual)
+        self.__updateResidual()
 
     def __setDefaultConstraints(self):
         """Apply default contraints imposed by the refinment process"""
@@ -716,7 +787,6 @@ class GeometryTask(AbstractCalibrationTask):
         geometryHistory = self.model().geometryHistoryModel()
         geometryHistory.appendGeometry("Init", datetime.datetime.now(), geometry, rms)
 
-        self.__formatResidual()
         self.__unsetProcessing()
 
     def __resetGeometry(self):
@@ -733,7 +803,6 @@ class GeometryTask(AbstractCalibrationTask):
         geometryHistory = self.model().geometryHistoryModel()
         geometryHistory.appendGeometry("Reset", datetime.datetime.now(), geometry, calibration.getRms())
 
-        self.__formatResidual()
         self.__unsetProcessing()
 
     def __fitGeometry(self):
@@ -766,7 +835,12 @@ class GeometryTask(AbstractCalibrationTask):
         self.__fitting = False
         self.__unsetProcessing()
 
-    def __formatResidual(self):
+    def __updateResidual(self):
+        """
+        Update the display of the residual.
+
+        Called when the calibration state was updated.
+        """
         state = self.__calibrationState
         rms = state.getRms()
         if rms is not None:
@@ -820,8 +894,6 @@ class GeometryTask(AbstractCalibrationTask):
             resetResidual = self.__fitting is not True
             calibration.fromGeometryModel(model, resetResidual=resetResidual)
             self.__calibrationState.update(calibration)
-            self.__updateDisplay()
-            self.__formatResidual()
 
         geometry = calibration.getPyfaiGeometry()
         self.__plot.markerManager().updatePhysicalMarkerPixels(geometry)
@@ -840,41 +912,6 @@ class GeometryTask(AbstractCalibrationTask):
         geometry = self.model().fittedGeometry()
         pickedGeometry = item.geometry()
         geometry.setFrom(pickedGeometry)
-
-    def __updateDisplay(self):
-        state = self.__calibrationState
-        if state.isEmpty():
-            return
-
-        rings = state.getRings()
-        tth = state.getTwoThetaArray()
-        self.__plot.setRings(rings, tth)
-
-        center = state.getBeamCenter()
-        if center is None:
-            self.__plot.removeMarker(legend="center")
-        else:
-            color = CalibrationContext.instance().getMarkerColor(0, mode="html")
-            self.__plot.addMarker(
-                text="Beam",
-                y=center[0],
-                x=center[1],
-                legend="center",
-                color=color,
-                symbol="+")
-
-        poni = state.getPoni()
-        if poni is None:
-            self.__plot.removeMarker(legend="poni")
-        else:
-            color = CalibrationContext.instance().getMarkerColor(0, mode="html")
-            self.__plot.addMarker(
-                text="PONI",
-                y=poni[0],
-                x=poni[1],
-                legend="poni",
-                color=color,
-                symbol="+")
 
     def _updateModel(self, model):
         self.__synchronizeRawView.registerModel(model.rawPlotView())
