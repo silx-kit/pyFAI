@@ -97,9 +97,16 @@ class GeometryRefinementContext(object):
 
     def chi2(self):
         if "wavelength" in self.__fixed:
-            chi2 = self.__geoRef.chi2()
+            param = numpy.array([self._dist, self._poni1, self._poni2,
+                                 self._rot1, self._rot2, self._rot3],
+                                dtype=numpy.float64)
+            chi2 = self.__geoRef.chi2(param)
         else:
-            chi2 = self.__geoRef.chi2_wavelength()
+            param = numpy.array([self._dist, self._poni1, self._poni2,
+                                 self._rot1, self._rot2, self._rot3,
+                                 1e10 * self.wavelength],
+                                dtype=numpy.float64)
+            chi2 = self.__geoRef.chi2_wavelength(param)
         return chi2
 
     def refine(self, maxiter):
