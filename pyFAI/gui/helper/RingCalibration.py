@@ -267,7 +267,7 @@ class RingCalibration(object):
         print("Initial residual: %s" % previous_residual)
 
         count = 0
-        timer = timeutils.Timer(seconds=10)
+        timer = timeutils.Timer(seconds=seconds)
 
         while count < max_iter and not timer.isTimeout():
             residual = self.__geoRef.refine(10000)
