@@ -498,7 +498,7 @@ class GeometryTask(AbstractCalibrationTask):
 
         image = self.__plot.getImage("image")
         if image is None:
-            return value
+            return
         data = image.getData(copy=False)
         ox, oy = image.getOrigin()
         sx, sy = image.getScale()
