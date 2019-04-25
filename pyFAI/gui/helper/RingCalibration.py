@@ -262,8 +262,6 @@ class RingCalibration(object):
 
         residual = previous_residual = float("+inf")
 
-        print("Initial residual: %s" % previous_residual)
-
         count = 0
         timer = timeutils.Timer(seconds=seconds)
 
