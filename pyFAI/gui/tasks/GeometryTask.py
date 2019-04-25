@@ -890,14 +890,14 @@ class GeometryTask(AbstractCalibrationTask):
         calibration = self.__getCalibration()
         if calibration is None:
             return
-        model = self.model().fittedGeometry()
-        if model.isValid():
+        geometry = self.model().fittedGeometry()
+        if geometry.isValid():
             resetResidual = self.__fitting is not True
-            calibration.fromGeometryModel(model, resetResidual=resetResidual)
+            calibration.fromGeometryModel(geometry, resetResidual=resetResidual)
             self.__calibrationState.update(calibration)
 
-        geometry = calibration.getPyfaiGeometry()
-        self.__plot.markerManager().updatePhysicalMarkerPixels(geometry)
+        geoRef = calibration.getPyfaiGeometry()
+        self.__plot.markerManager().updatePhysicalMarkerPixels(geoRef)
 
     def __geometryPickedFromHistory(self, index=None):
         item = self._geometryHistoryCombo.currentItem()
