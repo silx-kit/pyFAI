@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/04/2019"
+__date__ = "25/04/2019"
 
 import logging
 import numpy
@@ -106,6 +106,75 @@ class _StatusBar(qt.QStatusBar):
         self.__pixel.setValue(pixel)
         self.__chi.setValue(chi)
         self.__2theta.setValue(tth)
+
+
+class CalibrationState(qt.QObject):
+    """Store the state of a calibration"""
+
+    changed = qt.Signal()
+
+    def __init__(self, parent):
+        qt.QObject.__init__(self, parent)
+        self.__reset()
+
+    def __reset(self):
+        self.__geoRef = None
+        self.__geometry = None
+        self.__rings = None
+        self.__rms = None
+        self.__previousRms = None
+        self.__tth = None
+        self.__poni = None
+        self.__beamCenter = None
+        self.__empty = True
+        self.changed.emit()
+
+    def isEmpty(self):
+        return self.__empty
+
+    def getTwoThetaArray(self):
+        return self.__tth
+
+    def getRings(self):
+        return self.__rings
+
+    def getBeamCenter(self):
+        return self.__beamCenter
+
+    def getPoni(self):
+        return self.__poni
+
+    def getPreviousRms(self):
+        return self.__previousRms
+
+    def getRms(self):
+        return self.__rms
+
+    def getGeometryRefinement(self):
+        return self.__geoRef
+
+    def popGeometryRefinement(self):
+        """Invalidate the object and remove the ownershit of the geometry
+        refinment"""
+        geoRef = self.__geoRef
+        self.__reset()
+        return geoRef
+
+    def update(self, calibration):
+        """Update the state from a current calibration process.
+
+        :param RingCalibration calibration: A calibration process
+        """
+        self.__geoRef = calibration.getPyfaiGeometry()
+        self.__geometry = None
+        self.__rings = calibration.getRings()
+        self.__previousRms = self.__rms
+        self.__rms = calibration.getRms()
+        self.__tth = calibration.getTwoThetaArray()
+        self.__poni = calibration.getPoni()
+        self.__beamCenter = calibration.getBeamCenter()
+        self.__empty = False
+        self.changed.emit()
 
 
 class _RingPlot(silx.gui.plot.PlotWidget):
@@ -407,6 +476,7 @@ class GeometryTask(AbstractCalibrationTask):
         self._fitButton.clicked.connect(self.__fitGeometryLater)
         self._fitButton.setDisabledWhenWaiting(True)
         self._resetButton.clicked.connect(self.__resetGeometryLater)
+        self.__calibrationState = CalibrationState(self)
         self.__calibration = None
         self.__peaksInvalidated = False
         self.__fitting = False
@@ -513,11 +583,7 @@ class GeometryTask(AbstractCalibrationTask):
             self.__mouseLeft()
             return
 
-        if self.__calibration is None:
-            self.__mouseLeft()
-            return
-
-        geometry = self.__calibration.getPyfaiGeometry()
+        geometry = self.__calibrationState.getGeometryRefinement()
         if geometry is not None:
             ax, ay = numpy.array([x]), numpy.array([y])
             chi = geometry.chi(ay, ax)[0]
@@ -533,6 +599,13 @@ class GeometryTask(AbstractCalibrationTask):
         statusBar = _StatusBar(self)
         statusBar.setSizeGripEnabled(False)
         return statusBar
+
+    def __invalidateWavelength(self):
+        self.__wavelengthInvalidated = True
+
+    def __invalidateCalibration(self):
+        ##### FIXME
+        self.__calibration = None
 
     def __createCalibration(self):
         image = self.model().experimentSettingsModel().image().value()
@@ -563,12 +636,6 @@ class GeometryTask(AbstractCalibrationTask):
         # Copy the default values
         self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
         return calibration
-
-    def __invalidateWavelength(self):
-        self.__wavelengthInvalidated = True
-
-    def __invalidateCalibration(self):
-        self.__calibration = None
 
     def __getCalibration(self):
         if self.__calibration is None:
@@ -700,30 +767,27 @@ class GeometryTask(AbstractCalibrationTask):
         self.__unsetProcessing()
 
     def __formatResidual(self):
-        calibration = self.__getCalibration()
-        if calibration is None:
-            text = ""
-        else:
-            rms = calibration.getRms()
-            if rms is not None:
-                angleUnit = CalibrationContext.instance().getAngleUnit().value()
-                rms = units.convert(rms, units.Unit.RADIAN, angleUnit)
-                text = stringutil.to_scientific_unicode(rms, digits=4)
-                previousRms = calibration.getPreviousRms()
-                if previousRms is not None:
-                    previousRms = units.convert(previousRms, units.Unit.RADIAN, angleUnit)
-                    if numpy.isclose(rms, previousRms):
-                        diff = "no changes"
+        state = self.__calibrationState
+        rms = state.getRms()
+        if rms is not None:
+            angleUnit = CalibrationContext.instance().getAngleUnit().value()
+            rms = units.convert(rms, units.Unit.RADIAN, angleUnit)
+            text = stringutil.to_scientific_unicode(rms, digits=4)
+            previousRms = state.getPreviousRms()
+            if previousRms is not None:
+                previousRms = units.convert(previousRms, units.Unit.RADIAN, angleUnit)
+                if numpy.isclose(rms, previousRms):
+                    diff = "no changes"
+                else:
+                    diff = stringutil.to_scientific_unicode(rms - previousRms, digits=2)
+                    if rms < previousRms:
+                        diff = '<font color="green">%s</font>' % diff
                     else:
-                        diff = stringutil.to_scientific_unicode(rms - previousRms, digits=2)
-                        if rms < previousRms:
-                            diff = '<font color="green">%s</font>' % diff
-                        else:
-                            diff = '<font color="red">%s</font>' % diff
-                    text = '%s (%s)' % (text, diff)
-                text = "%s %s" % (text, angleUnit.symbol)
-            else:
-                text = ""
+                        diff = '<font color="red">%s</font>' % diff
+                text = '%s (%s)' % (text, diff)
+            text = "%s %s" % (text, angleUnit.symbol)
+        else:
+            text = ""
         self._currentResidual.setText(text)
 
     def __geometryCustomed(self):
@@ -740,9 +804,12 @@ class GeometryTask(AbstractCalibrationTask):
                 return
 
         calibration = self.__getCalibration()
-        rms = None if calibration is None else calibration.getRms()
+        calibration.fromGeometryModel(geometry, resetResidual=True)
+
+        state = self.__calibrationState
+        state.update(calibration)
         now = datetime.datetime.now()
-        geometryHistory.appendGeometry("Customed", now, geometry, rms)
+        geometryHistory.appendGeometry("Customed", now, geometry, state.getRms())
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
@@ -752,6 +819,7 @@ class GeometryTask(AbstractCalibrationTask):
         if model.isValid():
             resetResidual = self.__fitting is not True
             calibration.fromGeometryModel(model, resetResidual=resetResidual)
+            self.__calibrationState.update(calibration)
             self.__updateDisplay()
             self.__formatResidual()
 
@@ -774,15 +842,15 @@ class GeometryTask(AbstractCalibrationTask):
         geometry.setFrom(pickedGeometry)
 
     def __updateDisplay(self):
-        calibration = self.__getCalibration()
-        if calibration is None:
+        state = self.__calibrationState
+        if state.isEmpty():
             return
 
-        rings = calibration.getRings()
-        tth = calibration.getTwoThetaArray()
+        rings = state.getRings()
+        tth = state.getTwoThetaArray()
         self.__plot.setRings(rings, tth)
 
-        center = calibration.getBeamCenter()
+        center = state.getBeamCenter()
         if center is None:
             self.__plot.removeMarker(legend="center")
         else:
@@ -795,7 +863,7 @@ class GeometryTask(AbstractCalibrationTask):
                 color=color,
                 symbol="+")
 
-        poni = calibration.getPoni()
+        poni = state.getPoni()
         if poni is None:
             self.__plot.removeMarker(legend="poni")
         else:
