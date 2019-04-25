@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/04/2019"
+__date__ = "25/04/2019"
 
 import logging
 
@@ -38,11 +38,18 @@ _logger = logging.getLogger(__name__)
 
 
 class AdvancedComboBox(qt.QComboBox):
-    """Combobox which provide a way to custom the displayed """
+    """ComboBox with other features
+
+    - Provide a way to custom the displayed when using table view model.
+    - Allow to disable hardcoded update of `currentIndex`.
+    """
 
     def __init__(self, parent=None):
         qt.QComboBox.__init__(self, parent=parent)
         self.__displayedDataCallback = None
+        self.currentIndexChanged.connect(self.__currentIndexChanged)
+        self.__modelWasEmpty = False
+        self.__updateDefaultIndexUpdate = True
 
     def initStyleOption(self, option):
         """
@@ -60,6 +67,52 @@ class AdvancedComboBox(qt.QComboBox):
                 icon = qt.QIcon()
             option.currentText = text
             option.currentIcon = icon
+
+    def setUpdateCurrentIndexEnabled(self, enable):
+        """
+        Allow to disable the default behaviour of the QComboBox which update
+        the current index to 0 when the model crow from an empty state.
+        """
+        if self.__updateDefaultIndexUpdate == enable:
+            return
+        self.__updateDefaultIndexUpdate = enable
+        self.__updateModelConnection(not enable)
+        if enable:
+            if self.model() is not None:
+                self.__modelWasEmpty = self.model().rowCount() == 0
+
+    def __updateModelConnection(self, connect):
+        model = self.model()
+        if connect:
+            model.modelReset.connect(self.__modelReset)
+            model.rowsRemoved.connect(self.__rowsRemoved)
+        else:
+            model.modelReset.disconnect(self.__modelReset)
+            model.rowsRemoved.disconnect(self.__rowsRemoved)
+
+    def setModel(self, model):
+        if not self.__updateDefaultIndexUpdate:
+            self.__updateModelConnection(False)
+        super(AdvancedComboBox, self).setModel(model)
+        if not self.__updateDefaultIndexUpdate:
+            self.__updateModelConnection(True)
+            self.__modelWasEmpty = model.rowCount() == 0
+
+    def __modelReset(self):
+        self.__modelWasEmpty = self.model().rowCount() == 0
+
+    def __rowsRemoved(self, parent, first, last):
+        self.__modelWasEmpty = self.model().rowCount() == 0
+
+    def __currentIndexChanged(self, index):
+        """
+        Called when currentIndex is updated.
+        """
+        if not self.__updateDefaultIndexUpdate:
+            # Kind of hack to avoid a hard coded behaviour
+            if self.__modelWasEmpty:
+                self.__modelWasEmpty = False
+                self.setCurrentIndex(-1)
 
     def paintEvent(self, event):
         """
