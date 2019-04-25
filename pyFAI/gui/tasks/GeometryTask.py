@@ -444,12 +444,12 @@ class GeometryTask(AbstractCalibrationTask):
         constraintsModel.rotation2().setFixed(True)
         constraintsModel.rotation3().setFixed(True)
         constraintsModel.unlockSignals()
-        geometryModel = calibrationModel.fittedGeometry()
-        geometryModel.lockSignals()
-        geometryModel.rotation1().setValue(0)
-        geometryModel.rotation2().setValue(0)
-        geometryModel.rotation3().setValue(0)
-        geometryModel.unlockSignals()
+        geometry = calibrationModel.fittedGeometry()
+        geometry.lockSignals()
+        geometry.rotation1().setValue(0)
+        geometry.rotation2().setValue(0)
+        geometry.rotation3().setValue(0)
+        geometry.unlockSignals()
 
     def addParameterToLayout(self, layout, param):
         # an empty grid returns 1
