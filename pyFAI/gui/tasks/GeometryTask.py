@@ -565,7 +565,7 @@ class GeometryTask(AbstractCalibrationTask):
         defaultConstraintsButton.clicked.connect(self.__setDefaultConstraints)
         saxsConstraintsButton.clicked.connect(self.__setSaxsConstraints)
 
-        self._geometryHistoryCombo.currentIndexChanged.connect(self.__geometryPickedFromHistory)
+        self._geometryHistoryCombo.activated.connect(self.__geometryPickedFromHistory)
         self._geometryHistoryCombo.setAngleUnit(userAngleUnit)
 
         self.__calibrationState.changed.connect(self.__updateResidual)
