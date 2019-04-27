@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "19/11/2018"
+__date__ = "18/04/2019"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -81,14 +81,14 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
 
         if p1 < 0:
             with gil:
-                logger.warning("negative index along dim1: f1= %s", f1)
+                logger.warning("Negative index along dim1: f1= %s", f1)
             p1 = 0
             f1 = 0.0
             delta1 = d1[i]
 
         if p2 < 0:
             with gil:
-                logger.warning("negative index along dim2: f2= %s", f2)
+                logger.warning("Negative index along dim2: f2= %s", f2)
             p2 = 0
             f2 = 0.0
             delta2 = d2[i]
@@ -96,14 +96,14 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
         if p1 >= dim1:
             if p1 > dim1:
                 with gil:
-                    print("d1= %s, f1=%s, p1=%s, delta1=%s" % (d1[i], f1, p1, delta1))
+                    logger.warning("Overflow on dim1: d1= %s, f1=%s, p1=%s, delta1=%s", d1[i], f1, p1, delta1)
             p1 = dim1 - 1
             delta1 = d1[i] - p1
 
         if p2 >= dim2:
             if p2 > dim2:
                 with gil:
-                    print("d2= %s, f2=%s, p2=%s, delta2=%s" % (d2[i], f2, p2, delta2))
+                    logger.warning("Overflow on dim2: d2= %s, f2=%s, p2=%s, delta2=%s", d2[i], f2, p2, delta2)
             p2 = dim2 - 1
             delta2 = d2[i] - p2
 
@@ -164,8 +164,8 @@ def convert_corner_2D_to_4D(int ndim,
     shape1 = d2.shape[1] - 1
     assert d1.shape[0] == d2.shape[0], "d1.shape[0] == d2.shape[0]"
     assert d1.shape[1] == d2.shape[1], "d1.shape[1] == d2.shape[1]"
-    cdef cnumpy.float32_t[:, :, :, ::1] pos = numpy.zeros((shape0, shape1, 4, ndim), 
-                                                       dtype=numpy.float32)
+    cdef cnumpy.float32_t[:, :, :, ::1] pos = numpy.zeros((shape0, shape1, 4, ndim),
+                                                          dtype=numpy.float32)
     for i in prange(shape0, nogil=True, schedule="static"):
         for j in range(shape1):
             pos[i, j, 0, ndim - 2] += d1[i, j]
@@ -186,5 +186,6 @@ def convert_corner_2D_to_4D(int ndim,
                 pos[i, j, 2, 0] += d3[i + 1, j + 1]
                 pos[i, j, 3, 0] += d3[i, j + 1]
     return numpy.asarray(pos)
+
 
 include "bilinear.pxi"

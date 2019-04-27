@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "23/04/2019"
 
 import logging
 from silx.gui import qt
@@ -230,6 +230,8 @@ class QuantityEdit(qt.QLineEdit):
             text = validator.toText(value)
         old = self.blockSignals(True)
         self.setText(text)
+        # For very big numbers, make the begining visible
+        self.setCursorPosition(0)
         # Avoid sending further signals
         self.__previousText = text
         self.blockSignals(old)

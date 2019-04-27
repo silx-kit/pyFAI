@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/03/2019"
+__date__ = "11/04/2019"
 
 from .AbstractModel import AbstractModel
 from .PlotViewModel import PlotViewModel
@@ -37,6 +37,7 @@ from .GeometryModel import GeometryModel
 from .GeometryConstraintsModel import GeometryConstraintsModel
 from .IntegrationSettingsModel import IntegrationSettingsModel
 from .MarkerModel import MarkerModel
+from .GeometryHistoryModel import GeometryHistoryModel
 
 
 class CalibrationModel(AbstractModel):
@@ -51,6 +52,7 @@ class CalibrationModel(AbstractModel):
         self.__integrationSettingsModel = IntegrationSettingsModel(self)
         self.__markerModel = MarkerModel(self)
         self.__rawPlotView = PlotViewModel(self)
+        self.__geometryHistoryModel = GeometryHistoryModel(self)
 
     def isValid(self):
         return True
@@ -81,6 +83,12 @@ class CalibrationModel(AbstractModel):
         :rtype: GeometryConstraintsModel
         """
         return self.__geometryConstraintsModel
+
+    def geometryHistoryModel(self):
+        """
+        :rtype: GeometryHistoryModel
+        """
+        return self.__geometryHistoryModel
 
     def integrationSettingsModel(self):
         """
