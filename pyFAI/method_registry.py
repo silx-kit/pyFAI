@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2019"
+__date__ = "21/03/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -288,7 +288,10 @@ class IntegrationMethod:
     def __init__(self, dim, split, algo, impl,
                  target=None, target_name=None, target_type=None,
                  class_funct=None, old_method=None, extra=None):
-        """Constructor of the class, registring the methods.
+        """Constructor of the class, registering the methods.
+        
+        DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI
+
 
         :param dim: 1 or 2 integration engine
         :param split: pixel splitting options "no", "BBox", "pseudo", "full"

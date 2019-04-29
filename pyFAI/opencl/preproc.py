@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "15/03/2019"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -390,7 +390,9 @@ class OCL_Preproc(OpenclProcessing):
                 kwargs["do_dark_variance"] = do_dark
             kernel = self.kernels.get_kernel(kernel_name)
             evt = kernel(self.queue, (self.size,), None, *list(kwargs.values()))
-            if kernel_name.startswith("corrections3"):
+            if kernel_name.startswith("corrections4"):
+                dest = numpy.empty(self.on_device.get("image").shape + (4,), dtype=numpy.float32)
+            elif kernel_name.startswith("corrections3"):
                 dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)
             elif kernel_name == "corrections2":
                 dest = numpy.empty(self.on_device.get("image").shape + (2,), dtype=numpy.float32)

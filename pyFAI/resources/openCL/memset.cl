@@ -50,10 +50,10 @@
  * - array1: float Pointer to global memory with the outCount array
  * - array2: float Pointer to global memory with the outData array
  */
-__kernel void
-memset_out(__global float *array0,
-           __global float *array1,
-           __global float *array2
+kernel void
+memset_out(global float *array0,
+           global float *array1,
+           global float *array2
 )
 {
   int i = get_global_id(0);
@@ -65,3 +65,4 @@ memset_out(__global float *array0,
     array2[i] = 0.0f;
   }
 }
+

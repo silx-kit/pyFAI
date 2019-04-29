@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/02/2019"
+__date__ = "25/04/2019"
 
 import logging
 import numpy
@@ -97,9 +97,16 @@ class GeometryRefinementContext(object):
 
     def chi2(self):
         if "wavelength" in self.__fixed:
-            chi2 = self.__geoRef.chi2()
+            param = numpy.array([self._dist, self._poni1, self._poni2,
+                                 self._rot1, self._rot2, self._rot3],
+                                dtype=numpy.float64)
+            chi2 = self.__geoRef.chi2(param)
         else:
-            chi2 = self.__geoRef.chi2_wavelength()
+            param = numpy.array([self._dist, self._poni1, self._poni2,
+                                 self._rot1, self._rot2, self._rot3,
+                                 1e10 * self.wavelength],
+                                dtype=numpy.float64)
+            chi2 = self.__geoRef.chi2_wavelength(param)
         return chi2
 
     def refine(self, maxiter):
@@ -136,8 +143,6 @@ class RingCalibration(object):
         self.__calibrant.set_wavelength(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
-        self.__rms = None
-        self.__previousRms = None
         self.__defaultConstraints = None
 
         self.__init(peaks, method)
@@ -225,9 +230,6 @@ class RingCalibration(object):
         _score, parameters, rms = scores[0]
         geoRef.setParams(parameters)
 
-        self.__rms = rms
-        self.__previousRms = None
-
         peakPicker = PeakPicker(data=self.__image,
                                 calibrant=self.__calibrant,
                                 wavelength=self.__wavelength,
@@ -251,12 +253,6 @@ class RingCalibration(object):
     def getPyfaiGeometry(self):
         return self.__geoRef
 
-    def __computeRms(self):
-        if self.__geoRef is None:
-            return None
-        chi2 = self.__geoRef.chi2()
-        return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
-
     def refine(self, max_iter=500, seconds=10):
         """
         Contains the common geometry refinement part
@@ -264,13 +260,10 @@ class RingCalibration(object):
         self.__calibrant.set_wavelength(self.__wavelength)
         self.__peakPicker.points.setWavelength_change2th(self.__wavelength)
 
-        self.__previousRms = self.__rms
         residual = previous_residual = float("+inf")
 
-        print("Initial residual: %s" % previous_residual)
-
         count = 0
-        timer = timeutils.Timer(seconds=10)
+        timer = timeutils.Timer(seconds=seconds)
 
         while count < max_iter and not timer.isTimeout():
             residual = self.__geoRef.refine(10000)
@@ -279,7 +272,6 @@ class RingCalibration(object):
             previous_residual = residual
             count += 1
 
-        self.__rms = residual
         print("Final residual: %s (after %s iterations)" % (residual, count))
 
         self.__geoRef.del_ttha()
@@ -291,16 +283,10 @@ class RingCalibration(object):
 
         The unit is the radian.
         """
-        if self.__rms is None:
-            self.__rms = self.__computeRms()
-        return self.__rms
-
-    def getPreviousRms(self):
-        """Returns the previous RMS computed before the last fitting.
-
-        The unit is the radian.
-        """
-        return self.__previousRms
+        if self.__geoRef is None:
+            return None
+        chi2 = self.__geoRef.chi2()
+        return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
 
     def getTwoThetaArray(self):
         """
@@ -399,9 +385,7 @@ class RingCalibration(object):
         self.__geoRef.rot1 = model.rotation1().value()
         self.__geoRef.rot2 = model.rotation2().value()
         self.__geoRef.rot3 = model.rotation3().value()
-        if resetResidual:
-            self.__previousRms = None
-            self.__rms = None
+        self.__geoRef.reset()
 
     def toGeometryConstraintsModel(self, contraintsModel, reachFromGeoRef=True):
         if reachFromGeoRef is False:
