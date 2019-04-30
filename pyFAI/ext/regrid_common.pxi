@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "21/01/2019"
+__date__ = "30/04/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -107,12 +107,12 @@ cdef:
     float zerof = <float> 1.0
     double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
-from collections import namedtuple
-
-Integrate1dResult = namedtuple("Integrate1dResult", ["bins", "signal", "propagated"])
-Integrate2dResult = namedtuple("Integrate2dResult", ["signal", "bins0", "bins1", "propagated"])
-Integrate1dWithErrorResult = namedtuple("Integrate1dWithErrorResult", ["bins", "signal", "error", "propagated"])
-Integrate2dWithErrorResult = namedtuple("Integrate2dWithErrorResult", ["signal", "error", "bins0", "bins1", "propagated"])
+# from collections import namedtuple
+# 
+# Integrate1dResult = namedtuple("Integrate1dResult", ["bins", "signal", "propagated"])
+# Integrate2dResult = namedtuple("Integrate2dResult", ["signal", "bins0", "bins1", "propagated"])
+# Integrate1dWithErrorResult = namedtuple("Integrate1dWithErrorResult", ["bins", "signal", "error", "propagated"])
+# Integrate2dWithErrorResult = namedtuple("Integrate2dWithErrorResult", ["signal", "error", "bins0", "bins1", "propagated"])
 
 
 @cython.cdivision(True)

@@ -47,6 +47,8 @@ logger = logging.getLogger(__name__)
 
 from .preproc import preproc
 
+from ..containers import Integrate1dtpl, Integrate2dtpl
+
 _COMPILED_WITH_OPENMP = _openmp.COMPILED_WITH_OPENMP
 
 
@@ -329,26 +331,22 @@ def histogram_preproc(cnumpy.ndarray pos,
                       cnumpy.ndarray weights,
                       int bins=100,
                       bin_range=None,
-                      nthread=None,
-                      double empty=0.0,
-                      double normalization_factor=1.0):
+                      data_t empty=0.0):
     """
     Calculates histogram of pos weighted by weights 
     in the case data have been preprocessed, i.e. each datapoint contains 
-    (signal, normalization) or (signal, variance, normalization)  
+    (signal, normalization), (signal, variance, normalization), (signal, variance, normalization, count)  
 
     :param pos: 2Theta array
-    :param weights: array with intensities, variance and normalization
+    :param weights: array with intensities, variance, normalization and count
     :param bins: number of output bins
-    :param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED
-    :param nthread: OpenMP is disabled. unused
     :param empty: value given to empty bins
     :param normalization_factor: divide the result by this value
 
-    :return: 2theta, I, weighted histogram, raw histogram
+    :return: radial position, average intensity, error (std), 
+        histogram of signal, histogram of variance, histogram of normalization, pixel count
     """
     cdef int nchan, ndim
-    
     assert bins > 1
     ndim = weights.ndim
     nchan = weights.shape[ndim - 1]
@@ -358,15 +356,11 @@ def histogram_preproc(cnumpy.ndarray pos,
         position_t[::1] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=position_d)
         data_t[:, ::1] cdata = numpy.ascontiguousarray(weights, dtype=data_d).reshape(-1, nchan)
         acc_t[:, ::1] out_prop = numpy.zeros((bins, 4), dtype=acc_d)
-        data_t[:, ::1] out_error, out_signal = numpy.zeros(bins, dtype=data_d)
         position_t delta, min0, max0, maxin0
         position_t a = 0.0
         position_t fbin = 0.0
         position_t epsilon = 1e-10
         int bin = 0, i, j
-    
-    if (nchan == 3):
-        out_error = numpy.zeros(bins, dtype=data_d)
     
     if bin_range is not None:
         min0 = min(bin_range)
@@ -389,29 +383,80 @@ def histogram_preproc(cnumpy.ndarray pos,
                 out_prop[bin, j] = cdata[i, j]
             if nchan < 4:
                 out_prop[bin, 4] += 1.0
+    return numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop)
 
-        for bin in range(bins):
-            if out_prop[bin, nchan] > epsilon:
-                out_signal[bin] = out_prop[bin, 0] / out_prop[bin, nchan - 1]
-                if nchan == 3:
-                    out_error[bin] = sqrt(out_prop[bin, 1]) / out_prop[bin, nchan - 1]
-            else:
-                out_signal[bin] = empty
-                if nchan == 3:
-                    out_error[bin] = empty
 
-    out_pos = numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins)
+def histogram1d_engine(radial, npt,
+                       raw,
+                       dark=None,
+                       flat=None,
+                       solidangle=None,
+                       polarization=None,
+                       absorption=None,
+                       mask=None,
+                       dummy=None,
+                       delta_dummy=None,
+                       normalization_factor=1.0,
+                       empty=None,
+                       split_result=False,
+                       variance=None,
+                       dark_variance=None,
+                       poissonian=False,
+                       radial_range=None
+                       ):
+    """Implementation of rebinning engine (without splitting) using pure cython histograms
     
-    if nchan == 3:
-        return Integrate1dWithErrorResult(out_pos, 
-                                          numpy.asarray(out_signal), 
-                                          numpy.asarray(out_error), 
-                                          numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop))  
-    else:
-        return Integrate1dResult(out_pos, 
-                                 numpy.asarray(out_signal), 
-                                 numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop))
+    :param radial: radial position 2D array (same shape as raw)   
+    :param npt: number of points to integrate over
+    :param raw: 2D array with the raw signal
+    :param dark: array containing the value of the dark noise, to be subtracted
+    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
+    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility
+    :param polarization: Correction for polarization of the incident beam
+    :param absorption: Correction for absorption in the sensor volume
+    :param mask: 2d array of int/bool: non-null where data should be ignored
+    :param dummy: value of invalid data
+    :param delta_dummy: precision for invalid data
+    :param normalization_factor: final value is divided by this
+    :param empty: value to be given for empty bins
+    :param variance: provide an estimation of the variance
+    :param dark_variance: provide an estimation of the variance of the dark_current,
+    :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
 
+
+    NaN are always considered as invalid values
+
+    if neither empty nor dummy is provided, empty pixels are left at 0.
+    
+    Nota: "azimuthal_range" has to be integrated into the 
+           mask prior to the call of this function 
+    
+    :return: Integrate1dtpl named tuple containing: 
+            position, average intensity, std on intensity, 
+            plus the various histograms on signal, variance, normalization and count.  
+                                               
+    """
+    prep = preproc(raw,
+                   dark=dark,
+                   flat=flat,
+                   solidangle=solidangle,
+                   polarization=polarization,
+                   absorption=absorption,
+                   mask=mask,
+                   dummy=dummy,
+                   delta_dummy=delta_dummy,
+                   normalization_factor=normalization_factor,
+                   split_result=4,
+                   variance=variance,
+                   dark_variance=dark_variance,
+                   poissonian=poissonian,
+                   empty=0
+                   )
+    res = histogram_preproc(radial,
+                            prep,
+                            npt,
+                      bin_range=None,
+                      data_t empty=0.0):
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
@@ -528,71 +573,3 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
                                    numpy.asarray(out_data).view(dtype=prop_d).reshape(bins0, bins1))
     return result
 
-
-def histogram1d_engine(radial, npt,
-                       raw,
-                       dark=None,
-                       flat=None,
-                       solidangle=None,
-                       polarization=None,
-                       absorption=None,
-                       mask=None,
-                       dummy=None,
-                       delta_dummy=None,
-                       normalization_factor=1.0,
-                       empty=None,
-                       split_result=False,
-                       variance=None,
-                       dark_variance=None,
-                       poissonian=False,
-                       radial_range=None
-                       ):
-    """Implementation of rebinning engine (without splitting) using pure cython histograms
-    
-    :param radial: radial position 2D array (same shape as raw)   
-    :param npt: number of points to integrate over
-    :param raw: 2D array with the raw signal
-    :param dark: array containing the value of the dark noise, to be subtracted
-    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
-    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility
-    :param polarization: Correction for polarization of the incident beam
-    :param absorption: Correction for absorption in the sensor volume
-    :param mask: 2d array of int/bool: non-null where data should be ignored
-    :param dummy: value of invalid data
-    :param delta_dummy: precision for invalid data
-    :param normalization_factor: final value is divided by this
-    :param empty: value to be given for empty bins
-    :param variance: provide an estimation of the variance
-    :param dark_variance: provide an estimation of the variance of the dark_current,
-    :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
-
-
-    NaN are always considered as invalid values
-
-    if neither empty nor dummy is provided, empty pixels are left at 0.
-    
-    Nota: "azimuthal_range" has to be integrated into the 
-           mask prior to the call of this function 
-    
-    :return: Integrate1dtpl named tuple containing: 
-            position, average intensity, std on intensity, 
-            plus the various histograms on signal, variance, normalization and count.  
-                                               
-    """
-    prep = preproc(raw,
-                   dark=dark,
-                   flat=flat,
-                   solidangle=solidangle,
-                   polarization=polarization,
-                   absorption=absorption,
-                   mask=mask,
-                   dummy=dummy,
-                   delta_dummy=delta_dummy,
-                   normalization_factor=normalization_factor,
-                   split_result=4,
-                   variance=variance,
-                   dark_variance=dark_variance,
-                   poissonian=poissonian,
-                   empty=0
-                   )
-    #TODO...#
