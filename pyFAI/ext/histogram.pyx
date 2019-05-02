@@ -29,7 +29,7 @@
 """A set of histogram functions with or without OpenMP enabled."""
 
 __author__ = "Jerome Kieffer"
-__date__ = "30/04/2019"
+__date__ = "02/05/2019"
 __license__ = "MIT"
 __copyright__ = "2011-2019, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -330,21 +330,18 @@ def histogram2d(cnumpy.ndarray pos0 not None,
 def histogram_preproc(cnumpy.ndarray pos,
                       cnumpy.ndarray weights,
                       int bins=100,
-                      bin_range=None,
-                      data_t empty=0.0):
+                      bin_range=None):
     """
     Calculates histogram of pos weighted by weights 
     in the case data have been preprocessed, i.e. each datapoint contains 
     (signal, normalization), (signal, variance, normalization), (signal, variance, normalization, count)  
 
-    :param pos: 2Theta array
+    :param pos: radial array
     :param weights: array with intensities, variance, normalization and count
     :param bins: number of output bins
-    :param empty: value given to empty bins
-    :param normalization_factor: divide the result by this value
+    :param bin_range: 2-tuple with lower and upper bound for the valid position range.
 
-    :return: radial position, average intensity, error (std), 
-        histogram of signal, histogram of variance, histogram of normalization, pixel count
+    :return: 4 histograms concatenated, radial position (bin center)
     """
     cdef int nchan, ndim
     assert bins > 1
@@ -366,13 +363,16 @@ def histogram_preproc(cnumpy.ndarray pos,
         min0 = min(bin_range)
         maxin0 = max(bin_range)
     else:
-        min0 = pos.min()
-        maxin0 = pos.max()
-    max0 = calc_upper_bound(maxin0)
-
-    delta = (max0 - min0) / float(bins)
-
-    with nogil:
+        with nogil:
+            maxin0 = min0 = cpos[0]
+            for i in range(1, size):
+                a = cpos[i]
+                maxin0 = max(maxin0, a)
+                min0 = min(min0, a)
+               
+    with nogil:    
+        max0 = calc_upper_bound(maxin0)
+        delta = (max0 - min0) / float(bins)
         for i in range(size):
             a = cpos[i]
             fbin = get_bin_number(a, min0, delta)
@@ -383,10 +383,14 @@ def histogram_preproc(cnumpy.ndarray pos,
                 out_prop[bin, j] = cdata[i, j]
             if nchan < 4:
                 out_prop[bin, 4] += 1.0
-    return numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop)
+    return (numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop),
+            numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins))
 
 
-def histogram1d_engine(radial, npt,
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def histogram1d_engine(radial, int npt,
                        raw,
                        dark=None,
                        flat=None,
@@ -397,7 +401,7 @@ def histogram1d_engine(radial, npt,
                        dummy=None,
                        delta_dummy=None,
                        normalization_factor=1.0,
-                       empty=None,
+                       data_t empty=0.0,
                        split_result=False,
                        variance=None,
                        dark_variance=None,
@@ -436,6 +440,13 @@ def histogram1d_engine(radial, npt,
             plus the various histograms on signal, variance, normalization and count.  
                                                
     """
+    cdef: 
+        acc_t[:, ::1] res
+        cnumpy.float32_t[:, ::1] prep
+        position_t[::1] position
+        data_t[::1] histo_normalization, histo_signal, histo_variance, histo_count, intensity, error
+        data_t norm, sig, var, cnt 
+        int i
     prep = preproc(raw,
                    dark=dark,
                    flat=flat,
@@ -450,13 +461,38 @@ def histogram1d_engine(radial, npt,
                    variance=variance,
                    dark_variance=dark_variance,
                    poissonian=poissonian,
-                   empty=0
                    )
-    res = histogram_preproc(radial,
-                            prep,
-                            npt,
-                      bin_range=None,
-                      data_t empty=0.0):
+    res, position = histogram_preproc(radial,
+                                      prep,
+                                      npt,
+                                      bin_range=radial_range,
+                                      empty=empty)
+    
+    histo_signal = numpy.empty(npt, dtype=data_d)
+    histo_variance = numpy.empty(npt, dtype=data_d)
+    histo_normalization = numpy.empty(npt, dtype=data_d)
+    histo_count = numpy.empty(npt, dtype=data_d)
+    intensity = numpy.empty(npt, dtype=data_d)
+    error = numpy.empty(npt, dtype=data_d)
+    if dummy is not None:
+        empty = dummy
+    with nogil:
+        for i in range(npt):
+            sig = histo_normalization[i] = res[i, 0]
+            var = histo_variance[i] = res[i, 1]
+            norm = histo_normalization[i] = res[i, 2]
+            cnt = histo_count[i] = res[i, 3]
+            if norm != 0.0:
+                intensity[i] = sig / norm
+                if var != 0.0:
+                    error[i] = sqrt(var) / norm
+                else:
+                    error[i] = empty
+            else:
+                intensity[i] = empty
+                error[i] = empty
+    return Integrate1dtpl(position, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)
+
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
@@ -465,8 +501,7 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
                         cnumpy.ndarray pos1 not None,
                         bins,
                         cnumpy.ndarray weights not None,
-                        split=False,
-                        nthread=None,
+                        bint split=False,
                         double empty=0.0,
                         ):
     """
@@ -572,4 +607,6 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
                                    bin_centers1,
                                    numpy.asarray(out_data).view(dtype=prop_d).reshape(bins0, bins1))
     return result
+
+
 
