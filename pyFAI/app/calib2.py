@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "11/03/2019"
 __status__ = "production"
 
 import logging
@@ -64,7 +64,9 @@ def configure_parser_arguments(parser):
                         help="Filename where processed image is saved", metavar="FILE",
                         default=None)
     parser.add_argument("-v", "--verbose",
-                        action="store_true", dest="debug", default=False,
+                        dest="debug",
+                        action="store_true",
+                        default=False,
                         help="switch to debug/verbose mode")
     parser.add_argument('--debug',
                         dest="debug",
@@ -467,8 +469,6 @@ def setup_model(model, options):
 
     if options.outfile:
         logger.error("outfile option not supported")
-    if options.debug:
-        logger.error("debug option not supported")
 
     if options.reconstruct:
         logger.error("reconstruct option not supported")

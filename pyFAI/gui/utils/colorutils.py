@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "05/04/2019"
 
 
 from silx.gui import qt
@@ -35,6 +35,11 @@ from silx.gui.colors import Colormap
 
 
 def getFreeColorRange(colormap):
+    """
+    Returns a list of 10 colors in range not covered by colormap.
+
+    :rtype: List[qt.QColor]
+    """
     name = colormap['name']
     colormap = Colormap(name)
 

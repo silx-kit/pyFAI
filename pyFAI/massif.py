@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2018"
+__date__ = "22/03/2019"
 __status__ = "production"
 
 import sys
@@ -61,9 +61,9 @@ class Massif(object):
 
     def __init__(self, data=None, mask=None):
         """Constructor of the class...
-        
+
         :param data: 2D array or filename (discouraged)
-        :param mask: array with non zero for invalid data 
+        :param mask: array with non zero for invalid data
         """
         if isinstance(data, six.string_types) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
@@ -74,6 +74,8 @@ class Massif(object):
                 self.data = data.astype("float32")
             except Exception as error:
                 logger.error("Unable to understand this type of data %s: %s", data, error)
+        self.log_info = True
+        """If true, more information is displayed in the logger relative to picking."""
         self.mask = mask
         self._cleaned_data = None
         self._bilin = Bilinear(self.data)
@@ -123,34 +125,37 @@ class Massif(object):
         """
         All in one function that finds a maximum from the given seed (x)
         then calculates the region extension and extract position of the neighboring peaks.
-        :param x: coordinates of the peak, seed for the calculation
-        :type x: tuple of integer
-        :param nmax: maximum number of peak per region
-        :param annotate: call back method taking number of points + coordinate as input.
+
+        :param Tuple[int] x: coordinates of the peak, seed for the calculation
+        :param int nmax: maximum number of peak per region
+        :param annotate: callback method taking number of points + coordinate as input.
         :param massif_contour: callback to show the contour of a massif with the given index.
         :param stdout: this is the file where output is written by default.
         :return: list of peaks
         """
-        listpeaks = []
         region = self.calculate_massif(x)
         if region is None:
-            logger.error("You picked a background point at %s", x)
-            return listpeaks
+            if self.log_info:
+                logger.error("You picked a background point at %s", x)
+            return []
         xinit = self.nearest_peak(x)
         if xinit is None:
-            logger.error("Unable to find peak in the vinicy of %s", x)
-            return listpeaks
+            if self.log_info:
+                logger.error("Unable to find peak in the vinicy of %s", x)
+            return []
         else:
             if not region[int(xinit[0] + 0.5), int(xinit[1] + 0.5)]:
                 logger.error("Nearest peak %s is not in the same region  %s", xinit, x)
-                return listpeaks
+                return []
 
             if annotate is not None:
                 try:
                     annotate(xinit, x)
                 except Exception as error:
-                    logger.error("Error in annotate %i: %i %i. %s", len(listpeaks), xinit[0], xinit[1], error)
+                    logger.debug("Backtrace", exc_info=True)
+                    logger.error("Error in annotate %i: %i %i. %s", 0, xinit[0], xinit[1], error)
 
+        listpeaks = []
         listpeaks.append(xinit)
         cleaned_data = self.cleaned_data
         mean = cleaned_data[region].mean(dtype=numpy.float64)
@@ -162,6 +167,7 @@ class Massif(object):
             try:
                 massif_contour(region)
             except (WindowsError, MemoryError) as error:
+                logger.debug("Backtrace", exc_info=True)
                 logger.error("Error in plotting region: %s", error)
         nbFailure = 0
         for j in idx:
@@ -170,7 +176,8 @@ class Massif(object):
                 nbFailure += 1
                 continue
             if (region2[int(xopt[0] + 0.5), int(xopt[1] + 0.5)]) and not (xopt in listpeaks):
-                stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
+                if stdout:
+                    stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
                 listpeaks.append(xopt)
                 nbFailure = 0
             else:
@@ -304,7 +311,7 @@ class Massif(object):
 
     def get_labeled_massif(self, pattern=None, reconstruct=True):
         """
-        :param pattern: 3x3 matrix 
+        :param pattern: 3x3 matrix
         :param reconstruct: if False, split massif at masked position, else reconstruct missing part.
         :return: an image composed of int with a different value for each massif
         """

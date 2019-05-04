@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/08/2018"
+__date__ = "11/04/2019"
 
 from .AbstractModel import AbstractModel
 from .PlotViewModel import PlotViewModel
@@ -37,6 +37,7 @@ from .GeometryModel import GeometryModel
 from .GeometryConstraintsModel import GeometryConstraintsModel
 from .IntegrationSettingsModel import IntegrationSettingsModel
 from .MarkerModel import MarkerModel
+from .GeometryHistoryModel import GeometryHistoryModel
 
 
 class CalibrationModel(AbstractModel):
@@ -51,34 +52,61 @@ class CalibrationModel(AbstractModel):
         self.__integrationSettingsModel = IntegrationSettingsModel(self)
         self.__markerModel = MarkerModel(self)
         self.__rawPlotView = PlotViewModel(self)
+        self.__geometryHistoryModel = GeometryHistoryModel(self)
 
     def isValid(self):
         return True
 
     def experimentSettingsModel(self):
+        """
+        :rtype: ExperimentSettingsModel
+        """
         return self.__experimentSettingsModel
 
     def peakSelectionModel(self):
+        """
+        :rtype: PeakSelectionModel
+        """
         return self.__peakSelectionModel
 
     def fittedGeometry(self):
         return self.__fittedGeometry
 
     def peakGeometry(self):
+        """
+        :rtype: GeometryModel
+        """
         return self.__peakGeometry
 
     def geometryConstraintsModel(self):
+        """
+        :rtype: GeometryConstraintsModel
+        """
         return self.__geometryConstraintsModel
 
+    def geometryHistoryModel(self):
+        """
+        :rtype: GeometryHistoryModel
+        """
+        return self.__geometryHistoryModel
+
     def integrationSettingsModel(self):
+        """
+        :rtype: IntegrationSettingsModel
+        """
         return self.__integrationSettingsModel
 
     def markerModel(self):
+        """
+        :rtype: MarkerModel
+        """
         return self.__markerModel
 
     def rawPlotView(self):
         """Store definition of the RAW data view.
 
         This view is shared by some plots
+
+        :rtype: PlotViewModel
         """
         return self.__rawPlotView

@@ -27,31 +27,139 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/11/2018"
+__date__ = "22/03/2019"
 
 import logging
 import numpy
+
+from silx.gui import qt
 from silx.image import marchingsquares
 
 import pyFAI.utils
 from pyFAI.geometryRefinement import GeometryRefinement
 from pyFAI.geometry import Geometry
 from ..peak_picker import PeakPicker
+from . import model_transform
 
 _logger = logging.getLogger(__name__)
 
 
-class RingExtractor(object):
+class RingExtractorThread(qt.QThread):
+    """Job to process data and collect peaks according to a diffraction ring
+    modelization.
+    """
 
-    def __init__(self, image, mask, calibrant, detector, wavelength):
+    sigProcessLocationChanged = qt.Signal(object)
+
+    def __init__(self, parent):
+        """Constructor"""
+        super(RingExtractorThread, self).__init__(parent=parent)
+
+        self.__image = None
+        self.__mask = None
+        self.__calibrant = None
+        self.__detector = None
+        self.__wavelength = None
+        self.__geoRef = None
+
+        self.__maxRings = None
+        self.__ringNumbers = None
+        self.__pointPerDegree = None
+        self.__peaksModel = None
+        self.__geometryModel = None
+
+        self.__error = None
+        self.__keys = {}
+
+    def errorString(self):
+        """Returns the error message in case of failure"""
+        return self.__error
+
+    def isAborted(self):
+        """
+        Returns whether the theard was aborted or not.
+
+        .. note:: Aborted thead are not finished theads.
+        """
+        return self.__isAborted
+
+    def run(self):
+        self.__isAborted = False
+        try:
+            result = self.runProcess()
+        except Exception as e:
+            _logger.error("Backtrace", exc_info=True)
+            self.__error = str(e)
+            self.__isAborted = True
+        else:
+            if not result:
+                self.__error = "Task was aborted"
+                self.__isAborted = True
+
+    def setUserData(self, name, value):
+        """Store key-value information from caller to be retrived when the
+        processing finish."""
+        self.__keys[name] = value
+
+    def userData(self, name):
+        """Returns a stored user data."""
+        return self.__keys[name]
+
+    def setPeaksModel(self, peaksModel):
+        """Define a set of peaks as source of the diffraction ring
+        modelization"""
+        self.__peaksModel = peaksModel
+
+    def setGeometryModel(self, geometryModel):
+        """Define a geometry model as source of the diffraction ring
+        modelization"""
+        self.__geometryModel = geometryModel
+
+    def setMaxRings(self, maxRings):
+        """Set max ring to extract"""
+        self.__maxRings = maxRings
+
+    def setRingNumbers(self, ringNumbers):
+        """Specify a set of rings to extract
+
+        :param List[int] ringNumbers: List of number (1 is the 1st ring)
+        """
+        if ringNumbers is None:
+            self.__ringNumbers = None
+        else:
+            self.__ringNumbers = [n - 1 for n in ringNumbers]
+
+    def setPointPerDegree(self, pointPerDegree):
+        """Specify the amount of peak to extract per degree"""
+        self.__pointPerDegree = pointPerDegree
+
+    def setExperimentSettings(self, experimentSettings, copy):
+        """
+        Set the experiment data.
+
+        :param ..model.ExperimentSettingsModel.ExperimentSettingsModel experimentSettings:
+            Contains the modelization of the problem
+        :param bool copy: If true copy the data for a thread safe processing
+        """
+        image = experimentSettings.image().value()
+        mask = experimentSettings.mask().value()
+        calibrant = experimentSettings.calibrantModel().calibrant()
+        detector = experimentSettings.detector()
+        wavelength = experimentSettings.wavelength().value()
+
+        if copy:
+            if image is not None:
+                image = image.copy()
+            if mask is not None:
+                mask = mask.copy()
+
         self.__image = image
         self.__mask = mask
         self.__calibrant = calibrant
-        self.__calibrant.setWavelength_change2th(wavelength)
-        # self.__calibrant.set_wavelength(wavelength)
+        if self.__calibrant is not None:
+            self.__calibrant.setWavelength_change2th(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
-        self.__geoRef = None
 
     def __initGeoRef(self):
         """
@@ -137,14 +245,80 @@ class RingExtractor(object):
             detector=self.__detector)
         return geoRef
 
-    def extract(self, peaks=None, geometryModel=None, method="massif", maxRings=None, pointPerDegree=1.0):
+    def runProcess(self):
+        """Extract the peaks.
+
+        :raises ValueError: If a mandatory setting is not initialized.
+        :rtype: bool
+        :returns: True if successed
+        """
+        if self.__detector is None:
+            raise ValueError("No detector defined")
+        if self.__calibrant is None:
+            raise ValueError("No calibrant defined")
+        if self.__wavelength is None:
+            raise ValueError("No wavelength defined")
+
+        peaksModel = self.__peaksModel
+        geometryModel = self.__geometryModel
+
+        if peaksModel is not None and geometryModel is not None:
+            raise ValueError("Computation have to be done from peaks or from geometry")
+
+        if peaksModel is not None:
+            peaks = model_transform.createPeaksArray(peaksModel)
+            geometryModel = None
+
+        elif geometryModel is not None:
+            peaks = None
+            if not geometryModel.isValid():
+                raise ValueError("The fitted model is not valid. Extraction cancelled.")
+
+        result = self._extract(peaks=peaks, geometryModel=geometryModel)
+        self.__newPeaksRaw = result
+        return True
+
+    def resultPeaks(self):
+        """Returns the extracted peaks.
+
+        :rtype: dict
+        """
+        if len(self.__newPeaksRaw) == 0:
+            return {}
+
+        # Index to result per ring number
+        raw = numpy.array(self.__newPeaksRaw)
+        newPeaks = {}
+        ringNumbers = numpy.unique(raw[:, 2])
+        countPeaks = 0
+        for ringNumber in ringNumbers:
+            coords = raw[raw[:, 2] == ringNumber][:, 0:2]
+            ringNumber = int(ringNumber) + 1
+            newPeaks[ringNumber] = coords
+            countPeaks += len(coords)
+        assert(countPeaks == len(raw))
+        return newPeaks
+
+    def _updateProcessingLocation(self, mask):
+        self.sigProcessLocationChanged.emit(mask)
+
+    def _extract(self, peaks=None, geometryModel=None):
         """
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed.
 
-        # FIXME pts_per_deg
+        :param List[int] ringNumbers: If set, extraction will only be done on
+            rings number contained in this list (the number 0 identify the first
+            ring)
         """
         assert(numpy.logical_xor(peaks is not None, geometryModel is not None))
+        method = "massif"
+        maxRings = self.__maxRings
+        ringNumbers = self.__ringNumbers
+        pointPerDegree = self.__pointPerDegree
+
+        if ringNumbers is not None:
+            ringNumbers = set(ringNumbers)
 
         if peaks is not None:
             # Energy from from experiment settings
@@ -196,17 +370,16 @@ class RingExtractor(object):
         ms = marchingsquares.MarchingSquaresMergeImpl(ttha, self.__mask, use_minmax_cache=True)
 
         for i in range(tth.size):
+            if ringNumbers is not None:
+                if i not in ringNumbers:
+                    continue
             if rings >= maxRings:
                 break
             mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
-            # if self.mask is not None:
-            #     mask = numpy.logical_and(mask, numpy.logical_not(self.mask))
             size = mask.sum(dtype=int)
             if (size > 0):
                 rings += 1
-                peakPicker.massif_contour(mask)
-                # if self.gui:
-                #     update_fig(self.peakPicker.fig)
+                self._updateProcessingLocation(mask)
                 sub_data = peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
@@ -217,12 +390,11 @@ class RingExtractor(object):
                     upper_limit = mean
                     mask2 = numpy.logical_and(peakPicker.data > upper_limit, mask)
                     size2 = mask2.sum()
-                # length of the arc:
                 # Coords in points are y, x
                 points = ms.find_pixels(tth[i])
 
                 seeds = set((i[0], i[1]) for i in points if mask2[i[0], i[1]])
-                # max number of points: 360 points for a full circle
+                # Max number of points: 360 points for a full circle
                 azimuthal = chia[points[:, 0].clip(0, peakPicker.data.shape[0]), points[:, 1].clip(0, peakPicker.data.shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
                 keep = int(nb_deg_azim * pointPerDegree)
@@ -236,11 +408,6 @@ class RingExtractor(object):
                 _logger.info(msg, i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min)
                 _res = peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
 
-        # self.peakPicker.points.save(self.basename + ".npt")
-        # if self.weighted:
-        #     self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
-        # else:
-        #     self.data = peakPicker.points.getList()
         return peakPicker.points.getList()
 
     def toGeometryModel(self, model):

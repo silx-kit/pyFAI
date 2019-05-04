@@ -123,10 +123,10 @@ class TestCSR(utilstest.ParametricTestCase):
         res_csr = engine.integrate(self.data)
         res_scipy = scipy_engine.integrate(self.data)
 
-        self.assertTrue(numpy.allclose(res_csr[0], res_scipy[0]), "pos0 is the same")
-        self.assertTrue(numpy.allclose(res_csr[3], res_scipy[2][..., 3]), "count is almost the same")
-        self.assertTrue(numpy.allclose(res_csr[3], res_scipy[2][..., 2]), "count is same as normalization")
-        self.assertTrue(numpy.allclose(res_csr[2], res_scipy[2][..., 0]), "sum_data is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[0], res_scipy.position), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr[3], res_scipy.count), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[3], res_scipy.normalization), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr[2], res_scipy.signal), "sum_data is almost the same")
 
     def test_1d_nosplit(self):
         self.ai.reset()
@@ -151,10 +151,10 @@ class TestCSR(utilstest.ParametricTestCase):
         res_csr = engine.integrate(self.data)
         res_scipy = scipy_engine.integrate(self.data)
 
-        self.assertTrue(numpy.allclose(res_csr[0], res_scipy[0]), "pos0 is the same")
-        self.assertTrue(numpy.allclose(res_csr[3], res_scipy[2][..., 3]), "count is almost the same")
-        self.assertTrue(numpy.allclose(res_csr[3], res_scipy[2][..., 2]), "count is same as normalization")
-        self.assertTrue(numpy.allclose(res_csr[2], res_scipy[2][..., 0]), "sum_data is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[0], res_scipy.position), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr[3], res_scipy.count), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[3], res_scipy.normalization), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr[2], res_scipy.signal), "sum_data is almost the same")
 
     def test_2d_splitbbox(self):
         self.ai.reset()
@@ -181,11 +181,11 @@ class TestCSR(utilstest.ParametricTestCase):
         res_csr = engine.integrate(self.data)
         res_scipy = scipy_engine.integrate(self.data)
 
-        self.assertTrue(numpy.allclose(res_csr[1], res_scipy[1]), "pos0 is the same")
-        self.assertTrue(numpy.allclose(res_csr[2], res_scipy[2]), "pos2 is the same")
-        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy[3][..., 3]), "count is almost the same")
-        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy[3][..., 2]), "count is same as normalization")
-        self.assertTrue(numpy.allclose(res_csr[3].T, res_scipy[3][..., 0]), "sum_data is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[1], res_scipy.radial), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr[2], res_scipy.azimuthal), "pos1 is the same")
+        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy.count), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy.normalization), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr[3].T, res_scipy.signal), "sum_data is almost the same")
 
     def test_2d_nosplit(self):
         self.ai.reset()
@@ -212,11 +212,11 @@ class TestCSR(utilstest.ParametricTestCase):
         res_csr = engine.integrate(self.data)
         res_scipy = scipy_engine.integrate(self.data)
 
-        self.assertTrue(numpy.allclose(res_csr[1], res_scipy[1]), "pos0 is the same")
-        self.assertTrue(numpy.allclose(res_csr[2], res_scipy[2]), "pos2 is the same")
-        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy[3][..., 3]), "count is almost the same")
-        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy[3][..., 2]), "count is same as normalization")
-        self.assertTrue(numpy.allclose(res_csr[3].T, res_scipy[3][..., 0]), "sum_data is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[1], res_scipy.radial), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr[2], res_scipy.azimuthal), "pos1 is the same")
+        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy.count), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy.normalization), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr[3].T, res_scipy.signal), "sum_data is almost the same")
 
 
 def suite():
