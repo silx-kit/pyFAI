@@ -27,7 +27,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "15/11/2018"
+__date__ = "05/05/2019"
 __copyright__ = "2018-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,26 +37,34 @@ import logging
 logger = logging.getLogger("pyFAI.ext.invert_geometry")
 
 cdef class InvertGeometry:
+    """
+    Class to inverse the geometry: takes the nearest pixel then use linear interpolation
+
+    :param radius: 2D array with radial position
+    :param angle: 2D array with azimuthal position
+
+    Call it with (r,chi) to retrieve the pixel where it comes from.
+    """
     cdef:
         position_t[:, ::1] radius, angle
         int dim0, dim1
         position_t rad_min, rad_max, rad_scale, ang_min, ang_max, ang_scale
-    
+
     def __cinit__(self, radius, angle):
         """Constructor of the class
-        
+
         :param radius: 2D array with the radius for every position
-        :param angle:  2D array with the angle for every position
+        :param angle:  2D array with the azimuth for every position
         """
         cdef:
             int id0, id1
             position_t rad_min, rad_max, ang_min, ang_max, ang, rad
         self.dim0 = radius.shape[0]
         self.dim1 = radius.shape[1]
-        
+
         assert angle.shape[0] == self.dim0, "the two array have the same shape"
         assert angle.shape[1] == self.dim1, "the two array have the same shape"
-        
+
         self.radius = numpy.ascontiguousarray(radius, position_d)
         self.angle = numpy.ascontiguousarray(angle, position_d)
         rad_min = rad_max = self.radius[0, 0]
@@ -74,22 +82,22 @@ cdef class InvertGeometry:
                 elif rad < rad_min:
                     rad_min = rad
         self.rad_min = rad_min
-        self.rad_max = rad_max 
+        self.rad_max = rad_max
         self.rad_scale = 1.0 / (rad_max - rad_min) ** 2
         self.ang_min = ang_min
         self.ang_max = ang_max
-        self.ang_scale = 1.0 / (ang_max - ang_min) ** 2                
-        
+        self.ang_scale = 1.0 / (ang_max - ang_min) ** 2
+
     def __dealloc__(self):
         self.radius = None
         self.angle = None
-    
+
     @cython.wraparound(False)
     @cython.boundscheck(False)
     @cython.cdivision(True)
     def __call__(self, position_t rad, position_t ang, bint refined=True):
         """Calculate the pixel coordinate leading to the value (rad, angle)
-        
+
         :param rad: radial value
         :param ang: angular value
         :param refined: if True: use linear interpolation, else provide nearest pixel
@@ -106,11 +114,11 @@ cdef class InvertGeometry:
         for id0 in range(self.dim0):
             for id1 in range(self.dim1):
                 cost = self.ang_scale * (self.angle[id0, id1] - ang) ** 2 \
-                     + self.rad_scale * (self.radius[id0, id1] - rad) ** 2         
+                     + self.rad_scale * (self.radius[id0, id1] - rad) ** 2
                 if cost < min_cost:
                     min_cost = cost
                     best0 = id0
-                    best1 = id1 
+                    best1 = id1
         if refined and \
                 (best0 > 0) and (best0 < self.dim0 - 1) and\
                 (best1 > 0) and (best1 < self.dim1 - 1):
@@ -127,7 +135,7 @@ cdef class InvertGeometry:
             #la1 = self.angle[best0, best1 + 1] + self.angle[best0, best1 - 1] - 2 * self.angle[best0, best1]
             target_ang = ang - self.angle[best0, best1]
             target_rad = rad - self.radius[best0, best1]
-            
+
             # inversion of the matrix
             det = ga1 * gr0 - ga0 * gr1
             if det == 0.0:
