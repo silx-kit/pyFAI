@@ -552,7 +552,7 @@ class TestIntergrationNextGeneration(unittest.TestCase):
             reason = "Skipping TestIntergrationNextGeneration.test_histo as OpenCL method not available"
             self.skipTest(reason)
         opencl = ai._integrate1d_ng(data, 100, method=method, error_model="poisson")
-        self.assertEqual(opencl.compute_engine, "OCL_Histogram1d")
+        self.assertEqual(opencl.compute_engine, "pyFAI.opencl.azim_hist.OCL_Histogram1d")
         self.assertEqual(str(opencl.unit), "q_nm^-1")
 
         self.assertTrue(numpy.allclose(opencl.radial, python.radial), "opencl position are the same")

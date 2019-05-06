@@ -1639,7 +1639,7 @@ class AzimuthalIntegrator(Geometry):
                 result = Integrate1dResult(intpl.position,
                                            intpl.intensity,
                                            intpl.error)
-            result._set_compute_engine(integr.__class__.__name__)
+            result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
             result._set_unit(integr.unit)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
