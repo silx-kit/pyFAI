@@ -114,7 +114,7 @@ lut_integrate(  const     global    float              *weights,
                 //sum_count += coef;
                 //Kahan summation allows single precision arithmetics with error compensation
                 //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-                sum_data_K = kahan_sum(sum_data_K, pown(coef, coef_power) * data);
+                sum_data_K = kahan_sum(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
                 sum_count_K = kahan_sum(sum_count_K, coef);
             };//end if dummy
         };//for j
