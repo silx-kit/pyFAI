@@ -143,9 +143,9 @@ def _histogram_omp(cnumpy.ndarray pos not None,
 
     out_pos = numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins)
 
-    return (out_pos, 
-            numpy.asarray(out_merge), 
-            numpy.asarray(out_data), 
+    return (out_pos,
+            numpy.asarray(out_merge),
+            numpy.asarray(out_data),
             numpy.asarray(out_count))
 
 
@@ -223,9 +223,9 @@ def _histogram_nomp(cnumpy.ndarray pos,
 
     out_pos = numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins)
 
-    return (out_pos, 
-            numpy.asarray(out_merge), 
-            numpy.asarray(out_data), 
+    return (out_pos,
+            numpy.asarray(out_merge),
+            numpy.asarray(out_data),
             numpy.asarray(out_count))
 
 if _COMPILED_WITH_OPENMP:
@@ -259,7 +259,7 @@ def histogram2d(cnumpy.ndarray pos0 not None,
 
     :return: I, bin_centers0, bin_centers1, weighted histogram(2D), unweighted histogram (2D)
 
-    Nota: the histogram itself is not parallelized as it is slower than in serial mode 
+    Nota: the histogram itself is not parallelized as it is slower than in serial mode
     (cache contention)
     """
     assert pos0.size == pos1.size
@@ -300,7 +300,7 @@ def histogram2d(cnumpy.ndarray pos0 not None,
         for i in range(size):
             p0 = cpos0[i]
             p1 = cpos1[i]
-            
+
             fbin0 = get_bin_number(p0, min0, delta0)
             fbin1 = get_bin_number(p1, min1, delta1)
             bin0 = < int > floor(fbin0)
@@ -318,9 +318,9 @@ def histogram2d(cnumpy.ndarray pos0 not None,
                 else:
                     out_merge[i, j] += empty
 
-    return (numpy.asarray(out_merge), 
-            bin_centers0, bin_centers1, 
-            numpy.asarray(out_data), 
+    return (numpy.asarray(out_merge),
+            bin_centers0, bin_centers1,
+            numpy.asarray(out_data),
             numpy.asarray(out_count))
 
 
@@ -332,9 +332,9 @@ def histogram_preproc(pos,
                       int bins=100,
                       bin_range=None):
     """
-    Calculates histogram of pos weighted by weights 
-    in the case data have been preprocessed, i.e. each datapoint contains 
-    (signal, normalization), (signal, variance, normalization), (signal, variance, normalization, count)  
+    Calculates histogram of pos weighted by weights
+    in the case data have been preprocessed, i.e. each datapoint contains
+    (signal, normalization), (signal, variance, normalization), (signal, variance, normalization, count)
 
     :param pos: radial array
     :param weights: array with intensities, variance, normalization and count
@@ -358,7 +358,7 @@ def histogram_preproc(pos,
         position_t fbin = 0.0
         position_t epsilon = 1e-10
         int bin = 0, i, j
-    
+
     if bin_range is not None:
         min0 = min(bin_range)
         maxin0 = max(bin_range)
@@ -369,8 +369,8 @@ def histogram_preproc(pos,
                 a = cpos[i]
                 maxin0 = max(maxin0, a)
                 min0 = min(min0, a)
-               
-    with nogil:    
+
+    with nogil:
         max0 = calc_upper_bound(maxin0)
         delta = (max0 - min0) / float(bins)
         for i in range(size):
@@ -380,7 +380,7 @@ def histogram_preproc(pos,
             if bin < 0 or bin >= bins:
                 continue
             for j in range(nchan):
-                out_prop[bin, j] = cdata[i, j]
+                out_prop[bin, j] += cdata[i, j]
             if nchan < 4:
                 out_prop[bin, 4] += 1.0
     return (numpy.asarray(out_prop),
@@ -409,8 +409,8 @@ def histogram1d_engine(radial, int npt,
                        radial_range=None
                        ):
     """Implementation of rebinning engine (without splitting) using pure cython histograms
-    
-    :param radial: radial position 2D array (same shape as raw)   
+
+    :param radial: radial position 2D array (same shape as raw)
     :param npt: number of points to integrate over
     :param raw: 2D array with the raw signal
     :param dark: array containing the value of the dark noise, to be subtracted
@@ -431,21 +431,21 @@ def histogram1d_engine(radial, int npt,
     NaN are always considered as invalid values
 
     if neither empty nor dummy is provided, empty pixels are left at 0.
-    
-    Nota: "azimuthal_range" has to be integrated into the 
-           mask prior to the call of this function 
-    
-    :return: Integrate1dtpl named tuple containing: 
-            position, average intensity, std on intensity, 
-            plus the various histograms on signal, variance, normalization and count.  
-                                               
+
+    Nota: "azimuthal_range" has to be integrated into the
+           mask prior to the call of this function
+
+    :return: Integrate1dtpl named tuple containing:
+            position, average intensity, std on intensity,
+            plus the various histograms on signal, variance, normalization and count.
+
     """
-    cdef: 
+    cdef:
         acc_t[:, ::1] res
         cnumpy.float32_t[:, ::1] prep
         position_t[::1] position
         data_t[::1] histo_normalization, histo_signal, histo_variance, histo_count, intensity, error
-        data_t norm, sig, var, cnt 
+        data_t norm, sig, var, cnt
         int i
     prep = preproc(raw,
                    dark=dark,
@@ -466,7 +466,7 @@ def histogram1d_engine(radial, int npt,
                                       prep,
                                       npt,
                                       bin_range=radial_range)
-    
+
     histo_signal = numpy.empty(npt, dtype=data_d)
     histo_variance = numpy.empty(npt, dtype=data_d)
     histo_normalization = numpy.empty(npt, dtype=data_d)
@@ -477,7 +477,7 @@ def histogram1d_engine(radial, int npt,
         empty = dummy
     with nogil:
         for i in range(npt):
-            sig = histo_normalization[i] = res[i, 0]
+            sig = histo_signal[i] = res[i, 0]
             var = histo_variance[i] = res[i, 1]
             norm = histo_normalization[i] = res[i, 2]
             cnt = histo_count[i] = res[i, 3]
@@ -491,11 +491,11 @@ def histogram1d_engine(radial, int npt,
                 intensity[i] = empty
                 error[i] = empty
     return Integrate1dtpl(numpy.asarray(position),
-                          numpy.asarray(intensity), 
-                          numpy.asarray(error), 
-                          numpy.asarray(histo_signal), 
-                          numpy.asarray(histo_variance), 
-                          numpy.asarray(histo_normalization), 
+                          numpy.asarray(intensity),
+                          numpy.asarray(error),
+                          numpy.asarray(histo_signal),
+                          numpy.asarray(histo_variance),
+                          numpy.asarray(histo_normalization),
                           numpy.asarray(histo_count))
 
 
@@ -510,7 +510,7 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
                         double empty=0.0,
                         ):
     """
-    Calculate 2D histogram of pos0,pos1 weighted by weights when the weights are 
+    Calculate 2D histogram of pos0,pos1 weighted by weights when the weights are
     preprocessed and contain: signal, variance, normalization for each pixel
 
     :param pos0: 2Theta array
@@ -524,16 +524,16 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
     :return: named tuple with ("sig",["var"], "norm", "count")
     """
     assert pos0.size == pos1.size, "Positions array have the same size"
-    
+
     cdef:
         int bins0, bins1, i, j, bin0, bin1, c
         int size = pos0.size
         int nchan = weights.shape[weights.ndim - 1]
-    print(size, nchan, weights.size, weights.size//nchan, weights.ndim) 
-    assert weights.ndim > 1, "Weights have been preprocessed" 
+    print(size, nchan, weights.size, weights.size//nchan, weights.ndim)
+    assert weights.ndim > 1, "Weights have been preprocessed"
     assert pos0.size == (weights.size // nchan), "Weights have the right size"
     assert nchan <= 4, "Maximum of 4 chanels"
-    
+
     try:
         bins0, bins1 = tuple(bins)
     except TypeError:
@@ -542,7 +542,7 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
         bins0 = 1
     if bins1 <= 0:
         bins1 = 1
-    
+
     cdef:
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         position_t[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
@@ -559,7 +559,7 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
         position_t fbin0, fbin1, p0, p1
         acc_t epsilon = 1e-10
         acc_t sig, var, norm
-    
+
     if nchan == 3:
         out_error = numpy.zeros((bins0, bins1), dtype=data_d)
     if split:
@@ -584,7 +584,7 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
         for i in range(bins0):
             for j in range(bins1):
                 if nchan >= 3:
-                    sig = out_data[i, j, 0] 
+                    sig = out_data[i, j, 0]
                     var = out_data[i, j, 1]
                     norm = out_data[i, j, 2]
                     if norm > 0:
@@ -594,7 +594,7 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
                         out_signal[i, j] = empty
                         out_error[i, j] = empty
                 elif nchan == 2:
-                    sig = out_data[i, j, 0] 
+                    sig = out_data[i, j, 0]
                     norm = out_data[i, j, 2]
                     if norm > 0:
                         out_signal[i, j] = sig / norm
@@ -603,12 +603,12 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
     if nchan >= 3:
         result = Integrate2dWithErrorResult(numpy.asarray(out_signal),
                                             numpy.asarray(out_error),
-                                            bin_centers0, 
+                                            bin_centers0,
                                             bin_centers1,
                                             numpy.asarray(out_data).view(dtype=prop_d).reshape(bins0, bins1))
     else:
         result = Integrate2dResult(numpy.asarray(out_signal),
-                                   bin_centers0, 
+                                   bin_centers0,
                                    bin_centers1,
                                    numpy.asarray(out_data).view(dtype=prop_d).reshape(bins0, bins1))
     return result
