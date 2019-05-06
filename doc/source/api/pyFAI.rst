@@ -385,6 +385,18 @@ Deprecated, will be replaced by silx.math.histogramnd
     :undoc-members:
     :show-inheritance:
 
+:mod:`ext.invert_geometry` Module
+.................................
+
+Allow the inversion of pixel coordinate --> radius/azimuthal
+with linear interpolation within the last pixel
+
+.. automodule:: pyFAI.ext.invert_geometry
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 :mod:`ext.morphology` Module
 ............................
 
