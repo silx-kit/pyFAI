@@ -541,10 +541,6 @@ class TestIntergrationNextGeneration(unittest.TestCase):
         self.assertTrue(numpy.allclose(cython.radial, python.radial), "cython position are the same")
         self.assertTrue(numpy.allclose(cython.intensity, python.intensity), "cython intensities are the same")
         self.assertTrue(numpy.allclose(cython.sigma, python.sigma), "cython errors are the same")
-        print(cython.sum_signal)
-        print(python.sum_signal)
-        print(cython.sum_signal - python.sum_signal)
-
         self.assertTrue(numpy.allclose(cython.sum_signal, python.sum_signal), "cython sum_signal are the same")
         self.assertTrue(numpy.allclose(cython.sum_variance, python.sum_variance), "cython sum_variance are the same")
         self.assertTrue(numpy.allclose(cython.sum_normalization, python.sum_normalization), "cython sum_normalization are the same")
