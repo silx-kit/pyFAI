@@ -91,13 +91,13 @@ cdef class InvertGeometry:
     def __dealloc__(self):
         self.radius = None
         self.angle = None
-    
+
     @cython.wraparound(False)
     @cython.boundscheck(False)
     @cython.cdivision(True)
     def __call__(self, position_t rad, position_t ang, bint refined=True):
         """Calculate the pixel coordinate leading to the value (rad, angle)
-        
+
         :param rad: radial value
         :param ang: angular value
         :param refined: if True: use linear interpolation, else provide nearest pixel
@@ -136,7 +136,8 @@ cdef class InvertGeometry:
                 # inversion of the matrix
                 det = ga1 * gr0 - ga0 * gr1
                 if det == 0.0:
-                    logger.info("Impossible to invert the matrix")
+                    with gil:
+                        logger.info("Impossible to invert the matrix")
                 else:
                     cor0 = (target_rad * ga1 - target_ang * gr1) / det
                     cor1 = (-target_rad * ga0 + target_ang * gr0) / det
