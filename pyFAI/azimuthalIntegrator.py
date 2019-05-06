@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2019"
+__date__ = "06/05/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -84,7 +84,8 @@ except ImportError as error:
 else:
     # Register histogram integrators
     IntegrationMethod(1, "no", "histogram", "cython", old_method="cython",
-                      class_funct=(None, histogram.histogram))
+                      class_funct=(None, histogram.histogram1d_engine))
+    # TODO ... 2D is missing !
     IntegrationMethod(2, "no", "histogram", "cython", old_method="cython",
                       class_funct=(None, histogram.histogram2d))
 
@@ -1551,8 +1552,9 @@ class AzimuthalIntegrator(Geometry):
                 else:
                     variance = abs(data) + abs(dark)
 
-        if method.method[1:4] == ("no", "histogram", "python"):
-            integr = method.class_funct.function  # should be histogram_engine.histogram1d_engine
+        if (method.method[1:4] == ("no", "histogram", "python") or
+                method.method[1:4] == ("no", "histogram", "cython")):
+            integr = method.class_funct.function  # should be histogram[_engine].histogram1d_engine
             if azimuth_range:
                 chi_min, chi_max = azimuth_range
                 chi = self.chiArray(shape)
@@ -1579,14 +1581,13 @@ class AzimuthalIntegrator(Geometry):
                 result = Integrate1dResult(intpl.position,
                                            intpl.intensity,
                                            intpl.error)
-            result._set_compute_engine(integr.__name__)
+            result._set_compute_engine(integr.__module__ + "." + integr.__name__)
             result._set_unit(unit)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
             if variance is not None:
                 result._set_sum_variance(intpl.variance)
             result._set_count(intpl.count)
-
         elif method.method[1:4] == ("no", "histogram", "opencl"):
             if method not in self.engines:
                 # instanciated the engine

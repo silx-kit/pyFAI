@@ -37,6 +37,14 @@ import logging
 logger = logging.getLogger("pyFAI.ext.invert_geometry")
 
 cdef class InvertGeometry:
+    """
+    Class to inverse the geometry: takes the nearest pixel then use linear interpolation
+
+    :param radius: 2D array with radial position
+    :param angle: 2D array with azimuthal position
+
+    Call it with (r,chi) to retrieve the pixel where it comes from.
+    """
     cdef:
         position_t[:, ::1] radius, angle
         int dim0, dim1
@@ -46,7 +54,7 @@ cdef class InvertGeometry:
         """Constructor of the class
 
         :param radius: 2D array with the radius for every position
-        :param angle:  2D array with the angle for every position
+        :param angle:  2D array with the azimuth for every position
         """
         cdef:
             int id0, id1
@@ -83,13 +91,13 @@ cdef class InvertGeometry:
     def __dealloc__(self):
         self.radius = None
         self.angle = None
-
+    
     @cython.wraparound(False)
     @cython.boundscheck(False)
     @cython.cdivision(True)
     def __call__(self, position_t rad, position_t ang, bint refined=True):
         """Calculate the pixel coordinate leading to the value (rad, angle)
-
+        
         :param rad: radial value
         :param ang: angular value
         :param refined: if True: use linear interpolation, else provide nearest pixel

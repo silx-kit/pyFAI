@@ -29,7 +29,7 @@
 """A set of histogram functions with or without OpenMP enabled."""
 
 __author__ = "Jerome Kieffer"
-__date__ = "02/05/2019"
+__date__ = "06/05/2019"
 __license__ = "MIT"
 __copyright__ = "2011-2019, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -327,8 +327,8 @@ def histogram2d(cnumpy.ndarray pos0 not None,
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def histogram_preproc(cnumpy.ndarray pos,
-                      cnumpy.ndarray weights,
+def histogram_preproc(pos,
+                      weights,
                       int bins=100,
                       bin_range=None):
     """
@@ -383,7 +383,7 @@ def histogram_preproc(cnumpy.ndarray pos,
                 out_prop[bin, j] = cdata[i, j]
             if nchan < 4:
                 out_prop[bin, 4] += 1.0
-    return (numpy.recarray(shape=bins, dtype=prop_d, buf=out_prop),
+    return (numpy.asarray(out_prop),
             numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins))
 
 
@@ -461,12 +461,11 @@ def histogram1d_engine(radial, int npt,
                    variance=variance,
                    dark_variance=dark_variance,
                    poissonian=poissonian,
-                   )
-    res, position = histogram_preproc(radial,
+                   ).reshape(-1, 4)
+    res, position = histogram_preproc(radial.ravel(),
                                       prep,
                                       npt,
-                                      bin_range=radial_range,
-                                      empty=empty)
+                                      bin_range=radial_range)
     
     histo_signal = numpy.empty(npt, dtype=data_d)
     histo_variance = numpy.empty(npt, dtype=data_d)
@@ -491,7 +490,13 @@ def histogram1d_engine(radial, int npt,
             else:
                 intensity[i] = empty
                 error[i] = empty
-    return Integrate1dtpl(position, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)
+    return Integrate1dtpl(numpy.asarray(position),
+                          numpy.asarray(intensity), 
+                          numpy.asarray(error), 
+                          numpy.asarray(histo_signal), 
+                          numpy.asarray(histo_variance), 
+                          numpy.asarray(histo_normalization), 
+                          numpy.asarray(histo_count))
 
 
 @cython.cdivision(True)
@@ -607,6 +612,3 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
                                    bin_centers1,
                                    numpy.asarray(out_data).view(dtype=prop_d).reshape(bins0, bins1))
     return result
-
-
-
