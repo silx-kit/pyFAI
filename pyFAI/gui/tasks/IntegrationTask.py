@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/01/2019"
+__date__ = "07/05/2019"
 
 import logging
 import numpy
@@ -54,6 +54,8 @@ from ..utils import FilterBuilder
 from ..utils import imageutils
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
+from ..dialog import MessageBox
+from pyFAI.io import ponifile
 
 _logger = logging.getLogger(__name__)
 
@@ -1001,4 +1003,9 @@ class IntegrationTask(AbstractCalibrationTask):
         detector = experimentSettingsModel.detector()
         pyfaiGeometry.detector = detector
 
-        pyfaiGeometry.save(filename)
+        try:
+            writer = ponifile.PoniFile(pyfaiGeometry)
+            with open(filename, "wt") as fd:
+                writer.write(fd)
+        except Exception as e:
+            MessageBox.exception(self, "Error while saving poni file", e, _logger)
