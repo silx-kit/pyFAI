@@ -33,7 +33,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/12/2018"
+__date__ = "02/05/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -998,6 +998,7 @@ def pseudoSplit2D_ng(pos not None,
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
+    # TODO ... remove Integrate2dWithErrorResult namedtuple
     if do_variance:
         result = Integrate2dWithErrorResult(numpy.asarray(out_intensity).T,
                                             numpy.asarray(out_error).T,

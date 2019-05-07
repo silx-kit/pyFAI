@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2019"
+__date__ = "06/05/2019"
 
 import unittest
 import os
@@ -531,8 +531,20 @@ class TestIntergrationNextGeneration(unittest.TestCase):
 
         method = ("no", "histogram", "python")
         python = ai._integrate1d_ng(data, 100, method=method, error_model="poisson")
-        self.assertEqual(python.compute_engine, "histogram1d_engine")
+        self.assertEqual(python.compute_engine, "pyFAI.engines.histogram_engine.histogram1d_engine")
         self.assertEqual(str(python.unit), "q_nm^-1")
+
+        method = ("no", "histogram", "cython")
+        cython = ai._integrate1d_ng(data, 100, method=method, error_model="poisson")
+        self.assertEqual(cython.compute_engine, "pyFAI.ext.histogram.histogram1d_engine")
+        self.assertEqual(str(cython.unit), "q_nm^-1")
+        self.assertTrue(numpy.allclose(cython.radial, python.radial), "cython position are the same")
+        self.assertTrue(numpy.allclose(cython.intensity, python.intensity), "cython intensities are the same")
+        self.assertTrue(numpy.allclose(cython.sigma, python.sigma), "cython errors are the same")
+        self.assertTrue(numpy.allclose(cython.sum_signal, python.sum_signal), "cython sum_signal are the same")
+        self.assertTrue(numpy.allclose(cython.sum_variance, python.sum_variance), "cython sum_variance are the same")
+        self.assertTrue(numpy.allclose(cython.sum_normalization, python.sum_normalization), "cython sum_normalization are the same")
+        self.assertTrue(numpy.allclose(cython.count, python.count), "cython count are the same")
 
         method = ("no", "histogram", "opencl")
         actual_method = ai._normalize_method(method=method, dim=1, default=ai.DEFAULT_METHOD_1D).method[1:4]
@@ -540,16 +552,16 @@ class TestIntergrationNextGeneration(unittest.TestCase):
             reason = "Skipping TestIntergrationNextGeneration.test_histo as OpenCL method not available"
             self.skipTest(reason)
         opencl = ai._integrate1d_ng(data, 100, method=method, error_model="poisson")
-        self.assertEqual(opencl.compute_engine, "OCL_Histogram1d")
+        self.assertEqual(opencl.compute_engine, "pyFAI.opencl.azim_hist.OCL_Histogram1d")
         self.assertEqual(str(opencl.unit), "q_nm^-1")
 
-        self.assertTrue(numpy.allclose(opencl.radial, python.radial), "position are the same")
-        self.assertTrue(numpy.allclose(opencl.intensity, python.intensity), "intensities are the same")
-        self.assertTrue(numpy.allclose(opencl.sigma, python.sigma), "errors are the same")
-        self.assertTrue(numpy.allclose(opencl.sum_signal.sum(axis=-1), python.sum_signal), "sum_signal are the same")
-        self.assertTrue(numpy.allclose(opencl.sum_variance.sum(axis=-1), python.sum_variance), "sum_variance are the same")
-        self.assertTrue(numpy.allclose(opencl.sum_normalization.sum(axis=-1), python.sum_normalization), "sum_normalization are the same")
-        self.assertTrue(numpy.allclose(opencl.count, python.count), "count are the same")
+        self.assertTrue(numpy.allclose(opencl.radial, python.radial), "opencl position are the same")
+        self.assertTrue(numpy.allclose(opencl.intensity, python.intensity), "opencl intensities are the same")
+        self.assertTrue(numpy.allclose(opencl.sigma, python.sigma), "opencl errors are the same")
+        self.assertTrue(numpy.allclose(opencl.sum_signal.sum(axis=-1), python.sum_signal), "opencl sum_signal are the same")
+        self.assertTrue(numpy.allclose(opencl.sum_variance.sum(axis=-1), python.sum_variance), "opencl sum_variance are the same")
+        self.assertTrue(numpy.allclose(opencl.sum_normalization.sum(axis=-1), python.sum_normalization), "opencl sum_normalization are the same")
+        self.assertTrue(numpy.allclose(opencl.count, python.count), "opencl count are the same")
 
 
 def suite():

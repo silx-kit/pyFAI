@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "06/05/2019"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -38,14 +38,13 @@ import gc
 import logging
 import threading
 import numpy
-from . import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
+from . import ocl
+if ocl is not None:
+    from . import pyopencl, allocate_cl_buffers, release_cl_buffers
+    mf = pyopencl.mem_flags
 from ..ext.splitBBoxLUT import HistoBBox1d
 from . import utils
 from ..utils import crc32
-if pyopencl:
-    mf = pyopencl.mem_flags
-else:
-    raise ImportError("pyopencl is not installed")
 
 logger = logging.getLogger(__name__)
 
