@@ -335,6 +335,7 @@ class Bench(object):
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             label = ("1D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
+            print("method=%s" % method)
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
@@ -357,7 +358,7 @@ class Bench(object):
                 res = bench_test.stmt()
                 self.print_init(time.time() - t0)
             except memory_error as error:
-                print(error)
+                print("MemoryError: %s" % error)
                 break
             self.update_mp()
             if check:
@@ -373,7 +374,7 @@ class Bench(object):
                     try:
                         integrator = bench_test.ai.engines.get(key).engine
                     except MemoryError as error:
-                        print(error)
+                        print("MemoryError %s" % error)
                     else:
                         if "lut" in method:
                             print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
@@ -717,18 +718,18 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
         print("Devices:", ocl_devices)
     if do_1d:
         bench.bench_1d("splitBBox")
-        bench.bench_1d("lut", True)
+#         bench.bench_1d("lut", True)
         bench.bench_1d("csr", True)
         for device in ocl_devices:
             print("Working on device: " + str(device))
-            bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
     if do_2d:
         bench.bench_2d("splitBBox")
         bench.bench_2d("lut", True)
         for device in ocl_devices:
-            bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
     bench.save()

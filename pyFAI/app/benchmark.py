@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "07/05/2019"
 __status__ = "development"
 
 import logging
@@ -110,7 +110,8 @@ def main():
                         do_2d=options.twodim,
                         devices=devices)
 
-    pyFAI.benchmark.pylab.ion()
+    if pyFAI.benchmark.pylab is not None:
+        pyFAI.benchmark.pylab.ion()
     six.moves.input("Enter to quit")
 
 
