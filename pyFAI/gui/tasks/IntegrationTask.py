@@ -981,6 +981,10 @@ class IntegrationTask(AbstractCalibrationTask):
         if not result:
             return
         filename = dialog.selectedFiles()[0]
+        nameFilter = dialog.selectedNameFilter()
+        isPoniFilter = ".poni" in nameFilter
+        if isPoniFilter and not filename.endswith(".poni"):
+            filename = filename + ".poni"
 
         pyfaiGeometry = pyFAI.geometry.Geometry()
 
