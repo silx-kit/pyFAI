@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/11/2018"
+__date__ = "30/04/2019"
 
 from numpy.distutils.misc_util import Configuration
 import platform
@@ -66,8 +66,7 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('ext', parent_package, top_path)
 
     ext_modules = [
-        create_extension_config('_histogram_nomp'),
-        create_extension_config('_histogram_omp', can_use_openmp=True),
+        create_extension_config('histogram', can_use_openmp=True),
         create_extension_config("_geometry", can_use_openmp=True),
         create_extension_config("reconstruct", can_use_openmp=True),
         create_extension_config('splitPixel'),
