@@ -360,6 +360,10 @@ class Bench(object):
             except memory_error as error:
                 print("MemoryError: %s" % error)
                 break
+            if first:
+                if "ocl_csr_integr" in bench_test.ai.engines:
+                    print("Actual device used:", bench_test.ai.engines["ocl_csr_integr"].engine.ctx.devices[0])
+
             self.update_mp()
             if check:
                 module = sys.modules.get(AzimuthalIntegrator.__module__)
@@ -414,6 +418,7 @@ class Bench(object):
                     first = False
                 else:
                     self.new_point(size, tmin)
+
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
