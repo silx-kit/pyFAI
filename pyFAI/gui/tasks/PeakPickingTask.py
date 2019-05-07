@@ -1140,7 +1140,10 @@ class PeakPickingTask(AbstractCalibrationTask):
             return
 
         filename = dialog.selectedFiles()[0]
-        if not os.path.exists(filename) and not filename.endswith(".npt"):
+        nameFilter = dialog.selectedNameFilter()
+        isNptFilter = ".npt" in nameFilter
+
+        if isNptFilter and not filename.endswith(".npt"):
             filename = filename + ".npt"
         try:
             controlPoints = model_transform.createControlPoints(self.model())
