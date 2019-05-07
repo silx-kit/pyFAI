@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/03/2019"
+__date__ = "07/05/2019"
 __status__ = "production"
 
 import logging
@@ -287,31 +287,8 @@ def displayExceptionBox(message, exc_info):
     :param Union[tuple,Exception] exc_info: An exception or the output of
         exc_info.
     """
-    logger.error(message, exc_info=True)
-
-    if isinstance(exc_info, BaseException):
-        exc_info = (type(exc_info), exc_info, exc_info.__traceback__)
-    elif not isinstance(exc_info, tuple):
-        exc_info = sys.exc_info()
-
-    if exc_info[2] is not None:
-        # Mimic the syntax of the default Python exception
-        import traceback
-        detailed = (''.join(traceback.format_tb(exc_info[2])))
-        detailed = '{1}\nTraceback (most recent call last):\n{2}{0}: {1}'.format(exc_info[0].__name__, exc_info[1], detailed)
-    else:
-        # There is no backtrace
-        detailed = '{0}: {1}'.format(exc_info[0].__name__, exc_info[1])
-
-    from silx.gui import qt
-    msg = qt.QMessageBox()
-    msg.setWindowTitle(message)
-    msg.setIcon(qt.QMessageBox.Critical)
-    msg.setInformativeText("%s" % exc_info[1])
-    msg.setDetailedText(detailed)
-
-    msg.raise_()
-    msg.exec_()
+    from pyFAI.gui.dialog import MessageBox
+    MessageBox.exception(None, message, exc_info, logger)
 
 
 def setup_model(model, options):
