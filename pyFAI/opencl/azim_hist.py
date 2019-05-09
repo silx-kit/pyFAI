@@ -921,7 +921,18 @@ class OCL_Histogram1d(OpenclProcessing):
                           (self.bins, self.size, self.BLOCK_SIZE)
         if default_compiler_options:
             compile_options += " " + default_compiler_options
-        OpenclProcessing.compile_kernels(self, kernels, compile_options)
+        try:
+            OpenclProcessing.compile_kernels(self, kernels, compile_options)
+        except Exception as error:
+            # This error may be related to issue #1219. Provides an ugly work around.
+            if "cl_khr_int64_base_atomics" in self.ctx.devices[0].extensions:
+                # Maybe this extension actually does not existe !
+                print(kernels)
+                OpenclProcessing.compile_kernels(self, ["pyfai:openCL/deactivate_atomic64.cl"] + kernels, compile_options)
+                logger.warning("Your OpenCL compiler wrongly claims it support 64-bit atomics. Degrading to 32 bits atomics !")
+            else:
+                logger.error("Failed to compile kernel ! Check the compiler. %s", error)
+
         for kernel_name, kernel in self.kernels.get_kernels().items():
             wg = kernel_workgroup_size(self.program, kernel)
             self.workgroup_size[kernel_name] = (min(wg, self.BLOCK_SIZE),)  # this is a tuple
