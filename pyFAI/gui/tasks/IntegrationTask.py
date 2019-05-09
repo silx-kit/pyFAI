@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/05/2019"
+__date__ = "09/05/2019"
 
 import logging
 import numpy
@@ -710,11 +710,6 @@ class IntegrationPlot(qt.QFrame):
             color="blue",
             histogram=result1d.intensity,
             resetzoom=False)
-
-        if silx.version_info[0:2] == (0, 8):
-            # Invalidate manually the plot datarange on silx 0.8
-            # https://github.com/silx-kit/silx/issues/2079
-            self.__plot1d._invalidateDataRange()
 
         self.__setResult(result1d)
 

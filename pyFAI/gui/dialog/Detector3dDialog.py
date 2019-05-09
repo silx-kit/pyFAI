@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/01/2019"
+__date__ = "09/05/2019"
 
 import numpy
 import time
@@ -38,7 +38,6 @@ _logger = logging.getLogger(__name__)
 
 from silx.utils import html
 from silx.gui import qt
-import silx.math.combo
 from silx.gui.plot3d.items import mesh
 from silx.gui.plot3d.SceneWindow import SceneWindow
 from silx.gui import colors
@@ -106,13 +105,7 @@ class CreateSceneThread(qt.QThread):
 
     def runProcess(self):
         self.emitProgressValue(0, force=True)
-        if hasattr(mesh, "ColormapMesh"):
-            # Since silx 0.10
-            result = self.__createDetectorColormapMesh()
-        else:
-            # silx < 0.10
-            result = self.__createDetectorMesh()
-        self.emitProgressValue(100, force=True)
+        result = self.__createDetectorColormapMesh()
         return result
 
     def __createDetectorColormapMesh(self):
@@ -163,105 +156,6 @@ class CreateSceneThread(qt.QThread):
                      indices=indexes,
                      copy=False)
         item.setColormap(colormap)
-        self.__detectorItem = item
-        return True
-
-    def __createDetectorMesh(self):
-        if self.__geometry is not None:
-            if self.__detector is not None:
-                self.__geometry.detector = self.__detector
-            pixels = self.__geometry.calc_pos_zyx(corners=True)
-            pixels = numpy.array(pixels)
-            pixels = numpy.moveaxis(pixels, 0, -1)
-        else:
-            pixels = self.__detector.get_pixel_corners()
-
-        height, width, _, _, = pixels.shape
-        nb_vertices = width * height * 6
-
-        # Allocate contiguous memory
-        positions_array = numpy.empty((nb_vertices, 3), dtype=numpy.float32)
-        colors_array = numpy.empty((nb_vertices, 4), dtype=numpy.float32)
-
-        # Merge all pixels together
-        pixels = pixels[...]
-        pixels = numpy.reshape(pixels, (-1, 4, 3))
-
-        image = self.__image
-        mask = self.__mask
-
-        colormap = self.__colormap
-        if colormap is None:
-            colormap = colors.Colormap("inferno")
-
-        # Normalize the colormap as a RGBA float lookup table
-        lut = colormap.getNColors(256)
-        lut = lut / 255.0
-
-        cursor_color = colors.cursorColorForColormap(colormap.getName())
-        cursor_color = numpy.array(colors.rgba(cursor_color))
-
-        # Normalize the image as lookup table to colormap lookup table
-        if image is not None:
-            image = image.view()
-            image.shape = -1
-            image = numpy.log(image)
-            info = silx.math.combo.min_max(image, min_positive=True, finite=True)
-            image = (image - info.min_positive) / float(info.maximum - info.min_positive)
-            image = (image * 255.0).astype(int)
-            image = image.clip(0, 255)
-
-        if mask is not None:
-            mask = mask.view()
-            mask.shape = -1
-
-        masked_color = numpy.array([1.0, 0.0, 1.0, 1.0])
-        default_color = numpy.array([0.8, 0.8, 0.8, 1.0])
-
-        triangle_index = 0
-        color_index = 0
-        self.emitProgressValue(10, force=True)
-
-        for npixel, pixel in enumerate(pixels):
-            percent = 10 + int(90 * (npixel / len(pixels)))
-            self.emitProgressValue(percent)
-
-            if self.isInterruptionRequested():
-                return False
-
-            masked = False
-            if mask is not None:
-                masked = mask[npixel] != 0
-
-            if masked:
-                color = masked_color
-            elif image is not None:
-                color_id = image[color_index]
-                color = lut[color_id]
-            else:
-                color = default_color
-
-            positions_array[triangle_index + 0] = pixel[0]
-            positions_array[triangle_index + 1] = pixel[1]
-            positions_array[triangle_index + 2] = pixel[2]
-            colors_array[triangle_index + 0] = color
-            colors_array[triangle_index + 1] = color
-            colors_array[triangle_index + 2] = color
-            triangle_index += 3
-            positions_array[triangle_index + 0] = pixel[2]
-            positions_array[triangle_index + 1] = pixel[3]
-            positions_array[triangle_index + 2] = pixel[0]
-            colors_array[triangle_index + 0] = color
-            colors_array[triangle_index + 1] = color
-            colors_array[triangle_index + 2] = color
-            triangle_index += 3
-            color_index += 1
-
-        item = mesh.Mesh()
-        item.moveToThread(qt.QApplication.instance().thread())
-        item.setData(position=positions_array,
-                     color=colors_array,
-                     copy=False)
         self.__detectorItem = item
         return True
 
