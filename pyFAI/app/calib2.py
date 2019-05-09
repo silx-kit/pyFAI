@@ -75,6 +75,10 @@ def configure_parser_arguments(parser):
                         action="store_true",
                         default=False,
                         help='Set logging system in debug mode')
+    parser.add_argument("--opengl", "--gl", dest="opengl",
+                        action="store_true",
+                        default=False,
+                        help="Enable OpenGL rendering (else matplotlib is used)")
 
     # Settings
     parser.add_argument("-c", "--calibrant", dest="spacing", metavar="FILE",
@@ -550,7 +554,11 @@ def main():
         logging.root.setLevel(logging.DEBUG)
 
     # Then we can load Qt
+    import silx
     from silx.gui import qt
+    if options.opengl:
+        silx.config.DEFAULT_PLOT_BACKEND = "opengl"
+
     # Make sure matplotlib is loaded first by silx
     import silx.gui.plot.matplotlib
     from pyFAI.gui.CalibrationWindow import CalibrationWindow
