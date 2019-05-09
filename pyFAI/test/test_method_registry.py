@@ -62,6 +62,12 @@ class TestMethod(ParametricTestCase):
                 method = Method.parsed(string)
                 self.assertEqual(method, expected)
 
+    def test_fixed(self):
+        value = Method(dim=None, split='*', algo='*', impl='python', target=None)
+        expected = Method(dim=None, split=None, algo='*', impl='foo', target=None)
+        result = value.fixed(split=None, impl="foo")
+        self.assertEqual(result, expected)
+
 
 def suite():
     testsuite = unittest.TestSuite()

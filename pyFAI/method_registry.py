@@ -43,6 +43,11 @@ from collections import OrderedDict, namedtuple
 ClassFunction = namedtuple("ClassFunction", ["klass", "function"])
 
 
+class _Nothing(object):
+    """Used to identify an unset attribute that we could nullify."""
+    pass
+
+
 class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
 
     def degraded(self):
@@ -70,6 +75,25 @@ class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
             # Totally fail safe ?
             result = Method(self.dim, "no", "histogram", "python", None)
         return result
+
+    def fixed(self, dim=_Nothing, split=_Nothing, algo=_Nothing, impl=_Nothing, target=_Nothing):
+        """
+        Returns a method containing this Method data except requested attributes
+        set.
+
+        :rtype: Method
+        """
+        if dim is _Nothing:
+            dim = self.dim
+        if split is _Nothing:
+            split = self.split
+        if algo is _Nothing:
+            algo = self.algo
+        if impl is _Nothing:
+            impl = self.impl
+        if target is _Nothing:
+            target = self.target
+        return Method(dim, split, algo, impl, target)
 
     @staticmethod
     def parsed(string):
