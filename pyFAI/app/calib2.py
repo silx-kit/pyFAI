@@ -335,7 +335,7 @@ def setup_model(model, options):
 
     if options.detector_name:
         try:
-            detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name, args)
+            detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name)
             if options.pixel:
                 logger.warning("Detector model already specified. Pixel size argument ignored.")
         except Exception as e:
