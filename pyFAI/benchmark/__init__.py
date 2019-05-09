@@ -28,7 +28,7 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "07/05/2019"
+__date__ = "09/05/2019"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -118,6 +118,20 @@ class BenchTest(object):
     def clean(self):
         """Clean up stored data"""
         pass
+
+    def get_device(self):
+        res = None
+        if "ai" in dir(self):
+            if "engines" in dir(self.ai):
+                from ..method_registry import Method
+                for method in self.ai.engines:
+                    if isinstance(method, Method) and method.impl == "opencl":
+                        res = self.ai.engines[method].engine.ctx.devices[0]
+                        break
+                else:
+                    if ("ocl_csr_integr" in self.ai.engines):
+                        res = self.ai.engines["ocl_csr_integr"].engine.ctx.devices[0]
+        return res
 
 
 class BenchTest1D(BenchTest):
@@ -285,6 +299,11 @@ class Bench(object):
         print(" * Initialization time: %.1f ms" % (1000.0 * t))
         self.update_mp()
 
+    def print_init2(self, tinit, trep, loops):
+        print(" * Initialization time: %.1f ms, Repetition time: %.1f ms, executing %i loops" %
+              (1000.0 * tinit, 1000.0 * trep, loops))
+        self.update_mp()
+
     def print_exec(self, t):
         print(" * Execution time rep : %.1f ms" % (1000.0 * t))
         self.update_mp()
@@ -335,6 +354,7 @@ class Bench(object):
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             label = ("1D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
+            print("method=%s" % method)
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
@@ -355,10 +375,20 @@ class Bench(object):
             try:
                 t0 = time.time()
                 res = bench_test.stmt()
-                self.print_init(time.time() - t0)
+                t1 = time.time()
+                res2 = bench_test.stmt()
+                t2 = time.time()
+                loops = int(1.0 + self.nbr / (t2 - t1))
+                self.print_init2(t1 - t0, t2 - t1, loops)
+
             except memory_error as error:
-                print(error)
+                print("MemoryError: %s" % error)
                 break
+            if first:
+                actual_device = bench_test.get_device()
+                if actual_device:
+                    print("Actual device used: %s" % actual_device)
+
             self.update_mp()
             if check:
                 module = sys.modules.get(AzimuthalIntegrator.__module__)
@@ -373,7 +403,7 @@ class Bench(object):
                     try:
                         integrator = bench_test.ai.engines.get(key).engine
                     except MemoryError as error:
-                        print(error)
+                        print("MemoryError %s" % error)
                     else:
                         if "lut" in method:
                             print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
@@ -383,7 +413,7 @@ class Bench(object):
             self.update_mp()
             try:
                 t = timeit.Timer(bench_test.stmt, bench_test.setup_and_stmt)
-                tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+                tmin = min([i / loops for i in t.repeat(repeat=self.repeat, number=loops)])
             except memory_error as error:
                 print(error)
                 break
@@ -413,6 +443,7 @@ class Bench(object):
                     first = False
                 else:
                     self.new_point(size, tmin)
+
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
@@ -686,7 +717,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                   do_1d=True, do_2d=False, devices="all"):
     """Run the integrated benchmark using the most common algorithms (method parameter)
 
-    :param number: Measure timimg over number of executions
+    :param number: Measure timimg over number of executions or average over this time
     :param repeat: number of measurement, takes the best of them
     :param memprof: set to True to enable memory profiling to hunt memory leaks
     :param max_size: maximum image size in megapixel, set it to 2 to speed-up the tests.
@@ -717,18 +748,18 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
         print("Devices:", ocl_devices)
     if do_1d:
         bench.bench_1d("splitBBox")
-        bench.bench_1d("lut", True)
+#         bench.bench_1d("lut", True)
         bench.bench_1d("csr", True)
         for device in ocl_devices:
             print("Working on device: " + str(device))
-            bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
     if do_2d:
         bench.bench_2d("splitBBox")
         bench.bench_2d("lut", True)
         for device in ocl_devices:
-            bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
     bench.save()
