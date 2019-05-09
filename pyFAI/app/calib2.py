@@ -306,9 +306,6 @@ def setup_model(model, options):
     # TODO: This should be removed
     import pyFAI.gui.cli_calibration
 
-    if options.debug:
-        logging.root.setLevel(logging.DEBUG)
-
     # Settings
     settings = model.experimentSettingsModel()
     if options.spacing:
@@ -548,6 +545,9 @@ def main():
     # It have to be done before loading Qt
     # --help must also work without Qt
     options = parse_options()
+
+    if options.debug:
+        logging.root.setLevel(logging.DEBUG)
 
     # Then we can load Qt
     from silx.gui import qt
