@@ -289,7 +289,7 @@ class IntegrationMethod:
                  target=None, target_name=None, target_type=None,
                  class_funct=None, old_method=None, extra=None):
         """Constructor of the class, registering the methods.
-        
+
         DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI
 
 
@@ -318,7 +318,7 @@ class IntegrationMethod:
         self.old_method_name = old_method
         self.extra = extra
         self.method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)
-        # basic checks ....
+        # basic checks
         assert self.split_lower in self.AVAILABLE_SLITS
         assert self.algo_lower in self.AVAILABLE_ALGOS
         assert self.impl_lower in self.AVAILABLE_IMPLS
