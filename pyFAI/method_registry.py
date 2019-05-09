@@ -146,7 +146,7 @@ class IntegrationMethod:
         target_type = target_type.lower() if target_type else "*"
         if target_type in any_values:
             target_type = "*"
-        method_nt = Method(dim, algo, impl, split, target)
+        method_nt = Method(dim, split, algo, impl, target)
         if method_nt in cls._registry:
             return [cls._registry[method_nt]]
         # Validate on pixel splitting, implementation and algorithm
