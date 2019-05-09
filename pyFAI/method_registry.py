@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2019"
+__date__ = "09/05/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -194,7 +194,7 @@ class IntegrationMethod:
         if "ocl" in old_method:
             impl = "opencl"
             elements = old_method.split("_")
-            if len(elements) >= 1:
+            if len(elements) >= 2:
                 target_string = elements[-1]
                 if target_string == "cpu":
                     target = "cpu"
