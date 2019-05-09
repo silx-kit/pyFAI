@@ -40,31 +40,36 @@ __status__ = "development"
 from logging import getLogger
 logger = getLogger(__name__)
 from collections import OrderedDict, namedtuple
-Method = namedtuple("Method", ["dim", "split", "algo", "impl", "target"])
 ClassFunction = namedtuple("ClassFunction", ["klass", "function"])
 
 
-def _degraded(split, algo, impl):
-    "provide a degraded version of the input"
-    if impl == "opencl":
-        return split, algo, "cython"
-    elif algo == "lut":
-        return split, "histogram", impl
-    elif algo == "csr":
-        return split, "histogram", impl
-    elif split == "full":
-        return "pseudo", algo, impl
-    elif split == "full":
-        return "pseudo", algo, impl
-    elif split == "pseudo":
-        return "bbox", algo, impl
-    elif split == "bbox":
-        return "no", algo, impl
-    elif impl == "cython":
-        return split, algo, "python"
-    else:
-        # Totally fail safe ?
-        return "no", "histogram", "python"
+class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
+
+    def degraded(self):
+        """Returns a degraded version of this method.
+
+        :rtype: Method"
+        """
+        if self.impl == "opencl":
+            result = Method(self.dim, self.split, self.algo, "cython", None)
+        elif self.algo == "lut":
+            result = Method(self.dim, self.split, "histogram", self.impl, self.target)
+        elif self.algo == "csr":
+            result = Method(self.dim, self.split, "histogram", self.impl, self.target)
+        elif self.split == "full":
+            result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
+        elif self.split == "full":
+            result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
+        elif self.split == "pseudo":
+            result = Method(self.dim, "bbox", self.algo, self.impl, self.target)
+        elif self.split == "bbox":
+            result = Method(self.dim, "no", self.algo, self.impl, self.target)
+        elif self.impl == "cython":
+            result = Method(self.dim, self.split, self.algo, "python", None)
+        else:
+            # Totally fail safe ?
+            result = Method(self.dim, "no", "histogram", "python", None)
+        return result
 
 
 class IntegrationMethod:
@@ -129,6 +134,7 @@ class IntegrationMethod:
             return cls.select_method(dim, split, algo, impl,
                                      target, target_type,
                                      degradable=degradable)
+
         any_values = set(["any", "all", "*"])
         if dim in any_values:
             methods = []
@@ -169,13 +175,12 @@ class IntegrationMethod:
         res = [cls._registry[i] for i in candidates]
         if degradable:
             while not res:
-                newsplit, newalgo, newimpl = _degraded(split, algo, impl)
-                logger.info("Degrading method from (%s,%s,%s) -> (%s,%s,%s)",
-                            split, algo, impl, newsplit, newalgo, newimpl)
-                if (split, algo, impl) == (newsplit, newalgo, newimpl):
+                new_method = method_nt.degraded()
+                if new_method == method_nt:
                     break
-                split, algo, impl = newsplit, newalgo, newimpl
-                res = cls.select_method(dim, split, algo, impl)
+                logger.info("Degrading method from %s -> %s", method_nt, new_method)
+                method_nt = new_method
+                res = cls.select_method(method=new_method)
         return res
 
     @staticmethod
