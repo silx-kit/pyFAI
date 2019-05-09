@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "09/05/2019"
 
 import sys
 import unittest
@@ -50,6 +50,7 @@ from . import test_azimuthal_integrator
 from . import test_peak_picking
 from . import test_geometry
 from . import test_mask
+from . import test_method_registry
 from . import test_openCL
 from . import test_export
 from . import test_saxs
@@ -104,6 +105,7 @@ def suite():
     testsuite.addTest(test_peak_picking.suite())
     testsuite.addTest(test_geometry.suite())
     testsuite.addTest(test_mask.suite())
+    testsuite.addTest(test_method_registry.suite())
     testsuite.addTest(test_openCL.suite())
     testsuite.addTest(test_export.suite())
     testsuite.addTest(test_saxs.suite())
