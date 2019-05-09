@@ -246,20 +246,25 @@ class IntegrationProcess(object):
             try:
                 rings = unitutils.from2ThRad(rings, self.__radialUnit, self.__wavelength, self.__directDist)
             except ValueError:
-                message = "Convertion to unit %s not supported. Ring marks ignored"
+                message = "Convertion to unit %s not supported. Ring marks ignored."
                 _logger.warning(message, self.__radialUnit)
                 rings = []
             # Filter the rings which are not part of the result
-            rings = filter(lambda x: self.__result1d.radial[0] <= x <= self.__result1d.radial[-1], rings)
-            rings = list(rings)
+            minAngle, maxAngle = self.__result1d.radial[0], self.__result1d.radial[-1]
+            rings = [(i, angle) for i, angle in enumerate(rings) if minAngle <= angle <= maxAngle]
         else:
             rings = []
-        self.__ringAngles = rings
 
+        self.__rings = rings
         self.__ai = ai
 
-    def ringAngles(self):
-        return self.__ringAngles
+    def rings(self):
+        """
+        Returns the list of displayable rings as a list of tuple id (zero based), angle
+
+        :rtype: List
+        """
+        return self.__rings
 
     def result1d(self):
         return self.__result1d
@@ -386,7 +391,7 @@ class IntegrationPlot(qt.QFrame):
         self.__ringItems = {}
         self.__axisOfCurrentView = None
         self.__angleUnderMouse = None
-        self.__availableRingAngles = None
+        self.__availableRings = None
         self.__radialUnit = None
         self.__wavelength = None
         self.__directDist = None
@@ -468,7 +473,7 @@ class IntegrationPlot(qt.QFrame):
         result = None
         iresult = None
         minDistance = float("inf")
-        for ringId, ringAngle in enumerate(self.__availableRingAngles):
+        for ringId, ringAngle in self.__availableRings:
             distance = abs(angle - ringAngle)
             if distance < minDistance:
                 minDistance = distance
@@ -516,7 +521,7 @@ class IntegrationPlot(qt.QFrame):
 
     def __mouseMoved(self, x, y):
         """Called when mouse move over the plot."""
-        if self.__availableRingAngles is None:
+        if self.__availableRings is None:
             return
         angle = x
         ringId, angle = self.__getClosestAngle(angle)
@@ -544,7 +549,7 @@ class IntegrationPlot(qt.QFrame):
 
     def __getAvailableAngles(self, minTth, maxTth):
         result = []
-        for ringId, angle in enumerate(self.__availableRingAngles):
+        for ringId, angle in self.__availableRings:
             if minTth is None or maxTth is None:
                 result.append(ringId, angle)
             if minTth <= angle <= maxTth:
@@ -552,7 +557,7 @@ class IntegrationPlot(qt.QFrame):
         return result
 
     def __updateRings(self):
-        if self.__availableRingAngles is None:
+        if self.__availableRings is None:
             return
 
         minTth, maxTth = self.__plot2d.getXAxis().getLimits()
@@ -698,7 +703,7 @@ class IntegrationPlot(qt.QFrame):
         """
         self.__clearRings()
 
-        self.__availableRingAngles = integrationProcess.ringAngles()
+        self.__availableRings = integrationProcess.rings()
         self.__updateRings()
 
         # FIXME set axes units
