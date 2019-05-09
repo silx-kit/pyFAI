@@ -34,6 +34,7 @@ __status__ = "production"
 import logging
 import os
 import sys
+import datetime
 from argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
@@ -45,6 +46,7 @@ import pyFAI.resources
 import pyFAI.calibrant
 import pyFAI.detectors
 import pyFAI.io.image
+from pyFAI.io.ponifile import PoniFile
 
 
 try:
@@ -360,6 +362,30 @@ def setup_model(model, options):
         except Exception as e:
             displayExceptionBox("Error while loading the spline file", e)
 
+    geometryFromPoni = None
+    if options.poni:
+        if detector is None:
+            poniFile = PoniFile()
+            poniFile.read_from_file(options.poni)
+            detector = poniFile.detector
+
+            from pyFAI.gui.model.GeometryModel import GeometryModel
+            geometryFromPoni = GeometryModel()
+            geometryFromPoni.distance().setValue(poniFile.dist)
+            geometryFromPoni.poni1().setValue(poniFile.poni1)
+            geometryFromPoni.poni2().setValue(poniFile.poni2)
+            geometryFromPoni.rotation1().setValue(poniFile.rot1)
+            geometryFromPoni.rotation2().setValue(poniFile.rot2)
+            geometryFromPoni.rotation3().setValue(poniFile.rot3)
+            geometryFromPoni.wavelength().setValue(poniFile.wavelength)
+
+            geometryHistory = model.geometryHistoryModel()
+            now = datetime.datetime.now()
+            geometryHistory.appendGeometry("Ponifile", now, geometryFromPoni, None)
+
+        else:
+            logging.warning("Detector redefined in the command line. Detector from --poni argument ignored.")
+
     settings.detectorModel().setDetector(detector)
 
     if options.mask:
@@ -390,20 +416,29 @@ def setup_model(model, options):
     # Geometry
     # FIXME it will not be used cause the fitted geometry will be overwrited
     geometry = model.fittedGeometry()
-    if options.dist_mm:
-        geometry.distance().setValue(1e-3 * options.dist_mm)
-    if options.dist:
-        geometry.distance().setValue(options.dist)
-    if options.poni1:
-        geometry.poni1().setValue(options.poni1)
-    if options.poni2:
-        geometry.poni2().setValue(options.poni2)
-    if options.rot1:
-        geometry.rotation1().setValue(options.rot1)
-    if options.rot2:
-        geometry.rotation2().setValue(options.rot2)
-    if options.rot3:
-        geometry.rotation3().setValue(options.rot3)
+    if (options.dist_mm is not None or options.dist is not None or
+            options.poni1 is not None or options.poni2 is not None or
+            options.rot1 is not None or options.rot2 is not None or
+            options.rot3 is not None):
+        if geometryFromPoni is not None:
+            logging.warning("Geometry redefined in the command line. Geometry from --poni argument was stored in the history.")
+        if options.dist_mm is not None:
+            geometry.distance().setValue(1e-3 * options.dist_mm)
+        if options.dist is not None:
+            geometry.distance().setValue(options.dist)
+        if options.poni1 is not None:
+            geometry.poni1().setValue(options.poni1)
+        if options.poni2 is not None:
+            geometry.poni2().setValue(options.poni2)
+        if options.rot1 is not None:
+            geometry.rotation1().setValue(options.rot1)
+        if options.rot2 is not None:
+            geometry.rotation2().setValue(options.rot2)
+        if options.rot3 is not None:
+            geometry.rotation3().setValue(options.rot3)
+    else:
+        if geometryFromPoni is not None:
+            geometry.setFrom(geometryFromPoni)
 
     # Constraints
     constraints = model.geometryConstraintsModel()
@@ -458,9 +493,6 @@ def setup_model(model, options):
     if options.pixel:
         logger.error("pixel option not supported")
 
-    # FIXME poni file should be supported
-    if options.poni:
-        logger.error("poni option not supported")
     if options.background:
         logger.error("background option not supported")
     if options.dark:
