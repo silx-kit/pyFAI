@@ -38,12 +38,11 @@ __date__ = "09/05/2019"
 import unittest
 from silx.utils.testutils import ParametricTestCase
 from ..method_registry import Method
-from ..method_registry import IntegrationMethod
 
 
 class TestMethod(ParametricTestCase):
 
-    def test_method_from_strings(self):
+    def test_parsed(self):
         samples = [
             ("numpy", Method(dim=None, split='*', algo='*', impl='python', target=None)),
             ("cython", Method(dim=None, split='*', algo='*', impl='cython', target=None)),
@@ -60,7 +59,7 @@ class TestMethod(ParametricTestCase):
         ]
         for string, expected in samples:
             with self.subTest(string=string):
-                method = IntegrationMethod.parse_old_method(string)
+                method = Method.parsed(string)
                 self.assertEqual(method, expected)
 
 

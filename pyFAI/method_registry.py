@@ -71,6 +71,57 @@ class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
             result = Method(self.dim, "no", "histogram", "python", None)
         return result
 
+    @staticmethod
+    def parsed(string):
+        """Returns a Method from string.
+
+        :param str string: A string identifying a method. Like "python", "ocl",
+            "ocl_gpu", "ocl_0,0"
+        :rtype: Method"
+        """
+        algo = "*"
+        impl = "*"
+        split = "*"
+        string = string.lower()
+
+        if "lut" in string:
+            algo = "lut"
+        elif "csr" in string:
+            algo = "csr"
+
+        target = None
+
+        if string in ["numpy", "python"]:
+            impl = "python"
+        elif string == "cython":
+            impl = "cython"
+        elif "ocl" in string:
+            impl = "opencl"
+            elements = string.split("_")
+            if len(elements) >= 2:
+                target_string = elements[-1]
+                if target_string == "cpu":
+                    target = "cpu"
+                elif target_string == "gpu":
+                    target = "gpu"
+                elif target_string in ["*", "any", "all"]:
+                    target = None
+                elif "," in target_string:
+                    try:
+                        values = target_string.split(",")
+                        target = int(values[0]), int(values[1])
+                    except ValueError:
+                        pass
+
+        if "bbox" in string:
+            split = "bbox"
+        elif "full" in string:
+            split = "full"
+        elif "no" in string:
+            split = "no"
+
+        return Method(None, split, algo, impl, target)
+
 
 class IntegrationMethod:
     "Keeps track of all integration methods"
@@ -185,47 +236,10 @@ class IntegrationMethod:
 
     @staticmethod
     def parse_old_method(old_method):
-        algo = "*"
-        impl = "*"
-        split = "*"
-        old_method = old_method.lower()
-
-        if "lut" in old_method:
-            algo = "lut"
-        elif "csr" in old_method:
-            algo = "csr"
-
-        target = None
-
-        if old_method in ["numpy", "python"]:
-            impl = "python"
-        elif old_method == "cython":
-            impl = "cython"
-        elif "ocl" in old_method:
-            impl = "opencl"
-            elements = old_method.split("_")
-            if len(elements) >= 2:
-                target_string = elements[-1]
-                if target_string == "cpu":
-                    target = "cpu"
-                elif target_string == "gpu":
-                    target = "gpu"
-                elif target_string in ["*", "any", "all"]:
-                    target = None
-                elif "," in target_string:
-                    try:
-                        values = target_string.split(",")
-                        target = int(values[0]), int(values[1])
-                    except ValueError:
-                        pass
-
-        if "bbox" in old_method:
-            split = "bbox"
-        elif "full" in old_method:
-            split = "full"
-        elif "no" in old_method:
-            split = "no"
-        return Method(None, split, algo, impl, target)
+        """
+        :rtype: Method
+        """
+        return Method.parsed(old_method)
 
     @classmethod
     def select_old_method(cls, dim, old_method):
