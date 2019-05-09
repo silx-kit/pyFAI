@@ -215,7 +215,7 @@ class IntegrationMethod:
             split = "full"
         elif "no" in old_method:
             split = "no"
-        return Method(666, split, algo, impl, target)
+        return Method(None, split, algo, impl, target)
 
     @classmethod
     def select_old_method(cls, dim, old_method):
