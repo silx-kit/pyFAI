@@ -118,7 +118,7 @@ def configure_parser_arguments(parser):
                         default=None)
 
     # Geometry
-    parser.add_argument("-l", "--distance", dest="distance", type=float,
+    parser.add_argument("-l", "--distance", dest="dist_mm", type=float,
                         help="sample-detector distance in millimeter. Default: 100mm", default=None)
     parser.add_argument("--dist", dest="dist", type=float,
                         help="sample-detector distance in meter. Default: 0.1m", default=None)
@@ -388,8 +388,8 @@ def setup_model(model, options):
     # Geometry
     # FIXME it will not be used cause the fitted geometry will be overwrited
     geometry = model.fittedGeometry()
-    if options.distance:
-        geometry.distance().setValue(1e-3 * options.distance)
+    if options.dist_mm:
+        geometry.distance().setValue(1e-3 * options.dist_mm)
     if options.dist:
         geometry.distance().setValue(options.dist)
     if options.poni1:
