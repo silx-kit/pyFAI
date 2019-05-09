@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/01/2019"
+__date__ = "09/05/2019"
 
 
 from silx.gui import qt
@@ -230,7 +230,7 @@ class IntegrationMethodWidget(qt.QWidget):
 
     def method(self):
         """
-        Returns method as tuple of slit, algo and impl
+        Returns method as tuple of split, algo and impl
 
         :rtype: Tuple[str,str,str]
         """
