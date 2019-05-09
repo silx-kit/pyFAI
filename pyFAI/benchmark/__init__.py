@@ -28,7 +28,7 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "07/06/2018"
+__date__ = "09/05/2019"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -80,11 +80,11 @@ datasets = {"Fairchild.poni": "Fairchild.edf",
 
 PONIS = {
     "Pilatus6M.poni": {'dist': 0.3, 'poni2': 0.2115772, 'poni1': 0.225406, 'detector': 'Pilatus6M'},
-    "Fairchild.poni": {'dist': 0.0882065396596, 'poni2': 0.0449457803015, 'rot1': -0.506766875792, 'rot3': -1.13774685128e-05, 'rot2': 0.0167069809441, 'poni1': 0.0302286347503, 'detector': 'Fairchild'},
-    "halfccd.poni": {'dist': 0.0994744403007, 'poni2': 0.0481217639198, 'rot1': -0.000125830018938, 'rot3': 1.57079531561, 'rot2': -0.0160719674782, 'poni1': 0.026453455358, 'pixel2': 4.684483e-05, 'pixel1': 4.8422519999999994e-05},
+    "Fairchild.poni": {'dist': 0.0882065396596, 'poni2': 0.0449457803015, 'rot1':-0.506766875792, 'rot3':-1.13774685128e-05, 'rot2': 0.0167069809441, 'poni1': 0.0302286347503, 'detector': 'Fairchild'},
+    "halfccd.poni": {'dist': 0.0994744403007, 'poni2': 0.0481217639198, 'rot1':-0.000125830018938, 'rot3': 1.57079531561, 'rot2':-0.0160719674782, 'poni1': 0.026453455358, 'pixel2': 4.684483e-05, 'pixel1': 4.8422519999999994e-05},
     "Pilatus1M.poni": {'dist': 1.58323111834, 'poni2': 0.0412277798782, 'rot1': 0.00648735642526, 'rot3': 4.12987220385e-08, 'rot2': 0.00755810191106, 'poni1': 0.0334170169115, 'detector': 'Pilatus1M'},
-    "Mar3450.poni": {'dist': 0.222549826201, 'poni2': 0.172625538874, 'rot1': 0.00164880041469, 'rot3': -1.43412739468e-08, 'rot2': 0.0438631777747, 'wavelength': 3.738e-11, 'splineFile': None, 'poni1': 0.161137340974, 'detector': 'Mar345'},
-    "Frelon2k.poni": {'dist': 0.1057363, 'poni2': 0.05660461, 'rot1': 0.027767, 'rot3': -1.8e-05, 'rot2': 0.016991, 'poni1': 0.05301968, 'pixel2': 4.722437999999999e-05, 'pixel1': 4.6831519999999995e-05}
+    "Mar3450.poni": {'dist': 0.222549826201, 'poni2': 0.172625538874, 'rot1': 0.00164880041469, 'rot3':-1.43412739468e-08, 'rot2': 0.0438631777747, 'wavelength': 3.738e-11, 'splineFile': None, 'poni1': 0.161137340974, 'detector': 'Mar345'},
+    "Frelon2k.poni": {'dist': 0.1057363, 'poni2': 0.05660461, 'rot1': 0.027767, 'rot3':-1.8e-05, 'rot2': 0.016991, 'poni1': 0.05301968, 'pixel2': 4.722437999999999e-05, 'pixel1': 4.6831519999999995e-05}
 }
 
 # Handle to the Bench instance: allows debugging from outside if needed
@@ -119,24 +119,44 @@ class BenchTest(object):
         """Clean up stored data"""
         pass
 
+    def get_device(self):
+        res = None
+        if "ai" in dir(self):
+            if "engines" in dir(self.ai):
+                from ..method_registry import Method
+                for method in self.ai.engines:
+                    if isinstance(method, Method) and method.impl == "opencl":
+                        res = self.ai.engines[method].engine.ctx.devices[0]
+                        break
+                else:
+                    if ("ocl_csr_integr" in self.ai.engines):
+                        res = self.ai.engines["ocl_csr_integr"].engine.ctx.devices[0]
+        return res
+
 
 class BenchTest1D(BenchTest):
     """Test 1d integration"""
 
-    def __init__(self, azimuthal_params, file_name, unit, method):
+    def __init__(self, azimuthal_params, file_name, unit, method, function=None,
+                 error_model=None):
         BenchTest.__init__(self)
         self.azimuthal_params = azimuthal_params
         self.file_name = file_name
         self.unit = unit
         self.method = method
+        self.function_name = function or "integrate1d"
+        self.error_model = error_model
+        self.function = None
 
     def setup(self):
         self.ai = AzimuthalIntegrator(**self.azimuthal_params)
         self.data = fabio.open(self.file_name).data
         self.N = min(self.data.shape)
+        self.function = self.ai.__getattribute__(self.function_name)
 
     def stmt(self):
-        return self.ai.integrate1d(self.data, self.N, safe=False, unit=self.unit, method=self.method)
+        return self.function(self.data, self.N, safe=False, unit=self.unit,
+                             method=self.method, error_model=self.error_model)
 
     def clean(self):
         self.ai = None
@@ -279,6 +299,11 @@ class Bench(object):
         print(" * Initialization time: %.1f ms" % (1000.0 * t))
         self.update_mp()
 
+    def print_init2(self, tinit, trep, loops):
+        print(" * Initialization time: %.1f ms, Repetition time: %.1f ms, executing %i loops" %
+              (1000.0 * tinit, 1000.0 * trep, loops))
+        self.update_mp()
+
     def print_exec(self, t):
         print(" * Execution time rep : %.1f ms" % (1000.0 * t))
         self.update_mp()
@@ -329,6 +354,7 @@ class Bench(object):
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             label = ("1D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
+            print("method=%s" % method)
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
@@ -349,10 +375,20 @@ class Bench(object):
             try:
                 t0 = time.time()
                 res = bench_test.stmt()
-                self.print_init(time.time() - t0)
+                t1 = time.time()
+                res2 = bench_test.stmt()
+                t2 = time.time()
+                loops = int(1.0 + self.nbr / (t2 - t1))
+                self.print_init2(t1 - t0, t2 - t1, loops)
+
             except memory_error as error:
-                print(error)
+                print("MemoryError: %s" % error)
                 break
+            if first:
+                actual_device = bench_test.get_device()
+                if actual_device:
+                    print("Actual device used: %s" % actual_device)
+
             self.update_mp()
             if check:
                 module = sys.modules.get(AzimuthalIntegrator.__module__)
@@ -367,7 +403,7 @@ class Bench(object):
                     try:
                         integrator = bench_test.ai.engines.get(key).engine
                     except MemoryError as error:
-                        print(error)
+                        print("MemoryError %s" % error)
                     else:
                         if "lut" in method:
                             print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
@@ -377,7 +413,7 @@ class Bench(object):
             self.update_mp()
             try:
                 t = timeit.Timer(bench_test.stmt, bench_test.setup_and_stmt)
-                tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+                tmin = min([i / loops for i in t.repeat(repeat=self.repeat, number=loops)])
             except memory_error as error:
                 print(error)
                 break
@@ -407,6 +443,7 @@ class Bench(object):
                     first = False
                 else:
                     self.new_point(size, tmin)
+
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
@@ -680,7 +717,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                   do_1d=True, do_2d=False, devices="all"):
     """Run the integrated benchmark using the most common algorithms (method parameter)
 
-    :param number: Measure timimg over number of executions
+    :param number: Measure timimg over number of executions or average over this time
     :param repeat: number of measurement, takes the best of them
     :param memprof: set to True to enable memory profiling to hunt memory leaks
     :param max_size: maximum image size in megapixel, set it to 2 to speed-up the tests.
@@ -711,18 +748,18 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
         print("Devices:", ocl_devices)
     if do_1d:
         bench.bench_1d("splitBBox")
-        bench.bench_1d("lut", True)
+#         bench.bench_1d("lut", True)
         bench.bench_1d("csr", True)
         for device in ocl_devices:
             print("Working on device: " + str(device))
-            bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
     if do_2d:
         bench.bench_2d("splitBBox")
         bench.bench_2d("lut", True)
         for device in ocl_devices:
-            bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
     bench.save()

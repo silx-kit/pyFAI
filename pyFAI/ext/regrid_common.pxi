@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "21/01/2019"
+__date__ = "02/05/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -107,8 +107,9 @@ cdef:
     float zerof = <float> 1.0
     double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
-from collections import namedtuple
 
+from collections import namedtuple
+# TODO ... remove those namedtuple once splitpixel and splitbbox are upgraded ! 
 Integrate1dResult = namedtuple("Integrate1dResult", ["bins", "signal", "propagated"])
 Integrate2dResult = namedtuple("Integrate2dResult", ["signal", "bins0", "bins1", "propagated"])
 Integrate1dWithErrorResult = namedtuple("Integrate1dWithErrorResult", ["bins", "signal", "error", "propagated"])
@@ -129,17 +130,14 @@ cdef floating  get_bin_number(floating x0, floating pos0_min, floating delta) no
 
 
 @cython.cdivision(True)
-cdef floating calc_upper_bound(floating maximum_value) nogil:
+cdef inline floating calc_upper_bound(floating maximum_value) nogil:
     """Calculate the upper_bound for an histogram, 
     given the maximum value of all the data.
     
     :param maximum_value: maximum value over all elements
     :return: the smallest 32 bit float greater than the maximum
     """
-    if maximum_value > 0:
-        return maximum_value * EPS32
-    else:
-        return maximum_value / EPS32
+    return maximum_value * EPS32 if maximum_value > 0 else maximum_value / EPS32  
 
 
 cdef inline bint preproc_value_inplace(preproc_t* result,

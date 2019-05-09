@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2018"
+__date__ = "06/05/2019"
 __status__ = "development"
 
 import warnings
@@ -73,11 +73,11 @@ def preproc(raw,
     :param absorption: Correction for absorption in the sensor volume
     :param normalization_factor: final value is divided by this
     :param empty: value to be given for empty bins
-    :param split_result: set to true to separate signal from normalization and 
+    :param split_result: set to true to separate signal from normalization and
             return an array of float2, float3 (with variance) ot float4 (including counts)
-    :param variance: provide an estimation of the variance, enforce 
+    :param variance: provide an estimation of the variance, enforce
             split_result=True and return an float3 array with variance in second position.
-    :param dark_variance: provide an estimation of the variance of the dark_current, 
+    :param dark_variance: provide an estimation of the variance of the dark_current,
             enforce split_result=True and return an float3 array with variance in second position.
     :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
     :param dtype: dtype for all processing
@@ -198,12 +198,16 @@ def preproc(raw,
 
         if split_result:
             result = numpy.zeros(out_shape, dtype=dtype)
-            if out_shape[-1] == 4:
-                result[..., 3] = 1.0 - mask.reshape(shape)
             signal[mask] = 0.0
             normalization[mask] = 0.0
             result[..., 0] = signal.reshape(shape)
-            if variance is None:
+            if out_shape[-1] == 4:
+                if variance is not None:
+                    variance[mask] = 0.0
+                    result[..., 1] = variance.reshape(shape)
+                result[..., 2] = normalization.reshape(shape)
+                result[..., 3] = 1.0 - mask.reshape(shape)
+            elif variance is None:
                 result[:, :, 1] = normalization.reshape(shape)
             else:
                 variance[mask] = 0.0

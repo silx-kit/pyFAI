@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "09/05/2019"
 __status__ = "development"
 
 import logging
@@ -76,7 +76,7 @@ def main():
                         help="Limit the size of the dataset to X Mpixel images (for computer with limited memory)")
     parser.add_argument("-n", "--number",
                         dest="number", default=10, type=int,
-                        help="Number of repetition of the test, by default 10")
+                        help="Number of repetition of the test (or time used for each test), by default 10")
     parser.add_argument("-2d", "--2dimention",
                         action="store_true", dest="twodim", default=False,
                         help="Benchmark also algorithm for 2D-regrouping")
@@ -110,7 +110,8 @@ def main():
                         do_2d=options.twodim,
                         devices=devices)
 
-    pyFAI.benchmark.pylab.ion()
+    if pyFAI.benchmark.pylab is not None:
+        pyFAI.benchmark.pylab.ion()
     six.moves.input("Enter to quit")
 
 
