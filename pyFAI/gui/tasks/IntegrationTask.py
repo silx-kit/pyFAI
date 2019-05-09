@@ -181,8 +181,8 @@ class IntegrationProcess(object):
             wavelength=self.__wavelength)
 
         # FIXME Add error model
-
-        method1d = method_registry.Method(1, self.__method.split, self.__method.algo, self.__method.impl, None)
+        method = method_registry.Method(0, self.__method.split, self.__method.algo, self.__method.impl, None)
+        method1d = method.fixed(dim=1)
         methods = method_registry.IntegrationMethod.select_method(method=method1d)
         if len(methods) == 0:
             method1d = method_registry.Method(1, method1d.split, "*", "*", None)
@@ -190,7 +190,7 @@ class IntegrationProcess(object):
         else:
             method1d = methods[0].method
 
-        method2d = method_registry.Method(2, self.__method.split, self.__method.algo, self.__method.impl, None)
+        method2d = method.fixed(dim=2)
         methods = method_registry.IntegrationMethod.select_method(method=method2d)
         if len(methods) == 0:
             method2d = method_registry.Method(2, method2d.split, "*", "*", None)
@@ -868,9 +868,6 @@ class IntegrationTask(AbstractCalibrationTask):
         result = dialog.exec_()
         if result:
             method = dialog.selectedMethod()
-            # TODO selectedMethod should return a `Method` tuple
-            split, algo, impl = method
-            method = method_registry.Method(dim=666, split=split, algo=algo, impl=impl, target=None)
             self.__setMethod(method)
 
     def __setMethod(self, method):
