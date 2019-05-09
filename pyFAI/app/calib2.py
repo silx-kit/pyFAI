@@ -294,6 +294,8 @@ def displayExceptionBox(message, exc_info):
 def setup_model(model, options):
     """
     Setup the model using options from the command line.
+
+    :param pyFAI.gui.model.CalibrationModel model: Model of the application
     """
     args = options.args
 
