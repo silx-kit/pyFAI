@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2019"
+__date__ = "09/05/2019"
 __status__ = "production"
 
 import logging
@@ -392,15 +392,15 @@ def setup_model(model, options):
         geometry.distance().setValue(1e-3 * options.distance)
     if options.dist:
         geometry.distance().setValue(options.dist)
-    if options.dist:
+    if options.poni1:
         geometry.poni1().setValue(options.poni1)
-    if options.dist:
+    if options.poni2:
         geometry.poni2().setValue(options.poni2)
-    if options.dist:
+    if options.rot1:
         geometry.rotation1().setValue(options.rot1)
-    if options.dist:
+    if options.rot2:
         geometry.rotation2().setValue(options.rot2)
-    if options.dist:
+    if options.rot3:
         geometry.rotation3().setValue(options.rot3)
 
     # Constraints
