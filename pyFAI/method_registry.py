@@ -184,6 +184,7 @@ class IntegrationMethod:
         impl = "*"
         split = "*"
         old_method = old_method.lower()
+
         if "lut" in old_method:
             algo = "lut"
         elif "csr" in old_method:
@@ -191,7 +192,11 @@ class IntegrationMethod:
 
         target = None
 
-        if "ocl" in old_method:
+        if old_method in ["numpy", "python"]:
+            impl = "python"
+        elif old_method == "cython":
+            impl = "cython"
+        elif "ocl" in old_method:
             impl = "opencl"
             elements = old_method.split("_")
             if len(elements) >= 2:
