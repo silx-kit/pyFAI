@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/01/2019"
+__date__ = "09/05/2019"
 __docformat__ = 'restructuredtext'
 
 
@@ -97,16 +97,22 @@ class PoniFile(object):
                 self._detector = detectors.detector_factory(config["detector"])
             else:
                 self._detector = detectors.Detector()
-            if self._detector.force_pixel and ("pixelsize1" in config) and ("pixelsize2" in config):
-                pixel1 = float(config["pixelsize1"])
-                pixel2 = float(config["pixelsize2"])
-                self._detector = self._detector.__class__(pixel1=pixel1, pixel2=pixel2)
-            else:
-                self._detector = detectors.Detector()
-                if "pixelsize1" in config:
-                    self._detector.pixel1 = float(config["pixelsize1"])
-                if "pixelsize2" in config:
-                    self._detector.pixel2 = float(config["pixelsize2"])
+
+            if "pixelsize1" in config or "pixelsize2" in config:
+                if isinstance(self._detector, detectors.NexusDetector):
+                    # NexusDetector is already set
+                    pass
+                elif self._detector.force_pixel and ("pixelsize1" in config) and ("pixelsize2" in config):
+                    pixel1 = float(config["pixelsize1"])
+                    pixel2 = float(config["pixelsize2"])
+                    self._detector = self._detector.__class__(pixel1=pixel1, pixel2=pixel2)
+                else:
+                    self._detector = detectors.Detector()
+                    if "pixelsize1" in config:
+                        self._detector.pixel1 = float(config["pixelsize1"])
+                    if "pixelsize2" in config:
+                        self._detector.pixel2 = float(config["pixelsize2"])
+
             if "splinefile" in config:
                 if config["splinefile"].lower() != "none":
                     self._detector.set_splineFile(config["splinefile"])
