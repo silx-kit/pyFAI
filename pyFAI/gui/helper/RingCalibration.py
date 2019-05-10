@@ -161,28 +161,47 @@ class RingCalibration(object):
         """
         return self.__isValid
 
-    def __initGeoRef(self):
+    def __createDefaultParams(self, geometry=None):
         """
         Tries to initialise the GeometryRefinement (dist, poni, rot)
         Returns a dictionary of key value pairs
         """
-        defaults = {"dist": 0.1, "poni1": 0.0, "poni2": 0.0,
-                    "rot1": 0.0, "rot2": 0.0, "rot3": 0.0}
+        defaults = {"dist": None, "poni1": None, "poni2": None,
+                    "rot1": None, "rot2": None, "rot3": None}
+        if geometry is not None:
+            defaults["dist"] = geometry.distance().value()
+            defaults["poni1"] = geometry.poni1().value()
+            defaults["poni2"] = geometry.poni2().value()
+            defaults["rot1"] = geometry.rotation1().value()
+            defaults["rot2"] = geometry.rotation2().value()
+            defaults["rot3"] = geometry.rotation3().value()
+
         if self.__detector:
             try:
                 p1, p2, _p3 = self.__detector.calc_cartesian_positions()
-                defaults["poni1"] = p1.max() / 2.
-                defaults["poni2"] = p2.max() / 2.
+                if defaults["poni1"] is None:
+                    defaults["poni1"] = p1.max() / 2.0
+                if defaults["poni2"] is None:
+                    defaults["poni2"] = p2.max() / 2.0
             except Exception as err:
                 _logger.warning(err)
-        # if ai:
-        #    for key in defaults.keys():  # not PARAMETERS which holds wavelength
-        #        val = getattr(self.ai, key, None)
-        #        if val is not None:
-        #            defaults[key] = val
+
+        if defaults["dist"] is None:
+            defaults["dist"] = 0.1
+        if defaults["poni1"] is None:
+            defaults["poni1"] = 0.0
+        if defaults["poni2"] is None:
+            defaults["poni2"] = 0.0
+        if defaults["rot1"] is None:
+            defaults["rot1"] = 0.0
+        if defaults["rot2"] is None:
+            defaults["rot2"] = 0.0
+        if defaults["rot3"] is None:
+            defaults["rot3"] = 0.0
+
         return defaults
 
-    def __init(self, peaks, method, constraintsModel=None):
+    def __init(self, peaks, method, geometry=None, constraintsModel=None):
 
         if len(peaks) == 0:
             self.__peakPicker = None
@@ -190,7 +209,7 @@ class RingCalibration(object):
             return
 
         scores = []
-        defaultParams = self.__initGeoRef()
+        defaultParams = self.__createDefaultParams(geometry=geometry)
 
         geoRef = GeometryRefinementContext(
             data=peaks,
@@ -217,8 +236,7 @@ class RingCalibration(object):
             assert(constraintsModel.isValid())
             self.fromGeometryConstraintsModel(constraintsModel)
         score = geoRef.refine(1000000)
-        parameters = geoRef.getParams()
-        scores.append((score, parameters))
+        scores.append((score, geoRef, "without-guess"))
 
         # Second attempt
 
@@ -229,18 +247,17 @@ class RingCalibration(object):
             calibrant=self.__calibrant,
             **defaultParams)
         self.__geoRef = geoRef
-        geoRef.guess_poni()
         if constraintsModel is not None:
             assert(constraintsModel.isValid())
             self.fromGeometryConstraintsModel(constraintsModel)
+        geoRef.guess_poni()
         score = geoRef.refine(1000000)
-        parameters = geoRef.getParams()
-        scores.append((score, parameters))
+        scores.append((score, geoRef, "with-guess"))
 
         # Use the better one
         scores.sort()
-        score, parameters = scores[0]
-        geoRef.setParams(parameters)
+        score, geoRef, _ = scores[0]
+        scores = None
 
         peakPicker = PeakPicker(data=self.__image,
                                 calibrant=self.__calibrant,
@@ -253,8 +270,8 @@ class RingCalibration(object):
         self.__peakPicker = peakPicker
         self.__geoRef = geoRef
 
-    def init(self, peaks, method, constraintsModel):
-        self.__init(peaks, method, constraintsModel=constraintsModel)
+    def init(self, peaks, method, geometry, constraintsModel):
+        self.__init(peaks, method, geometry, constraintsModel=constraintsModel)
 
     def update(self, image, mask, calibrant, detector, wavelength=None):
         self.__image = image

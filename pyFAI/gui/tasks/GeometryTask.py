@@ -732,7 +732,9 @@ class GeometryTask(AbstractCalibrationTask):
     def __invalidatePeakSelection(self):
         self.__peaksInvalidated = True
 
-    def __initGeometryFromPeaks(self):
+    def __initGeometryFromPeaks(self, useFittedGeometry=False):
+        geometry = self.model().fittedGeometry()
+
         if self.__peaksInvalidated:
             # Recompute the geometry from the peaks
             peaksModel = self.model().peakSelectionModel()
@@ -745,12 +747,17 @@ class GeometryTask(AbstractCalibrationTask):
             constraints = self.model().geometryConstraintsModel().copy(self)
             constraints.fillDefault(calibration.defaultGeometryConstraintsModel())
 
-            calibration.init(peaks, "massif", constraints)
+            if useFittedGeometry:
+                initialGeometry = geometry
+            else:
+                initialGeometry = None
+
+            calibration.init(peaks, "massif", initialGeometry, constraints)
             calibration.toGeometryModel(self.model().peakGeometry())
             self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
             self.__peaksInvalidated = False
 
-        self.model().fittedGeometry().setFrom(self.model().peakGeometry())
+        geometry.setFrom(self.model().peakGeometry())
 
     def __initGeometryLater(self):
         self.__plot.setProcessing()
@@ -817,7 +824,7 @@ class GeometryTask(AbstractCalibrationTask):
             self._fitButton.setWaiting(False)
             return
         if self.__peaksInvalidated:
-            self.__initGeometryFromPeaks()
+            self.__initGeometryFromPeaks(useFittedGeometry=True)
         else:
             calibration.fromGeometryModel(self.model().fittedGeometry(), resetResidual=False)
 
