@@ -577,9 +577,9 @@ class Calibrant(object):
 
     def get_max_wavelength(self, index=None):
         """Calculate the maximum wavelength assuming the ring at index is visible
-         :param index: Ring number, otherwise assumes all rings are visible
-         :return: the maximum visible wavelength
-         """
+        :param index: Ring number, otherwise assumes all rings are visible
+        :return: the maximum visible wavelength
+        """
         dSpacing = self._dSpacing[:] + self._out_dSpacing  # get all rings
         if index is None:
             index = len(dSpacing) - 1
