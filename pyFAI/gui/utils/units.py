@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "10/05/2019"
 
 
 import numpy
@@ -50,23 +50,23 @@ class Dimentionality(enum.Enum):
 
 class Unit(enum.Enum):
 
-    DEGREE = ("Degree", u"deg", Dimentionality.ANGLE),
+    DEGREE = ("Degree", u"deg", Dimentionality.ANGLE, 1),
 
-    RADIAN = ("Radian", u"rad", Dimentionality.ANGLE),
+    RADIAN = ("Radian", u"rad", Dimentionality.ANGLE, 1),
 
-    METER = ("Meter", u"m", Dimentionality.LENGTH),
+    METER = ("Meter", u"m", Dimentionality.LENGTH, 1),
 
-    CENTIMETER = ("Centimeter", u"cm", Dimentionality.LENGTH),
+    CENTIMETER = ("Centimeter", u"cm", Dimentionality.LENGTH, 1),
 
-    MILLIMETER = ("Millimeter", u"mm", Dimentionality.LENGTH),
+    MILLIMETER = ("Millimeter", u"mm", Dimentionality.LENGTH, 1),
 
-    ANGSTROM = (u"Ångström", u"Å", Dimentionality.WAVELENGTH),
+    ANGSTROM = (u"Ångström", u"Å", Dimentionality.WAVELENGTH, 1),
 
-    METER_WL = ("Meter", u"m", Dimentionality.WAVELENGTH),
+    METER_WL = ("Meter", u"m", Dimentionality.WAVELENGTH, 1),
 
-    ENERGY = ("Energy", u"keV", Dimentionality.WAVELENGTH),
+    ENERGY = ("Energy", u"keV", Dimentionality.WAVELENGTH, -1),
 
-    PIXEL = ("Pixel", u"px", Dimentionality.PIXEL),
+    PIXEL = ("Pixel", u"px", Dimentionality.PIXEL, 1),
 
     @property
     def fullname(self):
@@ -79,6 +79,10 @@ class Unit(enum.Enum):
     @property
     def dimensionality(self):
         return self.value[0][2]
+
+    @property
+    def direction(self):
+        return self.value[0][3]
 
     @classmethod
     def get_units(cls, dimensionality):
