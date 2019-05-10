@@ -390,12 +390,11 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             return oldDeltaSq
 
-
     def refine2_wavelength(self, maxiter=1000000, fix=None):
         """Refine all parameters including the wavelength.
-        
-        This implies that it enforces an upper limit to the wavelength depending 
-        on the number of rings. 
+
+        This implies that it enforces an upper limit to the wavelength depending
+        on the number of rings.
         """
         if fix is None:
             fix = ["wavelength"]
