@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/11/2018"
+__date__ = "10/05/2019"
 
 import logging
 import numpy
@@ -143,9 +143,8 @@ class CalibrantPreview(qt.QFrame):
             if pos >= size:
                 continue
             agregation[0, pos] += 1
-        agregation = -agregation
 
-        colormap = Colormap()
+        colormap = Colormap(name="gray_r", vmin=agregation.min(), vmax=agregation.max())
         rgbImage = colormap.applyToData(agregation)[:, :, :3]
         qimage = imageutils.convertArrayToQImage(rgbImage)
         qpixmap = qt.QPixmap.fromImage(qimage)
