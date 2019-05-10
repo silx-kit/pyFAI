@@ -208,6 +208,8 @@ class ConstraintsPopup(qt.QFrame):
 
         # Update slider
         vMin, vMax = self.__min.value(), self.__max.value()
+        # TODO: The slider should use the displayedUnit, and not the internal unit
+        # Here the slider for the energy is not linear
         if vMin is not None and vMax is not None:
             old = self._slider.blockSignals(True)
             if self.__defaultConstraints is not None:
