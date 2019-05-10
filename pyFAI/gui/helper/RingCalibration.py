@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/04/2019"
+__date__ = "10/05/2019"
 
 import logging
 import numpy
@@ -145,7 +145,18 @@ class RingCalibration(object):
         self.__wavelength = wavelength
         self.__defaultConstraints = None
 
-        self.__init(peaks, method)
+        self.__isValid = True
+        try:
+            self.__init(peaks, method)
+        except Exception:
+            _logger.error("Error while initializing the calibration", exc_info=True)
+            self.__isValid = False
+
+    def isValid(self):
+        """
+        Returns true if it can be use to calibrate the data.
+        """
+        return self.__isValid
 
     def __initGeoRef(self):
         """
@@ -234,6 +245,8 @@ class RingCalibration(object):
                                 detector=self.__detector,
                                 method=method)
 
+        if score == float("inf"):
+            self.__isValid = False
         self.__peakPicker = peakPicker
         self.__geoRef = geoRef
 
@@ -283,7 +296,11 @@ class RingCalibration(object):
         """
         if self.__geoRef is None:
             return None
-        chi2 = self.__geoRef.chi2()
+        try:
+            chi2 = self.__geoRef.chi2()
+        except Exception:
+            _logger.debug("Backtrace", exc_info=True)
+            return float("inf")
         return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
 
     def getTwoThetaArray(self):

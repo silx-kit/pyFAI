@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/04/2019"
+__date__ = "10/05/2019"
 
 import logging
 import numpy
@@ -676,7 +676,6 @@ class GeometryTask(AbstractCalibrationTask):
         self.__wavelengthInvalidated = True
 
     def __invalidateCalibration(self):
-        ##### FIXME
         self.__calibration = None
 
     def __createCalibration(self):
@@ -705,6 +704,7 @@ class GeometryTask(AbstractCalibrationTask):
                                       wavelength,
                                       peaks=peaks,
                                       method="massif")
+
         # Copy the default values
         self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
         return calibration
@@ -784,7 +784,9 @@ class GeometryTask(AbstractCalibrationTask):
         # Save this geometry into the history
         calibration = self.__getCalibration()
         geometry = self.model().fittedGeometry()
-        rms = None if calibration is None else calibration.getRms()
+        rms = None
+        if calibration is None and calibration.isValid():
+            rms = calibration.getRms()
         geometryHistory = self.model().geometryHistoryModel()
         geometryHistory.appendGeometry("Init", datetime.datetime.now(), geometry, rms)
 
@@ -889,6 +891,9 @@ class GeometryTask(AbstractCalibrationTask):
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
         if calibration is None:
+            return
+        if not calibration.isValid():
+            qt.QMessageBox.critical(self, "Error while calibrating", "It is not possible to calibrate the geometry. Check the logs.")
             return
         geometry = self.model().fittedGeometry()
         if geometry.isValid():
