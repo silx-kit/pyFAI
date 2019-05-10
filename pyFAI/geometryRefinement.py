@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2019"
+__date__ = "10/05/2019"
 __status__ = "development"
 
 import os
@@ -265,7 +265,10 @@ class GeometryRefinement(AzimuthalIntegrator):
         if len(ary) < rings.max():
             # complete turn ~ 2pi ~ 7: help the optimizer to find the right way
             ary += [10.0 * (rings.max() - len(ary))] * (1 + rings.max() - len(ary))
-        return numpy.array(ary, dtype=numpy.float64)[rings]
+        tth = numpy.array(ary, dtype=numpy.float64)
+        if rings.max() >= len(tth):
+            raise IndexError("Ring indices %s are not all available at this wavelength (%s)" % (numpy.unique(rings), wavelength))
+        return tth[rings]
 
     def residu1(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)
