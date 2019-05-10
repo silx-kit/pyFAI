@@ -41,8 +41,13 @@ __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import numpy
+import logging
 from math import sqrt, atan2, pi
 from collections import namedtuple
+
+_logger = logging.getLogger(__name__)
+
+
 Ellipse = namedtuple("Ellipse", ["center_1", "center_2", "angle", "half_long_axis", "half_short_axis"])
 
 
@@ -89,7 +94,6 @@ def fit_ellipse(pty, ptx):
     res1 = numpy.sqrt(a2) if a2 > 0 else 0
     res2 = numpy.sqrt(b2) if b2 > 0 else 0
     if res1 == 0 or res2 == 0:
-        print("Numerical unconsistancy in ellipse fitting ... please investigate ")
-        print(pty, ptx)
-        print(up, down1, down2, a2, b2)
+        _logger.error("Numerical unconsistancy in ellipse fitting... please investigate")
+        _logger.error("Data: pty, ptx, up, down1, down2, a2, b2 -> %s", (pty, ptx, up, down1, down2, a2, b2))
     return Ellipse(y0, x0, angle, max(res1, res2), min(res1, res2))
