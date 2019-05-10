@@ -826,13 +826,16 @@ class GeometryTask(AbstractCalibrationTask):
         calibration.fromGeometryConstraintsModel(constraints)
 
         calibration.refine()
-        # write result to the fitted model
-        geometry = self.model().fittedGeometry()
-        calibration.toGeometryModel(geometry)
+        if calibration.isValid():
+            # write result to the fitted model
+            geometry = self.model().fittedGeometry()
+            calibration.toGeometryModel(geometry)
 
-        # Save this geometry into the history
-        geometryHistory = self.model().geometryHistoryModel()
-        geometryHistory.appendGeometry("Fitted", datetime.datetime.now(), geometry, calibration.getRms())
+            # Save this geometry into the history
+            geometryHistory = self.model().geometryHistoryModel()
+            geometryHistory.appendGeometry("Fitted", datetime.datetime.now(), geometry, calibration.getRms())
+        else:
+            self.__showDialogCalibrationDiverge()
 
         self._fitButton.setWaiting(False)
         self.__fitting = False
@@ -888,12 +891,20 @@ class GeometryTask(AbstractCalibrationTask):
         now = datetime.datetime.now()
         geometryHistory.appendGeometry("Customed", now, geometry, state.getRms())
 
+    def __showDialogCalibrationDiverge(self):
+        title = "Error while calibrating"
+        message = ("It is not possible to calibrate/refine the geometry. " +
+                   "The refinement <b>diverge</b>. " +
+                   "It may be due to a mistake on specified wavelength, or selected peaks. " +
+                   "<b>Check your input data</b>.")
+        qt.QMessageBox.critical(self, title, message)
+
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
         if calibration is None:
             return
         if not calibration.isValid():
-            qt.QMessageBox.critical(self, "Error while calibrating", "It is not possible to calibrate the geometry. Check the logs.")
+            self.__showDialogCalibrationDiverge()
             return
         geometry = self.model().fittedGeometry()
         if geometry.isValid():

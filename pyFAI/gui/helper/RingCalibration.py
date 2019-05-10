@@ -283,6 +283,9 @@ class RingCalibration(object):
             previous_residual = residual
             count += 1
 
+        if residual == float("inf"):
+            self.__isValid = False
+
         print("Final residual: %s (after %s iterations)" % (residual, count))
 
         self.__geoRef.del_ttha()
