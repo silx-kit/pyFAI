@@ -202,10 +202,9 @@ class RingCalibration(object):
         if constraintsModel is not None:
             assert(constraintsModel.isValid())
             self.fromGeometryConstraintsModel(constraintsModel)
-        rms = geoRef.refine(1000000)
-        score = geoRef.chi2()
+        score = geoRef.refine(1000000)
         parameters = geoRef.getParams()
-        scores.append((score, parameters, rms))
+        scores.append((score, parameters))
 
         # Second attempt
 
@@ -220,14 +219,13 @@ class RingCalibration(object):
         if constraintsModel is not None:
             assert(constraintsModel.isValid())
             self.fromGeometryConstraintsModel(constraintsModel)
-        rms = geoRef.refine(1000000)
-        score = geoRef.chi2()
+        score = geoRef.refine(1000000)
         parameters = geoRef.getParams()
-        scores.append((score, parameters, rms))
+        scores.append((score, parameters))
 
         # Use the better one
         scores.sort()
-        _score, parameters, rms = scores[0]
+        score, parameters = scores[0]
         geoRef.setParams(parameters)
 
         peakPicker = PeakPicker(data=self.__image,
