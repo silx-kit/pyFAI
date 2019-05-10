@@ -144,7 +144,7 @@ class CalibrantPreview(qt.QFrame):
                 continue
             agregation[0, pos] += 1
 
-        colormap = Colormap(name="gray_r", vmin=agregation.min(), vmax=agregation.max())
+        colormap = Colormap(name="reversed gray", vmin=agregation.min(), vmax=agregation.max())
         rgbImage = colormap.applyToData(agregation)[:, :, :3]
         qimage = imageutils.convertArrayToQImage(rgbImage)
         qpixmap = qt.QPixmap.fromImage(qimage)
