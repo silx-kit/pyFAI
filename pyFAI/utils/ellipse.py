@@ -36,11 +36,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/05/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import numpy
+from math import sqrt, atan2, pi
 from collections import namedtuple
 Ellipse = namedtuple("Ellipse", ["center_1", "center_2", "angle", "half_long_axis", "half_short_axis"])
 
@@ -72,15 +73,23 @@ def fit_ellipse(pty, ptx):
         if a > c:
             angle = 0
         else:
-            angle = numpy.pi / 2
+            angle = pi / 2
     else:
         if a > c:
-            angle = numpy.arctan2(2 * b, (a - c)) / 2
+            angle = atan2(2 * b, (a - c)) / 2
         else:
-            angle = numpy.pi / 2 + numpy.arctan2(2 * b, (a - c)) / 2
+            angle = numpy.pi / 2 + atan2(2 * b, (a - c)) / 2
     up = 2 * (a * f * f + c * d * d + g * b * b - 2 * b * d * f - a * c * g)
-    down1 = (b * b - a * c) * ((c - a) * numpy.sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
-    down2 = (b * b - a * c) * ((a - c) * numpy.sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
-    res1 = numpy.sqrt(up / down1)
-    res2 = numpy.sqrt(up / down2)
+    down1 = (b * b - a * c) * ((c - a) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
+    down2 = (b * b - a * c) * ((a - c) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
+
+    a2 = up / down1
+    b2 = up / down2
+
+    res1 = numpy.sqrt(a2) if a2 > 0 else 0
+    res2 = numpy.sqrt(b2) if b2 > 0 else 0
+    if res1 == 0 or res2 == 0:
+        print("Numerical unconsistancy in ellipse fitting ... please investigate ")
+        print(pty, ptx)
+        print(up, down1, down2, a2, b2)
     return Ellipse(y0, x0, angle, max(res1, res2), min(res1, res2))

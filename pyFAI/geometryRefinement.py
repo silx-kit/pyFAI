@@ -370,7 +370,13 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             return oldDeltaSq
 
+
     def refine2_wavelength(self, maxiter=1000000, fix=None):
+        """Refine all parameters including the wavelength.
+        
+        This implies that it enforces an upper limit to the wavelength depending 
+        on the number of rings. 
+        """
         if fix is None:
             fix = ["wavelength"]
         d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
@@ -387,14 +393,22 @@ class GeometryRefinement(AzimuthalIntegrator):
                 bounds.append((val, val))
             else:
                 bounds.append((getattr(self, "_%s_min" % i), getattr(self, "_%s_max" % i)))
+
+        pos0 = self.data[:, 0]
+        pos1 = self.data[:, 1]
+        ring = self.data[:, 2].astype(numpy.int32)
+
+        max_wavelength = self.calibrant.get_max_wavelength(ring.max())
+        bounds[-1] = (bounds[-1][0], min(max_wavelength, bounds[-1][1]))
+        if param[-1] >= max_wavelength:
+            param[-1] = max_wavelength
+
         # wavelength is multiplied to 10^10 to have values in the range 0.1-10: better numerical differentiation
         bounds[-1] = (bounds[-1][0] * 1e10, bounds[-1][1] * 1e10)
         param[-1] = 1e10 * param[-1]
         self.param = numpy.array(param)
+
         if self.data.shape[-1] == 3:
-            pos0 = self.data[:, 0]
-            pos1 = self.data[:, 1]
-            ring = self.data[:, 2].astype(numpy.int32)
             weight = None
             new_param = fmin_slsqp(self.residu2_wavelength,
                                    self.param, iter=maxiter,
@@ -404,9 +418,6 @@ class GeometryRefinement(AzimuthalIntegrator):
                                    iprint=(logger.getEffectiveLevel() <= logging.INFO))
 
         elif self.data.shape[-1] == 4:
-            pos0 = self.data[:, 0]
-            pos1 = self.data[:, 1]
-            ring = self.data[:, 2].astype(numpy.int32)
             weight = self.data[:, 3]
             new_param = fmin_slsqp(self.residu2_wavelength_weighted,
                                    self.param, iter=maxiter,

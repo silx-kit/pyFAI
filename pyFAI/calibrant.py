@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2019"
+__date__ = "10/05/2019"
 __status__ = "production"
 
 
@@ -574,6 +574,18 @@ class Calibrant(object):
             d2th = abs(numpy.array(self._2th) - angle)
             if d2th.min() < delta:
                 return d2th.argmin()
+
+    def get_max_wavelength(self, index=None):
+        """Calculate the maximum wavelength assuming the ring at index is visible
+         :param index: Ring number, otherwise assumes all rings are visible
+         :return: the maximum visible wavelength
+         """
+        dSpacing = self._dSpacing[:] + self._out_dSpacing  # get all rings
+        if index is None:
+            index = len(dSpacing) - 1
+        if index >= len(dSpacing):
+            raise IndexError("There are not than many (%s) rings indices in this calibrant" % (index))
+        return dSpacing[index] * 1e-10
 
     def get_peaks(self, unit="2th_deg"):
         """Calculate the peak position as
