@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/01/2019"
+__date__ = "10/05/2019"
 
 import logging
 import numpy
@@ -54,6 +54,9 @@ from ..utils import FilterBuilder
 from ..utils import imageutils
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
+from ..dialog import MessageBox
+from pyFAI.io import ponifile
+
 
 _logger = logging.getLogger(__name__)
 
@@ -102,6 +105,7 @@ class IntegrationProcess(object):
         self.__isValid = self._init(model)
         self.__resetZoomPolicy = None
         self.__method = None
+        self.__errorMessage = None
 
     def _init(self, model):
         self.__isValid = True
@@ -179,8 +183,8 @@ class IntegrationProcess(object):
             wavelength=self.__wavelength)
 
         # FIXME Add error model
-
-        method1d = method_registry.Method(1, self.__method.split, self.__method.algo, self.__method.impl, None)
+        method = method_registry.Method(0, self.__method.split, self.__method.algo, self.__method.impl, None)
+        method1d = method.fixed(dim=1)
         methods = method_registry.IntegrationMethod.select_method(method=method1d)
         if len(methods) == 0:
             method1d = method_registry.Method(1, method1d.split, "*", "*", None)
@@ -188,7 +192,7 @@ class IntegrationProcess(object):
         else:
             method1d = methods[0].method
 
-        method2d = method_registry.Method(2, self.__method.split, self.__method.algo, self.__method.impl, None)
+        method2d = method.fixed(dim=2)
         methods = method_registry.IntegrationMethod.select_method(method=method2d)
         if len(methods) == 0:
             method2d = method_registry.Method(2, method2d.split, "*", "*", None)
@@ -196,40 +200,46 @@ class IntegrationProcess(object):
         else:
             method2d = methods[0].method
 
-        self.__result1d = ai.integrate1d(
-            method=method1d,
-            data=self.__image,
-            npt=self.__nPointsRadial,
-            unit=self.__radialUnit,
-            mask=self.__mask,
-            polarization_factor=self.__polarizationFactor)
+        try:
+            self.__result1d = ai.integrate1d(
+                method=method1d,
+                data=self.__image,
+                npt=self.__nPointsRadial,
+                unit=self.__radialUnit,
+                mask=self.__mask,
+                polarization_factor=self.__polarizationFactor)
 
-        self.__result2d = ai.integrate2d(
-            method=method2d,
-            data=self.__image,
-            npt_rad=self.__nPointsRadial,
-            npt_azim=self.__nPointsAzimuthal,
-            unit=self.__radialUnit,
-            mask=self.__mask,
-            polarization_factor=self.__polarizationFactor)
+            self.__result2d = ai.integrate2d(
+                method=method2d,
+                data=self.__image,
+                npt_rad=self.__nPointsRadial,
+                npt_azim=self.__nPointsAzimuthal,
+                unit=self.__radialUnit,
+                mask=self.__mask,
+                polarization_factor=self.__polarizationFactor)
 
-        # Create an image masked where data exists
-        self.__resultMask2d = None
-        if self.__mask is not None:
-            if self.__mask.shape == self.__image.shape:
-                maskData = numpy.ones(shape=self.__image.shape, dtype=numpy.float32)
-                maskData[self.__mask == 0] = float("NaN")
+            # Create an image masked where data exists
+            self.__resultMask2d = None
+            if self.__mask is not None:
+                if self.__mask.shape == self.__image.shape:
+                    maskData = numpy.ones(shape=self.__image.shape, dtype=numpy.float32)
+                    maskData[self.__mask == 0] = float("NaN")
 
-                if self.__displayMask:
-                    self.__resultMask2d = ai.integrate2d(
-                        method=method2d,
-                        data=maskData,
-                        npt_rad=self.__nPointsRadial,
-                        npt_azim=self.__nPointsAzimuthal,
-                        unit=self.__radialUnit,
-                        polarization_factor=self.__polarizationFactor)
-            else:
-                _logger.warning("Inconsistency between image and mask sizes. %s != %s", self.__image.shape, self.__mask.shape)
+                    if self.__displayMask:
+                        self.__resultMask2d = ai.integrate2d(
+                            method=method2d,
+                            data=maskData,
+                            npt_rad=self.__nPointsRadial,
+                            npt_azim=self.__nPointsAzimuthal,
+                            unit=self.__radialUnit,
+                            polarization_factor=self.__polarizationFactor)
+                else:
+                    _logger.warning("Inconsistency between image and mask sizes. %s != %s", self.__image.shape, self.__mask.shape)
+        except Exception as e:
+            _logger.debug("Error while integrating", exc_info=True)
+            self.__errorMessage = e
+            # TODO: Could be nice to  compute anyway other content (directDist...)
+            return
 
         try:
             self.__directDist = ai.getFit2D()["directDist"]
@@ -244,20 +254,30 @@ class IntegrationProcess(object):
             try:
                 rings = unitutils.from2ThRad(rings, self.__radialUnit, self.__wavelength, self.__directDist)
             except ValueError:
-                message = "Convertion to unit %s not supported. Ring marks ignored"
+                message = "Convertion to unit %s not supported. Ring locations ignored."
                 _logger.warning(message, self.__radialUnit)
+                self.__errorMessage = message % self.__radialUnit
                 rings = []
+
             # Filter the rings which are not part of the result
-            rings = filter(lambda x: self.__result1d.radial[0] <= x <= self.__result1d.radial[-1], rings)
-            rings = list(rings)
+            minAngle, maxAngle = self.__result1d.radial[0], self.__result1d.radial[-1]
+            rings = [(i, angle) for i, angle in enumerate(rings) if minAngle <= angle <= maxAngle]
         else:
             rings = []
-        self.__ringAngles = rings
 
+        self.__rings = rings
         self.__ai = ai
 
-    def ringAngles(self):
-        return self.__ringAngles
+    def rings(self):
+        """
+        Returns the list of displayable rings as a list of tuple id (zero based), angle
+
+        :rtype: List
+        """
+        return self.__rings
+
+    def errorMessage(self):
+        return self.__errorMessage
 
     def result1d(self):
         return self.__result1d
@@ -384,7 +404,7 @@ class IntegrationPlot(qt.QFrame):
         self.__ringItems = {}
         self.__axisOfCurrentView = None
         self.__angleUnderMouse = None
-        self.__availableRingAngles = None
+        self.__availableRings = None
         self.__radialUnit = None
         self.__wavelength = None
         self.__directDist = None
@@ -466,7 +486,7 @@ class IntegrationPlot(qt.QFrame):
         result = None
         iresult = None
         minDistance = float("inf")
-        for ringId, ringAngle in enumerate(self.__availableRingAngles):
+        for ringId, ringAngle in self.__availableRings:
             distance = abs(angle - ringAngle)
             if distance < minDistance:
                 minDistance = distance
@@ -514,7 +534,7 @@ class IntegrationPlot(qt.QFrame):
 
     def __mouseMoved(self, x, y):
         """Called when mouse move over the plot."""
-        if self.__availableRingAngles is None:
+        if self.__availableRings is None:
             return
         angle = x
         ringId, angle = self.__getClosestAngle(angle)
@@ -542,7 +562,7 @@ class IntegrationPlot(qt.QFrame):
 
     def __getAvailableAngles(self, minTth, maxTth):
         result = []
-        for ringId, angle in enumerate(self.__availableRingAngles):
+        for ringId, angle in self.__availableRings:
             if minTth is None or maxTth is None:
                 result.append(ringId, angle)
             if minTth <= angle <= maxTth:
@@ -550,7 +570,7 @@ class IntegrationPlot(qt.QFrame):
         return result
 
     def __updateRings(self):
-        if self.__availableRingAngles is None:
+        if self.__availableRings is None:
             return
 
         minTth, maxTth = self.__plot2d.getXAxis().getLimits()
@@ -688,6 +708,22 @@ class IntegrationPlot(qt.QFrame):
                 self.__plot1d.removeMarker(item.getLegend())
                 self.__plot2d.removeMarker(item.getLegend())
         self.__ringItems = {}
+        self.__availableRings = []
+
+    def clear(self):
+        self.__clearRings()
+        try:
+            self.__plot1d.remove("result1d", "histogram")
+        except Exception:
+            pass
+        try:
+            self.__plot2d.removeImage("integrated_mask")
+        except Exception:
+            pass
+        try:
+            self.__plot2d.removeImage("integrated_data")
+        except Exception:
+            pass
 
     def setIntegrationProcess(self, integrationProcess):
         """
@@ -696,7 +732,7 @@ class IntegrationPlot(qt.QFrame):
         """
         self.__clearRings()
 
-        self.__availableRingAngles = integrationProcess.ringAngles()
+        self.__availableRings = integrationProcess.rings()
         self.__updateRings()
 
         # FIXME set axes units
@@ -708,11 +744,6 @@ class IntegrationPlot(qt.QFrame):
             color="blue",
             histogram=result1d.intensity,
             resetzoom=False)
-
-        if silx.version_info[0:2] == (0, 8):
-            # Invalidate manually the plot datarange on silx 0.8
-            # https://github.com/silx-kit/silx/issues/2079
-            self.__plot1d._invalidateDataRange()
 
         self.__setResult(result1d)
 
@@ -835,6 +866,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self.initNextStep()
 
         self._methodLabel.setLabelTemplate("{split}")
+        self._warning.setVisible(False)
 
         self.__integrationUpToDate = True
         self.__integrationResetZoomPolicy = None
@@ -866,9 +898,6 @@ class IntegrationTask(AbstractCalibrationTask):
         result = dialog.exec_()
         if result:
             method = dialog.selectedMethod()
-            # TODO selectedMethod should return a `Method` tuple
-            split, algo, impl = method
-            method = method_registry.Method(dim=666, split=split, algo=algo, impl=impl, target=None)
             self.__setMethod(method)
 
     def __setMethod(self, method):
@@ -950,6 +979,18 @@ class IntegrationTask(AbstractCalibrationTask):
         qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
 
     def __updateGUIWithIntegrationResult(self, integrationProcess):
+        error = integrationProcess.errorMessage()
+        if isinstance(error, Exception):
+            self._plot.clear()
+            MessageBox.exception(self, "Internal error while integrating", error, None)
+            self._warning.setVisible(False)
+            return
+
+        if error is not None:
+            self._warning.setText(error)
+            self._warning.setVisible(True)
+        else:
+            self._warning.setVisible(False)
         self._plot.setIntegrationProcess(integrationProcess)
 
     def _updateModel(self, model):
@@ -981,6 +1022,10 @@ class IntegrationTask(AbstractCalibrationTask):
         if not result:
             return
         filename = dialog.selectedFiles()[0]
+        nameFilter = dialog.selectedNameFilter()
+        isPoniFilter = ".poni" in nameFilter
+        if isPoniFilter and not filename.endswith(".poni"):
+            filename = filename + ".poni"
 
         pyfaiGeometry = pyFAI.geometry.Geometry()
 
@@ -997,4 +1042,9 @@ class IntegrationTask(AbstractCalibrationTask):
         detector = experimentSettingsModel.detector()
         pyfaiGeometry.detector = detector
 
-        pyfaiGeometry.save(filename)
+        try:
+            writer = ponifile.PoniFile(pyfaiGeometry)
+            with open(filename, "wt") as fd:
+                writer.write(fd)
+        except Exception as e:
+            MessageBox.exception(self, "Error while saving poni file", e, _logger)

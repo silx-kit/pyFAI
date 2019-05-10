@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/04/2019"
+__date__ = "10/05/2019"
 
 from silx.gui import icons
 
@@ -94,6 +94,16 @@ class ConstraintsPopup(qt.QFrame):
             model = DataModel()
             model.setValue(displayedUnit)
             displayedUnit = model
+
+        # TODO Not the best way to do it
+        # It would be better to swap the widgets
+        if internalUnit.direction != displayedUnit.value().direction:
+            self._leftSign.setText(u"≥")
+            self._rightSign.setText(u"≥")
+        else:
+            self._leftSign.setText(u"≤")
+            self._rightSign.setText(u"≤")
+
         self._minEdit.setModelUnit(internalUnit)
         self._minEdit.setDisplayedUnitModel(displayedUnit)
         self._minEdit.sigValueAccepted.connect(self.__validateMinConstraint)
@@ -198,6 +208,8 @@ class ConstraintsPopup(qt.QFrame):
 
         # Update slider
         vMin, vMax = self.__min.value(), self.__max.value()
+        # TODO: The slider should use the displayedUnit, and not the internal unit
+        # Here the slider for the energy is not linear
         if vMin is not None and vMax is not None:
             old = self._slider.blockSignals(True)
             if self.__defaultConstraints is not None:

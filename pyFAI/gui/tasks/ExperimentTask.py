@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2019"
+__date__ = "07/05/2019"
 
 import numpy
 import logging
@@ -65,7 +65,6 @@ class ExperimentTask(AbstractCalibrationTask):
 
         self._imageLoader.setDialogTitle("Load calibration image")
         self._maskLoader.setDialogTitle("Load mask image")
-        self._darkLoader.setDialogTitle("Load dark image")
 
         self._customDetector.clicked.connect(self.__customDetector)
 
@@ -141,8 +140,6 @@ class ExperimentTask(AbstractCalibrationTask):
         self._imageLoader.setModel(settings.image())
         self._mask.setModel(settings.mask())
         self._maskLoader.setModel(settings.mask())
-        self._dark.setModel(settings.dark())
-        self._darkLoader.setModel(settings.dark())
 
         self._wavelength.setModelUnit(units.Unit.METER_WL)
         self._wavelength.setDisplayedUnit(units.Unit.ANGSTROM)

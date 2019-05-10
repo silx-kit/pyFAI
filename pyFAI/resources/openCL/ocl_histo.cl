@@ -61,7 +61,7 @@ inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
    do {
        expected.f64 = current.f64;
        next.f64     = kahan_sum(expected.f64, val);
-       current.u64  = atomic_cmpxchg( (volatile __global unsigned long *)addr,
+       current.u64  = atomic_cmpxchg( (volatile global unsigned long *)addr,
                                       expected.u64, next.u64);
    } while( current.u64 != expected.u64 );
 }

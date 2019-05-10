@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "09/05/2019"
 __status__ = "development"
 
 import logging
@@ -481,10 +481,8 @@ class WorkerConfigurator(qt.QWidget):
         result = dialog.exec_()
         if result:
             method = dialog.selectedMethod()
-            # TODO selectedMethod should return a `Method` tuple
-            split, algo, impl = method
             dim = 2 if self.do_2D.isChecked() else 1
-            method = method_registry.Method(dim=dim, split=split, algo=algo, impl=impl, target=None)
+            method = method.fixed(dim=dim)
             self.__setMethod(method)
 
     def __setNormalization(self, normalizationFactor, monitorName):

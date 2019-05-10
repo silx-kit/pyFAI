@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/02/2019"
+__date__ = "10/05/2019"
 
 import weakref
 import logging
@@ -171,6 +171,13 @@ class ApplicationContext(object):
         from silx.gui.dialog.ImageFileDialog import ImageFileDialog
         dialog = ImageFileDialog(parent)
         dialog.finished.connect(functools.partial(self.__saveDialogState, dialog))
+
+        if hasattr(self, "getRawColormap"):
+            colormap = self.getRawColormap()
+            colormap = colormap.copy()
+            colormap.setVRange(None, None)
+            dialog.setColormap(colormap)
+
         self.__configureDialog(dialog)
 
         if previousFile is not None:

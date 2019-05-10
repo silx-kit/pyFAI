@@ -42,15 +42,43 @@
          <string>Integration parameters</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_10">
-         <item row="3" column="1">
-          <widget class="QCheckBox" name="_polarizationFactorCheck">
+         <item row="7" column="1" colspan="3">
+          <widget class="ThreadPoolPushButton" name="_integrateButton">
            <property name="text">
-            <string>Polarization factor:</string>
+            <string>Integrate</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
-          <widget class="QuantityEdit" name="_radialPoints">
+         <item row="2" column="1">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Azimuthal points:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="3">
+          <widget class="QToolButton" name="_customMethodButton">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2">
+          <widget class="MethodLabel" name="_methodLabel">
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="UnitSelector" name="_radialUnit">
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="QuantityEdit" name="_polarizationFactor">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -69,32 +97,8 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="2">
-          <widget class="UnitSelector" name="_radialUnit">
-           <property name="sizeAdjustPolicy">
-            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1" colspan="2">
-          <widget class="QCheckBox" name="_displayMask">
-           <property name="text">
-            <string>Display mask overlay</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLabel" name="label_8">
-           <property name="text">
-            <string>Azimuthal points:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2">
-          <widget class="QuantityEdit" name="_polarizationFactor">
+         <item row="1" column="2">
+          <widget class="QuantityEdit" name="_radialPoints">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -106,10 +110,10 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="label_7">
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="_polarizationFactorCheck">
            <property name="text">
-            <string>Radial points:</string>
+            <string>Polarization factor:</string>
            </property>
           </widget>
          </item>
@@ -126,6 +130,23 @@
            </property>
           </widget>
          </item>
+         <item row="5" column="1" colspan="2">
+          <widget class="QCheckBox" name="_displayMask">
+           <property name="text">
+            <string>Display mask overlay</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Radial points:</string>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="1">
           <widget class="QLabel" name="label_6">
            <property name="text">
@@ -133,24 +154,13 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="3">
-          <widget class="QToolButton" name="_customMethodButton">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2">
-          <widget class="MethodLabel" name="_methodLabel">
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
          <item row="6" column="1" colspan="3">
-          <widget class="ThreadPoolPushButton" name="_integrateButton">
+          <widget class="QLabel" name="_warning">
+           <property name="styleSheet">
+            <string notr="true">color:red;</string>
+           </property>
            <property name="text">
-            <string>Integrate</string>
+            <string>Message</string>
            </property>
           </widget>
          </item>

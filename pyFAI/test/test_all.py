@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "10/05/2019"
 
 import sys
 import unittest
@@ -50,6 +50,7 @@ from . import test_azimuthal_integrator
 from . import test_peak_picking
 from . import test_geometry
 from . import test_mask
+from . import test_method_registry
 from . import test_openCL
 from . import test_export
 from . import test_saxs
@@ -78,6 +79,7 @@ from . import test_utils_shell
 from . import test_utils_stringutil
 from . import test_utils_mathutil
 from . import test_utils_header
+from . import test_utils_ellipse
 from . import test_preproc
 from . import test_bayes
 from . import test_scripts
@@ -104,6 +106,7 @@ def suite():
     testsuite.addTest(test_peak_picking.suite())
     testsuite.addTest(test_geometry.suite())
     testsuite.addTest(test_mask.suite())
+    testsuite.addTest(test_method_registry.suite())
     testsuite.addTest(test_openCL.suite())
     testsuite.addTest(test_export.suite())
     testsuite.addTest(test_saxs.suite())
@@ -134,6 +137,7 @@ def suite():
     testsuite.addTest(test_utils_stringutil.suite())
     testsuite.addTest(test_utils_mathutil.suite())
     testsuite.addTest(test_utils_header.suite())
+    testsuite.addTest(test_utils_ellipse.suite())
     testsuite.addTest(test_preproc.suite())
     testsuite.addTest(test_bayes.suite())
     testsuite.addTest(test_scripts.suite())

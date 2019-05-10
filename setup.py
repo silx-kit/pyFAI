@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/04/2019"
+__date__ = "09/05/2019"
 __status__ = "stable"
 
 
@@ -974,7 +974,7 @@ def get_project_configuration(dry_run):
         "numexpr",
         # for the use of pkg_resources on script launcher
         "setuptools",
-        "silx>=0.9"]
+        "silx>=0.10"]
 
     setup_requires = [
         "setuptools",

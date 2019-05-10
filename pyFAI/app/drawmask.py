@@ -34,7 +34,7 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "09/05/2019"
 __satus__ = "Production"
 
 import os
@@ -47,8 +47,6 @@ import fabio
 _logger = logging.getLogger("drawmask")
 
 import silx
-if silx.version_info < (0, 2):
-    raise ImportError("Silx version 0.2 or higher expected")
 import silx.gui.plot
 from silx.gui import qt
 import pyFAI.utils
