@@ -926,10 +926,9 @@ class OCL_Histogram1d(OpenclProcessing):
         except Exception as error:
             # This error may be related to issue #1219. Provides an ugly work around.
             if "cl_khr_int64_base_atomics" in self.ctx.devices[0].extensions:
-                # Maybe this extension actually does not existe !
-                print(kernels)
+                # Maybe this extension actually does not existe!
                 OpenclProcessing.compile_kernels(self, ["pyfai:openCL/deactivate_atomic64.cl"] + kernels, compile_options)
-                logger.warning("Your OpenCL compiler wrongly claims it support 64-bit atomics. Degrading to 32 bits atomics !")
+                logger.warning("Your OpenCL compiler wrongly claims it support 64-bit atomics. Degrading to 32 bits atomics!")
             else:
                 logger.error("Failed to compile kernel ! Check the compiler. %s", error)
 
