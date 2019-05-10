@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/05/2019"
+__date__ = "10/05/2019"
 
 import logging
 import numpy
@@ -56,6 +56,7 @@ from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
 from pyFAI.io import ponifile
+
 
 _logger = logging.getLogger(__name__)
 
@@ -104,6 +105,7 @@ class IntegrationProcess(object):
         self.__isValid = self._init(model)
         self.__resetZoomPolicy = None
         self.__method = None
+        self.__errorMessage = None
 
     def _init(self, model):
         self.__isValid = True
@@ -198,40 +200,46 @@ class IntegrationProcess(object):
         else:
             method2d = methods[0].method
 
-        self.__result1d = ai.integrate1d(
-            method=method1d,
-            data=self.__image,
-            npt=self.__nPointsRadial,
-            unit=self.__radialUnit,
-            mask=self.__mask,
-            polarization_factor=self.__polarizationFactor)
+        try:
+            self.__result1d = ai.integrate1d(
+                method=method1d,
+                data=self.__image,
+                npt=self.__nPointsRadial,
+                unit=self.__radialUnit,
+                mask=self.__mask,
+                polarization_factor=self.__polarizationFactor)
 
-        self.__result2d = ai.integrate2d(
-            method=method2d,
-            data=self.__image,
-            npt_rad=self.__nPointsRadial,
-            npt_azim=self.__nPointsAzimuthal,
-            unit=self.__radialUnit,
-            mask=self.__mask,
-            polarization_factor=self.__polarizationFactor)
+            self.__result2d = ai.integrate2d(
+                method=method2d,
+                data=self.__image,
+                npt_rad=self.__nPointsRadial,
+                npt_azim=self.__nPointsAzimuthal,
+                unit=self.__radialUnit,
+                mask=self.__mask,
+                polarization_factor=self.__polarizationFactor)
 
-        # Create an image masked where data exists
-        self.__resultMask2d = None
-        if self.__mask is not None:
-            if self.__mask.shape == self.__image.shape:
-                maskData = numpy.ones(shape=self.__image.shape, dtype=numpy.float32)
-                maskData[self.__mask == 0] = float("NaN")
+            # Create an image masked where data exists
+            self.__resultMask2d = None
+            if self.__mask is not None:
+                if self.__mask.shape == self.__image.shape:
+                    maskData = numpy.ones(shape=self.__image.shape, dtype=numpy.float32)
+                    maskData[self.__mask == 0] = float("NaN")
 
-                if self.__displayMask:
-                    self.__resultMask2d = ai.integrate2d(
-                        method=method2d,
-                        data=maskData,
-                        npt_rad=self.__nPointsRadial,
-                        npt_azim=self.__nPointsAzimuthal,
-                        unit=self.__radialUnit,
-                        polarization_factor=self.__polarizationFactor)
-            else:
-                _logger.warning("Inconsistency between image and mask sizes. %s != %s", self.__image.shape, self.__mask.shape)
+                    if self.__displayMask:
+                        self.__resultMask2d = ai.integrate2d(
+                            method=method2d,
+                            data=maskData,
+                            npt_rad=self.__nPointsRadial,
+                            npt_azim=self.__nPointsAzimuthal,
+                            unit=self.__radialUnit,
+                            polarization_factor=self.__polarizationFactor)
+                else:
+                    _logger.warning("Inconsistency between image and mask sizes. %s != %s", self.__image.shape, self.__mask.shape)
+        except Exception as e:
+            _logger.debug("Error while integrating", exc_info=True)
+            self.__errorMessage = e
+            # TODO: Could be nice to  compute anyway other content (directDist...)
+            return
 
         try:
             self.__directDist = ai.getFit2D()["directDist"]
@@ -246,9 +254,11 @@ class IntegrationProcess(object):
             try:
                 rings = unitutils.from2ThRad(rings, self.__radialUnit, self.__wavelength, self.__directDist)
             except ValueError:
-                message = "Convertion to unit %s not supported. Ring marks ignored."
+                message = "Convertion to unit %s not supported. Ring locations ignored."
                 _logger.warning(message, self.__radialUnit)
+                self.__errorMessage = message % self.__radialUnit
                 rings = []
+
             # Filter the rings which are not part of the result
             minAngle, maxAngle = self.__result1d.radial[0], self.__result1d.radial[-1]
             rings = [(i, angle) for i, angle in enumerate(rings) if minAngle <= angle <= maxAngle]
@@ -265,6 +275,9 @@ class IntegrationProcess(object):
         :rtype: List
         """
         return self.__rings
+
+    def errorMessage(self):
+        return self.__errorMessage
 
     def result1d(self):
         return self.__result1d
@@ -695,6 +708,22 @@ class IntegrationPlot(qt.QFrame):
                 self.__plot1d.removeMarker(item.getLegend())
                 self.__plot2d.removeMarker(item.getLegend())
         self.__ringItems = {}
+        self.__availableRings = []
+
+    def clear(self):
+        self.__clearRings()
+        try:
+            self.__plot1d.remove("result1d", "histogram")
+        except Exception:
+            pass
+        try:
+            self.__plot2d.removeImage("integrated_mask")
+        except Exception:
+            pass
+        try:
+            self.__plot2d.removeImage("integrated_data")
+        except Exception:
+            pass
 
     def setIntegrationProcess(self, integrationProcess):
         """
@@ -837,6 +866,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self.initNextStep()
 
         self._methodLabel.setLabelTemplate("{split}")
+        self._warning.setVisible(False)
 
         self.__integrationUpToDate = True
         self.__integrationResetZoomPolicy = None
@@ -949,6 +979,18 @@ class IntegrationTask(AbstractCalibrationTask):
         qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
 
     def __updateGUIWithIntegrationResult(self, integrationProcess):
+        error = integrationProcess.errorMessage()
+        if isinstance(error, Exception):
+            self._plot.clear()
+            MessageBox.exception(self, "Internal error while integrating", error, None)
+            self._warning.setVisible(False)
+            return
+
+        if error is not None:
+            self._warning.setText(error)
+            self._warning.setVisible(True)
+        else:
+            self._warning.setVisible(False)
         self._plot.setIntegrationProcess(integrationProcess)
 
     def _updateModel(self, model):
