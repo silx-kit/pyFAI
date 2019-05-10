@@ -109,6 +109,9 @@ class GeometryRefinementContext(object):
             chi2 = self.__geoRef.chi2_wavelength(param)
         return chi2
 
+    def guess_poni(self):
+        self.__geoRef.guess_poni(self.__fixed)
+
     def refine(self, maxiter):
         attrs = ["wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
         for name in attrs:

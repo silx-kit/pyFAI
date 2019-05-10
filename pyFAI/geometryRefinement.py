@@ -146,7 +146,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._wavelength_min = 1e-15
         self._wavelength_max = 100.e-10
 
-    def guess_poni(self):
+    def guess_poni(self, fixed=None):
         """PONI can be guessed by the centroid of the ring with lowest 2Theta
 
         It may try to fit an ellipse and sometimes it works
@@ -194,15 +194,35 @@ class GeometryRefinement(AzimuthalIntegrator):
                     worked = False
                 else:
                     worked = True
-                    self.dist = dist
-                    self.poni1 = poni1
-                    self.poni2 = poni2
-                    self.rot1 = rot1
-                    self.rot2 = rot2
-                    self.rot3 = rot3
+                    self.update_values(dist=dist, poni1=poni1, poni2=poni2,
+                                       rot1=rot1, rot2=rot2, rot3=rot3,
+                                       fixed=fixed)
         if not worked:
-            self.poni1 = smallRing_in_m[0].sum() / nbpt
-            self.poni2 = smallRing_in_m[1].sum() / nbpt
+            poni1 = smallRing_in_m[0].sum() / nbpt
+            poni2 = smallRing_in_m[1].sum() / nbpt
+            self.update_values(poni1=poni1, poni2=poni2, fixed=fixed)
+
+    def update_values(self, dist=None, wavelength=None, poni1=None, poni2=None,
+                      rot1=None, rot2=None, rot3=None, fixed=None):
+        """Update values taking care of fixed parameters.
+        """
+        # TODO: Take care of ranges too
+        if fixed is None:
+            fixed = set([])
+        if dist is not None and "dist" not in fixed:
+            self.dist = dist
+        if wavelength is not None and "wavelength" not in fixed:
+            self.wavelength = wavelength
+        if poni1 is not None and "poni1" not in fixed:
+            self.poni1 = poni1
+        if poni2 is not None and "poni2" not in fixed:
+            self.poni2 = poni2
+        if rot1 is not None and "rot1" not in fixed:
+            self.rot1 = rot1
+        if rot2 is not None and "rot2" not in fixed:
+            self.rot2 = rot2
+        if rot3 is not None and "rot3" not in fixed:
+            self.rot3 = rot3
 
     def set_tolerance(self, value=10):
         """
