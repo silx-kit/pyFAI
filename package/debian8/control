@@ -95,7 +95,7 @@ Depends: ${misc:Depends},
          python-matplotlib,
          python-enum34,
          python-scipy,
-         python-silx (>=0.8)
+         python-silx (>=0.10)
 Recommends: python-h5py,
             python-pyopencl,
             python-qt4 | python-pyside
@@ -170,7 +170,7 @@ Depends: ${misc:Depends},
          python3-pil,
          python3-matplotlib,
          python3-scipy,
-         python3-silx (>=0.8)
+         python3-silx (>=0.10)
 Recommends: python3-pyopencl,
             python3-pyqt4 | python3-pyside
 Suggests: python3-h5py

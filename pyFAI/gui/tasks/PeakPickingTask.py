@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/04/2019"
+__date__ = "07/05/2019"
 
 import logging
 import numpy
@@ -57,6 +57,7 @@ from ..utils import validators
 from ..helper import model_transform
 from ..widgets.ColoredCheckBox import ColoredCheckBox
 from ..widgets.AdvancedSpinBox import AdvancedSpinBox
+from ..dialog import MessageBox
 
 
 _logger = logging.getLogger(__name__)
@@ -1127,9 +1128,7 @@ class PeakPickingTask(AbstractCalibrationTask):
                 self.__undoStack.push(command)
                 command.setRedoInhibited(False)
             except Exception as e:
-                _logger.error(str(e))
-                _logger.error("Backtrace", exc_info=True)
-                # FIXME Display error dialog
+                MessageBox.exception(self, "Error while loading peaks", e, _logger)
             except KeyboardInterrupt:
                 raise
 
@@ -1141,15 +1140,16 @@ class PeakPickingTask(AbstractCalibrationTask):
             return
 
         filename = dialog.selectedFiles()[0]
-        if not os.path.exists(filename) and not filename.endswith(".npt"):
+        nameFilter = dialog.selectedNameFilter()
+        isNptFilter = ".npt" in nameFilter
+
+        if isNptFilter and not filename.endswith(".npt"):
             filename = filename + ".npt"
         try:
             controlPoints = model_transform.createControlPoints(self.model())
             controlPoints.save(filename)
         except Exception as e:
-            _logger.error(str(e))
-            _logger.error("Backtrace", exc_info=True)
-            # FIXME Display error dialog
+            MessageBox.exception(self, "Error while saving peaks", e, _logger)
         except KeyboardInterrupt:
             raise
 

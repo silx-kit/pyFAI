@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/11/2018"
+__date__ = "10/05/2019"
 
 from .AbstractModel import AbstractModel
 from .ConstraintModel import ConstraintModel
@@ -137,3 +137,8 @@ class GeometryConstraintsModel(AbstractModel):
         self.rotation2().fillDefault(other.rotation2())
         self.rotation3().fillDefault(other.rotation3())
         self.unlockSignals()
+
+    def __str__(self):
+        template = "GeometryConstraintsModel(d:%s, w:%s, p1:%s, p2:%s, r1:%s, r2:%s, r3:%s)"
+        data = self.distance(), self.wavelength(), self.poni1(), self.poni2(), self.rotation1(), self.rotation2(), self.rotation3()
+        return template % data

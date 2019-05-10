@@ -28,12 +28,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/03/2019"
+__date__ = "09/05/2019"
 __status__ = "production"
 
 import logging
 import os
 import sys
+import datetime
 from argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
@@ -45,6 +46,7 @@ import pyFAI.resources
 import pyFAI.calibrant
 import pyFAI.detectors
 import pyFAI.io.image
+from pyFAI.io.ponifile import PoniFile
 
 
 try:
@@ -73,6 +75,10 @@ def configure_parser_arguments(parser):
                         action="store_true",
                         default=False,
                         help='Set logging system in debug mode')
+    parser.add_argument("--opengl", "--gl", dest="opengl",
+                        action="store_true",
+                        default=False,
+                        help="Enable OpenGL rendering (else matplotlib is used)")
 
     # Settings
     parser.add_argument("-c", "--calibrant", dest="spacing", metavar="FILE",
@@ -118,7 +124,7 @@ def configure_parser_arguments(parser):
                         default=None)
 
     # Geometry
-    parser.add_argument("-l", "--distance", dest="distance", type=float,
+    parser.add_argument("-l", "--distance", dest="dist_mm", type=float,
                         help="sample-detector distance in millimeter. Default: 100mm", default=None)
     parser.add_argument("--dist", dest="dist", type=float,
                         help="sample-detector distance in meter. Default: 0.1m", default=None)
@@ -287,36 +293,15 @@ def displayExceptionBox(message, exc_info):
     :param Union[tuple,Exception] exc_info: An exception or the output of
         exc_info.
     """
-    logger.error(message, exc_info=True)
-
-    if isinstance(exc_info, BaseException):
-        exc_info = (type(exc_info), exc_info, exc_info.__traceback__)
-    elif not isinstance(exc_info, tuple):
-        exc_info = sys.exc_info()
-
-    if exc_info[2] is not None:
-        # Mimic the syntax of the default Python exception
-        import traceback
-        detailed = (''.join(traceback.format_tb(exc_info[2])))
-        detailed = '{1}\nTraceback (most recent call last):\n{2}{0}: {1}'.format(exc_info[0].__name__, exc_info[1], detailed)
-    else:
-        # There is no backtrace
-        detailed = '{0}: {1}'.format(exc_info[0].__name__, exc_info[1])
-
-    from silx.gui import qt
-    msg = qt.QMessageBox()
-    msg.setWindowTitle(message)
-    msg.setIcon(qt.QMessageBox.Critical)
-    msg.setInformativeText("%s" % exc_info[1])
-    msg.setDetailedText(detailed)
-
-    msg.raise_()
-    msg.exec_()
+    from pyFAI.gui.dialog import MessageBox
+    MessageBox.exception(None, message, exc_info, logger)
 
 
 def setup_model(model, options):
     """
     Setup the model using options from the command line.
+
+    :param pyFAI.gui.model.CalibrationModel model: Model of the application
     """
     args = options.args
 
@@ -324,9 +309,6 @@ def setup_model(model, options):
     from pyFAI.gui.utils import units
     # TODO: This should be removed
     import pyFAI.gui.cli_calibration
-
-    if options.debug:
-        logging.root.setLevel(logging.DEBUG)
 
     # Settings
     settings = model.experimentSettingsModel()
@@ -358,7 +340,7 @@ def setup_model(model, options):
 
     if options.detector_name:
         try:
-            detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name, args)
+            detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name)
             if options.pixel:
                 logger.warning("Detector model already specified. Pixel size argument ignored.")
         except Exception as e:
@@ -380,6 +362,30 @@ def setup_model(model, options):
                 logger.warning("Spline file not supported with this kind of detector. Argument ignored.")
         except Exception as e:
             displayExceptionBox("Error while loading the spline file", e)
+
+    geometryFromPoni = None
+    if options.poni:
+        if detector is None:
+            poniFile = PoniFile()
+            poniFile.read_from_file(options.poni)
+            detector = poniFile.detector
+
+            from pyFAI.gui.model.GeometryModel import GeometryModel
+            geometryFromPoni = GeometryModel()
+            geometryFromPoni.distance().setValue(poniFile.dist)
+            geometryFromPoni.poni1().setValue(poniFile.poni1)
+            geometryFromPoni.poni2().setValue(poniFile.poni2)
+            geometryFromPoni.rotation1().setValue(poniFile.rot1)
+            geometryFromPoni.rotation2().setValue(poniFile.rot2)
+            geometryFromPoni.rotation3().setValue(poniFile.rot3)
+            geometryFromPoni.wavelength().setValue(poniFile.wavelength)
+
+            geometryHistory = model.geometryHistoryModel()
+            now = datetime.datetime.now()
+            geometryHistory.appendGeometry("Ponifile", now, geometryFromPoni, None)
+
+        else:
+            logging.warning("Detector redefined in the command line. Detector from --poni argument ignored.")
 
     settings.detectorModel().setDetector(detector)
 
@@ -411,20 +417,29 @@ def setup_model(model, options):
     # Geometry
     # FIXME it will not be used cause the fitted geometry will be overwrited
     geometry = model.fittedGeometry()
-    if options.distance:
-        geometry.distance().setValue(1e-3 * options.distance)
-    if options.dist:
-        geometry.distance().setValue(options.dist)
-    if options.dist:
-        geometry.poni1().setValue(options.poni1)
-    if options.dist:
-        geometry.poni2().setValue(options.poni2)
-    if options.dist:
-        geometry.rotation1().setValue(options.rot1)
-    if options.dist:
-        geometry.rotation2().setValue(options.rot2)
-    if options.dist:
-        geometry.rotation3().setValue(options.rot3)
+    if (options.dist_mm is not None or options.dist is not None or
+            options.poni1 is not None or options.poni2 is not None or
+            options.rot1 is not None or options.rot2 is not None or
+            options.rot3 is not None):
+        if geometryFromPoni is not None:
+            logging.warning("Geometry redefined in the command line. Geometry from --poni argument was stored in the history.")
+        if options.dist_mm is not None:
+            geometry.distance().setValue(1e-3 * options.dist_mm)
+        if options.dist is not None:
+            geometry.distance().setValue(options.dist)
+        if options.poni1 is not None:
+            geometry.poni1().setValue(options.poni1)
+        if options.poni2 is not None:
+            geometry.poni2().setValue(options.poni2)
+        if options.rot1 is not None:
+            geometry.rotation1().setValue(options.rot1)
+        if options.rot2 is not None:
+            geometry.rotation2().setValue(options.rot2)
+        if options.rot3 is not None:
+            geometry.rotation3().setValue(options.rot3)
+    else:
+        if geometryFromPoni is not None:
+            geometry.setFrom(geometryFromPoni)
 
     # Constraints
     constraints = model.geometryConstraintsModel()
@@ -479,9 +494,6 @@ def setup_model(model, options):
     if options.pixel:
         logger.error("pixel option not supported")
 
-    # FIXME poni file should be supported
-    if options.poni:
-        logger.error("poni option not supported")
     if options.background:
         logger.error("background option not supported")
     if options.dark:
@@ -538,8 +550,15 @@ def main():
     # --help must also work without Qt
     options = parse_options()
 
+    if options.debug:
+        logging.root.setLevel(logging.DEBUG)
+
     # Then we can load Qt
+    import silx
     from silx.gui import qt
+    if options.opengl:
+        silx.config.DEFAULT_PLOT_BACKEND = "opengl"
+
     # Make sure matplotlib is loaded first by silx
     import silx.gui.plot.matplotlib
     from pyFAI.gui.CalibrationWindow import CalibrationWindow

@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2018"
+__date__ = "09/05/2019"
 
 
 import unittest
@@ -103,18 +103,18 @@ class TestSolidAngle(unittest.TestCase):
         tth, I_nogood = ai.integrate1d(data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=False)
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_nogood - I_fit2d).max()
-        I = abs(I_nogood - I_fit2d).mean()
+        mean_I = abs(I_nogood - I_fit2d).mean()
         self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
         self.assertTrue(delta_I > 100, 'Error on (wrong) I are large: %s >100' % delta_I)
-        self.assertTrue(I > 2, 'Error on (wrong) I are large: %s >2' % I)
+        self.assertTrue(mean_I > 2, 'Error on (wrong) I are large: %s >2' % mean_I)
 
         tth, I_good = ai.integrate1d(data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=3)
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_good - I_fit2d).max()
-        I = abs(I_good - I_fit2d).mean()
+        mean_I = abs(I_good - I_fit2d).mean()
         self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
         self.assertTrue(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
-        self.assertTrue(I < 0.05, 'Error on (good) I are small: %s <0.05' % I)
+        self.assertTrue(mean_I < 0.05, 'Error on (good) I are small: %s <0.05' % mean_I)
         ai.reset()
 
     def test_nonflat_center(self):
@@ -416,12 +416,12 @@ class TestGeometry(utilstest.ParametricTestCase):
         pixels = {"detector": "Pilatus100k",
                   "wavelength": 1e-10}
         geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
-                      {'dist': 1, 'rot1':-1, 'rot2': 1, 'rot3': 1},
-                      {'dist': 1, 'rot1':-.2, 'rot2': 1, 'rot3':-.1},
-                      {'dist': 1, 'rot1':-1, 'rot2':-.2, 'rot3': 1},
+                      {'dist': 1, 'rot1': -1, 'rot2': 1, 'rot3': 1},
+                      {'dist': 1, 'rot1': -.2, 'rot2': 1, 'rot3': -.1},
+                      {'dist': 1, 'rot1': -1, 'rot2': -.2, 'rot3': 1},
                       {'dist': 1, 'rot1': 1, 'rot2': 5, 'rot3': .4},
-                      {'dist': 1, 'rot1':-1.2, 'rot2': 1, 'rot3': 1},
-                      {'dist': 100, 'rot1':-2, 'rot2': 2, 'rot3': 1},
+                      {'dist': 1, 'rot1': -1.2, 'rot2': 1, 'rot3': 1},
+                      {'dist': 100, 'rot1': -2, 'rot2': 2, 'rot3': 1},
                       ]
         for g in geometries:
             g.update(pixels)

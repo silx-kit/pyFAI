@@ -31,8 +31,8 @@
 * calculating the geometry, i.e. the position in the detector space of each pixel of the detector
 * manages caches to store intermediate results
 
-NOTA: The Geometry class is not a "transformation class" which would take a 
-detector and transform it. It is rather a description of the experimental setup.  
+NOTA: The Geometry class is not a "transformation class" which would take a
+detector and transform it. It is rather a description of the experimental setup.
 
 """
 
@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/04/2019"
+__date__ = "09/05/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -81,13 +81,13 @@ PolarizationDescription = namedtuple("PolarizationDescription",
 
 class Geometry(object):
     """This class is the parent-class of azimuthal integrator.
-    
-    This class contains a detector (using composition) which provides the 
+
+    This class contains a detector (using composition) which provides the
     position of all pixels, or only a limited set of pixel indices.
-    The Geometry class is responsible for translating/rotating those pixel to 
-    their position in reference to the sample position.  
+    The Geometry class is responsible for translating/rotating those pixel to
+    their position in reference to the sample position.
     The description of the experimental setup is inspired by the work of P. Boesecke
-    
+
     Detector is assumed to be corrected from "raster orientation" effect.
     It is not addressed here but rather in the Detector object or at read time.
     Considering there is no tilt:
@@ -1722,7 +1722,7 @@ class Geometry(object):
             shape = self.detector.max_shape
         try:
             ttha = self.__getattribute__(dim1_unit.center)(shape)
-        except:
+        except Exception:
             raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
         calcimage = numpy.interp(ttha.ravel(), tth, I)
@@ -1776,7 +1776,7 @@ class Geometry(object):
             shape = self.detector.max_shape
         try:
             ttha = self.__getattribute__(dim1_unit.center)(shape)
-        except:
+        except Exception:
             raise RuntimeError("in pyFAI.Geometry.calcfrom2d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
         chia = self.chiArray(shape)

@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "18/04/2019"
+__date__ = "09/05/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -905,7 +905,7 @@ class OCL_Histogram1d(OpenclProcessing):
 
     def compile_kernels(self, kernel_file=None):
         """Call the OpenCL compiler
-        
+
         :param kernel_file: path to the kernel (by default use the one in the resources directory)
         """
         # concatenate all needed source files into a single openCL module
@@ -921,7 +921,17 @@ class OCL_Histogram1d(OpenclProcessing):
                           (self.bins, self.size, self.BLOCK_SIZE)
         if default_compiler_options:
             compile_options += " " + default_compiler_options
-        OpenclProcessing.compile_kernels(self, kernels, compile_options)
+        try:
+            OpenclProcessing.compile_kernels(self, kernels, compile_options)
+        except Exception as error:
+            # This error may be related to issue #1219. Provides an ugly work around.
+            if "cl_khr_int64_base_atomics" in self.ctx.devices[0].extensions:
+                # Maybe this extension actually does not existe!
+                OpenclProcessing.compile_kernels(self, ["pyfai:openCL/deactivate_atomic64.cl"] + kernels, compile_options)
+                logger.warning("Your OpenCL compiler wrongly claims it support 64-bit atomics. Degrading to 32 bits atomics!")
+            else:
+                logger.error("Failed to compile kernel ! Check the compiler. %s", error)
+
         for kernel_name, kernel in self.kernels.get_kernels().items():
             wg = kernel_workgroup_size(self.program, kernel)
             self.workgroup_size[kernel_name] = (min(wg, self.BLOCK_SIZE),)  # this is a tuple
@@ -1037,11 +1047,11 @@ class OCL_Histogram1d(OpenclProcessing):
 
         .. math::
 
-            Signal= (data - dark) 
+            Signal= (data - dark)
             Variance= (variance + dark_variance)
             Normalization= (normalization_factor * flat * solidangle * polarization * absorption)
             Count= 1 per valid pixel
-            
+
         Integration is performed using the histograms (based on atomic adds
 
         :param dark: array of same shape as data for pre-processing
@@ -1062,7 +1072,7 @@ class OCL_Histogram1d(OpenclProcessing):
         :param bin_range: provide lower and upper bound for position
         :param histo_signal: destination array or pyopencl array for sum of signals
         :param histo_normalization: destination array or pyopencl array for sum of normalization
-        :param histo_count: destination array or pyopencl array for counting pixels 
+        :param histo_count: destination array or pyopencl array for counting pixels
         :param intensity: destination PyOpenCL array for integrated intensity
         :param error: destination PyOpenCL array for standart deviation
         :return: bin_positions, averaged data, histogram of signal, histogram of variance, histogram of normalization, count of pixels
@@ -1281,7 +1291,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
         :param bins_azimuthal: number of bins on which to histogram is calculated in azimuthal direction
         :param checksum_radial: pre-calculated checksum of the position array to prevent re-calculating it :)
         :param checksum_azimuthal: pre-calculated checksum of the position array to prevent re-calculating it :)
-        
+
         :param empty: value to be assigned to bins without contribution from any pixel
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
@@ -1423,11 +1433,11 @@ class OCL_Histogram2d(OCL_Histogram1d):
 
         .. math::
 
-            Signal= (data - dark) 
+            Signal= (data - dark)
             Variance= (variance + dark_variance)
             Normalization= (normalization_factor * flat * solidangle * polarization * absorption)
             Count= 1 per valid pixel
-            
+
         Integration is performed using the histograms (based on atomic adds
 
         :param dark: array of same shape as data for pre-processing
@@ -1448,7 +1458,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
         :param bin_range: provide lower and upper bound for position
         :param histo_signal: destination array or pyopencl array for sum of signals
         :param histo_normalization: destination array or pyopencl array for sum of normalization
-        :param histo_count: destination array or pyopencl array for counting pixels 
+        :param histo_count: destination array or pyopencl array for counting pixels
         :param intensity: destination PyOpenCL array for integrated intensity
         :param error: destination PyOpenCL array for standart deviation
         :return: bin_positions, averaged data, histogram of signal, histogram of variance, histogram of normalization, count of pixels

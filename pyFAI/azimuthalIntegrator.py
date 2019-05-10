@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2019"
+__date__ = "10/05/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -237,9 +237,9 @@ if ocl:
                 IntegrationMethod(1, "full", "CSR", "OpenCL",
                                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
                                   target=ids, target_name=name[0], target_type=name[1])
-                IntegrationMethod(2, "full", "CSR", "OpenCL",
-                                  class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
-                                  target=ids, target_name=name[0], target_type=name[1])
+                # IntegrationMethod(2, "full", "CSR", "OpenCL",
+                #                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
+                #                   target=ids, target_name=name[0], target_type=name[1])
 
     try:
         from .opencl import azim_lut as ocl_azim_lut  # IGNORE:F0401

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2019"
+__date__ = "07/05/2019"
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
@@ -44,7 +44,6 @@ class ExperimentSettingsModel(AbstractModel):
         self.__image = ImageFromFilenameModel()
         self.__mask = ImageFromFilenameModel()
         self.__maskedImage = MaskedImageModel(None, self.__image, self.__mask)
-        self.__dark = ImageFromFilenameModel()
         self.__isDetectorMask = True
 
         self.__wavelength = DataModel()
@@ -56,8 +55,6 @@ class ExperimentSettingsModel(AbstractModel):
         self.__image.filenameChanged.connect(self.wasChanged)
         self.__mask.changed.connect(self.wasChanged)
         self.__mask.filenameChanged.connect(self.wasChanged)
-        self.__dark.changed.connect(self.wasChanged)
-        self.__dark.filenameChanged.connect(self.wasChanged)
         self.__wavelength.changed.connect(self.wasChanged)
         self.__polarizationFactor.changed.connect(self.wasChanged)
         self.__calibrantModel.changed.connect(self.wasChanged)
@@ -136,9 +133,6 @@ class ExperimentSettingsModel(AbstractModel):
 
     def maskedImage(self):
         return self.__maskedImage
-
-    def dark(self):
-        return self.__dark
 
     def wavelength(self):
         return self.__wavelength

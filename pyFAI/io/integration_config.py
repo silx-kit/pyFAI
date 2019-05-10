@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2019"
+__date__ = "09/05/2019"
 __docformat__ = 'restructuredtext'
 
 
@@ -153,7 +153,7 @@ def _patch_v2_to_v3(config):
     :param dict config: Dictionary reworked inplace.
     """
     old_method = config.pop("method")
-    method = method_registry.IntegrationMethod.parse_old_method(old_method)
+    method = method_registry.Method.parsed(old_method)
     config["method"] = method.split, method.algo, method.impl
     config["opencl_device"] = method.target
 
@@ -226,8 +226,8 @@ class ConfigurationReader(object):
         if method is None:
             method = method_registry.Method(dim, "*", "*", "*", target=None)
         elif isinstance(method, six.string_types):
-            method = method_registry.IntegrationMethod.parse_old_method(old_method=method)
-            method = method_registry.Method(dim, method.split, method.algo, method.impl, target=target)
+            method = method_registry.Method.parsed(method)
+            method = method.fixed(dim=dim, target=target)
         elif isinstance(method, (list, tuple)):
             if len(method) != 3:
                 raise TypeError("Method size %s unsupported." % len(method))
