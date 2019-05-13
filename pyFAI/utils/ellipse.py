@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2019"
+__date__ = "13/05/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -102,10 +102,9 @@ def fit_ellipse(pty, ptx, _allow_delta=True):
 
     a2 = up / down1
     b2 = up / down2
+    if a2 < 0 or b2 < 0:
+        raise ValueError("Ellipse can't be fitted")
 
-    res1 = numpy.sqrt(a2) if a2 > 0 else 0
-    res2 = numpy.sqrt(b2) if b2 > 0 else 0
-    if res1 == 0 or res2 == 0:
-        _logger.error("Numerical unconsistancy in ellipse fitting... please investigate")
-        _logger.error("Data: pty, ptx, up, down1, down2, a2, b2 -> %s", (pty, ptx, up, down1, down2, a2, b2))
+    res1 = numpy.sqrt(a2)
+    res2 = numpy.sqrt(b2)
     return Ellipse(y0, x0, angle, max(res1, res2), min(res1, res2))
