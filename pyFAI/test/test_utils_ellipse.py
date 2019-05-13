@@ -97,14 +97,12 @@ class TestEllipse(unittest.TestCase):
         self.assertAlmostEqual(ellipse.half_short_axis, 20, places=5)
 
     def test_centered_to_zero(self):
-        self.skipTest("Unexpected result")
-        # LinAlgError exception
         angles = numpy.linspace(0, numpy.pi, 10)
         pty = numpy.sin(angles) * 20
         ptx = numpy.cos(angles) * 20
         ellipse = ellipse_mdl.fit_ellipse(pty, ptx)
-        self.assertAlmostEqual(ellipse.center_1, 10, places=5)
-        self.assertAlmostEqual(ellipse.center_2, 10, places=5)
+        self.assertAlmostEqual(ellipse.center_1, 0, places=5)
+        self.assertAlmostEqual(ellipse.center_2, 0, places=5)
         self.assertAlmostEqual(ellipse.half_long_axis, 20, places=5)
         self.assertAlmostEqual(ellipse.half_short_axis, 20, places=5)
 

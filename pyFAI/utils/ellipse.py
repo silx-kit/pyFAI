@@ -51,7 +51,7 @@ _logger = logging.getLogger(__name__)
 Ellipse = namedtuple("Ellipse", ["center_1", "center_2", "angle", "half_long_axis", "half_short_axis"])
 
 
-def fit_ellipse(pty, ptx):
+def fit_ellipse(pty, ptx, _allow_delta=True):
     """Fit an ellipse
 
     inspired from
@@ -59,15 +59,27 @@ def fit_ellipse(pty, ptx):
 
     :param pty: point coordinates in the slow dimension (y)
     :param ptx: point coordinates in the fast dimension (x)
+    :raise ValueError: If the ellipse can't be fitted
     """
     x = ptx[:, numpy.newaxis]
     y = pty[:, numpy.newaxis]
     D = numpy.hstack((x * x, x * y, y * y, x, y, numpy.ones_like(x)))
     S = numpy.dot(D.T, D)
+    try:
+        inv = numpy.linalg.inv(S)
+    except numpy.linalg.LinAlgError:
+        if not _allow_delta:
+            raise ValueError("Ellipse can't be fitted")
+        # Try to do the same with a delta
+        delta = 100
+        ellipse = fit_ellipse(pty + delta, ptx + delta, _allow_delta=False)
+        y0, x0, angle, wlong, wshort = ellipse
+        return Ellipse(y0 - delta, x0 - delta, angle, wlong, wshort)
+
     C = numpy.zeros([6, 6])
     C[0, 2] = C[2, 0] = 2
     C[1, 1] = -1
-    E, V = numpy.linalg.eig(numpy.dot(numpy.linalg.inv(S), C))
+    E, V = numpy.linalg.eig(numpy.dot(inv, C))
     n = numpy.argmax(numpy.abs(E))
     res = V[:, n]
     b, c, d, f, g, a = res[1] / 2, res[2], res[3] / 2, res[4] / 2, res[5], res[0]
