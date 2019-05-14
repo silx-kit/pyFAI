@@ -909,15 +909,19 @@ class GeometryTask(AbstractCalibrationTask):
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
         if calibration is None:
+            self.__calibrationState.reset()
             return
         if not calibration.isValid():
             self.__showDialogCalibrationDiverge()
+            self.__calibrationState.reset()
             return
         geometry = self.model().fittedGeometry()
         if geometry.isValid():
             resetResidual = self.__fitting is not True
             calibration.fromGeometryModel(geometry, resetResidual=resetResidual)
             self.__calibrationState.update(calibration)
+        else:
+            self.__calibrationState.reset()
 
         geoRef = calibration.getPyfaiGeometry()
         self.__plot.markerManager().updatePhysicalMarkerPixels(geoRef)
