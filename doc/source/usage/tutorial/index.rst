@@ -32,4 +32,5 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Inpainting/Inpainting
    ThickDetector/index
    Variance/Variance
+   Ellipse/ellipse
    Soleil/index
