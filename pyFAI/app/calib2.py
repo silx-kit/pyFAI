@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019"
+__date__ = "14/05/2019"
 __status__ = "production"
 
 import logging
@@ -365,27 +365,29 @@ def setup_model(model, options):
 
     geometryFromPoni = None
     if options.poni:
-        if detector is None:
-            poniFile = PoniFile()
-            poniFile.read_from_file(options.poni)
-            detector = poniFile.detector
+        if os.path.exists(options.poni):
+            if detector is None:
+                poniFile = PoniFile()
+                poniFile.read_from_file(options.poni)
+                detector = poniFile.detector
 
-            from pyFAI.gui.model.GeometryModel import GeometryModel
-            geometryFromPoni = GeometryModel()
-            geometryFromPoni.distance().setValue(poniFile.dist)
-            geometryFromPoni.poni1().setValue(poniFile.poni1)
-            geometryFromPoni.poni2().setValue(poniFile.poni2)
-            geometryFromPoni.rotation1().setValue(poniFile.rot1)
-            geometryFromPoni.rotation2().setValue(poniFile.rot2)
-            geometryFromPoni.rotation3().setValue(poniFile.rot3)
-            geometryFromPoni.wavelength().setValue(poniFile.wavelength)
+                from pyFAI.gui.model.GeometryModel import GeometryModel
+                geometryFromPoni = GeometryModel()
+                geometryFromPoni.distance().setValue(poniFile.dist)
+                geometryFromPoni.poni1().setValue(poniFile.poni1)
+                geometryFromPoni.poni2().setValue(poniFile.poni2)
+                geometryFromPoni.rotation1().setValue(poniFile.rot1)
+                geometryFromPoni.rotation2().setValue(poniFile.rot2)
+                geometryFromPoni.rotation3().setValue(poniFile.rot3)
+                geometryFromPoni.wavelength().setValue(poniFile.wavelength)
 
-            geometryHistory = model.geometryHistoryModel()
-            now = datetime.datetime.now()
-            geometryHistory.appendGeometry("Ponifile", now, geometryFromPoni, None)
-
+                geometryHistory = model.geometryHistoryModel()
+                now = datetime.datetime.now()
+                geometryHistory.appendGeometry("Ponifile", now, geometryFromPoni, None)
+            else:
+                logger.warning("Detector redefined in the command line. Detector from --poni argument ignored.")
         else:
-            logger.warning("Detector redefined in the command line. Detector from --poni argument ignored.")
+            logger.warning("PONI file '%s' do not exists. --poni option ignored.", options.poni)
 
     settings.detectorModel().setDetector(detector)
 
