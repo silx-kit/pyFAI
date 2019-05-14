@@ -385,7 +385,7 @@ def setup_model(model, options):
             geometryHistory.appendGeometry("Ponifile", now, geometryFromPoni, None)
 
         else:
-            logging.warning("Detector redefined in the command line. Detector from --poni argument ignored.")
+            logger.warning("Detector redefined in the command line. Detector from --poni argument ignored.")
 
     settings.detectorModel().setDetector(detector)
 
@@ -422,7 +422,7 @@ def setup_model(model, options):
             options.rot1 is not None or options.rot2 is not None or
             options.rot3 is not None):
         if geometryFromPoni is not None:
-            logging.warning("Geometry redefined in the command line. Geometry from --poni argument was stored in the history.")
+            logger.warning("Geometry redefined in the command line. Geometry from --poni argument was stored in the history.")
         if options.dist_mm is not None:
             geometry.distance().setValue(1e-3 * options.dist_mm)
         if options.dist is not None:
