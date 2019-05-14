@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/05/2019"
+__date__ = "14/05/2019"
 
 import logging
 import numpy
@@ -1018,10 +1018,18 @@ class IntegrationTask(AbstractCalibrationTask):
     def __saveAsPoni(self):
         # FIXME test the validity of the geometry before opening the dialog
         dialog = createSaveDialog(self, "Save as PONI file", poni=True)
+        # Disable the warning as the data is append to the file
+        dialog.setOption(qt.QFileDialog.DontConfirmOverwrite, True)
+        settings = self.model().experimentSettingsModel()
+        previousPoniFile = settings.poniFile().value()
+        if previousPoniFile is not None:
+            dialog.selectFile(previousPoniFile)
+
         result = dialog.exec_()
         if not result:
             return
         filename = dialog.selectedFiles()[0]
+        settings.poniFile().setValue(filename)
         nameFilter = dialog.selectedNameFilter()
         isPoniFilter = ".poni" in nameFilter
         if isPoniFilter and not filename.endswith(".poni"):

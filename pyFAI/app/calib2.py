@@ -365,6 +365,9 @@ def setup_model(model, options):
 
     geometryFromPoni = None
     if options.poni:
+        settings.poniFile().setValue(options.poni)
+        settings.poniFile().setSynchronized(True)
+
         if os.path.exists(options.poni):
             if detector is None:
                 poniFile = PoniFile()
