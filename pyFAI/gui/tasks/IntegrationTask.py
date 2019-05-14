@@ -1011,17 +1011,24 @@ class IntegrationTask(AbstractCalibrationTask):
         experimentSettings.mask().changed.connect(self.__invalidateIntegrationNoReset)
         experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegrationNoReset)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
+        model.fittedGeometry().changed.connect(self.__fittedGeometryChanged)
         integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)
         integrationSettings.nPointsRadial().changed.connect(self.__invalidateIntegrationNoReset)
         integrationSettings.nPointsAzimuthal().changed.connect(self.__invalidateIntegrationNoReset)
+
+    def __fittedGeometryChanged(self):
+        # File have to be saved again
+        poniFile = self.model().experimentSettingsModel().poniFile()
+        with poniFile.lockContext():
+            poniFile.setSynchronized(False)
 
     def __saveAsPoni(self):
         # FIXME test the validity of the geometry before opening the dialog
         dialog = createSaveDialog(self, "Save as PONI file", poni=True)
         # Disable the warning as the data is append to the file
         dialog.setOption(qt.QFileDialog.DontConfirmOverwrite, True)
-        settings = self.model().experimentSettingsModel()
-        previousPoniFile = settings.poniFile().value()
+        poniFile = self.model().experimentSettingsModel().poniFile()
+        previousPoniFile = poniFile.value()
         if previousPoniFile is not None:
             dialog.selectFile(previousPoniFile)
 
@@ -1029,11 +1036,12 @@ class IntegrationTask(AbstractCalibrationTask):
         if not result:
             return
         filename = dialog.selectedFiles()[0]
-        settings.poniFile().setValue(filename)
         nameFilter = dialog.selectedNameFilter()
         isPoniFilter = ".poni" in nameFilter
         if isPoniFilter and not filename.endswith(".poni"):
             filename = filename + ".poni"
+        with poniFile.lockContext():
+            poniFile.setValue(filename)
 
         pyfaiGeometry = pyFAI.geometry.Geometry()
 
@@ -1054,5 +1062,8 @@ class IntegrationTask(AbstractCalibrationTask):
             writer = ponifile.PoniFile(pyfaiGeometry)
             with open(filename, "wt") as fd:
                 writer.write(fd)
+            with poniFile.lockContext():
+                poniFile.setValue(filename)
+                poniFile.setSynchronized(True)
         except Exception as e:
             MessageBox.exception(self, "Error while saving poni file", e, _logger)
