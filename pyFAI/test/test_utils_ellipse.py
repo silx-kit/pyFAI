@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2019"
+__date__ = "13/05/2019"
 
 import unittest
 import numpy
@@ -97,21 +97,27 @@ class TestEllipse(unittest.TestCase):
         self.assertAlmostEqual(ellipse.half_short_axis, 20, places=5)
 
     def test_centered_to_zero(self):
-        self.skipTest("Unexpected result")
-        # LinAlgError exception
         angles = numpy.linspace(0, numpy.pi, 10)
         pty = numpy.sin(angles) * 20
         ptx = numpy.cos(angles) * 20
         ellipse = ellipse_mdl.fit_ellipse(pty, ptx)
-        self.assertAlmostEqual(ellipse.center_1, 10, places=5)
-        self.assertAlmostEqual(ellipse.center_2, 10, places=5)
+        self.assertAlmostEqual(ellipse.center_1, 0, places=5)
+        self.assertAlmostEqual(ellipse.center_2, 0, places=5)
         self.assertAlmostEqual(ellipse.half_long_axis, 20, places=5)
         self.assertAlmostEqual(ellipse.half_short_axis, 20, places=5)
 
+    def test_line(self):
+        pty = numpy.arange(10)
+        ptx = numpy.arange(10)
+        with self.assertRaises(ValueError):
+            ellipse_mdl.fit_ellipse(pty, ptx)
+
     def test_inconsistancy(self):
+        # From real peaking
         pty = numpy.array([0.06599215, 0.06105629, 0.06963708, 0.06900191, 0.06496001, 0.06352082, 0.05923421, 0.07080027, 0.07276284, 0.07170048])
         ptx = numpy.array([0.05836343, 0.05866434, 0.05883284, 0.05872581, 0.05823667, 0.05839846, 0.0591999, 0.05907079, 0.05945377, 0.05909428])
-        _ = ellipse_mdl.fit_ellipse(pty, ptx)
+        with self.assertRaises(ValueError):
+            ellipse_mdl.fit_ellipse(pty, ptx)
 
 
 def suite():

@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2019"
+__date__ = "13/05/2019"
 __status__ = "development"
 
 import os
@@ -187,7 +187,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                 if cos_tpr * sin_tilt > 0:
                     rot1 = -rot1
                 rot3 = 0
-            except:
+            except ValueError:
                 worked = False
             else:
                 if numpy.isnan(dist + poni1 + poni2 + rot1 + rot2 + rot3):
