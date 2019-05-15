@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "04/10/2018"
+__date__ = "15/05/2019"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -40,12 +40,12 @@ import threading
 import numpy
 from . import ocl, pyopencl
 from ..ext.splitBBoxLUT import HistoBBox1d
-from . import utils
+
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-from ..utils import crc32
+from ..utils import crc32, get_cl_file
 logger = logging.getLogger(__name__)
 
 
@@ -160,10 +160,10 @@ class OCLFullSplit1d(object):
             if os.path.isfile(kernel_name):
                 kernel_file = os.path.abspath(kernel_name)
             else:
-                kernel_file = utils.get_cl_file("pyfai:openCL/" + kernel_name)
+                kernel_file = get_cl_file("pyfai:openCL/" + kernel_name)
         else:
             kernel_file = str(kernel_file)
-        kernel_src = utils.read_cl_file(kernel_file)
+        kernel_src = open(kernel_file).read()
         compile_options = "-D BINS=%i -D POS_SIZE=%i -D SIZE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % \
                           (self.bins, self.pos_size, self.size, self.workgroup_size, numpy.finfo(numpy.float32).eps)
         logger.info("Compiling file %s with options %s", kernel_file, compile_options)
