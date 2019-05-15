@@ -125,6 +125,7 @@ class AdvancedDoubleValidator(DoubleValidator):
     def __init__(self, parent=None):
         super(AdvancedDoubleValidator, self).__init__(parent=parent)
         self.__allowEmpty = False
+        self.__boundIncluded = True, True
 
     def setAllowEmpty(self, allow):
         """
@@ -135,6 +136,13 @@ class AdvancedDoubleValidator(DoubleValidator):
         :param bool allow: New state.
         """
         self.__allowEmpty = allow
+
+    def setIncludedBound(self, minBoundIncluded, maxBoundIncluded):
+        """
+        Allow the include or exclude boundary ranges. Default including both
+        boundaries.
+        """
+        self.__boundIncluded = minBoundIncluded, maxBoundIncluded
 
     def validate(self, inputText, pos):
         """
@@ -150,7 +158,21 @@ class AdvancedDoubleValidator(DoubleValidator):
                 # python API is not the same as C++ one
                 return qt.QValidator.Acceptable, inputText, pos
 
-        return super(AdvancedDoubleValidator, self).validate(inputText, pos)
+        acceptable, inputText, pos = super(AdvancedDoubleValidator, self).validate(inputText, pos)
+
+        if acceptable == qt.QValidator.Acceptable:
+            # Check boundaries
+            if self.__boundIncluded != (True, True):
+                value, isValid = self.toValue(inputText)
+                if isValid:
+                    if not self.__boundIncluded[0]:
+                        if value == self.bottom():
+                            acceptable = qt.QValidator.Intermediate
+                    if not self.__boundIncluded[1]:
+                        if value == self.top():
+                            acceptable = qt.QValidator.Intermediate
+
+        return acceptable, inputText, pos
 
     def toValue(self, text):
         """Convert the input string into an interpreted value

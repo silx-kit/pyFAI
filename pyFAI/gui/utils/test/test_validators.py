@@ -100,6 +100,28 @@ class TestDoubleValidator(unittest.TestCase):
         self.assertEqual(text, "")
         self.assertEqual(pos, 0)
 
+    def testBottomBoundaryRejected(self):
+        validator = validators.AdvancedDoubleValidator()
+        validator.setRange(0, 10)
+        validator.setIncludedBound(False, True)
+        state, text, _pos = validator.validate("0", 0)
+        self.assertNotEqual(state, qt.QValidator.Acceptable)
+        self.assertEqual(text, "0")
+        state, text, _pos = validator.validate("10", 0)
+        self.assertEqual(state, qt.QValidator.Acceptable)
+        self.assertEqual(text, "10")
+
+    def testTopBoundaryRejected(self):
+        validator = validators.AdvancedDoubleValidator()
+        validator.setRange(0, 10)
+        validator.setIncludedBound(True, False)
+        state, text, _pos = validator.validate("0", 0)
+        self.assertEqual(state, qt.QValidator.Acceptable)
+        self.assertEqual(text, "0")
+        state, text, _pos = validator.validate("10", 0)
+        self.assertNotEqual(state, qt.QValidator.Acceptable)
+        self.assertEqual(text, "10")
+
     def testAcceptableEmpty(self):
         validator = validators.AdvancedDoubleValidator()
         validator.setAllowEmpty(True)
