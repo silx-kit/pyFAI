@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2019"
+__date__ = "15/05/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -80,7 +80,9 @@ def fit_ellipse(pty, ptx, _allow_delta=True):
     C[0, 2] = C[2, 0] = 2
     C[1, 1] = -1
     E, V = numpy.linalg.eig(numpy.dot(inv, C))
-    n = numpy.argmax(numpy.abs(E))
+    m = numpy.logical_and(numpy.isfinite(E), numpy.isreal(E))
+    E, V = E[m], V[:, m]
+    n = numpy.argmax(E) if E.max() > 0 else numpy.argmin(E)
     res = V[:, n]
     b, c, d, f, g, a = res[1] / 2, res[2], res[3] / 2, res[4] / 2, res[5], res[0]
     num = b * b - a * c
