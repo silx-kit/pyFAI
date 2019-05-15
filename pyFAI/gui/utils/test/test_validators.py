@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2018"
+__date__ = "15/05/2019"
 
 import unittest
 import logging
@@ -85,7 +85,8 @@ class TestIntValidator(unittest.TestCase):
 class TestDoubleValidator(unittest.TestCase):
 
     def testValid(self):
-        validator = validators.DoubleAndEmptyValidator()
+        validator = validators.AdvancedDoubleValidator()
+        validator.setAllowEmpty(True)
         state, text, pos = validator.validate("1.2", 0)
         self.assertEqual(state, qt.QValidator.Acceptable)
         self.assertEqual(text, "1.2")
@@ -100,7 +101,8 @@ class TestDoubleValidator(unittest.TestCase):
         self.assertEqual(pos, 0)
 
     def testAcceptableEmpty(self):
-        validator = validators.DoubleAndEmptyValidator()
+        validator = validators.AdvancedDoubleValidator()
+        validator.setAllowEmpty(True)
         state, text, pos = validator.validate("", 0)
         self.assertEqual(state, qt.QValidator.Acceptable)
         self.assertEqual(text, "")

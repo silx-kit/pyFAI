@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019"
+__date__ = "15/05/2019"
 __status__ = "development"
 
 import logging
@@ -137,7 +137,8 @@ class WorkerConfigurator(qt.QWidget):
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
 
-        doubleOrEmptyValidator = validators.DoubleAndEmptyValidator()
+        doubleOrEmptyValidator = validators.AdvancedDoubleValidator(self)
+        doubleOrEmptyValidator.setAllowEmpty(True)
         self.normalization_factor.setValidator(doubleOrEmptyValidator)
         self.normalization_factor.setText("1.0")
 
