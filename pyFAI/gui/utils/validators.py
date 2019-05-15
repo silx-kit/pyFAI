@@ -164,13 +164,8 @@ class AdvancedDoubleValidator(DoubleValidator):
             # Check boundaries
             if self.__boundIncluded != (True, True):
                 value, isValid = self.toValue(inputText)
-                if isValid:
-                    if not self.__boundIncluded[0]:
-                        if value == self.bottom():
-                            acceptable = qt.QValidator.Intermediate
-                    if not self.__boundIncluded[1]:
-                        if value == self.top():
-                            acceptable = qt.QValidator.Intermediate
+                if not isValid:
+                    acceptable = qt.QValidator.Intermediate
 
         return acceptable, inputText, pos
 
@@ -185,7 +180,20 @@ class AdvancedDoubleValidator(DoubleValidator):
         if self.__allowEmpty:
             if text.strip() == "":
                 return None, True
-        return super(AdvancedDoubleValidator, self).toValue(text)
+
+        value, isValid = super(AdvancedDoubleValidator, self).toValue(text)
+
+        if isValid:
+            # Check boundaries
+            if self.__boundIncluded != (True, True):
+                if not self.__boundIncluded[0]:
+                    if value == self.bottom():
+                        isValid = False
+                if not self.__boundIncluded[1]:
+                    if value == self.top():
+                        isValid = False
+
+        return value, isValid
 
     def toText(self, value):
         """Convert the input string into an interpreted value
