@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/10/2018"
+__date__ = "15/05/2019"
 
 import logging
 from silx.gui import qt
@@ -117,10 +117,32 @@ class DoubleValidator(qt.QDoubleValidator):
         return str(value)
 
 
-class DoubleAndEmptyValidator(DoubleValidator):
+class AdvancedDoubleValidator(DoubleValidator):
     """
-    Validate double values or empty string.
+    Validate double values and provides features to allow or disable other
+    things.
     """
+    def __init__(self, parent=None):
+        super(AdvancedDoubleValidator, self).__init__(parent=parent)
+        self.__allowEmpty = False
+        self.__boundIncluded = True, True
+
+    def setAllowEmpty(self, allow):
+        """
+        Allow the field to be empty. Default is false.
+
+        An empty field is represented as a `None` value.
+
+        :param bool allow: New state.
+        """
+        self.__allowEmpty = allow
+
+    def setIncludedBound(self, minBoundIncluded, maxBoundIncluded):
+        """
+        Allow the include or exclude boundary ranges. Default including both
+        boundaries.
+        """
+        self.__boundIncluded = minBoundIncluded, maxBoundIncluded
 
     def validate(self, inputText, pos):
         """
@@ -131,11 +153,21 @@ class DoubleAndEmptyValidator(DoubleValidator):
         :param str inputText: Text to validate
         :param int pos: Position of the cursor
         """
-        if inputText.strip() == "":
-            # python API is not the same as C++ one
-            return qt.QValidator.Acceptable, inputText, pos
+        if self.__allowEmpty:
+            if inputText.strip() == "":
+                # python API is not the same as C++ one
+                return qt.QValidator.Acceptable, inputText, pos
 
-        return super(DoubleAndEmptyValidator, self).validate(inputText, pos)
+        acceptable, inputText, pos = super(AdvancedDoubleValidator, self).validate(inputText, pos)
+
+        if acceptable == qt.QValidator.Acceptable:
+            # Check boundaries
+            if self.__boundIncluded != (True, True):
+                value, isValid = self.toValue(inputText)
+                if not isValid:
+                    acceptable = qt.QValidator.Intermediate
+
+        return acceptable, inputText, pos
 
     def toValue(self, text):
         """Convert the input string into an interpreted value
@@ -145,9 +177,23 @@ class DoubleAndEmptyValidator(DoubleValidator):
         :returns: A tuple containing the resulting object and True if the
             string is valid
         """
-        if text.strip() == "":
-            return None, True
-        return super(DoubleAndEmptyValidator, self).toValue(text)
+        if self.__allowEmpty:
+            if text.strip() == "":
+                return None, True
+
+        value, isValid = super(AdvancedDoubleValidator, self).toValue(text)
+
+        if isValid:
+            # Check boundaries
+            if self.__boundIncluded != (True, True):
+                if not self.__boundIncluded[0]:
+                    if value == self.bottom():
+                        isValid = False
+                if not self.__boundIncluded[1]:
+                    if value == self.top():
+                        isValid = False
+
+        return value, isValid
 
     def toText(self, value):
         """Convert the input string into an interpreted value
@@ -155,9 +201,10 @@ class DoubleAndEmptyValidator(DoubleValidator):
         :param object value: Input object
         :rtype: str
         """
-        if value is None:
-            return ""
-        return super(DoubleAndEmptyValidator, self).toText(value)
+        if self.__allowEmpty:
+            if value is None:
+                return ""
+        return super(AdvancedDoubleValidator, self).toText(value)
 
 
 class IntegerAndEmptyValidator(qt.QIntValidator):

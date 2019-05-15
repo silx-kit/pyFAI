@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/05/2019"
+__date__ = "15/05/2019"
 
 from silx.gui import icons
 
@@ -46,7 +46,8 @@ class ConstraintsPopup(qt.QFrame):
     def __init__(self, parent=None):
         super(ConstraintsPopup, self).__init__(parent=parent)
         qt.loadUi(pyFAI.utils.get_ui_file("constraint-drop.ui"), self)
-        validator = validators.DoubleAndEmptyValidator(self)
+        validator = validators.AdvancedDoubleValidator(self)
+        validator.setAllowEmpty(True)
         self.__useDefaultMin = False
         self.__useDefaultMax = False
         self.__min = DataModel(self)
