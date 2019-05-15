@@ -234,5 +234,5 @@ Indirect contributors (ideas...)
    :target: https://travis-ci.org/silx-kit/pyFAI
 .. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/github/silx-kit/pyfai?svg=true
    :target: https://ci.appveyor.com/project/ESRF/pyfai
-   |myBinder Launcher| image:: https://mybinder.org/badge_logo.svg
+.. |myBinder Launcher| image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/master?filepath=binder%2Findex.ipynb
