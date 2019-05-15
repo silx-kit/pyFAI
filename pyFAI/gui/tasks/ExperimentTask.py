@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/05/2019"
+__date__ = "15/05/2019"
 
 import numpy
 import logging
@@ -44,6 +44,7 @@ from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
 from ..helper.SynchronizeRawView import SynchronizeRawView
 from ..CalibrationContext import CalibrationContext
 from ..utils import units
+from ..utils import validators
 from ..utils import FilterBuilder
 from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 
@@ -85,6 +86,13 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
+
+        validator = validators.AdvancedDoubleValidator(self)
+        validator.setBottom(0)
+        validator.setIncludedBound(False, True)
+        validator.setAllowEmpty(True)
+        self._energy.setValidator(validator)
+        self._wavelength.setValidator(validator)
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)

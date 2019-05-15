@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2018"
+__date__ = "15/05/2019"
 
 import unittest
 import logging
@@ -85,7 +85,8 @@ class TestIntValidator(unittest.TestCase):
 class TestDoubleValidator(unittest.TestCase):
 
     def testValid(self):
-        validator = validators.DoubleAndEmptyValidator()
+        validator = validators.AdvancedDoubleValidator()
+        validator.setAllowEmpty(True)
         state, text, pos = validator.validate("1.2", 0)
         self.assertEqual(state, qt.QValidator.Acceptable)
         self.assertEqual(text, "1.2")
@@ -99,8 +100,47 @@ class TestDoubleValidator(unittest.TestCase):
         self.assertEqual(text, "")
         self.assertEqual(pos, 0)
 
+    def testBottomBoundaryRejected(self):
+        validator = validators.AdvancedDoubleValidator()
+        validator.setRange(0, 10)
+        validator.setIncludedBound(False, True)
+        state, text, _pos = validator.validate("0", 0)
+        self.assertNotEqual(state, qt.QValidator.Acceptable)
+        self.assertEqual(text, "0")
+        state, text, _pos = validator.validate("10", 0)
+        self.assertEqual(state, qt.QValidator.Acceptable)
+        self.assertEqual(text, "10")
+
+    def testRejectedBottomToValue(self):
+        validator = validators.AdvancedDoubleValidator()
+        validator.setRange(0, 10)
+        validator.setIncludedBound(False, True)
+        value, isValid = validator.toValue("0")
+        self.assertEqual(value, 0)
+        self.assertFalse(isValid)
+
+    def testTopBoundaryRejected(self):
+        validator = validators.AdvancedDoubleValidator()
+        validator.setRange(0, 10)
+        validator.setIncludedBound(True, False)
+        state, text, _pos = validator.validate("0", 0)
+        self.assertEqual(state, qt.QValidator.Acceptable)
+        self.assertEqual(text, "0")
+        state, text, _pos = validator.validate("10", 0)
+        self.assertNotEqual(state, qt.QValidator.Acceptable)
+        self.assertEqual(text, "10")
+
+    def testRejectedTopToValue(self):
+        validator = validators.AdvancedDoubleValidator()
+        validator.setRange(0, 10)
+        validator.setIncludedBound(True, False)
+        value, isValid = validator.toValue("10")
+        self.assertEqual(value, 10)
+        self.assertFalse(isValid)
+
     def testAcceptableEmpty(self):
-        validator = validators.DoubleAndEmptyValidator()
+        validator = validators.AdvancedDoubleValidator()
+        validator.setAllowEmpty(True)
         state, text, pos = validator.validate("", 0)
         self.assertEqual(state, qt.QValidator.Acceptable)
         self.assertEqual(text, "")

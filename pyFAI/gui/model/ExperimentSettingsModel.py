@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/05/2019"
+__date__ = "14/05/2019"
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
@@ -35,6 +35,7 @@ from .CalibrantModel import CalibrantModel
 from .DataModel import DataModel
 from .MaskedImageModel import MaskedImageModel
 from .ImageModel import ImageFromFilenameModel
+from .FilenameModel import FilenameModel
 
 
 class ExperimentSettingsModel(AbstractModel):
@@ -50,6 +51,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__polarizationFactor = DataModel()
         self.__calibrantModel = CalibrantModel()
         self.__detectorModel = DetectorModel()
+        self.__poniFile = FilenameModel()
 
         self.__image.changed.connect(self.wasChanged)
         self.__image.filenameChanged.connect(self.wasChanged)
@@ -59,6 +61,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__polarizationFactor.changed.connect(self.wasChanged)
         self.__calibrantModel.changed.connect(self.wasChanged)
         self.__detectorModel.changed.connect(self.wasChanged)
+        self.__poniFile.changed.connect(self.wasChanged)
 
         self.__image.changed.connect(self.__updateDetectorMask)
         self.__detectorModel.changed.connect(self.__updateDetectorMask)
@@ -139,3 +142,6 @@ class ExperimentSettingsModel(AbstractModel):
 
     def polarizationFactor(self):
         return self.__polarizationFactor
+
+    def poniFile(self):
+        return self.__poniFile
