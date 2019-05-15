@@ -1089,8 +1089,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.addAction(action)
 
     def __onPlotModeChanged(self, owner):
-        if owner is None:
-            return
         # TODO: This condition should not be reached like that
         if owner is not self.__plot:
             # Here a default plot tool is triggered
