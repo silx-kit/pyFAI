@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "16/05/2019"
 
 import sys
 import os
@@ -226,7 +226,7 @@ class TestBugRegression(unittest.TestCase):
         hc = 12.398419292004204  # Old reference value
         self.assertAlmostEqual(hc, units.hc, 6, "hc is correct, got %s" % units.hc)
 
-    def test_bug_808(self):
+    def test_import_all_modules(self):
         """Try to import every single module in the package
         """
         import pyFAI
