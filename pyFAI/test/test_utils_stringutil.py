@@ -31,7 +31,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "16/05/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -40,6 +40,7 @@ import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..utils import stringutil
+from silx.utils.testutils import ParametricTestCase
 
 
 class TestUtilsString(unittest.TestCase):
@@ -69,10 +70,30 @@ class TestUtilsString(unittest.TestCase):
         self.assertEqual(stringutil.safe_format("aaaa{a[0]}{b.__name__}", {}), expected)
 
 
+class TestToOrdinal(ParametricTestCase):
+
+    CASES = [
+        (1, "1st"),
+        (2, "2nd"),
+        (3, "3rd"),
+        (5, "5th"),
+        (13, "13th"),
+        (812, "812th"),
+        (250, "250th"),
+        (2071, "2071st"),
+    ]
+
+    def test_ordinal(self):
+        for value, expected in self.CASES:
+            with self.subTest(value=value, expected=expected):
+                self.assertEqual(stringutil.to_ordinal(value), expected)
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestUtilsString))
+    testsuite.addTest(loader(TestToOrdinal))
     return testsuite
 
 
