@@ -21,7 +21,7 @@ done
 # Generates index notebook
 head --lines=11 binder/index_template.ipynb > binder/index.ipynb
 
-NOTEBOOK_BASE_DIR="pyFAI/doc/source/usage"
+NOTEBOOK_BASE_DIR="doc/source/usage"
 pushd ${NOTEBOOK_BASE_DIR}
 NOTEBOOKS=`find . -name "*.ipynb"`
 popd
@@ -29,6 +29,7 @@ popd
 echo "Notebooks:"
 
 for IPYNB in ${NOTEBOOKS}; do
+    IPYNB=${IPYNB#./}
     echo "- ${IPYNB}";
     echo "    \"  - [${IPYNB}](../${NOTEBOOK_BASE_DIR}/${IPYNB})\n\"," >> binder/index.ipynb;
 done
