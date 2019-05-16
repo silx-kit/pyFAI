@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/05/2019"
+__date__ = "16/05/2019"
 
 import logging
 import numpy
@@ -52,6 +52,7 @@ from ..helper import ProcessingWidget
 from pyFAI.ext.invert_geometry import InvertGeometry
 from ..utils import FilterBuilder
 from ..utils import imageutils
+from ...utils import stringutil
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
@@ -451,6 +452,24 @@ class IntegrationPlot(qt.QFrame):
         if event.type() == qt.QEvent.Leave:
             self.__mouseLeave()
             return True
+
+        if event.type() == qt.QEvent.ToolTip:
+            if self.__availableRings is not None:
+                pos = widget.mapFromGlobal(event.globalPos())
+                coord = widget.pixelToData(pos.x(), pos.y())
+
+                angle = coord[0]
+                ringId, angle = self.__getClosestAngle(angle)
+
+                if ringId is not None:
+                    message = "%s ring" % stringutil.to_ordinal(ringId + 1)
+                    qt.QToolTip.showText(event.globalPos(), message)
+                else:
+                    qt.QToolTip.hideText()
+                    event.ignore()
+
+                return True
+
         return False
 
     def __mouseLeave(self):
