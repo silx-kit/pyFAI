@@ -45,7 +45,7 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>How to</string>
+         <string>Help</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_12">
          <item>
