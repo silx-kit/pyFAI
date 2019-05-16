@@ -115,9 +115,9 @@ class CalibrationState(qt.QObject):
 
     def __init__(self, parent):
         qt.QObject.__init__(self, parent)
-        self.__reset()
+        self.reset()
 
-    def __reset(self):
+    def reset(self):
         self.__geoRef = None
         self.__geometry = None
         self.__rings = None
@@ -157,7 +157,7 @@ class CalibrationState(qt.QObject):
         """Invalidate the object and remove the ownershit of the geometry
         refinment"""
         geoRef = self.__geoRef
-        self.__reset()
+        self.reset()
         return geoRef
 
     def update(self, calibration):
@@ -909,15 +909,19 @@ class GeometryTask(AbstractCalibrationTask):
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
         if calibration is None:
+            self.__calibrationState.reset()
             return
         if not calibration.isValid():
             self.__showDialogCalibrationDiverge()
+            self.__calibrationState.reset()
             return
         geometry = self.model().fittedGeometry()
         if geometry.isValid():
             resetResidual = self.__fitting is not True
             calibration.fromGeometryModel(geometry, resetResidual=resetResidual)
             self.__calibrationState.update(calibration)
+        else:
+            self.__calibrationState.reset()
 
         geoRef = calibration.getPyfaiGeometry()
         self.__plot.markerManager().updatePhysicalMarkerPixels(geoRef)
