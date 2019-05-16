@@ -232,6 +232,20 @@ class TestBugRegression(unittest.TestCase):
         import pyFAI
         pyFAI_root = os.path.split(pyFAI.__file__)[0]
 
+        def must_be_skipped(path):
+            path = os.path.relpath(path, pyFAI_root)
+            path = path.replace("\\", "/")
+            elements = path.split("/")
+            if not UtilsTest.WITH_OPENCL_TEST:
+                if "opencl" in elements:
+                    logger.warning("Skip %s. OpenCL tests disabled", path)
+                    return True
+            if not UtilsTest.WITH_QT_TEST:
+                if "gui" in elements:
+                    logger.warning("Skip %s. Qt tests disabled", path)
+                    return True
+            return False
+
         for root, dirs, files in os.walk(pyFAI_root, topdown=True):
             for adir in dirs:
 
@@ -241,36 +255,30 @@ class TestBugRegression(unittest.TestCase):
                     logger.info("Loading subpackage: %s from %s", subpackage, subpackage_path)
                     sys.modules[subpackage] = load_source(subpackage, subpackage_path)
             for name in files:
-                dirs = os.path.split(name)
-                if not UtilsTest.WITH_OPENCL_TEST:
-                    if "opencl" in dirs:
-                        logger.warning("Skip %s. OpenCL tests disabled", name)
-                        continue
-                if not UtilsTest.WITH_QT_TEST:
-                    if "gui" in dirs:
-                        logger.warning("Skip %s. Qt tests disabled", name)
-                        continue
-                if name.endswith(".py"):
-                    path = os.path.join(root, name)
-                    fqn = "pyFAI" + path[len(pyFAI_root):-3].replace(os.sep, ".")
-                    logger.info("Importing %s from %s", fqn, path)
-                    try:
-                        load_source(fqn, path)
-                    except Exception as err:
-                        if ((isinstance(err, ImportError) and
-                                "No Qt wrapper found" in err.__str__() or
-                                "pyopencl is not installed" in err.__str__() or
-                                "PySide" in err.__str__()) or
-                            (isinstance(err, SystemError) and
-                                "Parent module" in err.__str__())):
+                if not name.endswith(".py"):
+                    continue
+                path = os.path.join(root, name)
+                if must_be_skipped(path):
+                    continue
+                fqn = "pyFAI" + path[len(pyFAI_root):-3].replace(os.sep, ".")
+                logger.info("Importing %s from %s", fqn, path)
+                try:
+                    load_source(fqn, path)
+                except Exception as err:
+                    if ((isinstance(err, ImportError) and
+                            "No Qt wrapper found" in err.__str__() or
+                            "pyopencl is not installed" in err.__str__() or
+                            "PySide" in err.__str__()) or
+                        (isinstance(err, SystemError) and
+                            "Parent module" in err.__str__())):
 
-                            logger.info("Expected failure importing %s from %s with error: %s",
-                                        fqn, path, err)
-                        else:
-                            logger.error("Failed importing %s from %s with error: %s%s: %s",
-                                         fqn, path, os.linesep,
-                                         err.__class__.__name__, err)
-                            raise err
+                        logger.info("Expected failure importing %s from %s with error: %s",
+                                    fqn, path, err)
+                    else:
+                        logger.error("Failed importing %s from %s with error: %s%s: %s",
+                                     fqn, path, os.linesep,
+                                     err.__class__.__name__, err)
+                        raise err
 
     def test_bug_816(self):
         "Ensure the chi-disontinuity is properly set"
