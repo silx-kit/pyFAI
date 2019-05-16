@@ -248,8 +248,9 @@ class TestBugRegression(unittest.TestCase):
 
         for root, dirs, files in os.walk(pyFAI_root, topdown=True):
             for adir in dirs:
-
                 subpackage_path = os.path.join(root, adir, "__init__.py")
+                if must_be_skipped(subpackage_path):
+                    continue
                 subpackage = "pyFAI" + subpackage_path[len(pyFAI_root):-12].replace(os.sep, ".")
                 if os.path.isdir(subpackage_path):
                     logger.info("Loading subpackage: %s from %s", subpackage, subpackage_path)
