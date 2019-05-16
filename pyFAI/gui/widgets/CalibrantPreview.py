@@ -103,14 +103,14 @@ class CalibrantPreview(qt.QFrame):
             fileds.append((u"Name", name, None))
         fileds.append((u"Nb registered rays", calibrant.count_registered_dSpacing(), None))
         dSpacing = calibrant.get_dSpacing()
-        fileds.append((u"Nb visible rays", len(dSpacing), u"between 0 and π"))
+        fileds.append((u"Nb visible rays", len(dSpacing), u"between 0 and 180°"))
         if len(dSpacing) > 0:
             ray = calibrant.get_dSpacing()[0]
             angle = calibrant.get_2th()[0]
-            fileds.append((u"First visible ray", u"%f (%f rad)" % (ray, angle), None))
+            fileds.append((u"First visible ray", u"%f Å (%f°)" % (ray, numpy.rad2deg(angle)), None))
             ray = calibrant.get_dSpacing()[-1]
             angle = calibrant.get_2th()[-1]
-            fileds.append((u"Last visible ray", u"%f (%f rad)" % (ray, angle), None))
+            fileds.append((u"Last visible ray", u"%f Å (%f°)" % (ray, numpy.rad2deg(angle)), None))
 
         toolTip = []
         for f in fileds:
