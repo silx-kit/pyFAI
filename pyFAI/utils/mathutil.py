@@ -736,10 +736,7 @@ def is_far_from_group(pt, lst_pts, d2):
 
 
 def rwp(obt, ref):
-    """          ___________________________
-    Calculate  \/     4 ( obt - ref)²
-               V Sum( --------------- )
-                        (obt + ref)²
+    """Compute :math:`\\sqrt{\\sum \\frac{4\\cdot(obt-ref)^2}{(obt + ref)^2}}`.
 
     This is done for symmetry reason between obt and ref
 
