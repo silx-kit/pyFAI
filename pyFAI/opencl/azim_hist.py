@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "09/05/2019"
+__date__ = "16/05/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -52,18 +52,19 @@ import threading
 from collections import OrderedDict
 import numpy
 
+from . import ocl, pyopencl
+if pyopencl is not None:
+    mf = pyopencl.mem_flags
+else:
+    raise ImportError("pyopencl is not installed")
+
+from . import allocate_cl_buffers, release_cl_buffers, kernel_workgroup_size
+from . import concatenate_cl_kernel, get_x87_volatile_option, processing
 from ..containers import Integrate1dtpl, Integrate2dtpl
-from . import concatenate_cl_kernel, get_x87_volatile_option
-from . import processing
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
 from ..utils import calc_checksum
-from . import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers, kernel_workgroup_size
-if pyopencl:
-    mf = pyopencl.mem_flags
-else:
-    raise ImportError("pyopencl is not installed")
 logger = logging.getLogger(__name__)
 
 
