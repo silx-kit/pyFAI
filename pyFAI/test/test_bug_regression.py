@@ -243,6 +243,15 @@ class TestBugRegression(unittest.TestCase):
                     logger.info("Loading subpackage: %s from %s", subpackage, subpackage_path)
                     sys.modules[subpackage] = load_source(subpackage, subpackage_path)
             for name in files:
+                dirs = os.path.split(name)
+                if not UtilsTest.WITH_OPENCL_TEST:
+                    if "opencl" in dirs:
+                        logger.warning("Skip %s. OpenCL tests disabled", name)
+                        continue
+                if not UtilsTest.WITH_QT_TEST:
+                    if "gui" in dirs:
+                        logger.warning("Skip %s. Qt tests disabled", name)
+                        continue
                 if name.endswith(".py"):
                     path = os.path.join(root, name)
                     fqn = "pyFAI" + path[len(pyFAI_root):-3].replace(os.sep, ".")
