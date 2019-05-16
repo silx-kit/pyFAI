@@ -135,15 +135,8 @@ class CalibrantPreview(qt.QFrame):
 
         tth_min, tth_max = 0, numpy.pi
         size = 360
-        agregation = numpy.zeros((1, size))
-        for tth in tths:
-            pos = int((tth - tth_min) / (tth_max - tth_min) * size)
-            if pos < 0:
-                continue
-            if pos >= size:
-                continue
-            agregation[0, pos] += 1
-
+        histo = numpy.histogram(tths, bins=size, range=(tth_min, tth_max))
+        agregation = histo[0].reshape(1, -1)
         colormap = Colormap(name="reversed gray", vmin=agregation.min(), vmax=agregation.max())
         rgbImage = colormap.applyToData(agregation)[:, :, :3]
         qimage = imageutils.convertArrayToQImage(rgbImage)
