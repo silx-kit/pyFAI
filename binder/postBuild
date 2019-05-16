@@ -5,7 +5,7 @@ python -m bash_kernel.install
 
 # Download resources
 RESOURCES_URL="http://www.silx.org/pub/pyFAI"
-echo "Download notebooks from ${RESOURCES_URL}"
+echo "Download notebook resources from ${RESOURCES_URL}"
 
 COOKBOOK_DIR="doc/source/usage/cookbook"
 COOKBOOK_FILES="LaB6_29.4keV.tif
@@ -17,3 +17,20 @@ for FILE in ${COOKBOOK_FILES}; do
     echo "Download ${URL}";
     wget "${URL}" -O ${COOKBOOK_DIR}/${FILE};
 done
+
+# Generates index notebook
+head --lines=11 binder/index_template.ipynb > binder/index.ipynb
+
+NOTEBOOK_BASE_DIR="pyFAI/doc/source/usage"
+pushd ${NOTEBOOK_BASE_DIR}
+NOTEBOOKS=`find . -name "*.ipynb"`
+popd
+
+echo "Notebooks:"
+
+for IPYNB in ${NOTEBOOKS}; do
+    echo "- ${IPYNB}";
+    echo "    \"  - [${IPYNB}](../${NOTEBOOK_BASE_DIR}/${IPYNB})\n\"," >> binder/index.ipynb;
+done
+
+tail --lines=+12 binder/index_template.ipynb >> binder/index.ipynb
