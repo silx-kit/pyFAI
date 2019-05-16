@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "16/05/2019"
 
 import os
 import tempfile
@@ -169,7 +169,7 @@ class TestDetector(unittest.TestCase):
             if os.path.exists(fname):  # already tested with another alias
                 continue
             det = detector_factory(det_name)
-            logger.info("%s --> nxs", det_name)
+            logger.debug("%s --> nxs", det_name)
             if (det.pixel1 is None) or (det.shape is None):
                 continue
             if (det.shape[0] > 1900) or (det.shape[1] > 1900):
