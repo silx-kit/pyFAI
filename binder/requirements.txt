@@ -1,0 +1,3 @@
+pyFAI
+ipympl
+bash_kernel
