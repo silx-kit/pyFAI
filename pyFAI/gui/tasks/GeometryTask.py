@@ -507,9 +507,10 @@ class _RingPlot(silx.gui.plot.PlotWidget):
     def __updateDisplay(self):
         """Update the display when the calibration state was updated."""
         state = self.__state
+
+        self.__cleanupRings()
+        self.__cleanupMarkers()
         if state.isEmpty():
-            self.__cleanupRings()
-            self.__cleanupMarkers()
             return
 
         rings = state.getRings()
