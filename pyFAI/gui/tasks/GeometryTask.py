@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/05/2019"
+__date__ = "16/05/2019"
 
 import logging
 import numpy
@@ -792,7 +792,7 @@ class GeometryTask(AbstractCalibrationTask):
         calibration = self.__getCalibration()
         geometry = self.model().fittedGeometry()
         rms = None
-        if calibration is None and calibration.isValid():
+        if calibration is not None and calibration.isValid():
             rms = calibration.getRms()
         geometryHistory = self.model().geometryHistoryModel()
         geometryHistory.appendGeometry("Init", datetime.datetime.now(), geometry, rms)
