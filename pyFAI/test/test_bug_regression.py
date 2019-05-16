@@ -230,8 +230,6 @@ class TestBugRegression(unittest.TestCase):
         """Try to import every single module in the package
         """
         import pyFAI
-#         print(pyFAI.__file__)
-#         print(pyFAI.__name__)
         pyFAI_root = os.path.split(pyFAI.__file__)[0]
 
         for root, dirs, files in os.walk(pyFAI_root, topdown=True):
