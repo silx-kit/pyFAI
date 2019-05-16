@@ -370,8 +370,12 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             for item in items:
                 item.setVisible(False)
 
-        for angleId in range(0, len(angles), step):
-            ringId, ringAngle = angles[angleId]
+        # Do not dispaly all rings, but at least the 10 first
+        firstRings = [a for a in angles if a[0] <= 10]
+        sampledRings = [a for a in angles if (a[0] % step == 0)]
+        displayedRings = set(firstRings + sampledRings)
+
+        for ringId, ringAngle in displayedRings:
             self.__displayedAngles.add(ringAngle)
             items = self.__getItemsFromAngle(ringId, ringAngle)
             for item in items:
