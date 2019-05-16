@@ -206,8 +206,10 @@ class _RingPlot(silx.gui.plot.PlotWidget):
 
         self.__plotBackground = SynchronizePlotBackground(self)
 
+        widget = self
         if hasattr(self, "centralWidget"):
-            self.centralWidget().installEventFilter(self)
+            widget = widget.centralWidget()
+        widget.installEventFilter(self)
 
     def setCalibrationState(self, state):
         if self.__state is not None:
