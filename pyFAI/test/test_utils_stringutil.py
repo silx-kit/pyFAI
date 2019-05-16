@@ -45,28 +45,28 @@ from ..utils import stringutil
 class TestUtilsString(unittest.TestCase):
 
     def test_default_behaviour_nothing(self):
-        self.assertEquals(stringutil.safe_format("aaaa", {}), "aaaa")
+        self.assertEqual(stringutil.safe_format("aaaa", {}), "aaaa")
 
     def test_default_behaviour_list(self):
-        self.assertEquals(stringutil.safe_format("aaaa{0}{1}", (10, "aaaa")), "aaaa10aaaa")
+        self.assertEqual(stringutil.safe_format("aaaa{0}{1}", (10, "aaaa")), "aaaa10aaaa")
 
     def test_default_behaviour_dict(self):
-        self.assertEquals(stringutil.safe_format("aaaa{a}{b}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa")
+        self.assertEqual(stringutil.safe_format("aaaa{a}{b}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa")
 
     def test_default_behaviour_object(self):
         args = {"a": (10, 1), "b": TestUtilsString}
         expected = "aaaa10TestUtilsString"
-        self.assertEquals(stringutil.safe_format("aaaa{a[0]}{b.__name__}", args), expected)
+        self.assertEqual(stringutil.safe_format("aaaa{a[0]}{b.__name__}", args), expected)
 
     def test_missing_index(self):
-        self.assertEquals(stringutil.safe_format("aaaa{0}{1}{2}", (10, "aaaa")), "aaaa10aaaa{2}")
+        self.assertEqual(stringutil.safe_format("aaaa{0}{1}{2}", (10, "aaaa")), "aaaa10aaaa{2}")
 
     def test_missing_key(self):
-        self.assertEquals(stringutil.safe_format("aaaa{a}{b}{c}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa{c}")
+        self.assertEqual(stringutil.safe_format("aaaa{a}{b}{c}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa{c}")
 
     def test_missing_object(self):
         expected = "aaaa{a[0]}{b.__name__}"
-        self.assertEquals(stringutil.safe_format("aaaa{a[0]}{b.__name__}", {}), expected)
+        self.assertEqual(stringutil.safe_format("aaaa{a[0]}{b.__name__}", {}), expected)
 
 
 def suite():
