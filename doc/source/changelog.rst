@@ -1,13 +1,36 @@
 :Author: Jérôme Kieffer
-:Date: 19/12/2018
+:Date: 16/05/2019
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
 
+0.18.0 15/05/2019
+-----------------
+* Last release with Valentin as he finishes his contract soon
+* almost 800 commits, 60 PR since the last release: this is a huge release !
+* Major rework on all GUIs, mainly pyFAI-calib2 and pyFAI-integrate.
+* Possibility to integrate image stacks (i.e. from HDF5), ...
+* Rework the *method* to specify the algorithm, pixel splitting and implementation
+  with sensible fall-backs. Also available via the different GUIs
+* 3D visualization of detectors and experimental setup, useful for non flat detectors.
+* `integrate1d_ng` is available with histogramming without pixel splitting in
+  Python, Cython and OpenCL. Now, propagates the variance properly !
+* IO sub-packages with associated refactoring for ponifile, json, ...
+* Improved management of OpenMP: simplify the code for histograms.
+* Improved geometry description and tutorial for writing exchange with other
+  software (ImageD11, thanks to Carsten Detlefs).
+* More reliable simple ellipse fitting with tests and doc.
+* Better POCL integration (debugged on cuda, x87, Power9, ...)
+* Rely on *silx* mechanics for the build, test, download, GUI, opencl ...
+* Many new tutorials, now available on binder-hub: new calibrants, Pilatus calibration, ...
+* Fix many issues reported in third-party software (Dioptas, ...)
+* Drop support of debian8, Python 2.7 and Python 3.4 on all platforms.
+  It is likely most functionalities still work but without guaranty.
+
 0.17.0 19/12/2018
 -----------------
-* Only 200 commits in a couple of month, this ia a small release
+* Only 200 commits in a couple of month, this is a small release
 * Fix major bugs in pyFAI-calib2 (double validator, initial guess, ring position)
 * Constrains have been added to the geometry fitting of pyFAI-calib2
 * New pyFAI-integrate graphical application

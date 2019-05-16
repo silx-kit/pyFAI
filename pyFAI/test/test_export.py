@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "16/05/2019"
 
 
 import unittest
@@ -99,6 +99,21 @@ class TestFIT2D(unittest.TestCase):
         self.assertFalse(res, res)
         res = testExport(tilt=20, tpr=580)
         self.assertFalse(res, res)
+
+    def test_ImageD11(self):
+        ai = AzimuthalIntegrator()
+        ai.setFit2D(100, centerX=900, centerY=1000, tilt=20, tiltPlanRotation=80, pixelX=50, pixelY=60)
+        ai.wavelength = 1.234e-10
+        param = ai.getImageD11()
+        ai2 = AzimuthalIntegrator()
+        ai2.setImageD11(param)
+        for key in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "pixel1", "pixel2", "splineFile", "wavelength"]:
+            refv = ai.__getattribute__(key)
+            obtv = ai2.__getattribute__(key)
+            if refv is None:
+                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+            else:
+                self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
 
 
 class TestSPD(unittest.TestCase):
