@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "14/05/2019"
 
 import logging
 import functools
@@ -91,9 +91,10 @@ class MarkerManager(object):
                 _logger.debug("Backtrace", exc_info=True)
                 self.__directDist = None
 
-        invertGeometry = InvertGeometry(
-            self.__geometry.array_from_unit(typ="center", unit=pyFAI.units.TTH_RAD, scale=False),
-            self.__geometry.chiArray())
+        if geometry is not None:
+            invertGeometry = InvertGeometry(
+                geometry.array_from_unit(typ="center", unit=pyFAI.units.TTH_RAD, scale=False),
+                geometry.chiArray())
 
         self.__markerModel.lockSignals()
         for marker in self.__markerModel:
@@ -102,12 +103,12 @@ class MarkerManager(object):
 
             chiRad, tthRad = marker.physicalPosition()
             pixel = None
-            if self.__geometry is not None:
+            if geometry is not None:
                 pixel = invertGeometry(tthRad, chiRad, True)
 
                 ax, ay = numpy.array([pixel[1]]), numpy.array([pixel[0]])
-                tth = self.__geometry.tth(ay, ax)[0]
-                chi = self.__geometry.chi(ay, ax)[0]
+                tth = geometry.tth(ay, ax)[0]
+                chi = geometry.chi(ay, ax)[0]
 
                 error = numpy.sqrt((tthRad - tth) ** 2 + (chiRad - chi) ** 2)
                 if error > 0.05:

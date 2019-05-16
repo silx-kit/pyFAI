@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "16/05/2019"
 __status__ = "stable"
 
 
@@ -1111,13 +1111,15 @@ class NexusDetector(Detector):
                 setattr(cloned, name, value)
         return cloned
 
-    def __deepcopy__(self):
+    def __deepcopy__(self, memo=None):
         import copy
         cloned = self.__class__()
+        if memo is not None:
+            memo[id(self)] = cloned
         for name in self._ATTRIBUTES_TO_CLONE:
             if hasattr(self, name):
                 value = getattr(self, name)
-                value = copy.deepcopy(value)
+                value = copy.deepcopy(value, memo)
                 setattr(cloned, name, value)
         return cloned
 

@@ -122,15 +122,15 @@ Python 2.7, 3.4, 3.5, 3.6 and 3.7 are well tested.
 Python 2.6, 3.2 and 3.3 are no more supported since pyFAI 0.12
 For full functionality of pyFAI the following modules need to be installed.
 
-    * numpy 		- 	http://www.numpy.org
-    * scipy 		- 	http://www.scipy.org
-    * matplotlib 	- 	http://matplotlib.sourceforge.net/
-    * fabio 		-	http://sourceforge.net/projects/fable/files/fabio/
-    * h5py	    	-  	http://www.h5py.org/
-    * pyopencl		-	http://mathema.tician.de/software/pyopencl/
-    * python-pyqt5	-	http://www.riverbankcomputing.co.uk/software/pyqt/intro
-    * silx          -   http://www.silx.org
-    * numexpr       -   https://github.com/pydata/numexpr
+* `numpy`    		  - http://www.numpy.org
+* `scipy` 	  	  - http://www.scipy.org
+* `matplotlib` 	  - http://matplotlib.sourceforge.net/
+* `fabio` 		    - http://sourceforge.net/projects/fable/files/fabio/
+* `h5py`	    	  - http://www.h5py.org/
+* `pyopencl`		  - http://mathema.tician.de/software/pyopencl/
+* `python-pyqt5`	- http://www.riverbankcomputing.co.uk/software/pyqt/intro
+* `silx`          - http://www.silx.org
+* `numexpr`       - https://github.com/pydata/numexpr
 
 Those dependencies can simply be installed by::
 
@@ -149,15 +149,15 @@ or using apt-get on from the command line in a terminal::
 
 The extra Ubuntu packages needed are:
 
-    * python-numpy
-    * python-scipy
-    * python-matplotlib
-    * python-dev
-    * python-fabio
-    * python-pyopencl
-    * python-pyqt5
-    * python-silx
-    * python-numexpr
+* `python-numpy`
+* `python-scipy`
+* `python-matplotlib`
+* `python-dev`
+* `python-fabio`
+* `python-pyopencl`
+* `python-pyqt5`
+* `python-silx`
+* `python-numexpr`
 
 and the same with python3
 using apt-get these can be installed as::
@@ -203,32 +203,32 @@ One needs to subscribe by sending an email to sympa@esrf.fr with a subject "subs
 Maintainers
 -----------
 
- * Jérôme Kieffer (ESRF)
- * Valentin Valls (ESRF)
+* Jérôme Kieffer (ESRF)
+* Valentin Valls (ESRF)
 
 Contributors
 ------------
 
- * Frédéric-Emmanuel Picca (Soleil)
- * Thomas Vincent (ESRF)
- * Dimitris Karkoulis (ESRF)
- * Aurore Deschildre (ESRF)
- * Giannis Ashiotis (ESRF)
- * Zubair Nawaz (Sesame)
- * Jon Wright (ESRF)
- * Amund Hov (ESRF)
- * Dodogerstlin @github
- * Gunthard Benecke (Desy)
- * Gero Flucke (Desy)
+* Frédéric-Emmanuel Picca (Soleil)
+* Thomas Vincent (ESRF)
+* Dimitris Karkoulis (ESRF)
+* Aurore Deschildre (ESRF)
+* Giannis Ashiotis (ESRF)
+* Zubair Nawaz (Sesame)
+* Jon Wright (ESRF)
+* Amund Hov (ESRF)
+* Dodogerstlin @github
+* Gunthard Benecke (Desy)
+* Gero Flucke (Desy)
 
 Indirect contributors (ideas...)
 --------------------------------
 
- * Peter Boesecke
- * Manuel Sánchez del Río
- * Vicente Armando Solé
- * Brian Pauw
- * Veijo Honkimaki
+* Peter Boesecke
+* Manuel Sánchez del Río
+* Vicente Armando Solé
+* Brian Pauw
+* Veijo Honkimaki
 
 .. |Build Status| image:: https://travis-ci.org/silx-kit/pyFAI.svg?branch=master
    :target: https://travis-ci.org/silx-kit/pyFAI
