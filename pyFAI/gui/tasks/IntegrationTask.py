@@ -44,6 +44,7 @@ from ..utils import unitutils
 from ..model.DataModel import DataModel
 from ..widgets.QuantityLabel import QuantityLabel
 from ..CalibrationContext import CalibrationContext
+from ... import units as core_units
 from ..utils import units
 from ..utils import validators
 from ..helper.MarkerManager import MarkerManager
@@ -330,6 +331,7 @@ class _StatusBar(qt.QStatusBar):
         qt.QStatusBar.__init__(self, parent)
 
         angleUnitModel = CalibrationContext.instance().getAngleUnit()
+        scatteringUnitModel = CalibrationContext.instance().getScatteringVectorUnit()
 
         self.__position = QuantityLabel(self)
         self.__position.setPrefix(u"<b>Pos</b>: ")
@@ -337,6 +339,7 @@ class _StatusBar(qt.QStatusBar):
         # TODO: Could it be done using a custom layout? Instead of setElasticSize
         self.__position.setElasticSize(True)
         self.addWidget(self.__position)
+
         self.__chi = QuantityLabel(self)
         self.__chi.setPrefix(u"<b>χ</b>: ")
         self.__chi.setFormatter(u"{value: >4.3F}")
@@ -346,6 +349,7 @@ class _StatusBar(qt.QStatusBar):
         self.__chi.setUnitEditable(True)
         self.__chi.setElasticSize(True)
         self.addWidget(self.__chi)
+
         self.__2theta = QuantityLabel(self)
         self.__2theta.setPrefix(u"<b>2θ</b>: ")
         self.__2theta.setFormatter(u"{value: >4.3F}")
@@ -354,6 +358,15 @@ class _StatusBar(qt.QStatusBar):
         self.__2theta.setUnitEditable(True)
         self.__2theta.setElasticSize(True)
         self.addWidget(self.__2theta)
+
+        self.__q = QuantityLabel(self)
+        self.__q.setPrefix(u"<b>q</b>: ")
+        self.__q.setFormatter(u"{value: >4.3F}")
+        self.__q.setInternalUnit(units.Unit.INV_ANGSTROM)
+        self.__q.setDisplayedUnitModel(scatteringUnitModel)
+        self.__q.setUnitEditable(True)
+        self.__q.setElasticSize(True)
+        self.addWidget(self.__q)
 
         self.clearValues()
 
@@ -377,12 +390,20 @@ class _StatusBar(qt.QStatusBar):
 
         if tth is None:
             self.__2theta.setVisible(False)
+            self.__q.setVisible(False)
         else:
             self.__2theta.setVisible(True)
             self.__2theta.setValue(tth)
+            # NOTE: warelength could be updated, and the the display would not
+            # be updated. But here it is safe enougth.
+            wavelength = CalibrationContext.instance().getCalibrationModel().fittedGeometry().wavelength().value()
+            q = unitutils.from2ThRad(tth, core_units.Q_A, wavelength)
+            self.__q.setVisible(True)
+            self.__q.setValue(q)
 
     def clearValues(self):
         self.__2theta.setValue(float("nan"))
+        self.__q.setValue(float("nan"))
 
 
 class IntegrationPlot(qt.QFrame):
