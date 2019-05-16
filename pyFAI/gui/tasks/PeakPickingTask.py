@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/05/2019"
+__date__ = "15/05/2019"
 
 import logging
 import numpy
@@ -378,19 +378,31 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
 
+    def setInteractiveMode(self, mode, color='black',
+                           shape='polygon', label=None,
+                           zoomOnWheel=True, source=None, width=None):
+        """Override the function to allow to disable extrat interaction modes.
+        """
+        self.setPeakInteractiveMode(self.PEAK_SELECTION_MODE)
+        silx.gui.plot.PlotWidget.setInteractiveMode(self, mode, color=color, shape=shape, label=label, zoomOnWheel=zoomOnWheel, source=source, width=width)
+
+    def peakInteractiveMode(self):
+        """Returns the peak interactive mode selected."""
+        return self.__mode
+
     def setPeakInteractiveMode(self, mode):
         if self.__mode == mode:
             return
         self.__mode = mode
 
         if mode == self.PEAK_SELECTION_MODE:
-            self.setInteractiveMode('zoom')
+            super(_PeakPickingPlot, self).setInteractiveMode('zoom')
         elif mode == self.ERASOR_MODE:
             color = "black"
-            self.setInteractiveMode('draw', shape='rectangle', source=self, color=color)
+            super(_PeakPickingPlot, self).setInteractiveMode('draw', shape='rectangle', source=self, color=color)
         elif mode == self.BRUSH_MODE:
             color = "black"
-            self.setInteractiveMode('draw', shape='rectangle', source=self, color=color)
+            super(_PeakPickingPlot, self).setInteractiveMode('draw', shape='rectangle', source=self, color=color)
         else:
             assert(False)
 
@@ -1077,8 +1089,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.addAction(action)
 
     def __onPlotModeChanged(self, owner):
-        if owner is None:
-            return
         # TODO: This condition should not be reached like that
         if owner is not self.__plot:
             # Here a default plot tool is triggered
