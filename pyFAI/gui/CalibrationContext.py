@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/04/2019"
+__date__ = "16/05/2019"
 
 import logging
 import numpy
@@ -79,6 +79,8 @@ class CalibrationContext(ApplicationContext):
         self.__lengthUnit.setValue(units.Unit.METER)
         self.__wavelengthUnit = DataModel()
         self.__wavelengthUnit.setValue(units.Unit.ANGSTROM)
+        self.__scatteringVectorUnit = DataModel()
+        self.__scatteringVectorUnit.setValue(units.Unit.INV_ANGSTROM)
         self.__markerColors = {}
         self.__cacheStyles = {}
 
@@ -137,6 +139,7 @@ class CalibrationContext(ApplicationContext):
         self.__restoreUnit(self.__angleUnit, settings, "angle-unit", units.Unit.RADIAN)
         self.__restoreUnit(self.__lengthUnit, settings, "length-unit", units.Unit.METER)
         self.__restoreUnit(self.__wavelengthUnit, settings, "wavelength-unit", units.Unit.ANGSTROM)
+        self.__restoreUnit(self.__scatteringVectorUnit, settings, "scattering-vector-unit", units.Unit.INV_ANGSTROM)
         settings.endGroup()
 
     def saveSettings(self):
@@ -151,6 +154,7 @@ class CalibrationContext(ApplicationContext):
         settings.setValue("angle-unit", self.__angleUnit.value().name)
         settings.setValue("length-unit", self.__lengthUnit.value().name)
         settings.setValue("wavelength-unit", self.__wavelengthUnit.value().name)
+        settings.setValue("scattering-vector-unit", self.__scatteringVectorUnit.value().name)
         settings.endGroup()
 
         # Synchronize the file storage
@@ -209,6 +213,9 @@ class CalibrationContext(ApplicationContext):
 
     def getWavelengthUnit(self):
         return self.__wavelengthUnit
+
+    def getScatteringVectorUnit(self):
+        return self.__scatteringVectorUnit
 
     def getMarkerColor(self, index, mode="qt"):
         colors = self.markerColorList()

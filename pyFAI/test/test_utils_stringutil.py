@@ -31,7 +31,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "16/05/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -40,39 +40,60 @@ import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..utils import stringutil
+from silx.utils.testutils import ParametricTestCase
 
 
 class TestUtilsString(unittest.TestCase):
 
     def test_default_behaviour_nothing(self):
-        self.assertEquals(stringutil.safe_format("aaaa", {}), "aaaa")
+        self.assertEqual(stringutil.safe_format("aaaa", {}), "aaaa")
 
     def test_default_behaviour_list(self):
-        self.assertEquals(stringutil.safe_format("aaaa{0}{1}", (10, "aaaa")), "aaaa10aaaa")
+        self.assertEqual(stringutil.safe_format("aaaa{0}{1}", (10, "aaaa")), "aaaa10aaaa")
 
     def test_default_behaviour_dict(self):
-        self.assertEquals(stringutil.safe_format("aaaa{a}{b}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa")
+        self.assertEqual(stringutil.safe_format("aaaa{a}{b}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa")
 
     def test_default_behaviour_object(self):
         args = {"a": (10, 1), "b": TestUtilsString}
         expected = "aaaa10TestUtilsString"
-        self.assertEquals(stringutil.safe_format("aaaa{a[0]}{b.__name__}", args), expected)
+        self.assertEqual(stringutil.safe_format("aaaa{a[0]}{b.__name__}", args), expected)
 
     def test_missing_index(self):
-        self.assertEquals(stringutil.safe_format("aaaa{0}{1}{2}", (10, "aaaa")), "aaaa10aaaa{2}")
+        self.assertEqual(stringutil.safe_format("aaaa{0}{1}{2}", (10, "aaaa")), "aaaa10aaaa{2}")
 
     def test_missing_key(self):
-        self.assertEquals(stringutil.safe_format("aaaa{a}{b}{c}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa{c}")
+        self.assertEqual(stringutil.safe_format("aaaa{a}{b}{c}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa{c}")
 
     def test_missing_object(self):
         expected = "aaaa{a[0]}{b.__name__}"
-        self.assertEquals(stringutil.safe_format("aaaa{a[0]}{b.__name__}", {}), expected)
+        self.assertEqual(stringutil.safe_format("aaaa{a[0]}{b.__name__}", {}), expected)
+
+
+class TestToOrdinal(ParametricTestCase):
+
+    CASES = [
+        (1, "1st"),
+        (2, "2nd"),
+        (3, "3rd"),
+        (5, "5th"),
+        (13, "13th"),
+        (812, "812th"),
+        (250, "250th"),
+        (2071, "2071st"),
+    ]
+
+    def test_ordinal(self):
+        for value, expected in self.CASES:
+            with self.subTest(value=value, expected=expected):
+                self.assertEqual(stringutil.to_ordinal(value), expected)
 
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestUtilsString))
+    testsuite.addTest(loader(TestToOrdinal))
     return testsuite
 
 
