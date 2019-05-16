@@ -35,7 +35,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "11/01/2019"
+__date__ = "16/05/2019"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -44,7 +44,7 @@ import logging
 logger = logging.getLogger(__name__)
 from collections import OrderedDict
 import numpy
-from . import ocl, release_cl_buffers, kernel_workgroup_size, get_x87_volatile_option
+from . import ocl
 if ocl:
     import pyopencl.array
     from . import processing
@@ -53,6 +53,7 @@ if ocl:
     BufferDescription = processing.BufferDescription
 else:
     raise ImportError("pyopencl is not installed or no device is available")
+from. import release_cl_buffers, kernel_workgroup_size, get_x87_volatile_option
 
 
 class Separator(OpenclProcessing):
