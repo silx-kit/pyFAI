@@ -236,6 +236,10 @@ class TestBugRegression(unittest.TestCase):
             path = os.path.relpath(path, pyFAI_root)
             path = path.replace("\\", "/")
             elements = path.split("/")
+            if "test" in elements:
+                # Always skip test modules
+                logger.warning("Skip test module %s", path)
+                return True
             if not UtilsTest.WITH_OPENCL_TEST:
                 if "opencl" in elements:
                     logger.warning("Skip %s. OpenCL tests disabled", path)
