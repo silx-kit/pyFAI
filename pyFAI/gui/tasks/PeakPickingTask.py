@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/05/2019"
+__date__ = "16/05/2019"
 
 import logging
 import numpy
@@ -821,6 +821,19 @@ class _RingSelectionBehaviour(qt.QObject):
         self.__plot = plot
         self.__initState()
 
+    def incRing(self):
+        """Select the next ring. The auto selectection will be disabled."""
+        ringNumber = self.__spinnerRing.value()
+        ringNumber = ringNumber + 1
+        self.selectRing(ringNumber)
+
+    def decRing(self):
+        """Select the next ring. The auto selection will be disabled."""
+        ringNumber = self.__spinnerRing.value()
+        ringNumber = ringNumber - 1
+        if ringNumber > 0:
+            self.selectRing(ringNumber)
+
     def selectRing(self, ringNumber):
         """Select one of the rings.
 
@@ -1078,12 +1091,19 @@ class PeakPickingTask(AbstractCalibrationTask):
             self.addAction(action)
 
         action = qt.QAction(self)
-        action.setText("Toggle new tring tool")
-        action.triggered.connect(lambda: self.__ringSelection.toggleNewRing())
+        action.setText("Select the next ring")
+        action.triggered.connect(lambda: self.__ringSelection.incRing())
         action.setShortcut(qt.QKeySequence(qt.Qt.Key_Plus))
         self.addAction(action)
+
         action = qt.QAction(self)
-        action.setText("Toggle new tring tool")
+        action.setText("Select the previous ring")
+        action.triggered.connect(lambda: self.__ringSelection.decRing())
+        action.setShortcut(qt.QKeySequence(qt.Qt.Key_Minus))
+        self.addAction(action)
+
+        action = qt.QAction(self)
+        action.setText("Toggle new ring tool")
         action.triggered.connect(lambda: self.__ringSelection.toggleNewRing())
         action.setShortcut(qt.QKeySequence(qt.Qt.Key_Equal))
         self.addAction(action)

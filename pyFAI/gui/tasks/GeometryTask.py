@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/05/2019"
+__date__ = "16/05/2019"
 
 import logging
 import numpy
@@ -51,6 +51,8 @@ from ..utils import units
 from ..helper.MarkerManager import MarkerManager
 from ..helper import ProcessingWidget
 from ..helper import model_transform
+from ..utils import unitutils
+from ... import units as core_units
 
 _logger = logging.getLogger(__name__)
 
@@ -61,6 +63,7 @@ class _StatusBar(qt.QStatusBar):
         qt.QStatusBar.__init__(self, parent)
 
         angleUnitModel = CalibrationContext.instance().getAngleUnit()
+        scatteringUnitModel = CalibrationContext.instance().getScatteringVectorUnit()
 
         self.__position = QuantityLabel(self)
         self.__position.setPrefix(u"<b>Pos</b>: ")
@@ -68,12 +71,14 @@ class _StatusBar(qt.QStatusBar):
         # TODO: Could it be done using a custom layout? Instead of setElasticSize
         self.__position.setElasticSize(True)
         self.addWidget(self.__position)
+
         self.__pixel = QuantityLabel(self)
         self.__pixel.setPrefix(u"<b>Pixel</b>: ")
         self.__pixel.setFormatter(u"{value}")
         self.__pixel.setFloatFormatter(u"{value: >4.3F}")
         self.__pixel.setElasticSize(True)
         self.addWidget(self.__pixel)
+
         self.__chi = QuantityLabel(self)
         self.__chi.setPrefix(u"<b>χ</b>: ")
         self.__chi.setFormatter(u"{value: >4.3F}")
@@ -83,6 +88,7 @@ class _StatusBar(qt.QStatusBar):
         self.__chi.setUnitEditable(True)
         self.__chi.setElasticSize(True)
         self.addWidget(self.__chi)
+
         self.__2theta = QuantityLabel(self)
         self.__2theta.setPrefix(u"<b>2θ</b>: ")
         self.__2theta.setFormatter(u"{value: >4.3F}")
@@ -91,6 +97,15 @@ class _StatusBar(qt.QStatusBar):
         self.__2theta.setUnitEditable(True)
         self.__2theta.setElasticSize(True)
         self.addWidget(self.__2theta)
+
+        self.__q = QuantityLabel(self)
+        self.__q.setPrefix(u"<b>q</b>: ")
+        self.__q.setFormatter(u"{value: >4.3F}")
+        self.__q.setInternalUnit(units.Unit.INV_ANGSTROM)
+        self.__q.setDisplayedUnitModel(scatteringUnitModel)
+        self.__q.setUnitEditable(True)
+        self.__q.setElasticSize(True)
+        self.addWidget(self.__q)
 
         self.clearValues()
 
@@ -106,6 +121,14 @@ class _StatusBar(qt.QStatusBar):
         self.__pixel.setValue(pixel)
         self.__chi.setValue(chi)
         self.__2theta.setValue(tth)
+        if not numpy.isnan(tth):
+            # NOTE: warelength could be updated, and the the display would not
+            # be updated. But here it is safe enougth.
+            wavelength = CalibrationContext.instance().getCalibrationModel().fittedGeometry().wavelength().value()
+            q = unitutils.from2ThRad(tth, core_units.Q_A, wavelength)
+            self.__q.setValue(q)
+        else:
+            self.__q.setValue(float("nan"))
 
 
 class CalibrationState(qt.QObject):
@@ -206,8 +229,10 @@ class _RingPlot(silx.gui.plot.PlotWidget):
 
         self.__plotBackground = SynchronizePlotBackground(self)
 
+        widget = self
         if hasattr(self, "centralWidget"):
-            self.centralWidget().installEventFilter(self)
+            widget = widget.centralWidget()
+        widget.installEventFilter(self)
 
     def setCalibrationState(self, state):
         if self.__state is not None:
@@ -220,6 +245,26 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         if event.type() == qt.QEvent.Leave:
             self.__mouseLeave()
             return True
+
+        if event.type() == qt.QEvent.ToolTip:
+            if self.__tth is not None:
+                pos = widget.mapFromGlobal(event.globalPos())
+                coord = widget.pixelToData(pos.x(), pos.y(), axis="left", check=False)
+
+                pos = coord[0], coord[1]
+                x, y = self.__clampOnImage(pos)
+                angle = self.__tth[y, x]
+                ringId, angle = self.__getClosestAngle(angle)
+
+                if ringId is not None:
+                    message = "%s ring" % stringutil.to_ordinal(ringId + 1)
+                    qt.QToolTip.showText(event.globalPos(), message)
+                else:
+                    qt.QToolTip.hideText()
+                    event.ignore()
+
+                return True
+
         return False
 
     def markerManager(self):
@@ -370,8 +415,12 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             for item in items:
                 item.setVisible(False)
 
-        for angleId in range(0, len(angles), step):
-            ringId, ringAngle = angles[angleId]
+        # Do not dispaly all rings, but at least the 10 first
+        firstRings = [a for a in angles if a[0] <= 10]
+        sampledRings = [a for a in angles if (a[0] % step == 0)]
+        displayedRings = set(firstRings + sampledRings)
+
+        for ringId, ringAngle in displayedRings:
             self.__displayedAngles.add(ringAngle)
             items = self.__getItemsFromAngle(ringId, ringAngle)
             for item in items:
@@ -792,7 +841,7 @@ class GeometryTask(AbstractCalibrationTask):
         calibration = self.__getCalibration()
         geometry = self.model().fittedGeometry()
         rms = None
-        if calibration is None and calibration.isValid():
+        if calibration is not None and calibration.isValid():
             rms = calibration.getRms()
         geometryHistory = self.model().geometryHistoryModel()
         geometryHistory.appendGeometry("Init", datetime.datetime.now(), geometry, rms)
