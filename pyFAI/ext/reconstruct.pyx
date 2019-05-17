@@ -25,11 +25,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""Cython module to reconstruct the masked values of an image"""
+"""Cython module to reconstruct the masked values of an image.
+
+It's a simple inpainting module for reconstructing the missing part of an
+image (masked) to be able to use more common algorithms.
+"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "17/05/2019"
 __status__ = "stable"
 __license__ = "MIT"
 

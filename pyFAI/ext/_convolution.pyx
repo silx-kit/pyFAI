@@ -26,11 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Implementation of a separable 2D convolution"""
+"""Implementation of a separable 2D convolution.
+
+It is used in real space are used to blurs images, used in blob-detection
+algorithm.
+"""
 
 __authors__ = ["Pierre Paleo", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "01/12/2016"
+__date__ = "17/05/2019"
 __status__ = "stable"
 __license__ = "MIT"
 import cython

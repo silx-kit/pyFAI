@@ -26,9 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""
+This extension is a fast-implementation for calculating the geometry, i.e. where
+every pixel of an array stays in space (x,y,z) or its (r, :math:`\\chi`)
+coordinates.
+"""
+
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "26/10/2018"
+__date__ = "17/05/2019"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 

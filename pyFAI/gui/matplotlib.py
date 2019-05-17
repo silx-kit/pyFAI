@@ -22,6 +22,7 @@
 # THE SOFTWARE.
 #
 # ###########################################################################*/
+
 """This module inits matplotlib and setups the backend to use.
 
 It MUST be imported prior to any other import of matplotlib.
@@ -29,11 +30,12 @@ It MUST be imported prior to any other import of matplotlib.
 It provides the matplotlib :class:`FigureCanvasQTAgg` class corresponding
 to the used backend.
 """
+
 from __future__ import absolute_import
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "20/02/2018"
+__date__ = "17/05/2019"
 
 
 import sys

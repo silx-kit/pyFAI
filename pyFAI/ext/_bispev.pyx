@@ -25,14 +25,14 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-'''Spline evaluation function
 
-Created on Nov 4, 2013
-'''
+
+"""Module containing a re-implementation of bi-cubic spline evaluation from
+scipy."""
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "17/05/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -51,12 +51,14 @@ def bisplev(x, y, tck, dx=0, dy=0):
     Return a rank-2 array of spline function values (or spline derivative
     values) at points given by the cross-product of the rank-1 arrays x and
     y.  In special cases, return an array or just a float if either x or y or
-    both are floats.  Based on BISPEV from FITPACK.
+    both are floats. Based on BISPEV from FITPACK.
 
     See :func:`bisplrep` to generate the `tck` representation.
 
     See also :func:`splprep`, :func:`splrep`, :func:`splint`, :func:`sproot`,
     :func:`splev`, :func:`UnivariateSpline`, :func:`BivariateSpline`
+
+    References: [1]_, [2]_, [3]_.
 
     .. [1] Dierckx P. : An algorithm for surface fitting
        with spline functions

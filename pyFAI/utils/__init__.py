@@ -27,14 +27,14 @@
 #  THE SOFTWARE.
 
 """
-Utilities
+Module with miscelaneous tools
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2018"
+__date__ = "17/05/2019"
 __status__ = "production"
 
 import logging
