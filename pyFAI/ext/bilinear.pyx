@@ -25,10 +25,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""Module with makes a discrete 2D-array appear like a continuous function thanks
+to bilinear interpolations.
+"""
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "18/04/2019"
+__date__ = "17/05/2019"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 

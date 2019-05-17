@@ -23,11 +23,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-""" Bayesian evaluation of background for 1D powder diffraction pattern
+"""Bayesian evaluation of background for 1D powder diffraction pattern.
 
 Code according to Sivia and David, J. Appl. Cryst. (2001). 34, 318-324
-# Version: 0.1 2012/03/28
-# Version: 0.2 2016/10/07: OOP implementation
+
+* Version: 0.1 2012/03/28
+* Version: 0.2 2016/10/07: OOP implementation
 """
 
 from __future__ import absolute_import, print_function, division
@@ -35,7 +36,7 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "17/05/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 

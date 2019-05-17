@@ -25,9 +25,7 @@
 #  THE SOFTWARE.
 
 
-"""Pre-Processing
-
-A module for all common pixel-wise  pre-processing of data.
+"""Module providing common pixel-wise pre-processing of data.
 """
 
 from __future__ import absolute_import, print_function, with_statement
@@ -36,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/05/2019"
+__date__ = "17/05/2019"
 __status__ = "development"
 
 import warnings
@@ -87,10 +85,8 @@ def preproc(raw,
     NaN are always considered as invalid values
 
     if neither empty nor dummy is provided, empty pixels are 0.
-    Empty pixels are always zero in "split_result" mode
+    Empty pixels are always zero in "split_result" mode.
 
-    Split result:
-    -------------
     When set to False, i.e the default, the pixel-wise operation is:
     I = (raw - dark)/(flat \* solidangle \* polarization \* absorption)
     Invalid pixels are set to the dummy or empty value.
@@ -100,7 +96,7 @@ def preproc(raw,
     I = [(raw - dark), (variance), (flat \* solidangle \* polarization \* absorption)]
     Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
 
-    If poissonian is set to True, the variance is evaluated as (raw + dark)
+    If poissonian is set to True, the variance is evaluated as (raw + dark).
     """
     if isinstance(dtype, str):
         dtype = numpy.dtype(dtype).type
