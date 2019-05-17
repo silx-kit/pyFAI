@@ -35,11 +35,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2019"
+__date__ = "17/05/2019"
 
 import unittest
 import numpy
 from pyFAI.utils import ellipse as ellipse_mdl
+
+
+def modulo(value, div=numpy.pi):
+    """hack to calculate the value%div but returns the smallest 
+    absolute value, possibly negative"""
+    q = value / div
+    i = round(q)
+    return (i - q) * div
 
 
 class TestEllipse(unittest.TestCase):
@@ -53,7 +61,7 @@ class TestEllipse(unittest.TestCase):
         self.assertAlmostEqual(ellipse.center_2, 100)
         self.assertAlmostEqual(ellipse.half_long_axis, 20)
         self.assertAlmostEqual(ellipse.half_short_axis, 10)
-        self.assertAlmostEqual(ellipse.angle, 0)
+        self.assertAlmostEqual(modulo(ellipse.angle), 0)
 
     def test_ellipse2(self):
         angles = numpy.arange(0, numpy.pi * 2, 0.2)
@@ -64,7 +72,7 @@ class TestEllipse(unittest.TestCase):
         self.assertAlmostEqual(ellipse.center_2, 100)
         self.assertAlmostEqual(ellipse.half_long_axis, 20)
         self.assertAlmostEqual(ellipse.half_short_axis, 10)
-        self.assertAlmostEqual(ellipse.angle, numpy.pi)
+        self.assertAlmostEqual(modulo(ellipse.angle), 0)
 
     def test_half_circle(self):
         angles = numpy.linspace(0, numpy.pi, 10)
