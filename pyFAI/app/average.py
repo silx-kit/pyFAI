@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "17/05/2019"
 __status__ = "production"
 
 import os
@@ -99,8 +99,8 @@ def parse_algorithms(options):
 def cleanup_input_paths(input_paths):
     """Clean up filename using :: to access to data inside file.
 
-    :returns: Returns a list of paths without directory separator inside the filename
-    location.
+    :returns: Returns a list of paths without directory separator inside the
+        filename location.
     """
     result = []
     for path in input_paths:

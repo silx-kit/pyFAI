@@ -30,7 +30,7 @@ from __future__ import division
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/11/2018"
+__date__ = "17/05/2019"
 
 
 import logging
@@ -43,7 +43,8 @@ class Timer(object):
     """Kind of context manager to call a code while the amount of seconds is
     not finished.
 
-    .. code-block::
+    .. code-block:: python
+
         timer = Timer(seconds=10)
         while not timer.isTimeout():
             print("Tick")

@@ -25,9 +25,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+
+"""
+Module providing inversion transformation from pixel coordinate to radial/azimuthal
+coordinate.
+"""
+
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "06/05/2019"
+__date__ = "17/05/2019"
 __copyright__ = "2018-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 

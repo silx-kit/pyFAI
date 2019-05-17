@@ -26,9 +26,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Module used in file hierarchy tree for the diff_map graphical user interface.
+"""
+
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "09/01/2018"
+__date__ = "17/05/2019"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 

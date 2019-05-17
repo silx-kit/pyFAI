@@ -30,11 +30,13 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""Contains all OpenCL implementation."""
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2019"
+__date__ = "17/05/2019"
 __status__ = "stable"
 
 import os
