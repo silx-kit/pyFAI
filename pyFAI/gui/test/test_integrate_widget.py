@@ -34,15 +34,14 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2019"
+__date__ = "16/05/2019"
 
-import os
-import sys
 import unittest
 import logging
 
 from silx.gui import qt
 from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
+from silx.gui.utils import testutils
 from pyFAI.test.utilstest import UtilsTest
 from pyFAI.io import integration_config
 
@@ -50,31 +49,14 @@ from pyFAI.io import integration_config
 logger = logging.getLogger(__name__)
 
 
-class TestIntegrationDialog(unittest.TestCase):
+class TestIntegrationDialog(testutils.TestCaseQt):
 
     @classmethod
     def setUpClass(cls):
-        cls.app = None
-        if sys.platform.startswith('linux') and not os.environ.get('DISPLAY', ''):
-            # On linux and no DISPLAY available (e.g., ssh without -X)
-            logger.warning('pyFAI.integrate_widget tests disabled (DISPLAY env. variable not set)')
-            cls.app = None
-        elif qt is not None:
-            cls.app = qt.QApplication([])
-
+        super(TestIntegrationDialog, cls).setUpClass()
         config = {"poni": UtilsTest.getimage("Pilatus1M.poni")}
         integration_config.normalize(config, inplace=True)
         cls.base_config = config
-
-    def setUp(self):
-        if qt is None:
-            self.skipTest("Qt is not available")
-        if self.__class__.app is None:
-            self.skipTest("DISPLAY env. is not set")
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.app = None
 
     def test_config_flatdark_v1(self):
         dico = {"dark_current": "a,b,c",

@@ -26,11 +26,12 @@
 #  THE SOFTWARE.
 
 #
-"""Inverse watershed for connecting region of high intensity
+"""Peak peaking via inverse watershed for connecting region of high intensity
 """
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "11/01/2018"
+__date__ = "17/05/2019"
 __status__ = "stable"
 __license__ = "MIT"
 

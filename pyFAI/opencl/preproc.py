@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "15/03/2019"
+__date__ = "16/05/2019"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -42,7 +42,10 @@ logger = logging.getLogger(__name__)
 
 from collections import OrderedDict
 import numpy
-from . import pyopencl, mf, processing
+from . import pyopencl
+if pyopencl is None:
+    raise ImportError("pyopencl is not installed")
+from . import mf, processing
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription

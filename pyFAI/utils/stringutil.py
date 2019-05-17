@@ -26,12 +26,12 @@
 
 from __future__ import absolute_import, print_function, division
 
-"""Module containing utilitary around string"""
+"""Module containing enhanced string formatters."""
 
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "17/05/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 

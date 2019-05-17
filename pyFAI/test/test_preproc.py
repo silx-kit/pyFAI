@@ -151,9 +151,10 @@ class TestPreproc(unittest.TestCase):
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_opencl(self):
-        from ..opencl import ocl, preproc as ocl_preproc
+        from ..opencl import ocl
         if ocl is None:
             self.skipTest("OpenCL not available")
+        from ..opencl import preproc as ocl_preproc
         self.one_test(ocl_preproc)
 
 

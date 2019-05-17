@@ -29,14 +29,14 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "11/01/2019"
+__date__ = "16/05/2019"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from . import pyopencl, kernel_workgroup_size
+from . import pyopencl
 from ..utils import calc_checksum
 
 if pyopencl:
@@ -46,6 +46,7 @@ else:
 
 from . import processing
 from . import get_x87_volatile_option
+from . import kernel_workgroup_size
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription

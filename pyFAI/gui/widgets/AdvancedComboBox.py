@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/04/2019"
+__date__ = "17/05/2019"
 
 import logging
 
@@ -139,7 +139,7 @@ class AdvancedComboBox(qt.QComboBox):
 
         Only `qt.Qt.DisplayRole` and `qt.Qt.DecorationRole` are supported.
 
-        .. code-block::
+        .. code-block:: python
 
             def displayedData(widget, row, role=qt.Qt.DisplayRole):
                 if role == qt.Qt.DisplayRole:

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "17/05/2019"
 
 import logging
 import numpy
@@ -767,8 +767,8 @@ class IntegrationPlot(qt.QFrame):
 
     def setIntegrationProcess(self, integrationProcess):
         """
-        :param IntegrationProcess integrationProcess: Result of the integration
-            process
+        :param :class:`~pyFAI.gui.tasks.IntegrationTask.IntegrationProcess` integrationProcess:
+            Result of the integration process
         """
         self.__clearRings()
 
