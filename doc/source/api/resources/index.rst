@@ -1,9 +1,6 @@
 pyFAI.resources package
 =======================
 
-Submodules
-----------
-
 pyFAI.resources.setup module
 ----------------------------
 

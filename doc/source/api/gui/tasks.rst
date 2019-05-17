@@ -1,9 +1,6 @@
 pyFAI.gui.tasks package
 =======================
 
-Submodules
-----------
-
 pyFAI.gui.tasks.AbstractCalibrationTask module
 ----------------------------------------------
 

@@ -13,9 +13,6 @@ Subpackages
     utils
     widgets
 
-Submodules
-----------
-
 pyFAI.gui.ApplicationContext module
 -----------------------------------
 

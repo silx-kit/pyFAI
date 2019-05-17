@@ -1,9 +1,6 @@
 pyFAI.gui.dialog package
 ========================
 
-Submodules
-----------
-
 pyFAI.gui.dialog.Detector3dDialog module
 ----------------------------------------
 

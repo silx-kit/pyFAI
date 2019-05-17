@@ -1,9 +1,6 @@
 pyFAI.gui.widgets package
 =========================
 
-Submodules
-----------
-
 pyFAI.gui.widgets.AdvancedComboBox module
 -----------------------------------------
 

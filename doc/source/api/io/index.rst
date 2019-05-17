@@ -1,9 +1,6 @@
 pyFAI.io package
 ================
 
-Submodules
-----------
-
 pyFAI.io.image module
 ---------------------
 

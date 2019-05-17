@@ -1,9 +1,6 @@
 pyFAI.app package
 =================
 
-Submodules
-----------
-
 pyFAI.app.average module
 ------------------------
 

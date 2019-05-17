@@ -1,9 +1,6 @@
 pyFAI.gui.model package
 =======================
 
-Submodules
-----------
-
 pyFAI.gui.model.AbstractModel module
 ------------------------------------
 

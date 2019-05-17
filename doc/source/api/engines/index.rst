@@ -1,9 +1,6 @@
 pyFAI.engines package
 =====================
 
-Submodules
-----------
-
 pyFAI.engines.CSR_engine module
 -------------------------------
 

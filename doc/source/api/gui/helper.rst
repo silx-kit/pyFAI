@@ -1,9 +1,6 @@
 pyFAI.gui.helper package
 ========================
 
-Submodules
-----------
-
 pyFAI.gui.helper.MarkerManager module
 -------------------------------------
 

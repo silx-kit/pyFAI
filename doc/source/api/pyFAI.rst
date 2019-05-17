@@ -1,9 +1,6 @@
 pyFAI package
 =============
 
-Subpackages
------------
-
 .. toctree::
 
     app/index

@@ -1,9 +1,6 @@
 pyFAI.ext package
 =================
 
-Submodules
-----------
-
 pyFAI.ext.bilinear module
 -------------------------
 
