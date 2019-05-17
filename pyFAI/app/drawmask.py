@@ -34,7 +34,7 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019"
+__date__ = "16/05/2019"
 __satus__ = "Production"
 
 import os
@@ -46,7 +46,6 @@ import fabio
 
 _logger = logging.getLogger("drawmask")
 
-import silx
 import silx.gui.plot
 from silx.gui import qt
 import pyFAI.utils
@@ -97,12 +96,7 @@ class MaskImageWidget(AbstractMaskImageWidget):
 
         self.__plot2D = silx.gui.plot.Plot2D()
         self.__plot2D.setKeepDataAspectRatio(True)
-        if hasattr(self.__plot2D, "getMaskAction"):
-            # silx 0.5 and later
-            maskAction = self.__plot2D.getMaskAction()
-        else:
-            # silx 0.4 and previous
-            maskAction = self.__plot2D.maskAction
+        maskAction = self.__plot2D.getMaskAction()
         maskAction.setVisible(False)
         self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(plot=self.__plot2D)
         try:
