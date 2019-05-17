@@ -53,6 +53,3 @@ Tips & Tricks:
 PyFAI-integrate saves all parameters in a .azimint.json (hidden) file. This JSON file
 is an ascii file which can be edited and used to configure online data analysis using
 the LImA plugin of pyFAI.
-
-Nota: there is bug in debian6 making the GUI crash (to be fixed inside pyqt)
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348
