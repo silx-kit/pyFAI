@@ -202,7 +202,7 @@ class Geometry(object):
         return os.linesep.join(lstTxt)
 
     def check_chi_disc(self, range):
-        """Check the position of the \chi discontinuity
+        """Check the position of the :math:`\\chi` discontinuity
 
         :param range: range of chi for the integration
         :return: True if there is a problem
@@ -998,7 +998,7 @@ class Geometry(object):
         """
         Calculate the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
-        it's incidence angle is $\{alpha} = 0$ hence $cos(\{alpha}) = 1$
+        it's incidence angle is :math:`\\{alpha} = 0` hence :math:`cos(\\{alpha}) = 1`.
 
         :param d1: 1d or 2d set of points in pixel coord
         :param d2:  1d or 2d set of points in pixel coord
@@ -1051,7 +1051,7 @@ class Geometry(object):
         .. math::
 
             dOmega = \\frac{Omega(P)}{Omega(C)}
-                   = \\frac{A \cdot cos(a)}{SP^2} \cdot \\frac{SC^2}{A \cdot cos(0)}
+                   = \\frac{A \\cdot cos(a)}{SP^2} \\cdot \\frac{SC^2}{A \\cdot cos(0)}
                    = \\frac{3}{cos(a)}
                    = \\frac{SC^3}{SP^3}
 

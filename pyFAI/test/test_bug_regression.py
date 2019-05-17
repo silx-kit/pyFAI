@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "16/05/2019"
 
 import sys
 import os
@@ -226,44 +226,64 @@ class TestBugRegression(unittest.TestCase):
         hc = 12.398419292004204  # Old reference value
         self.assertAlmostEqual(hc, units.hc, 6, "hc is correct, got %s" % units.hc)
 
-    def test_bug_808(self):
+    def test_import_all_modules(self):
         """Try to import every single module in the package
         """
         import pyFAI
-#         print(pyFAI.__file__)
-#         print(pyFAI.__name__)
         pyFAI_root = os.path.split(pyFAI.__file__)[0]
+
+        def must_be_skipped(path):
+            path = os.path.relpath(path, pyFAI_root)
+            path = path.replace("\\", "/")
+            elements = path.split("/")
+            if "test" in elements:
+                # Always skip test modules
+                logger.warning("Skip test module %s", path)
+                return True
+            if not UtilsTest.WITH_OPENCL_TEST:
+                if "opencl" in elements:
+                    logger.warning("Skip %s. OpenCL tests disabled", path)
+                    return True
+            if not UtilsTest.WITH_QT_TEST:
+                if "gui" in elements:
+                    logger.warning("Skip %s. Qt tests disabled", path)
+                    return True
+            return False
 
         for root, dirs, files in os.walk(pyFAI_root, topdown=True):
             for adir in dirs:
-
                 subpackage_path = os.path.join(root, adir, "__init__.py")
+                if must_be_skipped(subpackage_path):
+                    continue
                 subpackage = "pyFAI" + subpackage_path[len(pyFAI_root):-12].replace(os.sep, ".")
                 if os.path.isdir(subpackage_path):
                     logger.info("Loading subpackage: %s from %s", subpackage, subpackage_path)
                     sys.modules[subpackage] = load_source(subpackage, subpackage_path)
             for name in files:
-                if name.endswith(".py"):
-                    path = os.path.join(root, name)
-                    fqn = "pyFAI" + path[len(pyFAI_root):-3].replace(os.sep, ".")
-                    logger.info("Importing %s from %s", fqn, path)
-                    try:
-                        load_source(fqn, path)
-                    except Exception as err:
-                        if ((isinstance(err, ImportError) and
-                                "No Qt wrapper found" in err.__str__() or
-                                "pyopencl is not installed" in err.__str__() or
-                                "PySide" in err.__str__()) or
-                            (isinstance(err, SystemError) and
-                                "Parent module" in err.__str__())):
+                if not name.endswith(".py"):
+                    continue
+                path = os.path.join(root, name)
+                if must_be_skipped(path):
+                    continue
+                fqn = "pyFAI" + path[len(pyFAI_root):-3].replace(os.sep, ".")
+                logger.info("Importing %s from %s", fqn, path)
+                try:
+                    load_source(fqn, path)
+                except Exception as err:
+                    if ((isinstance(err, ImportError) and
+                            "No Qt wrapper found" in err.__str__() or
+                            "pyopencl is not installed" in err.__str__() or
+                            "PySide" in err.__str__()) or
+                        (isinstance(err, SystemError) and
+                            "Parent module" in err.__str__())):
 
-                            logger.info("Expected failure importing %s from %s with error: %s",
-                                        fqn, path, err)
-                        else:
-                            logger.error("Failed importing %s from %s with error: %s%s: %s",
-                                         fqn, path, os.linesep,
-                                         err.__class__.__name__, err)
-                            raise err
+                        logger.info("Expected failure importing %s from %s with error: %s",
+                                    fqn, path, err)
+                    else:
+                        logger.error("Failed importing %s from %s with error: %s%s: %s",
+                                     fqn, path, os.linesep,
+                                     err.__class__.__name__, err)
+                        raise err
 
     def test_bug_816(self):
         "Ensure the chi-disontinuity is properly set"
