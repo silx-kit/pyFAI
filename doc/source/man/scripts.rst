@@ -15,21 +15,21 @@ The calibration is the determination of the geometry of the experimental setup u
 Finally a full dataset can be integrated using different tools targeted at different experiments.
 
 Pre-processing tools:
- * pyFAI-drawmask: tool for drawing a mask on top of an image
- * pyFAI-average: tool for averaging/median/... filtering images (i.e. for dark current)
+ * ``pyFAI-drawmask``: tool for drawing a mask on top of an image (deprecated)
+ * ``pyFAI-average``: tool for averaging/median/... filtering images (i.e. for dark current)
 
 Calibration tools:
- * pyFAI-calib: manually select the rings and refine the geometry
- * pyFAI-recalib: automatic ring extraction to refine the geometry (deprecated: see "recalib" option in pyFAI-calib)
- * MX-calibrate: Calibrate automatically a set of images taken at various detector distances
- * check_calib: checks the calibration of an image at the sub-pixel level (deprecated: see "validate" option in pyFAI-calib)
+ * ``pyFAI-calib2`` and ``pyFAI-calib``: manually select the rings and refine the geometry
+ * ``pyFAI-recalib``: automatic ring extraction to refine the geometry (deprecated: see "recalib" option in pyFAI-calib)
+ * ``MX-calibrate``: Calibrate automatically a set of images taken at various detector distances
+ * ``check_calib``: checks the calibration of an image at the sub-pixel level (deprecated: see "validate" option in pyFAI-calib)
 
 Azimuthal integration tools:
- * pyFAI-integrate: the graphical interface for integration (GUI)
- * pyFAI-saxs: command line interface for small-angle scattering
- * pyFAI-waxs: command line interface for powder difration
- * diff_map: diffraction mapping & tomography tool (command line and GUI)
- * diff_tomo: diffraction tomography tool (command line only)
+ * ``pyFAI-integrate``: the graphical interface for integration (GUI)
+ * ``pyFAI-saxs``: command line interface for small-angle scattering
+ * ``pyFAI-waxs``: command line interface for powder difration
+ * ``diff_map``: diffraction mapping & tomography tool (command line and GUI)
+ * ``diff_tomo``: diffraction tomography tool (command line only)
 
 .. toctree::
    :maxdepth: 1

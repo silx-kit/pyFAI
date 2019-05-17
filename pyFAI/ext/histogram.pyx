@@ -26,10 +26,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""A set of histogram functions with or without OpenMP enabled."""
+"""A set of histogram functions with or without OpenMP enabled.
+
+Re-implementation of the numpy.histogram, optimized for azimuthal integration.
+
+Deprecated, will be replaced by ``silx.math.histogramnd``.
+"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "06/05/2019"
+__date__ = "17/05/2019"
 __license__ = "MIT"
 __copyright__ = "2011-2019, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"

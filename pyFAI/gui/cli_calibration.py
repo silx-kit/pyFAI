@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2018"
+__date__ = "17/05/2019"
 __status__ = "production"
 
 import os
@@ -124,29 +124,29 @@ class AbstractCalibration(object):
                 " display too many images without crashing, this"\
                 " is why the window showing the diffraction image"\
                 " is closed"
-    HELP = {"help": "Try to get the help of a given action, like 'refine?'. Use done when finished. "
-            "Most command are composed of 'action parameter value' like 'set wavelength 1 A'.",
-            "get": "print he value of a parameter",
-            "set": "set the value of a parameter to the given value, i.e 'set wavelength 0.1 nm', units are optional",
-            'fix': "fixes the value of a parameter so that its value will not be optimized, i.e. 'fix wavelength'",
-            'free': "frees the parameter so that the value can be optimized, i.e. 'free wavelength'",
-            'bound': "sets the upper and lower bound of a parameter: 'bound dist 0.1 0.2'",
-            'bounds': "sets the upper and lower bound of all parameters",
-            'refine': "performs a new cycle of refinement",
-            'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob, massif, watershed) and the nb_pts_per_deg in azimuth",
-            'done': "finishes the processing, performs an integration and quits",
-            'validate': "plot the offset between the calibrated image and the back-projected image",
-            'validate2': "measures the offset of the center as function of azimuthal angle by cross-correlation of 2 plots, 180 deg appart. Option: number of azimuthal sliced, default: 36",
-            'integrate': "perform the azimuthal integration and display results",
-            'abort': "quit immediately, discarding any unsaved changes",
-            'show': "Just print out the current parameter set. Optional parameters are units for length, rotation and wavelength, i.e. 'show mm deg A'",
-            'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
-            'assign': "Change the assignment of a group of points to a rings",
-            "weight": "toggle from weighted to unweighted mode...",
-            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad, integrator_method, error_model. Warning: attribute change may be harmful !",
-            "chiplot": "plot control point radial error as function of azimuthal angle, optional parameters: the rings for which this need to be plotted",
-            "delete": "delete a group of points, provide the letter."
-            }
+    _HELP = {"help": "Try to get the help of a given action, like 'refine?'. Use done when finished. "
+             "Most command are composed of 'action parameter value' like 'set wavelength 1 A'.",
+             "get": "print he value of a parameter",
+             "set": "set the value of a parameter to the given value, i.e 'set wavelength 0.1 nm', units are optional",
+             'fix': "fixes the value of a parameter so that its value will not be optimized, i.e. 'fix wavelength'",
+             'free': "frees the parameter so that the value can be optimized, i.e. 'free wavelength'",
+             'bound': "sets the upper and lower bound of a parameter: 'bound dist 0.1 0.2'",
+             'bounds': "sets the upper and lower bound of all parameters",
+             'refine': "performs a new cycle of refinement",
+             'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob, massif, watershed) and the nb_pts_per_deg in azimuth",
+             'done': "finishes the processing, performs an integration and quits",
+             'validate': "plot the offset between the calibrated image and the back-projected image",
+             'validate2': "measures the offset of the center as function of azimuthal angle by cross-correlation of 2 plots, 180 deg appart. Option: number of azimuthal sliced, default: 36",
+             'integrate': "perform the azimuthal integration and display results",
+             'abort': "quit immediately, discarding any unsaved changes",
+             'show': "Just print out the current parameter set. Optional parameters are units for length, rotation and wavelength, i.e. 'show mm deg A'",
+             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
+             'assign': "Change the assignment of a group of points to a rings",
+             "weight": "toggle from weighted to unweighted mode...",
+             "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad, integrator_method, error_model. Warning: attribute change may be harmful !",
+             "chiplot": "plot control point radial error as function of azimuthal angle, optional parameters: the rings for which this need to be plotted",
+             "delete": "delete a group of points, provide the letter."
+             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist": "meter", "poni1": "meter", "poni2": "meter", "rot1": "radian",
              "rot2": "radian", "rot3": "radian", "wavelength": "meter"}
@@ -795,15 +795,15 @@ class AbstractCalibration(object):
             if action in ["help", "?"]:
                 req_help = True
             if req_help:
-                for what in self.HELP.keys():
+                for what in self._HELP.keys():
                     if action.startswith(what):
                         print("Help on %s" % what)
-                        print(self.HELP[what])
+                        print(self._HELP[what])
                         break
                 else:
                     print("Help on commands")
-                    print(self.HELP["help"])
-                    print("Valid actions: " + ", ".join(self.HELP.keys()))
+                    print(self._HELP["help"])
+                    print("Valid actions: " + ", ".join(self._HELP.keys()))
                     print("Valid parameters: " + ", ".join(self.PARAMETERS))
             elif action == "get":  # get wavelength
                 if (len(words) >= 2):
@@ -813,7 +813,7 @@ class AbstractCalibration(object):
                         else:
                             print("No a parameter: %s" % param)
                 else:
-                    print(self.HELP[action])
+                    print(self._HELP[action])
 
             elif action == "set":  # set wavelength 1e-10
                 if (len(words) in (3, 4)) and words[1] in self.PARAMETERS:
@@ -830,7 +830,7 @@ class AbstractCalibration(object):
                                 scale = unit.scale
                         setattr(self.geoRef, param, value / scale)
                 else:
-                    print(self.HELP[action])
+                    print(self._HELP[action])
             elif action == "fix":  # fix wavelength
                 if (len(words) >= 2):
                     for param in words[1:]:
@@ -840,7 +840,7 @@ class AbstractCalibration(object):
                         else:
                             print("No a parameter: %s" % param)
                 else:
-                    print(self.HELP[action])
+                    print(self._HELP[action])
             elif action == "free":  # free wavelength
                 if (len(words) >= 2):
                     for param in words[1:]:
@@ -850,7 +850,7 @@ class AbstractCalibration(object):
                         else:
                             print("No a parameter: %s" % param)
                 else:
-                    print(self.HELP[action])
+                    print(self._HELP[action])
 
             elif action == "recalib":
                 max_rings = None
@@ -922,9 +922,9 @@ class AbstractCalibration(object):
                             self.geoRef.__getattribute__("set_%s" % param)(value)
                             self.geoRef.__getattribute__("set_%s_max" % param)(value_max)
                     else:
-                        print(self.HELP[action])
+                        print(self._HELP[action])
                 else:
-                    print(self.HELP[action])
+                    print(self._HELP[action])
             elif action == "bounds":
                 readFloatFromKeyboard("Enter Distance in meter "
                                       "(or dist_min[%.3f] dist[%.3f] dist_max[%.3f]):\t " %
@@ -1037,9 +1037,9 @@ class AbstractCalibration(object):
                     else:
                         print("No such parameter %s" % param)
                 else:
-                    print(self.HELP[action])
+                    print(self._HELP[action])
             elif action == "chiplot":
-                    print(self.HELP[action])
+                    print(self._HELP[action])
                     rings = None
                     if len(words) > 1:
                         try:
@@ -1049,7 +1049,7 @@ class AbstractCalibration(object):
                     self.chiplot(rings)
             elif action == "delete":
                 if len(words) < 2:
-                    print(self.HELP[action])
+                    print(self._HELP[action])
                 else:
                     for code in words[1:]:
                         self.peakPicker.remove_grp(code)

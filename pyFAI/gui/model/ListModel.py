@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "11/04/2019"
+__date__ = "17/05/2019"
 
 import functools
 
@@ -41,8 +41,8 @@ class ChangeEvent(object):
         """
         Define a change done on an item from the :class:`ListModel`.
 
-        :param int index, The location where to put/remove the item (before the change)
-            or the current index of the changed item
+        :param int index: The location where to put/remove the item (before the
+            change) or the current index of the changed item
         :param object item: The item involved in this change
         :param bool updated: True if the item was changed
         :param bool added: True if the item was added

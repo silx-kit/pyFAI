@@ -23,11 +23,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-""" Bayesian evaluation of background for 1D powder diffraction pattern
+"""Bayesian evaluation of background for 1D powder diffraction pattern.
 
 Code according to Sivia and David, J. Appl. Cryst. (2001). 34, 318-324
-# Version: 0.1 2012/03/28
-# Version: 0.2 2016/10/07: OOP implementation
+
+* Version: 0.1 2012/03/28
+* Version: 0.2 2016/10/07: OOP implementation
 """
 
 from __future__ import absolute_import, print_function, division
@@ -35,7 +36,7 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "17/05/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -53,7 +54,7 @@ class BayesianBackground(object):
 
     .. math:: z =  y / sigma^2
 
-    * if z<0: a quadratic behaviour is expected
+    * if z<0 a quadratic behaviour is expected
     * if z>>1 it is likely a bragg peak so the penalty should be small: log(z).
     * The spline is used to have a quadratic behaviour near 0 and the log one
       near the junction
@@ -126,9 +127,11 @@ class BayesianBackground(object):
     def bayes_llk(cls, z):
         """Calculate actually the log-likelihood from a set of weighted error
 
-        Re implementation of:
-        (y<=0)*5*y**2 + (y>0)*(y<8)*pyFAI.utils.bayes.background.spline(y) + (y>=8)*(s1+log(abs(y)+1*(y<8)))
-        even slightly faster
+        Re implementation of the following code even slightly faster:
+
+        .. code-block:: python
+
+            (y<=0)*5*y**2 + (y>0)*(y<8)*pyFAI.utils.bayes.background.spline(y) + (y>=8)*(s1+log(abs(y)+1*(y<8)))
 
         :param float[:] z: weighted error
         :return: log likelihood
