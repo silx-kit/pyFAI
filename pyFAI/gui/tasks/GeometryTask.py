@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "17/05/2019"
 
 import logging
 import numpy
@@ -110,7 +110,7 @@ class _StatusBar(qt.QStatusBar):
         self.clearValues()
 
     def clearValues(self):
-        self.setValues(None, None, float("nan"), float("nan"), float("nan"))
+        self.setValues(None, None, numpy.nan, numpy.nan, numpy.nan)
 
     def setValues(self, x, y, pixel, chi, tth):
         if x is None:
@@ -120,15 +120,16 @@ class _StatusBar(qt.QStatusBar):
         self.__position.setValue(pos)
         self.__pixel.setValue(pixel)
         self.__chi.setValue(chi)
+        tth = numpy.nan if tth is None else tth
         self.__2theta.setValue(tth)
         if not numpy.isnan(tth):
-            # NOTE: warelength could be updated, and the the display would not
+            # NOTE: wavelength could be updated, and the the display would not
             # be updated. But here it is safe enougth.
             wavelength = CalibrationContext.instance().getCalibrationModel().fittedGeometry().wavelength().value()
             q = unitutils.from2ThRad(tth, core_units.Q_A, wavelength)
             self.__q.setValue(q)
         else:
-            self.__q.setValue(float("nan"))
+            self.__q.setValue(numpy.nan)
 
 
 class CalibrationState(qt.QObject):
