@@ -43,7 +43,7 @@ perform a system wide installation.
 With conda
 ..........
 
-pyFAI is also available via conda (for Linux and Mac, currently)::
+pyFAI is also available via conda::
 
   conda install pyfai -c conda-forge
 
