@@ -35,18 +35,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2019"
+__date__ = "17/05/2019"
 
 import unittest
 import numpy
 from pyFAI.utils import ellipse as ellipse_mdl
 
+
 def modulo(value, div=numpy.pi):
     """hack to calculate the value%div but returns the smallest 
     absolute value, possibly negative"""
-    q = value/div
+    q = value / div
     i = round(q)
-    return (i-q) * div
+    return (i - q) * div
 
 
 class TestEllipse(unittest.TestCase):
