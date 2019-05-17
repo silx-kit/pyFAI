@@ -54,7 +54,7 @@ class BayesianBackground(object):
 
     .. math:: z =  y / sigma^2
 
-    * if z<0: a quadratic behaviour is expected
+    * if z<0 a quadratic behaviour is expected
     * if z>>1 it is likely a bragg peak so the penalty should be small: log(z).
     * The spline is used to have a quadratic behaviour near 0 and the log one
       near the junction
@@ -127,9 +127,11 @@ class BayesianBackground(object):
     def bayes_llk(cls, z):
         """Calculate actually the log-likelihood from a set of weighted error
 
-        Re implementation of:
-        (y<=0)*5*y**2 + (y>0)*(y<8)*pyFAI.utils.bayes.background.spline(y) + (y>=8)*(s1+log(abs(y)+1*(y<8)))
-        even slightly faster
+        Re implementation of the following code even slightly faster:
+
+        .. code-block:: python
+
+            (y<=0)*5*y**2 + (y>0)*(y<8)*pyFAI.utils.bayes.background.spline(y) + (y>=8)*(s1+log(abs(y)+1*(y<8)))
 
         :param float[:] z: weighted error
         :return: log likelihood
