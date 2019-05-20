@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/05/2019"
+__date__ = "20/05/2019"
 
 import logging
 import numpy
@@ -53,6 +53,7 @@ from ..helper import ProcessingWidget
 from ..helper import model_transform
 from ..utils import unitutils
 from ... import units as core_units
+from silx.image import marchingsquares
 
 _logger = logging.getLogger(__name__)
 
@@ -151,6 +152,9 @@ class CalibrationState(qt.QObject):
         self.__poni = None
         self.__beamCenter = None
         self.__empty = True
+        self.__ringPolygons = {}
+        self.__mask = None
+        self.__mc = None
         self.changed.emit()
 
     def isEmpty(self):
@@ -184,20 +188,42 @@ class CalibrationState(qt.QObject):
         self.reset()
         return geoRef
 
+    def getRingPolygons(self, ringId):
+        """Returns the polygon of a ring.
+
+        This function compute the requested polygon ring, and cache it for the
+        next use.
+
+        :rtype: List[numpy.ndarray]
+        """
+        if ringId in self.__ringPolygons:
+            return self.__ringPolygons[ringId]
+        angle = self.__rings[ringId]
+        polygons = self.__ms.find_contours(angle)
+        self.__ringPolygons[ringId] = polygons
+        return polygons
+
     def update(self, calibration):
         """Update the state from a current calibration process.
 
         :param RingCalibration calibration: A calibration process
         """
+        mask = calibration.getMask()
         self.__geoRef = calibration.getPyfaiGeometry()
         self.__geometry = None
         self.__rings = calibration.getRings()
         self.__previousRms = self.__rms
         self.__rms = calibration.getRms()
-        self.__tth = calibration.getTwoThetaArray()
+        tth = calibration.getTwoThetaArray()
+        # Make sure there is no more copy
+        self.__tth = numpy.ascontiguousarray(tth)
         self.__poni = calibration.getPoni()
         self.__beamCenter = calibration.getBeamCenter()
         self.__empty = False
+        ms = marchingsquares.MarchingSquaresMergeImpl(tth, mask, use_minmax_cache=True)
+        self.__ms = ms
+        self.__ringPolygons = {}
+
         self.changed.emit()
 
 
@@ -304,8 +330,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         result = None
         iresult = None
         minDistance = float("inf")
-        for ringId, data in enumerate(self.__rings):
-            ringAngle, _polygons = data
+        for ringId, ringAngle in enumerate(self.__rings):
             distance = abs(angle - ringAngle)
             if distance < minDistance:
                 minDistance = distance
@@ -383,8 +408,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
 
     def __getAvailableAngles(self, minTth, maxTth):
         result = []
-        for ringId, data in enumerate(self.__rings):
-            angle, _polygons = data
+        for ringId, angle in enumerate(self.__rings):
             if minTth is None or maxTth is None:
                 result.append(ringId, angle)
             if minTth <= angle <= maxTth:
@@ -432,7 +456,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         if items is not None:
             return items
 
-        polyline = self.__rings[ringId][1]
+        polyline = self.__state.getRingPolygons(ringId)
         color = CalibrationContext.instance().getMarkerColor(ringId, mode="numpy")
         items = []
         for lineId, line in enumerate(polyline):
