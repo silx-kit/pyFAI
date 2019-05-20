@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "20/05/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1045,7 +1045,7 @@ class Nexus(object):
 
         :return: list of HDF5 groups
         """
-        entries = [(grp, from_isotime(self.h5[grp + "/start_time"].value))
+        entries = [(grp, from_isotime(self.h5[grp + "/start_time"][()]))
                    for grp in self.h5
                    if isinstance(self.h5[grp], h5py.Group) and
                    ("start_time" in self.h5[grp]) and
@@ -1186,7 +1186,7 @@ class Nexus(object):
                 else:
                     logger.warning("Not overwriting %s in %s", toplevel[name].name, self.filename)
                     return
-            toplevel[name] = obj.value
+            toplevel[name] = obj[()]
             for k, v in obj.attrs.items():
                 toplevel[name].attrs[k] = v
 
