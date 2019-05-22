@@ -27,13 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/05/2019"
+__date__ = "20/05/2019"
 
 import logging
 import numpy
 import collections
 
-from silx.image import marchingsquares
 import pyFAI.utils
 from ...geometryRefinement import GeometryRefinement
 from ..model.GeometryConstraintsModel import GeometryConstraintsModel
@@ -334,12 +333,18 @@ class RingCalibration(object):
         tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
         return tth
 
+    def getMask(self):
+        """
+        Returns the mask used to compute the tth.
+        """
+        return self.__mask
+
     def getRings(self):
         """
         Returns polygons of rings
 
-        :returns: List of ring angle with the associated polygon
-        :rtype: List[Tuple[float,List[numpy.ndarray]]]
+        :returns: List of ring angles available
+        :rtype: List[float]
         """
         tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
 
@@ -355,11 +360,9 @@ class RingCalibration(object):
         if len(angles) == 0:
             return result
 
-        ms = marchingsquares.MarchingSquaresMergeImpl(tth, self.__mask, use_minmax_cache=True)
         rings = []
         for angle in angles:
-            polygons = ms.find_contours(angle)
-            rings.append((angle, polygons))
+            rings.append(angle)
 
         return rings
 
