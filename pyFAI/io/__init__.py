@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/05/2019"
+__date__ = "27/05/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -980,23 +980,26 @@ class Nexus(object):
     TODO: make it thread-safe !!!
     """
 
-    def __init__(self, filename, mode="r"):
+    def __init__(self, filename, mode=None):
         """
         Constructor
 
         :param filename: name of the hdf5 file containing the nexus
-        :param mode: can be r or a
+        :param mode: can be 'r', 'a', 'w', '+' ....
         """
         self.filename = os.path.abspath(filename)
         self.mode = mode
         if not h5py:
             logger.error("h5py module missing: NeXus not supported")
             raise RuntimeError("H5py module is missing")
+
         pre_existing = os.path.exists(self.filename)
-        if pre_existing and self.mode == "r":
-            self.h5 = h5py.File(self.filename, mode=self.mode)
-        else:
-            self.h5 = h5py.File(self.filename)
+        if self.mode is None:
+            if pre_existing:
+                self.mode = "r"
+            else:
+                self.mode = "+"
+        self.h5 = h5py.File(self.filename, mode=self.mode)
         self.to_close = []
 
         if not pre_existing:
