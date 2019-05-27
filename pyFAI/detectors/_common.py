@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "27/05/2019"
 __status__ = "stable"
 
 
@@ -710,7 +710,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             logger.error("h5py module missing: NeXus detectors not supported")
             raise RuntimeError("H5py module is missing")
 
-        with io.Nexus(filename, "+") as nxs:
+        with io.Nexus(filename, "a") as nxs:
             det_grp = nxs.new_detector(name=self.name.replace(" ", "_"))
             det_grp["API_VERSION"] = numpy.string_(self.API_VERSION)
             det_grp["IS_FLAT"] = self.IS_FLAT
