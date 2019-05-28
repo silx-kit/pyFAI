@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "27/05/2019"
 
 
 import unittest
@@ -79,7 +79,7 @@ class TestNexus(unittest.TestCase):
             logger.warning("H5py not present, skipping test_io.TestNexus")
             return
         fname = os.path.join(self.tmpdir, "nxs.h5")
-        nxs = io.Nexus(fname, "r+")
+        nxs = io.Nexus(fname, "a")
         nxs.new_detector()
         nxs.close()
 
