@@ -186,7 +186,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
                {
                    // defined in kahan.cl
                    sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
-                   sum_variance_K = kahan_sum(sum_variance_K, coef * variance);
+                   sum_variance_K = kahan_sum(sum_variance_K, coef * coef * variance);
                    sum_norm_K = kahan_sum(sum_norm_K, coef * norm);
                    sum_count_K = kahan_sum(sum_count_K, coef * count);
                };//end if finite
@@ -434,6 +434,50 @@ csr_integrate_single(  const   global  float   *weights,
         merged[bin_num] = dummy;
 };//end kernel
 
+/**
+ * \brief Performs 1d azimuthal integration based on CSR sparse matrix multiplication on preprocessed data
+ *  Unlike the former kernel, it works with a workgroup size of ONE (tailor made form MacOS bug)
+ *
+ * @param weights     Float pointer to global memory storing the input image.
+ * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
+ * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
+ * @param indptr     Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
+ * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
+ * @param dummy       Float: value for bad pixels
+ * @param coef_power  Set to 2 for variance propagation, leave to 1 for mean calculation
+ * @param sum_data    Float pointer to the output 1D array with the weighted histogram
+ * @param sum_count   Float pointer to the output 1D array with the unweighted histogram
+ * @param merged      Float pointer to the output 1D array with the diffractogram
+ *
+ */
+kernel void
+csr_integrate4(  const   global  float4  *weights,
+                 const   global  float   *coefs,
+                 const   global  int     *indices,
+                 const   global  int     *indptr,
+                         global  float8  *summed,
+                         global  float   *averint,
+                         global  float   *stderr)
+{
+    int bin_num = get_group_id(0);
+    float8 result = CSRxVec4(weights, coefs, indices, indptr);
+    if (get_local_id(0)==0)
+    {
+        summed[bin_num] = result;
+        if (result.s4 > 0.0f)
+        {
+            averint[bin_num] =  result.s0 / result.s4;
+            stderr[bin_num] = sqrt(result.s1) / result.s4;
+        }
+        else
+        {
+            averint[bin_num] = NAN;
+            stderr[bin_num] = NAN;
+        }
+
+    }
+};//end kernel
+
 
 /**
  * \brief Performs 1d azimuthal integration based on CSR sparse matrix multiplication on preprocessed data
@@ -485,13 +529,13 @@ csr_integrate4_single(  const   global  float4  *weights,
             //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
             // defined in kahan.cl
             sum_signal_K = kahan_sum(sum_signal_K ,coef * signal);
-            sum_variance_K = kahan_sum(sum_variance_K, coef * variance);
+            sum_variance_K = kahan_sum(sum_variance_K, coef * coef * variance);
             sum_norm_K = kahan_sum(sum_norm_K, coef * norm);
             sum_count_K = kahan_sum(sum_count_K, coef * count);
         };//end if finite
     };//for j
 
-    summed[bin_num] = (float8)(sum_signal_K,sum_variance_K, sum_norm_K,sum_count_K);
+    summed[bin_num] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
     if (sum_norm_K.s0 > 0.0f)
     {
         averint[bin_num] =  sum_signal_K.s0 / sum_norm_K.s0;
