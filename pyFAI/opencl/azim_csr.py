@@ -63,6 +63,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     """
     BLOCK_SIZE = 64
     buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("output4", 4, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
@@ -127,7 +128,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "flat": None,
                           "polarization": None,
                           "solidangle": None,
-                          "absorption": None}
+                          "absorption": None,
+                          "dark_variance": None}
 
         if block_size is None:
             block_size = self.BLOCK_SIZE
@@ -145,6 +147,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                          BufferDescription("indptr", (self.bins + 1), numpy.int32, mf.READ_ONLY),
                          BufferDescription("sum_data", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("averint", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("stderr", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
                          ]
@@ -248,9 +252,44 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("sum_data", self.cl_mem["sum_data"]),
                                                             ("sum_count", self.cl_mem["sum_count"]),
                                                             ("merged", self.cl_mem["merged"])))
+
+        self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
+                                                           ("variance", self.cl_mem["variance"]),
+                                                           ("do_dark", numpy.int8(0)),
+                                                           ("dark", self.cl_mem["dark"]),
+                                                           ("do_dark_variance", numpy.int8(0)),
+                                                           ("dark_variance", self.cl_mem["dark_variance"]),
+                                                           ("do_flat", numpy.int8(0)),
+                                                           ("flat", self.cl_mem["flat"]),
+                                                           ("do_solidangle", numpy.int8(0)),
+                                                           ("solidangle", self.cl_mem["solidangle"]),
+                                                           ("do_polarization", numpy.int8(0)),
+                                                           ("polarization", self.cl_mem["polarization"]),
+                                                           ("do_absorption", numpy.int8(0)),
+                                                           ("absorption", self.cl_mem["absorption"]),
+                                                           ("do_mask", numpy.int8(0)),
+                                                           ("mask", self.cl_mem["mask"]),
+                                                           ("do_dummy", numpy.int8(0)),
+                                                           ("dummy", numpy.float32(0)),
+                                                           ("delta_dummy", numpy.float32(0)),
+                                                           ("normalization_factor", numpy.float32(1.0)),
+                                                           ("output4", self.cl_mem["output4"])))
+
+        self.cl_kernel_args["csr_integrate4"] = OrderedDict((("output4", self.cl_mem["output4"]),
+                                                            ("data", self.cl_mem["data"]),
+                                                            ("indices", self.cl_mem["indices"]),
+                                                            ("indptr", self.cl_mem["indptr"]),
+                                                            ("merged8", self.cl_mem["merged8"]),
+                                                            ("averint", self.cl_mem["averint"]),
+                                                            ("stderr", self.cl_mem["stderr"]),
+                                                            ))
+
+
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
+        self.cl_kernel_args["csr_integrate4_single"] = self.cl_kernel_args["csr_integrate4"]
 
         self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
+        self.cl_kernel_args["memset_ng"] = OrderedDict(((i, self.cl_mem[i]) for i in ("averint", "stderr", "merged8")))
         self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
@@ -335,8 +374,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
             wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
             memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_out"].values()))
             events.append(EventDescription("memset_out", memset))
-            kw1 = self.cl_kernel_args["corrections"]
-            kw2 = self.cl_kernel_args["csr_integrate"]
+            kw_corr = self.cl_kernel_args["corrections"]
+            kw_int = self.cl_kernel_args["csr_integrate"]
 
             if dummy is not None:
                 do_dummy = numpy.int8(1)
@@ -350,13 +389,13 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 dummy = numpy.float32(self.empty)
                 delta_dummy = numpy.float32(0.0)
 
-            kw1["do_dummy"] = do_dummy
-            kw1["dummy"] = dummy
-            kw1["delta_dummy"] = delta_dummy
-            kw1["normalization_factor"] = numpy.float32(normalization_factor)
-            kw2["do_dummy"] = do_dummy
-            kw2["dummy"] = dummy
-            kw2["coef_power"] = numpy.int32(coef_power)
+            kw_corr["do_dummy"] = do_dummy
+            kw_corr["dummy"] = dummy
+            kw_corr["delta_dummy"] = delta_dummy
+            kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
+            kw_int["do_dummy"] = do_dummy
+            kw_int["dummy"] = dummy
+            kw_int["coef_power"] = numpy.int32(coef_power)
 
             if dark is not None:
                 do_dark = numpy.int8(1)
@@ -367,7 +406,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(dark, "dark", dark_checksum)
             else:
                 do_dark = numpy.int8(0)
-            kw1["do_dark"] = do_dark
+            kw_corr["do_dark"] = do_dark
 
             if flat is not None:
                 do_flat = numpy.int8(1)
@@ -377,7 +416,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(flat, "flat", flat_checksum)
             else:
                 do_flat = numpy.int8(0)
-            kw1["do_flat"] = do_flat
+            kw_corr["do_flat"] = do_flat
 
             if solidangle is not None:
                 do_solidangle = numpy.int8(1)
@@ -387,7 +426,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(solidangle, "solidangle", solidangle_checksum)
             else:
                 do_solidangle = numpy.int8(0)
-            kw1["do_solidangle"] = do_solidangle
+            kw_corr["do_solidangle"] = do_solidangle
 
             if polarization is not None:
                 do_polarization = numpy.int8(1)
@@ -397,7 +436,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(polarization, "polarization", polarization_checksum)
             else:
                 do_polarization = numpy.int8(0)
-            kw1["do_polarization"] = do_polarization
+            kw_corr["do_polarization"] = do_polarization
 
             if absorption is not None:
                 do_absorption = numpy.int8(1)
@@ -407,10 +446,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(absorption, "absorption", absorption_checksum)
             else:
                 do_absorption = numpy.int8(0)
-            kw1["do_absorption"] = do_absorption
+            kw_corr["do_absorption"] = do_absorption
 
             wg = self.workgroup_size["corrections"]
-            ev = self.kernels.corrections(self.queue, self.wdim_data, wg, *list(kw1.values()))
+            ev = self.kernels.corrections(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
             events.append(EventDescription("corrections", ev))
 
             if preprocess_only:
@@ -425,10 +464,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wdim_bins = (self.bins * wg),
             if wg == 1:
-                integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw2.values())
+                integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("integrate_single", integrate))
             else:
-                integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw2.values())
+                integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("integrate", integrate))
             if out_merged is None:
                 merged = numpy.empty(self.bins, dtype=numpy.float32)
@@ -503,8 +542,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
             wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
             memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_out"].values()))
             events.append(EventDescription("memset_out", memset))
-            kw1 = self.cl_kernel_args["corrections"]
-            kw2 = self.cl_kernel_args["csr_integrate"]
+            kw_corr = self.cl_kernel_args["corrections"]
+            kw_int = self.cl_kernel_args["csr_integrate"]
 
             if dummy is not None:
                 do_dummy = numpy.int8(1)
@@ -518,13 +557,13 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 dummy = numpy.float32(self.empty)
                 delta_dummy = numpy.float32(0.0)
 
-            kw1["do_dummy"] = do_dummy
-            kw1["dummy"] = dummy
-            kw1["delta_dummy"] = delta_dummy
-            kw1["normalization_factor"] = numpy.float32(normalization_factor)
-            kw2["do_dummy"] = do_dummy
-            kw2["dummy"] = dummy
-            kw2["coef_power"] = numpy.int32(coef_power)
+            kw_corr["do_dummy"] = do_dummy
+            kw_corr["dummy"] = dummy
+            kw_corr["delta_dummy"] = delta_dummy
+            kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
+            kw_int["do_dummy"] = do_dummy
+            kw_int["dummy"] = dummy
+            kw_int["coef_power"] = numpy.int32(coef_power)
 
             if dark is not None:
                 do_dark = numpy.int8(1)
@@ -535,7 +574,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(dark, "dark", dark_checksum)
             else:
                 do_dark = numpy.int8(0)
-            kw1["do_dark"] = do_dark
+            kw_corr["do_dark"] = do_dark
 
             if flat is not None:
                 do_flat = numpy.int8(1)
@@ -545,7 +584,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(flat, "flat", flat_checksum)
             else:
                 do_flat = numpy.int8(0)
-            kw1["do_flat"] = do_flat
+            kw_corr["do_flat"] = do_flat
 
             if solidangle is not None:
                 do_solidangle = numpy.int8(1)
@@ -555,7 +594,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(solidangle, "solidangle", solidangle_checksum)
             else:
                 do_solidangle = numpy.int8(0)
-            kw1["do_solidangle"] = do_solidangle
+            kw_corr["do_solidangle"] = do_solidangle
 
             if polarization is not None:
                 do_polarization = numpy.int8(1)
@@ -565,7 +604,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(polarization, "polarization", polarization_checksum)
             else:
                 do_polarization = numpy.int8(0)
-            kw1["do_polarization"] = do_polarization
+            kw_corr["do_polarization"] = do_polarization
 
             if absorption is not None:
                 do_absorption = numpy.int8(1)
@@ -575,10 +614,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.send_buffer(absorption, "absorption", absorption_checksum)
             else:
                 do_absorption = numpy.int8(0)
-            kw1["do_absorption"] = do_absorption
+            kw_corr["do_absorption"] = do_absorption
 
             wg = self.workgroup_size["corrections"]
-            ev = self.kernels.corrections(self.queue, self.wdim_data, wg, *list(kw1.values()))
+            ev = self.kernels.corrections(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
             events.append(EventDescription("corrections", ev))
 
             if preprocess_only:
@@ -593,10 +632,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wdim_bins = (self.bins * wg),
             if wg == 1:
-                integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw2.values())
+                integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("integrate_single", integrate))
             else:
-                integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw2.values())
+                integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("integrate", integrate))
             if out_merged is None:
                 merged = numpy.empty(self.bins, dtype=numpy.float32)
