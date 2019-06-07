@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/04/2019"
+__date__ = "15/05/2019"
 
 import logging
 from silx.gui import qt
@@ -53,7 +53,8 @@ class QuantityEdit(qt.QLineEdit):
 
     def __init__(self, parent=None):
         super(QuantityEdit, self).__init__(parent)
-        validator = validators.DoubleAndEmptyValidator(self)
+        validator = validators.AdvancedDoubleValidator(self)
+        validator.setAllowEmpty(True)
         self.setValidator(validator)
 
         self.__wasModified = False

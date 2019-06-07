@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/05/2019"
+__date__ = "16/05/2019"
 
 import numpy
 import logging
@@ -44,6 +44,7 @@ from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
 from ..helper.SynchronizeRawView import SynchronizeRawView
 from ..CalibrationContext import CalibrationContext
 from ..utils import units
+from ..utils import validators
 from ..utils import FilterBuilder
 from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 
@@ -85,6 +86,13 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
+
+        validator = validators.AdvancedDoubleValidator(self)
+        validator.setBottom(0)
+        validator.setIncludedBound(False, True)
+        validator.setAllowEmpty(True)
+        self._energy.setValidator(validator)
+        self._wavelength.setValidator(validator)
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
@@ -229,6 +237,7 @@ class ExperimentTask(AbstractCalibrationTask):
         if detector is None:
             self._detectorLabel.setStyleSheet("QLabel { color: red }")
             self._detectorSize.setText("")
+            self._detectorPixelSize.setText("")
             self._detectorFileDescription.setVisible(False)
             self._detectorFileDescriptionTitle.setVisible(False)
         else:
@@ -236,6 +245,14 @@ class ExperimentTask(AbstractCalibrationTask):
             text = [str(s) for s in detector.max_shape]
             text = u" × ".join(text)
             self._detectorSize.setText(text)
+            try:
+                text = ["%0.1f" % (s * 10**6) for s in [detector.pixel1, detector.pixel2]]
+                text = u" × ".join(text)
+            except Exception as e:
+                # Is heterogeneous detectors have pixel sixe?
+                _logger.debug(e, exc_info=True)
+                text = "N.A."
+                self._detectorPixelSize.setText(text)
 
             if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
                 fileDescription = detector.get_splineFile()
@@ -270,6 +287,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
         if detector is None:
             self._detectorSize.setText("")
+            self._detectorPixelSize.setText("")
             self.__plot.removeMarker("xmin")
             self.__plot.removeMarker("xmax")
             self.__plot.removeMarker("ymin")

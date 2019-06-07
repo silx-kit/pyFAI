@@ -34,18 +34,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2019"
+__date__ = "16/05/2019"
 
 import unittest
 import logging
 import numpy
 
-try:
-    from silx.gui.utils import testutils
-except ImportError:
-    # silx 0.8 and earlly
-    from silx.gui.test import utils as testutils
-
+from silx.gui.utils import testutils
 from ..model.PeakModel import PeakModel
 from ..model.ListModel import ListModel
 from ..model.DataModel import DataModel

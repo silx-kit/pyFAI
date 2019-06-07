@@ -3,6 +3,8 @@
 :Keywords: geometry conversion from/to pyFAI
 :Target: developers
 
+.. _geometryconversion:
+
 The purpose of this note is to compare how ``pyFAI`` and ``ImageD11``
 treat the detector position. In particular, we derive how “PONI”
 detector parameters refined with ``pyFAI`` can be transformed into

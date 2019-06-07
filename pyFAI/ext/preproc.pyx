@@ -25,10 +25,14 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""
+Contains a preprocessing function in charge of the dark-current subtraction,
+flat-field normalization... taking care of masked values and normalization.
+"""
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "06/05/2019"
+__date__ = "17/05/2019"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 

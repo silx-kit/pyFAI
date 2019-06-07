@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/05/2019"
+__date__ = "16/05/2019"
 
 
 import numpy
@@ -40,6 +40,8 @@ class Dimentionality(enum.Enum):
     LENGTH = "Length"
 
     WAVELENGTH = "Wavelength"
+
+    SCATTERING_VECTOR = "Scattering vector"
 
     PIXEL = "Pixel"
 
@@ -67,6 +69,10 @@ class Unit(enum.Enum):
     ENERGY = ("Energy", u"keV", Dimentionality.WAVELENGTH, -1),
 
     PIXEL = ("Pixel", u"px", Dimentionality.PIXEL, 1),
+
+    INV_ANGSTROM = (u"Inverse Ångström", u"Å⁻¹", Dimentionality.SCATTERING_VECTOR, 1),
+
+    INV_NANOMETER = (u"Inverse nanometer", u"nm⁻¹", Dimentionality.SCATTERING_VECTOR, 1),
 
     @property
     def fullname(self):
@@ -115,6 +121,9 @@ def _initConverters():
     _converters[(Unit.CENTIMETER, Unit.MILLIMETER)] = lambda v: v * 1e1
     _converters[(Unit.MILLIMETER, Unit.METER)] = lambda v: v * 1e-3
     _converters[(Unit.MILLIMETER, Unit.CENTIMETER)] = lambda v: v * 1e-1
+
+    _converters[(Unit.INV_ANGSTROM, Unit.INV_NANOMETER)] = lambda v: v * 10.0
+    _converters[(Unit.INV_NANOMETER, Unit.INV_ANGSTROM)] = lambda v: v * 0.1
 
 
 def convert(value, inputUnit, outputUnit):

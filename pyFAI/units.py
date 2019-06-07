@@ -205,7 +205,7 @@ register_radial_unit("q_A^-1",
                      label=r"Scattering vector $q$ ($\AA^{-1}$)",
                      equation=eq_q,
                      short_name="q",
-                     unit_symbol="\AA^{-1}")
+                     unit_symbol=r"\AA^{-1}")
 
 register_radial_unit("d*2_A^-2",
                      center="rd2Array",
@@ -214,7 +214,7 @@ register_radial_unit("d*2_A^-2",
                      label=r"Reciprocal spacing squared $d^{*2}$ ($\AA^{-2}$)",
                      equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2,
                      short_name="d^{*2}",
-                     unit_symbol="\AA^{-2}")
+                     unit_symbol=r"\AA^{-2}")
 
 register_radial_unit("d*2_nm^-2",
                      center="rd2Array",

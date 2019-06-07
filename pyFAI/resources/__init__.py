@@ -34,26 +34,29 @@ of this modules to ensure access across different distribution schemes:
 - Frozen fat binary application using pyFAI (frozen with cx_Freeze or py2app).
   This needs special care for the resource files in the setup:
 
-  - With cx_Freeze, add pyFAI/resources to include_files::
+- With cx_Freeze, add pyFAI/resources to include_files:
+
+.. code-block:: python
 
     import pyFAI.resources
     pyFAI_include_files = (os.path.dirname(pyFAI.resources.__file__),
                           os.path.join('pyFAI', 'resources'))
-    setup(...
-          options={'build_exe': {'include_files': [pyFAI_include_files]}}
-          )
+    setup(...,
+        options={'build_exe': {'include_files': [pyFAI_include_files]}}
+    )
 
+- With py2app, add pyFAI in the packages list of the py2app options:
 
-  - With py2app, add pyFAI in the packages list of the py2app options::
+.. code-block:: python
 
-    setup(...
-          options={'py2app': {'packages': ['pyFAI']}}
-          )
+    setup(...,
+        options={'py2app': {'packages': ['pyFAI']}}
+    )
 """
 
 __authors__ = ["V.A. Sole", "Thomas Vincent"]
 __license__ = "MIT"
-__date__ = "20/02/2018"
+__date__ = "17/05/2019"
 
 
 import os

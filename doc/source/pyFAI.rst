@@ -61,10 +61,10 @@ implemente from scratch a novel azimuthal integration tool which is
 designed to take advantage of modern parallel hardware features.
 PyFAI assumes the setup does not change during the experiment and tries to reuse
 a maximum number of data (using memoization_), moreover those calculation are performed
-only when needed (lazy_evaluation_).
+only when needed (`lazy evaluation`_).
 
 .. _memoization: http://en.wikipedia.org/wiki/Memoization
-.. _lazy_evaluation: http://en.wikipedia.org/wiki/Lazy_evaluation
+.. _lazy evaluation: http://en.wikipedia.org/wiki/Lazy_evaluation
 
 Experiment description
 ----------------------
