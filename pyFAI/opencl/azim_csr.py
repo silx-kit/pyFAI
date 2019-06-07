@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "07/06/2019"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -146,6 +146,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                          BufferDescription("sum_data", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
                          ]
         try:
             self.set_profiling(profile)
@@ -452,6 +453,175 @@ class OCL_CSR_Integrator(OpenclProcessing):
         if self.profile:
             self.events += events
         return merged, sum_data, sum_count
+
+    def integrate_ng(self, data, dark=None, dummy=None, delta_dummy=None,
+                     variance=None, dark_variance=None,
+                     flat=None, solidangle=None, polarization=None, absorption=None,
+                     dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                     polarization_checksum=None, absorption_checksum=None,
+                     safe=True,
+                     normalization_factor=1.0,
+                     out_merged=None, out_avgint=None, out_stderr=None,):
+        """
+        Before performing azimuthal integration with proper variance propagation, the preprocessing is:
+
+        .. math::
+
+            signal = (raw - dark)
+            variance = variance + dark_variance
+            normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
+            count = number of pixel contributing
+
+        Integration is performed using the CSR representation of the look-up table on all
+        arrays: signal, variance, normalization and count
+
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidangle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
+        :param normalization_factor: divide raw signal by this value
+        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
+        :param out_merged: destination array or pyopencl array for averaged data (float8!)
+        :param out_avgint: destination array or pyopencl array for sum of all data
+        :param out_stderr: destination array or pyopencl array for sum of the number of pixels
+        :return: out_avgint, out_stderr, out_merged
+        """
+        events = []
+        with self.sem:
+            self.send_buffer(data, "image")
+            wg = self.workgroup_size["memset_out"]
+            wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
+            memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_out"].values()))
+            events.append(EventDescription("memset_out", memset))
+            kw1 = self.cl_kernel_args["corrections"]
+            kw2 = self.cl_kernel_args["csr_integrate"]
+
+            if dummy is not None:
+                do_dummy = numpy.int8(1)
+                dummy = numpy.float32(dummy)
+                if delta_dummy is None:
+                    delta_dummy = numpy.float32(0.0)
+                else:
+                    delta_dummy = numpy.float32(abs(delta_dummy))
+            else:
+                do_dummy = numpy.int8(0)
+                dummy = numpy.float32(self.empty)
+                delta_dummy = numpy.float32(0.0)
+
+            kw1["do_dummy"] = do_dummy
+            kw1["dummy"] = dummy
+            kw1["delta_dummy"] = delta_dummy
+            kw1["normalization_factor"] = numpy.float32(normalization_factor)
+            kw2["do_dummy"] = do_dummy
+            kw2["dummy"] = dummy
+            kw2["coef_power"] = numpy.int32(coef_power)
+
+            if dark is not None:
+                do_dark = numpy.int8(1)
+                # TODO: what is do_checksum=False and image not on device ...
+                if not dark_checksum:
+                    dark_checksum = calc_checksum(dark, safe)
+                if dark_checksum != self.on_device["dark"]:
+                    self.send_buffer(dark, "dark", dark_checksum)
+            else:
+                do_dark = numpy.int8(0)
+            kw1["do_dark"] = do_dark
+
+            if flat is not None:
+                do_flat = numpy.int8(1)
+                if not flat_checksum:
+                    flat_checksum = calc_checksum(flat, safe)
+                if self.on_device["flat"] != flat_checksum:
+                    self.send_buffer(flat, "flat", flat_checksum)
+            else:
+                do_flat = numpy.int8(0)
+            kw1["do_flat"] = do_flat
+
+            if solidangle is not None:
+                do_solidangle = numpy.int8(1)
+                if not solidangle_checksum:
+                    solidangle_checksum = calc_checksum(solidangle, safe)
+                if solidangle_checksum != self.on_device["solidangle"]:
+                    self.send_buffer(solidangle, "solidangle", solidangle_checksum)
+            else:
+                do_solidangle = numpy.int8(0)
+            kw1["do_solidangle"] = do_solidangle
+
+            if polarization is not None:
+                do_polarization = numpy.int8(1)
+                if not polarization_checksum:
+                    polarization_checksum = calc_checksum(polarization, safe)
+                if polarization_checksum != self.on_device["polarization"]:
+                    self.send_buffer(polarization, "polarization", polarization_checksum)
+            else:
+                do_polarization = numpy.int8(0)
+            kw1["do_polarization"] = do_polarization
+
+            if absorption is not None:
+                do_absorption = numpy.int8(1)
+                if not absorption_checksum:
+                    absorption_checksum = calc_checksum(absorption, safe)
+                if absorption_checksum != self.on_device["absorption"]:
+                    self.send_buffer(absorption, "absorption", absorption_checksum)
+            else:
+                do_absorption = numpy.int8(0)
+            kw1["do_absorption"] = do_absorption
+
+            wg = self.workgroup_size["corrections"]
+            ev = self.kernels.corrections(self.queue, self.wdim_data, wg, *list(kw1.values()))
+            events.append(EventDescription("corrections", ev))
+
+            if preprocess_only:
+                image = numpy.empty(data.shape, dtype=numpy.float32)
+                ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
+                events.append(EventDescription("copy D->H image", ev))
+                if self.profile:
+                    self.events += events
+                ev.wait()
+                return image
+            wg = self.workgroup_size["csr_integrate"][0]
+
+            wdim_bins = (self.bins * wg),
+            if wg == 1:
+                integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw2.values())
+                events.append(EventDescription("integrate_single", integrate))
+            else:
+                integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw2.values())
+                events.append(EventDescription("integrate", integrate))
+            if out_merged is None:
+                merged = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                merged = out_merged.data
+            if out_sum_count is None:
+                sum_count = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                sum_count = out_sum_count.data
+            if out_sum_data is None:
+                sum_data = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                sum_data = out_sum_data.data
+
+            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
+            events.append(EventDescription("copy D->H merged", ev))
+            ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
+            events.append(EventDescription("copy D->H sum_data", ev))
+            ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
+            events.append(EventDescription("copy D->H sum_count", ev))
+            ev.wait()
+        if self.profile:
+            self.events += events
+        return merged, sum_data, sum_count
+
 
     # Name of the default "process" method
     __call__ = integrate
