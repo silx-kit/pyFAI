@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "07/06/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -700,9 +700,11 @@ class Integrator1d(object):
         :param platformid: integer
         :param devid: integer
         """
+
+        extensions = ["cl_khr_int64_base_atomics"] if useFp64 else None
         if self._ctx is None:
-            self._ctx = ocl.create_context(devicetype, useFp64,
-                                           platformid, deviceid)
+            self._ctx = ocl.create_context(devicetype, platformid, deviceid,
+                                           extensions=extensions)
             device = self._ctx.devices[0]
 
             self.devicetype = pyopencl.device_type.to_string(device.type)
