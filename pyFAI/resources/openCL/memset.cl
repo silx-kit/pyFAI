@@ -66,3 +66,47 @@ memset_out(global float *array0,
   }
 }
 
+kernel void
+memset1(global float *array)
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if (i < NBINS)
+  {
+    array[i] = 0.0f;
+  }
+}
+
+kernel void
+memset2(global float2 *array)
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if (i < NBINS)
+  {
+    array[i] = (float2)(0.0f, 0.0f);
+  }
+}
+
+kernel void
+memset4(global float4 *array)
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if (i < NBINS)
+  {
+    array[i] = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+}
+
+
+kernel void
+memset8(global float8 *array)
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if (i < NBINS)
+  {
+    array[i] = (float8)(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  }
+}
