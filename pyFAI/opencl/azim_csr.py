@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "07/06/2019"
+__date__ = "11/06/2019"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -282,8 +282,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("merged8", self.cl_mem["merged8"]),
                                                             ("averint", self.cl_mem["averint"]),
                                                             ("stderr", self.cl_mem["stderr"]),
-                                                            ))
-
+                                                             ))
 
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
         self.cl_kernel_args["csr_integrate4_single"] = self.cl_kernel_args["csr_integrate4"]
@@ -500,7 +499,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                      polarization_checksum=None, absorption_checksum=None,
                      safe=True,
                      normalization_factor=1.0,
-                     out_merged=None, out_avgint=None, out_stderr=None,):
+                     out_avgint=None, out_stderr=None, out_merged=None):
         """
         Before performing azimuthal integration with proper variance propagation, the preprocessing is:
 
@@ -529,10 +528,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-        :param out_merged: destination array or pyopencl array for averaged data (float8!)
         :param out_avgint: destination array or pyopencl array for sum of all data
         :param out_stderr: destination array or pyopencl array for sum of the number of pixels
+        :param out_merged: destination array or pyopencl array for averaged data (float8!)
         :return: out_avgint, out_stderr, out_merged
         """
         events = []
@@ -563,7 +561,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
             kw_int["do_dummy"] = do_dummy
             kw_int["dummy"] = dummy
-            kw_int["coef_power"] = numpy.int32(coef_power)
 
             if dark is not None:
                 do_dark = numpy.int8(1)
@@ -620,14 +617,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
             ev = self.kernels.corrections(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
             events.append(EventDescription("corrections", ev))
 
-            if preprocess_only:
-                image = numpy.empty(data.shape, dtype=numpy.float32)
-                ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
-                events.append(EventDescription("copy D->H image", ev))
-                if self.profile:
-                    self.events += events
-                ev.wait()
-                return image
             wg = self.workgroup_size["csr_integrate"][0]
 
             wdim_bins = (self.bins * wg),
@@ -637,30 +626,31 @@ class OCL_CSR_Integrator(OpenclProcessing):
             else:
                 integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("integrate", integrate))
+
             if out_merged is None:
-                merged = numpy.empty(self.bins, dtype=numpy.float32)
+                merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
             else:
                 merged = out_merged.data
-            if out_sum_count is None:
-                sum_count = numpy.empty(self.bins, dtype=numpy.float32)
+            if out_avgint is None:
+                avgint = numpy.empty(self.bins, dtype=numpy.float32)
             else:
-                sum_count = out_sum_count.data
-            if out_sum_data is None:
-                sum_data = numpy.empty(self.bins, dtype=numpy.float32)
+                avgint = out_avgint.data
+            if out_stderr is None:
+                stderr = numpy.empty(self.bins, dtype=numpy.float32)
             else:
-                sum_data = out_sum_data.data
+                stderr = out_stderr.data
 
-            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
-            events.append(EventDescription("copy D->H merged", ev))
-            ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
-            events.append(EventDescription("copy D->H sum_data", ev))
-            ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
-            events.append(EventDescription("copy D->H sum_count", ev))
+            ev = pyopencl.enqueue_copy(self.queue, avgint, self.cl_mem["averint"])
+            events.append(EventDescription("copy D->H avgint", ev))
+
+            ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderr"])
+            events.append(EventDescription("copy D->H stderr", ev))
+            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+            events.append(EventDescription("copy D->H merged8", ev))
             ev.wait()
         if self.profile:
             self.events += events
-        return merged, sum_data, sum_count
-
+        return avgint, stderr, merged
 
     # Name of the default "process" method
     __call__ = integrate
