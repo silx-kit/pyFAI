@@ -49,6 +49,7 @@
  * @param data        float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
+ * @param super_sum   Local array of float2 of size WORKGROUP_SIZE: mandatory as a static function !
  * @return (sum_main, sum_neg)
  *
  */
@@ -56,7 +57,8 @@
 static inline float2 CSRxVec(const   global  float   *vector,
                              const   global  float   *data,
                              const   global  int     *indices,
-                             const   global  int     *indptr)
+                             const   global  int     *indptr,
+                                     local   float2  *super_sum)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -88,11 +90,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
  * parallel reduction
  */
 
-// REMEMBER TO PASS WORKGROUP_SIZE as a compile time argument !
-    local float2 super_sum[WORKGROUP_SIZE];
-
     int index;
-
     if (bin_size < WORKGROUP_SIZE)
     {
         if (thread_id_loc < bin_size)
@@ -133,6 +131,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
+ * @param super_sum   Local array of float4 of size WORKGROUP_SIZE: mandatory as a static function !
  * @return (sum_signal_main, sum_signal_neg, sum_norm_main, sum_norm_neg)
  *
  */
@@ -140,7 +139,8 @@ static inline float2 CSRxVec(const   global  float   *vector,
 static inline float4 CSRxVec2(const   global  float2   *data,
                               const   global  float    *coefs,
                               const   global  int      *indices,
-                              const   global  int      *indptr)
+                              const   global  int      *indptr,
+                                      local   float4   *super_sum)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -151,7 +151,6 @@ static inline float4 CSRxVec2(const   global  float2   *data,
     // we use _K suffix to highlight it is float2 used for Kahan summation
     float2 sum_signal_K = (float2)(0.0f, 0.0f);
     float2 sum_norm_K = (float2)(0.0f, 0.0f);
-    float coef, signal, norm;
     int idx, k, j;
 
     for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE)
@@ -159,10 +158,10 @@ static inline float4 CSRxVec2(const   global  float2   *data,
         k = j+thread_id_loc;
         if (k < bin_bounds.y)
         {
-               coef = coefs[k];
+               float coef = coefs[k];
                idx = indices[k];
-               signal = data[idx].s0;
-               norm = data[idx].s1;
+               float signal = data[idx].s0;
+               float norm = data[idx].s1;
                if (isfinite(signal) && isfinite(norm))
                {
                    // defined in kahan.cl
@@ -174,30 +173,20 @@ static inline float4 CSRxVec2(const   global  float2   *data,
 /*
  * parallel reduction
  */
-
-// REMEMBER TO PASS WORKGROUP_SIZE as a compile time argument !
-    local float2 super_sum_signal[WORKGROUP_SIZE];
-    local float2 super_sum_norm[WORKGROUP_SIZE];
-
-    int index;
-
     if (bin_size < WORKGROUP_SIZE)
     {
         if (thread_id_loc < bin_size)
         {
-            super_sum_signal[thread_id_loc] = sum_signal_K;
-            super_sum_norm[thread_id_loc] = sum_norm_K;
+            super_sum[thread_id_loc] = (float4)(sum_signal_K, sum_norm_K);
         }
         else
         {
-            super_sum_signal[thread_id_loc] = (float2)(0.0f, 0.0f);
-            super_sum_norm[thread_id_loc] = (float2)(0.0f, 0.0f);
+            super_sum[thread_id_loc] = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
         }
     }
     else
     {
-        super_sum_signal[thread_id_loc] = sum_signal_K;
-        super_sum_norm[thread_id_loc] = sum_norm_K;
+        super_sum[thread_id_loc] = (float4)(sum_signal_K, sum_norm_K);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -206,14 +195,15 @@ static inline float4 CSRxVec2(const   global  float2   *data,
         active_threads /= 2;
         if (thread_id_loc < active_threads)
         {
-            index = thread_id_loc + active_threads;
-            super_sum_signal[thread_id_loc] = compensated_sum(super_sum_signal[thread_id_loc], super_sum_signal[index]);
-            super_sum_norm[thread_id_loc] = compensated_sum(super_sum_norm[thread_id_loc], super_sum_norm[index]);
+            float4 here = super_sum[thread_id_loc];
+            float4 there = super_sum[thread_id_loc + active_threads];
+            sum_signal_K = compensated_sum((float2)(here.s0, here.s1), (float2)(there.s0, there.s1));
+            sum_norm_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
+            super_sum[thread_id_loc] = (float4) (sum_signal_K, sum_norm_K);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    float4 result = (float4)(super_sum_signal[0], super_sum_norm[0]);
-    return result;
+    return super_sum[0];
 }
 
 /**
@@ -225,6 +215,7 @@ static inline float4 CSRxVec2(const   global  float2   *data,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
+ * @param super_sum   Local array of float8 of size WORKGROUP_SIZE: mandatory as a static function !
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
  *
@@ -234,7 +225,8 @@ static inline float4 CSRxVec2(const   global  float2   *data,
 static inline float8 CSRxVec4(const   global  float4   *data,
                               const   global  float    *coefs,
                               const   global  int      *indices,
-                              const   global  int      *indptr)
+                              const   global  int      *indptr,
+                                      local   float8   *super_sum)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -247,7 +239,6 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     float2 sum_variance_K = (float2)(0.0f, 0.0f);
     float2 sum_norm_K = (float2)(0.0f, 0.0f);
     float2 sum_count_K = (float2)(0.0f, 0.0f);
-    float coef, signal, norm, variance, count;
     int idx, k, j;
 
     for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE)
@@ -255,13 +246,13 @@ static inline float8 CSRxVec4(const   global  float4   *data,
         k = j+thread_id_loc;
         if (k < bin_bounds.y)
         {
-               coef = coefs[k];
+               float coef = coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
-               signal = quatret.s0;
-               variance = quatret.s1;
-               norm = quatret.s2;
-               count = quatret.s3;
+               float signal = quatret.s0;
+               float variance = quatret.s1;
+               float norm = quatret.s2;
+               float count = quatret.s3;
                if (isfinite(signal) && isfinite(variance) && isfinite(norm) && isfinite(count))
                {
                    // defined in kahan.cl
@@ -275,37 +266,20 @@ static inline float8 CSRxVec4(const   global  float4   *data,
 /*
  * parallel reduction
  */
-
-// REMEMBER TO PASS WORKGROUP_SIZE as a compile time argument !
-    local float2 super_sum_signal[WORKGROUP_SIZE];
-    local float2 super_sum_variance[WORKGROUP_SIZE];
-    local float2 super_sum_norm[WORKGROUP_SIZE];
-    local float2 super_sum_count[WORKGROUP_SIZE];
-    int index;
-
     if (bin_size < WORKGROUP_SIZE)
     {
         if (thread_id_loc < bin_size)
         {
-            super_sum_signal[thread_id_loc] = sum_signal_K;
-            super_sum_variance[thread_id_loc] = sum_variance_K;
-            super_sum_norm[thread_id_loc] = sum_norm_K;
-            super_sum_count[thread_id_loc] = sum_count_K;
+            super_sum[thread_id_loc] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
         }
         else
         {
-            super_sum_signal[thread_id_loc] = (float2)(0.0f, 0.0f);
-            super_sum_variance[thread_id_loc] = (float2)(0.0f, 0.0f);
-            super_sum_norm[thread_id_loc] = (float2)(0.0f, 0.0f);
-            super_sum_count[thread_id_loc] = (float2)(0.0f, 0.0f);
+            super_sum[thread_id_loc] = (float8)(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
         }
     }
     else
     {
-        super_sum_signal[thread_id_loc] = sum_signal_K;
-        super_sum_variance[thread_id_loc] = sum_variance_K;
-        super_sum_norm[thread_id_loc] = sum_norm_K;
-        super_sum_count[thread_id_loc] = sum_count_K;
+        super_sum[thread_id_loc] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -314,16 +288,17 @@ static inline float8 CSRxVec4(const   global  float4   *data,
         active_threads /= 2;
         if (thread_id_loc < active_threads)
         {
-            index = thread_id_loc + active_threads;
-            super_sum_signal[thread_id_loc] = compensated_sum(super_sum_signal[thread_id_loc], super_sum_signal[index]);
-            super_sum_variance[thread_id_loc] = compensated_sum(super_sum_variance[thread_id_loc], super_sum_variance[index]);
-            super_sum_norm[thread_id_loc] = compensated_sum(super_sum_norm[thread_id_loc], super_sum_norm[index]);
-            super_sum_count[thread_id_loc] = compensated_sum(super_sum_count[thread_id_loc], super_sum_count[index]);
+            float8 here =  super_sum[thread_id_loc];
+            float8 there = super_sum[thread_id_loc + active_threads];
+            sum_signal_K = compensated_sum((float2)(here.s0, here.s1), (float2)(there.s0, there.s1));
+            sum_variance_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
+            sum_norm_K = compensated_sum((float2)(here.s4, here.s5), (float2)(there.s4, there.s5));
+            sum_count_K = compensated_sum((float2)(here.s6, here.s7), (float2)(there.s6, there.s7));
+            super_sum[thread_id_loc] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    float8 result = (float8)(super_sum_signal[0],super_sum_variance[0], super_sum_norm[0], super_sum_count[0]);
-    return result;
+    return super_sum[0];
 }
 
 
@@ -540,7 +515,8 @@ csr_integrate4(  const   global  float4  *weights,
                          global  float   *stderr)
 {
     int bin_num = get_group_id(0);
-    float8 result = CSRxVec4(weights, coefs, indices, indptr);
+    local float8 shared[WORKGROUP_SIZE];
+    float8 result = CSRxVec4(weights, coefs, indices, indptr, shared);
     if (get_local_id(0)==0)
     {
         summed[bin_num] = result;
