@@ -39,6 +39,92 @@
 #include "for_eclipse.h"
 
 /**
+ * \brief OpenCL workgroup function for sparse matrix-dense vector multiplication
+ *
+ * The CSR matrix is represented by a set of 3 arrays (coefs, indices, indptr)
+ *
+ * The returned value is a float2 with the main result in s0 and the remainder in s1
+ *
+ * @param vector      float2 array in global memory storing the data as signal/normalization.
+ * @param data        float  array in global memory holding the coeficient part of the LUT
+ * @param indices     integer array in global memory holding the corresponding column index of the coeficient
+ * @param indptr      Integer array in global memory holding the index of the start of the nth line
+ * @return (sum_main, sum_neg)
+ *
+ */
+
+static inline float2 CSRxVec(const   global  float   *vector,
+                             const   global  float   *data,
+                             const   global  int     *indices,
+                             const   global  int     *indptr)
+{
+    // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
+    int bin_num = get_group_id(0);
+    int thread_id_loc = get_local_id(0);
+    int active_threads = get_local_size(0);
+    int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
+    int bin_size = bin_bounds.y - bin_bounds.x;
+    // we use _K suffix to highlight it is float2 used for Kahan summation
+    float2 sum_K = (float2)(0.0f, 0.0f);
+    float coef, signal;
+    int idx, k, j;
+
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE)
+    {
+        k = j+thread_id_loc;
+        if (k < bin_bounds.y)
+        {
+               coef = data[k];
+               idx = indices[k];
+               signal = vector[idx];
+               if (isfinite(signal))
+               {
+                   // defined in kahan.cl
+                   sum_K = kahan_sum(sum_K, coef * signal);
+               };//end if finite
+       } //end if k < bin_bounds.y
+       };//for j
+/*
+ * parallel reduction
+ */
+
+// REMEMBER TO PASS WORKGROUP_SIZE as a compile time argument !
+    local float2 super_sum[WORKGROUP_SIZE];
+
+    int index;
+
+    if (bin_size < WORKGROUP_SIZE)
+    {
+        if (thread_id_loc < bin_size)
+        {
+            super_sum[thread_id_loc] = sum_K;
+        }
+        else
+        {
+            super_sum[thread_id_loc] = (float2)(0.0f, 0.0f);
+        }
+    }
+    else
+    {
+        super_sum[thread_id_loc] = sum_K;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    while (active_threads != 1)
+    {
+        active_threads /= 2;
+        if (thread_id_loc < active_threads)
+        {
+            index = thread_id_loc + active_threads;
+            super_sum[thread_id_loc] = compensated_sum(super_sum[thread_id_loc], super_sum[index]);
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+    return super_sum[0];
+}
+
+
+/**
  * \brief OpenCL function for 1d azimuthal integration based on CSR matrix multiplication
  *
  * The CSR matrix is represented by a set of 3 arrays (coefs, indices, indptr)
@@ -47,9 +133,6 @@
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
- * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy       Float: value for bad pixels (Nan are always bad pixels)
- * @param coef_power  Set to 2 for variance propagation, leave to 1 for mean calculation
  * @return (sum_signal_main, sum_signal_neg, sum_norm_main, sum_norm_neg)
  *
  */
@@ -57,10 +140,7 @@
 static inline float4 CSRxVec2(const   global  float2   *data,
                               const   global  float    *coefs,
                               const   global  int      *indices,
-                              const   global  int      *indptr,
-                              const           char     do_dummy,
-                              const           float    dummy,
-                              const           int      coef_power)
+                              const   global  int      *indptr)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -83,10 +163,10 @@ static inline float4 CSRxVec2(const   global  float2   *data,
                idx = indices[k];
                signal = data[idx].s0;
                norm = data[idx].s1;
-               if ((isfinite(signal) && isfinite(norm)) && ((!do_dummy) || (signal!=dummy)))
+               if (isfinite(signal) && isfinite(norm))
                {
                    // defined in kahan.cl
-                   sum_signal_K = kahan_sum(sum_signal_K, ((coef_power == 2) ? coef*coef: coef) * signal);
+                   sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
                    sum_norm_K = kahan_sum(sum_norm_K, coef * norm);
                };//end if finite
        } //end if k < bin_bounds.y
