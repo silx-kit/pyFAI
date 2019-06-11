@@ -83,7 +83,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
                    sum_K = kahan_sum(sum_K, coef * signal);
                };//end if finite
        } //end if k < bin_bounds.y
-       };//for j
+     };//for j
 /*
  * parallel reduction
  */
