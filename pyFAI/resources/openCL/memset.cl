@@ -67,6 +67,22 @@ memset_out(global float *array0,
 }
 
 kernel void
+memset_ng(global float *array0,
+          global float *array1,
+          global float8 *array2
+)
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if (i < NBINS)
+  {
+    array0[i] = 0.0f;
+    array1[i] = 0.0f;
+    array2[i] = (float8)(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  }
+}
+
+kernel void
 memset1(global float *array)
 {
   int i = get_global_id(0);

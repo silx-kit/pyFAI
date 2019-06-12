@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/06/2019"
+__date__ = "12/06/2019"
 
 import logging
 import numpy
@@ -90,22 +90,31 @@ class TestOclAzimCSR(unittest.TestCase):
         """
         from ..azim_csr import OCL_CSR_Integrator
         data = numpy.ones(self.ai.detector.shape)
-        tth = self.ai.array_from_unit(unit="2th_deg")
+        # r_m = self.ai.array_from_unit(unit="r_m")
         npt = 500
+        method = IntegrationMethod.select_one_available(("no", "histogram", "numpy"),
+                                                        dim=1, default=None, degradable=True)
+        csr_method = IntegrationMethod.select_one_available(("no", "csr", "cython"),
+                                                            dim=1, default=None, degradable=False)
 
-        method = IntegrationMethod.select_one_available(("no split", "histogram", "numpy"), dim=1, default=None, degradable=True)
-        print(method)
-        ref = self.ai._integrate1d_ng(data, npt, unit="2th_deg", method=method)
-        print(ref)
-        integrator = OCL_CSR_Integrator(tth, npt, devicetype="cpu")
+        # Retrieve the CSR array
+        cpu_integrate = self.ai._integrate1d_legacy(data, npt, unit="r_m", method=csr_method)
+        r_m = cpu_integrate[0]
+        csr_engine = list(self.ai.engines.values())[0]
+        csr = csr_engine.engine.lut
+        ref = self.ai._integrate1d_ng(data, npt, unit="r_m", method=method)
+        # print(ref)
+        integrator = OCL_CSR_Integrator(csr, data.size,)
         solidangle = self.ai.solidAngleArray()
-        res = integrator(data, solidangle=solidangle)
+        res = integrator.integrate_ng(data, solidangle=solidangle)
 
         # Start with smth easy: the position
-        self.assertTrue(numpy.allclose(res[0], ref[0]), "position are the same")
+        self.assertTrue(numpy.allclose(r_m, ref[0]), "position are the same")
         # A bit harder: the count of pixels
-        delta = ref.count - res.count
-        self.assertLessEqual(delta.max(), 2, "counts are almost the same")
+        print(res[2].shape)
+        res_count = res[2][:, 6]
+        delta = ref.count - res_count
+        self.assertLessEqual(delta.max(), 1, "counts are almost the same")
         self.assertEqual(delta.sum(), 0, "as much + and -")
 
         # Intensities are not that different:

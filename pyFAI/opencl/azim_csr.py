@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "11/06/2019"
+__date__ = "12/06/2019"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -536,12 +536,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
         events = []
         with self.sem:
             self.send_buffer(data, "image")
-            wg = self.workgroup_size["memset_out"]
+            wg = self.workgroup_size["memset_ng"]
             wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
-            memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_out"].values()))
-            events.append(EventDescription("memset_out", memset))
-            kw_corr = self.cl_kernel_args["corrections"]
-            kw_int = self.cl_kernel_args["csr_integrate"]
+            memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
+            events.append(EventDescription("memset_ng", memset))
+            kw_corr = self.cl_kernel_args["corrections4"]
+            kw_int = self.cl_kernel_args["csr_integrate4"]
 
             if dummy is not None:
                 do_dummy = numpy.int8(1)
@@ -559,8 +559,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["dummy"] = dummy
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
-            kw_int["do_dummy"] = do_dummy
-            kw_int["dummy"] = dummy
 
             if dark is not None:
                 do_dark = numpy.int8(1)
@@ -613,19 +611,21 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
 
-            wg = self.workgroup_size["corrections"]
-            ev = self.kernels.corrections(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
+            wg = self.workgroup_size["corrections4"]
+            ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
             events.append(EventDescription("corrections", ev))
 
-            wg = self.workgroup_size["csr_integrate"][0]
+            wg = self.workgroup_size["csr_integrate4"][0]
 
             wdim_bins = (self.bins * wg),
             if wg == 1:
-                integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate_single", integrate))
+                integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
+                events.append(EventDescription("integrate4_single", integrate))
             else:
-                integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate", integrate))
+                for k, v in kw_int.items():
+                    print(k, ": ", v)
+                integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg,), *kw_int.values())
+                events.append(EventDescription("integrate4", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
