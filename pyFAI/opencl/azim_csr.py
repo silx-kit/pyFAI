@@ -622,8 +622,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("integrate4_single", integrate))
             else:
-                for k, v in kw_int.items():
-                    print(k, ": ", v)
                 integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("integrate4", integrate))
 

@@ -90,7 +90,6 @@ class TestOclAzimCSR(unittest.TestCase):
         """
         from ..azim_csr import OCL_CSR_Integrator
         data = numpy.ones(self.ai.detector.shape)
-        # r_m = self.ai.array_from_unit(unit="r_m")
         npt = 500
         method = IntegrationMethod.select_one_available(("no", "histogram", "numpy"),
                                                         dim=1, default=None, degradable=True)
@@ -111,31 +110,25 @@ class TestOclAzimCSR(unittest.TestCase):
         # Start with smth easy: the position
         self.assertTrue(numpy.allclose(r_m, ref[0]), "position are the same")
         # A bit harder: the count of pixels
-        print(res[2].shape)
         res_count = res[2][:, 6]
         delta = ref.count - res_count
         self.assertLessEqual(delta.max(), 1, "counts are almost the same")
         self.assertEqual(delta.sum(), 0, "as much + and -")
 
         # Intensities are not that different:
-        delta = ref.intensity - res.intensity
-        self.assertLessEqual(delta.max(), 1e-3, "intensity is almost the same")
-        self.assertLessEqual((delta[1:-1] + delta[:-2] + delta[2:]).max(), 1e-3, "intensity is almost the same")
+        delta = ref.intensity - res[0]
+        self.assertLessEqual(abs(delta.max()), 1e-5, "intensity is almost the same")
 
         # histogram of normalization
-        ref = numpy.histogram(tth, npt, weights=solidangle)[0]
-        sig = res.normalization.sum(axis=-1, dtype="float64")
-        err = abs((sig - ref).sum())
-        epsilon = 1e-5 if self.precise else 3e-3
-        self.assertLess(err, epsilon, "normalization content is the same: %s<%s" % (err, epsilon))
-        self.assertLess(abs(gaussian_filter1d(sig - ref, 9)).max(), 1.5, "normalization, after smoothing is flat")
+        ref = self.ai._integrate1d_ng(solidangle, npt, unit="r_m", method=method).sum_signal
+        sig = res[2][:, 4]
+        err = abs((sig - ref).max())
+        self.assertLess(err, 5e-5, "normalization content is the same: %s<5e-5" % (err))
 
         # histogram of signal
-        ref = numpy.histogram(tth, npt, weights=data)[0]
-        sig = res.signal.sum(axis=-1, dtype="float64")
-        print(abs((sig - ref).sum()), abs(gaussian_filter1d(sig / ref - 1, 9)).max())
-        self.assertLess(abs((sig - ref).sum()), 9e-5, "signal content is the same")
-        self.assertLess(abs(gaussian_filter1d(sig / ref - 1, 9)).max(), 2e-5, "signal, after smoothing is flat")
+        ref = self.ai._integrate1d_ng(data, npt, unit="r_m", method=method).sum_signal
+        sig = res[2][:, 0]
+        self.assertLess(abs((sig - ref).sum()), 5e-5, "signal content is the same")
 
 
 def suite():
