@@ -1648,7 +1648,8 @@ class AzimuthalIntegrator(Geometry):
                 result._set_sum_variance(intpl.variance)
             result._set_count(intpl.count)
         elif method.method[1:4] == ("csr", "opencl"):
-            
+            # TODO: I stopped here ...before switching context
+            raise Exception("TODO!")
         else:
             # Fallback method ...
             kwargs = {"npt": npt,
