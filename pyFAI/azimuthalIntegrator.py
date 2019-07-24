@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2019"
+__date__ = "25/06/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -54,7 +54,7 @@ from .utils.decorators import deprecated, deprecated_warning
 from .containers import Integrate1dResult, Integrate2dResult
 from .io import DefaultAiWriter
 error = None
-
+from .containers import Integrate1dtpl, Integrate2dtpl
 from .method_registry import IntegrationMethod
 
 from .engines.preproc import preproc as preproc_np
@@ -1647,6 +1647,8 @@ class AzimuthalIntegrator(Geometry):
             if variance is not None:
                 result._set_sum_variance(intpl.variance)
             result._set_count(intpl.count)
+        elif method.method[1:4] == ("csr", "opencl"):
+            
         else:
             # Fallback method ...
             kwargs = {"npt": npt,

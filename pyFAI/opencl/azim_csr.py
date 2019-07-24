@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "12/06/2019"
+__date__ = "13/06/2019"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -38,7 +38,6 @@ from collections import OrderedDict
 import numpy
 from . import pyopencl
 from ..utils import calc_checksum
-
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
