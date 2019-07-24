@@ -51,7 +51,7 @@ Depends: ${misc:Depends},
          ${python:Depends},
          ${shlibs:Depends},
          python-pkg-resources,
-         python-pyfai (>= ${source:Version})
+         python3-pyfai (>= ${source:Version})
 Description: Fast Azimuthal Integration scripts
  PyFAI is a Python library for azimuthal integration; it allows the conversion
  of diffraction images taken with 2D detectors like CCD cameras into X-Ray
