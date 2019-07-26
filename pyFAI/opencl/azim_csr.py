@@ -495,7 +495,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                      variance=None, dark_variance=None,
                      flat=None, solidangle=None, polarization=None, absorption=None,
                      dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-                     polarization_checksum=None, absorption_checksum=None,
+                     polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                      safe=True,
                      normalization_factor=1.0,
                      out_avgint=None, out_stderr=None, out_merged=None):
@@ -558,6 +558,18 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["dummy"] = dummy
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
+
+            if variance is not None:
+                self.send_buffer(variance, "variance")
+            if dark_variance is not None:
+                if not dark_variance_checksum:
+                    dark_variance_checksum = calc_checksum(dark_variance, safe)
+                if dark_variance_checksum != self.on_device["dark_variance"]:
+                    self.send_buffer(dark_variance, "dark_variance", dark_variance_checksum)
+            else:
+                do_dark = numpy.int8(0)
+            kw_corr["do_dark"] = do_dark
+                
 
             if dark is not None:
                 do_dark = numpy.int8(1)
