@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/40/2019"
+__date__ = "30/45/2019"
 
 import sys
 import os
@@ -370,9 +370,11 @@ class TestBugRegression(unittest.TestCase):
 
         # Now with the azimuthal integrator set with the chi discontinuity at 0
         ai.setChiDiscAtZero()
-        angles = -180, -90, 0, 90, 180, 270, 360   
+        angles = 0, 90, 180, 270, 360   
         delta = 45
-        for method in ["python", "cython", "csr", "lut"]:
+        for method in [#"python", 
+                       #"cython", 
+                       "csr", "lut"]:
             print(method)
             for angle in angles:
                 res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
@@ -380,8 +382,7 @@ class TestBugRegression(unittest.TestCase):
                     #We expect only half of the pixel
                     self.assertLess(abs(res/target - 0.5), 0.1, "ChiDiscAtZero we expect half the pixels to be missing %s %s %s=%s/2"%(method, angle, res, target))   
                 else:
-                    self.assertLess(abs(res/target - 1), 0.1, "ChiDiscAtZero we expect the pixel to be present %s %s %s=%s"%(method, angle, res, target))   
-        
+                    self.assertLess(abs(res/target - 1), 0.1, "ChiDiscAtZero we expect the pixel to be present method:%s angle:%s expected:%s=%s"%(method, angle, target, res))   
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
