@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2019"
+__date__ = "30/38/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -396,7 +396,10 @@ class AzimuthalIntegrator(Geometry):
         gc.collect()
 
     def create_mask(self, data, mask=None,
-                    dummy=None, delta_dummy=None, mode="normal"):
+                    dummy=None, delta_dummy=None, 
+                    unit=None, radial_range=None, 
+                    azimuth_range=None,
+                    mode="normal"):
         """
         Combines various masks into another one.
 
@@ -424,11 +427,16 @@ class AzimuthalIntegrator(Geometry):
 
             * "normal": False for valid pixels, True for bad pixels
             * "numpy": True for valid pixels, false for others
+            * "where": does a numpy.where on the "numpy" output
 
         This method tries to accomodate various types of masks (like
-        valid=0 & masked=-1, ...) and guesses if an input mask needs
-        to be inverted.
+        valid=0 & masked=-1, ...) 
+        
+        Note for the developper: we use a lot of numpy.logical_or in this method,
+        the out= argument allows to recycle buffers and save considerable time in 
+        allocating temporary arrays.  
         """
+        logical_or = numpy.logical_or
         shape = data.shape
         #       ^^^^   this is why data is mandatory !
         if mask is None:
@@ -454,11 +462,21 @@ class AzimuthalIntegrator(Geometry):
                 mask = numpy.zeros(shape, dtype=bool)
         if dummy is not None:
             if delta_dummy is None:
-                numpy.logical_or(mask, (data == dummy), mask)
+                logical_or(mask, (data == dummy), out=mask)
             else:
-                numpy.logical_or(mask,
-                                 abs(data - dummy) <= delta_dummy,
-                                 mask)
+                logical_or(mask, abs(data - dummy) <= delta_dummy, out=mask)
+        
+        if radial_range is not None: 
+            assert unit, "unit is needed when building a mask based on radial_range" 
+            rad = self.array_from_unit(shape, "center", unit, scale=False)
+            logical_or(mask, rad < radial_range[0], out=mask)
+            logical_or(mask, rad > radial_range[1], out=mask)
+        if azimuth_range is not None:
+            chi = self.chiArray(shape)
+            logical_or(mask, chi < azimuth_range[0], out=mask)
+            logical_or(mask, chi > azimuth_range[1], out=mask)
+
+        #Prepare alternative representation for output:        
         if mode == "numpy":
             numpy.logical_not(mask, mask)
         elif mode == "where":
@@ -1023,7 +1041,7 @@ class AzimuthalIntegrator(Geometry):
         pos0_scale = unit.scale
 
         if radial_range:
-            radial_range = tuple([i / pos0_scale for i in radial_range])
+            radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
 
         if variance is not None:
             assert variance.size == data.size
@@ -1394,18 +1412,14 @@ class AzimuthalIntegrator(Geometry):
         if method.method[1:3] == ("no", "histogram") and method.impl_lower != "opencl":
             # Common part for  Numpy and Cython
             data = data.astype(numpy.float32)
-            mask = self.create_mask(data, mask, dummy, delta_dummy, mode="numpy")
+            mask = self.create_mask(data, mask, dummy, delta_dummy, 
+                                    unit=unit,
+                                    radial_range=radial_range,
+                                    azimuth_range=azimuth_range,
+                                    mode="where")
             pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             if radial_range is None:
                 radial_range = (pos0.min(), pos0.max() * EPS32)
-            else:
-                mask *= (pos0 >= min(radial_range))
-                mask *= (pos0 <= max(radial_range))
-            if azimuth_range is not None:
-                chiMin, chiMax = azimuth_range
-                chi = self.chiArray(shape)
-                mask *= (chi >= chiMin) * (chi <= chiMax)
-            mask = numpy.where(mask)
             pos0 = pos0[mask]
             if dark is not None:
                 data -= dark
@@ -1833,7 +1847,7 @@ class AzimuthalIntegrator(Geometry):
         shape = data.shape
 
         if radial_range:
-            radial_range = tuple([i / pos0_scale for i in radial_range])
+            radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
 
         if variance is not None:
             assert variance.size == data.size
@@ -2104,18 +2118,17 @@ class AzimuthalIntegrator(Geometry):
             logger.debug("integrate2d uses numpy or cython implementation")
             data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
             mask = self.create_mask(data, mask, dummy, delta_dummy,
-                                    mode="numpy")
+                                    unit=unit, 
+                                    radial_range=radial_range,
+                                    azimuth_range=azimuth_range,
+                                    mode="where")
             pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             pos1 = self.chiArray(shape)
 
-            if radial_range is not None:
-                mask *= (pos0 >= min(radial_range)) * (pos0 <= max(radial_range))
-            else:
+            if radial_range is None:
                 radial_range = [pos0.min(), pos0.max() * EPS32]
 
-            if azimuth_range is not None:
-                mask *= (pos1 >= min(azimuth_range)) * (pos1 <= max(azimuth_range))
-            else:
+            if azimuth_range is None:
                 azimuth_range = [pos1.min(), pos1.max() * EPS32]
 
             if variance is not None:
@@ -2582,24 +2595,16 @@ class AzimuthalIntegrator(Geometry):
             logger.debug("integrate2d uses cython implementation")
             data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
             mask = self.create_mask(data, mask, dummy, delta_dummy,
-                                    mode="normal")
-            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-            pos1 = self.chiArray(shape)
+                                    unit=unit,
+                                    radial_range=radial_range,
+                                    azimuth_range=azimuth_range,
+                                    mode="normal").ravel()
+            pos0 = self.array_from_unit(shape, "center", unit, scale=False).ravel()
+            pos1 = self.chiArray(shape).ravel()
 
-            if radial_range is not None:
-                mask_radial = numpy.logical_or(pos0 < min(radial_range), pos0 > max(radial_range))
-                mask = numpy.logical_or(mask, mask_radial)
-            else:
+            if radial_range is None:
                 radial_range = [pos0.min(), pos0.max() * EPS32]
-
-            pos0 = pos0.ravel()
-            pos1 = pos1.ravel()
-
-            if azimuth_range is not None:
-                # mask *= (pos1 >= min(azimuth_range)) * (pos1 <= max(azimuth_range))
-                mask_azim = numpy.logical_or(pos1 < min(azimuth_range), pos1 > max(azimuth_range))
-                mask = numpy.logical_or(mask.ravel(), mask_azim)
-            else:
+            if azimuth_range is None:
                 azimuth_range = [pos1.min(), pos1.max() * EPS32]
 
             prep = preproc(data,
