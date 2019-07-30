@@ -42,11 +42,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "30/40/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
+from math import pi 
 from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
@@ -201,18 +202,38 @@ class Geometry(object):
                            f2d["tilt"], f2d["tiltPlanRotation"]))
         return os.linesep.join(lstTxt)
 
-    def check_chi_disc(self, range):
+    def check_chi_disc(self, azim_range):
         """Check the position of the :math:`\\chi` discontinuity
 
         :param range: range of chi for the integration
         :return: True if there is a problem
         """
-        lower = range[0]
-        upper = range[-1]
-        disc = numpy.pi if self.chiDiscAtPi else 0
-        if (lower < disc) and (upper > disc):
-            logger.warning("Chi discontinuity in azimuthal range ! disc=%s in [%s, %s]", disc, lower, upper)
-            return 1
+        lower = azim_range[0]
+        upper = azim_range[-1]
+        error_msg = "Azimuthal range issue: Range [%s, %s] not in valid region %s in radians: Expect %s results !"
+        if self.chiDiscAtPi:
+            txt_range = "[-pi; π["
+            lower_bound = -pi
+            upper_bound = pi 
+        else:
+            txt_range = "[0; 2π["
+            lower_bound = 0
+            upper_bound = 2*pi 
+
+        if lower<lower_bound:
+            if upper<lower_bound:
+                logger.warning(error_msg, lower, upper, txt_range, "empty")
+            else:
+                logger.warning(error_msg, lower, upper, txt_range,"partial")
+            return True
+        elif lower>upper_bound:
+            logger.warning(error_msg, lower, upper, txt_range, "empty")
+            return True
+        else: 
+            if upper>upper_bound:
+                logger.warning(error_msg, lower, upper, txt_range, "partial")
+                return True
+        return False
 
     def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None):
         """
