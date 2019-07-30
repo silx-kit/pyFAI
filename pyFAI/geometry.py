@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/40/2019"
+__date__ = "30/41/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -212,7 +212,7 @@ class Geometry(object):
         upper = azim_range[-1]
         error_msg = "Azimuthal range issue: Range [%s, %s] not in valid region %s in radians: Expect %s results !"
         if self.chiDiscAtPi:
-            txt_range = "[-pi; π["
+            txt_range = "[-π; π["
             lower_bound = -pi
             upper_bound = pi 
         else:
