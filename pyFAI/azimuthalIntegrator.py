@@ -1621,9 +1621,102 @@ class AzimuthalIntegrator(Geometry):
                         method = self.DEFAULT_METHOD_1D
                     else:
                         cython_engine.set_engine(cython_integr)
-
-
-        if (method.method[1:4] == ("no", "histogram", "python") or
+            #This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
+            if method.impl_lower == "cython":
+                #The integrator has already been initialized previously
+                integr = self.engines[method].engine
+                intpl = integr.integrate_ng(data,
+                                            variance=variance,
+                                            dummy=dummy, 
+                                            delta_dummy=delta_dummy, 
+                                            dark=dark,
+                                            flat=flat, 
+                                            solidangle=solidangle,
+                                            polarization=polarization,
+                                            normalization_factor=normalization_factor)
+            elif method.impl_lower == "opencl":
+                if method not in self.engines:
+                    # instanciated the engine
+                    engine = self.engines[method] = Engine()
+                else:
+                    engine = self.engines[method]
+                with engine.lock:
+                    # Validate that the engine used is the proper one
+                    integr = engine.engine
+                    reset = None
+                    if integr is None:
+                        reset = "of first initialization"
+                    if (not reset) and safe:
+                        if integr.unit != unit:
+                            reset = "unit was changed"
+                        if integr.bins != npt:
+                            reset = "number of points changed"
+                        if integr.size != data.size:
+                            reset = "input image size changed"
+                        if integr.empty != empty:
+                            reset = "empty value changed "
+                        if (mask is not None) and (not integr.check_mask):
+                            reset = "mask but CSR was without mask"
+                        elif (mask is None) and (integr.check_mask):
+                            reset = "no mask but CSR has mask"
+                        elif (mask is not None) and (integr.mask_checksum != mask_crc):
+                            reset = "mask changed"
+                        if (radial_range is None) and (integr.pos0Range is not None):
+                            reset = "radial_range was defined in CSR"
+                        elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
+                            reset = "radial_range is defined but not the same as in CSR"
+                        if (azimuth_range is None) and (integr.pos1Range is not None):
+                            reset = "azimuth_range not defined and CSR had azimuth_range defined"
+                        elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
+                            reset = "azimuth_range requested and CSR's azimuth_range don't match"
+                    error = False
+    
+                    if reset:
+                        logger.info("ai.integrate1d_ng: Resetting ocl_csr integrator because %s", reset)
+                        csr_integr = self.engines[cython_method].engine 
+                        
+                        try:
+                            integr = method.class_funct.klass(csr_integr.lut, 
+                                                              image_size=data.size, 
+                                                              checksum=csr_integr.lut_checksum, 
+                                                              empty=empty,
+                                                              unit=unit,
+                                                              platformid=method.target[0],
+                                                              deviceid=method.target[1])
+                        except MemoryError:
+                            logger.warning("MemoryError: falling back on default forward implementation")
+                            self.reset_engines()
+                            method = self.DEFAULT_METHOD_1D
+                        else:
+                            engine.set_engine(integr)
+                    else:
+                        integr = self.engines[method].engine
+                intpl = integr.integrate_ng(data, dark=dark,
+                                            dummy=dummy, delta_dummy=delta_dummy,
+                                            variance=variance,
+                                            flat=flat, solidangle=solidangle,
+                                            polarization=polarization, polarization_checksum=polarization_checksum,
+                                            normalization_factor=normalization_factor,
+                                            bin_range=None)
+            elif method.impl_lower == "python":
+                raise NotImplementedError()
+            # This section is common to all 3 CSR implementations...
+            if variance is None:
+                result = Integrate1dResult(intpl.position, intpl.intensity)
+            else:
+                result = Integrate1dResult(intpl.position,
+                                           intpl.intensity,
+                                           intpl.error)
+            result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
+            result._set_unit(integr.unit)
+            result._set_sum_signal(intpl.signal)
+            result._set_sum_normalization(intpl.normalization)
+            if variance is not None:
+                result._set_sum_variance(intpl.variance)
+            result._set_count(intpl.count)
+ 
+        #END of CSR implementations
+        elif (method.method[1:4] == ("no", "histogram", "python") or
                 method.method[1:4] == ("no", "histogram", "cython")):
             integr = method.class_funct.function  # should be histogram[_engine].histogram1d_engine
             if azimuth_range:
@@ -1703,83 +1796,6 @@ class AzimuthalIntegrator(Geometry):
                                polarization=polarization, polarization_checksum=polarization_checksum,
                                normalization_factor=normalization_factor,
                                bin_range=None)
-            if variance is None:
-                result = Integrate1dResult(intpl.position, intpl.intensity)
-            else:
-                result = Integrate1dResult(intpl.position,
-                                           intpl.intensity,
-                                           intpl.error)
-            result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
-            result._set_unit(integr.unit)
-            result._set_sum_signal(intpl.signal)
-            result._set_sum_normalization(intpl.normalization)
-            if variance is not None:
-                result._set_sum_variance(intpl.variance)
-            result._set_count(intpl.count)
-        elif method.method[2:4] == ("csr", "opencl"):
-            if method not in self.engines:
-                # instanciated the engine
-                engine = self.engines[method] = Engine()
-            else:
-                engine = self.engines[method]
-            with engine.lock:
-                # Validate that the engine used is the proper one
-                integr = engine.engine
-                reset = None
-                if integr is None:
-                    reset = "of first initialization"
-                if (not reset) and safe:
-                    if integr.unit != unit:
-                        reset = "unit was changed"
-                    if integr.bins != npt:
-                        reset = "number of points changed"
-                    if integr.size != data.size:
-                        reset = "input image size changed"
-                    if integr.empty != empty:
-                        reset = "empty value changed "
-                    if (mask is not None) and (not integr.check_mask):
-                        reset = "mask but CSR was without mask"
-                    elif (mask is None) and (integr.check_mask):
-                        reset = "no mask but CSR has mask"
-                    elif (mask is not None) and (integr.mask_checksum != mask_crc):
-                        reset = "mask changed"
-                    if (radial_range is None) and (integr.pos0Range is not None):
-                        reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
-                        reset = "radial_range is defined but not the same as in CSR"
-                    if (azimuth_range is None) and (integr.pos1Range is not None):
-                        reset = "azimuth_range not defined and CSR had azimuth_range defined"
-                    elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
-                        reset = "azimuth_range requested and CSR's azimuth_range don't match"
-                error = False
-
-                if reset:
-                    logger.info("ai.integrate1d_ng: Resetting ocl_csr integrator because %s", reset)
-                    csr_integr = self.engines[cython_method].engine 
-                    
-                    try:
-                        integr = method.class_funct.klass(csr_integr.lut, 
-                                                          image_size=data.size, 
-                                                          checksum=csr_integr.lut_checksum, 
-                                                          empty=empty,
-                                                          unit=unit,
-                                                          platformid=method.target[0],
-                                                          deviceid=method.target[1])
-                    except MemoryError:
-                        logger.warning("MemoryError: falling back on default forward implementation")
-                        self.reset_engines()
-                        method = self.DEFAULT_METHOD_1D
-                    else:
-                        engine.set_engine(integr)
-                else:
-                    integr = self.engines[method].engine
-            intpl = integr.integrate_ng(data, dark=dark,
-                                        dummy=dummy, delta_dummy=delta_dummy,
-                                        variance=variance,
-                                        flat=flat, solidangle=solidangle,
-                                        polarization=polarization, polarization_checksum=polarization_checksum,
-                                        normalization_factor=normalization_factor,
-                                        bin_range=None)
             if variance is None:
                 result = Integrate1dResult(intpl.position, intpl.intensity)
             else:
