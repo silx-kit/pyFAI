@@ -2556,9 +2556,9 @@ class AzimuthalIntegrator(Geometry):
             pos1 = self.chiArray(shape).ravel()
 
             if radial_range is None:
-                radial_range = [pos0.min(), pos0.max() * EPS32]
+                radial_range = [pos0.min(), pos0.max()]
             if azimuth_range is None:
-                azimuth_range = [pos1.min(), pos1.max() * EPS32]
+                azimuth_range = [pos1.min(), pos1.max()]
 
             prep = preproc(data,
                            dark=dark,
