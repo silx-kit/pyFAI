@@ -62,9 +62,6 @@ def deg2rad(dd, disc=1):
 
     :param dd: angle in degrees
     :return: angle in radians in the selected range 
-
-    Nota: depending on the platform it could be 0<2pi
-    A branch is cheaper than a trigo operation
     """
     # range [0:2pi[
     rp = (dd / 180.0) % 2.0
