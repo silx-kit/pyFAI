@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/07/2019"
+__date__ = "31/07/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -697,8 +697,8 @@ class AzimuthalIntegrator(Geometry):
                     pos0 = self.twoThetaArray(shape)
                     delta_pos0 = self.delta2Theta(shape)
                     if tthRange is not None and len(tthRange) > 1:
-                        pos0_min = deg2rad(min(tthRange))
-                        pos0_maxin = deg2rad(max(tthRange))
+                        pos0_min = numpy.deg2rad(tthRange[0])
+                        pos0_maxin = numpy.deg2rad(tthRange[-1])
                     else:
                         pos0_min = pos0.min()
                         pos0_maxin = pos0.max()
@@ -1051,14 +1051,7 @@ class AzimuthalIntegrator(Geometry):
                 variance = numpy.ascontiguousarray(data, numpy.float32)
 
         if azimuth_range is not None:
-            azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
-            if azimuth_range[1] <= azimuth_range[0]:
-                azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
-            self.check_chi_disc(azimuth_range)
-
-            chi = self.chiArray(shape)
-        else:
-            chi = None
+            azimuth_range = self.normalize_azimuth_range(azimuth_range)
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
@@ -1367,10 +1360,11 @@ class AzimuthalIntegrator(Geometry):
 
         if method.method[1:4] == ("bbox", "histogram", "cython"):
             logger.debug("integrate1d uses BBox implementation")
-            if chi is not None:
-                chi = chi
+            if azimuth_range is not None:
+                chi = self.chiArray(shape)
                 dchi = self.deltaChi(shape)
             else:
+                chi = None
                 dchi = None
             pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)

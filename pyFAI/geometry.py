@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France" 
-__date__ = "30/07/2019"    
+__date__ = "31/07/2019"    
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -57,7 +57,7 @@ from collections import namedtuple, OrderedDict
 from . import detectors
 from . import units
 from .utils.decorators import deprecated
-from .utils import crc32
+from .utils import crc32, deg2rad
 from . import utils
 from .io import ponifile
 
@@ -202,14 +202,13 @@ class Geometry(object):
                            f2d["tilt"], f2d["tiltPlanRotation"]))
         return os.linesep.join(lstTxt)
 
-    def check_chi_disc(self, azim_range):
+    def check_chi_disc(self, azimuth_range):
         """Check the position of the :math:`\\chi` discontinuity
 
         :param range: range of chi for the integration
         :return: True if there is a problem
         """
-        lower = azim_range[0]
-        upper = azim_range[-1]
+        lower, upper = azimuth_range
         error_msg = "Azimuthal range issue: Range [%s, %s] not in valid region %s in radians: Expect %s results !"
         if self.chiDiscAtPi:
             txt_range = "[-π; π["
@@ -234,6 +233,24 @@ class Geometry(object):
                 logger.warning(error_msg, lower, upper, txt_range, "partial")
                 return True
         return False
+
+    def normalize_azimuth_range(self, azimuth_range):
+        """Convert the azimuth range from degrees to radians 
+        
+        This method takes care of the position of the discontinuity and adapts the range accordingly!
+        
+        :param azimuth_range: 2-tuple of float in degrees
+        :return: 2-tuple of float in radians in a range such to avoid the discontinuity
+        """
+        if azimuth_range is None:
+            return
+        azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
+        if azimuth_range[1] <= azimuth_range[0]:
+            azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
+            self.check_chi_disc(azimuth_range)
+        return azimuth_range
+
+        
 
     def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None):
         """
