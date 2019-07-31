@@ -357,8 +357,8 @@ class TestBugRegression(unittest.TestCase):
         
         target = numpy.prod(shape)/4
         ai.setChiDiscAtPi()
-        angles = -180, -90, 0, 90, 180   
-        delta = 45
+        angles = numpy.arange(-180, 360, 30)   
+        delta = 15
         for method in ["python", "cython", "csr", "lut"]:
             for angle in angles:
                 res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
@@ -370,11 +370,7 @@ class TestBugRegression(unittest.TestCase):
 
         # Now with the azimuthal integrator set with the chi discontinuity at 0
         ai.setChiDiscAtZero()
-        angles = 0, 90, 180, 270, 360   
-        delta = 45
-        for method in [#"python", 
-                       #"cython", 
-                       "csr", "lut"]:
+        for method in ["python", "cython", "csr", "lut"]:
             print(method)
             for angle in angles:
                 res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
