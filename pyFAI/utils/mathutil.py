@@ -66,14 +66,11 @@ def deg2rad(dd, disc=1):
     Nota: depending on the platform it could be 0<2pi
     A branch is cheaper than a trigo operation
     """
-    rp = dd / 180.0
+    # range [0:2pi[
+    rp = (dd / 180.0) % 2.0
     if disc: # range [-pi:pi[
-        while rp >= 1.0:
-            rp -= 2.0
-        while rp < -10:
-            rp += 2.0
-    else: # range [0:2pi[
-        rp = rp % 2.0
+        if rp >= 1.0:
+            rp -= 2.0 
     return rp * math.pi
 
 

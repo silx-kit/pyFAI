@@ -734,8 +734,8 @@ class AzimuthalIntegrator(Geometry):
         return tthAxis, I
 
     def setup_LUT(self, shape, npt, mask=None,
-                  pos0_range=None, pos1_range=None, mask_checksum=None,
-                  unit=units.TTH):
+                  pos0_range=None, pos1_range=None, 
+                  mask_checksum=None, unit=units.TTH):
         """
         Prepare a look-up-table
 
@@ -793,18 +793,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             pos1 = self.chiArray(shape)
             dpos1 = self.deltaChi(shape)
-        if ("__len__" in dir(pos0_range)) and (len(pos0_range) > 1):
-            pos0_min = min(pos0_range)
-            pos0_maxin = max(pos0_range)
-            pos0Range = (pos0_min, pos0_maxin * EPS32)
-        else:
-            pos0Range = None
-        if ("__len__" in dir(pos1_range)) and (len(pos1_range) > 1):
-            pos1_min = min(pos1_range)
-            pos1_maxin = max(pos1_range)
-            pos1Range = (pos1_min, pos1_maxin * EPS32)
-        else:
-            pos1Range = None
+
         if mask is None:
             mask_checksum = None
         else:
@@ -813,8 +802,8 @@ class AzimuthalIntegrator(Geometry):
         if int2d:
             return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
                                             bins=npt,
-                                            pos0Range=pos0Range,
-                                            pos1Range=pos1Range,
+                                            pos0Range=pos0_range,
+                                            pos1Range=pos1_range,
                                             mask=mask,
                                             mask_checksum=mask_checksum,
                                             allow_pos0_neg=False,
@@ -822,8 +811,8 @@ class AzimuthalIntegrator(Geometry):
         else:
             return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                             bins=npt,
-                                            pos0Range=pos0Range,
-                                            pos1Range=pos1Range,
+                                            pos0Range=pos0_range,
+                                            pos1Range=pos1_range,
                                             mask=mask,
                                             mask_checksum=mask_checksum,
                                             allow_pos0_neg=False,
@@ -897,18 +886,6 @@ class AzimuthalIntegrator(Geometry):
                     dpos1 = None
                 else:
                     dpos1 = self.deltaChi(shape)
-        if ("__len__" in dir(pos0_range)) and (len(pos0_range) > 1):
-            pos0_min = min(pos0_range)
-            pos0_maxin = max(pos0_range)
-            pos0Range = (pos0_min, pos0_maxin * EPS32)
-        else:
-            pos0Range = None
-        if ("__len__" in dir(pos1_range)) and (len(pos1_range) > 1):
-            pos1_min = min(pos1_range)
-            pos1_maxin = max(pos1_range)
-            pos1Range = (pos1_min, pos1_maxin * EPS32)
-        else:
-            pos1Range = None
         if mask is None:
             mask_checksum = None
         else:
@@ -928,8 +905,8 @@ class AzimuthalIntegrator(Geometry):
             else:
                 return splitPixelFullCSR.FullSplitCSR_1d(pos,
                                                          bins=npt,
-                                                         pos0Range=pos0Range,
-                                                         pos1Range=pos1Range,
+                                                         pos0Range=pos0_range,
+                                                         pos1Range=pos1_range,
                                                          mask=mask,
                                                          mask_checksum=mask_checksum,
                                                          allow_pos0_neg=False,
@@ -938,8 +915,8 @@ class AzimuthalIntegrator(Geometry):
             if int2d:
                 return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
                                                 bins=npt,
-                                                pos0Range=pos0Range,
-                                                pos1Range=pos1Range,
+                                                pos0Range=pos0_range,
+                                                pos1Range=pos1_range,
                                                 mask=mask,
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
@@ -947,8 +924,8 @@ class AzimuthalIntegrator(Geometry):
             else:
                 return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                 bins=npt,
-                                                pos0Range=pos0Range,
-                                                pos1Range=pos1Range,
+                                                pos0Range=pos0_range,
+                                                pos1Range=pos1_range,
                                                 mask=mask,
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
@@ -1125,8 +1102,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = ("azimuth_range not defined and"
                                  " LUT had azimuth_range defined")
                     elif (azimuth_range is not None) and\
-                            (integr.pos1Range !=
-                             (min(azimuth_range), max(azimuth_range) * EPS32)):
+                            (integr.pos1Range != [azimuth_range[0], azimuth_range[1] * EPS32]):
                         reset = ("azimuth_range requested and"
                                  " LUT's azimuth_range don't match")
                 if reset:
@@ -1231,23 +1207,10 @@ class AzimuthalIntegrator(Geometry):
                     elif (mask is not None) and\
                             (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if (radial_range is None) and\
-                            (integr.pos0Range is not None):
-                        reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and\
-                            (integr.pos0Range !=
-                             (min(radial_range), max(radial_range) * EPS32)):
-                        reset = ("radial_range is defined"
-                                 " but not the same as in CSR")
-                    if (azimuth_range is None) and\
-                            (integr.pos1Range is not None):
-                        reset = ("azimuth_range not defined and"
-                                 " CSR had azimuth_range defined")
-                    elif (azimuth_range is not None) and\
-                            (integr.pos1Range !=
-                             (min(azimuth_range), max(azimuth_range) * EPS32)):
-                        reset = ("azimuth_range requested and"
-                                 " CSR's azimuth_range don't match")
+                    if radial_range != integr.pos0Range:
+                        reset = "radial_range changed"
+                    if azimuth_range != integr.pos1Range:
+                        reset = "azimuth_range changed"
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s", reset)
                     split = method.split_lower
@@ -1912,14 +1875,10 @@ class AzimuthalIntegrator(Geometry):
                         reset = "no mask but LUT has mask"
                     elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if (radial_range is None) and (integr.pos0Range is not None):
-                        reset = "radial_range was defined in LUT"
-                    elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
-                        reset = "radial_range is defined but not the same as in LUT"
-                    if (azimuth_range is None) and (integr.pos1Range is not None):
-                        reset = "azimuth_range not defined and LUT had azimuth_range defined"
-                    elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
-                        reset = "azimuth_range requested and LUT's azimuth_range don't match"
+                    if radial_range != integr.pos0Range:
+                        reset = "radial_range changed"
+                    if azimuth_range != integr.pos1Range:
+                        reset = "azimuth_range changed"
                 error = False
                 if reset:
                     logger.info("ai.integrate2d: Resetting integrator because %s", reset)
