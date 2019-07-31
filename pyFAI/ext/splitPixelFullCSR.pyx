@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/01/2019"
+__date__ = "31/07/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -252,21 +252,19 @@ class FullSplitCSR_1d(object):
             bint check_pos1 = False, check_mask = False
 
         bins = self.bins
-        if self.pos0Range is not None and len(self.pos0Range) > 1:
-            self.pos0_min = min(self.pos0Range)
-            self.pos0_maxin = max(self.pos0Range)
+        if self.pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = self.pos0Range
         else:
             self.pos0_min = self.pos[:, :, 0].min()
             self.pos0_maxin = self.pos[:, :, 0].max()
-        self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
-        if self.pos1Range is not None and len(self.pos1Range) > 1:
-            self.pos1_min = min(self.pos1Range)
-            self.pos1_maxin = max(self.pos1Range)
+        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
+        if self.pos1Range is not None:
+            self.pos1_min, self.pos1_maxin = self.pos1Range
             self.check_pos1 = True
         else:
             self.pos1_min = self.pos[:, :, 1].min()
             self.pos1_maxin = self.pos[:, :, 1].max()
-        self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+        self.pos1_max = calc_upper_bound(<position_t> self.pos1_maxin)
 
         self.delta = (self.pos0_max - self.pos0_min) / (<double> (bins))
 
@@ -687,16 +685,14 @@ class FullSplitCSR_2d(object):
             bint check_pos1 = False, check_mask = False
 
         bins = self.bins
-        if self.pos0Range is not None and len(self.pos0Range) > 1:
-            self.pos0_min = min(self.pos0Range)
-            self.pos0_maxin = max(self.pos0Range)
+        if self.pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = self.pos0Range
         else:
             self.pos0_min = self.pos[:, :, 0].min()
             self.pos0_maxin = self.pos[:, :, 0].max()
-        self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
-        if self.pos1Range is not None and len(self.pos1Range) > 1:
-            self.pos1_min = min(self.pos1Range)
-            self.pos1_maxin = max(self.pos1Range)
+        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
+        if self.pos1Range is not None:
+            self.pos1_min, self.pos1_maxin = self.pos1Range
             self.check_pos1 = True
         else:
             self.pos1_min = self.pos[:, :, 1].min()

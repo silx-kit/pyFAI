@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2019 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -38,25 +38,26 @@ detector and transform it. It is rather a description of the experimental setup.
 
 from __future__ import division, print_function
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jerome Kieffer" 
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France" 
+__date__ = "31/07/2019"    
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
+from math import pi 
 from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
 import threading
 from collections import namedtuple, OrderedDict
-
+from six import PY2
 from . import detectors
 from . import units
 from .utils.decorators import deprecated
-from .utils import crc32
+from .utils import crc32, deg2rad
 from . import utils
 from .io import ponifile
 
@@ -201,18 +202,55 @@ class Geometry(object):
                            f2d["tilt"], f2d["tiltPlanRotation"]))
         return os.linesep.join(lstTxt)
 
-    def check_chi_disc(self, range):
+    def check_chi_disc(self, azimuth_range):
         """Check the position of the :math:`\\chi` discontinuity
 
         :param range: range of chi for the integration
         :return: True if there is a problem
         """
-        lower = range[0]
-        upper = range[-1]
-        disc = numpy.pi if self.chiDiscAtPi else 0
-        if (lower < disc) and (upper > disc):
-            logger.warning("Chi discontinuity in azimuthal range ! disc=%s in [%s, %s]", disc, lower, upper)
-            return 1
+        lower, upper = azimuth_range
+        error_msg = "Azimuthal range issue: Range [%s, %s] not in valid region %s in radians: Expect %s results !"
+        if self.chiDiscAtPi:
+            txt_range = "[-pi; pi[" if PY2 else "[-π; π[" 
+            lower_bound = -pi
+            upper_bound = pi 
+        else:
+            txt_range = "[0; 2pi[" if PY2 else "[-0; 2π["
+            lower_bound = 0
+            upper_bound = 2*pi 
+
+        if lower<lower_bound:
+            if upper<lower_bound:
+                logger.warning(error_msg, lower, upper, txt_range, "empty")
+            else:
+                logger.warning(error_msg, lower, upper, txt_range,"partial")
+            return True
+        elif lower>upper_bound:
+            logger.warning(error_msg, lower, upper, txt_range, "empty")
+            return True
+        else: 
+            if upper>upper_bound:
+                logger.warning(error_msg, lower, upper, txt_range, "partial")
+                return True
+        return False
+
+    def normalize_azimuth_range(self, azimuth_range):
+        """Convert the azimuth range from degrees to radians 
+        
+        This method takes care of the position of the discontinuity and adapts the range accordingly!
+        
+        :param azimuth_range: 2-tuple of float in degrees
+        :return: 2-tuple of float in radians in a range such to avoid the discontinuity
+        """
+        if azimuth_range is None:
+            return
+        azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
+        if azimuth_range[1] <= azimuth_range[0]:
+            azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
+            self.check_chi_disc(azimuth_range)
+        return azimuth_range
+
+        
 
     def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None):
         """
