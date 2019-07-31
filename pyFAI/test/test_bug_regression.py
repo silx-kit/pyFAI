@@ -355,10 +355,11 @@ class TestBugRegression(unittest.TestCase):
         nb_pix = ai.integrate1d(data, 100).count.sum()
         self.assertAlmostEqual(nb_pix, numpy.prod(shape), msg="All pixels are counted", delta=0.01)
         
-        target = numpy.prod(shape)/4
+        delta = 45
+        target = numpy.prod(shape)/360*2*delta
         ai.setChiDiscAtPi()
-        angles = numpy.arange(-180, 360, 30)   
-        delta = 15
+        angles = numpy.arange(-180, 400, 90)   
+        
         for method in ["python", "cython", "csr", "lut"]:
             for angle in angles:
                 res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
