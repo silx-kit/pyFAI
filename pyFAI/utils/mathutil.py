@@ -30,11 +30,11 @@
 Utilities, mainly for image treatment
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "31/07/2019"
 __status__ = "production"
 
 import logging
@@ -56,20 +56,19 @@ except ImportError:
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 
-def deg2rad(dd):
+def deg2rad(dd, disc=1):
     """
-    Convert degrees to radian in the range -pi->pi
+    Convert degrees to radian in the range [-π->π[ or [0->2π[ 
 
     :param dd: angle in degrees
-
-    Nota: depending on the platform it could be 0<2pi
-    A branch is cheaper than a trigo operation
+    :return: angle in radians in the selected range 
     """
-    while dd > 180.0:
-        dd -= 360.0
-    while dd < -180.0:
-        dd += 360.0
-    return dd * math.pi / 180.
+    # range [0:2pi[
+    rp = (dd / 180.0) % 2.0
+    if disc: # range [-pi:pi[
+        if rp >= 1.0:
+            rp -= 2.0 
+    return rp * math.pi
 
 
 def expand2d(vect, size2, vertical=True):

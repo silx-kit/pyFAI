@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "31/07/2019"
 
 import sys
 import os
@@ -345,6 +345,41 @@ class TestBugRegression(unittest.TestCase):
         aif.chi(numpy.array([1, 2]), numpy.array([3, 4]))
         aif.chi(numpy.array([1]), numpy.array([3]))
 
+    def test_bug_1275(self):
+        "This bug about major sectors not taken into account when performing intgrate1d on small azimuthal sectors"
+        shape = (128,128)
+        detector = detectors.Detector(100e-4, 100e-4, max_shape=shape)
+        ai = AzimuthalIntegrator(detector=detector, wavelength=1e-10)
+        ai.setFit2D(1000, shape[1]/2, shape[0]/2)
+        data = numpy.ones(shape)
+        nb_pix = ai.integrate1d(data, 100).count.sum()
+        self.assertAlmostEqual(nb_pix, numpy.prod(shape), msg="All pixels are counted", delta=0.01)
+        
+        delta = 45
+        target = numpy.prod(shape)/360*2*delta
+        ai.setChiDiscAtPi()
+        angles = numpy.arange(-180, 400, 90)   
+        
+        for method in ["python", "cython", "csr", "lut"]:
+            for angle in angles:
+                res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
+                if angle in (-180, 180):
+                    #We expect only half of the pixel
+                    self.assertLess(abs(res/target - 0.5), 0.1, "ChiDiscAtPi we expect half the pixels to be missing %s %s %s=%s/2"%(method, angle, res, target))   
+                else:
+                    self.assertLess(abs(res/target - 1), 0.1, "ChiDiscAtPi we expect the pixel to be present %s %s %s=%s"%(method, angle, res, target))
+
+        # Now with the azimuthal integrator set with the chi discontinuity at 0
+        ai.setChiDiscAtZero()
+        for method in ["python", "cython", "csr", "lut"]:
+            print(method)
+            for angle in angles:
+                res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
+                if angle in (0, 360):
+                    #We expect only half of the pixel
+                    self.assertLess(abs(res/target - 0.5), 0.1, "ChiDiscAtZero we expect half the pixels to be missing %s %s %s=%s/2"%(method, angle, res, target))   
+                else:
+                    self.assertLess(abs(res/target - 1), 0.1, "ChiDiscAtZero we expect the pixel to be present method:%s angle:%s expected:%s=%s"%(method, angle, target, res))   
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

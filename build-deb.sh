@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-#    Project: Fabio Input/Output
-#             https://github.com/silx-kit/fabio
+#    Project: PyFAI Input/Output
+#             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2019 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -57,7 +57,7 @@ then
                 debian_version=9
                 ;;
             buster)
-                debian_version=9
+                debian_version=10
                 ;;
         esac
     fi
@@ -91,6 +91,7 @@ optional arguments:
     --debian7  Simulate a debian7 system (fail-safe)
     --debian8  Simulate a debian 8 Jessie system
     --debian9  Simulate a debian 9 Stretch system
+    --debian10 Simulate a debian 10 Buster system
 "
 
 install=0
@@ -127,6 +128,13 @@ do
           ;;
       --debian9)
           debian_version=9
+          target_system=debian${debian_version}
+          dist_directory=${project_directory}/dist/${target_system}
+          build_directory=${project_directory}/build/${target_system}
+          shift
+          ;;
+      --debian10)
+          debian_version=10
           target_system=debian${debian_version}
           dist_directory=${project_directory}/dist/${target_system}
           build_directory=${project_directory}/build/${target_system}
@@ -209,8 +217,18 @@ build_deb_8_plus () {
       #export DEB_BUILD_OPTIONS=nocheck
     fi
 
+    case $debian_version in
+        9)
+            debian_name=stretch
+            ;;
+        10)
+            debian_name=buster
+            ;;
+    esac
+
     dch -v ${debianversion}-1 "upstream development build of ${project} ${version}"
-    dch --bpo "${project} snapshot ${version} built for ${target_system}"
+    dch -D ${debian_name}-backports -l~bpo${debian_version}+ "${project} snapshot ${version} built for ${target_system}"
+    #dch --bpo "${project} snapshot ${version} built for ${target_system}"
     dpkg-buildpackage -r
     rc=$?
 

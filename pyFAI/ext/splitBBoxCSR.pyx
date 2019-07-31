@@ -35,7 +35,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "31/07/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -124,15 +124,14 @@ class HistoBBox1d(object):
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
             self.calc_boundaries(pos0Range)
 
-        if pos1Range is not None and len(pos1Range) > 1:
+        if pos1Range is not None:
             assert pos1.size == self.size, "pos1 size"
             assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
             self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
             self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
-            self.pos1_min = min(pos1Range)
-            pos1_maxin = max(pos1Range)
-            self.pos1_max = calc_upper_bound(<double> pos1_maxin)
+            self.pos1_min, pos1_maxin = pos1Range
+            self.pos1_max = calc_upper_bound(<position_t> pos1_maxin)
         else:
             self.check_pos1 = False
             self.cpos1_min = None
@@ -194,9 +193,8 @@ class HistoBBox1d(object):
                     if lower < pos0_min:
                         pos0_min = lower
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
@@ -221,9 +219,8 @@ class HistoBBox1d(object):
             bint allow_pos0_neg = self.allow_pos0_neg
             int idx
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             cpos0 = self.cpos0
             pos0_min = pos0_max = cpos0[0]
@@ -933,16 +930,14 @@ class HistoBBox2d(object):
                     if lower1 < pos1_min:
                         pos1_min = lower1
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
 
-        if pos1Range is not None and len(pos1Range) > 1:
-            self.pos1_min = min(pos1Range)
-            self.pos1_maxin = max(pos1Range)
+        if pos1Range is not None:
+            self.pos1_min, self.pos1_maxin = pos1Range
         else:
             self.pos1_min = pos1_min
             self.pos1_maxin = pos1_max
@@ -1004,16 +999,14 @@ class HistoBBox2d(object):
                     if c1 < pos1_min:
                         pos1_min = c1
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
 
-        if pos1Range is not None and len(pos1Range) > 1:
-            self.pos1_min = min(pos1Range)
-            self.pos1_maxin = max(pos1Range)
+        if pos1Range is not None:
+            self.pos1_min, self.pos1_maxin = pos1Range
         else:
             self.pos1_min = pos1_min
             self.pos1_maxin = pos1_max

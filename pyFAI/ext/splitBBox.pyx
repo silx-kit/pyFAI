@@ -32,7 +32,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/05/2019"
+__date__ = "31/07/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -167,23 +167,21 @@ def histoBBox1d(weights,
             if min0 < pos0_min:
                 pos0_min = min0
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0Range is not None:
+        pos0_min, pos0_maxin = pos0Range
     else:
         pos0_maxin = pos0_max
     if pos0_min < 0:
         pos0_min = 0
     pos0_max = calc_upper_bound(pos0_maxin)
 
-    if pos1Range is not None and len(pos1Range) > 1:
+    if pos1Range is not None:
         assert pos1.size == size, "pos1.size == size"
         assert delta_pos1.size == size, "delta_pos1.size == size"
         check_pos1 = 1
         cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+        pos1_min, pos1_maxin = pos1Range
         pos1_max = calc_upper_bound(pos1_maxin)
 
     delta = (pos0_max - pos0_min) / (<position_t> (bins))
@@ -429,15 +427,13 @@ def histoBBox2d(weights,
             if min1 < pos1_min:
                 pos1_min = min1
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0Range is not None:
+        pos0_min, pos0_maxin = pos0Range
     else:
         pos0_maxin = pos0_max
 
-    if (pos1Range is not None) and (len(pos1Range) > 1):
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1Range is not None:
+        pos1_min, pos1_maxin = pos1Range
     else:
         pos1_maxin = pos1_max
 
@@ -762,15 +758,13 @@ def histoBBox2d_ng(weights,
             if min1 < pos1_min:
                 pos1_min = min1
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0Range is not None:
+        pos0_min, pos0_maxin = pos0Range
     else:
         pos0_maxin = pos0_max
 
-    if (pos1Range is not None) and (len(pos1Range) > 1):
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1Range is not None:
+        pos1_min, pos1_maxin = pos1Range
     else:
         pos1_maxin = pos1_max
 
