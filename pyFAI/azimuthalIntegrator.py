@@ -1651,6 +1651,7 @@ class AzimuthalIntegrator(Geometry):
                         csr_integr = self.engines[cython_method].engine 
                         
                         try:
+                            print(method.class_funct.klass.__module__)
                             integr = method.class_funct.klass(csr_integr.lut, 
                                                               image_size=data.size, 
                                                               checksum=csr_integr.lut_checksum, 
@@ -1671,8 +1672,7 @@ class AzimuthalIntegrator(Geometry):
                                             variance=variance,
                                             flat=flat, solidangle=solidangle,
                                             polarization=polarization, polarization_checksum=polarization_checksum,
-                                            normalization_factor=normalization_factor,
-                                            bin_range=None)
+                                            normalization_factor=normalization_factor)
             elif method.impl_lower == "python":
                 raise NotImplementedError()
             # This section is common to all 3 CSR implementations...
