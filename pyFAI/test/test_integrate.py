@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "05/08/2019"
 
 
 import tempfile
@@ -46,11 +46,11 @@ import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..containers import Integrate1dResult
-from ..containers import Integrate2dResult
+from ..containers import Integrate1dResult, Integrate2dResult 
 from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
 from ..utils import mathutil
+from ..method_registry import IntegrationMethod
 
 
 @contextlib.contextmanager
@@ -121,6 +121,34 @@ class TestIntegrate1D(unittest.TestCase):
                 else:
                     logger.info(mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
+
+    def test_ng_nosplit(self):
+        "Test the equivalent of new generation integrators"
+        res = {}
+        methods = IntegrationMethod.select_method(dim=1, split="no")
+        radial_range = (0.5, 7.0)
+        for m in methods:
+            logger.info("Processing %s"%m)
+            res[m] = self.ai._integrate1d_ng(self.data, self.npt,
+                                             variance=self.data, 
+                                             method=m, radial_range=radial_range)
+        for a in res:
+            for b in res:
+                R = mathutil.rwp(res[a][:2], res[b][:2])
+                mesg = "test2th: %s vs %s measured Int R=%s<%s" % (a, b, R, self.Rmax)
+                if R > self.Rmax:
+                    logger.error(mesg)
+                else:
+                    logger.info(mesg)
+                self.assertTrue(R <= self.Rmax, mesg)
+                R = mathutil.rwp(res[a][::2], res[b][::2])
+                mesg = "test2th: %s vs %s measured Std R=%s<%s" % (a, b, R, self.Rmax)
+                if R > self.Rmax:
+                    logger.error(mesg)
+                else:
+                    logger.info(mesg)
+                self.assertTrue(R <= self.Rmax, mesg)
+
 
     def test_filename(self):
         with resulttempfile() as filename:

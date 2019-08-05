@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/07/2019"
+__date__ = "05/08/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -145,7 +145,7 @@ except ImportError as error:
 else:
     # Register splitBBoxLUT integrators
     IntegrationMethod(1, "bbox", "LUT", "cython", old_method="lut",
-                      class_funct=(splitBBoxLUT.HistoBBox1d, splitBBoxLUT.HistoBBox1d.integrate))
+                      class_funct=(splitBBoxLUT.HistoBBox1d, splitBBoxLUT.HistoBBox1d.integrate_ng))
     IntegrationMethod(2, "bbox", "LUT", "cython", old_method="lut",
                       class_funct=(splitBBoxLUT.HistoBBox2d, splitBBoxLUT.HistoBBox2d.integrate))
 
@@ -173,7 +173,7 @@ except ImportError as error:
 else:
     # Register splitPixelFullCSR integrators
     IntegrationMethod(1, "full", "CSR", "cython", old_method="full_csr",
-                      class_funct=(splitPixelFullCSR.FullSplitCSR_1d, splitPixelFullCSR.FullSplitCSR_1d.integrate))
+                      class_funct=(splitPixelFullCSR.FullSplitCSR_1d, splitPixelFullCSR.FullSplitCSR_1d.integrate_ng))
     # FIXME: The implementation is there but the routing have to be fixed
     # IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr",
     #                   class_funct=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate))
@@ -1140,43 +1140,46 @@ class AzimuthalIntegrator(Geometry):
                                                                              checksum=integr.lut_checksum)
                                 ocl_engine.set_engine(ocl_integr)
                             if ocl_integr is not None:
-                                I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
-                                                                      solidangle=solidangle,
-                                                                      solidangle_checksum=self._dssa_crc,
-                                                                      dummy=dummy,
-                                                                      delta_dummy=delta_dummy,
-                                                                      polarization=polarization,
-                                                                      polarization_checksum=polarization_checksum,
-                                                                      normalization_factor=normalization_factor)
+                                I, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
+                                                                             solidangle=solidangle,
+                                                                             solidangle_checksum=self._dssa_crc,
+                                                                             dummy=dummy,
+                                                                             delta_dummy=delta_dummy,
+                                                                             polarization=polarization,
+                                                                             polarization_checksum=polarization_checksum,
+                                                                             normalization_factor=normalization_factor)
                                 qAxis = integr.bin_centers  # this will be copied later
                                 if error_model == "azimuthal":
 
                                     variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                                 if variance is not None:
-                                    var1d, a, b = ocl_integr.integrate(variance,
-                                                                       solidangle=None,
-                                                                       dummy=dummy,
-                                                                       delta_dummy=delta_dummy,
-                                                                       normalization_factor=1.0)
+                                    var1d, a, b = ocl_integr.integrate_legacy(variance,
+                                                                              solidangle=None,
+                                                                              dummy=dummy,
+                                                                              delta_dummy=delta_dummy,
+                                                                              normalization_factor=1.0,
+                                                                              coef_power=2)
                                     with numpy.errstate(divide='ignore'):
                                         sigma = numpy.sqrt(a) / (b * normalization_factor)
                                     sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
-                        qAxis, I, sum_, count = integr.integrate(data, dark=dark, flat=flat,
-                                                                 solidAngle=solidangle,
-                                                                 dummy=dummy,
-                                                                 delta_dummy=delta_dummy,
-                                                                 polarization=polarization,
-                                                                 normalization_factor=normalization_factor)
+                        qAxis, I, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
+                                                                        solidAngle=solidangle,
+                                                                        dummy=dummy,
+                                                                        delta_dummy=delta_dummy,
+                                                                        polarization=polarization,
+                                                                        normalization_factor=normalization_factor)
 
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                         if variance is not None:
-                            _, var1d, a, b = integr.integrate(variance,
-                                                              solidAngle=None,
-                                                              dummy=dummy,
-                                                              delta_dummy=delta_dummy,
-                                                              normalization_factor=1.0)
+                            print(integr, integr.__module__)
+                            _, var1d, a, b = integr.integrate_legacy(variance,
+                                                                     solidAngle=None,
+                                                                     dummy=dummy,
+                                                                     delta_dummy=delta_dummy,
+                                                                     coef_power=2,
+                                                                     normalization_factor=1.0)
                             with numpy.errstate(divide='ignore'):
                                 sigma = numpy.sqrt(a) / (b * normalization_factor)
                             sigma[b == 0] = dummy if dummy is not None else self._empty
@@ -1248,14 +1251,14 @@ class AzimuthalIntegrator(Geometry):
                                                                              block_size=block_size,
                                                                              profile=profile)
                                 ocl_engine.set_engine(ocl_integr)
-                            I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
-                                                                  solidangle=solidangle,
-                                                                  solidangle_checksum=self._dssa_crc,
-                                                                  dummy=dummy,
-                                                                  delta_dummy=delta_dummy,
-                                                                  polarization=polarization,
-                                                                  polarization_checksum=polarization_checksum,
-                                                                  normalization_factor=normalization_factor)
+                            I, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
+                                                                         solidangle=solidangle,
+                                                                         solidangle_checksum=self._dssa_crc,
+                                                                         dummy=dummy,
+                                                                         delta_dummy=delta_dummy,
+                                                                         polarization=polarization,
+                                                                         polarization_checksum=polarization_checksum,
+                                                                         normalization_factor=normalization_factor)
                             qAxis = integr.bin_centers  # this will be copied later
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
@@ -1268,21 +1271,21 @@ class AzimuthalIntegrator(Geometry):
                                     sigma = numpy.sqrt(a) / (b * normalization_factor)
                                 sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
-                        qAxis, I, sum_, count = integr.integrate(data, dark=dark, flat=flat,
-                                                                 solidAngle=solidangle,
-                                                                 dummy=dummy,
-                                                                 delta_dummy=delta_dummy,
-                                                                 polarization=polarization,
-                                                                 normalization_factor=normalization_factor)
+                        qAxis, I, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
+                                                                        solidAngle=solidangle,
+                                                                        dummy=dummy,
+                                                                        delta_dummy=delta_dummy,
+                                                                        polarization=polarization,
+                                                                        normalization_factor=normalization_factor)
 
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                         if variance is not None:
-                            _, var1d, a, b = integr.integrate(variance,
-                                                              solidAngle=None,
-                                                              dummy=dummy,
-                                                              delta_dummy=delta_dummy,
-                                                              normalization_factor=1.0)
+                            _, var1d, a, b = integr.integrate_legacy(variance,
+                                                                     solidAngle=None,
+                                                                     dummy=dummy,
+                                                                     delta_dummy=delta_dummy,
+                                                                     normalization_factor=1.0)
                             with numpy.errstate(divide='ignore'):
                                 sigma = numpy.sqrt(a) / (b * normalization_factor)
                             sigma[b == 0] = dummy if dummy is not None else self._empty
@@ -1433,6 +1436,7 @@ class AzimuthalIntegrator(Geometry):
 
         result = Integrate1dResult(qAxis, I, sigma)
         result._set_method_called("integrate1d")
+        result._set_method(method)
         result._set_compute_engine(str(method))
         result._set_unit(unit)
         result._set_sum(sum_)
@@ -1820,6 +1824,7 @@ class AzimuthalIntegrator(Geometry):
             result._set_sum_normalization(norm.sum)
             result._set_sum_variance(sigma2.sum)
             result._set_count(signal.count)
+        result._set_method(method)
         result._set_method_called("integrate1d_ng")
         return result
 

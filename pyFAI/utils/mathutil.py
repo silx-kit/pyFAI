@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/07/2019"
+__date__ = "05/08/2019"
 __status__ = "production"
 
 import logging
@@ -756,3 +756,29 @@ def rwp(obt, ref):
     big_delta = (big_ref - big_obt)
     non_null = abs(big_mean) > 1e-10
     return numpy.sqrt(((big_delta[non_null]) ** 2 / ((big_mean[non_null]) ** 2)).sum())
+
+def chi_square(obt, ref):
+    """Compute :math:`\\sqrt{\\sum \\frac{4\\cdot(obt-ref)^2}{(obt + ref)^2}}`.
+
+    This is done for symmetry reason between obt and ref
+
+    :param obt: obtained data
+    :type obt: 3-tuple of array of the same size containing position, intensity, variance
+    :param obt: reference data
+    :type obt: 3-tuple of array of the same size containing position, intensity, variance
+    :return:  Chi² value, lineary interpolated
+    """
+    ref_pos, ref_int, ref_std = ref
+    obt_pos, obt_int, obt_std = obt
+    big_pos = numpy.concatenate((ref_pos, obt_pos))
+    big_pos.sort()
+    big_pos = numpy.unique(big_pos)
+    big_ref_int = numpy.interp(big_pos, ref_pos, ref_int, 0.0, 0.0)
+    big_obt_int = numpy.interp(big_pos, obt_pos, obt_int, 0.0, 0.0)
+    big_delta_int = (big_ref_int - big_obt_int)
+    
+    big_ref_var = numpy.interp(big_pos, ref_pos, ref_std, 0.0, 0.0)**2
+    big_obt_var = numpy.interp(big_pos, obt_pos, obt_std, 0.0, 0.0)**2
+    big_variance = (big_ref_var + big_obt_var) / 2.0
+    non_null = abs(big_variance) > 1e-10
+    return (big_delta_int[non_null] ** 2 / big_variance[non_null]).mean()
