@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/06/2019"
+__date__ = "06/08/2019"
 
 import logging
 import numpy
@@ -106,28 +106,28 @@ class TestOclAzimCSR(unittest.TestCase):
         integrator = OCL_CSR_Integrator(csr, data.size,)
         solidangle = self.ai.solidAngleArray()
         res = integrator.integrate_ng(data, solidangle=solidangle)
-
+        # for info, res contains: position intensity error signal variance normalization count
+        
         # Start with smth easy: the position
         self.assertTrue(numpy.allclose(r_m, ref[0]), "position are the same")
         # A bit harder: the count of pixels
-        res_count = res[2][:, 6]
-        delta = ref.count - res_count
+        delta = ref.count - res.count
         self.assertLessEqual(delta.max(), 1, "counts are almost the same")
         self.assertEqual(delta.sum(), 0, "as much + and -")
 
         # Intensities are not that different:
-        delta = ref.intensity - res[0]
+        delta = ref.intensity - res.intensity
         self.assertLessEqual(abs(delta.max()), 1e-5, "intensity is almost the same")
 
         # histogram of normalization
         ref = self.ai._integrate1d_ng(solidangle, npt, unit="r_m", method=method).sum_signal
-        sig = res[2][:, 4]
+        sig = res.normalization
         err = abs((sig - ref).max())
         self.assertLess(err, 5e-5, "normalization content is the same: %s<5e-5" % (err))
 
         # histogram of signal
         ref = self.ai._integrate1d_ng(data, npt, unit="r_m", method=method).sum_signal
-        sig = res[2][:, 0]
+        sig = res.signal
         self.assertLess(abs((sig - ref).sum()), 5e-5, "signal content is the same")
 
 
