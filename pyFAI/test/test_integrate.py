@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/08/2019"
+__date__ = "06/08/2019"
 
 
 import tempfile
@@ -132,22 +132,37 @@ class TestIntegrate1D(unittest.TestCase):
             res[m] = self.ai._integrate1d_ng(self.data, self.npt,
                                              variance=self.data, 
                                              method=m, radial_range=radial_range)
-        for a in res:
-            for b in res:
+        keys = list(res.keys())
+        for i, a in enumerate(keys):
+            for b in keys[i:]:
+                if a==b: continue
                 R = mathutil.rwp(res[a][:2], res[b][:2])
-                mesg = "test2th: %s vs %s measured Int R=%s<%s" % (a, b, R, self.Rmax)
+                print(a,"vs",b, "R=", R) 
+                print(" Radial:", abs(res[a].radial-res[b].radial).max())
+                print(" Intensity", abs(res[a].intensity-res[b].intensity).max())
+                print(" Sigma", abs(res[a].sigma-res[b].sigma).max())                
+                res_b_sum_signal = res[b].sum_signal.sum(axis=-1, dtype="float64")if res[b].sum_signal.ndim==2 else res[b].sum_signal  
+                print(" Signal", abs(res[a].sum-res_b_sum_signal).max())
+                res_b_sum_normalization = res[b].sum_normalization.sum(axis=-1, dtype="float64")if res[b].sum_normalization.ndim==2 else res[b].sum_normalization
+                print(" Normalization", abs(res[a].sum_normalization-res_b_sum_normalization).max())
+                res_b_sum_variance = res[b].sum_variance.sum(axis=-1, dtype="float64")if res[b].sum_variance.ndim==2 else res[b].sum_variance
+                print(" Variance", abs(res[a].sum_variance-res_b_sum_variance).max())
+                res_b_count = res[b].count.sum(axis=-1) if res[b].count.ndim==2 else res[b].count
+                print(" Count", abs(res[a].count-res_b_count).max())
+                R = mathutil.rwp(res[a][:2], res[b][:2])
+                mesg = "test_ng_nosplit: %s vs %s measured Int R=%s<%s" % (a, b, R, self.Rmax)
                 if R > self.Rmax:
                     logger.error(mesg)
                 else:
                     logger.info(mesg)
-                self.assertTrue(R <= self.Rmax, mesg)
+                self.assertLess(R, self.Rmax, mesg)
                 R = mathutil.rwp(res[a][::2], res[b][::2])
-                mesg = "test2th: %s vs %s measured Std R=%s<%s" % (a, b, R, self.Rmax)
+                mesg = "test_ng_nosplit: %s vs %s measured Std R=%s<%s" % (a, b, R, self.Rmax)
                 if R > self.Rmax:
                     logger.error(mesg)
                 else:
                     logger.info(mesg)
-                self.assertTrue(R <= self.Rmax, mesg)
+                self.assertLess(R, self.Rmax, mesg)
 
 
     def test_filename(self):

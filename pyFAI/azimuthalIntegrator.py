@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/08/2019"
+__date__ = "06/08/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1173,7 +1173,6 @@ class AzimuthalIntegrator(Geometry):
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                         if variance is not None:
-                            print(integr, integr.__module__)
                             _, var1d, a, b = integr.integrate_legacy(variance,
                                                                      solidAngle=None,
                                                                      dummy=dummy,
@@ -1657,6 +1656,7 @@ class AzimuthalIntegrator(Geometry):
                                                               checksum=csr_integr.lut_checksum, 
                                                               empty=empty,
                                                               unit=unit,
+                                                              bin_centers=csr_integr.bin_centers,
                                                               platformid=method.target[0],
                                                               deviceid=method.target[1])
                         except MemoryError:
@@ -1757,6 +1757,8 @@ class AzimuthalIntegrator(Geometry):
                                                           npt,
                                                           empty=empty,
                                                           unit=unit,
+                                                          mask=mask,
+                                                          mask_checksum=mask_crc,
                                                           platformid=method.target[0],
                                                           deviceid=method.target[1])
                     except MemoryError:
@@ -1771,7 +1773,7 @@ class AzimuthalIntegrator(Geometry):
                                flat=flat, solidangle=solidangle,
                                polarization=polarization, polarization_checksum=polarization_checksum,
                                normalization_factor=normalization_factor,
-                               bin_range=None)
+                               radial_range=radial_range)
             if variance is None:
                 result = Integrate1dResult(intpl.position, intpl.intensity)
             else:
@@ -1787,6 +1789,7 @@ class AzimuthalIntegrator(Geometry):
             result._set_count(intpl.count)
         else:
             # Fallback method ...
+            logger.warning("Failed to find method: %s",method)
             kwargs = {"npt": npt,
                       "error_model": None,
                       "variance": None,

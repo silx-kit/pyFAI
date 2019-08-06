@@ -4,7 +4,7 @@
 #             https://github.com/silx-kit
 #
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2019 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -29,8 +29,8 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "13/06/2019"
-__copyright__ = "2014-2017, ESRF, Grenoble"
+__date__ = "06/08/2019"
+__copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -42,7 +42,7 @@ if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-
+from ..containers import Integrate1dtpl
 from . import processing
 from . import get_x87_volatile_option
 from . import kernel_workgroup_size
@@ -87,7 +87,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                numpy.int32: "s32_to_float"
                }
 
-    def __init__(self, lut, image_size, checksum=None, empty=None,
+    def __init__(self, lut, image_size, checksum=None, 
+                 empty=None, unit=None, bin_centers=None, 
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """
@@ -98,6 +99,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param image_size: Expected image size: image.size
         :param checksum: pre-calculated checksum of the LUT to prevent re-calculating it :)
         :param empty: value to be assigned to bins without contribution from any pixel
+        :param unit: Storage for the unit related to the LUT
+        :param bin_centers: the radial position of the bin_center, place_holder
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
@@ -119,6 +122,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.data_size = self._data.shape[0]
         self.size = image_size
         self.empty = empty or 0.0
+        self.unit = unit
+        self.bin_centers = bin_centers
 
         if not checksum:
             checksum = calc_checksum(self._data)
@@ -332,13 +337,13 @@ class OCL_CSR_Integrator(OpenclProcessing):
         if checksum is not None:
             self.on_device[dest] = checksum
 
-    def integrate(self, data, dummy=None, delta_dummy=None,
-                  dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
-                  dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-                  polarization_checksum=None, absorption_checksum=None,
-                  preprocess_only=False, safe=True,
-                  normalization_factor=1.0, coef_power=1,
-                  out_merged=None, out_sum_data=None, out_sum_count=None):
+    def integrate_legacy(self, data, dummy=None, delta_dummy=None,
+                         dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
+                         dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                         polarization_checksum=None, absorption_checksum=None,
+                         preprocess_only=False, safe=True,
+                         normalization_factor=1.0, coef_power=1,
+                         out_merged=None, out_sum_data=None, out_sum_count=None):
         """
         Before performing azimuthal integration, the preprocessing is:
 
@@ -490,6 +495,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
         if self.profile:
             self.events += events
         return merged, sum_data, sum_count
+
+    integrate = integrate_legacy
 
     def integrate_ng(self, data, dark=None, dummy=None, delta_dummy=None,
                      variance=None, dark_variance=None,
@@ -656,10 +663,11 @@ class OCL_CSR_Integrator(OpenclProcessing):
             events.append(EventDescription("copy D->H stderr", ev))
             ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
             events.append(EventDescription("copy D->H merged8", ev))
-            ev.wait()
         if self.profile:
             self.events += events
-        return avgint, stderr, merged
+        res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:,0], merged[:,2], merged[:,4], merged[:,6])
+        "position intensity error signal variance normalization count"
+        return res
 
     # Name of the default "process" method
     __call__ = integrate

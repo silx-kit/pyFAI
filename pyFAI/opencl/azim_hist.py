@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/06/2019"
+__date__ = "06/08/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -781,7 +781,7 @@ class OCL_Histogram1d(OpenclProcessing):
     """
     BLOCK_SIZE = 32
     buffers = [BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
-               BufferDescription("position", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("radial", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
@@ -805,15 +805,20 @@ class OCL_Histogram1d(OpenclProcessing):
                numpy.int32: "s32_to_float"
                }
 
-    def __init__(self, position, bins, checksum=None, empty=None, unit=None,
+    def __init__(self, radial, bins, checksum=None, empty=None, unit=None,
+                 azimuthal=None, azimuthal_checksum=None,
+                 mask=None, mask_checksum=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """
-        :param position: array with the radial position of every single pixel. Same as image size
+        :param radial: array with the radial position of every single pixel. Same as image size
         :param bins: number of bins on which to histogram
-        :param checksum: pre-calculated checksum of the position array to prevent re-calculating it :)
+        :param checksum: pre-calculated checksum of the radial array to prevent re-calculating it :)
         :param empty: value to be assigned to bins without contribution from any pixel
-        :param unit: just a place_holder for the units of position.
+        :param unit: just a place_holder for the units of radial array.
+        :param azimuthal: array with the azimuthal position, same size as radial
+        :param azimuthal_checksum: Checksum of the azimuthal array
+        :param mask: Array with the mask, 0 for valid values, anything for masked pixels, same size as radial
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
@@ -833,20 +838,22 @@ class OCL_Histogram1d(OpenclProcessing):
                            self.ctx.devices[0].name)
         self.unit = unit
         self.bins = numpy.uint32(bins)
-        self.size = numpy.uint32(position.size)
+        self.size = numpy.uint32(radial.size)
         self.empty = numpy.float32(empty) if empty is not None else numpy.float32(0.0)
-        self.mini = numpy.float32(numpy.min(position))
-        self.maxi = numpy.float32(numpy.max(position) * (1.0 + numpy.finfo(numpy.float32).eps))
+        self.mini = numpy.float32(numpy.min(radial))
+        self.maxi = numpy.float32(numpy.max(radial) * (1.0 + numpy.finfo(numpy.float32).eps))
 
         if not checksum:
-            checksum = calc_checksum(position)
-        self.position = position
-        self.on_device = {"position": checksum,
+            checksum = calc_checksum(radial)
+        self.radial = radial
+        self.mask_checksum = None
+        self.on_device = {"radial": checksum,
                           "dark": None,
                           "flat": None,
                           "polarization": None,
                           "solidangle": None,
-                          "absorption": None}
+                          "absorption": None,
+                          "mask":None}
 
         if block_size is None:
             block_size = self.BLOCK_SIZE
@@ -873,17 +880,33 @@ class OCL_Histogram1d(OpenclProcessing):
             self.set_kernel_arguments()
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
-        self.send_buffer(position, "position", checksum)
-
+        self.send_buffer(radial, "radial", checksum)
+        if mask is not None:
+            if mask_checksum is None:
+                mask_checksum = calc_checksum(mask)
+            self.send_buffer(numpy.ascontiguousarray(mask, dtype=numpy.int8), "mask", mask_checksum)
+            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
+        #TODO: Azimuthal arry handling
     def __copy__(self):
         """Shallow copy of the object
 
         :return: copy of the object
         """
-        return self.__class__(self.position,
+        if self.on_device.get("mask"):
+            mask = self.cl_mem["mask"].get()
+        else:
+            mask=None
+#         if self.on_device.get("azimuthal"):
+#             azimuthal = self.cl_mem["azimuthal"].get()
+#         else:
+#             azimuthal = None
+                
+        return self.__class__(self.radial,
                               self.bins,
-                              checksum=self.on_device.get("position"),
+                              checksum=self.on_device.get("radial"),
                               empty=self.empty,
+                              mask=mask,
+                              mask_checksum=self.on_device.get("mask"),
                               ctx=self.ctx,
                               block_size=self.block_size,
                               profile=self.profile)
@@ -895,11 +918,22 @@ class OCL_Histogram1d(OpenclProcessing):
         """
         if memo is None:
             memo = {}
-        position = self.position.copy()
-        memo[id(self.position)] = position
-        new_obj = self.__class__(position, self.bins,
+        radial = self.radial.copy()
+        memo[id(self.radial)] = radial
+        if self.on_device.get("mask"):
+            mask = self.cl_mem["mask"].get()
+        else:
+            mask=None
+#         if self.on_device.get("azimuthal"):
+#             azimuthal = self.cl_mem["azimuthal"].get()
+#         else:
+#             azimuthal = None
+
+        new_obj = self.__class__(radial, self.bins,
                                  checksum=self.on_device.get("data"),
                                  empty=self.empty,
+                                 mask=mask, mask_checksum=self.on_device.get("mask"),
+                                 
                                  ctx=self.ctx,
                                  block_size=self.block_size,
                                  profile=self.profile)
@@ -965,7 +999,7 @@ class OCL_Histogram1d(OpenclProcessing):
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("preproc4", self.cl_mem["output4"])))
 
-        self.cl_kernel_args["histogram_1d_preproc"] = OrderedDict((("position", self.cl_mem["position"]),
+        self.cl_kernel_args["histogram_1d_preproc"] = OrderedDict((("radial", self.cl_mem["radial"]),
                                                                    ("preproc4", self.cl_mem["output4"]),
                                                                    ("histo_sig", self.cl_mem["histo_sig"]),
                                                                    ("histo_var", self.cl_mem["histo_var"]),
@@ -1041,7 +1075,7 @@ class OCL_Histogram1d(OpenclProcessing):
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
                   preprocess_only=False, safe=True,
-                  normalization_factor=1.0, bin_range=None,
+                  normalization_factor=1.0, radial_range=None,
                   histo_signal=None, histo_variance=None,
                   histo_normalization=None, histo_count=None,
                   intensity=None, error=None):
@@ -1072,7 +1106,7 @@ class OCL_Histogram1d(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param bin_range: provide lower and upper bound for position
+        :param radial_range: provide lower and upper bound for radial
         :param histo_signal: destination array or pyopencl array for sum of signals
         :param histo_normalization: destination array or pyopencl array for sum of normalization
         :param histo_count: destination array or pyopencl array for counting pixels
@@ -1181,9 +1215,9 @@ class OCL_Histogram1d(OpenclProcessing):
                 ev.wait()
                 return image
 
-            if bin_range:
-                mini = numpy.float32(min(bin_range))
-                maxi = numpy.float32(max(bin_range) * (1.0 + numpy.finfo(numpy.float32).eps))
+            if radial_range is not None:
+                mini = numpy.float32(radial_range[0])
+                maxi = numpy.float32(radial_range[1]* (1.0 + numpy.finfo(numpy.float32).eps))
             else:
                 mini = self.mini
                 maxi = self.maxi
@@ -1237,7 +1271,6 @@ class OCL_Histogram1d(OpenclProcessing):
             events.append(EventDescription("copy D->H error", ev))
             delta = (maxi - mini) / self.bins
             positions = numpy.linspace(mini + 0.5 * delta, maxi - 0.5 * delta, self.bins)
-            ev.wait()
 
         if self.profile:
             self.events += events

@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2019 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "11/01/2019"
+__date__ = "05/08/2019"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -262,13 +262,13 @@ class OCL_LUT_Integrator(OpenclProcessing):
         if checksum is not None:
             self.on_device[dest] = checksum
 
-    def integrate(self, data, dummy=None, delta_dummy=None,
-                  dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
-                  dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-                  polarization_checksum=None, absorption_checksum=None,
-                  preprocess_only=False, safe=True,
-                  normalization_factor=1.0, coef_power=1,
-                  out_merged=None, out_sum_data=None, out_sum_count=None):
+    def integrate_legacy(self, data, dummy=None, delta_dummy=None,
+                         dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
+                         dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                         polarization_checksum=None, absorption_checksum=None,
+                         preprocess_only=False, safe=True,
+                         normalization_factor=1.0, coef_power=1,
+                         out_merged=None, out_sum_data=None, out_sum_count=None):
         """
         Before performing azimuthal integration, the preprocessing is:
 
@@ -408,3 +408,9 @@ class OCL_LUT_Integrator(OpenclProcessing):
         if self.profile:
             self.events += events
         return merged, sum_data, sum_count
+    
+    integrate = integrate_legacy
+    
+    def integrate_ng(self,*arg, **kwargs):
+        raise NotImplementedError("In azim_lut.py")
+    
