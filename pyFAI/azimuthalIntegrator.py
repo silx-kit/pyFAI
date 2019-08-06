@@ -1751,11 +1751,12 @@ class AzimuthalIntegrator(Geometry):
                 if reset:
                     logger.info("ai.integrate1d: Resetting integrator because %s", reset)
                     pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-
+                    azimuth = self.chiArray(shape)
                     try:
                         integr = method.class_funct.klass(pos0,
                                                           npt,
                                                           empty=empty,
+                                                          azimuth=azimuth,
                                                           unit=unit,
                                                           mask=mask,
                                                           mask_checksum=mask_crc,
@@ -1773,7 +1774,8 @@ class AzimuthalIntegrator(Geometry):
                                flat=flat, solidangle=solidangle,
                                polarization=polarization, polarization_checksum=polarization_checksum,
                                normalization_factor=normalization_factor,
-                               radial_range=radial_range)
+                               radial_range=radial_range,
+                               azimuth_range=azimuth_range)
             if variance is None:
                 result = Integrate1dResult(intpl.position, intpl.intensity)
             else:

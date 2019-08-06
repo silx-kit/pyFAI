@@ -223,7 +223,7 @@ kernel void histogram_2d_preproc(global float * radial,
         float rvalue = radial[idx];
         float avalue = azimuthal[idx];
         if ((rvalue>=mini_rad)&&(rvalue<maxi_azim)&&
-            (avalue>mini_azim)&&(avalue<maxi_azim))
+            (avalue>=mini_azim)&&(avalue<maxi_azim))
         { //pixel position is the range
             unsigned int target_rad = (unsigned int) (nbins_rad * (radial[idx] - mini_rad) / (maxi_rad-mini_rad));
             unsigned int target_azim = (unsigned int) (nbins_azim * (azimuthal[idx] - mini_azim) / (maxi_azim-mini_azim));
@@ -304,7 +304,7 @@ histogram_postproc(global float2 * histo_sig,
         else
         {
             intensities[idx] = (histo_sig[idx].s0 + histo_sig[idx].s1) / nrm;
-            errors[idx] = sqrt(histo_var[idx].s0 + histo_var[idx].s1)/ nrm;
+            errors[idx] = sqrt(histo_var[idx].s0 + histo_var[idx].s1) / nrm;
         }
     }
 }
