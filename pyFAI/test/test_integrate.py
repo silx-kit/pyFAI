@@ -133,29 +133,24 @@ class TestIntegrate1D(unittest.TestCase):
                                              variance=self.data, 
                                              method=m, radial_range=radial_range)
         keys = list(res.keys())
+        norm = lambda a: a.sum(axis=-1, dtype="float64") if a.ndim==2 else a
         for i, a in enumerate(keys):
             for b in keys[i:]:
                 if a==b: continue
                 R = mathutil.rwp(res[a][:2], res[b][:2])
-                print(a,"vs",b, "R=", R) 
-                print(" Radial:", abs(res[a].radial-res[b].radial).max())
-                print(" Intensity", abs(res[a].intensity-res[b].intensity).max())
-                print(" Sigma", abs(res[a].sigma-res[b].sigma).max())                
-                res_b_sum_signal = res[b].sum_signal.sum(axis=-1, dtype="float64")if res[b].sum_signal.ndim==2 else res[b].sum_signal  
-                print(" Signal", abs(res[a].sum-res_b_sum_signal).max())
-                res_b_sum_normalization = res[b].sum_normalization.sum(axis=-1, dtype="float64")if res[b].sum_normalization.ndim==2 else res[b].sum_normalization
-                print(" Normalization", abs(res[a].sum_normalization-res_b_sum_normalization).max())
-                res_b_sum_variance = res[b].sum_variance.sum(axis=-1, dtype="float64")if res[b].sum_variance.ndim==2 else res[b].sum_variance
-                print(" Variance", abs(res[a].sum_variance-res_b_sum_variance).max())
-                res_b_count = res[b].count.sum(axis=-1) if res[b].count.ndim==2 else res[b].count
-                print(" Count", abs(res[a].count-res_b_count).max())
-                R = mathutil.rwp(res[a][:2], res[b][:2])
-                mesg = "test_ng_nosplit: %s vs %s measured Int R=%s<%s" % (a, b, R, self.Rmax)
+                err_msg = ["test_ng_nosplit: %s vs %s got R=%.2f !<%s. Max delta values:"%(a,b,R,self.Rmax)]
+                err_msg.append(" Radial: %.1f"% abs(norm(res[a].radial)-norm(res[b].radial)).max())
+                err_msg.append(" Intensity: %.1f"% abs(norm(res[a].intensity)-norm(res[b].intensity)).max())
+                err_msg.append(" Sigma: %.1f"% (abs(norm(res[a].sigma)-norm(res[b].sigma)).max()))                
+                err_msg.append(" Signal: %.1f"% abs(norm(res[a].sum_signal)-norm(res[b].sum_signal)).max())
+                err_msg.append(" Normalization: %.1f"% abs(norm(res[a].sum_normalization)-norm(res[b].sum_normalization)).max())
+                err_msg.append(" Variance: %.1f"% abs(norm(res[a].sum_variance)-norm(res[b].sum_variance)).max())
+                err_msg.append(" Count: %.1f"% abs(norm(res[a].count)-norm(res[b].count)).max())
                 if R > self.Rmax:
-                    logger.error(mesg)
+                    logger.error(os.linesep.join(err_msg))
                 else:
-                    logger.info(mesg)
-                self.assertLess(R, self.Rmax, mesg)
+                    logger.info(os.linesep.join(err_msg))
+                self.assertLess(R, self.Rmax, err_msg)
                 R = mathutil.rwp(res[a][::2], res[b][::2])
                 mesg = "test_ng_nosplit: %s vs %s measured Std R=%s<%s" % (a, b, R, self.Rmax)
                 if R > self.Rmax:
