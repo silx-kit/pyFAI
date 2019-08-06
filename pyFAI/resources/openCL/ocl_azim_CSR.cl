@@ -523,7 +523,7 @@ csr_integrate4(  const   global  float4  *weights,
         if (result.s4 > 0.0f)
         {
             averint[bin_num] =  result.s0 / result.s4;
-            stderr[bin_num] = sqrt(result.s1) / result.s4;
+            stderr[bin_num] = sqrt(result.s2) / result.s4;
         }
         else
         {

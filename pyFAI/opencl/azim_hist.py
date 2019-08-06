@@ -782,6 +782,7 @@ class OCL_Histogram1d(OpenclProcessing):
     BLOCK_SIZE = 32
     buffers = [BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("radial", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("azimuthal", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
@@ -840,14 +841,17 @@ class OCL_Histogram1d(OpenclProcessing):
         self.bins = numpy.uint32(bins)
         self.size = numpy.uint32(radial.size)
         self.empty = numpy.float32(empty) if empty is not None else numpy.float32(0.0)
-        self.mini = numpy.float32(numpy.min(radial))
-        self.maxi = numpy.float32(numpy.max(radial) * (1.0 + numpy.finfo(numpy.float32).eps))
+        self.radial_mini = numpy.float32(numpy.min(radial))
+        self.radial_maxi = numpy.float32(numpy.max(radial) * (1.0 + numpy.finfo(numpy.float32).eps))
 
         if not checksum:
             checksum = calc_checksum(radial)
         self.radial = radial
         self.mask_checksum = None
+        self.check_azim =  numpy.int8(0)
+        self.azim_mini = self.azim_maxi = numpy.float32(0.0)
         self.on_device = {"radial": checksum,
+                          "azimuthal": None,
                           "dark": None,
                           "flat": None,
                           "polarization": None,
@@ -886,7 +890,16 @@ class OCL_Histogram1d(OpenclProcessing):
                 mask_checksum = calc_checksum(mask)
             self.send_buffer(numpy.ascontiguousarray(mask, dtype=numpy.int8), "mask", mask_checksum)
             self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
-        #TODO: Azimuthal arry handling
+
+        if azimuthal is not None:
+            self.check_azim = numpy.int8(1)
+            self.azim_mini = numpy.float32(numpy.min(azimuthal))
+            self.azim_maxi = numpy.float32(numpy.max(azimuthal) * (1.0 + numpy.finfo(numpy.float32).eps))
+            if azimuthal_checksum is None:
+                azimuthal_checksum = calc_checksum(azimuthal)
+            self.send_buffer(azimuthal, "azimuthal", azimuthal_checksum)
+            
+
     def __copy__(self):
         """Shallow copy of the object
 
@@ -896,17 +909,17 @@ class OCL_Histogram1d(OpenclProcessing):
             mask = self.cl_mem["mask"].get()
         else:
             mask=None
-#         if self.on_device.get("azimuthal"):
-#             azimuthal = self.cl_mem["azimuthal"].get()
-#         else:
-#             azimuthal = None
+        if self.on_device.get("azimuthal"):
+            azimuthal = self.cl_mem["azimuthal"].get()
+        else:
+            azimuthal = None
                 
         return self.__class__(self.radial,
                               self.bins,
                               checksum=self.on_device.get("radial"),
                               empty=self.empty,
-                              mask=mask,
-                              mask_checksum=self.on_device.get("mask"),
+                              mask=mask, mask_checksum=self.on_device.get("mask"),
+                              azimuthal=azimuthal, azimuthal_checksum=self.on_device.get("azimuthal"),
                               ctx=self.ctx,
                               block_size=self.block_size,
                               profile=self.profile)
@@ -924,16 +937,20 @@ class OCL_Histogram1d(OpenclProcessing):
             mask = self.cl_mem["mask"].get()
         else:
             mask=None
-#         if self.on_device.get("azimuthal"):
-#             azimuthal = self.cl_mem["azimuthal"].get()
-#         else:
-#             azimuthal = None
+        if self.on_device.get("azimuthal"):
+            mask = self.cl_mem["mask"].get()
+        else:
+            mask=None
+        if self.on_device.get("azimuthal"):
+            azimuthal = self.cl_mem["azimuthal"].get()
+        else:
+            azimuthal = None
 
         new_obj = self.__class__(radial, self.bins,
-                                 checksum=self.on_device.get("data"),
+                                 checksum=self.on_device.get("radial"),
                                  empty=self.empty,
                                  mask=mask, mask_checksum=self.on_device.get("mask"),
-                                 
+                                 azimuthal=azimuthal, azimuthal_checksum=self.on_device.get("azimuthal"),
                                  ctx=self.ctx,
                                  block_size=self.block_size,
                                  profile=self.profile)
@@ -1000,6 +1017,7 @@ class OCL_Histogram1d(OpenclProcessing):
                                                            ("preproc4", self.cl_mem["output4"])))
 
         self.cl_kernel_args["histogram_1d_preproc"] = OrderedDict((("radial", self.cl_mem["radial"]),
+                                                                   ("azimuthal", self.cl_mem["azimuthal"]),
                                                                    ("preproc4", self.cl_mem["output4"]),
                                                                    ("histo_sig", self.cl_mem["histo_sig"]),
                                                                    ("histo_var", self.cl_mem["histo_var"]),
@@ -1007,8 +1025,11 @@ class OCL_Histogram1d(OpenclProcessing):
                                                                    ("histo_cnt", self.cl_mem["histo_cnt"]),
                                                                    ("size", self.size),
                                                                    ("bins", self.bins),
-                                                                   ("mini", self.mini),
-                                                                   ("maxi", self.maxi)))
+                                                                   ("radial_mini", self.radial_mini),
+                                                                   ("radial_maxi", self.radial_maxi),
+                                                                   ("check_azim", self.check_azim),
+                                                                   ("azim_mini", self.azim_mini),
+                                                                   ("azim_maxi", self.azim_maxi)))
 
         self.cl_kernel_args["histogram_postproc"] = OrderedDict((("histo_sig", self.cl_mem["histo_sig"]),
                                                                  ("histo_var", self.cl_mem["histo_var"]),
@@ -1075,7 +1096,8 @@ class OCL_Histogram1d(OpenclProcessing):
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
                   preprocess_only=False, safe=True,
-                  normalization_factor=1.0, radial_range=None,
+                  normalization_factor=1.0, 
+                  radial_range=None, azimuth_range=None,
                   histo_signal=None, histo_variance=None,
                   histo_normalization=None, histo_count=None,
                   intensity=None, error=None):
@@ -1106,7 +1128,8 @@ class OCL_Histogram1d(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param radial_range: provide lower and upper bound for radial
+        :param radial_range: provide lower and upper bound for radial array
+        :param azimuth_range: provide lower and upper bound for azimuthal array
         :param histo_signal: destination array or pyopencl array for sum of signals
         :param histo_normalization: destination array or pyopencl array for sum of normalization
         :param histo_count: destination array or pyopencl array for counting pixels
@@ -1216,13 +1239,27 @@ class OCL_Histogram1d(OpenclProcessing):
                 return image
 
             if radial_range is not None:
-                mini = numpy.float32(radial_range[0])
-                maxi = numpy.float32(radial_range[1]* (1.0 + numpy.finfo(numpy.float32).eps))
+                radial_mini = numpy.float32(radial_range[0])
+                radial_maxi = numpy.float32(radial_range[1]* (1.0 + numpy.finfo(numpy.float32).eps))
             else:
-                mini = self.mini
-                maxi = self.maxi
-            kw_histogram["mini"] = mini
-            kw_histogram["maxi"] = maxi
+                radial_mini = self.radial_mini
+                radial_maxi = self.radial_maxi
+            kw_histogram["radial_mini"] = radial_mini
+            kw_histogram["radial_maxi"] = radial_maxi
+
+            if azimuth_range is not None:
+                azim_mini = numpy.float32(azimuth_range[0])
+                azim_maxi = numpy.float32(azimuth_range[1]* (1.0 + numpy.finfo(numpy.float32).eps))
+                kw_histogram["check_azim"] = numpy.int8(1)
+                if self.on_device.get("azimuthal") is None:
+                    raise RuntimeError("Unable to use azimuthal range: azimuthal array not provided")
+            else:
+                azim_mini = self.azim_mini
+                azim_maxi = self.azim_maxi
+                kw_histogram["check_azim"] = numpy.int8(0)
+            kw_histogram["azim_mini"] = azim_mini
+            kw_histogram["azim_maxi"] = azim_maxi
+
 
             histogram = self.kernels.histogram_1d_preproc(self.queue, self.wdim_data, self.workgroup_size["histogram_1d_preproc"],
                                                           *kw_histogram.values())
@@ -1269,8 +1306,8 @@ class OCL_Histogram1d(OpenclProcessing):
             events.append(EventDescription("copy D->H intensity", ev))
             ev = pyopencl.enqueue_copy(self.queue, error, self.cl_mem["error"])
             events.append(EventDescription("copy D->H error", ev))
-            delta = (maxi - mini) / self.bins
-            positions = numpy.linspace(mini + 0.5 * delta, maxi - 0.5 * delta, self.bins)
+            delta = (radial_maxi - radial_mini) / self.bins
+            positions = numpy.linspace(radial_mini + 0.5 * delta, radial_maxi - 0.5 * delta, self.bins)
 
         if self.profile:
             self.events += events
@@ -1316,8 +1353,8 @@ class OCL_Histogram2d(OCL_Histogram1d):
 
     def __init__(self, radial, azimuthal,
                  bins_radial, bins_azimuthal,
-                 checksum_radial=None, checksum_azimuthal=None,
-                 empty=None, unit=None,
+                 radial_checksum=None, azimuthal_checksum=None,
+                 empty=None, unit=None, mask=None, mask_checksum=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """
@@ -1325,8 +1362,8 @@ class OCL_Histogram2d(OCL_Histogram1d):
         :param azimuthal: array with the azimuthal position of every single pixel. Same as image size
         :param bins_radial: number of bins on which to histogram is calculated in radial direction
         :param bins_azimuthal: number of bins on which to histogram is calculated in azimuthal direction
-        :param checksum_radial: pre-calculated checksum of the position array to prevent re-calculating it :)
-        :param checksum_azimuthal: pre-calculated checksum of the position array to prevent re-calculating it :)
+        :param radial_checksum: pre-calculated checksum of the position array to prevent re-calculating it :)
+        :param azimuthal_checksum: pre-calculated checksum of the position array to prevent re-calculating it :)
 
         :param empty: value to be assigned to bins without contribution from any pixel
         :param ctx: actual working context, left to None for automatic
@@ -1338,33 +1375,25 @@ class OCL_Histogram2d(OCL_Histogram1d):
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
         """
-        OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
-                                  platformid=platformid, deviceid=deviceid,
-                                  block_size=block_size, profile=profile)
-        self.unit = unit
+        OCL_Histogram1d.__init__(self, 
+                                 radial=radial, radial_checksum=radial_checksum,
+                                 azimuthal=azimuthal, azimuthal_checksum=azimuthal_checksum,
+                                 empty=empty, unit=unit, mask=mask, mask_checksum=mask_checksum,
+                                 ctx=ctx, devicetype=devicetype,
+                                 platformid=platformid, deviceid=deviceid,
+                                 block_size=block_size, profile=profile)
         self.bins_radial = numpy.uint32(bins_radial)
         self.bins_azimuthal = numpy.uint32(bins_azimuthal)
         self.bins = numpy.uint32(bins_radial * bins_azimuthal)
         self.size = numpy.uint32(radial.size)
         self.empty = numpy.float32(empty) if empty is not None else numpy.float32(0.0)
 
-        self.mini_rad = numpy.float32(numpy.min(radial))
-        self.maxi_rad = numpy.float32(numpy.max(radial) * (1.0 + numpy.finfo(numpy.float32).eps))
-        self.mini_azim = numpy.float32(numpy.min(azimuthal))
-        self.maxi_azim = numpy.float32(numpy.max(azimuthal) * (1.0 + numpy.finfo(numpy.float32).eps))
+        self.radial_mini = numpy.float32(numpy.min(radial))
+        self.radial_maxi = numpy.float32(numpy.max(radial) * (1.0 + numpy.finfo(numpy.float32).eps))
+        self.azim_mini = numpy.float32(numpy.min(azimuthal))
+        self.azim_maxi = numpy.float32(numpy.max(azimuthal) * (1.0 + numpy.finfo(numpy.float32).eps))
         self.maxi = self.mini = None
 
-        if not checksum_radial:
-            checksum_radial = calc_checksum(radial)
-        if not checksum_azimuthal:
-            checksum_azimuthal = calc_checksum(azimuthal)
-        self.on_device = {"radial": checksum_radial,
-                          "azimuthal": checksum_azimuthal,
-                          "dark": None,
-                          "flat": None,
-                          "polarization": None,
-                          "solidangle": None,
-                          "absorption": None}
 
         if block_size is None:
             block_size = self.BLOCK_SIZE
@@ -1393,8 +1422,6 @@ class OCL_Histogram2d(OCL_Histogram1d):
             raise MemoryError(error)
         self.radial = radial
         self.azimuthal = azimuthal
-        self.send_buffer(radial, "radial", checksum_radial)
-        self.send_buffer(azimuthal, "azimuthal", checksum_azimuthal)
 
     def __copy__(self):
         """Shallow copy of the object
@@ -1447,10 +1474,10 @@ class OCL_Histogram2d(OCL_Histogram1d):
                                                                    ("size", self.size),
                                                                    ("bins_radial", self.bins_radial),
                                                                    ("bins_azimuthal", self.bins_azimuthal),
-                                                                   ("mini_rad", self.mini_rad),
-                                                                   ("maxi_rad", self.maxi_rad),
-                                                                   ("mini_azim", self.mini_azim),
-                                                                   ("maxi_azim", self.maxi_azim)))
+                                                                   ("radial_mini", self.radial_mini),
+                                                                   ("radial_maxi", self.radial_maxi),
+                                                                   ("azim_mini", self.azim_mini),
+                                                                   ("azim_maxi", self.azim_maxi)))
 
     def integrate(self, data, dark=None,
                   dummy=None, delta_dummy=None,
@@ -1601,22 +1628,22 @@ class OCL_Histogram2d(OCL_Histogram1d):
                 return image
 
             if radial_range:
-                mini_rad = numpy.float32(min(radial_range))
-                maxi_rad = numpy.float32(max(radial_range) * (1.0 + numpy.finfo(numpy.float32).eps))
+                radial_mini = numpy.float32(min(radial_range))
+                radial_maxi = numpy.float32(max(radial_range) * (1.0 + numpy.finfo(numpy.float32).eps))
             else:
-                mini_rad = self.mini_rad
-                maxi_rad = self.maxi_rad
-            kw_histogram["mini_rad"] = mini_rad
-            kw_histogram["maxi_rad"] = maxi_rad
+                radial_mini = self.radial_mini
+                radial_maxi = self.radial_maxi
+            kw_histogram["radial_mini"] = radial_mini
+            kw_histogram["radial_maxi"] = radial_maxi
 
             if azimuthal_range:
-                mini_azim = numpy.float32(min(azimuthal_range))
-                maxi_azim = numpy.float32(max(azimuthal_range) * (1.0 + numpy.finfo(numpy.float32).eps))
+                azim_mini = numpy.float32(min(azimuthal_range))
+                azim_maxi = numpy.float32(max(azimuthal_range) * (1.0 + numpy.finfo(numpy.float32).eps))
             else:
-                mini_azim = self.mini_azim
-                maxi_azim = self.maxi_azim
-            kw_histogram["mini_azim"] = mini_azim
-            kw_histogram["maxi_azim"] = maxi_azim
+                azim_mini = self.azim_mini
+                azim_maxi = self.azim_maxi
+            kw_histogram["azim_mini"] = azim_mini
+            kw_histogram["azim_maxi"] = azim_maxi
 
             histogram = self.kernels.histogram_2d_preproc(self.queue, self.wdim_data, self.workgroup_size["histogram_2d_preproc"],
                                                           *kw_histogram.values())
@@ -1664,11 +1691,11 @@ class OCL_Histogram2d(OCL_Histogram1d):
             ev = pyopencl.enqueue_copy(self.queue, error, self.cl_mem["error"])
             events.append(EventDescription("copy D->H error", ev))
 
-            delta_radial = (maxi_rad - mini_rad) / self.bins_radial
-            delta_azimuthal = (maxi_azim - mini_azim) / self.bins_azimuthal
+            delta_radial = (radial_maxi - radial_mini) / self.bins_radial
+            delta_azimuthal = (azim_maxi - azim_mini) / self.bins_azimuthal
 
-            pos_radial = numpy.linspace(mini_rad + 0.5 * delta_radial, maxi_rad - 0.5 * delta_radial, self.bins_radial)
-            pos_azim = numpy.linspace(mini_azim + 0.5 * delta_azimuthal, maxi_azim - 0.5 * delta_azimuthal, self.bins_azimuthal)
+            pos_radial = numpy.linspace(radial_mini + 0.5 * delta_radial, radial_maxi - 0.5 * delta_radial, self.bins_radial)
+            pos_azim = numpy.linspace(azim_mini + 0.5 * delta_azimuthal, azim_maxi - 0.5 * delta_azimuthal, self.bins_azimuthal)
             ev.wait()
 
         if self.profile:
