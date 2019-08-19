@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/08/2019"
+__date__ = "19/08/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1751,12 +1751,12 @@ class AzimuthalIntegrator(Geometry):
                 if reset:
                     logger.info("ai.integrate1d: Resetting integrator because %s", reset)
                     pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-                    azimuth = self.chiArray(shape)
+                    azimuthal = self.chiArray(shape)
                     try:
                         integr = method.class_funct.klass(pos0,
                                                           npt,
                                                           empty=empty,
-                                                          azimuth=azimuth,
+                                                          azimuthal=azimuthal,
                                                           unit=unit,
                                                           mask=mask,
                                                           mask_checksum=mask_crc,

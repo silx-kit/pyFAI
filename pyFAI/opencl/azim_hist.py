@@ -1065,7 +1065,6 @@ class OCL_Histogram1d(OpenclProcessing):
         """
 
         dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
-        print(dest, dest_type, )
         events = []
         if isinstance(data, pyopencl.array.Array):
             if (data.dtype == dest_type):
@@ -1081,7 +1080,6 @@ class OCL_Histogram1d(OpenclProcessing):
         else:
             # Assume it is a numpy array
             if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
-                print("Reduce precision to ", self.cl_mem[dest])
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
                 events.append(EventDescription("copy H->D %s" % dest, copy_image))
             else:
