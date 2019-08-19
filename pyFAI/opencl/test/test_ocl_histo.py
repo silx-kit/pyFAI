@@ -141,7 +141,7 @@ class TestOclHistogram(unittest.TestCase):
 
         npt = (300, 36)
         ref = self.ai._integrate2d_legacy(data, *npt, unit="2th_deg", method="numpy", dummy=dummy)
-        integrator = OCL_Histogram2d(tth, chi, *npt, empty=dummy, profile=1, devicetype="cpu")
+        integrator = OCL_Histogram2d(tth, chi, *npt, empty=dummy, profile=1)
         res = integrator(data, solidangle=solidangle)
                 
         # Start with smth easy: the position
@@ -152,8 +152,7 @@ class TestOclHistogram(unittest.TestCase):
         delta = ref.count - res.count.T
         self.assertLessEqual(delta.max(), 2, "counts are almost the same")
         self.assertLessEqual(delta.sum(), 1, "as much + and -")
-        lost = max(abs(delta).sum(), 1)
-        print(lost)
+        lost = max(abs(delta).sum(), 1.1)
         # Intensities are not that different:
         delta = ref.intensity - res.intensity.T
         self.assertLessEqual(delta.max(), 1e-3, "intensity is almost the same")
@@ -162,8 +161,7 @@ class TestOclHistogram(unittest.TestCase):
         ref = numpy.histogram2d(tth.ravel(), chi.ravel(), npt, range=range_, weights=solidangle.ravel())[0]
         sig = res.normalization.sum(axis=-1, dtype="float64")
         err = abs((sig - ref).sum())
-        print(err, (sig - ref).sum())
-        allowed = lost * solidangle.max()
+        allowed = lost*solidangle.max()
         self.assertLessEqual(err, allowed, "normalization content is the same: %s<=%s" %( err, allowed))
 
         # histogram of signal
