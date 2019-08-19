@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "06/08/2019"
+__date__ = "19/08/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -61,6 +61,7 @@ else:
 from . import allocate_cl_buffers, release_cl_buffers, kernel_workgroup_size
 from . import concatenate_cl_kernel, get_x87_volatile_option, processing
 from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..utils.decorators import deprecated
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
@@ -69,8 +70,9 @@ logger = logging.getLogger(__name__)
 
 
 class Integrator1d(object):
-    """
-    Attempt to implements ocl_azim using pyopencl
+    """Attempt to implements ocl_azim using pyopencl
+    
+    Implementation based on Dimitris' work. Deprecated, marked for removal in version 1.0 
     """
     BLOCK_SIZE = 128
 
@@ -596,6 +598,7 @@ class Integrator1d(object):
                 self._cl_mem["tth_min_max"]
             self._cl_kernel_args["get_spans"][2] = self._cl_mem["tth_min_max"]
 
+    @deprecated
     def execute(self, image):
         """
         Perform a 1D azimuthal integration
@@ -1389,34 +1392,6 @@ class OCL_Histogram2d(OCL_Histogram1d):
                                  ctx=ctx, devicetype=devicetype,
                                  platformid=platformid, deviceid=deviceid,
                                  block_size=block_size, profile=profile)
-
-
-        if block_size is None:
-            block_size = self.BLOCK_SIZE
-
-        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
-        self.workgroup_size = {}
-        self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
-        self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
-
-        self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
-                        for i in self.__class__.buffers]
-
-        self.buffers += [BufferDescription("histo_sig", self.bins * 2, numpy.float32, mf.READ_WRITE),
-                         BufferDescription("histo_var", self.bins * 2, numpy.float32, mf.READ_WRITE),
-                         BufferDescription("histo_nrm", self.bins * 2, numpy.float32, mf.READ_WRITE),
-                         BufferDescription("histo_cnt", self.bins, numpy.uint32, mf.READ_WRITE),
-                         BufferDescription("error", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("intensity", self.bins, numpy.float32, mf.WRITE_ONLY)]
-        try:
-            self.set_profiling(profile)
-            self.allocate_buffers()
-            self.compile_kernels()
-            self.set_kernel_arguments()
-        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
-            raise MemoryError(error)
-        self.radial = radial
-        self.azimuthal = azimuthal
 
     def __copy__(self):
         """Shallow copy of the object
