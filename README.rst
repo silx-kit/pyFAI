@@ -118,14 +118,15 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 2.7, 3.4, 3.5, 3.6 and 3.7 are well tested.
+Python 2.7, 3.5, 3.6 and 3.7 are well tested.
 Python 2.6, 3.2 and 3.3 are no more supported since pyFAI 0.12
+Python 3.4 has beed dropped with 0.19
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
-* ``scipy`` 	   - http://www.scipy.org
+* ``scipy`` 	 - http://www.scipy.org
 * ``matplotlib`` - http://matplotlib.sourceforge.net/
-* ``fabio`` 		 - http://sourceforge.net/projects/fable/files/fabio/
+* ``fabio`` 	 - http://sourceforge.net/projects/fable/files/fabio/
 * ``h5py``	     - http://www.h5py.org/
 * ``pyopencl``	 - http://mathema.tician.de/software/pyopencl/
 * ``pyqt5``	     - http://www.riverbankcomputing.co.uk/software/pyqt/intro
@@ -204,11 +205,11 @@ Maintainers
 -----------
 
 * Jérôme Kieffer (ESRF)
-* Valentin Valls (ESRF)
 
 Contributors
 ------------
 
+* Valentin Valls (ESRF)
 * Frédéric-Emmanuel Picca (Soleil)
 * Thomas Vincent (ESRF)
 * Dimitris Karkoulis (ESRF)
