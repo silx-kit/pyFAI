@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/07/2019"
+__date__ = "05/08/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -433,16 +433,16 @@ class FullSplitCSR_1d(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate(self,
-                  weights,
-                  dummy=None,
-                  delta_dummy=None,
-                  dark=None,
-                  flat=None,
-                  solidAngle=None,
-                  polarization=None,
-                  double normalization_factor=1.0,
-                  int coef_power=1):
+    def integrate_legacy(self,
+                         weights,
+                         dummy=None,
+                         delta_dummy=None,
+                         dark=None,
+                         flat=None,
+                         solidAngle=None,
+                         polarization=None,
+                         double normalization_factor=1.0,
+                         int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -578,11 +578,14 @@ class FullSplitCSR_1d(object):
                 numpy.asarray(sum_data), 
                 numpy.asarray(sum_count))
 
+    integrate = integrate_legacy
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
     def outPos(self):
         return self.bin_centers
 
+    def integrate_ng(self, *arg, **kwargs):
+        raise NotImplementedError("Please fix pyFAI/ext/splitPixelFullCSR.pyx")
 
 ################################################################################
 # Bidimensionnal regrouping

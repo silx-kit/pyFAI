@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019"
+__date__ = "12/06/2019"
 __status__ = "development"
 
 from logging import getLogger
@@ -151,7 +151,7 @@ class IntegrationMethod:
     "Keeps track of all integration methods"
     _registry = OrderedDict()
 
-    AVAILABLE_SLITS = ("no", "bbox", "pseudo", "full")
+    AVAILABLE_SPLITS = ("no", "bbox", "pseudo", "full")
     AVAILABLE_ALGOS = ("histogram", "lut", "csr")
     AVAILABLE_IMPLS = ("python", "cython", "opencl")
 
@@ -189,6 +189,7 @@ class IntegrationMethod:
                 split, algo, impl, target = method
             else:
                 _dim, split, algo, impl, target = method
+
             method = Method(dim, split, algo, impl, target)
         methods = cls.select_method(method=method, degradable=degradable)
         if len(methods) == 0:
@@ -367,7 +368,7 @@ class IntegrationMethod:
         self.extra = extra
         self.method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)
         # basic checks
-        assert self.split_lower in self.AVAILABLE_SLITS
+        assert self.split_lower in self.AVAILABLE_SPLITS
         assert self.algo_lower in self.AVAILABLE_ALGOS
         assert self.impl_lower in self.AVAILABLE_IMPLS
         self.__class__._registry[self.method] = self

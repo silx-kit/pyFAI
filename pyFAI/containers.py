@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/04/2019"
+__date__ = "05/08/2019"
 __status__ = "development"
 
 from collections import namedtuple
@@ -46,8 +46,6 @@ class IntegrateResult(tuple):
     """
 
     def __init__(self):
-        self._method_called = None
-        self._compute_engine = None
         self._sum_signal = None  # sum of signal
         self._sum_variance = None  # sum of variance
         self._sum_normalization = None  # sum of all normalization SA, pol, ...
@@ -62,7 +60,20 @@ class IntegrateResult(tuple):
         self._metadata = None
         self._npt_azim = None
         self._percentile = None
+        self._method = None
+        self._method_called = None
+        self._compute_engine = None
+    
+    @property
+    def method(self):
+        """return the name of the integration method _actually_ used, 
+        represented as a 4-tuple (dimention, splitting, algorithm, implementation)
+        """
+        return self._method
 
+    def _set_method(self, value):
+        self._method = value
+    
     @property
     def method_called(self):
         "return the name of the method called"
