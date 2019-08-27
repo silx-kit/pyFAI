@@ -277,6 +277,22 @@ class ImXPadS70(ImXPadS10):
         ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
+class ImXPadS70V(ImXPadS10):
+    """
+    ImXPad detector: ImXPad s70 detector with 1x7modules
+    """
+    MODULE_SIZE = (80, 120)  # number of pixels per module (y, x)
+    MAX_SHAPE = (560, 120)  # max size of the detector
+    PIXEL_SIZE = (130e-6, 130e-6)
+    BORDER_SIZE_RELATIVE = 2.5
+    force_pixel = True
+    aliases = ["Imxpad S70 V"]
+    PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
+
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
 class ImXPadS140(ImXPadS10):
     """
     ImXPad detector: ImXPad s140 detector with 2x7modules
