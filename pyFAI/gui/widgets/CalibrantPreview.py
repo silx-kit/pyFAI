@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/11/2018"
+__date__ = "16/05/2019"
 
 import logging
 import numpy
@@ -55,6 +55,7 @@ class CalibrantPreview(qt.QFrame):
         self.__calibrant = None
         self.__waveLength = None
         self.__pixmap = None
+        self.__cachedSize = None
         self.setMinimumSize(qt.QSize(50, 20))
 
     def setCalibrant(self, calibrant):
@@ -103,14 +104,14 @@ class CalibrantPreview(qt.QFrame):
             fileds.append((u"Name", name, None))
         fileds.append((u"Nb registered rays", calibrant.count_registered_dSpacing(), None))
         dSpacing = calibrant.get_dSpacing()
-        fileds.append((u"Nb visible rays", len(dSpacing), u"between 0 and π"))
+        fileds.append((u"Nb visible rays", len(dSpacing), u"between 0 and 180°"))
         if len(dSpacing) > 0:
             ray = calibrant.get_dSpacing()[0]
             angle = calibrant.get_2th()[0]
-            fileds.append((u"First visible ray", u"%f (%f rad)" % (ray, angle), None))
+            fileds.append((u"First visible ray", u"%f Å (%f°)" % (ray, numpy.rad2deg(angle)), None))
             ray = calibrant.get_dSpacing()[-1]
             angle = calibrant.get_2th()[-1]
-            fileds.append((u"Last visible ray", u"%f (%f rad)" % (ray, angle), None))
+            fileds.append((u"Last visible ray", u"%f Å (%f°)" % (ray, numpy.rad2deg(angle)), None))
 
         toolTip = []
         for f in fileds:
@@ -124,32 +125,23 @@ class CalibrantPreview(qt.QFrame):
         toolTip = u"<html><ul>%s</ul></html>" % toolTip
         self.setToolTip(toolTip)
 
-    def __getPixmap(self):
-        if self.__pixmap is not None:
+    def __getPixmap(self, size=360):
+        if self.__pixmap is not None and self.__cachedSize == size:
             return self.__pixmap
-
         calibrant = self.__getConfiguredCalibrant()
         if calibrant is None:
             return None
         tths = numpy.array(calibrant.get_2th())
 
         tth_min, tth_max = 0, numpy.pi
-        size = 360
-        agregation = numpy.zeros((1, size))
-        for tth in tths:
-            pos = int((tth - tth_min) / (tth_max - tth_min) * size)
-            if pos < 0:
-                continue
-            if pos >= size:
-                continue
-            agregation[0, pos] += 1
-        agregation = -agregation
-
-        colormap = Colormap()
+        histo = numpy.histogram(tths, bins=size, range=(tth_min, tth_max))
+        agregation = histo[0].reshape(1, -1)
+        colormap = Colormap(name="reversed gray", vmin=agregation.min(), vmax=agregation.max())
         rgbImage = colormap.applyToData(agregation)[:, :, :3]
         qimage = imageutils.convertArrayToQImage(rgbImage)
         qpixmap = qt.QPixmap.fromImage(qimage)
         self.__pixmap = qpixmap
+        self.__cachedSize = size
         return self.__pixmap
 
     def paintEvent(self, event):
@@ -168,9 +160,9 @@ class CalibrantPreview(qt.QFrame):
                           self)
 
         # content
-        pixmap = self.__getPixmap()
         pixmapRect = self.rect().adjusted(self._PIXMAP_OFFSET, self._PIXMAP_OFFSET,
                                           -self._PIXMAP_OFFSET, -self._PIXMAP_OFFSET)
+        pixmap = self.__getPixmap(size=pixmapRect.width())
         if pixmap is not None:
             painter.drawPixmap(pixmapRect,
                                pixmap,

@@ -47,7 +47,7 @@ class _LoadImageFromFileDialogAction(qt.QAction):
     """Action loading an image using the default `QFileDialog`."""
 
     def __init__(self, parent):
-        qt.QAction.__init__(self, parent=parent)
+        qt.QAction.__init__(self, parent)
         self.triggered.connect(self.__execute)
         self.setText("Use file dialog")
 
@@ -96,7 +96,7 @@ class _LoadImageFromImageDialogAction(qt.QAction):
     """Action loading an image using the silx ImageFileDialog."""
 
     def __init__(self, parent):
-        qt.QAction.__init__(self, parent=parent)
+        qt.QAction.__init__(self, parent)
         self.triggered.connect(self.__execute)
         self.setText("Use image dialog")
 

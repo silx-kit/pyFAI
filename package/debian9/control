@@ -13,6 +13,7 @@ Build-Depends: cython,
                python-all-dev,
                python-setuptools,
                python-fabio,
+               python-silx,
                python-h5py,
                python-lxml,
                python-matplotlib,
@@ -27,6 +28,7 @@ Build-Depends: cython,
                python3-all-dev,
                python-setuptools,
                python3-fabio,
+               python3-silx,
                python3-lxml,
                python3-matplotlib,
                python3-numpy,
@@ -80,7 +82,7 @@ Depends: ${misc:Depends},
          python-imaging,
          python-matplotlib,
          python-scipy,
-         python-silx (>=0.8)
+         python-silx (>=0.10)
 Recommends: python-h5py,
             python-pyopencl,
             python-qt4|python-pyside|python-pyqt5
@@ -118,7 +120,7 @@ Depends: ${misc:Depends},
          python3-pil,
          python3-matplotlib,
          python3-scipy,
-         python3-silx (>=0.8)
+         python3-silx (>=0.10)
 Recommends: python3-pyopencl,
             python3-pyqt5|python3-pyside
 Suggests: python3-h5py

@@ -34,44 +34,124 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019"
+__date__ = "12/06/2019"
 __status__ = "development"
 
 from logging import getLogger
 logger = getLogger(__name__)
 from collections import OrderedDict, namedtuple
-Method = namedtuple("Method", ["dim", "split", "algo", "impl", "target"])
 ClassFunction = namedtuple("ClassFunction", ["klass", "function"])
 
 
-def _degraded(split, algo, impl):
-    "provide a degraded version of the input"
-    if impl == "opencl":
-        return split, algo, "cython"
-    elif algo == "lut":
-        return split, "histogram", impl
-    elif algo == "csr":
-        return split, "histogram", impl
-    elif split == "full":
-        return "pseudo", algo, impl
-    elif split == "full":
-        return "pseudo", algo, impl
-    elif split == "pseudo":
-        return "bbox", algo, impl
-    elif split == "bbox":
-        return "no", algo, impl
-    elif impl == "cython":
-        return split, algo, "python"
-    else:
-        # Totally fail safe ?
-        return "no", "histogram", "python"
+class _Nothing(object):
+    """Used to identify an unset attribute that we could nullify."""
+    pass
+
+
+class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
+
+    def degraded(self):
+        """Returns a degraded version of this method.
+
+        :rtype: Method"
+        """
+        if self.impl == "opencl":
+            result = Method(self.dim, self.split, self.algo, "cython", None)
+        elif self.algo == "lut":
+            result = Method(self.dim, self.split, "histogram", self.impl, self.target)
+        elif self.algo == "csr":
+            result = Method(self.dim, self.split, "histogram", self.impl, self.target)
+        elif self.split == "full":
+            result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
+        elif self.split == "full":
+            result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
+        elif self.split == "pseudo":
+            result = Method(self.dim, "bbox", self.algo, self.impl, self.target)
+        elif self.split == "bbox":
+            result = Method(self.dim, "no", self.algo, self.impl, self.target)
+        elif self.impl == "cython":
+            result = Method(self.dim, self.split, self.algo, "python", None)
+        else:
+            # Totally fail safe ?
+            result = Method(self.dim, "no", "histogram", "python", None)
+        return result
+
+    def fixed(self, dim=_Nothing, split=_Nothing, algo=_Nothing, impl=_Nothing, target=_Nothing):
+        """
+        Returns a method containing this Method data except requested attributes
+        set.
+
+        :rtype: Method
+        """
+        if dim is _Nothing:
+            dim = self.dim
+        if split is _Nothing:
+            split = self.split
+        if algo is _Nothing:
+            algo = self.algo
+        if impl is _Nothing:
+            impl = self.impl
+        if target is _Nothing:
+            target = self.target
+        return Method(dim, split, algo, impl, target)
+
+    @staticmethod
+    def parsed(string):
+        """Returns a Method from string.
+
+        :param str string: A string identifying a method. Like "python", "ocl",
+            "ocl_gpu", "ocl_0,0"
+        :rtype: Method"
+        """
+        algo = "*"
+        impl = "*"
+        split = "*"
+        string = string.lower()
+
+        if "lut" in string:
+            algo = "lut"
+        elif "csr" in string:
+            algo = "csr"
+
+        target = None
+
+        if string in ["numpy", "python"]:
+            impl = "python"
+        elif string == "cython":
+            impl = "cython"
+        elif "ocl" in string:
+            impl = "opencl"
+            elements = string.split("_")
+            if len(elements) >= 2:
+                target_string = elements[-1]
+                if target_string == "cpu":
+                    target = "cpu"
+                elif target_string == "gpu":
+                    target = "gpu"
+                elif target_string in ["*", "any", "all"]:
+                    target = None
+                elif "," in target_string:
+                    try:
+                        values = target_string.split(",")
+                        target = int(values[0]), int(values[1])
+                    except ValueError:
+                        pass
+
+        if "bbox" in string:
+            split = "bbox"
+        elif "full" in string:
+            split = "full"
+        elif "no" in string:
+            split = "no"
+
+        return Method(None, split, algo, impl, target)
 
 
 class IntegrationMethod:
     "Keeps track of all integration methods"
     _registry = OrderedDict()
 
-    AVAILABLE_SLITS = ("no", "bbox", "pseudo", "full")
+    AVAILABLE_SPLITS = ("no", "bbox", "pseudo", "full")
     AVAILABLE_ALGOS = ("histogram", "lut", "csr")
     AVAILABLE_IMPLS = ("python", "cython", "opencl")
 
@@ -109,6 +189,7 @@ class IntegrationMethod:
                 split, algo, impl, target = method
             else:
                 _dim, split, algo, impl, target = method
+
             method = Method(dim, split, algo, impl, target)
         methods = cls.select_method(method=method, degradable=degradable)
         if len(methods) == 0:
@@ -129,6 +210,7 @@ class IntegrationMethod:
             return cls.select_method(dim, split, algo, impl,
                                      target, target_type,
                                      degradable=degradable)
+
         any_values = set(["any", "all", "*"])
         if dim in any_values:
             methods = []
@@ -146,7 +228,7 @@ class IntegrationMethod:
         target_type = target_type.lower() if target_type else "*"
         if target_type in any_values:
             target_type = "*"
-        method_nt = Method(dim, algo, impl, split, target)
+        method_nt = Method(dim, split, algo, impl, target)
         if method_nt in cls._registry:
             return [cls._registry[method_nt]]
         # Validate on pixel splitting, implementation and algorithm
@@ -169,53 +251,20 @@ class IntegrationMethod:
         res = [cls._registry[i] for i in candidates]
         if degradable:
             while not res:
-                newsplit, newalgo, newimpl = _degraded(split, algo, impl)
-                logger.info("Degrading method from (%s,%s,%s) -> (%s,%s,%s)",
-                            split, algo, impl, newsplit, newalgo, newimpl)
-                if (split, algo, impl) == (newsplit, newalgo, newimpl):
+                new_method = method_nt.degraded()
+                if new_method == method_nt:
                     break
-                split, algo, impl = newsplit, newalgo, newimpl
-                res = cls.select_method(dim, split, algo, impl)
+                logger.info("Degrading method from %s -> %s", method_nt, new_method)
+                method_nt = new_method
+                res = cls.select_method(method=new_method)
         return res
 
     @staticmethod
     def parse_old_method(old_method):
-        algo = "*"
-        impl = "*"
-        split = "*"
-        old_method = old_method.lower()
-        if "lut" in old_method:
-            algo = "lut"
-        elif "csr" in old_method:
-            algo = "csr"
-
-        target = None
-
-        if "ocl" in old_method:
-            impl = "opencl"
-            elements = old_method.split("_")
-            if len(elements) >= 2:
-                target_string = elements[-1]
-                if target_string == "cpu":
-                    target = "cpu"
-                elif target_string == "gpu":
-                    target = "gpu"
-                elif target_string in ["*", "any", "all"]:
-                    target = None
-                elif "," in target_string:
-                    try:
-                        values = target_string.split(",")
-                        target = int(values[0]), int(values[1])
-                    except ValueError:
-                        pass
-
-        if "bbox" in old_method:
-            split = "bbox"
-        elif "full" in old_method:
-            split = "full"
-        elif "no" in old_method:
-            split = "no"
-        return Method(666, split, algo, impl, target)
+        """
+        :rtype: Method
+        """
+        return Method.parsed(old_method)
 
     @classmethod
     def select_old_method(cls, dim, old_method):
@@ -289,7 +338,7 @@ class IntegrationMethod:
                  target=None, target_name=None, target_type=None,
                  class_funct=None, old_method=None, extra=None):
         """Constructor of the class, registering the methods.
-        
+
         DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI
 
 
@@ -318,8 +367,8 @@ class IntegrationMethod:
         self.old_method_name = old_method
         self.extra = extra
         self.method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)
-        # basic checks ....
-        assert self.split_lower in self.AVAILABLE_SLITS
+        # basic checks
+        assert self.split_lower in self.AVAILABLE_SPLITS
         assert self.algo_lower in self.AVAILABLE_ALGOS
         assert self.impl_lower in self.AVAILABLE_IMPLS
         self.__class__._registry[self.method] = self

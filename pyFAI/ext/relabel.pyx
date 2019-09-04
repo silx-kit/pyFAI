@@ -26,11 +26,14 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""A module to relabel regions"""
+"""Module providing features to relabel regions.
+
+It is used to flag from largest regions to the smallest.
+"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "17/05/2019"
 __status__ = "stable"
 __license__ = "MIT"
 

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2019"
+__date__ = "14/05/2019"
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
@@ -35,6 +35,7 @@ from .CalibrantModel import CalibrantModel
 from .DataModel import DataModel
 from .MaskedImageModel import MaskedImageModel
 from .ImageModel import ImageFromFilenameModel
+from .FilenameModel import FilenameModel
 
 
 class ExperimentSettingsModel(AbstractModel):
@@ -44,24 +45,23 @@ class ExperimentSettingsModel(AbstractModel):
         self.__image = ImageFromFilenameModel()
         self.__mask = ImageFromFilenameModel()
         self.__maskedImage = MaskedImageModel(None, self.__image, self.__mask)
-        self.__dark = ImageFromFilenameModel()
         self.__isDetectorMask = True
 
         self.__wavelength = DataModel()
         self.__polarizationFactor = DataModel()
         self.__calibrantModel = CalibrantModel()
         self.__detectorModel = DetectorModel()
+        self.__poniFile = FilenameModel()
 
         self.__image.changed.connect(self.wasChanged)
         self.__image.filenameChanged.connect(self.wasChanged)
         self.__mask.changed.connect(self.wasChanged)
         self.__mask.filenameChanged.connect(self.wasChanged)
-        self.__dark.changed.connect(self.wasChanged)
-        self.__dark.filenameChanged.connect(self.wasChanged)
         self.__wavelength.changed.connect(self.wasChanged)
         self.__polarizationFactor.changed.connect(self.wasChanged)
         self.__calibrantModel.changed.connect(self.wasChanged)
         self.__detectorModel.changed.connect(self.wasChanged)
+        self.__poniFile.changed.connect(self.wasChanged)
 
         self.__image.changed.connect(self.__updateDetectorMask)
         self.__detectorModel.changed.connect(self.__updateDetectorMask)
@@ -137,11 +137,11 @@ class ExperimentSettingsModel(AbstractModel):
     def maskedImage(self):
         return self.__maskedImage
 
-    def dark(self):
-        return self.__dark
-
     def wavelength(self):
         return self.__wavelength
 
     def polarizationFactor(self):
         return self.__polarizationFactor
+
+    def poniFile(self):
+        return self.__poniFile

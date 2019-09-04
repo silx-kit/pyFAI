@@ -56,7 +56,7 @@ def createControlPoints(model):
         if not peakModel.isEnabled():
             continue
         ringNumber = peakModel.ringNumber() - 1
-        points = peakModel.coords()
+        points = peakModel.coords().tolist()
         controlPoints.append(points=points, ring=ringNumber)
     return controlPoints
 

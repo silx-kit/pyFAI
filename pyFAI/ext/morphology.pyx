@@ -26,12 +26,15 @@
 #  THE SOFTWARE.
 
 """
-A few binary morphology operation
+This module provides a couple of binary morphology operations on images.
+
+They are also implemented in ``scipy.ndimage`` in the general case, but not as
+fast.
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/01/2018"
+__date__ = "17/05/2019"
 __status__ = "stable"
 __license__ = "MIT"
 

@@ -45,7 +45,7 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>How to</string>
+         <string>Help</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_12">
          <item>
@@ -164,6 +164,19 @@
          <string>Detector</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0">
+         <item row="1" column="0">
+          <widget class="QLabel" name="_detectorFileDescriptionTitle">
+           <property name="toolTip">
+            <string>File describing this detector</string>
+           </property>
+           <property name="text">
+            <string>File:</string>
+           </property>
+           <property name="buddy">
+            <cstring>_image</cstring>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="0">
           <widget class="QLabel" name="label_9">
            <property name="text">
@@ -188,19 +201,6 @@
           <widget class="QToolButton" name="_customDetector">
            <property name="text">
             <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="_detectorFileDescriptionTitle">
-           <property name="toolTip">
-            <string>File describing this detector</string>
-           </property>
-           <property name="text">
-            <string>File:</string>
-           </property>
-           <property name="buddy">
-            <cstring>_image</cstring>
            </property>
           </widget>
          </item>
@@ -238,6 +238,33 @@
            </property>
           </widget>
          </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="_detectorPixelSizeLabel">
+           <property name="toolTip">
+            <string>Detector pixel size without binning</string>
+           </property>
+           <property name="text">
+            <string>Pixel size:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="QLabel" name="_detectorPixelSizeUnit">
+           <property name="text">
+            <string>µm</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLabel" name="_detectorPixelSize">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -247,6 +274,19 @@
          <string>Acquisition</string>
         </property>
         <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0">
+         <item row="3" column="1">
+          <widget class="QLabel" name="_error">
+           <property name="styleSheet">
+            <string notr="true">QLabel {color:red}</string>
+           </property>
+           <property name="text">
+            <string>dsdfsddsf</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="2">
           <widget class="LoadImageToolButton" name="_imageLoader">
            <property name="toolTip">
@@ -264,23 +304,6 @@
            </property>
            <property name="buddy">
             <cstring>_image</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="label_76">
-           <property name="text">
-            <string>Dark file:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="2">
-          <widget class="LoadImageToolButton" name="_darkLoader">
-           <property name="toolTip">
-            <string>Load a dark current file</string>
-           </property>
-           <property name="text">
-            <string>...</string>
            </property>
           </widget>
          </item>
@@ -322,16 +345,6 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
-          <widget class="FileEdit" name="_dark">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="0">
           <widget class="QLabel" name="_imageSizeLabel">
            <property name="text">
@@ -363,19 +376,6 @@
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QLabel" name="_error">
-           <property name="styleSheet">
-            <string notr="true">QLabel {color:red}</string>
-           </property>
-           <property name="text">
-            <string>dsdfsddsf</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>

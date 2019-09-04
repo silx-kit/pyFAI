@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2019 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,32 +31,33 @@
 * calculating the geometry, i.e. the position in the detector space of each pixel of the detector
 * manages caches to store intermediate results
 
-NOTA: The Geometry class is not a "transformation class" which would take a 
-detector and transform it. It is rather a description of the experimental setup.  
+NOTA: The Geometry class is not a "transformation class" which would take a
+detector and transform it. It is rather a description of the experimental setup.
 
 """
 
 from __future__ import division, print_function
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jerome Kieffer" 
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/04/2019"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France" 
+__date__ = "31/07/2019"    
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
+from math import pi 
 from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
 import threading
 from collections import namedtuple, OrderedDict
-
+from six import PY2
 from . import detectors
 from . import units
 from .utils.decorators import deprecated
-from .utils import crc32
+from .utils import crc32, deg2rad
 from . import utils
 from .io import ponifile
 
@@ -81,13 +82,13 @@ PolarizationDescription = namedtuple("PolarizationDescription",
 
 class Geometry(object):
     """This class is the parent-class of azimuthal integrator.
-    
-    This class contains a detector (using composition) which provides the 
+
+    This class contains a detector (using composition) which provides the
     position of all pixels, or only a limited set of pixel indices.
-    The Geometry class is responsible for translating/rotating those pixel to 
-    their position in reference to the sample position.  
+    The Geometry class is responsible for translating/rotating those pixel to
+    their position in reference to the sample position.
     The description of the experimental setup is inspired by the work of P. Boesecke
-    
+
     Detector is assumed to be corrected from "raster orientation" effect.
     It is not addressed here but rather in the Detector object or at read time.
     Considering there is no tilt:
@@ -201,18 +202,55 @@ class Geometry(object):
                            f2d["tilt"], f2d["tiltPlanRotation"]))
         return os.linesep.join(lstTxt)
 
-    def check_chi_disc(self, range):
-        """Check the position of the \chi discontinuity
+    def check_chi_disc(self, azimuth_range):
+        """Check the position of the :math:`\\chi` discontinuity
 
         :param range: range of chi for the integration
         :return: True if there is a problem
         """
-        lower = range[0]
-        upper = range[-1]
-        disc = numpy.pi if self.chiDiscAtPi else 0
-        if (lower < disc) and (upper > disc):
-            logger.warning("Chi discontinuity in azimuthal range ! disc=%s in [%s, %s]", disc, lower, upper)
-            return 1
+        lower, upper = azimuth_range
+        error_msg = "Azimuthal range issue: Range [%s, %s] not in valid region %s in radians: Expect %s results !"
+        if self.chiDiscAtPi:
+            txt_range = "[-pi; pi[" if PY2 else "[-π; π[" 
+            lower_bound = -pi
+            upper_bound = pi 
+        else:
+            txt_range = "[0; 2pi[" if PY2 else "[-0; 2π["
+            lower_bound = 0
+            upper_bound = 2*pi 
+
+        if lower<lower_bound:
+            if upper<lower_bound:
+                logger.warning(error_msg, lower, upper, txt_range, "empty")
+            else:
+                logger.warning(error_msg, lower, upper, txt_range,"partial")
+            return True
+        elif lower>upper_bound:
+            logger.warning(error_msg, lower, upper, txt_range, "empty")
+            return True
+        else: 
+            if upper>upper_bound:
+                logger.warning(error_msg, lower, upper, txt_range, "partial")
+                return True
+        return False
+
+    def normalize_azimuth_range(self, azimuth_range):
+        """Convert the azimuth range from degrees to radians 
+        
+        This method takes care of the position of the discontinuity and adapts the range accordingly!
+        
+        :param azimuth_range: 2-tuple of float in degrees
+        :return: 2-tuple of float in radians in a range such to avoid the discontinuity
+        """
+        if azimuth_range is None:
+            return
+        azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
+        if azimuth_range[1] <= azimuth_range[0]:
+            azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
+            self.check_chi_disc(azimuth_range)
+        return azimuth_range
+
+        
 
     def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None):
         """
@@ -998,7 +1036,7 @@ class Geometry(object):
         """
         Calculate the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
-        it's incidence angle is $\{alpha} = 0$ hence $cos(\{alpha}) = 1$
+        it's incidence angle is :math:`\\{alpha} = 0` hence :math:`cos(\\{alpha}) = 1`.
 
         :param d1: 1d or 2d set of points in pixel coord
         :param d2:  1d or 2d set of points in pixel coord
@@ -1051,7 +1089,7 @@ class Geometry(object):
         .. math::
 
             dOmega = \\frac{Omega(P)}{Omega(C)}
-                   = \\frac{A \cdot cos(a)}{SP^2} \cdot \\frac{SC^2}{A \cdot cos(0)}
+                   = \\frac{A \\cdot cos(a)}{SP^2} \\cdot \\frac{SC^2}{A \\cdot cos(0)}
                    = \\frac{3}{cos(a)}
                    = \\frac{SC^3}{SP^3}
 
@@ -1439,6 +1477,91 @@ class Geometry(object):
             logger.warning("Rotation conversion from pyFAI to SPD is not yet implemented")
         return res
 
+    def getImageD11(self):
+        """Export the current geometry in ImageD11 format.
+        Please refer to the documentation in doc/source/geometry_conversion.rst
+        for the orientation and units of those values.
+        
+        :return: an Ordered dict with those parameters:    
+            distance 294662.658 #in nm
+            o11 1
+            o12 0
+            o21 0
+            o22 -1
+            tilt_x 0.00000
+            tilt_y -0.013173
+            tilt_z 0.002378
+            wavelength 0.154
+            y-center 1016.328171
+            y-size 48.0815
+            z-center 984.924425
+            z-size 46.77648
+        """
+        f2d = self.getFit2D()
+        distance = f2d.get("directDist", 0) * 1e3  # mm -> µm
+        y_center = f2d.get("centerX", 0)  # in pixel
+        z_center = f2d.get("centerY", 0)  # in pixel
+
+        tilt_x = self.rot3
+        tilt_y = self.rot2
+        tilt_z = -self.rot1
+        out = OrderedDict([("distance", distance),
+                           ("o11", 1),
+                           ("o12", 0),
+                           ("o21", 0),
+                           ("o22", -1),
+                           ("tilt_x", tilt_x),
+                           ("tilt_y", tilt_y),
+                           ("tilt_z", tilt_z),
+                           ])
+        if self._wavelength:
+            out["wavelength"] = self.wavelength * 1e9  # nm
+        if y_center:
+            out["y-center"] = y_center
+        out["y-size"] = self.detector.pixel2 * 1e6  # µm
+        if z_center:
+            out["z-center"] = z_center
+        out["z-size"] = self.detector.pixel1 * 1e6  # µm
+        return out
+
+    def setImageD11(self, param):
+        """Set the geometry from the parameter set which contains distance, 
+        o11, o12, o21, o22, tilt_x, tilt_y tilt_z, wavelength, y-center, y-size, 
+        z-center and z-size. 
+        Please refer to the documentation in doc/source/geometry_conversion.rst
+        for the orientation and units of those values.
+        
+        :param param: dict with the values to set.
+        """
+        o11 = param.get("o11")
+        if o11 is not None:
+            assert o11 == 1, "Only canonical orientation is supported"
+        o12 = param.get("o12")
+        if o12 is not None:
+            assert o12 == 0, "Only canonical orientation is supported"
+        o21 = param.get("o21")
+        if o21 is not None:
+            assert o21 == 0, "Only canonical orientation is supported"
+        o22 = param.get("o22")
+        if o22 is not None:
+            assert o22 == -1, "Only canonical orientation is supported"
+
+        self.rot3 = param.get("tilt_x", 0.0)
+        self.rot2 = param.get("tilt_y", 0.0)
+        self.rot1 = -param.get("tilt_z", 0.0)
+        distance = param.get("distance", 0.0) * 1e-6  # ->m
+        self.dist = distance * cos(self.rot2) * cos(self.rot1)
+        pixel_v = param.get("z-size", 0.0) * 1e-6
+        pixel_h = param.get("y-size", 0.0) * 1e-6
+        self.poni1 = -distance * sin(self.rot2) + pixel_v * param.get("z-center", 0.0)
+        self.poni2 = +distance * cos(self.rot2) * sin(self.rot1) + pixel_h * param.get("y-center", 0.0)
+        self.detector = detectors.Detector(pixel1=pixel_v, pixel2=pixel_h)
+        wl = param.get("wavelength")
+        if wl:
+            self.wavelength = wl * 1e-9
+        self.reset()
+        return self
+
     def set_param(self, param):
         """set the geometry from a 6-tuple with dist, poni1, poni2, rot1, rot2,
         rot3
@@ -1722,7 +1845,7 @@ class Geometry(object):
             shape = self.detector.max_shape
         try:
             ttha = self.__getattribute__(dim1_unit.center)(shape)
-        except:
+        except Exception:
             raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
         calcimage = numpy.interp(ttha.ravel(), tth, I)
@@ -1776,7 +1899,7 @@ class Geometry(object):
             shape = self.detector.max_shape
         try:
             ttha = self.__getattribute__(dim1_unit.center)(shape)
-        except:
+        except Exception:
             raise RuntimeError("in pyFAI.Geometry.calcfrom2d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
         chia = self.chiArray(shape)

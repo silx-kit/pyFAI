@@ -57,8 +57,8 @@ def read_image_data(image_path):
         raise IOError("Data from path '%s' is not supported or missing" % image_path)
 
     if len(data.shape) != 2:
-        raise TypeError("Path identify a %dd-array, but a 2d is array is expected" % (image_path, len(data.shape)))
+        raise TypeError("Path %s identify a %dd-array, but a 2d is array is expected" % (image_path, len(data.shape)))
     if data.dtype.kind not in "fui":
-        raise TypeError("Path identify an %s-kind array, but a numerical kind is expected" % (image_path, data.dtype.kind))
+        raise TypeError("Path %s identify an %s-kind array, but a numerical kind is expected" % (image_path, data.dtype.kind))
 
     return data

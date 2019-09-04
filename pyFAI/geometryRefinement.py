@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2019"
+__date__ = "13/05/2019"
 __status__ = "development"
 
 import os
@@ -146,7 +146,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._wavelength_min = 1e-15
         self._wavelength_max = 100.e-10
 
-    def guess_poni(self):
+    def guess_poni(self, fixed=None):
         """PONI can be guessed by the centroid of the ring with lowest 2Theta
 
         It may try to fit an ellipse and sometimes it works
@@ -187,22 +187,42 @@ class GeometryRefinement(AzimuthalIntegrator):
                 if cos_tpr * sin_tilt > 0:
                     rot1 = -rot1
                 rot3 = 0
-            except:
+            except ValueError:
                 worked = False
             else:
                 if numpy.isnan(dist + poni1 + poni2 + rot1 + rot2 + rot3):
                     worked = False
                 else:
                     worked = True
-                    self.dist = dist
-                    self.poni1 = poni1
-                    self.poni2 = poni2
-                    self.rot1 = rot1
-                    self.rot2 = rot2
-                    self.rot3 = rot3
+                    self.update_values(dist=dist, poni1=poni1, poni2=poni2,
+                                       rot1=rot1, rot2=rot2, rot3=rot3,
+                                       fixed=fixed)
         if not worked:
-            self.poni1 = smallRing_in_m[0].sum() / nbpt
-            self.poni2 = smallRing_in_m[1].sum() / nbpt
+            poni1 = smallRing_in_m[0].sum() / nbpt
+            poni2 = smallRing_in_m[1].sum() / nbpt
+            self.update_values(poni1=poni1, poni2=poni2, fixed=fixed)
+
+    def update_values(self, dist=None, wavelength=None, poni1=None, poni2=None,
+                      rot1=None, rot2=None, rot3=None, fixed=None):
+        """Update values taking care of fixed parameters.
+        """
+        # TODO: Take care of ranges too
+        if fixed is None:
+            fixed = set([])
+        if dist is not None and "dist" not in fixed:
+            self.dist = dist
+        if wavelength is not None and "wavelength" not in fixed:
+            self.wavelength = wavelength
+        if poni1 is not None and "poni1" not in fixed:
+            self.poni1 = poni1
+        if poni2 is not None and "poni2" not in fixed:
+            self.poni2 = poni2
+        if rot1 is not None and "rot1" not in fixed:
+            self.rot1 = rot1
+        if rot2 is not None and "rot2" not in fixed:
+            self.rot2 = rot2
+        if rot3 is not None and "rot3" not in fixed:
+            self.rot3 = rot3
 
     def set_tolerance(self, value=10):
         """
@@ -265,7 +285,10 @@ class GeometryRefinement(AzimuthalIntegrator):
         if len(ary) < rings.max():
             # complete turn ~ 2pi ~ 7: help the optimizer to find the right way
             ary += [10.0 * (rings.max() - len(ary))] * (1 + rings.max() - len(ary))
-        return numpy.array(ary, dtype=numpy.float64)[rings]
+        tth = numpy.array(ary, dtype=numpy.float64)
+        if rings.max() >= len(tth):
+            raise IndexError("Ring indices %s are not all available at this wavelength (%s)" % (numpy.unique(rings), wavelength))
+        return tth[rings]
 
     def residu1(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)
@@ -368,6 +391,11 @@ class GeometryRefinement(AzimuthalIntegrator):
             return oldDeltaSq
 
     def refine2_wavelength(self, maxiter=1000000, fix=None):
+        """Refine all parameters including the wavelength.
+
+        This implies that it enforces an upper limit to the wavelength depending
+        on the number of rings.
+        """
         if fix is None:
             fix = ["wavelength"]
         d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
@@ -384,14 +412,22 @@ class GeometryRefinement(AzimuthalIntegrator):
                 bounds.append((val, val))
             else:
                 bounds.append((getattr(self, "_%s_min" % i), getattr(self, "_%s_max" % i)))
+
+        pos0 = self.data[:, 0]
+        pos1 = self.data[:, 1]
+        ring = self.data[:, 2].astype(numpy.int32)
+
+        max_wavelength = self.calibrant.get_max_wavelength(ring.max())
+        bounds[-1] = (bounds[-1][0], min(max_wavelength, bounds[-1][1]))
+        if param[-1] >= max_wavelength:
+            param[-1] = max_wavelength
+
         # wavelength is multiplied to 10^10 to have values in the range 0.1-10: better numerical differentiation
         bounds[-1] = (bounds[-1][0] * 1e10, bounds[-1][1] * 1e10)
         param[-1] = 1e10 * param[-1]
         self.param = numpy.array(param)
+
         if self.data.shape[-1] == 3:
-            pos0 = self.data[:, 0]
-            pos1 = self.data[:, 1]
-            ring = self.data[:, 2].astype(numpy.int32)
             weight = None
             new_param = fmin_slsqp(self.residu2_wavelength,
                                    self.param, iter=maxiter,
@@ -401,9 +437,6 @@ class GeometryRefinement(AzimuthalIntegrator):
                                    iprint=(logger.getEffectiveLevel() <= logging.INFO))
 
         elif self.data.shape[-1] == 4:
-            pos0 = self.data[:, 0]
-            pos1 = self.data[:, 1]
-            ring = self.data[:, 2].astype(numpy.int32)
             weight = self.data[:, 3]
             new_param = fmin_slsqp(self.residu2_wavelength_weighted,
                                    self.param, iter=maxiter,

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/01/2019"
+__date__ = "09/05/2019"
 
 
 from silx.gui import qt
@@ -230,7 +230,7 @@ class IntegrationMethodWidget(qt.QWidget):
 
     def method(self):
         """
-        Returns method as tuple of slit, algo and impl
+        Returns method as tuple of split, algo and impl
 
         :rtype: Tuple[str,str,str]
         """
@@ -240,23 +240,31 @@ class IntegrationMethodWidget(qt.QWidget):
         algo = index.data(self.CodeRole)
         index = self._splitView.selectedIndexes()[0]
         split = index.data(self.CodeRole)
-        return split, algo, impl
+        return method_registry.Method(666, split, algo, impl, None)
 
     def __updateFeedback(self):
         self.__updateItems()
         self.__updateMessage()
 
-    def __updateItemsFromModel(self, codeList, model, method):
+    def __updateItemsFromModel(self, codeList, model, method, patch):
         for name in codeList:
             index = self.__indexFromCode(model, name)
             if not index.isValid():
                 continue
             item = model.itemFromIndex(index)
 
-            localMethod = tuple(name if m is None else m for m in method)
-            methods = method_registry.IntegrationMethod.select_method(1, *localMethod, degradable=False)
+            if patch == "algo":
+                localMethod = method.fixed(algo=name)
+            elif patch == "impl":
+                localMethod = method.fixed(impl=name)
+            elif patch == "split":
+                localMethod = method.fixed(split=name)
+
+            localMethod = localMethod.fixed(dim=1)
+            methods = method_registry.IntegrationMethod.select_method(method=localMethod, degradable=False)
             available1d = len(methods) != 0
-            methods = method_registry.IntegrationMethod.select_method(2, *localMethod, degradable=False)
+            localMethod = localMethod.fixed(dim=2)
+            methods = method_registry.IntegrationMethod.select_method(method=localMethod, degradable=False)
             available2d = len(methods) != 0
 
             label = self._HUMAN_READABLE.get(name, name)
@@ -276,27 +284,23 @@ class IntegrationMethodWidget(qt.QWidget):
 
     def __updateItems(self):
         method = self.method()
-        split, algo, impl = method
-
-        localMethod = None, algo, impl
         self.__updateItemsFromModel(method_registry.IntegrationMethod.AVAILABLE_SLITS,
                                     self._splittingModel,
-                                    localMethod)
-        localMethod = split, None, impl
+                                    method, patch="split")
         self.__updateItemsFromModel(method_registry.IntegrationMethod.AVAILABLE_ALGOS,
                                     self._algoModel,
-                                    localMethod)
-        localMethod = split, algo, None
+                                    method, patch="algo")
         self.__updateItemsFromModel(method_registry.IntegrationMethod.AVAILABLE_IMPLS,
                                     self._implementationModel,
-                                    localMethod)
+                                    method, patch="impl")
 
     def __updateMessage(self):
         method = self.method()
-
-        methods = method_registry.IntegrationMethod.select_method(1, *method, degradable=False)
+        method = method.fixed(dim=1)
+        methods = method_registry.IntegrationMethod.select_method(method=method, degradable=False)
         available1d = len(methods) != 0
-        methods = method_registry.IntegrationMethod.select_method(2, *method, degradable=False)
+        method = method.fixed(dim=2)
+        methods = method_registry.IntegrationMethod.select_method(method=method, degradable=False)
         available2d = len(methods) != 0
 
         if available1d and available2d:

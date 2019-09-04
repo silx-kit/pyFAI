@@ -25,12 +25,16 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
+
 """
-Some Cythonized function for blob detection function
+Some Cythonized function for blob detection function.
+
+It is used to find peaks in images by performing subsequent blurs.
 """
+
 __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/01/2018"
+__date__ = "17/05/2019"
 __status__ = "stable"
 __license__ = "MIT"
 import cython

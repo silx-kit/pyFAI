@@ -32,7 +32,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "02/05/2019"
+__date__ = "31/07/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -96,7 +96,7 @@ def histoBBox1d(weights,
     cdef:
         ssize_t  idx, bin0_max, bin0_min
         data_t data, cdummy = 0.0, ddummy = 0.0
-        acc_t epsilon = 1e-10, 
+        acc_t epsilon = 1e-10,
         position_t pos0_min = 0.0, pos1_min = 0.0, pos0_max = 0.0, pos1_max = 0.0
         position_t pos0_maxin = 0.0, pos1_maxin = 0.0, min0 = 0.0, max0 = 0.0, fbin0_min = 0.0, fbin0_max = 0.0
         bint check_pos1 = False, check_mask = False, check_dummy = False
@@ -106,8 +106,8 @@ def histoBBox1d(weights,
         data_t[::1] cdata, cflat, cdark, cpolarization, csolidangle
         position_t[::1] cpos0, dpos0, cpos1, dpos1, cpos0_lower, cpos0_upper
         mask_t[::1] cmask
-        acc_t inv_area, delta_right, delta_left 
-        
+        acc_t inv_area, delta_right, delta_left
+
     cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
     dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
@@ -167,23 +167,21 @@ def histoBBox1d(weights,
             if min0 < pos0_min:
                 pos0_min = min0
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0Range is not None:
+        pos0_min, pos0_maxin = pos0Range
     else:
         pos0_maxin = pos0_max
     if pos0_min < 0:
         pos0_min = 0
     pos0_max = calc_upper_bound(pos0_maxin)
 
-    if pos1Range is not None and len(pos1Range) > 1:
+    if pos1Range is not None:
         assert pos1.size == size, "pos1.size == size"
         assert delta_pos1.size == size, "delta_pos1.size == size"
         check_pos1 = 1
         cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+        pos1_min, pos1_maxin = pos1Range
         pos1_max = calc_upper_bound(pos1_maxin)
 
     delta = (pos0_max - pos0_min) / (<position_t> (bins))
@@ -281,7 +279,8 @@ def histoBBox2d(weights,
                 bint chiDiscAtPi=1,
                 empty=0.0,
                 double normalization_factor=1.0,
-                int coef_power=1):
+                int coef_power=1,
+                bint clip_pos1=1):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
@@ -307,6 +306,7 @@ def histoBBox2d(weights,
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
     :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
+    :param clip_pos1: clip the azimuthal range to -pi/pi (or 0-2pi), set to False to deactivate behavior
 
 
     :return: I, bin_centers0, bin_centers1, weighted histogram(2D), unweighted histogram (2D)
@@ -331,7 +331,7 @@ def histoBBox2d(weights,
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         data_t[::1] cflat, cdark, cpolarization, csolidangle
         data_t cdummy, ddummy
-        
+
         #related to positions: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
@@ -349,7 +349,7 @@ def histoBBox2d(weights,
         position_t c0, c1, d0, d1
         position_t min0, max0, min1, max1, delta0, delta1
         position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
-        position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max, 
+        position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max,
         acc_t data, epsilon = 1e-10
         acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
         ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
@@ -409,10 +409,11 @@ def histoBBox2d(weights,
                     min0 = 0.0
                 if max0 < 0.0:
                     max0 = 0.0
-            if max1 > (2 - chiDiscAtPi) * pi:
-                max1 = (2 - chiDiscAtPi) * pi
-            if min1 < (-chiDiscAtPi) * pi:
-                min1 = (-chiDiscAtPi) * pi
+            if clip_pos1:
+                if max1 > (2 - chiDiscAtPi) * pi:
+                    max1 = (2 - chiDiscAtPi) * pi
+                if min1 < (-chiDiscAtPi) * pi:
+                    min1 = (-chiDiscAtPi) * pi
             cpos0_upper[idx] = max0
             cpos0_lower[idx] = min0
             cpos1_upper[idx] = max1
@@ -426,15 +427,13 @@ def histoBBox2d(weights,
             if min1 < pos1_min:
                 pos1_min = min1
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0Range is not None:
+        pos0_min, pos0_maxin = pos0Range
     else:
         pos0_maxin = pos0_max
 
-    if (pos1Range is not None) and (len(pos1Range) > 1):
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1Range is not None:
+        pos1_min, pos1_maxin = pos1Range
     else:
         pos1_maxin = pos1_max
 
@@ -499,7 +498,7 @@ def histoBBox2d(weights,
                     sum_count[bin0_min, bin1_min] += 1.0
                     sum_data[bin0_min, bin1_min] += data
                 else:
-                    # spread on 2 or more bins in dim1 
+                    # spread on 2 or more bins in dim1
                     delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
                     delta_up = fbin1_max - (bin1_max)
                     inv_area = 1.0 / (fbin1_max - fbin1_min)
@@ -518,7 +517,7 @@ def histoBBox2d(weights,
                 if bin1_min == bin1_max:
                     # All pixel fall inside the same bins in dim 1
                     inv_area = 1.0 / (fbin0_max - fbin0_min)
-                    
+
                     delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left
                     sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left) ** coef_power
@@ -536,7 +535,7 @@ def histoBBox2d(weights,
                     delta_right = fbin0_max - (<acc_t> bin0_max)
                     delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
                     delta_up = fbin1_max - (<acc_t> bin1_max)
-                                        
+
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
                     sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left * delta_down) ** coef_power
 
@@ -575,7 +574,7 @@ def histoBBox2d(weights,
     return (numpy.asarray(out_merge).T,
             bin_centers0,
             bin_centers1,
-            numpy.asarray(sum_data).T, 
+            numpy.asarray(sum_data).T,
             numpy.asarray(sum_count).T)
 
 
@@ -602,6 +601,7 @@ def histoBBox2d_ng(weights,
                    bint chiDiscAtPi=1,
                    float empty=0.0,
                    double normalization_factor=1.0,
+                   bint clip_pos1=1
                    ):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
@@ -628,7 +628,7 @@ def histoBBox2d_ng(weights,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
-
+    :param clip_pos1: clip the azimuthal range to -pi/pi (or 0-2pi), set to False to deactivate behavior
 
     :return: named tuple with "signal", ["error"], "bins0", "bins1", "propagated"
     """
@@ -652,7 +652,7 @@ def histoBBox2d_ng(weights,
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
         data_t cdummy, ddummy=0.0
-        
+
         # Related to positions: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
@@ -670,7 +670,7 @@ def histoBBox2d_ng(weights,
         position_t c0, c1, d0, d1
         position_t min0, max0, min1, max1, delta0, delta1
         position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
-        position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max, 
+        position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max,
         acc_t norm
         acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
         ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
@@ -683,7 +683,7 @@ def histoBBox2d_ng(weights,
         do_variance = True
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
         out_error = numpy.zeros((bins0, bins1), dtype=data_d)
-        
+
     if mask is not None:
         assert mask.size == size, "mask size"
         check_mask = True
@@ -722,7 +722,7 @@ def histoBBox2d_ng(weights,
     pos0_min = cpos0[0]
     pos0_max = cpos0[0]
     pos1_min = cpos1[0]
-    pos1_max = cpos1[0]    
+    pos1_max = cpos1[0]
     with nogil:
         for idx in range(size):
             if (check_mask and cmask[idx]):
@@ -740,10 +740,11 @@ def histoBBox2d_ng(weights,
                     min0 = 0.0
                 if max0 < 0.0:
                     max0 = 0.0
-            if max1 > (2 - chiDiscAtPi) * pi:
-                max1 = (2 - chiDiscAtPi) * pi
-            if min1 < (-chiDiscAtPi) * pi:
-                min1 = (-chiDiscAtPi) * pi
+            if clip_pos1:
+                if max1 > (2 - chiDiscAtPi) * pi:
+                    max1 = (2 - chiDiscAtPi) * pi
+                if min1 < (-chiDiscAtPi) * pi:
+                    min1 = (-chiDiscAtPi) * pi
             cpos0_upper[idx] = max0
             cpos0_lower[idx] = min0
             cpos1_upper[idx] = max1
@@ -757,15 +758,13 @@ def histoBBox2d_ng(weights,
             if min1 < pos1_min:
                 pos1_min = min1
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0Range is not None:
+        pos0_min, pos0_maxin = pos0Range
     else:
         pos0_maxin = pos0_max
 
-    if (pos1Range is not None) and (len(pos1Range) > 1):
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1Range is not None:
+        pos1_min, pos1_maxin = pos1Range
     else:
         pos1_maxin = pos1_max
 
@@ -777,12 +776,12 @@ def histoBBox2d_ng(weights,
 
     delta0 = (pos0_max - pos0_min) / (<position_t> bins0)
     delta1 = (pos1_max - pos1_min) / (<position_t> bins1)
-    
+
     with nogil:
         for idx in range(size):
             if (check_mask) and cmask[idx]:
                 continue
-  
+
             is_valid = preproc_value_inplace(&value,
                                              cdata[idx],
                                              variance=cvariance[idx] if do_variance else 0.0,
@@ -834,7 +833,7 @@ def histoBBox2d_ng(weights,
                     # All pixel is within a single bin
                     update_2d_accumulator(out_data, bin0_min, bin1_min, value, 1.0)
                 else:
-                    # spread on 2 or more bins in dim1 
+                    # spread on 2 or more bins in dim1
                     delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
                     delta_up = fbin1_max - (bin1_max)
                     inv_area = 1.0 / (fbin1_max - fbin1_min)
@@ -849,7 +848,7 @@ def histoBBox2d_ng(weights,
                 if bin1_min == bin1_max:
                     # All pixel fall inside the same bins in dim 1
                     inv_area = 1.0 / (fbin0_max - fbin0_min)
-                    
+
                     delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
                     update_2d_accumulator(out_data, bin0_min, bin1_min, value, inv_area * delta_left)
 
@@ -865,7 +864,7 @@ def histoBBox2d_ng(weights,
                     delta_right = fbin0_max - (<acc_t> bin0_max)
                     delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
                     delta_up = fbin1_max - (<acc_t> bin1_max)
-                    
+
                     update_2d_accumulator(out_data, bin0_min, bin1_min, value, inv_area * delta_left * delta_down)
                     update_2d_accumulator(out_data, bin0_min, bin1_max, value, inv_area * delta_left * delta_up)
                     update_2d_accumulator(out_data, bin0_max, bin1_min, value, inv_area * delta_right * delta_down)
@@ -878,7 +877,7 @@ def histoBBox2d_ng(weights,
                     for j in range(bin1_min + 1, bin1_max):
                         update_2d_accumulator(out_data, bin0_min, j, value, inv_area * delta_left)
                         update_2d_accumulator(out_data, bin0_max, j, value, inv_area * delta_right)
-                        
+
         for i in range(bins0):
             for j in range(bins1):
                 norm = out_data[i, j, 2]
@@ -893,17 +892,17 @@ def histoBBox2d_ng(weights,
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-    # TODO ... remove Integrate2dWithErrorResult namedtuple 
+    # TODO ... remove Integrate2dWithErrorResult namedtuple
     if do_variance:
         result = Integrate2dWithErrorResult(numpy.asarray(out_intensity).T,
                                             numpy.asarray(out_error).T,
-                                            bin_centers0, 
+                                            bin_centers0,
                                             bin_centers1,
                                             numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
     else:
         result = Integrate2dResult(numpy.asarray(out_intensity).T,
-                                   bin_centers0, 
+                                   bin_centers0,
                                    bin_centers1,
                                    numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
 
-    return result 
+    return result

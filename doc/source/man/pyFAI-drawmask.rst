@@ -1,6 +1,8 @@
 Mask generation tool: pyFAI-drawmask
 ====================================
 
+.. _pyFAI-drawmask:
+
 Purpose
 -------
 

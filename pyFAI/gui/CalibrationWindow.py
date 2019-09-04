@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/01/2019"
+__date__ = "14/05/2019"
 
 import functools
 
@@ -232,6 +232,20 @@ class CalibrationWindow(qt.QMainWindow):
         return qt.QMainWindow.resizeEvent(self, event)
 
     def closeEvent(self, event):
+        poniFile = self.model().experimentSettingsModel().poniFile()
+
+        if not poniFile.isSynchronized():
+            button = qt.QMessageBox.question(self,
+                                             "calib2",
+                                             "The PONI file was not saved.\nDo you really want to close the application?",
+                                             qt.QMessageBox.Cancel | qt.QMessageBox.No | qt.QMessageBox.Yes,
+                                             qt.QMessageBox.Yes)
+            if button != qt.QMessageBox.Yes:
+                event.ignore()
+                return
+
+        event.accept()
+
         for task in self.__tasks:
             task.aboutToClose()
         self.__context.saveWindowLocationSettings("main-window", self)

@@ -25,6 +25,8 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+# cython: language_level=3, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+
 """Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done on the pixel's bounding box like fit2D,
@@ -33,7 +35,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "05/08/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -46,9 +48,11 @@ import logging
 logger = logging.getLogger(__name__)
 from cython.parallel import prange
 import numpy
+from libc.math cimport sqrt
 from ..utils import crc32
 from ..utils.decorators import deprecated
-
+from .preproc import preproc
+from ..containers import Integrate1dtpl
 
 class HistoBBox1d(object):
     """
@@ -120,15 +124,14 @@ class HistoBBox1d(object):
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
             self.calc_boundaries(pos0Range)
 
-        if pos1Range is not None and len(pos1Range) > 1:
+        if pos1Range is not None:
             assert pos1.size == self.size, "pos1 size"
             assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
             self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
             self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
-            self.pos1_min = min(pos1Range)
-            pos1_maxin = max(pos1Range)
-            self.pos1_max = calc_upper_bound(<double> pos1_maxin)
+            self.pos1_min, pos1_maxin = pos1Range
+            self.pos1_max = calc_upper_bound(<position_t> pos1_maxin)
         else:
             self.check_pos1 = False
             self.cpos1_min = None
@@ -190,9 +193,8 @@ class HistoBBox1d(object):
                     if lower < pos0_min:
                         pos0_min = lower
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
@@ -217,9 +219,8 @@ class HistoBBox1d(object):
             bint allow_pos0_neg = self.allow_pos0_neg
             int idx
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             cpos0 = self.cpos0
             pos0_min = pos0_max = cpos0[0]
@@ -498,16 +499,16 @@ class HistoBBox1d(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate(self,
-                  weights,
-                  dummy=None,
-                  delta_dummy=None,
-                  dark=None,
-                  flat=None,
-                  solidAngle=None,
-                  polarization=None,
-                  double normalization_factor=1.0,
-                  int coef_power=1):
+    def integrate_legacy(self,
+                         weights,
+                         dummy=None,
+                         delta_dummy=None,
+                         dark=None,
+                         flat=None,
+                         solidAngle=None,
+                         polarization=None,
+                         double normalization_factor=1.0,
+                         int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -643,10 +644,119 @@ class HistoBBox1d(object):
                 numpy.asarray(sum_data), 
                 numpy.asarray(sum_count))
 
+    integrate = integrate_legacy
+
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
     def outPos(self):
         return self.bin_centers
+
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def integrate_ng(self,
+                     weights,
+                     variance=None,
+                     dummy=None,
+                     delta_dummy=None,
+                     dark=None,
+                     flat=None,
+                     solidangle=None,
+                     polarization=None,
+                     absorption=None,
+                     data_t normalization_factor=1.0,
+                     ):
+        """
+        Actually perform the integration which in this case consists of:
+         * Calculate the signal and the normalization parts
+         * Perform the integration which is here a matrix-vector product
+
+        :param weights: input image
+        :type weights: ndarray
+        :param variance: the variance associate to the image
+        :type variance: ndarray 
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param normalization_factor: divide the valid result by this value
+        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
+
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
+
+        """
+        cdef:
+            cnumpy.int32_t i, j, idx = 0, bins = self.bins, size = self.size
+            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
+            data_t empty
+            acc_t[::1] sum_sig = numpy.zeros(bins, dtype=acc_d)
+            acc_t[::1] sum_var = numpy.zeros(bins, dtype=acc_d)
+            acc_t[::1] sum_norm = numpy.zeros(bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
+            data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
+            data_t[::1] error = numpy.zeros(bins, dtype=data_d)
+            data_t[::1] ccoef = self.data
+            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
+            data_t[:, ::1] preproc4
+            
+            
+        assert weights.size == size, "weights size"
+        empty = dummy if dummy is not None else self.empty
+        #Call the preprocessor ...
+        preproc4 = preproc(weights.ravel(),
+                           dark=dark,
+                           flat=flat,
+                           solidangle=solidangle,
+                           polarization=polarization,
+                           absorption=absorption,
+                           mask=self.cmask,
+                           dummy=dummy, 
+                           delta_dummy=delta_dummy,
+                           normalization_factor=normalization_factor, 
+                           empty=self.empty,
+                           split_result=4,
+                           variance=variance,
+                           dtype=data_d)
+
+        for i in prange(bins, nogil=True, schedule="guided"):
+            acc_sig = 0.0
+            acc_var = 0.0
+            acc_norm = 0.0
+            acc_count = 0.0
+            for j in range(indptr[i], indptr[i + 1]):
+                idx = indices[j]
+                coef = ccoef[j]
+                if coef == 0.0:
+                    continue
+                acc_sig = acc_sig + coef * preproc4[idx, 0]
+                acc_var = acc_var + coef * coef * preproc4[idx, 1]
+                acc_norm = acc_norm + coef * preproc4[idx, 2] 
+                acc_count = acc_count + coef * preproc4[idx, 3]
+
+            sum_sig[i] += acc_sig
+            sum_var[i] += acc_var
+            sum_norm[i] += acc_norm
+            sum_count[i] += acc_count
+            if acc_count > epsilon:
+                merged[i] += acc_sig / acc_norm
+                error[i] += sqrt(acc_var) / acc_norm
+            else:
+                merged[i] += empty
+                error[i] += empty
+        #"position intensity error signal variance normalization count"
+        return Integrate1dtpl(self.bin_centers, 
+                              numpy.asarray(merged),numpy.asarray(error) ,
+                              numpy.asarray(sum_sig),numpy.asarray(sum_var), 
+                              numpy.asarray(sum_norm), numpy.asarray(sum_count))
 
 
 ################################################################################
@@ -822,16 +932,14 @@ class HistoBBox2d(object):
                     if lower1 < pos1_min:
                         pos1_min = lower1
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
 
-        if pos1Range is not None and len(pos1Range) > 1:
-            self.pos1_min = min(pos1Range)
-            self.pos1_maxin = max(pos1Range)
+        if pos1Range is not None:
+            self.pos1_min, self.pos1_maxin = pos1Range
         else:
             self.pos1_min = pos1_min
             self.pos1_maxin = pos1_max
@@ -893,16 +1001,14 @@ class HistoBBox2d(object):
                     if c1 < pos1_min:
                         pos1_min = c1
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
 
-        if pos1Range is not None and len(pos1Range) > 1:
-            self.pos1_min = min(pos1Range)
-            self.pos1_maxin = max(pos1Range)
+        if pos1Range is not None:
+            self.pos1_min, self.pos1_maxin = pos1Range
         else:
             self.pos1_min = pos1_min
             self.pos1_maxin = pos1_max

@@ -24,7 +24,7 @@
 
 __authors__ = ["J. Kieffer"]
 __license__ = "MIT"
-__date__ = "19/03/2019"
+__date__ = "12/06/2019"
 
 import unittest
 from ...test.utilstest import UtilsTest
@@ -36,6 +36,8 @@ def suite():
     if UtilsTest.opencl:
         from . import test_addition
         from . import test_ocl_histo
+        from . import test_ocl_azim_csr
         testSuite.addTests(test_addition.suite())
         testSuite.addTests(test_ocl_histo.suite())
+        testSuite.addTests(test_ocl_azim_csr.suite())
     return testSuite

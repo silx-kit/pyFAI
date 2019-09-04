@@ -26,12 +26,12 @@
 
 from __future__ import absolute_import, print_function, division
 
-"""Module containing utilitary around string"""
+"""Module containing enhanced string formatters."""
 
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2019"
+__date__ = "17/05/2019"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -138,3 +138,21 @@ def to_bool(string):
     if lower in _FALSE_STRINGS:
         return False
     raise ValueError("'%s' is not a valid boolean" % string)
+
+
+_ordinal_suffix = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
+"""Suffix for ordinal numbers from 0 to 9"""
+
+
+def to_ordinal(number):
+    """
+    Returns a string from an ordinal value with it's suffix.
+
+    :param int number: A number refering to a position
+    :rtype: str
+    """
+    string = "%d" % number
+    if len(string) >= 2 and string[-2] == "1":
+        return string + "th"
+    digit = ord(string[-1]) - ord("0")
+    return string + _ordinal_suffix[digit]

@@ -36,16 +36,22 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "15/05/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import numpy
+import logging
+from math import sqrt, atan2, pi
 from collections import namedtuple
+
+_logger = logging.getLogger(__name__)
+
+
 Ellipse = namedtuple("Ellipse", ["center_1", "center_2", "angle", "half_long_axis", "half_short_axis"])
 
 
-def fit_ellipse(pty, ptx):
+def fit_ellipse(pty, ptx, _allow_delta=True):
     """Fit an ellipse
 
     inspired from
@@ -53,16 +59,30 @@ def fit_ellipse(pty, ptx):
 
     :param pty: point coordinates in the slow dimension (y)
     :param ptx: point coordinates in the fast dimension (x)
+    :raise ValueError: If the ellipse can't be fitted
     """
     x = ptx[:, numpy.newaxis]
     y = pty[:, numpy.newaxis]
     D = numpy.hstack((x * x, x * y, y * y, x, y, numpy.ones_like(x)))
     S = numpy.dot(D.T, D)
+    try:
+        inv = numpy.linalg.inv(S)
+    except numpy.linalg.LinAlgError:
+        if not _allow_delta:
+            raise ValueError("Ellipse can't be fitted")
+        # Try to do the same with a delta
+        delta = 100
+        ellipse = fit_ellipse(pty + delta, ptx + delta, _allow_delta=False)
+        y0, x0, angle, wlong, wshort = ellipse
+        return Ellipse(y0 - delta, x0 - delta, angle, wlong, wshort)
+
     C = numpy.zeros([6, 6])
     C[0, 2] = C[2, 0] = 2
     C[1, 1] = -1
-    E, V = numpy.linalg.eig(numpy.dot(numpy.linalg.inv(S), C))
-    n = numpy.argmax(numpy.abs(E))
+    E, V = numpy.linalg.eig(numpy.dot(inv, C))
+    m = numpy.logical_and(numpy.isfinite(E), numpy.isreal(E))
+    E, V = E[m], V[:, m]
+    n = numpy.argmax(E) if E.max() > 0 else numpy.argmin(E)
     res = V[:, n]
     b, c, d, f, g, a = res[1] / 2, res[2], res[3] / 2, res[4] / 2, res[5], res[0]
     num = b * b - a * c
@@ -72,15 +92,21 @@ def fit_ellipse(pty, ptx):
         if a > c:
             angle = 0
         else:
-            angle = numpy.pi / 2
+            angle = pi / 2
     else:
         if a > c:
-            angle = numpy.arctan2(2 * b, (a - c)) / 2
+            angle = atan2(2 * b, (a - c)) / 2
         else:
-            angle = numpy.pi / 2 + numpy.arctan2(2 * b, (a - c)) / 2
+            angle = numpy.pi / 2 + atan2(2 * b, (a - c)) / 2
     up = 2 * (a * f * f + c * d * d + g * b * b - 2 * b * d * f - a * c * g)
-    down1 = (b * b - a * c) * ((c - a) * numpy.sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
-    down2 = (b * b - a * c) * ((a - c) * numpy.sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
-    res1 = numpy.sqrt(up / down1)
-    res2 = numpy.sqrt(up / down2)
+    down1 = (b * b - a * c) * ((c - a) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
+    down2 = (b * b - a * c) * ((a - c) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
+
+    a2 = up / down1
+    b2 = up / down2
+    if a2 < 0 or b2 < 0:
+        raise ValueError("Ellipse can't be fitted")
+
+    res1 = numpy.sqrt(a2)
+    res2 = numpy.sqrt(b2)
     return Ellipse(y0, x0, angle, max(res1, res2), min(res1, res2))

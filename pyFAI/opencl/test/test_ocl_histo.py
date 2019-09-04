@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/03/2019"
+__date__ = "19/08/2019"
 
 import logging
 import numpy
@@ -67,7 +67,6 @@ class TestOclHistogram(unittest.TestCase):
             else:
                 cls.PROFILE = False
                 cls.queue = pyopencl.CommandQueue(cls.ctx)
-            cls.max_valid_wg = 0
             if "cl_khr_int64_base_atomics" in cls.ctx.devices[0].extensions:
                 cls.precise = True
             else:
@@ -77,7 +76,7 @@ class TestOclHistogram(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         super(TestOclHistogram, cls).tearDownClass()
-        print("Maximum valid workgroup size %s on device %s" % (cls.max_valid_wg, cls.ctx.devices[0]))
+        logger.info("We were using device %s", cls.ctx.devices[0])
         cls.ctx = None
         cls.queue = None
         cls.ai = None
@@ -126,51 +125,51 @@ class TestOclHistogram(unittest.TestCase):
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_histogram2d(self):
         """
-        tests the addition  kernel
+        tests the 2D histogram kernel
         """
         from ..azim_hist import OCL_Histogram2d
         data = numpy.ones(self.ai.detector.shape)
         tth = self.ai.array_from_unit(unit="2th_deg")
         chi = numpy.degrees(self.ai.chiArray())
         solidangle = self.ai.solidAngleArray()
-
+        dummy = -42
         mini_rad = numpy.float32(tth.min())
         maxi_rad = numpy.float32(tth.max() * (1.0 + numpy.finfo(numpy.float32).eps))
         mini_azim = numpy.float32(chi.min())
         maxi_azim = numpy.float32(chi.max() * (1.0 + numpy.finfo(numpy.float32).eps))
-        range = [[mini_rad, maxi_rad], [mini_azim, maxi_azim]]
+        range_ = [[mini_rad, maxi_rad], [mini_azim, maxi_azim]]
 
         npt = (300, 36)
-        ref = self.ai._integrate2d_legacy(data, *npt, unit="2th_deg", method="numpy")
-        integrator = OCL_Histogram2d(tth, chi, *npt, devicetype="cpu")
-
+        ref = self.ai._integrate2d_legacy(data, *npt, unit="2th_deg", method="numpy", dummy=dummy)
+        integrator = OCL_Histogram2d(tth, chi, *npt, empty=dummy, profile=1)
         res = integrator(data, solidangle=solidangle)
-
+                
         # Start with smth easy: the position
         self.assertTrue(numpy.allclose(res.radial, ref.radial), "radial position are the same")
         self.assertTrue(numpy.allclose(res.azimuthal, ref.azimuthal), "azimuthal position are the same")
         # A bit harder: the count of pixels
+        
         delta = ref.count - res.count.T
         self.assertLessEqual(delta.max(), 2, "counts are almost the same")
         self.assertLessEqual(delta.sum(), 1, "as much + and -")
-
+        lost = max(abs(delta).sum(), 1.1)
         # Intensities are not that different:
         delta = ref.intensity - res.intensity.T
         self.assertLessEqual(delta.max(), 1e-3, "intensity is almost the same")
-        self.assertLessEqual((delta[1:-1] + delta[:-2] + delta[2:]).max(), 1e-3, "intensity is almost the same")
 
         # histogram of normalization
-        ref = numpy.histogram2d(tth.ravel(), chi.ravel(), npt, range=range, weights=solidangle.ravel())[0]
+        ref = numpy.histogram2d(tth.ravel(), chi.ravel(), npt, range=range_, weights=solidangle.ravel())[0]
         sig = res.normalization.sum(axis=-1, dtype="float64")
         err = abs((sig - ref).sum())
-        self.assertLess(err, 1, "normalization content is the same: %s<1e-5" % err)
-        self.assertLess(abs(gaussian_filter1d(sig - ref, 9)).max(), 1.5, "normalization, after smoothing is flat")
+        allowed = lost*solidangle.max()
+        self.assertLessEqual(err, allowed, "normalization content is the same: %s<=%s" %( err, allowed))
 
         # histogram of signal
-        ref = numpy.histogram2d(tth.ravel(), chi.ravel(), npt, range=range, weights=data.ravel())[0]
+        ref = numpy.histogram2d(tth.ravel(), chi.ravel(), npt, range=range_, weights=data.ravel())[0]
         sig = res.signal.sum(axis=-1, dtype="float64")
         err = abs((sig - ref).sum())
-        self.assertLess(err, 9e-5, "signal content is the same: %s" % err)
+        allowed = lost * data.max()
+        self.assertLessEqual(err, allowed, "signal content is the same: %s<=%s " % (err, allowed))
 
 
 def suite():

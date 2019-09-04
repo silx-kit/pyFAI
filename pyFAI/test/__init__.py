@@ -34,16 +34,14 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "16/05/2019"
 
 import sys
 import os
 import unittest
 
-
 from . import utilstest
-# not importing test_all here to prevent premature initialization of UtilsTest
-# and preventing the test skipping
+from pyFAI.test.utilstest import test_options
 
 
 # Issue https://github.com/silx-kit/fabio/pull/291
@@ -59,6 +57,8 @@ if fabio.hdf5image.Hdf5Image.close.__module__ != "fabio.hdf5image":
 
 
 def suite():
+    # Importing locally to prevent premature initialization of UtilsTest
+    # and preventing the test skipping
     from . import test_all
     test_suite = unittest.TestSuite()
     test_suite.addTest(test_all.suite())
@@ -67,6 +67,7 @@ def suite():
 
 def run_tests():
     """Run test complete test_suite"""
+    test_options.configure()
     runner = unittest.TextTestRunner()
     if not runner.run(suite()).wasSuccessful():
         print("Test suite failed")

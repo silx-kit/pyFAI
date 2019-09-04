@@ -33,7 +33,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/01/2019"
+__date__ = "05/08/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -135,14 +135,13 @@ class HistoBBox1d(object):
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
         self.calc_boundaries(pos0Range)
-        if pos1Range is not None and len(pos1Range) > 1:
+        if pos1Range is not None:
             assert pos1.size == self.size, "pos1 size"
             assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
             self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
             self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
-            self.pos1_min = min(pos1Range)
-            pos1_maxin = max(pos1Range)
+            self.pos1_min, pos1_maxin = pos1Range
             self.pos1_max = calc_upper_bound(<position_t> pos1_maxin)
         else:
             self.check_pos1 = False
@@ -200,15 +199,14 @@ class HistoBBox1d(object):
                     if lower < pos0_min:
                         pos0_min = lower
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if (pos0Range is not None):
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
-        self.pos0_max = calc_upper_bound(<acc_t> self.pos0_maxin)
+        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -393,15 +391,15 @@ class HistoBBox1d(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate(self, weights,
-                  dummy=None,
-                  delta_dummy=None,
-                  dark=None,
-                  flat=None,
-                  solidAngle=None,
-                  polarization=None,
-                  double normalization_factor=1.0,
-                  int coef_power=1):
+    def integrate_legacy(self, weights,
+                         dummy=None,
+                         delta_dummy=None,
+                         dark=None,
+                         flat=None,
+                         solidAngle=None,
+                         polarization=None,
+                         double normalization_factor=1.0,
+                         int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -730,10 +728,15 @@ class HistoBBox1d(object):
         return (self.bin_centers, numpy.asarray(merged), 
                 numpy.asarray(sum_data), numpy.asarray(sum_count))
 
+    integrate = integrate_legacy
+
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
     def outPos(self):
         return self.bin_centers
+
+    def integrate_ng(self, *arg, **kwargs):
+        raise NotImplementedError("Please fix splitBBoxLUT.pyx")
 
 
 ################################################################################
@@ -895,26 +898,24 @@ class HistoBBox2d(object):
                     if lower1 < pos1_min:
                         pos1_min = lower1
 
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            self.pos0_maxin = max(pos0Range)
+        if pos0Range is not None:
+            self.pos0_min, self.pos0_maxin = pos0Range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
 
-        if (pos1Range is not None) and (len(pos1Range) > 1):
-            self.pos1_min = min(pos1Range)
-            self.pos1_maxin = max(pos1Range)
+        if pos1Range is not None:
+            self.pos1_min, self.pos1_maxin = pos1Range
         else:
             self.pos1_min = pos1_min
             self.pos1_maxin = pos1_max
 
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
-        self.pos0_max = calc_upper_bound(<double> self.pos0_maxin)
+        self.pos0_max = calc_upper_bound(<position_t>  self.pos0_maxin)
         self.cpos0_sup = cpos0_sup
         self.cpos0_inf = cpos0_inf
-        self.pos1_max = calc_upper_bound(<double> self.pos1_maxin)
+        self.pos1_max = calc_upper_bound(<position_t>  self.pos1_maxin)
         self.cpos1_sup = cpos1_sup
         self.cpos1_inf = cpos1_inf
 

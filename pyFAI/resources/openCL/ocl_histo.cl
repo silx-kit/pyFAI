@@ -3,11 +3,11 @@
  *            1D & 2D histogram based on atomic adds
  *
  *
- *   Copyright (C) 2014-2018 European Synchrotron Radiation Facility
+ *   Copyright (C) 2014-2019 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 2019-03-15
+ *   Last revision: 2019-08-06
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -61,7 +61,7 @@ inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
    do {
        expected.f64 = current.f64;
        next.f64     = kahan_sum(expected.f64, val);
-       current.u64  = atomic_cmpxchg( (volatile __global unsigned long *)addr,
+       current.u64  = atomic_cmpxchg( (volatile global unsigned long *)addr,
                                       expected.u64, next.u64);
    } while( current.u64 != expected.u64 );
 }
@@ -122,7 +122,8 @@ kernel void histogram_1d(global float* position,
 /**
  * \brief Calculate the 1D weighted histogram of positions for preprocessed data
  *
- * - position: array of position
+ * - radial: array of radial position
+ * - azimuthal: array of azimuthal position
  * - weight: array of weights containing: signal, variance, normalization, count
  * - histo_sig: contains the resulting histogram for the signal
  * - histo_var: contains the resulting histogram for the variance
@@ -132,11 +133,15 @@ kernel void histogram_1d(global float* position,
  * - nbins: size of histograms
  * - mini: lower bound of the histogram
  * - maxi: upper boubd of the histogram (excluded)
+ * - check_azim: set to 1 to validate the azimuthal position
+ * - azim_mini: lower bound for valid azimuthal angle 
+ * - azim_maxi: upper bound for valid azimuthal angle (excluded)
  *
  * This is a 1D histogram
  */
 
-kernel void histogram_1d_preproc(global float* position,
+kernel void histogram_1d_preproc(global float* radial,
+								 global float* azimuthal,
                                  global float4* weights,
                                  global float2* histo_sig,
                                  global float2* histo_var,
@@ -144,24 +149,39 @@ kernel void histogram_1d_preproc(global float* position,
                                  global unsigned int* histo_cnt,
                                  int size,
                                  int nbins,
-                                 float mini,
-                                 float maxi)
+                                 float radial_mini,
+                                 float radial_maxi,
+								 char check_azim,
+								 float azimuthal_mini,
+								 float azimuthal_maxi)
 {
     unsigned int idx = get_global_id(0);
     if (idx<size)
     {// pixel in the image
-        float pvalue = position[idx];
-        if ((pvalue>=mini)&&(pvalue<maxi))
-        { // position in range
-            unsigned int target = (unsigned int) (nbins * (position[idx] - mini) / (maxi-mini));
-            float4 value = weights[idx];
-            atomic_add_global_kahan(&histo_sig[target], value.s0);
-            atomic_add_global_kahan(&histo_var[target], value.s1);
-            atomic_add_global_kahan(&histo_nrm[target], value.s2);
-            atomic_add(&histo_cnt[target], (unsigned int)(value.s3 + 0.5f));
+        float pvalue = radial[idx];
+        if ((pvalue>=radial_mini) && (pvalue<radial_maxi))
+        { // position in radial range
+        	char valid;
+        	if (check_azim) 
+        	{ //position
+        		float azim = azimuthal[idx]; 
+        		valid = (azim>=azimuthal_mini) && (azim<azimuthal_maxi);
+        	}
+        	else
+        	{
+        		valid = 1;
+        	}
+        	if (valid)
+        	{
+                unsigned int target = (unsigned int) (nbins * (pvalue - radial_mini) / (radial_maxi - radial_mini));
+                float4 value = weights[idx];
+                atomic_add_global_kahan(&histo_sig[target], value.s0);
+                atomic_add_global_kahan(&histo_var[target], value.s1);
+                atomic_add_global_kahan(&histo_nrm[target], value.s2);
+                atomic_add(&histo_cnt[target], (unsigned int)(value.s3 + 0.5f));        		
+        	} //Treat valid data
         } // else discard value
-    }
-    return;
+    } // if idx in array
 }
 
 /**
@@ -203,7 +223,7 @@ kernel void histogram_2d_preproc(global float * radial,
         float rvalue = radial[idx];
         float avalue = azimuthal[idx];
         if ((rvalue>=mini_rad)&&(rvalue<maxi_azim)&&
-            (avalue>mini_azim)&&(avalue<maxi_azim))
+            (avalue>=mini_azim)&&(avalue<maxi_azim))
         { //pixel position is the range
             unsigned int target_rad = (unsigned int) (nbins_rad * (radial[idx] - mini_rad) / (maxi_rad-mini_rad));
             unsigned int target_azim = (unsigned int) (nbins_azim * (azimuthal[idx] - mini_azim) / (maxi_azim-mini_azim));
@@ -284,7 +304,7 @@ histogram_postproc(global float2 * histo_sig,
         else
         {
             intensities[idx] = (histo_sig[idx].s0 + histo_sig[idx].s1) / nrm;
-            errors[idx] = sqrt(histo_var[idx].s0 + histo_var[idx].s1)/ nrm;
+            errors[idx] = sqrt(histo_var[idx].s0 + histo_var[idx].s1) / nrm;
         }
     }
 }

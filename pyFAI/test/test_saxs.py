@@ -34,13 +34,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "20/05/2019"
 
 
 import unittest
 import logging
 import fabio
-from . import utilstest
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
@@ -49,7 +48,6 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 from ..third_party import six
 from ..utils import mathutil
-from pyFAI.utils.decorators import depreclog
 
 
 class TestSaxs(unittest.TestCase):
@@ -72,10 +70,8 @@ class TestSaxs(unittest.TestCase):
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def testNumpy(self):
-        with utilstest.TestLogging(logger=depreclog, warning=0):
-            # Filter deprecated warning
-            qref, Iref, _ = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
-            q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="numpy")
+        qref, Iref, _ = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
+        q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="numpy")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -92,10 +88,8 @@ class TestSaxs(unittest.TestCase):
 
     @unittest.skipIf(UtilsTest.low_mem, "skipping test using >100M")
     def testCython(self):
-        with utilstest.TestLogging(logger=depreclog, warning=0):
-            # Filter deprecated warning
-            qref, Iref, _s = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
-            q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="cython")
+        qref, Iref, _s = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
+        q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="cython")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -111,10 +105,8 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(R < 20, "Cython: Measure R=%s<2" % R)
 
     def testSplitBBox(self):
-        with utilstest.TestLogging(logger=depreclog, warning=0):
-            # Filter deprecated warning
-            qref, Iref, _s = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
-            q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="splitbbox")
+        qref, Iref, _s = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
+        q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="splitbbox")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -130,10 +122,8 @@ class TestSaxs(unittest.TestCase):
         self.assertEqual(R < 20, True, "SplitBBox: Measure R=%s<20" % R)
 
     def testSplitPixel(self):
-        with utilstest.TestLogging(logger=depreclog, warning=0):
-            # Filter deprecated warning
-            qref, Iref, _s = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
-            q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="splitpixel")
+        qref, Iref, _s = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
+        q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="splitpixel")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))

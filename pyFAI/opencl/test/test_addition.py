@@ -35,7 +35,7 @@ __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2018"
+__date__ = "09/01/2019"
 
 import logging
 import numpy
@@ -123,9 +123,14 @@ class TestAddition(unittest.TestCase):
         """
         for platform in ocl.platforms:
             for _did, device in enumerate(platform.devices):
-                meas = _measure_workgroup_size((platform.id, device.id))
-                self.assertEqual(meas, device.max_work_group_size,
-                                 "Workgroup size for %s/%s: %s == %s" % (platform, device, meas, device.max_work_group_size))
+                logger.debug("Testing %s/%s", platform, device)
+                try:
+                    meas = _measure_workgroup_size((platform.id, device.id))
+                except Exception as err:
+                    logger.error(err)
+                else:
+                    self.assertEqual(meas, device.max_work_group_size,
+                                     "Workgroup size for %s/%s: %s == %s" % (platform, device, meas, device.max_work_group_size))
 
 
 def suite():

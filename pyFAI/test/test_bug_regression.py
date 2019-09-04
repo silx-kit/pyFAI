@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "31/07/2019"
 
 import sys
 import os
@@ -226,44 +226,64 @@ class TestBugRegression(unittest.TestCase):
         hc = 12.398419292004204  # Old reference value
         self.assertAlmostEqual(hc, units.hc, 6, "hc is correct, got %s" % units.hc)
 
-    def test_bug_808(self):
+    def test_import_all_modules(self):
         """Try to import every single module in the package
         """
         import pyFAI
-#         print(pyFAI.__file__)
-#         print(pyFAI.__name__)
         pyFAI_root = os.path.split(pyFAI.__file__)[0]
+
+        def must_be_skipped(path):
+            path = os.path.relpath(path, pyFAI_root)
+            path = path.replace("\\", "/")
+            elements = path.split("/")
+            if "test" in elements:
+                # Always skip test modules
+                logger.warning("Skip test module %s", path)
+                return True
+            if not UtilsTest.WITH_OPENCL_TEST:
+                if "opencl" in elements:
+                    logger.warning("Skip %s. OpenCL tests disabled", path)
+                    return True
+            if not UtilsTest.WITH_QT_TEST:
+                if "gui" in elements:
+                    logger.warning("Skip %s. Qt tests disabled", path)
+                    return True
+            return False
 
         for root, dirs, files in os.walk(pyFAI_root, topdown=True):
             for adir in dirs:
-
                 subpackage_path = os.path.join(root, adir, "__init__.py")
+                if must_be_skipped(subpackage_path):
+                    continue
                 subpackage = "pyFAI" + subpackage_path[len(pyFAI_root):-12].replace(os.sep, ".")
                 if os.path.isdir(subpackage_path):
                     logger.info("Loading subpackage: %s from %s", subpackage, subpackage_path)
                     sys.modules[subpackage] = load_source(subpackage, subpackage_path)
             for name in files:
-                if name.endswith(".py"):
-                    path = os.path.join(root, name)
-                    fqn = "pyFAI" + path[len(pyFAI_root):-3].replace(os.sep, ".")
-                    logger.info("Importing %s from %s", fqn, path)
-                    try:
-                        load_source(fqn, path)
-                    except Exception as err:
-                        if ((isinstance(err, ImportError) and
-                                "No Qt wrapper found" in err.__str__() or
-                                "pyopencl is not installed" in err.__str__() or
-                                "PySide" in err.__str__()) or
-                            (isinstance(err, SystemError) and
-                                "Parent module" in err.__str__())):
+                if not name.endswith(".py"):
+                    continue
+                path = os.path.join(root, name)
+                if must_be_skipped(path):
+                    continue
+                fqn = "pyFAI" + path[len(pyFAI_root):-3].replace(os.sep, ".")
+                logger.info("Importing %s from %s", fqn, path)
+                try:
+                    load_source(fqn, path)
+                except Exception as err:
+                    if ((isinstance(err, ImportError) and
+                            "No Qt wrapper found" in err.__str__() or
+                            "pyopencl is not installed" in err.__str__() or
+                            "PySide" in err.__str__()) or
+                        (isinstance(err, SystemError) and
+                            "Parent module" in err.__str__())):
 
-                            logger.info("Expected failure importing %s from %s with error: %s",
-                                        fqn, path, err)
-                        else:
-                            logger.error("Failed importing %s from %s with error: %s%s: %s",
-                                         fqn, path, os.linesep,
-                                         err.__class__.__name__, err)
-                            raise err
+                        logger.info("Expected failure importing %s from %s with error: %s",
+                                    fqn, path, err)
+                    else:
+                        logger.error("Failed importing %s from %s with error: %s%s: %s",
+                                     fqn, path, os.linesep,
+                                     err.__class__.__name__, err)
+                        raise err
 
     def test_bug_816(self):
         "Ensure the chi-disontinuity is properly set"
@@ -325,6 +345,41 @@ class TestBugRegression(unittest.TestCase):
         aif.chi(numpy.array([1, 2]), numpy.array([3, 4]))
         aif.chi(numpy.array([1]), numpy.array([3]))
 
+    def test_bug_1275(self):
+        "This bug about major sectors not taken into account when performing intgrate1d on small azimuthal sectors"
+        shape = (128,128)
+        detector = detectors.Detector(100e-4, 100e-4, max_shape=shape)
+        ai = AzimuthalIntegrator(detector=detector, wavelength=1e-10)
+        ai.setFit2D(1000, shape[1]/2, shape[0]/2)
+        data = numpy.ones(shape)
+        nb_pix = ai.integrate1d(data, 100).count.sum()
+        self.assertAlmostEqual(nb_pix, numpy.prod(shape), msg="All pixels are counted", delta=0.01)
+        
+        delta = 45
+        target = numpy.prod(shape)/360*2*delta
+        ai.setChiDiscAtPi()
+        angles = numpy.arange(-180, 400, 90)   
+        
+        for method in ["python", "cython", "csr", "lut"]:
+            for angle in angles:
+                res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
+                if angle in (-180, 180):
+                    #We expect only half of the pixel
+                    self.assertLess(abs(res/target - 0.5), 0.1, "ChiDiscAtPi we expect half the pixels to be missing %s %s %s=%s/2"%(method, angle, res, target))   
+                else:
+                    self.assertLess(abs(res/target - 1), 0.1, "ChiDiscAtPi we expect the pixel to be present %s %s %s=%s"%(method, angle, res, target))
+
+        # Now with the azimuthal integrator set with the chi discontinuity at 0
+        ai.setChiDiscAtZero()
+        for method in ["python", "cython", "csr", "lut"]:
+            print(method)
+            for angle in angles:
+                res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
+                if angle in (0, 360):
+                    #We expect only half of the pixel
+                    self.assertLess(abs(res/target - 0.5), 0.1, "ChiDiscAtZero we expect half the pixels to be missing %s %s %s=%s/2"%(method, angle, res, target))   
+                else:
+                    self.assertLess(abs(res/target - 1), 0.1, "ChiDiscAtZero we expect the pixel to be present method:%s angle:%s expected:%s=%s"%(method, angle, target, res))   
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

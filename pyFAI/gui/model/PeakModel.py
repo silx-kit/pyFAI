@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/04/2019"
+__date__ = "17/05/2019"
 
 import numpy
 from .AbstractModel import AbstractModel
@@ -39,7 +39,7 @@ class PeakModel(AbstractModel):
         super(PeakModel, self).__init__(parent)
         self.__name = None
         self.__color = None
-        self.__coords = []
+        self.__coords = numpy.zeros((0, 2))
         self.__ringNumber = None
         self.__isEnabled = True
 
@@ -91,7 +91,7 @@ class PeakModel(AbstractModel):
 
         List of axis/ord can be reached like that.
 
-        .. code-block::
+        .. code-block:: python
 
             coords = group.coords()
             yy = coords[:, 0]

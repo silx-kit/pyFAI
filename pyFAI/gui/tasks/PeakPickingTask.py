@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/04/2019"
+__date__ = "16/05/2019"
 
 import logging
 import numpy
@@ -57,6 +57,7 @@ from ..utils import validators
 from ..helper import model_transform
 from ..widgets.ColoredCheckBox import ColoredCheckBox
 from ..widgets.AdvancedSpinBox import AdvancedSpinBox
+from ..dialog import MessageBox
 
 
 _logger = logging.getLogger(__name__)
@@ -377,19 +378,31 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         if hasattr(self, "centralWidget"):
             self.centralWidget().installEventFilter(self)
 
+    def setInteractiveMode(self, mode, color='black',
+                           shape='polygon', label=None,
+                           zoomOnWheel=True, source=None, width=None):
+        """Override the function to allow to disable extrat interaction modes.
+        """
+        self.setPeakInteractiveMode(self.PEAK_SELECTION_MODE)
+        silx.gui.plot.PlotWidget.setInteractiveMode(self, mode, color=color, shape=shape, label=label, zoomOnWheel=zoomOnWheel, source=source, width=width)
+
+    def peakInteractiveMode(self):
+        """Returns the peak interactive mode selected."""
+        return self.__mode
+
     def setPeakInteractiveMode(self, mode):
         if self.__mode == mode:
             return
         self.__mode = mode
 
         if mode == self.PEAK_SELECTION_MODE:
-            self.setInteractiveMode('zoom')
+            super(_PeakPickingPlot, self).setInteractiveMode('zoom')
         elif mode == self.ERASOR_MODE:
             color = "black"
-            self.setInteractiveMode('draw', shape='rectangle', source=self, color=color)
+            super(_PeakPickingPlot, self).setInteractiveMode('draw', shape='rectangle', source=self, color=color)
         elif mode == self.BRUSH_MODE:
             color = "black"
-            self.setInteractiveMode('draw', shape='rectangle', source=self, color=color)
+            super(_PeakPickingPlot, self).setInteractiveMode('draw', shape='rectangle', source=self, color=color)
         else:
             assert(False)
 
@@ -808,6 +821,19 @@ class _RingSelectionBehaviour(qt.QObject):
         self.__plot = plot
         self.__initState()
 
+    def incRing(self):
+        """Select the next ring. The auto selectection will be disabled."""
+        ringNumber = self.__spinnerRing.value()
+        ringNumber = ringNumber + 1
+        self.selectRing(ringNumber)
+
+    def decRing(self):
+        """Select the next ring. The auto selection will be disabled."""
+        ringNumber = self.__spinnerRing.value()
+        ringNumber = ringNumber - 1
+        if ringNumber > 0:
+            self.selectRing(ringNumber)
+
     def selectRing(self, ringNumber):
         """Select one of the rings.
 
@@ -1065,19 +1091,24 @@ class PeakPickingTask(AbstractCalibrationTask):
             self.addAction(action)
 
         action = qt.QAction(self)
-        action.setText("Toggle new tring tool")
-        action.triggered.connect(lambda: self.__ringSelection.toggleNewRing())
+        action.setText("Select the next ring")
+        action.triggered.connect(lambda: self.__ringSelection.incRing())
         action.setShortcut(qt.QKeySequence(qt.Qt.Key_Plus))
         self.addAction(action)
+
         action = qt.QAction(self)
-        action.setText("Toggle new tring tool")
+        action.setText("Select the previous ring")
+        action.triggered.connect(lambda: self.__ringSelection.decRing())
+        action.setShortcut(qt.QKeySequence(qt.Qt.Key_Minus))
+        self.addAction(action)
+
+        action = qt.QAction(self)
+        action.setText("Toggle new ring tool")
         action.triggered.connect(lambda: self.__ringSelection.toggleNewRing())
         action.setShortcut(qt.QKeySequence(qt.Qt.Key_Equal))
         self.addAction(action)
 
     def __onPlotModeChanged(self, owner):
-        if owner is None:
-            return
         # TODO: This condition should not be reached like that
         if owner is not self.__plot:
             # Here a default plot tool is triggered
@@ -1127,9 +1158,7 @@ class PeakPickingTask(AbstractCalibrationTask):
                 self.__undoStack.push(command)
                 command.setRedoInhibited(False)
             except Exception as e:
-                _logger.error(str(e))
-                _logger.error("Backtrace", exc_info=True)
-                # FIXME Display error dialog
+                MessageBox.exception(self, "Error while loading peaks", e, _logger)
             except KeyboardInterrupt:
                 raise
 
@@ -1141,15 +1170,16 @@ class PeakPickingTask(AbstractCalibrationTask):
             return
 
         filename = dialog.selectedFiles()[0]
-        if not os.path.exists(filename) and not filename.endswith(".npt"):
+        nameFilter = dialog.selectedNameFilter()
+        isNptFilter = ".npt" in nameFilter
+
+        if isNptFilter and not filename.endswith(".npt"):
             filename = filename + ".npt"
         try:
             controlPoints = model_transform.createControlPoints(self.model())
             controlPoints.save(filename)
         except Exception as e:
-            _logger.error(str(e))
-            _logger.error("Backtrace", exc_info=True)
-            # FIXME Display error dialog
+            MessageBox.exception(self, "Error while saving peaks", e, _logger)
         except KeyboardInterrupt:
             raise
 
