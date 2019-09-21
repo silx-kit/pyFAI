@@ -254,7 +254,7 @@ class RingCalibration(object):
         scores.append((score, geoRef, "with-guess"))
 
         # Use the better one
-        scores.sort()
+        scores.sort(key=lambda x: x[0])
         score, geoRef, _ = scores[0]
         scores = None
 
