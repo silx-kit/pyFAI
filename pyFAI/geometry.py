@@ -1492,10 +1492,10 @@ class Geometry(object):
             tilt_y -0.013173
             tilt_z 0.002378
             wavelength 0.154
-            y-center 1016.328171
-            y-size 48.0815
-            z-center 984.924425
-            z-size 46.77648
+            y_center 1016.328171
+            y_size 48.0815
+            z_center 984.924425
+            z_size 46.77648
         """
         f2d = self.getFit2D()
         distance = f2d.get("directDist", 0) * 1e3  # mm -> µm
@@ -1517,17 +1517,17 @@ class Geometry(object):
         if self._wavelength:
             out["wavelength"] = self.wavelength * 1e9  # nm
         if y_center:
-            out["y-center"] = y_center
-        out["y-size"] = self.detector.pixel2 * 1e6  # µm
+            out["y_center"] = y_center
+        out["y_size"] = self.detector.pixel2 * 1e6  # µm
         if z_center:
-            out["z-center"] = z_center
-        out["z-size"] = self.detector.pixel1 * 1e6  # µm
+            out["z_center"] = z_center
+        out["z_size"] = self.detector.pixel1 * 1e6  # µm
         return out
 
     def setImageD11(self, param):
         """Set the geometry from the parameter set which contains distance, 
-        o11, o12, o21, o22, tilt_x, tilt_y tilt_z, wavelength, y-center, y-size, 
-        z-center and z-size. 
+        o11, o12, o21, o22, tilt_x, tilt_y tilt_z, wavelength, y_center, y_size, 
+        z_center and z_size. 
         Please refer to the documentation in doc/source/geometry_conversion.rst
         for the orientation and units of those values.
         
@@ -1551,10 +1551,10 @@ class Geometry(object):
         self.rot1 = -param.get("tilt_z", 0.0)
         distance = param.get("distance", 0.0) * 1e-6  # ->m
         self.dist = distance * cos(self.rot2) * cos(self.rot1)
-        pixel_v = param.get("z-size", 0.0) * 1e-6
-        pixel_h = param.get("y-size", 0.0) * 1e-6
-        self.poni1 = -distance * sin(self.rot2) + pixel_v * param.get("z-center", 0.0)
-        self.poni2 = +distance * cos(self.rot2) * sin(self.rot1) + pixel_h * param.get("y-center", 0.0)
+        pixel_v = param.get("z_size", 0.0) * 1e-6
+        pixel_h = param.get("y_size", 0.0) * 1e-6
+        self.poni1 = -distance * sin(self.rot2) + pixel_v * param.get("z_center", 0.0)
+        self.poni2 = +distance * cos(self.rot2) * sin(self.rot1) + pixel_h * param.get("y_center", 0.0)
         self.detector = detectors.Detector(pixel1=pixel_v, pixel2=pixel_h)
         wl = param.get("wavelength")
         if wl:
