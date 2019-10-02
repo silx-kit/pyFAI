@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/05/2019"
+__date__ = "02/10/2019"
 
 
 from silx.gui import qt
@@ -163,7 +163,7 @@ class IntegrationMethodWidget(qt.QWidget):
         item = qt.QStandardItem("Any")
         item.setData("*", self.CodeRole)
         model.appendRow(item)
-        for name in method_registry.IntegrationMethod.AVAILABLE_SLITS:
+        for name in method_registry.IntegrationMethod.AVAILABLE_SPLITS:
             label = self._HUMAN_READABLE.get(name, name)
             item = qt.QStandardItem(label)
             item.setData(name, self.CodeRole)
@@ -284,7 +284,7 @@ class IntegrationMethodWidget(qt.QWidget):
 
     def __updateItems(self):
         method = self.method()
-        self.__updateItemsFromModel(method_registry.IntegrationMethod.AVAILABLE_SLITS,
+        self.__updateItemsFromModel(method_registry.IntegrationMethod.AVAILABLE_SPLITS,
                                     self._splittingModel,
                                     method, patch="split")
         self.__updateItemsFromModel(method_registry.IntegrationMethod.AVAILABLE_ALGOS,
