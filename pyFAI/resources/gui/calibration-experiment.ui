@@ -217,7 +217,7 @@
             <string>Detector size without binning</string>
            </property>
            <property name="text">
-            <string>Size:</string>
+            <string>Size (h×w):</string>
            </property>
           </widget>
          </item>
@@ -244,7 +244,7 @@
             <string>Detector pixel size without binning</string>
            </property>
            <property name="text">
-            <string>Pixel size:</string>
+            <string>Pixel size (h×w):</string>
            </property>
           </widget>
          </item>

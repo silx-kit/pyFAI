@@ -252,7 +252,8 @@ class ExperimentTask(AbstractCalibrationTask):
                 # Is heterogeneous detectors have pixel sixe?
                 _logger.debug(e, exc_info=True)
                 text = "N.A."
-                self._detectorPixelSize.setText(text)
+            self._detectorPixelSize.setText(text)
+
 
             if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
                 fileDescription = detector.get_splineFile()
