@@ -237,7 +237,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     // we use _K suffix to highlight it is float2 used for Kahan summation
     float2 sum_signal_K = (float2)(0.0f, 0.0f);
     float2 sum_variance_K = (float2)(0.0f, 0.0f);
-    float2 sum_norm_K = (float2)(0.0f, 0.0f);
+    float2 sum_norm_K = (float2)(0.0f, 0.0f); 
     float2 sum_count_K = (float2)(0.0f, 0.0f);
     int idx, k, j;
 
@@ -300,6 +300,64 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     }
     return super_sum[0];
 }
+
+/**
+ * \brief OpenCL function for sigma clipping CSR look up table. Sets count to NAN
+ *
+ * The CSR matrix is represented by a set of 3 arrays (coefs, indices, indptr)
+ *
+ * @param data        float4 array in global memory storing the data as signal/variance/normalization/count.
+ * @param coefs       float  array in global memory holding the coeficient part of the LUT
+ * @param indices     integer array in global memory holding the corresponding column index of the coeficient
+ * @param indptr      Integer array in global memory holding the index of the start of the nth line
+ * @param aver        average over the region
+ * @param std         standard deviation of the average
+ * @param cutoff      cut values above so many sigma, set count to NAN 
+ * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
+ *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
+ *
+ */
+
+
+static inline int _sigma_clip4(         global  float4   *data,
+                                const   global  float    *coefs,
+                                const   global  int      *indices,
+                                const   global  int      *indptr,
+								                float    aver,
+												float    std,
+												float    cutoff,
+										local   int      counter)
+{
+    // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
+	int cnt, j, k, idx;
+	counter[0] = 0;
+    int bin_num = get_group_id(0);
+    int thread_id_loc = get_local_id(0);
+    int active_threads = get_local_size(0);
+    int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
+	barrier(CLK_LOCAL_MEM_FENCE);
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE)
+    {
+        k = j+thread_id_loc;
+        if (k < bin_bounds.y)
+        {
+        	idx = indices[k];
+            float4 quatret = data[idx];
+            if (isfinite(quatret.s3) & (quatret.s3>0.0f))
+            {
+            	float signal = quatret.s0 / quatret.s2;
+            	if (fabs(signal-signal) > cutoff*std)
+            	{
+            		data[idx].s3 = NAN;
+            		atomic_inc(counter);
+            	}
+            		 
+            } // if finite
+        }// in bounds
+    }// loop
+    barrier(CLK_LOCAL_MEM_FENCE);
+    return counter[0];
+}// functions
 
 
 /**
@@ -429,7 +487,6 @@ csr_integrate(  const   global  float   *weights,
 
 /**
  * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT in CSR form
- *  Unlike the former kernel, it works with a workgroup size of ONE
  *
  * @param weights     Float pointer to global memory storing the input image.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
@@ -604,4 +661,62 @@ csr_integrate4_single(  const   global  float4  *weights,
     }
 };//end kernel
 
+/**
+ * \brief Performs sigma clipping in azimuthal rings based on a LUT in CSR form for background extraction
+ *
+ * @param weights     Float pointer to global memory storing the input image.
+ * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
+ * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
+ * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
+ * @param cutoff      Discard any value with |value - mean| > cutoff*sigma
+ * @param cycle       number of cycle 
+ * @param summed      contains all the data
+ * @param averint     Average signal
+ * @param stderr      Standard deviation of the signal
+ *
+ */
 
+kernel void
+csr_sigma_clip4(  const   global  float4  *weights,
+                  const   global  float   *coefs,
+                  const   global  int     *indices,
+                  const   global  int     *indptr,
+				  const           float    cutoff,
+				  const           int      cycle,
+                          global  float8  *summed,
+                          global  float   *averint,
+                          global  float   *stderr)
+{
+    int bin_num = get_group_id(0);
+    local float8 shared[WORKGROUP_SIZE];
+    local int counter[1];
+    float aver, std;
+    int cnt;
+    float8 result = CSRxVec4(weights, coefs, indices, indptr, shared);
+    for (int i=0; i<cycle; i++)
+    {
+        float aver, std;
+        if (result.s4 > 0.0f)
+        {
+			aver = result.s0 / result.s4;
+			std = sqrt(result.s2) / result.s4;
+			cnt = _sigma_clip4(weights, coefs, indices, indptr, aver, std, cutoff, counter);
+			if (cnt==0)
+				break;
+        }
+        else
+        {
+        	aver = NAN;
+        	std = NAN;
+        	break;
+        }
+        result = CSRxVec4(weights, coefs, indices, indptr, shared);
+    }
+        
+	if (get_local_id(0)==0)
+	{
+		summed[bin_num] = result;
+		averint[bin_num] = aver;  
+		stderr[bin_num] = std;
+    }
+};//end kernel
