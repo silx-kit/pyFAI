@@ -326,7 +326,7 @@ static inline int _sigma_clip4(         global  float4   *data,
 								                float    aver,
 												float    std,
 												float    cutoff,
-										local   int      counter)
+										local   int      *counter)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
 	int cnt, j, k, idx;
