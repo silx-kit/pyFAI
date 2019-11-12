@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/08/2019"
+__date__ = "12/11/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1677,9 +1677,10 @@ class AzimuthalIntegrator(Geometry):
                 raise NotImplementedError()
             # This section is common to all 3 CSR implementations...
             if variance is None:
-                result = Integrate1dResult(intpl.position, intpl.intensity)
+                result = Integrate1dResult(intpl.position  * unit.scale, 
+                                           intpl.intensity)
             else:
-                result = Integrate1dResult(intpl.position,
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.error)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
@@ -1715,9 +1716,10 @@ class AzimuthalIntegrator(Geometry):
                            radial_range=radial_range)
 
             if variance is None:
-                result = Integrate1dResult(intpl.position, intpl.intensity)
+                result = Integrate1dResult(intpl.position * unit.scale, 
+                                           intpl.intensity)
             else:
-                result = Integrate1dResult(intpl.position,
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.error)
             result._set_compute_engine(integr.__module__ + "." + integr.__name__)
@@ -1769,17 +1771,20 @@ class AzimuthalIntegrator(Geometry):
                     else:
                         engine.set_engine(integr)
                 intpl = integr(data, dark=dark,
-                               dummy=dummy, delta_dummy=delta_dummy,
+                               dummy=dummy, 
+                               delta_dummy=delta_dummy,
                                variance=variance,
                                flat=flat, solidangle=solidangle,
-                               polarization=polarization, polarization_checksum=polarization_checksum,
+                               polarization=polarization, 
+                               polarization_checksum=polarization_checksum,
                                normalization_factor=normalization_factor,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range)
             if variance is None:
-                result = Integrate1dResult(intpl.position, intpl.intensity)
+                result = Integrate1dResult(intpl.position * unit.scale, 
+                                           intpl.intensity)
             else:
-                result = Integrate1dResult(intpl.position,
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.error)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
