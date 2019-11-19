@@ -343,10 +343,11 @@ static inline int _sigma_clip4(         global  float4   *data,
         {
         	idx = indices[k];
             float4 quatret = data[idx];
-            if (isfinite(quatret.s3) & (quatret.s3>0.0f))
+            // Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division 
+            if (isfinite(quatret.s3) & (quatret.s2>0.0f))
             {
             	float signal = quatret.s0 / quatret.s2;
-            	if (fabs(signal-signal) > cutoff*std)
+            	if (fabs(signal-aver) > cutoff*std)
             	{
             		data[idx].s3 = NAN;
             		atomic_inc(counter);
@@ -695,7 +696,6 @@ csr_sigma_clip4(  const   global  float4  *weights,
     float8 result = CSRxVec4(weights, coefs, indices, indptr, shared);
     for (int i=0; i<cycle; i++)
     {
-        float aver, std;
         if (result.s4 > 0.0f)
         {
 			aver = result.s0 / result.s4;

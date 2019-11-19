@@ -1652,6 +1652,10 @@ class AzimuthalIntegrator(Geometry):
                                                               bin_centers=csr_integr.bin_centers,
                                                               platformid=method.target[0],
                                                               deviceid=method.target[1])
+                            # Copy some properties from the cython integrator
+                            integr.check_mask = csr_integr.check_mask
+                            integr.pos0Range = csr_integr.pos0Range
+                            integr.pos1Range = csr_integr.pos1Range
                         except MemoryError:
                             logger.warning("MemoryError: falling back on default forward implementation")
                             self.reset_engines()
