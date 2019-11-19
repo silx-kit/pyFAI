@@ -412,12 +412,23 @@ class SeparateResult(tuple):
     """
     Class containing the result of AzimuthalIntegrator.separte which separates the
     
-    * Amorphous isotropic signal
-    * Bragg peaks 
-    * Shadow areas (signal << amorphous)  
+    * Amorphous isotropic signal (from a median filter or a sigma-clip)
+    * Bragg peaks (signal > amorphous)
+    * Shadow areas (signal < amorphous)  
     """
 
-    def __init__(self):
+    def __new__(self, bragg, amorphous):
+        return tuple.__new__(SeparateResult, (bragg, amorphous))
+
+    def __init__(self, bragg, amorphous):
+        # tuple.__init__(self, (bragg, amorphous))
+        self._radial = None
+        self._intensity = None
+        self._sigma = None
+        self._sum_signal = None  # sum of signal
+        self._sum_variance = None  # sum of variance
+        self._sum_normalization = None  # sum of all normalization SA, pol, ...
+        self._count = None  # sum of counts, from signal/norm
         self._unit = None
         self._has_mask_applied = None
         self._has_dark_correction = None
@@ -425,6 +436,7 @@ class SeparateResult(tuple):
         self._normalization_factor = None
         self._polarization_factor = None
         self._metadata = None
+        self._npt_rad = None
         self._npt_azim = None
         self._percentile = None
         self._method = None
@@ -449,6 +461,42 @@ class SeparateResult(tuple):
         :rtype: numpy.ndarray
         """
         return self[1]
+
+    @property
+    def shadow(self):
+        """
+        Contains the shadowed (weak) signal part
+
+        :rtype: numpy.ndarray
+        """
+        return self._shadow
+
+    @property
+    def radial(self):
+        """
+        Radial positions (q/2theta/r)
+
+        :rtype: numpy.ndarray
+        """
+        return self._radial
+
+    @property
+    def intensity(self):
+        """
+        Regrouped intensity
+
+        :rtype: numpy.ndarray
+        """
+        return self._intensity
+
+    @property
+    def sigma(self):
+        """
+        Error array if it was requested
+
+        :rtype: numpy.ndarray, None
+        """
+        return self._sigma
 
     @property
     def method(self):
