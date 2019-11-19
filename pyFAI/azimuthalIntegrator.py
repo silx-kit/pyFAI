@@ -3262,7 +3262,10 @@ class AzimuthalIntegrator(Geometry):
         :param percentile: which percentile use for cutting out
         :param mask: masked out pixels array
         :param restore_mask: masked pixels have the same value as input data provided
-        :return: bragg, amorphous
+        :return: SeparateResult which the bragg & amorphous signal
+        
+        Note: the filtered 1D spectrum can be retrieved from
+        SeparateResult.radial and SeparateResult.intensity 
         """
 
         filter_result = self.medfilt1d(data, npt_rad=npt_rad, npt_azim=npt_azim,
@@ -3282,7 +3285,7 @@ class AzimuthalIntegrator(Geometry):
 
         result = SeparateResult(bragg, amorphous)
         result._radial = filter_result.radial
-        result._instensity = filter_result.intensity
+        result._intensity = filter_result.intensity
         result._sigma = filter_result.sigma
 
         result._set_sum_signal(filter_result.sum_signal)
