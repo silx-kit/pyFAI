@@ -1471,10 +1471,42 @@ class AzimuthalIntegrator(Geometry):
                         method="csr", unit=units.Q, safe=True,
                         normalization_factor=1.0,
                         metadata=None):
-        """Demonstrator for the new azimuthal integrator taking care of the normalization,
+        """Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
-        Early stage prototype
+        Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
+        Takes extra care of normalization and performs proper variance propagation
+
+        :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt: number of points in the output pattern
+        :param str filename: output filename in 2/3 column ascii format, TODO: implement
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True 
+        :param ndarray variance: array containing the variance of the data. If not available, no error propagation is done 
+        :param str error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
+        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type radial_range: (float, float), optional
+        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type azimuth_range: (float, float), optional
+        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value 
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+               0 for circular polarization or random,
+               None for no correction,
+               True for using the former correction 
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param IntegrationMethod method: can be a 3-tuple with (splitting, algorithm, implementation) or directly the IntegrationMethod instance.
+        :param pyFAI.units.Unit unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
+        :param bool safe: Do some extra checks to ensure LUT/CSR is still valid. False is faster.
+        :param float normalization_factor: Value of a normalization monitor 
+        :param metadata: JSON serializable object containing the metadata, usually a dictionary. TODO: implement in saving files
+        :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
+
+        if filename is not None: 
+            logger.warning("Filename is not yet implemented")
+        if metadata is not None: 
+            logger.warning("metadata is not yet implemented")
 
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         assert method.dimension == 1
@@ -1836,7 +1868,6 @@ class AzimuthalIntegrator(Geometry):
         result._set_has_mask_applied(has_mask)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
-
         result._set_method_called("integrate1d_ng")
         return result
 
@@ -3121,12 +3152,12 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
-    def sigma_clip(self, data, npt_rad=1024, npt_azim=512,
-                   correctSolidAngle=True,
-                   polarization_factor=None, dark=None, flat=None,
-                   method="splitpixel", unit=units.Q,
-                   thres=3, max_iter=5, dummy=None, delta_dummy=None,
-                   mask=None, normalization_factor=1.0, metadata=None):
+    def _sigma_clip_legacy(self, data, npt_rad=1024, npt_azim=512,
+                           correctSolidAngle=True,
+                           polarization_factor=None, dark=None, flat=None,
+                           method="splitpixel", unit=units.Q,
+                           thres=3, max_iter=5, dummy=None, delta_dummy=None,
+                           mask=None, normalization_factor=1.0, metadata=None):
         """Perform the 2D integration and perform a sigm-clipping iterative
         filter along each row. see the doc of scipy.stats.sigmaclip for the
         options.
@@ -3261,6 +3292,58 @@ class AzimuthalIntegrator(Geometry):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         return result
+    
+    def sigma_clip_ng(self, data, npt_rad=1024, npt_azim=None,
+                      correctSolidAngle=True,
+                      polarization_factor=None, dark=None, flat=None,
+                      method="splitpixel", unit=units.Q,
+                      thres=5.0, max_iter=5, dummy=None, delta_dummy=None,
+                      mask=None, normalization_factor=1.0, metadata=None, **kwargs):
+        """Performs iteratively the 1D integration with variance propagation 
+        and performs a sigm-clipping at each iteration, i.e.
+        all pixel which intensity differs more than thres*std is 
+        discarded for next iteration.
+        
+        Keep only pixels with intensty:
+        
+            |I - <I>| < thres * Sigma(I)
+
+        This enforces a gaussian distibution and is very good at extracting 
+        background or amorphous isotropic scattering out of Bragg peaks.
+
+        :param data: input image as numpy array
+        :param npt_rad: number of radial points
+        :param npt_azim: Depreciated, left for compatibiliy reason
+        :param bool correctSolidAngle: correct for solid angle of each pixel
+                if True
+        :param float polarization_factor: polarization factor between -1 (vertical)
+                and +1 (horizontal).
+
+                - 0 for circular polarization or random,
+                - None for no correction,
+                - True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param ndarray variance: the variance of the 
+        :param unit: unit to be used for integration
+        :param method: pathway for integration and sort
+        :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres.
+                The threshold can be a 2-tuple with sigma_low and sigma_high.
+        :param max_iter: maximum number of iterations        :param mask: masked out pixels array
+        :param float normalization_factor: Value of a normalization monitor
+        :param metadata: any other metadata,
+        :type metadata: JSON serializable dict
+        :return: Integrate1D like result like
+        
+        The difference with the previous version is that there is not 
+        The standard deviation is usually smaller the the signal cleaner. It is also slightly faster.
+        
+        The In
+        
+        """
+        # We use NaN as dummies
+
+    sigma_clip = _sigma_clip_legacy
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
