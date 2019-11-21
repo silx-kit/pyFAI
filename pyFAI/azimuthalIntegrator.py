@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2019"
+__date__ = "21/11/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1471,23 +1471,23 @@ class AzimuthalIntegrator(Geometry):
                         method="csr", unit=units.Q, safe=True,
                         normalization_factor=1.0,
                         metadata=None):
-        """Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
+        """Calculate the azimuthal integration (1d) of a 2D image.
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
-        Takes extra care of normalization and performs proper variance propagation
+        Takes extra care of normalization and performs proper variance propagation.
 
         :param ndarray data: 2D array from the Detector/CCD camera
         :param int npt: number of points in the output pattern
-        :param str filename: output filename in 2/3 column ascii format, TODO: implement
+        :param str filename: output filename in 2/3 column ascii format
         :param bool correctSolidAngle: correct for solid angle of each pixel if True 
-        :param ndarray variance: array containing the variance of the data. If not available, no error propagation is done 
+        :param ndarray variance: array containing the variance of the data. 
         :param str error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
-        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (min, max). Values outside the range are ignored.
         :type radial_range: (float, float), optional
-        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (min, max). Values outside the range are ignored.
         :type azimuth_range: (float, float), optional
-        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        :param float dummy: value for dead/masked pixels
+        :param ndarray mask: array with  0 for valid pixels, all other are masked (static mask)
+        :param float dummy: value for dead/masked pixels (dynamic mask)
         :param float delta_dummy: precision for dummy value 
         :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
                0 for circular polarization or random,
@@ -1495,19 +1495,13 @@ class AzimuthalIntegrator(Geometry):
                True for using the former correction 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param IntegrationMethod method: can be a 3-tuple with (splitting, algorithm, implementation) or directly the IntegrationMethod instance.
-        :param pyFAI.units.Unit unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
-        :param bool safe: Do some extra checks to ensure LUT/CSR is still valid. False is faster.
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param Unit unit: Output units, can be "q_nm^-1" (default), "2th_deg", "r_mm" for now.
+        :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
         :param float normalization_factor: Value of a normalization monitor 
-        :param metadata: JSON serializable object containing the metadata, usually a dictionary. TODO: implement in saving files
+        :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
-
-        if filename is not None: 
-            logger.warning("Filename is not yet implemented")
-        if metadata is not None: 
-            logger.warning("metadata is not yet implemented")
-
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         assert method.dimension == 1
         unit = units.to_unit(unit)
@@ -1705,7 +1699,7 @@ class AzimuthalIntegrator(Geometry):
                 raise NotImplementedError()
             # This section is common to all 3 CSR implementations...
             if variance is None:
-                result = Integrate1dResult(intpl.position  * unit.scale, 
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity)
             else:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -1744,7 +1738,7 @@ class AzimuthalIntegrator(Geometry):
                            radial_range=radial_range)
 
             if variance is None:
-                result = Integrate1dResult(intpl.position * unit.scale, 
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity)
             else:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -1799,17 +1793,17 @@ class AzimuthalIntegrator(Geometry):
                     else:
                         engine.set_engine(integr)
                 intpl = integr(data, dark=dark,
-                               dummy=dummy, 
+                               dummy=dummy,
                                delta_dummy=delta_dummy,
                                variance=variance,
                                flat=flat, solidangle=solidangle,
-                               polarization=polarization, 
+                               polarization=polarization,
                                polarization_checksum=polarization_checksum,
                                normalization_factor=normalization_factor,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range)
             if variance is None:
-                result = Integrate1dResult(intpl.position * unit.scale, 
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity)
             else:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -1869,6 +1863,11 @@ class AzimuthalIntegrator(Geometry):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         result._set_method_called("integrate1d_ng")
+        result._set_metadata(metadata)
+        if filename is not None:
+            writer = DefaultAiWriter(filename, self)
+            writer.write(result)
+
         return result
 
     def integrate_radial(self, data, npt, npt_rad=100,
@@ -3292,7 +3291,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         return result
-    
+
     def sigma_clip_ng(self, data, npt_rad=1024, npt_azim=None,
                       correctSolidAngle=True,
                       polarization_factor=None, dark=None, flat=None,
