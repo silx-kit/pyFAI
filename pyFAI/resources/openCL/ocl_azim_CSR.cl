@@ -344,7 +344,7 @@ static inline int _sigma_clip4(         global  float4   *data,
         	idx = indices[k];
             float4 quatret = data[idx];
             // Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division 
-            if (isfinite(quatret.s3) & (quatret.s2>0.0f))
+            if (isfinite(quatret.s3) && (quatret.s2>0.0f))
             {
             	float signal = quatret.s0 / quatret.s2;
             	if (fabs(signal-aver) > cutoff*std)
@@ -360,7 +360,23 @@ static inline int _sigma_clip4(         global  float4   *data,
     return counter[0];
 }// functions
 
-
+//Calculate the variance of the signal within a bin
+static inline float _azimuthal_variance(        global  float4   *data, 
+                                        const   global  float    *coefs,
+                                        const   global  int      *indices,
+                                        const   global  int      *indptr,
+                                        const           float    aver)
+{
+    // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
+    int bin_num = get_group_id(0);
+    int thread_id_loc = get_local_id(0);
+    int active_threads = get_local_size(0);
+    int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
+    int bin_size = bin_bounds.y - bin_bounds.x;
+    float variance;
+    //TODO
+    return  variance;
+}
 /**
  * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT in CSR form
  *
@@ -671,6 +687,7 @@ csr_integrate4_single(  const   global  float4  *weights,
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param cutoff      Discard any value with |value - mean| > cutoff*sigma
  * @param cycle       number of cycle 
+ * @param azimuthal   set to 1 to calculate the variance from the difference to the average in the bin, left to 0 to propagate as usual 
  * @param summed      contains all the data
  * @param averint     Average signal
  * @param stderr      Standard deviation of the signal
@@ -684,6 +701,7 @@ csr_sigma_clip4(  const   global  float4  *weights,
                   const   global  int     *indptr,
 				  const           float    cutoff,
 				  const           int      cycle,
+				  const           int      azimuthal,
                           global  float8  *summed,
                           global  float   *averint,
                           global  float   *stderr)
@@ -699,7 +717,13 @@ csr_sigma_clip4(  const   global  float4  *weights,
         if (result.s4 > 0.0f)
         {
 			aver = result.s0 / result.s4;
-			std = sqrt(result.s2) / result.s4;
+			if (azimuthal)
+			{
+			    // TODO
+			    std = sqrt(_azimuthal_variance(weights, coefs, indices, indptr, aver));
+			}
+			else    
+			    std = sqrt(result.s2) / result.s4;
 			cnt = _sigma_clip4(weights, coefs, indices, indptr, aver, std, cutoff, counter);
 			if (cnt==0)
 				break;
