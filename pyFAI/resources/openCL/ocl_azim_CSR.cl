@@ -262,7 +262,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
                    sum_count_K = kahan_sum(sum_count_K, coef * count);
                };//end if finite
        } //end if k < bin_bounds.y
-       };//for j
+    };//for j
 /*
  * parallel reduction
  */
@@ -360,12 +360,13 @@ static inline int _sigma_clip4(         global  float4   *data,
     return counter[0];
 }// functions
 
-//Calculate the variance of the signal within a bin
-static inline float _azimuthal_variance(        global  float4   *data, 
-                                        const   global  float    *coefs,
-                                        const   global  int      *indices,
-                                        const   global  int      *indptr,
-                                        const           float    aver)
+//Calculate the standard deviation of the signal within a bin
+static inline float _azimuthal_deviation(        global  float4   *data, 
+                                         const   global  float    *coefs,
+                                         const   global  int      *indices,
+                                         const   global  int      *indptr,
+                                         const           float    aver,
+                                                 local   float4  *super_sum)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -373,10 +374,55 @@ static inline float _azimuthal_variance(        global  float4   *data,
     int active_threads = get_local_size(0);
     int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
     int bin_size = bin_bounds.y - bin_bounds.x;
-    float variance;
-    //TODO
-    return  variance;
+    // we use _K suffix to highlight it is float2 used for Kahan summation
+    float4 sum_K = (float4)(0.0f, 0.0f,0.0f, 0.0f);
+    float coef, signal;
+    int idx, k, j;
+    float2 sum_variance_K = (float2)(0.0f, 0.0f);
+    float2 sum_count_K = (float2)(0.0f, 0.0f);
+
+    // each thread processes a few points according to the LUT. 
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE){
+        k = j+thread_id_loc;
+        if (k < bin_bounds.y){
+               coef = coefs[k];
+               idx = indices[k];
+               float4 quatret = data[idx];
+               if (isfinite(quatret.s0) && isfinite(quatret.s1) && (quatret.s3>0) && (quatret.s2>0)){
+                   // defined in kahan.cl
+                   sum_variance_K = kahan_sum(sum_variance_K, (coef * (aver - (quatret.s0/quatret.s2))**2);
+                   sum_count_K = kahan_sum(sum_count_K, coef * quatret.s3);
+               }//end if finite
+       } //end if k < bin_bounds.y
+    }//for j
+
+    // parallel reduction between threads in a workgoup
+    int index;
+    if (bin_size < WORKGROUP_SIZE){
+        if (thread_id_loc < bin_size)
+            super_sum[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
+        else
+            super_sum[thread_id_loc] = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+    else
+        super_sum[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    while (active_threads != 1){
+        active_threads /= 2;
+        if (thread_id_loc < active_threads){            
+            float4 here =  super_sum[thread_id_loc];
+            float4 there = super_sum[thread_id_loc + active_threads];
+            sum_variance_K = compensated_sum((float2)(here.s0, here.s1), (float2)(there.s0, there.s1));
+            sum_count_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
+            super_sum[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+    return sqrt(super_sum[0].s0)/(super_sum[0].s2);
 }
+
 /**
  * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT in CSR form
  *
@@ -720,7 +766,7 @@ csr_sigma_clip4(  const   global  float4  *weights,
 			if (azimuthal)
 			{
 			    // TODO
-			    std = sqrt(_azimuthal_variance(weights, coefs, indices, indptr, aver));
+			    std = _azimuthal_deviation(weights, coefs, indices, indptr, aver, TODO));
 			}
 			else    
 			    std = sqrt(result.s2) / result.s4;
