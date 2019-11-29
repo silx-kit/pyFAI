@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "29/11/2019"
 __status__ = "development"
 
 import warnings
@@ -77,7 +77,7 @@ def preproc(raw,
             split_result=True and return an float3 array with variance in second position.
     :param dark_variance: provide an estimation of the variance of the dark_current,
             enforce split_result=True and return an float3 array with variance in second position.
-    :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
+    :param poissonian: set to "True" for assuming the detector is poissonian and variance = max(1, raw + dark)
     :param dtype: dtype for all processing
 
     All calculation are performed in single precision floating point (32 bits).
@@ -88,15 +88,22 @@ def preproc(raw,
     Empty pixels are always zero in "split_result" mode.
 
     When set to False, i.e the default, the pixel-wise operation is:
-    I = (raw - dark)/(flat \* solidangle \* polarization \* absorption)
+
+    .. math::
+
+        I = \\frac{raw - dark}{flat \\cdot solidangle \\cdot polarization \\cdot absorption}
+
     Invalid pixels are set to the dummy or empty value.
 
-    When split_ressult is set to True, each result is a float2
+    When split_result is set to True, each result is a float2
     or a float3 (with an additional value for the variance) as such:
-    I = [(raw - dark), (variance), (flat \* solidangle \* polarization \* absorption)]
-    Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
 
-    If poissonian is set to True, the variance is evaluated as (raw + dark).
+    I = [:math:`raw - dark`, :math:`variance`, :math:`flat \\cdot solidangle \\cdot polarization \\cdot absorption`]
+
+    If split_result is 4, then the count of pixel is appended to the list, i.e. 1 or 0 for masked pixels
+    Empty pixels will have all their 2 or 3 or 4 values to 0 (and not to dummy or empty value)
+
+    If poissonian is set to True, the variance is evaluated as raw + dark, with a minimum of 1.
     """
     if isinstance(dtype, str):
         dtype = numpy.dtype(dtype).type
@@ -162,7 +169,7 @@ def preproc(raw,
                 variance += dark
             elif dark_variance is not None:
                 variance += dark_variance
-
+    
         if flat is not None:
             assert flat.size == size, "Flat array size is correct"
             flat = numpy.ascontiguousarray(flat.ravel(), dtype=dtype)
@@ -191,7 +198,8 @@ def preproc(raw,
         mask |= (normalization == 0)
         if variance is not None:
             mask |= numpy.logical_not(numpy.isfinite(variance))
-
+            if poissonian:
+                variance = numpy.maximum(1.0, variance)
         if split_result:
             result = numpy.zeros(out_shape, dtype=dtype)
             signal[mask] = 0.0
