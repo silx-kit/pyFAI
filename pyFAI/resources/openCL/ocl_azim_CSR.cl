@@ -293,45 +293,51 @@ static inline int _sigma_clip4(         global  float4   *data,
                                 const   global  float    *coefs,
                                 const   global  int      *indices,
                                 const   global  int      *indptr,
-								                float    aver,
-												float    std,
-												float    cutoff,
-										local   int      *counter){
+                                                float    aver,
+                                                float    std,
+                                                float    cutoff,
+                                        local   int      *counter){
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
-	int cnt, j, k, idx;
-	counter[0] = 0;
+    int cnt, j, k, idx;
+    counter[0] = 0;
     int bin_num = get_group_id(0);
     int thread_id_loc = get_local_id(0);
     int active_threads = get_local_size(0);
     int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
-	barrier(CLK_LOCAL_MEM_FENCE);
-    for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE){
-        k = j+thread_id_loc;
-        if (k < bin_bounds.y){
-        	idx = indices[k];
+    
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (j=bin_bounds.s0; j<bin_bounds.s1; j+=WORKGROUP_SIZE){
+        k = j + thread_id_loc;
+        if (k < bin_bounds.s1){
+            idx = indices[k];
             float4 quatret = data[idx];
             // Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division 
             if (isfinite(quatret.s3) && (quatret.s2 > 0.0f)){
-            	float signal = quatret.s0 / quatret.s2;
-            	if (fabs(signal-aver) > cutoff*std){
-            		data[idx].s3 = NAN;
-            		atomic_inc(counter);
-            	}
-            		 
+                float signal = quatret.s0 / quatret.s2;
+                if (fabs(signal-aver) > cutoff*std){
+                    data[idx].s3 = NAN;
+                    atomic_inc(counter);
+                }
+                     
             } // if finite
         }// in bounds
     }// loop
     barrier(CLK_LOCAL_MEM_FENCE);
+    barrier(CLK_GLOBAL_MEM_FENCE);
     return counter[0];
 }// functions
 
-//Calculate the standard deviation of the signal within a bin
-static inline float _azimuthal_deviation(        global  float4   *data, 
-                                         const   global  float    *coefs,
-                                         const   global  int      *indices,
-                                         const   global  int      *indptr,
-                                         const           float    aver,
-                                                 local   float4  *shared_data4)
+/* Calculate the standard deviation of the signal within a bin assuming an azimuthal symmetry
+ * 
+ * 
+ * @return: 2tuple containing std=sqrt(sum_error_squared/count) & sem=sqrt(sum_error_squared)/count
+ */
+static inline float2 _azimuthal_deviation(        global  float4   *data, 
+                                          const   global  float    *coefs,
+                                          const   global  int      *indices,
+                                          const   global  int      *indptr,
+                                          const           float    aver,
+                                                 local   float4  *shared4)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -353,9 +359,9 @@ static inline float _azimuthal_deviation(        global  float4   *data,
                coef = coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
-               if (isfinite(quatret.s0) && isfinite(quatret.s1) && (quatret.s3>0) && (quatret.s2>0)){
+               if (isfinite(quatret.s0) && isfinite(quatret.s1) && (quatret.s2>0) && (quatret.s3>0)){
                    // defined in kahan.cl
-            	   float delta = coef * (aver - (quatret.s0/quatret.s2));
+                   float delta = coef * (aver - (quatret.s0/quatret.s2));
                    sum_variance_K = kahan_sum(sum_variance_K, delta*delta);
                    sum_count_K = kahan_sum(sum_count_K, coef * quatret.s3);
                }//end if finite
@@ -366,27 +372,28 @@ static inline float _azimuthal_deviation(        global  float4   *data,
     int index;
     if (bin_size < WORKGROUP_SIZE) {
         if (thread_id_loc < bin_size)
-            shared_data4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
+            shared4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
         else
-            shared_data4[thread_id_loc] = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+            shared4[thread_id_loc] = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
     }
     else
-        shared_data4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
+        shared4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
     while (active_threads > 1) {
         active_threads /= 2;
         if (thread_id_loc < active_threads) {            
-            float4 here =  shared_data4[thread_id_loc];
-            float4 there = shared_data4[thread_id_loc + active_threads];
+            float4 here =  shared4[thread_id_loc];
+            float4 there = shared4[thread_id_loc + active_threads];
             sum_variance_K = compensated_sum((float2)(here.s0, here.s1), (float2)(there.s0, there.s1));
             sum_count_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
-            shared_data4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
+            shared4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    return sqrt(shared_data4[0].s0)/(shared_data4[0].s2);
+    return (float2)(sqrt(shared4[0].s0/shared4[0].s2),
+                    sqrt(shared4[0].s0)/shared4[0].s2);
 }
 
 /**
@@ -494,7 +501,7 @@ csr_integrate(  const   global  float   *weights,
     }
 
     if (thread_id_loc == 0) { 
-    	//Only thread 0 works 
+        //Only thread 0 works 
         sum_data[bin_num] = super_sum_data[0].s0;
         sum_count[bin_num] = super_sum_count[0].s0;
         if (sum_count[bin_num] > epsilon)
@@ -692,44 +699,75 @@ csr_sigma_clip4(          global  float4  *data4,
                   const   global  float   *coefs,
                   const   global  int     *indices,
                   const   global  int     *indptr,
-				  const           float    cutoff,
-				  const           int      cycle,
-				  const           int      azimuthal,
+                  const           float    cutoff,
+                  const           int      cycle,
+                  const           int      azimuthal,
                           global  float8  *summed,
                           global  float   *averint,
                           global  float   *stderr) {
     int bin_num = get_group_id(0);
-    local int counter[1];
-    float aver, std;
+    float aver, std, sem;
     int cnt;
-    local float8 shared[WORKGROUP_SIZE];
-    float8 result = CSRxVec4(data4, coefs, indices, indptr, shared);
+    local float8 shared8[WORKGROUP_SIZE];
+    
+    // first calculation of azimuthal integration to initialize aver & std
+    
+    float8 result = CSRxVec4(data4, coefs, indices, indptr, shared8);
+    if (result.s4 > 0.0f){
+        aver = result.s0 / result.s4;
+        if (azimuthal){
+            float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (__local float4*) shared8);
+            std = res2.s0;
+            sem = res2.s1;
+        }             
+        else {
+            std = sqrt(result.s2 / result.s4);
+            sem = sqrt(result.s2) / result.s4;
+        }
+            
+    }
+    else {
+        aver = NAN;
+        std = NAN;
+        sem = NAN;
+    }
+
     for (int i=0; i<cycle; i++) {
-        if (result.s4 > 0.0f){
-			aver = result.s0 / result.s4;
-			if (azimuthal) {
-				// REMEMBER TO PASS WORKGROUP_SIZE AS A CPP DEF
-			    std = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (__local float4*) shared);
-			}
-			else {    
-			    std = sqrt(result.s2) / result.s4;
-			}
-			cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, cutoff, counter);
-			if (cnt==0) {
-				break;
-			}
+        if ( ! (isfinite(aver) && isfinite(std)))
+            break;
+
+        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, cutoff, (__local int*) shared8);
+
+        if (! cnt) 
+            break;
+        
+        result = CSRxVec4(data4, coefs, indices, indptr, shared8);
+
+        if (result.s4 > 0.0f) {
+            aver = result.s0 / result.s4;
+            if (azimuthal){
+            	float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (__local float4*) shared8);
+            	std = res2.s0;
+            	sem = res2.s1;
+            }                
+            else {
+            	std = sqrt(result.s2 / result.s4);
+            	sem = sqrt(result.s2) / result.s4;
+            }
+                
         }
         else {
-        	aver = NAN;
-        	std = NAN;
-        	break;
+            aver = NAN;
+            std = NAN;
+            sem = NAN;
+            break;
         }
-        result = CSRxVec4(data4, coefs, indices, indptr, shared);
     }
         
-	if (get_local_id(0) == 0) {
-		summed[bin_num] = result;
-		averint[bin_num] = aver;  
-		stderr[bin_num] = std;
+    if (get_local_id(0) == 0) {
+        summed[bin_num] = result;
+        averint[bin_num] = aver;
+        //Note the standard error of the mean, SEM,  differs from std by sqrt of the normalization factor
+        stderr[bin_num] = sem;
     }
 } //end kernel
