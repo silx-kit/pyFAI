@@ -1679,6 +1679,7 @@ class AzimuthalIntegrator(Geometry):
                                                               deviceid=method.target[1])
                             # Copy some properties from the cython integrator
                             integr.check_mask = csr_integr.check_mask
+                            integr.mask_checksum = csr_integr.mask_checksum 
                             integr.pos0Range = csr_integr.pos0Range
                             integr.pos1Range = csr_integr.pos1Range
                         except MemoryError:

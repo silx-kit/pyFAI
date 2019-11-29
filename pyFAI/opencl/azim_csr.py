@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "19/11/2019"
+__date__ = "22/11/2019"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -293,8 +293,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("data", self.cl_mem["data"]),
                                                               ("indices", self.cl_mem["indices"]),
                                                               ("indptr", self.cl_mem["indptr"]),
-                                                              ("cutoff", numpy.float32(3)),
+                                                              ("cutoff", numpy.float32(5)),
                                                               ("cycle", numpy.int32(5)),
+                                                              ("azimuthal", numpy.int32(0)),
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("stderr", self.cl_mem["stderr"]),
@@ -684,14 +685,18 @@ class OCL_CSR_Integrator(OpenclProcessing):
                    flat=None, solidangle=None, polarization=None, absorption=None,
                    dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                    polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-                   safe=True,
+                   safe=True, error_model=None,
                    normalization_factor=1.0,
                    cutoff=4.0, cycle=5,
                    out_avgint=None, out_stderr=None, out_merged=None):
         """
         Perform a sigma-clipping iterative filter within each along each row. 
         see the doc of scipy.stats.sigmaclip for more descriptions.
-        Before performing azimuthal integration, proper variance is propagated:
+        
+        If the error model is "azimuthal": the variance is the variance within a bin,
+        which is refined at each iteration, can be costly !
+        
+        Else, the error is propagated according to:
 
         .. math::
 
@@ -726,6 +731,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :return: out_avgint, out_stderr, out_merged
         """
         events = []
+        if isinstance(error_model, str):
+            error_model = error_model.lower()
+        else:
+            error_model = ""
         with self.sem:
             self.send_buffer(data, "image")
             wg = self.workgroup_size["memset_ng"]
@@ -752,6 +761,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
+            if error_model.startswith("poisson"):
+                variance = numpy.maximum(data, 1)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:
@@ -821,6 +832,11 @@ class OCL_CSR_Integrator(OpenclProcessing):
             wg = self.workgroup_size["csr_sigma_clip4"][0]
             kw_int["cutoff"] = numpy.float32(cutoff)
             kw_int["cycle"] = numpy.int32(cycle)
+            if error_model.startswith("azim"):
+                kw_int["azimuthal"] = numpy.int32(1)
+            else:
+                kw_int["azimuthal"] = numpy.int32(0)
+
             wdim_bins = (self.bins * wg),
             if wg == 1:
                 raise RuntimeError("csr_sigma_clip4 is not yet available in single threaded OpenCL !")
