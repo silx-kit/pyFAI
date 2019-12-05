@@ -28,18 +28,81 @@
  * THE SOFTWARE.
  */
 
-/* Pixel-wise kernel that calculated the I-bg and increments a counter for     
- * 
- * param preproc: an array with pixel-wise preprocessed data
- * param summed: the sigma clipped data
+/* Constant to be provided at build time:
+ *   WORKGROUP_SIZE: number of threads in a workgroup, 1024 is a good bet.
+ *   NIMAGE: size of the image
  */
-kernel void find_peaks( global float4 *preproc,
-                        global  float8  *summed 
-                        
-                       ){
+
+#include "for_eclipse.h"
+
+
+/* Pixel-wise kernel that calculated the I-bg and counting pixels of interest
+ * 
+ * For every pixel in the preproc array, the value for the background level 
+ * and the std are interpolated.
+ * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are maked as peak-pixel, 
+ * counted and their index registered in highidx
+ * 
+ * The kernel uses local memory for keeping track of peak count and positions 
+ */
+kernel void find_peaks( const global  float4 *preproc4,
+                        const global  float  *radius2d,
+                        const global  float  *radius1d,
+                        const global  float  *average1d,
+                        const global  float  *std1d,
+                        const global  float  radius_min,
+                        const global  float  radius_max,
+                        const         float   cutoff,
+                        const         float   noise,
+                              global  float4 *result4
+                              global  int    *counter,
+                              global  int    *highidx){
+    int tid = get_local_id(0);
+    // all thread in this WG share this local counter, upgraded at the end
+    local int local_counter[1];
+    local int local_highidx[WORKGROUP_SIZE];
+    local_highidx[tid] = 0;
+    if (tid == 0)
+        local_counter[0] = 0;
+    barrier(CLK_LOCAL_MEM_FENCE);
     
-	
-}
+    int gid = get_global_id(0);
+    if (gid<NIMAGE) {
+        float radius = radius2d[gid];
+        if ((radius>=radius_min) && (radius<radius_max)) {
+            float4 value = preproc4[gid];
+            if (value.s2>0.0) {
+                value.s1 = value.s0 / value.s2; 
+            } // normalization not null -> calculate corrected value
+            else {
+                value.s0 = 0.0f;
+                value.s1 = 0.0f;
+            } // empty pixel
+            
+            float pos = (radius - radius1d[0]) /  (radius1d[1] - radius1d[0]);
+            int index = convert_int_rtz(pos);
+            float delta = pos - index;
+            value.s2 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // bilinear interpolation: averge
+            value.s3 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // bilinear interpolation: std
+        } //check radius range
+        result4[gid] = value;
+        if ((value.s1 - value.s2) > max(noise, cutoff*value.s2)){
+            local_highidx[atomic_inc(local_counter)] = gid;
+        }//pixel is considered of high intensity: registering it. 
+    } //pixel in image
+     
+    //Update global memory counter
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (local_counter[0]){
+        local int to_upgrade[1];    
+        if (tid == 0) 
+            to_upgrade[0] = atomic_add(counter, local_counter[0]);
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid<to_upgrade[0])
+            highidx[tid + to_upgrade[0]] = local_highidx[tid];
+    } // end update global memory
+
+} //end kernel find_peaks
 
 // this kernel takes one
 kernel void integrate_peaks(){
