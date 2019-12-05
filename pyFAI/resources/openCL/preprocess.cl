@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 19/01/2017
+ *   Last revision: 05/12/2019
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -147,108 +147,17 @@ s32_to_float(__global int  *array_int,
 
 
 /**
- * Functions to be called from an actual kernel.
- * \brief Performs the normalization of input image by dark subtraction,
- *        variance is propagated to second member of the float3
+ * Internal functions pixel wise function.
+ * 
+ * Performs the normalization of input image by dark subtraction,
+ *        variance is propagated to second member of the float4
  *        flatfield, solid angle, polarization and absorption are stored in
- *        third member of the float3 returned.
+ *        third member. the last member contains 1 for valid pixels.
  *
- * Invalid/Dummy pixels will all have the third-member set to 0, i.e. no weight
+ * Invalid/Dummy pixels will all have the 3rd/4th-member set to 0, i.e. no weight
  *
  * - image           Float pointer to global memory storing the input image.
- * - do_dark         Bool/int: shall dark-current correction be applied ?
- * - dark            Float pointer to global memory storing the dark image.
- * - do_flat         Bool/int: shall flat-field correction be applied ?
- * - flat            Float pointer to global memory storing the flat image.
- * - do_solidangle   Bool/int: shall flat-field correction be applied ?
- * - solidangle      Float pointer to global memory storing the solid angle of each pixel.
- * - do_polarization Bool/int: shall polarization correction be applied ?
- * - polarization    Float pointer to global memory storing the polarization of each pixel.
- * - do_absorption   Bool/int: shall absorption correction be applied ?
- * - absorption      Float pointer to global memory storing the effective absoption of each pixel.
- * - do_mask         perform mask correction ?
- * - mask            Bool/char pointer to mask array
- * - do_dummy        Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * - dummy           Float: value for bad pixels
- * - delta_dummy     Float: precision for bad pixel value
- * - normalization_factor : divide the input by this value
- *
-**/
-
-static float3 _preproc3(const __global float  *image,
-                        const __global float  *variance,
-                        const          char   do_dark,
-                        const __global float  *dark,
-                        const          char   do_dark_variance,
-                        const __global float  *dark_variance,
-                        const          char   do_flat,
-                        const __global float  *flat,
-                        const          char   do_solidangle,
-                        const __global float  *solidangle,
-                        const          char   do_polarization,
-                        const __global float  *polarization,
-                        const          char   do_absorption,
-                        const __global float  *absorption,
-                        const          char   do_mask,
-                        const __global char   *mask,
-                        const          char   do_dummy,
-                        const          float  dummy,
-                        const          float  delta_dummy,
-                        const          float  normalization_factor)
-{
-    size_t i = get_global_id(0);
-    float3 result = (float3)(0.0f, 0.0f, 0.0f);
-    if (i < NIMAGE)
-    {
-        if ((!do_mask) || (!mask[i]))
-        {
-            result = (float3)(image[i], variance[i], normalization_factor);
-            if ( (!do_dummy)
-                  ||((delta_dummy != 0.0f) && (fabs(result.s0-dummy) > delta_dummy))
-                  ||((delta_dummy == 0.0f) && (result.s0 != dummy)))
-            {
-                if (do_dark)
-                    result.s0 -= dark[i];
-                if (do_dark_variance)
-                    result.s1 += dark_variance[i];
-                if (do_flat)
-                {
-                    float one_flat = flat[i];
-                    if ( (!do_dummy)
-                         ||((delta_dummy != 0.0f) && (fabs(one_flat-dummy) > delta_dummy))
-                         ||((delta_dummy == 0.0f) && (one_flat != dummy)))
-                        result.s2 *= one_flat;
-                    else
-                        result.s2 = 0.0f;
-                }
-                if (do_solidangle)
-                    result.s2 *= solidangle[i];
-                if (do_polarization)
-                    result.s2 *= polarization[i];
-                if (do_absorption)
-                    result.s2 *= absorption[i];
-                if (isnan(result.s0) || isnan(result.s1) || isnan(result.s2) || (result.s2 == 0.0f))
-                    result = (float3)(0.0f, 0.0f, 0.0f);
-            }
-            else
-            {
-                result = (float3)(0.0f, 0.0f, 0.0f);
-            }//end if do_dummy
-        } // end if mask
-    };//end if NIMAGE
-    return result;
-};//end function
-
-/**
- * Functions to be called from an actual kernel.
- * \brief Performs the normalization of input image by dark subtraction,
- *        variance is propagated to second member of the float3
- *        flatfield, solid angle, polarization and absorption are stored in
- *        third member of the float3 returned.
- *
- * Invalid/Dummy pixels will all have the third-member set to 0, i.e. no weight
- *
- * - image           Float pointer to global memory storing the input image.
+ * - poissonian      when set, uses the signal as the variance (with minimum of 1)
  * - do_dark         Bool/int: shall dark-current correction be applied ?
  * - dark            Float pointer to global memory storing the dark image.
  * - do_flat         Bool/int: shall flat-field correction be applied ?
@@ -269,6 +178,7 @@ static float3 _preproc3(const __global float  *image,
 **/
 
 static float4 _preproc4(const __global float  *image,
+                        const          char   poissonian,
                         const __global float  *variance,
                         const          char   do_dark,
                         const __global float  *dark,
@@ -291,21 +201,20 @@ static float4 _preproc4(const __global float  *image,
 {
     size_t i= get_global_id(0);
     float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-    if (i < NIMAGE)
-    {
-        if ((!do_mask) || (!mask[i]))
-        {
-            result = (float4)(image[i], variance[i], normalization_factor, 1.0f);
+    if (i < NIMAGE){
+        if ((!do_mask) || (!mask[i])){
+            if (poissonian)
+                result = (float4)(image[i], max(image[i], 1.0f), normalization_factor, 1.0f);
+            else
+                result = (float4)(image[i], variance[i], normalization_factor, 1.0f);
             if ( (!do_dummy)
                   ||((delta_dummy != 0.0f) && (fabs(result.s0-dummy) > delta_dummy))
-                  ||((delta_dummy == 0.0f) && (result.s0 != dummy)))
-            {
+                  ||((delta_dummy == 0.0f) && (result.s0 != dummy))){
                 if (do_dark)
                     result.s0 -= dark[i];
                 if (do_dark_variance)
                     result.s1 += dark_variance[i];
-                if (do_flat)
-                {
+                if (do_flat){
                     float one_flat = flat[i];
                     if ( (!do_dummy)
                          ||((delta_dummy != 0.0f) && (fabs(one_flat-dummy) > delta_dummy))
@@ -323,14 +232,13 @@ static float4 _preproc4(const __global float  *image,
                 if (isnan(result.s0) || isnan(result.s1) || isnan(result.s2) || (result.s2 == 0.0f))
                     result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
             }
-            else
-            {
+            else{
                 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
             }//end if do_dummy
         } // end if mask
-    };//end if NIMAGE
+    }//end if NIMAGE
     return result;
-};//end function
+}//end function
 
 
 /**
@@ -383,14 +291,12 @@ corrections(const __global float  *image,
             const          float  dummy,
             const          float  delta_dummy,
             const          float  normalization_factor,
-                  __global float  *output
-            )
-{
+                  __global float  *output){
     size_t i= get_global_id(0);
-    float3 result = (float3)(0.0f, 0.0f, 0.0f);
-    if (i < NIMAGE)
-    {
-        result = _preproc3(image,
+    if (i < NIMAGE) {
+        float4 result;
+        result = _preproc4(image,
+                           0,
                            image,
                            do_dark,
                            dark,
@@ -414,9 +320,8 @@ corrections(const __global float  *image,
             output[i] = result.s0 / result.s2;
         else
             output[i] = dummy;
-    };//end if NIMAGE
-
-};//end kernel
+    }//end if NIMAGE
+}//end kernel
 
 
 /**
@@ -469,93 +374,17 @@ corrections2(const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    float3 result = (float3)(0.0f, 0.0f, 0.0f);
+    
     if (i < NIMAGE)
     {
-        result = _preproc3(image,
-                           image,
-                            do_dark,
-                            dark,
-                            0,
-                            0,
-                            do_flat,
-                            flat,
-                            do_solidangle,
-                            solidangle,
-                            do_polarization,
-                            polarization,
-                            do_absorption,
-                            absorption,
-                            do_mask,
-                            mask,
-                            do_dummy,
-                            dummy,
-                            delta_dummy,
-                            normalization_factor);
-        output[i] = (float2)(result.s0, result.s2);
-    };//end if NIMAGE
-};//end kernel
-
-/**
- * \brief Performs Normalization of input image with float3 output (signal, variance, normalization) assuming poissonian signal
- *
- * Intensities of images are corrected by:
- *  - dark (read-out) noise subtraction for the data
- *  - Solid angle correction (denominator)
- *  - polarization correction (denominator)
- *  - flat fiels correction (denominator)
- *
- * Corrections are made out of place.
- * Dummy pixels set both the numerator and denominator to 0
- *
- * - image           Float pointer to global memory storing the input image.
- * - do_dark         Bool/int: shall dark-current correction be applied ?
- * - dark            Float pointer to global memory storing the dark image.
- * - do_flat         Bool/int: shall flat-field correction be applied ?
- * - flat            Float pointer to global memory storing the flat image.
- * - do_solidangle   Bool/int: shall flat-field correction be applied ?
- * - solidangle      Float pointer to global memory storing the solid angle of each pixel.
- * - do_polarization Bool/int: shall flat-field correction be applied ?
- * - polarization    Float pointer to global memory storing the polarization of each pixel.
- * - do_dummy          Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * - dummy             Float: value for bad pixels
- * - delta_dummy       Float: precision for bad pixel value
- * - normalization_factor : divide the input by this value
- *
- *
-**/
-
-kernel void
-corrections3Poisson( const __global float  *image,
-                     const          char   do_dark,
-                     const __global float  *dark,
-                     const          char   do_flat,
-                     const __global float  *flat,
-                     const          char   do_solidangle,
-                     const __global float  *solidangle,
-                     const          char   do_polarization,
-                     const __global float  *polarization,
-                     const          char   do_absorption,
-                     const __global float  *absorption,
-                     const          char   do_mask,
-                     const __global char   *mask,
-                     const          char   do_dummy,
-                     const          float  dummy,
-                     const          float  delta_dummy,
-                     const          float  normalization_factor,
-                           __global float3  *output
-            )
-{
-    size_t i= get_global_id(0);
-    float3 result = (float3)(0.0f, 0.0f, 0.0f);
-    if (i < NIMAGE)
-    {
-        result = _preproc3(image,
+        float4 result;
+        result = _preproc4(image,
+                           0,
                            image,
                            do_dark,
                            dark,
-                           do_dark,
-                           dark,
+                           0,
+                           0,
                            do_flat,
                            flat,
                            do_solidangle,
@@ -570,7 +399,7 @@ corrections3Poisson( const __global float  *image,
                            dummy,
                            delta_dummy,
                            normalization_factor);
-        output[i] = result;
+        output[i] = (float2)(result.s0, result.s2);
     };//end if NIMAGE
 };//end kernel
 
@@ -605,6 +434,7 @@ corrections3Poisson( const __global float  *image,
 
 kernel void
 corrections3(const __global float  *image,
+             const          char   poissonian,
              const __global float  *variance,
              const          char   do_dark,
              const __global float  *dark,
@@ -628,10 +458,11 @@ corrections3(const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    float3 result = (float3)(0.0f, 0.0f, 0.0f);
-    if (i < NIMAGE)
-    {
-        result = _preproc3( image,
+    
+    if (i < NIMAGE){
+        float4 result;
+        result = _preproc4( image,
+                            poissonian,
                             variance,
                             do_dark,
                             dark,
@@ -651,56 +482,7 @@ corrections3(const __global float  *image,
                             dummy,
                             delta_dummy,
                             normalization_factor);
-        output[i] = result;
-    };//end if NIMAGE
-};//end kernel
-
-kernel void
-corrections4Poisson( const __global float  *image,
-                     const          char   do_dark,
-                     const __global float  *dark,
-                     const          char   do_flat,
-                     const __global float  *flat,
-                     const          char   do_solidangle,
-                     const __global float  *solidangle,
-                     const          char   do_polarization,
-                     const __global float  *polarization,
-                     const          char   do_absorption,
-                     const __global float  *absorption,
-                     const          char   do_mask,
-                     const __global char   *mask,
-                     const          char   do_dummy,
-                     const          float  dummy,
-                     const          float  delta_dummy,
-                     const          float  normalization_factor,
-                           __global float4  *output
-            )
-{
-    size_t i= get_global_id(0);
-    float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-    if (i < NIMAGE)
-    {
-        result = _preproc4(image,
-                           image,
-                           do_dark,
-                           dark,
-                           do_dark,
-                           dark,
-                           do_flat,
-                           flat,
-                           do_solidangle,
-                           solidangle,
-                           do_polarization,
-                           polarization,
-                           do_absorption,
-                           absorption,
-                           do_mask,
-                           mask,
-                           do_dummy,
-                           dummy,
-                           delta_dummy,
-                           normalization_factor);
-        output[i] = result;
+        output[i] = (float3)(result.s0, result.s1, result.s2);
     };//end if NIMAGE
 };//end kernel
 
@@ -716,7 +498,8 @@ corrections4Poisson( const __global float  *image,
  * Corrections are made in place unless the pixel is dummy.
  * Dummy pixels are left untouched so that they remain dummy
  *
- * - image              Float pointer to global memory storing the input image.
+ * - image           Float pointer to global memory storing the input image.
+ * - poissonian      when set, uses the signal as the variance (with minimum of 1)
  * - do_dark         Bool/int: shall dark-current correction be applied ?
  * - dark            Float pointer to global memory storing the dark image.
  * - do_flat         Bool/int: shall flat-field correction be applied ?
@@ -725,9 +508,9 @@ corrections4Poisson( const __global float  *image,
  * - solidangle      Float pointer to global memory storing the solid angle of each pixel.
  * - do_polarization Bool/int: shall flat-field correction be applied ?
  * - polarization    Float pointer to global memory storing the polarization of each pixel.
- * - do_dummy          Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * - dummy             Float: value for bad pixels
- * - delta_dummy       Float: precision for bad pixel value
+ * - do_dummy        Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
+ * - dummy           Float: value for bad pixels
+ * - delta_dummy     Float: precision for bad pixel value
  * - normalization_factor : divide the input by this value
  *
  *
@@ -735,6 +518,7 @@ corrections4Poisson( const __global float  *image,
 
 kernel void
 corrections4(const __global float  *image,
+             const          char   poissonian,
              const __global float  *variance,
              const          char   do_dark,
              const __global float  *dark,
@@ -762,6 +546,7 @@ corrections4(const __global float  *image,
     if (i < NIMAGE)
     {
         result = _preproc4( image,
+                            poissonian,
                             variance,
                             do_dark,
                             dark,

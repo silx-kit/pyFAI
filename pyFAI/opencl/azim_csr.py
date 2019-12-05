@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "22/11/2019"
+__date__ = "05/12/2019"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -259,6 +259,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("merged", self.cl_mem["merged"])))
 
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
+                                                           ("poissonian", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -511,7 +512,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     integrate = integrate_legacy
 
     def integrate_ng(self, data, dark=None, dummy=None, delta_dummy=None,
-                     variance=None, dark_variance=None,
+                     poissonian=None, variance=None, dark_variance=None,
                      flat=None, solidangle=None, polarization=None, absorption=None,
                      dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                      polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
@@ -534,6 +535,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
+        :param poissonian: set to use signal as variance (minimum 1)
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -578,6 +580,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
+            kw_corr["poissonian"] = numpy.int8(1 if poissonian else 0)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:

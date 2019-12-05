@@ -28,8 +28,16 @@
  * THE SOFTWARE.
  */
 
-// Pixel-wise kernel that calculated the I-bg   
-kernel void find_peaks(){ float4 *preprocessed, 
+/* Pixel-wise kernel that calculated the I-bg and increments a counter for     
+ * 
+ * param preproc: an array with pixel-wise preprocessed data
+ * param summed: the sigma clipped data
+ */
+kernel void find_peaks( global float4 *preproc,
+                        global  float8  *summed 
+                        
+                       ){
+    
 	
 }
 

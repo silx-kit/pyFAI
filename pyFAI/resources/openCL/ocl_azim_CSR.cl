@@ -690,7 +690,8 @@ csr_integrate4_single(  const   global  float4  *weights,
  * @param azimuthal   set to 1 to calculate the variance from the difference to the average in the bin, left to 0 to propagate as usual 
  * @param summed      contains all the data
  * @param averint     Average signal
- * @param stderr      Standard deviation of the signal
+ * @param stdevpix    Standard deviation of the pixel
+ * @param stderrmean  Standard error of the mean
  *
  */
 
@@ -704,7 +705,8 @@ csr_sigma_clip4(          global  float4  *data4,
                   const           int      azimuthal,
                           global  float8  *summed,
                           global  float   *averint,
-                          global  float   *stderr) {
+                          global  float   *stdevpix,
+                          global  float   *stderrmean) {
     int bin_num = get_group_id(0);
     float aver, std, sem;
     int cnt;
@@ -768,6 +770,7 @@ csr_sigma_clip4(          global  float4  *data4,
         summed[bin_num] = result;
         averint[bin_num] = aver;
         //Note the standard error of the mean, SEM,  differs from std by sqrt of the normalization factor
-        stderr[bin_num] = sem;
+        stdevpix[bin_num] = std;
+        stderrmean[bin_num] = sem;
     }
 } //end kernel
