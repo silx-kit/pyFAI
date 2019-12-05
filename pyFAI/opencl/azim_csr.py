@@ -154,6 +154,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                          BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("averint", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("stderr", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("stderrmean", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
                          ]

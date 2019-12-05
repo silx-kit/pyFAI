@@ -45,7 +45,7 @@
  * 
  * The kernel uses local memory for keeping track of peak count and positions 
  */
-kernel void find_peaks( const global  float4 *preproc4,
+kernel void find_peaks(       global  float4 *preproc4, //both input and output
                         const global  float  *radius2d,
                         const global  float  *radius1d,
                         const global  float  *average1d,
@@ -54,7 +54,6 @@ kernel void find_peaks( const global  float4 *preproc4,
                         const global  float  radius_max,
                         const         float   cutoff,
                         const         float   noise,
-                              global  float4 *result4
                               global  int    *counter,
                               global  int    *highidx){
     int tid = get_local_id(0);
@@ -69,8 +68,9 @@ kernel void find_peaks( const global  float4 *preproc4,
     int gid = get_global_id(0);
     if (gid<NIMAGE) {
         float radius = radius2d[gid];
+        float4 value = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
         if ((radius>=radius_min) && (radius<radius_max)) {
-            float4 value = preproc4[gid];
+            value = preproc4[gid];
             if (value.s2>0.0) {
                 value.s1 = value.s0 / value.s2; 
             } // normalization not null -> calculate corrected value
@@ -78,17 +78,16 @@ kernel void find_peaks( const global  float4 *preproc4,
                 value.s0 = 0.0f;
                 value.s1 = 0.0f;
             } // empty pixel
-            
             float pos = (radius - radius1d[0]) /  (radius1d[1] - radius1d[0]);
             int index = convert_int_rtz(pos);
             float delta = pos - index;
             value.s2 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // bilinear interpolation: averge
             value.s3 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // bilinear interpolation: std
+            if ((value.s1 - value.s2) > max(noise, cutoff*value.s2)){
+                local_highidx[atomic_inc(local_counter)] = gid;
+            }//pixel is considered of high intensity: registering it. 
         } //check radius range
-        result4[gid] = value;
-        if ((value.s1 - value.s2) > max(noise, cutoff*value.s2)){
-            local_highidx[atomic_inc(local_counter)] = gid;
-        }//pixel is considered of high intensity: registering it. 
+        preproc4[gid] = value;
     } //pixel in image
      
     //Update global memory counter
