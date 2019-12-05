@@ -24,7 +24,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """Module providing common pixel-wise pre-processing of data.
 """
 
@@ -34,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/11/2019"
+__date__ = "05/12/2019"
 __status__ = "development"
 
 import warnings
@@ -142,7 +141,7 @@ def preproc(raw,
     if variance is not None:
         variance = numpy.ascontiguousarray(variance.ravel(), dtype=dtype)
     elif poissonian:
-        variance = signal.copy()
+        variance = numpy.maximum(1.0, signal)  # this makes a copy
 
     # runtime warning here
     with warnings.catch_warnings():
@@ -169,7 +168,7 @@ def preproc(raw,
                 variance += dark
             elif dark_variance is not None:
                 variance += dark_variance
-    
+
         if flat is not None:
             assert flat.size == size, "Flat array size is correct"
             flat = numpy.ascontiguousarray(flat.ravel(), dtype=dtype)
@@ -198,8 +197,6 @@ def preproc(raw,
         mask |= (normalization == 0)
         if variance is not None:
             mask |= numpy.logical_not(numpy.isfinite(variance))
-            if poissonian:
-                variance = numpy.maximum(1.0, variance)
         if split_result:
             result = numpy.zeros(out_shape, dtype=dtype)
             signal[mask] = 0.0
