@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "05/12/2019"
+__date__ = "06/12/2019"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -301,6 +301,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("stderr", self.cl_mem["stderr"]),
+                                                              ("stderrmean", self.cl_mem["stderrmean"]),
                                                              ))
 
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
@@ -866,8 +867,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
             ev = pyopencl.enqueue_copy(self.queue, avgint, self.cl_mem["averint"])
             events.append(EventDescription("copy D->H avgint", ev))
 
-            ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderr"])
-            events.append(EventDescription("copy D->H stderr", ev))
+            ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderrmean"])
+            events.append(EventDescription("copy D->H stderrmean", ev))
             ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
             events.append(EventDescription("copy D->H merged8", ev))
         if self.profile:
