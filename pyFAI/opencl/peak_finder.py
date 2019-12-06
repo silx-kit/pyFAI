@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "05/12/2019"
+__date__ = "06/12/2019"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,7 +37,7 @@ import logging
 from collections import OrderedDict
 import numpy
 from ..utils import EPS32
-from .azim_csr import OCL_CSR_Integrator, BufferDescription, mf
+from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl
 
 logger = logging.getLogger(__name__)
 
@@ -62,13 +62,13 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
     kernel_files = ["pyfai:openCL/kahan.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
-                    "pyfai:openCL/ocl_azim_CSR.cl"
+                    "pyfai:openCL/ocl_azim_CSR.cl",
                     "pyfai:openCL/peak_finder.cl"
                     ]
 
     def __init__(self, lut, image_size, checksum=None,
                  empty=None, unit=None, bin_centers=None,
-                 radius=None,
+                 radius=None, mask=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """
@@ -92,18 +92,27 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                         store profiling elements (makes code slightly slower)
         """
         self.radius = radius
+        if mask is not None:
+            self.mask = numpy.ascontiguousarray(mask, "int8")
+        else:
+            self.mask = None
         assert image_size == radius.size
+        nbin = lut[2].size-1
+        self.buffers += [BufferDescription("radius1d", nbin, numpy.float32, mf.READ_ONLY),
+                         BufferDescription("counter", 1, numpy.float32, mf.WRITE_ONLY),
+                         ]
         OCL_CSR_Integrator.__init__(self, lut, image_size, checksum,
                  empty, unit, bin_centers,
                  ctx, devicetype, platformid, deviceid,
                  block_size, profile)
 
-        self.buffers += [BufferDescription("radius1d", self.bin_centers.size, numpy.float32, mf.READ_ONLY),
-                         BufferDescription("counter", 1, numpy.float32, mf.WRITE_ONLY),
-                         ]
-
-        self.send_buffer(self.bin_centers, "radius1d")
-        self.send_buffer(self.radius, "radius2d")
+        if self.mask is not None:
+            self.send_buffer(self.mask, "mask")
+            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
+        if self.bin_centers is not None:
+            self.send_buffer(self.bin_centers, "radius1d")
+        if self.radius is not None:
+            self.send_buffer(self.radius, "radius2d")
 
     def set_kernel_arguments(self):
         OCL_CSR_Integrator.set_kernel_arguments(self)
@@ -118,7 +127,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                           ("noise", numpy.float32(1.0)),
                                                           ("counter", self.cl_mem["counter"]),
                                                           ("peak_position", self.cl_mem["peak_position"])))
-
+        
     def peak_finder(self, data, dark=None, dummy=None, delta_dummy=None,
                    variance=None, dark_variance=None,
                    flat=None, solidangle=None, polarization=None, absorption=None,
@@ -202,8 +211,6 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
-            if error_model.startswith("poisson"):
-                variance = numpy.maximum(data, 1)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:
@@ -265,7 +272,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             else:
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
-
+            
+            if error_model.startswith("poisson"):
+                kw_corr["poissonian"] = numpy.int8(1)
+            else:
+                kw_corr["poissonian"] = numpy.int8(0)
             wg = self.workgroup_size["corrections4"]
             ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
             events.append(EventDescription("corrections", ev))
@@ -288,21 +299,31 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 events.append(EventDescription("csr_sigma_clip4", integrate))
 
             # now perform the calc_from_1d on the device and count the number of pixels
-
-            # memset the two int buffers:
+            memset1 = self.program.memset_int(self.queue, self.wdim_data, self.workgroup_size["corrections"], self.cl_mem["peak_position"], numpy.int32(0), numpy.int32(self.size))
+            memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
+            events+=[EventDescription("memset peak_position", memset1), EventDescription("memset counter", memset2)]
 
             if radial_range is not None:
                 kw_proj["radius_min"] = numpy.float32(min(radial_range))
                 kw_proj["radius_max"] = numpy.float32(max(radial_range) * EPS32)
             else:
                 kw_proj["radius_min"] = numpy.float32(0.0)
-                kw_proj["radius_min"] = numpy.float32(numpy.finfo(numpy.float32).max)
+                kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
             kw_proj["noise"] = numpy.float32(noise)
-
+            
+            peak_search = self.program.find_peaks(self.queue, self.wdim_data, self.workgroup_size["corrections4"], *list(kw_proj.values()))
+            events.append(EventDescription("peak_search", peak_search))
             # call the find_peaks kernel
+            
             # Return the number of peaks
-
+            cnt = numpy.empty(1, dtype=numpy.int32)
+            ev = pyopencl.enqueue_copy(self.queue, cnt, self.cl_mem["counter"])
+            events.append(EventDescription("copy D->H counter", ev))
+            ev.wait()
+            high = numpy.empty(cnt, dtype=numpy.int32)
+            ev = pyopencl.enqueue_copy(self.queue, high, self.cl_mem["peak_position"])
+            events.append(EventDescription("copy D->H high_position", ev))
 #             if out_merged is None:
 #                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
 #             else:
@@ -323,11 +344,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 #             events.append(EventDescription("copy D->H stderr", ev))
 #             ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
 #             events.append(EventDescription("copy D->H merged8", ev))
-#         if self.profile:
-#             self.events += events
-#         res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
-#         "position intensity error signal variance normalization count"
-#         return res
+        if self.profile:
+            self.events += events
+        #res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
+        #"position intensity error signal variance normalization count"
+        return high
 
     # Name of the default "process" method
     __call__ = peak_finder
