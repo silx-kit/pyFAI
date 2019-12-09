@@ -50,8 +50,8 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
                         const global  float  *radius1d,
                         const global  float  *average1d,
                         const global  float  *std1d,
-                        const global  float  radius_min,
-                        const global  float  radius_max,
+                        const         float   radius_min,
+                        const         float   radius_max,
                         const         float   cutoff,
                         const         float   noise,
                               global  int    *counter,
@@ -82,8 +82,8 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
             int index = convert_int_rtz(pos);
             float delta = pos - index;
             value.s2 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // bilinear interpolation: averge
-            value.s3 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // bilinear interpolation: std
-            if ((value.s1 - value.s2) > max(noise, cutoff*value.s2)){
+            value.s3 = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // bilinear interpolation: std
+            if ((value.s1 - value.s2) > max(noise, cutoff*value.s3)){
                 local_highidx[atomic_inc(local_counter)] = gid;
             }//pixel is considered of high intensity: registering it. 
         } //check radius range
@@ -105,5 +105,5 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
 
 // this kernel takes one
 kernel void integrate_peaks(){
-	
+    
 }
