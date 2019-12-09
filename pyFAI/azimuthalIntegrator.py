@@ -51,7 +51,7 @@ from .geometry import Geometry
 from . import units
 from .utils import EPS32, deg2rad, crc32
 from .utils.decorators import deprecated, deprecated_warning
-from .containers import Integrate1dResult, Integrate2dResult
+from .containers import Integrate1dResult, Integrate2dResult, SeparateResult
 from .io import DefaultAiWriter
 error = None
 from .method_registry import IntegrationMethod
@@ -3359,22 +3359,52 @@ class AzimuthalIntegrator(Geometry):
         :param percentile: which percentile use for cutting out
         :param mask: masked out pixels array
         :param restore_mask: masked pixels have the same value as input data provided
-        :return: bragg, amorphous
+        :return: SeparateResult which the bragg & amorphous signal
+        
+        Note: the filtered 1D spectrum can be retrieved from
+        SeparateResult.radial and SeparateResult.intensity 
         """
 
-        radial, spectrum = self.medfilt1d(data, npt_rad=npt_rad, npt_azim=npt_azim,
-                                          unit=unit, method=method,
-                                          percentile=percentile, mask=mask)
+        filter_result = self.medfilt1d(data, npt_rad=npt_rad, npt_azim=npt_azim,
+                                       unit=unit, method=method,
+                                       percentile=percentile, mask=mask)
         # This takes 100ms and is the next to be optimized.
-        amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
-                                    dim1_unit=unit, correctSolidAngle=True)
+        amorphous = self.calcfrom1d(filter_result.radial, filter_result.intensity,
+                                    data.shape, mask=None,
+                                    dim1_unit=unit,
+                                    correctSolidAngle=True)
         bragg = data - amorphous
         if restore_mask:
             wmask = numpy.where(mask)
             maskdata = data[wmask]
             bragg[wmask] = maskdata
             amorphous[wmask] = maskdata
-        return bragg, amorphous
+
+        result = SeparateResult(bragg, amorphous)
+        result._radial = filter_result.radial
+        result._intensity = filter_result.intensity
+        result._sigma = filter_result.sigma
+
+        result._set_sum_signal(filter_result.sum_signal)
+        result._set_sum_variance(filter_result.sum_variance)
+        result._set_sum_normalization(filter_result.sum_normalization)
+        result._set_count(filter_result.count)
+
+        result._set_method_called("medfilt1d")
+        result._set_compute_engine(str(method))
+        result._set_percentile(percentile)
+        result._set_npt_azim(npt_azim)
+        result._set_unit(unit)
+        result._set_has_mask_applied(filter_result.has_mask_applied)
+        result._set_metadata(filter_result.metadata)
+        result._set_has_dark_correction(filter_result.has_dark_correction)
+        result._set_has_flat_correction(filter_result.has_flat_correction)
+
+        # TODO when switching to sigma-clipped filtering
+        # result._set_polarization_factor(polarization_factor)
+        # result._set_normalization_factor(normalization_factor)
+
+        return result
 
     def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
                    unit="r_m", method="splitpixel", poissonian=False,
