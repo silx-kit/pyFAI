@@ -1668,7 +1668,6 @@ class AzimuthalIntegrator(Geometry):
                         csr_integr = self.engines[cython_method].engine
 
                         try:
-                            print(method.class_funct.klass.__module__)
                             integr = method.class_funct.klass(csr_integr.lut,
                                                               image_size=data.size,
                                                               checksum=csr_integr.lut_checksum,
