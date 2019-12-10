@@ -1482,7 +1482,7 @@ decrease the value if arcs are mixed together.""", default=None)
         AbstractCalibration.preprocess(self)
 
         if self.gaussianWidth is not None:
-            self.peakPicker.massif.setValleySize(self.gaussianWidth)
+            self.peakPicker.massif.valley_size = self.gaussianWidth
         else:
             self.peakPicker.massif.initValleySize()
         if self.gui:
