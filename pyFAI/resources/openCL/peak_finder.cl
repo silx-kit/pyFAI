@@ -103,7 +103,36 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
 
 } //end kernel find_peaks
 
-// this kernel takes one
-kernel void integrate_peaks(){
-    
+// function returning the diffraction signal intensity i.e. (Icorrected - Ibackground)
+static float _calc_intensity(float4 value){
+	return value.s1 - value.s2;
+}
+
+/* this kernel takes the list of high-pixels, searches for the local maximum.
+ * 
+ * the index of this maximum is saved into the pixel position.
+ * the counter of the local maximum is incremented.
+ * 
+ */
+
+
+kernel void seach_maximum(       global  float4 *preproc4, //both input and output
+		                   const global  int    *highidx,
+						   const         int     nbhigh,
+                                 global  int    *peak_size){
+	//Nota preproc4 contains Iraw, Icor, Ibg, sigma
+	int gid = get_global_id(0);
+	if (gid<nbhigh) {
+		int here = highidx[gid];
+		if (here<NIMAGE){
+			float4 value = preproc4[here]
+			
+		}
+	}
+	
+}
+
+/* this kernel takes an images 
+kernel void peak_dilation(){
+	
 }
