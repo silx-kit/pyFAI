@@ -59,6 +59,7 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
     int tid = get_local_id(0);
     // all thread in this WG share this local counter, upgraded at the end
     local int local_counter[1];
+    local int to_upgrade[1];
     local int local_highidx[WORKGROUP_SIZE];
     local_highidx[tid] = 0;
     if (tid == 0)
@@ -93,7 +94,6 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
     //Update global memory counter
     barrier(CLK_LOCAL_MEM_FENCE);
     if (local_counter[0]){
-        local int to_upgrade[1];    
         if (tid == 0) 
             to_upgrade[0] = atomic_add(counter, local_counter[0]);
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -113,6 +113,8 @@ static float _calc_intensity(float4 value){
  * the index of this maximum is saved into the pixel position.
  * the counter of the local maximum is incremented.
  * 
+ * 
+ * This kernel has to be launched with one thread per hot pixel.
  */
 
 
