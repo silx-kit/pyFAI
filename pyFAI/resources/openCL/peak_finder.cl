@@ -121,13 +121,19 @@ static float _calc_intensity(float4 value){
 kernel void seach_maximum(       global  float4 *preproc4, //both input and output
 		                   const global  int    *highidx,
 						   const         int     nbhigh,
+						   const         int     width,
+						   const         int     height,
+						   
                                  global  int    *peak_size){
 	//Nota preproc4 contains Iraw, Icor, Ibg, sigma
 	int gid = get_global_id(0);
 	if (gid<nbhigh) {
 		int here = highidx[gid];
 		if (here<NIMAGE){
-			float4 value = preproc4[here]
+			int x, y, where, there;
+			float4 value4 = preproc4[here];
+			float value = _calc_intensity(value4);
+			int where = 0; // where is left at zero if we are on a local maximum
 			
 		}
 	}
