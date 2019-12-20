@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2019 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -582,7 +582,7 @@ class SingleGeometry(object):
         """This method  is in charge of calculating the motor position from metadata/label/..."""
         return self.pos_function(self.metadata)
 
-    def extract_cp(self, max_rings=None, pts_per_deg=1.0):
+    def extract_cp(self, max_rings=None, pts_per_deg=1.0, Imin=0):
         """Performs an automatic keypoint extraction and update the geometry refinement part
 
         :param max_ring: extract at most N rings from the image
@@ -647,7 +647,7 @@ class SingleGeometry(object):
                 logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); " +
                             "searching for %i pts out of %i with I>%.1f, dmin=%.1f",
                             i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min)
-                res = self.massif.peaks_from_area(mask2, Imin=0, keep=keep, dmin=dist_min, seed=seeds, ring=i)
+                res = self.massif.peaks_from_area(mask2, Imin=Imin, keep=keep, dmin=dist_min, seed=seeds, ring=i)
                 cp.append(res, i)
         self.control_points = cp
         self.geometry_refinement.data = numpy.asarray(cp.getList(), dtype=numpy.float64)
