@@ -50,7 +50,7 @@ from ..containers import Integrate1dtpl, Integrate2dtpl
 
 class CSRIntegrator(object):
     def __init__(self,
-                 size,
+                 image_size,
                  data=None,
                  indices=None,
                  indptr=None,
@@ -63,7 +63,7 @@ class CSRIntegrator(object):
         :param indptr: indices of the start of line in the CSR matrix
         :param empty: value for empty pixels
         """
-        self.size = size
+        self.size = image_size
         self.empty = empty
         self.bins = None
         self._csr = None
@@ -142,11 +142,10 @@ class CSRIntegrator(object):
 
 class CsrIntegrator1d(CSRIntegrator):
     def __init__(self,
-                 size,
-                 data=None,
-                 indices=None,
-                 indptr=None,
+                 lut,
+                 image_size,
                  empty=0.0,
+                 unit=None,
                  bin_centers=None,
                  ):
         """Constructor of the abstract class for 1D integration
@@ -155,18 +154,21 @@ class CsrIntegrator1d(CSRIntegrator):
         :param indices: indices of the CSR matrix
         :param indptr: indices of the start of line in the CSR matrix
         :param empty: value for empty pixels
+        :param unit: the kind of radial units
         :param bin_center: position of the bin center
         
         Nota: bins are deduced from bin_centers 
 
         """
         self.bin_centers = bin_centers
-        self._geometry = None
-        CSRIntegrator.__init__(self, size, data, indices, indptr, empty)
+        data, indices, indptr = lut
+        CSRIntegrator.__init__(self, image_size, data, indices, indptr, empty)
+        self.pos0_range = self.pos1_range = self._geometry = None
+        self.unit = unit
 
     def set_geometry(self, geometry):
         from pyFAI.geometry import Geometry
-        assert numpy.prod(geometry.shape) == self.size
+        assert numpy.prod(geometry.detector.shape) == self.size
         assert isinstance(geometry, Geometry)
         self._geometry = geometry
 
@@ -273,7 +275,7 @@ class CsrIntegrator1d(CSRIntegrator):
         shape = data.shape
         error_model = error_model.lower() if error_model else ""
         
-        if self.geometry is None:
+        if self._geometry is None:
             raise RuntimeError("Set geometry first")
         
         prep = preproc(data,
@@ -314,13 +316,13 @@ class CsrIntegrator1d(CSRIntegrator):
         avg[msk] = 0
         std[msk] = 0        
 
-        res = Integrate1dtpl(self.bin_centers,avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
+        return Integrate1dtpl(self.bin_centers,avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
         
         
 
 class CsrIntegrator2d(CSRIntegrator):
     def __init__(self,
-                 size,
+                 image_size,
                  data=None,
                  indices=None,
                  indptr=None,
@@ -341,7 +343,7 @@ class CsrIntegrator2d(CSRIntegrator):
         """
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
-        CSRIntegrator.__init__(self, size, data, indices, indptr, empty)
+        CSRIntegrator.__init__(self, image_size, data, indices, indptr, empty)
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content

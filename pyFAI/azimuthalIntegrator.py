@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2019"
+__date__ = "20/12/2019"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -129,6 +129,15 @@ else:
                       class_funct=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate))
     IntegrationMethod(2, "bbox", "CSR", "cython", old_method="csr",
                       class_funct=(splitBBoxCSR.HistoBBox2d, splitBBoxCSR.HistoBBox2d.integrate))
+    from .engines import CSR_engine as py_CSR_engine
+    IntegrationMethod(1, "no", "CSR", "python",
+                      class_funct=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+    IntegrationMethod(2, "no", "CSR", "python",
+                      class_funct=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+    IntegrationMethod(1, "bbox", "CSR", "python",
+                      class_funct=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+    IntegrationMethod(2, "bbox", "CSR", "python",
+                      class_funct=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
 
 try:
     from .ext import splitBBoxLUT
@@ -811,7 +820,10 @@ class AzimuthalIntegrator(Geometry):
                                             allow_pos0_neg=False,
                                             unit=unit)
 
-    def setup_CSR(self, shape, npt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, unit=units.TTH, split="bbox"):
+    def setup_CSR(self, shape, npt, mask=None, 
+                  pos0_range=None, pos1_range=None, 
+                  mask_checksum=None, unit=units.TTH, 
+                  split="bbox"):
         """
         Prepare a look-up-table
 
@@ -3300,7 +3312,7 @@ class AzimuthalIntegrator(Geometry):
                       error_model=None,
                       dark=None, 
                       flat=None,
-                      method=("no", "csr" "cython"), 
+                      method=("no", "csr", "cython"), 
                       unit=units.Q,
                       thres=5.0, 
                       max_iter=5, 
@@ -3380,7 +3392,8 @@ class AzimuthalIntegrator(Geometry):
         else:
             polarization, polarization_checksum = self.polarization(data.shape, polarization_factor, with_checksum=True)
             
-        if (method.impl_lower == "opencl") and (method.algo_lower == "csr"):
+        print(method, method.algo_lower)
+        if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."
             # Prepare LUT if needed!
             # initialize the CSR integrator in Cython as it may be needed later on.
@@ -3426,7 +3439,7 @@ class AzimuthalIntegrator(Geometry):
                         split = "full"
                     try:
                         cython_integr = self.setup_CSR(data.shape, npt, mask,
-                                                       radial_range=None, azimuth_range=None,
+                                                       pos0_range=None, pos1_range=None,
                                                        mask_checksum=mask_crc,
                                                        unit=unit, split=split)
                     except MemoryError:  # CSR method is hungry...
@@ -3436,30 +3449,32 @@ class AzimuthalIntegrator(Geometry):
                         method = self.DEFAULT_METHOD_1D
                     else:
                         cython_engine.set_engine(cython_integr)
-            # This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
-            if method.impl_lower == "cython":  
-                # The integrator has already been initialized previously
-                integr = self.engines[method].engine
-                raise RuntimeError("Not implemplemented, sorry")
-#                 intpl = integr.integrate_ng(data,
-#                                             variance=variance,
-#                                             dummy=dummy,
-#                                             delta_dummy=delta_dummy,
-#                                             dark=dark,
-#                                             flat=flat,
-#                                             solidangle=solidangle,
-#                                             polarization=polarization,
-#                                             normalization_factor=normalization_factor)
-            elif method.impl_lower == "opencl":
-                if method not in self.engines:
-                    # instanciated the engine
-                    engine = self.engines[method] = Engine()
-                else:
-                    engine = self.engines[method]
-                with engine.lock:
+            if method not in self.engines:
+                # instanciated the engine
+                engine = self.engines[method] = Engine()
+            else:
+                engine = self.engines[method]
+            with engine.lock:
+                # Validate that the engine used is the proper one
+                integr = engine.engine
+                reset = None
+
+                # This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
+                if method.impl_lower == "cython":  
+                    # The integrator has already been initialized previously
+                    integr = self.engines[method].engine
+                    raise RuntimeError("Not implemplemented, sorry")
+    #                 intpl = integr.integrate_ng(data,
+    #                                             variance=variance,
+    #                                             dummy=dummy,
+    #                                             delta_dummy=delta_dummy,
+    #                                             dark=dark,
+    #                                             flat=flat,
+    #                                             solidangle=solidangle,
+    #                                             polarization=polarization,
+    #                                             normalization_factor=normalization_factor)
+                else:  #method.impl_lower in ("python", "opencl")
                     # Validate that the engine used is the proper one
-                    integr = engine.engine
-                    reset = None
                     if integr is None:
                         reset = "of first initialization"
                     if (not reset) and safe:
@@ -3490,39 +3505,47 @@ class AzimuthalIntegrator(Geometry):
                     if reset:
                         logger.info("ai.sigma_clip_ng: Resetting ocl_csr integrator because %s", reset)
                         csr_integr = self.engines[cython_method].engine
-
-                        try:
+                        if method.impl_lower ==  "opencl":
+                            try:
+                                integr = method.class_funct.klass(csr_integr.lut,
+                                                                  image_size=data.size,
+                                                                  checksum=csr_integr.lut_checksum,
+                                                                  empty=self._empty,
+                                                                  unit=unit,
+                                                                  bin_centers=csr_integr.bin_centers,
+                                                                  platformid=method.target[0],
+                                                                  deviceid=method.target[1])
+                                # Copy some properties from the cython integrator
+                                integr.check_mask = csr_integr.check_mask
+                                integr.mask_checksum = csr_integr.mask_checksum 
+                                integr.pos0Range = csr_integr.pos0Range
+                                integr.pos1Range = csr_integr.pos1Range
+                            except MemoryError:
+                                logger.warning("MemoryError: falling back on default forward implementation")
+                                self.reset_engines()
+                                method = self.DEFAULT_METHOD_1D
+                            else:
+                                engine.set_engine(integr)
+                        elif method.impl_lower ==  "python":
                             integr = method.class_funct.klass(csr_integr.lut,
                                                               image_size=data.size,
-                                                              checksum=csr_integr.lut_checksum,
                                                               empty=self._empty,
                                                               unit=unit,
-                                                              bin_centers=csr_integr.bin_centers,
-                                                              platformid=method.target[0],
-                                                              deviceid=method.target[1])
+                                                              bin_centers=csr_integr.bin_centers)
                             # Copy some properties from the cython integrator
                             integr.check_mask = csr_integr.check_mask
-                            integr.mask_checksum = csr_integr.mask_checksum 
-                            integr.pos0Range = csr_integr.pos0Range
-                            integr.pos1Range = csr_integr.pos1Range
-                        except MemoryError:
-                            logger.warning("MemoryError: falling back on default forward implementation")
-                            self.reset_engines()
-                            method = self.DEFAULT_METHOD_1D
-                        else:
-                            engine.set_engine(integr)
+                            integr.pos0_range = csr_integr.pos0Range
+                            integr.pos1_range = csr_integr.pos1Range
+                            integr.set_geometry(self)
                     else:
                         integr = self.engines[method].engine
-                intpl = integr.sigma_clip(data, 
-                                          dark=dark, dummy=dummy, delta_dummy=delta_dummy,
-                                          variance=variance, dark_variance=None,
-                                          flat=flat, solidangle=solidangle, polarization=polarization, absorption=None,
-                                          dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-                                          polarization_checksum=polarization_checksum, absorption_checksum=None, 
-                                          dark_variance_checksum=None,
-                                          safe=True, error_model=error_model,
-                                          normalization_factor=normalization_factor,
-                                          cutoff=thres, cycle=max_iter)
+                    kwargs = {"dark":dark, "dummy":dummy, "delta_dummy":delta_dummy,
+                              "variance":variance, "dark_variance":None,
+                              "flat":flat, "solidangle":solidangle, "polarization":polarization, "absorption":None,
+                              "error_model":error_model, "normalization_factor":normalization_factor,
+                              "cutoff":thres, "cycle":max_iter}
+
+                    intpl = integr.sigma_clip(data, **kwargs)
         else:
             raise RuntimeError("Not yet implemented. Sorry")
         result = Integrate1dResult(intpl.position, intpl.intensity, intpl.error)  
