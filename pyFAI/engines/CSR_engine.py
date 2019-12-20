@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2019"
+__date__ = "20/12/2019"
 __status__ = "development"
 
 import logging
@@ -161,7 +161,14 @@ class CsrIntegrator1d(CSRIntegrator):
 
         """
         self.bin_centers = bin_centers
+        self._geometry = None
         CSRIntegrator.__init__(self, size, data, indices, indptr, empty)
+
+    def set_geometry(self, geometry):
+        from pyFAI.geometry import Geometry
+        assert numpy.prod(geometry.shape) == self.size
+        assert isinstance(geometry, Geometry)
+        self._geometry = geometry
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
@@ -224,6 +231,92 @@ class CsrIntegrator1d(CSRIntegrator):
                               intensity, error,
                               signal, variance, normalization, count)
 
+    def sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,
+                   variance=None, dark_variance=None,
+                   flat=None, solidangle=None, polarization=None, absorption=None,
+                   safe=True, error_model=None,
+                   normalization_factor=1.0,
+                   cutoff=4.0, cycle=5):
+        """
+        Perform a sigma-clipping iterative filter within each along each row. 
+        see the doc of scipy.stats.sigmaclip for more descriptions.
+        
+        If the error model is "azimuthal": the variance is the variance within a bin,
+        which is refined at each iteration, can be costly !
+        
+        Else, the error is propagated according to:
+
+        .. math::
+
+            signal = (raw - dark)
+            variance = variance + dark_variance
+            normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
+            count = number of pixel contributing
+
+        Integration is performed using the CSR representation of the look-up table on all
+        arrays: signal, variance, normalization and count
+
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param normalization_factor: divide raw signal by this value
+        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
+        :param cycle: perform at maximum this number of cycles. 5 is common.
+        :return: namedtuple with "position intensity error signal variance normalization count"
+        """
+        shape = data.shape
+        error_model = error_model.lower() if error_model else ""
+        
+        if self.geometry is None:
+            raise RuntimeError("Set geometry first")
+        
+        prep = preproc(data,
+                       dark=dark,
+                       flat=flat,
+                       solidangle=solidangle,
+                       polarization=polarization,
+                       absorption=absorption,
+                       mask=None,
+                       dummy=dummy,
+                       delta_dummy=delta_dummy,
+                       normalization_factor=normalization_factor,
+                       empty=self.empty,
+                       split_result=4,
+                       variance=variance,
+                       dtype=numpy.float32,
+                       poissonian=error_model.startswith("pois"))
+        prep_flat = prep.reshape((numpy.prod(shape), 4))
+        res = self._csr.dot(prep_flat)
+        for _ in range(cycle):
+            msk = res[:, 2] == 0
+            avg = res[:, 0] / res[:, 2]
+            std = numpy.sqrt(res[:, 1] / res[:, 2])
+            avg[msk] = 0
+            std[msk] = 0
+            
+            avg2d = self._geometry.calcfrom1d(self.bin_centers, avg, shape=shape,
+                    dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
+            std2d = self._geometry.calcfrom1d(self.bin_centers, std, shape=shape,
+                    dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
+            cnt = abs(prep[..., 0]/prep[..., 2] - avg2d)/std2d
+            msk2d = numpy.logical_and(numpy.logical_not(numpy.isfinite(cnt)), cnt> cutoff)
+            prep[msk2d, :] = 0
+            res = self._csr.dot(prep_flat)
+        msk = res[:, 2] == 0
+        avg = res[:, 0] / res[:, 2]
+        std = numpy.sqrt(res[:, 1] / res[:, 2])
+        avg[msk] = 0
+        std[msk] = 0        
+
+        res = Integrate1dtpl(self.bin_centers,avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
+        
+        
 
 class CsrIntegrator2d(CSRIntegrator):
     def __init__(self,
