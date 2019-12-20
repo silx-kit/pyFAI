@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/08/2019"
+__date__ = "20/12/2019"
 
 
 import unittest
@@ -168,6 +168,34 @@ class TestMask(unittest.TestCase):
     @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_OpenCL_CSR(self):
         logger.info("Testing CSR-based algorithm (backward-integration)")
+        for devtype in ("GPU", "CPU"):
+            ids = ocl.select_device(devtype, best=True)
+            if ids is None:
+                logger.error("No suitable %s OpenCL device found", devtype)
+                continue
+            else:
+                logger.info("I found a suitable device %s %s: %s %s", devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]])
+
+            for ds in self.datasets:
+                ai = load(ds["poni"])
+                data = fabio.open(ds["img"]).data
+                ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
+                try:
+                    res = ai.integrate1d(data, self.N, method="ocl_csr_%i,%i" % (ids[0], ids[1]), unit="2th_deg")
+                except (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError) as error:
+                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
+                    break
+                else:
+                    r = mathutil.rwp(ref, res)
+                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
+                    self.assertTrue(r < 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
+                ai.reset()
+                del ai, data
+                gc.collect()
+
+    @unittest.skipIf(test_options.low_mem, "test using >200M")
+    def test_OpenCL_sigma_clip(self):
+        logger.info("Testing OpenCL sigma-clipping")
         for devtype in ("GPU", "CPU"):
             ids = ocl.select_device(devtype, best=True)
             if ids is None:

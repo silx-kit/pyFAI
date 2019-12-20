@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "06/12/2019"
+__date__ = "20/12/2019"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -733,7 +733,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param out_avgint: destination array or pyopencl array for sum of all data
         :param out_stderr: destination array or pyopencl array for sum of the number of pixels
         :param out_merged: destination array or pyopencl array for averaged data (float8!)
-        :return: out_avgint, out_stderr, out_merged
+        :return: namedtuple with "position intensity error signal variance normalization count"
         """
         events = []
         if isinstance(error_model, str):

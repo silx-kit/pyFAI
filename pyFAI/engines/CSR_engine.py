@@ -232,7 +232,8 @@ class CsrIntegrator1d(CSRIntegrator):
         return Integrate1dtpl(self.bin_centers,
                               intensity, error,
                               signal, variance, normalization, count)
-
+    integrate_ng = integrate
+    
     def sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,
                    variance=None, dark_variance=None,
                    flat=None, solidangle=None, polarization=None, absorption=None,
@@ -295,6 +296,7 @@ class CsrIntegrator1d(CSRIntegrator):
                        poissonian=error_model.startswith("pois"))
         prep_flat = prep.reshape((numpy.prod(shape), 4))
         res = self._csr.dot(prep_flat)
+        print(cycle)
         for _ in range(cycle):
             msk = res[:, 2] == 0
             avg = res[:, 0] / res[:, 2]

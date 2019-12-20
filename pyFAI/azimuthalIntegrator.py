@@ -134,10 +134,11 @@ else:
                       class_funct=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
     IntegrationMethod(2, "no", "CSR", "python",
                       class_funct=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
-    IntegrationMethod(1, "bbox", "CSR", "python",
-                      class_funct=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
-    IntegrationMethod(2, "bbox", "CSR", "python",
-                      class_funct=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+    # error propagation does not work properly with pixel splitting for now
+#     IntegrationMethod(1, "bbox", "CSR", "python",
+#                       class_funct=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+#     IntegrationMethod(2, "bbox", "CSR", "python",
+#                       class_funct=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
 
 try:
     from .ext import splitBBoxLUT
@@ -1638,7 +1639,7 @@ class AzimuthalIntegrator(Geometry):
                                             solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor)
-            elif method.impl_lower == "opencl":
+            else: # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
                     # instanciated the engine
                     engine = self.engines[method] = Engine()
@@ -1678,37 +1679,54 @@ class AzimuthalIntegrator(Geometry):
                     if reset:
                         logger.info("ai.integrate1d_ng: Resetting ocl_csr integrator because %s", reset)
                         csr_integr = self.engines[cython_method].engine
-
-                        try:
+                        if method.impl_lower == "opencl":
+                            try:
+                                integr = method.class_funct.klass(csr_integr.lut,
+                                                                  image_size=data.size,
+                                                                  checksum=csr_integr.lut_checksum,
+                                                                  empty=empty,
+                                                                  unit=unit,
+                                                                  bin_centers=csr_integr.bin_centers,
+                                                                  platformid=method.target[0],
+                                                                  deviceid=method.target[1])
+                                # Copy some properties from the cython integrator
+                                integr.check_mask = csr_integr.check_mask
+                                integr.mask_checksum = csr_integr.mask_checksum 
+                                integr.pos0Range = csr_integr.pos0Range
+                                integr.pos1Range = csr_integr.pos1Range
+                            except MemoryError:
+                                logger.warning("MemoryError: falling back on default forward implementation")
+                                self.reset_engines()
+                                method = self.DEFAULT_METHOD_1D
+                            else:
+                                engine.set_engine(integr)
+                        elif method.impl_lower == "python":
                             integr = method.class_funct.klass(csr_integr.lut,
                                                               image_size=data.size,
-                                                              checksum=csr_integr.lut_checksum,
                                                               empty=empty,
                                                               unit=unit,
-                                                              bin_centers=csr_integr.bin_centers,
-                                                              platformid=method.target[0],
-                                                              deviceid=method.target[1])
+                                                              bin_centers=csr_integr.bin_centers)
                             # Copy some properties from the cython integrator
                             integr.check_mask = csr_integr.check_mask
-                            integr.mask_checksum = csr_integr.mask_checksum 
                             integr.pos0Range = csr_integr.pos0Range
                             integr.pos1Range = csr_integr.pos1Range
-                        except MemoryError:
-                            logger.warning("MemoryError: falling back on default forward implementation")
-                            self.reset_engines()
-                            method = self.DEFAULT_METHOD_1D
-                        else:
                             engine.set_engine(integr)
+                        else:
+                            raise RuntimeError("Unexpected configuration")
+                            
                     else:
                         integr = self.engines[method].engine
+                if method.impl_lower == "opencl":
+                    ocl_kwargs = {"polarization_checksum":polarization_checksum}
+                else:
+                    ocl_kwargs = {}
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
                                             variance=variance,
                                             flat=flat, solidangle=solidangle,
-                                            polarization=polarization, polarization_checksum=polarization_checksum,
-                                            normalization_factor=normalization_factor)
-            elif method.impl_lower == "python":
-                raise NotImplementedError()
+                                            polarization=polarization,
+                                            normalization_factor=normalization_factor,
+                                            **ocl_kwargs)
             # This section is common to all 3 CSR implementations...
             if variance is None:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -3537,6 +3555,7 @@ class AzimuthalIntegrator(Geometry):
                             integr.pos0_range = csr_integr.pos0Range
                             integr.pos1_range = csr_integr.pos1Range
                             integr.set_geometry(self)
+                            engine.set_engine(integr)
                     else:
                         integr = self.engines[method].engine
                     kwargs = {"dark":dark, "dummy":dummy, "delta_dummy":delta_dummy,
