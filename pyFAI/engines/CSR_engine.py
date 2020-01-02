@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2019"
+__date__ = "02/01/2020"
 __status__ = "development"
 
 import logging
@@ -51,29 +51,27 @@ from ..containers import Integrate1dtpl, Integrate2dtpl
 class CSRIntegrator(object):
     def __init__(self,
                  image_size,
-                 data=None,
-                 indices=None,
-                 indptr=None,
+                 lut=None,
                  empty=0.0):
         """Constructor of the abstract class
         
-        :param size: input image size        
-        :param data: data of the CSR matrix
-        :param indices: indices of the CSR matrix
-        :param indptr: indices of the start of line in the CSR matrix
+        :param size: input image size
+        :param lut: tuple of 3 arrays with data, indices and indptr,
+                     index of the start of line in the CSR matrix
         :param empty: value for empty pixels
         """
         self.size = image_size
         self.empty = empty
         self.bins = None
         self._csr = None
-        self._csr2 = None
+        self._csr2 = None # Used for propagating variance
         self.lut_size = 0  # actually nnz
         self.data = None
         self.indices = None
         self.indptr = None
-        if (data is not None) and (indices is not None) and (indptr is not None):
-            self.set_matrix(data, indices, indptr)
+        if lut is not None:
+            assert len(lut) == 3
+            self.set_matrix(*lut)
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
@@ -142,17 +140,16 @@ class CSRIntegrator(object):
 
 class CsrIntegrator1d(CSRIntegrator):
     def __init__(self,
-                 lut,
                  image_size,
+                 lut=None,
                  empty=0.0,
                  unit=None,
                  bin_centers=None,
                  ):
         """Constructor of the abstract class for 1D integration
         
-        :param data: data of the CSR matrix
-        :param indices: indices of the CSR matrix
-        :param indptr: indices of the start of line in the CSR matrix
+        :param image_size: size of the image 
+        :param lut: (data, indices, indptr) of the CSR matrix
         :param empty: value for empty pixels
         :param unit: the kind of radial units
         :param bin_center: position of the bin center
@@ -161,8 +158,7 @@ class CsrIntegrator1d(CSRIntegrator):
 
         """
         self.bin_centers = bin_centers
-        data, indices, indptr = lut
-        CSRIntegrator.__init__(self, image_size, data, indices, indptr, empty)
+        CSRIntegrator.__init__(self, image_size, lut, empty)
         self.pos0_range = self.pos1_range = self._geometry = None
         self.unit = unit
 
@@ -325,18 +321,15 @@ class CsrIntegrator1d(CSRIntegrator):
 class CsrIntegrator2d(CSRIntegrator):
     def __init__(self,
                  image_size,
-                 data=None,
-                 indices=None,
-                 indptr=None,
+                 lut=None,
                  empty=0.0,
                  bin_centers0=None,
                  bin_centers1=None):
         """Constructor of the abstract class for 2D integration
         
         :param size: input image size
-        :param data: data of the CSR matrix
-        :param indices: indices of the CSR matrix
-        :param indptr: indices of the start of line in the CSR matrix
+        :param lut: tuple of 3 arrays with data, indices and indptr,
+                     index of the start of line in the CSR matrix
         :param empty: value for empty pixels
         :param bin_center: position of the bin center
 
@@ -345,7 +338,7 @@ class CsrIntegrator2d(CSRIntegrator):
         """
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
-        CSRIntegrator.__init__(self, image_size, data, indices, indptr, empty)
+        CSRIntegrator.__init__(self, image_size, lut, empty)
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
