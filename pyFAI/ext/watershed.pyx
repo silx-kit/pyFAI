@@ -31,7 +31,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/05/2019"
+__date__ = "18/10/2019"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -223,7 +223,7 @@ class InverseWatershed(object):
         Save all regions into a HDF5 file
         """
         import h5py
-        with h5py.File(fname) as h5:
+        with h5py.File(fname, mode="w") as h5:
             h5["NAME"] = self.NAME
             h5["VERSION"] = self.VERSION
             for i in ("data", "height", "width", "labels", "borders", "thres"):
@@ -241,7 +241,7 @@ class InverseWatershed(object):
         Load data from a HDF5 file
         """
         import h5py
-        with h5py.File(fname) as h5:
+        with h5py.File(fname, mode="r") as h5:
             assert h5["VERSION"].value == cls.VERSION, "Version of module used for HDF5"
             assert h5["NAME"].value == cls.NAME, "Name of module used for HDF5"
             self = cls(h5["data"].value, h5["thres"].value)

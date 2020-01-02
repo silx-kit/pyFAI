@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/07/2019"
+__date__ = "06/12/2019"
 
 import sys
 import os
@@ -223,7 +223,8 @@ class TestBugRegression(unittest.TestCase):
 
     def test_bug_758(self):
         """check the stored "h*c" constant is almost 12.4"""
-        hc = 12.398419292004204  # Old reference value
+        hc = 12.398419292004204  # Old reference value from pyFAI
+        hc = 12.398419739640717  # calculated from scipy 1.3
         self.assertAlmostEqual(hc, units.hc, 6, "hc is correct, got %s" % units.hc)
 
     def test_import_all_modules(self):

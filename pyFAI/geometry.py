@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France" 
-__date__ = "31/07/2019"    
+__date__ = "13/12/2019"    
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -671,7 +671,7 @@ class Geometry(object):
         :param use_cython: set to False to use the slower Python path (for tests)
         :param scale: set to False for returning the internal representation
                       (S.I. often) which is faster
-        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+        :return: 3d array with shape=(\\*shape,4,2) the two elements are:
             - dim3[0]: radial angle 2th, q, r...
             - dim3[1]: azimuthal angle chi
         """
@@ -769,7 +769,7 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+        :return: 3d array with shape=(\\*shape,4,2) the two elements are:
            * dim3[0]: radial angle 2th
            * dim3[1]: azimuthal angle chi
         """
@@ -783,7 +783,7 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(\*shape,4,2) the two elements are (scattering vector q, azimuthal angle chi)
+        :return: 3d array with shape=(\\*shape,4,2) the two elements are (scattering vector q, azimuthal angle chi)
         """
         return self.corner_array(shape, unit=units.Q, use_cython=False, scale=False)
 
@@ -795,7 +795,7 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(\*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
+        :return: 3d array with shape=(\\*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
         """
         return self.corner_array(shape, unit=units.R, use_cython=False, scale=False)
 
@@ -807,7 +807,7 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(\*shape,4,2) the two elements are (reciprocal spacing squared, azimuthal angle chi)
+        :return: 3d array with shape=(\\*shape,4,2) the two elements are (reciprocal spacing squared, azimuthal angle chi)
         """
         return self.corner_array(shape, unit=units.RecD2_NM, scale=False)
 
@@ -821,7 +821,7 @@ class Geometry(object):
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
         :param scale: set to False for returning the internal representation
                 (S.I. often) which is faster
-        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+        :return: 3d array with shape=(\\*shape,4,2) the two elements are:
             - dim3[0]: radial angle 2th, q, r...
             - dim3[1]: azimuthal angle chi
         """
@@ -863,7 +863,7 @@ class Geometry(object):
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
         :param scale: set to False for returning the internal representation
                 (S.I. often) which is faster
-        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+        :return: 3d array with shape=(\\*shape,4,2) the two elements are:
 
             - dim3[0]: radial angle 2th, q, r...
             - dim3[1]: azimuthal angle chi

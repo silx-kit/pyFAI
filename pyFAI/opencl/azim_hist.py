@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "19/08/2019"
+__date__ = "05/12/2019"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -334,9 +334,9 @@ class Integrator1d(object):
         self.nBins = Nbins
         self.nData = Nimage
         self.wdim_data = (Nimage + self.BLOCK_SIZE - 1) & \
-            ~ (self.BLOCK_SIZE - 1),
+            ~(self.BLOCK_SIZE - 1),
         self.wdim_bins = (Nbins + self.BLOCK_SIZE - 1) & \
-            ~ (self.BLOCK_SIZE - 1),
+            ~(self.BLOCK_SIZE - 1),
 
     def configure(self, kernel=None):
         """
@@ -720,10 +720,10 @@ class Integrator1d(object):
 
                 if self.nBins:
                     self.wdim_bins = (self.nBins + self.BLOCK_SIZE - 1) & \
-                        ~ (self.BLOCK_SIZE - 1),
+                        ~(self.BLOCK_SIZE - 1),
                 if self.nData:
                     self.wdim_data = (self.nData + self.BLOCK_SIZE - 1) & \
-                        ~ (self.BLOCK_SIZE - 1),
+                        ~(self.BLOCK_SIZE - 1),
 
             self.useFp64 = "fp64" in device.extensions
             platforms = pyopencl.get_platforms()
@@ -851,7 +851,7 @@ class OCL_Histogram1d(OpenclProcessing):
             radial_checksum = calc_checksum(radial)
         self.radial = radial
         self.mask_checksum = None
-        self.check_azim =  numpy.int8(0)
+        self.check_azim = numpy.int8(0)
         self.azim_mini = self.azim_maxi = numpy.float32(0.0)
         self.on_device = {"radial": radial_checksum,
                           "azimuthal": None,
@@ -904,7 +904,6 @@ class OCL_Histogram1d(OpenclProcessing):
             self.send_buffer(numpy.ascontiguousarray(mask, dtype=numpy.int8), "mask", mask_checksum)
             self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
 
-
     def __copy__(self):
         """Shallow copy of the object
 
@@ -913,12 +912,12 @@ class OCL_Histogram1d(OpenclProcessing):
         if self.on_device.get("mask"):
             mask = self.cl_mem["mask"].get()
         else:
-            mask=None
+            mask = None
         if self.on_device.get("azimuthal"):
             azimuthal = self.cl_mem["azimuthal"].get()
         else:
             azimuthal = None
-                
+
         return self.__class__(self.radial,
                               self.bins,
                               checksum=self.on_device.get("radial"),
@@ -941,11 +940,11 @@ class OCL_Histogram1d(OpenclProcessing):
         if self.on_device.get("mask"):
             mask = self.cl_mem["mask"].get()
         else:
-            mask=None
+            mask = None
         if self.on_device.get("azimuthal"):
             mask = self.cl_mem["mask"].get()
         else:
-            mask=None
+            mask = None
         if self.on_device.get("azimuthal"):
             azimuthal = self.cl_mem["azimuthal"].get()
         else:
@@ -1000,6 +999,7 @@ class OCL_Histogram1d(OpenclProcessing):
 
         """
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
+                                                           ("poissonian", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -1096,12 +1096,13 @@ class OCL_Histogram1d(OpenclProcessing):
 
     def integrate(self, data, dark=None,
                   dummy=None, delta_dummy=None,
+                  poissonian=False,
                   variance=None, dark_variance=None,
                   flat=None, solidangle=None, polarization=None, absorption=None,
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
                   preprocess_only=False, safe=True,
-                  normalization_factor=1.0, 
+                  normalization_factor=1.0,
                   radial_range=None, azimuth_range=None,
                   histo_signal=None, histo_variance=None,
                   histo_normalization=None, histo_count=None,
@@ -1121,6 +1122,7 @@ class OCL_Histogram1d(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
+        :param poissonian: set to assume variance is data (minimum 1) 
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -1150,7 +1152,7 @@ class OCL_Histogram1d(OpenclProcessing):
             events.append(EventDescription("memset_histograms", memset))
             kw_correction = self.cl_kernel_args["corrections4"]
             kw_histogram = self.cl_kernel_args["histogram_1d_preproc"]
-
+            kw_correction["poissonian"] = numpy.int8(1 if poissonian else 0)
             if variance is None:
                 kw_correction["variance"] = self.cl_mem["image"]
             else:
@@ -1245,7 +1247,7 @@ class OCL_Histogram1d(OpenclProcessing):
 
             if radial_range is not None:
                 radial_mini = numpy.float32(radial_range[0])
-                radial_maxi = numpy.float32(radial_range[1]* (1.0 + numpy.finfo(numpy.float32).eps))
+                radial_maxi = numpy.float32(radial_range[1] * (1.0 + numpy.finfo(numpy.float32).eps))
             else:
                 radial_mini = self.radial_mini
                 radial_maxi = self.radial_maxi
@@ -1254,7 +1256,7 @@ class OCL_Histogram1d(OpenclProcessing):
 
             if azimuth_range is not None:
                 azim_mini = numpy.float32(azimuth_range[0])
-                azim_maxi = numpy.float32(azimuth_range[1]* (1.0 + numpy.finfo(numpy.float32).eps))
+                azim_maxi = numpy.float32(azimuth_range[1] * (1.0 + numpy.finfo(numpy.float32).eps))
                 kw_histogram["check_azim"] = numpy.int8(1)
                 if self.on_device.get("azimuthal") is None:
                     raise RuntimeError("Unable to use azimuthal range: azimuthal array not provided")
@@ -1264,7 +1266,6 @@ class OCL_Histogram1d(OpenclProcessing):
                 kw_histogram["check_azim"] = numpy.int8(0)
             kw_histogram["azim_mini"] = azim_mini
             kw_histogram["azim_maxi"] = azim_maxi
-
 
             histogram = self.kernels.histogram_1d_preproc(self.queue, self.wdim_data, self.workgroup_size["histogram_1d_preproc"],
                                                           *kw_histogram.values())
@@ -1383,7 +1384,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
         self.bins_radial = numpy.uint32(bins_radial)
         self.bins_azimuthal = numpy.uint32(bins_azimuthal)
 
-        OCL_Histogram1d.__init__(self, 
+        OCL_Histogram1d.__init__(self,
                                  radial, bins_radial * bins_azimuthal, radial_checksum=radial_checksum,
                                  azimuthal=azimuthal, azimuthal_checksum=azimuthal_checksum,
                                  empty=empty, unit=unit, mask=mask, mask_checksum=mask_checksum,
@@ -1399,7 +1400,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
         if self.on_device.get("mask"):
             mask = self.cl_mem["mask"].get()
         else:
-            mask=None
+            mask = None
 
         return self.__class__(self.radial, self.azimuthal,
                               self.bins_radial, self.bins_azimuthal,
@@ -1419,7 +1420,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
         if self.on_device.get("mask"):
             mask = self.cl_mem["mask"].get()
         else:
-            mask=None
+            mask = None
         if memo is None:
             memo = {}
         radial = self.radial.copy()

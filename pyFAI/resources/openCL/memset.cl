@@ -126,3 +126,15 @@ memset8(global float8 *array)
     array[i] = (float8)(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
   }
 }
+
+kernel void
+memset_int(global int *array, int pattern, int size)
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if (i < size)
+  {
+    array[i] = pattern;
+  }
+}
+
