@@ -83,9 +83,10 @@ class CSRIntegrator(object):
         self.indices = indices
         self.indptr = indptr
         self.lut_size = len(indices)
-        self._csr = csr_matrix((data, indices, indptr))
-        self._csr2 = csr_matrix((data * data, indices, indptr))  # contains the coef squared, used for variance propagation
         self.bins = len(indptr) - 1
+        print(self.bins, self.size)
+        self._csr = csr_matrix((data, indices, indptr), shape=(self.bins, self.size))
+        self._csr2 = csr_matrix((data * data, indices, indptr), shape=(self.bins, self.size)) # contains the coef squared, used for variance propagation
 
     def integrate(self,
                   signal,
@@ -132,9 +133,14 @@ class CSRIntegrator(object):
                        variance=variance,
                        dtype=numpy.float32)
         prep.shape = numpy.prod(shape), -1
-        res = self._csr.dot(prep)
+        logger.warning("prep.shape %s lut_size %s, image_size %s, bins %s", prep.shape, self.lut_size, self.size, self.bins)
+        res = numpy.empty((numpy.prod(self.bins), 4), dtype=numpy.float32)
+        logger.warning(self._csr.shape)
+        res[:, 0] = self._csr.dot(prep[:, 0])
         if variance is not None:
             res[:, 1] = self._csr2.dot(prep[:, 1])
+        res[:, 2] = self._csr.dot(prep[:, 2])
+        res[:, 3] = self._csr.dot(prep[:, 3])
         return res
 
 
