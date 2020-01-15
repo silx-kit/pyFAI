@@ -33,16 +33,14 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "15/01/2020"
 __status__ = "production"
 
 import os
-import logging
 from argparse import ArgumentParser
+import logging
 
-logger = logging.getLogger("average")
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
+logger = logging.getLogger(__name__)
 
 import pyFAI.utils.shell
 from pyFAI.utils import logging_utils

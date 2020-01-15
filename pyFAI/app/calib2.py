@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/05/2019"
+__date__ = "15/01/2020"
 __status__ = "production"
 
 import logging
@@ -37,9 +37,7 @@ import sys
 import datetime
 from argparse import ArgumentParser
 
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
-logger = logging.getLogger("pyFAI-calib2")
+logger = logging.getLogger(__name__)
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 
 import pyFAI.resources

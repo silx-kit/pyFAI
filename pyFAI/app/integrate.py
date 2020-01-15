@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/02/2019"
+__date__ = "15/01/2020"
 __satus__ = "production"
 
 import sys
@@ -48,9 +48,6 @@ import six
 
 import fabio
 
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
-logger = logging.getLogger("pyFAI")
 
 import pyFAI.utils
 import pyFAI.worker
@@ -62,6 +59,8 @@ from pyFAI.utils import logging_utils
 from pyFAI.utils import header_utils
 
 from argparse import ArgumentParser
+
+logger = logging.getLogger(__name__)
 
 try:
     from rfoo.utils import rconsole

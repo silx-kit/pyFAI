@@ -34,15 +34,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "15/01/2020"
 __satus__ = "Production"
 
 import logging
 import os
 import glob
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
-logger = logging.getLogger("diff_tomo")
+logger = logging.getLogger(__name__)
 from pyFAI import version as PyFAI_VERSION
 from pyFAI import date as PyFAI_DATE
 from pyFAI.diffmap import DiffMap

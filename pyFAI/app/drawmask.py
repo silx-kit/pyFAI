@@ -34,17 +34,15 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "15/01/2020"
 __satus__ = "Production"
 
 import os
 import numpy
 import logging
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
 import fabio
 
-_logger = logging.getLogger("drawmask")
+_logger = logging.getLogger(__name__)
 
 import silx.gui.plot
 from silx.gui import qt

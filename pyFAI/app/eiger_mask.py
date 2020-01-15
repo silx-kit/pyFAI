@@ -34,20 +34,19 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "15/01/2020"
 __satus__ = "development"
 
 
 import os
 import sys
 import logging
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
-logger = logging.getLogger("eiger-mask")
 import fabio
 
 import pyFAI
 from argparse import ArgumentParser
+
+logger = logging.getLogger(__name__)
 
 try:
     import h5py

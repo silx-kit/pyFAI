@@ -33,13 +33,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2018"
+__date__ = "15/01/2020"
 __satus__ = "development"
 
 import logging
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
-logger = logging.getLogger("pyFAI.recalib")
+logger = logging.getLogger(__name__)
 from pyFAI.gui.cli_calibration import Recalibration
 from pyFAI.third_party import six
 try:
