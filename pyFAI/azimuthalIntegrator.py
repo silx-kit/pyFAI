@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2019"
+__date__ = "02/01/2020"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1701,8 +1701,8 @@ class AzimuthalIntegrator(Geometry):
                             else:
                                 engine.set_engine(integr)
                         elif method.impl_lower == "python":
-                            integr = method.class_funct.klass(csr_integr.lut,
-                                                              image_size=data.size,
+                            integr = method.class_funct.klass(image_size=data.size,
+                                                              lut=csr_integr.lut,
                                                               empty=empty,
                                                               unit=unit,
                                                               bin_centers=csr_integr.bin_centers)

@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "21/01/2019"
+__date__ = "02/01/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -66,9 +66,7 @@ class CsrIntegrator2d(object):
     """
     def __init__(self,
                  int size,
-                 cnumpy.float32_t[::1] data=None,
-                 cnumpy.int32_t[::1] indices=None,
-                 cnumpy.int32_t[::1] indptr=None,
+                 lut=None,
                  data_t empty=0.0,
                  bin_centers0=None,
                  bin_centers1=None):
@@ -77,9 +75,8 @@ class CsrIntegrator2d(object):
 
         :param bins: number of output bins
         :param size: input image size
-        :param data: data of the CSR matrix
-        :param indices: indices of the CSR matrix
-        :param indptr: indices of the start of line in the CSR matrix
+        :param lut: tuple of 3 arrays with data, indices and indptr,
+                     index of the start of line in the CSR matrix        
         :param empty: value for empty pixels
         :param bin_centers0: position of the bin center along dim0
         :param bin_centers0: position of the bin center along dim1
@@ -93,8 +90,9 @@ class CsrIntegrator2d(object):
         self.data = None
         self.indices = None
         self.indptr = None
-        if (data is not None) and (indices is not None) and (indptr is not None):
-            self.set_matrix(data, indices, indptr)
+        if lut is not None:
+            assert len(lut) == 3
+            self.set_matrix(*lut)
 
     def set_matrix(self,
                    cnumpy.float32_t[::1] data not None,
