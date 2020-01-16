@@ -34,15 +34,23 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2020"
+__date__ = "16/01/2020"
 __satus__ = "Production"
 
 import os
 import numpy
 import logging
-import fabio
+logging.basicConfig(level=logging.INFO)
+logging.captureWarnings(True)
+logger = logging.getLogger(__name__)
+try:
+    # it should be loaded before h5py ... init looks like the right place
+    import hdf5plugin  # noqa
+    raise ImportError
+except ImportError:
+    logger.debug("Backtrace", exc_info=True)
 
-_logger = logging.getLogger(__name__)
+import fabio
 
 import silx.gui.plot
 from silx.gui import qt
