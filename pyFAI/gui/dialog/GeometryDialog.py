@@ -27,16 +27,16 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/02/2019"
+__date__ = "18/01/2020"
 
+from math import pi
 from silx.gui import qt
-
 from pyFAI.utils import get_ui_file
 from ..utils import units
 from ..model.DataModel import DataModel
 from ..model.GeometryModel import GeometryModel
 from ..model.Fit2dGeometryModel import Fit2dGeometryModel
-from pyFAI.geometry import Geometry
+from ...geometry import Geometry
 
 
 class GeometryDialog(qt.QDialog):
@@ -189,15 +189,15 @@ class GeometryDialog(qt.QDialog):
 
     def __createPyfaiGeometry(self):
         geometry = self.__geometry
-        if not geometry.isValid():
+        if not geometry.isValid(checkWaveLength=False):
             raise RuntimeError("The geometry is not valid")
         dist = geometry.distance().value()
-        poni1 = geometry.distance().value()
-        poni2 = geometry.distance().value()
-        rot1 = geometry.distance().value()
-        rot2 = geometry.distance().value()
-        rot3 = geometry.distance().value()
-        wavelength = geometry.distance().value()
+        poni1 = geometry.poni1().value()
+        poni2 = geometry.poni2().value()
+        rot1 = geometry.rotation1().value()
+        rot2 = geometry.rotation2().value()
+        rot3 = geometry.rotation3().value()
+        wavelength = geometry.wavelength().value()
         result = Geometry(dist=dist,
                           poni1=poni1,
                           poni2=poni2,
@@ -231,11 +231,11 @@ class GeometryDialog(qt.QDialog):
         else:
             pyFAIGeometry = Geometry(detector=self.__detector)
             try:
-                f2d_distance = geometry.distance().value()
+                f2d_distance = geometry.distance().value() / 1000 #  convert ?
                 f2d_centerX = geometry.centerX().value()
                 f2d_centerY = geometry.centerY().value()
-                f2d_tiltPlan = geometry.tiltPlan().value()
-                f2d_tilt = geometry.tilt().value()
+                f2d_tiltPlan = geometry.tiltPlan().value() * pi / 180 #  convert ?
+                f2d_tilt = geometry.tilt().value() * pi / 180 # convert ?
                 pyFAIGeometry.setFit2D(directDist=f2d_distance,
                                        centerX=f2d_centerX,
                                        centerY=f2d_centerY,
@@ -280,7 +280,7 @@ class GeometryDialog(qt.QDialog):
             pass
         elif self.__detector is None:
             error = "No detector defined. It is needed to compute the Fit2D geometry."
-        elif not geometry.isValid():
+        elif not geometry.isValid(checkWaveLength=False):
             error = "The current geometry is not valid to compute the Fit2D one."
         else:
             pyFAIGeometry = self.__createPyfaiGeometry()
@@ -289,11 +289,11 @@ class GeometryDialog(qt.QDialog):
             except Exception:
                 error = "This geometry can't be modelized with Fit2D."
             else:
-                distance = result["directDist"]
+                distance = result["directDist"] * 1000 #  convert ?
                 centerX = result["centerX"]
                 centerY = result["centerY"]
-                tilt = result["tilt"]
-                tiltPlan = result["tiltPlanRotation"]
+                tilt = result["tilt"] * 180 / pi #  convert ?
+                tiltPlan = result["tiltPlanRotation"] * 180 / pi #  convert to SI
 
         self._fit2dError.setVisible(error is not None)
         self._fit2dError.setText(error)

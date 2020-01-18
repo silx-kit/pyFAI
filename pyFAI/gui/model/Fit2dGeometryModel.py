@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/02/2019"
+__date__ = "18/01/2020"
 
 from .AbstractModel import AbstractModel
 from .DataModel import DataModel
@@ -48,6 +48,11 @@ class Fit2dGeometryModel(AbstractModel):
         self.__centerY.changed.connect(self.wasChanged)
         self.__tilt.changed.connect(self.wasChanged)
         self.__tiltPlan.changed.connect(self.wasChanged)
+
+    def __repr__(self):
+        return "DirectBeamDist= %s mm\tCenter: x=%s, y=%s pix\tTilt=%s deg tiltPlanRotation= %s deg" % (
+                    self.__distance.value(), self.__centerX.value(), self.__centerY.value(),
+                    self.__tilt.value(), self.__tiltPlan.value())
 
     def __eq__(self, other):
         if not isinstance(other, Fit2dGeometryModel):
