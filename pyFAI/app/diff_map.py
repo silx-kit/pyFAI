@@ -27,14 +27,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """GUI interface for reduction of diffraction tomography experiments"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2020"
+__date__ = "21/01/2020"
 __satus__ = "Production"
 
 import sys
@@ -44,9 +43,8 @@ logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
 try:
     import hdf5plugin  # noqa
-    raise ImportError
 except ImportError:
-    logger.debug("Unable to import hdf5plugin, backtrace:", exc_info=True)
+    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 from pyFAI.diffmap import DiffMap
 
@@ -69,7 +67,7 @@ def main():
                             "pyfai",
                             "pyfai-integrate",
                             None)
-        
+        # initialization of the singleton
         context = ApplicationContext(settings)
         app = qt.QApplication([])
         window = DiffMapWidget()
