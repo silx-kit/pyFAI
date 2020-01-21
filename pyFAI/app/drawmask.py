@@ -33,7 +33,7 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2020"
+__date__ = "21/01/2020"
 __satus__ = "Production"
 
 import os
@@ -43,10 +43,9 @@ logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
 try:
-    # it should be loaded before h5py ... init looks like the right place
     import hdf5plugin  # noqa
 except ImportError:
-    logger.debug("Backtrace", exc_info=True)
+    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 import fabio
 
