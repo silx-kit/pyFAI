@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2020"
+__date__ = "17/01/2020"
 __satus__ = "Production"
 
 import sys
@@ -64,6 +64,14 @@ def main():
     else:
         from silx.gui import qt
         from pyFAI.gui.diffmap_widget import DiffMapWidget
+        from pyFAI.gui.ApplicationContext import ApplicationContext
+        settings = qt.QSettings(qt.QSettings.IniFormat,
+                            qt.QSettings.UserScope,
+                            "pyfai",
+                            "pyfai-integrate",
+                            None)
+        
+        context = ApplicationContext(settings)
         app = qt.QApplication([])
         window = DiffMapWidget()
         window.set_config(config)
