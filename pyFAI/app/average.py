@@ -33,16 +33,19 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "21/01/2020"
 __status__ = "production"
 
 import os
-import logging
 from argparse import ArgumentParser
-
-logger = logging.getLogger("average")
+import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
+logger = logging.getLogger(__name__)
+try:
+    import hdf5plugin  # noqa
+except ImportError:
+    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 import pyFAI.utils.shell
 from pyFAI.utils import logging_utils

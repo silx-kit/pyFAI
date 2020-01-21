@@ -27,21 +27,25 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """GUI interface for reduction of diffraction tomography experiments"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2018"
+__date__ = "21/01/2020"
 __satus__ = "Production"
 
-import logging
 import sys
+import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
-logger = logging.getLogger("diff_map")
+logger = logging.getLogger(__name__)
+try:
+    import hdf5plugin  # noqa
+except ImportError:
+    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
+
 from pyFAI.diffmap import DiffMap
 
 
@@ -57,6 +61,14 @@ def main():
     else:
         from silx.gui import qt
         from pyFAI.gui.diffmap_widget import DiffMapWidget
+        from pyFAI.gui.ApplicationContext import ApplicationContext
+        settings = qt.QSettings(qt.QSettings.IniFormat,
+                            qt.QSettings.UserScope,
+                            "pyfai",
+                            "pyfai-integrate",
+                            None)
+        # initialization of the singleton
+        context = ApplicationContext(settings)
         app = qt.QApplication([])
         window = DiffMapWidget()
         window.set_config(config)

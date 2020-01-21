@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/02/2019"
+__date__ = "17/01/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -463,11 +463,11 @@ class DiffMapWidget(qt.QWidget):
                     logger.warning("Aborted by user")
                     self.progressbarChanged.emit(0, 0)
                     if diffmap.nxs:
-                        self.data_np = diffmap.dataset.value
+                        self.data_np = diffmap.dataset[()]
                         diffmap.nxs.close()
                     return
             if diffmap.nxs:
-                self.data_np = diffmap.dataset.value
+                self.data_np = diffmap.dataset[()]
                 diffmap.nxs.close()
         logger.warning("Processing finished in %.3fs", time.time() - t0)
         self.progressbarChanged.emit(len(self.list_dataset), 0)
@@ -509,7 +509,7 @@ class DiffMapWidget(qt.QWidget):
 
         with self.update_sem:
             try:
-                data = self.data_h5.value
+                data = self.data_h5[()]
             except ValueError:
                 data = self.data_np
             if self.radial_data is None:

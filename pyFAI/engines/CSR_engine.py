@@ -162,6 +162,17 @@ class CsrIntegrator1d(CSRIntegrator):
         
         Nota: bins are deduced from bin_centers 
 
+
+        TODO: 
+        ~/workspace-400/pyFAI/build/lib.linux-x86_64-3.7/pyFAI/azimuthalIntegrator.py in sigma_clip_ng(self, data, npt, correctSolidAngle, polarization_factor, variance, error_model, dark, flat, method, unit, thres, max_iter, dummy, delta_dummy, mask, normalization_factor, metadata, safe, **kwargs)
+   3508                         elif (mask is None) and (integr.check_mask):
+   3509                             reset = "no mask but CSR has mask"
+-> 3510                         elif (mask is not None) and (integr.mask_checksum != mask_crc):
+   3511                             reset = "mask changed"
+   3512 #                         if (radial_range is None) and (integr.pos0Range is not None):
+
+AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
+
         """
         self.bin_centers = bin_centers
         CSRIntegrator.__init__(self, image_size, lut, empty)
