@@ -27,16 +27,16 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/02/2019"
+__date__ = "21/01/2020"
 
+from math import pi
 from silx.gui import qt
-
 from pyFAI.utils import get_ui_file
 from ..utils import units
 from ..model.DataModel import DataModel
 from ..model.GeometryModel import GeometryModel
 from ..model.Fit2dGeometryModel import Fit2dGeometryModel
-from pyFAI.geometry import Geometry
+from ...geometry import Geometry
 
 
 class GeometryDialog(qt.QDialog):
@@ -93,31 +93,21 @@ class GeometryDialog(qt.QDialog):
         self._pyfaiRotation3Unit.setUnitEditable(True)
 
         # Connect fit2d widgets to units
-        self._fit2dDistance.setDisplayedUnitModel(lengthUnit)
+        self._fit2dDistance.setDisplayedUnit(units.Unit.MILLIMETER)
         self._fit2dDistance.setModelUnit(units.Unit.MILLIMETER)
         self._fit2dDistanceUnit.setUnit(units.Unit.MILLIMETER)
-        # self._fit2dDistanceUnit.setUnitModel(lengthUnit)
-        # self._fit2dDistanceUnit.setUnitEditable(True)
         self._fit2dCenterX.setDisplayedUnitModel(pixelUnit)
         self._fit2dCenterX.setModelUnit(units.Unit.PIXEL)
         self._fit2dCenterXUnit.setUnit(units.Unit.PIXEL)
-        # self._fit2dCenterXUnit.setUnitModel(pixelUnit)
-        # self._fit2dCenterXUnit.setUnitEditable(True)
         self._fit2dCenterY.setDisplayedUnitModel(pixelUnit)
         self._fit2dCenterY.setModelUnit(units.Unit.PIXEL)
         self._fit2dCenterYUnit.setUnit(units.Unit.PIXEL)
-        # self._fit2dCenterYUnit.setUnitModel(pixelUnit)
-        # self._fit2dCenterYUnit.setUnitEditable(True)
-        self._fit2dTilt.setDisplayedUnitModel(angleUnit)
+        self._fit2dTilt.setDisplayedUnit(units.Unit.DEGREE)
         self._fit2dTilt.setModelUnit(units.Unit.DEGREE)
         self._fit2dTiltUnit.setUnit(units.Unit.DEGREE)
-        # self._fit2dTiltUnit.setUnitModel(angleUnit)
-        # self._fit2dTiltUnit.setUnitEditable(True)
-        self._fit2dTiltPlan.setDisplayedUnitModel(angleUnit)
+        self._fit2dTiltPlan.setDisplayedUnit(units.Unit.DEGREE)
         self._fit2dTiltPlan.setModelUnit(units.Unit.DEGREE)
         self._fit2dTiltPlanUnit.setUnit(units.Unit.DEGREE)
-        # self._fit2dTiltPlanUnit.setUnitModel(angleUnit)
-        # self._fit2dTiltPlanUnit.setUnitEditable(True)
 
         # Connect fit2d model-widget
         self._fit2dDistance.setModel(self.__fit2dGeometry.distance())
@@ -189,15 +179,15 @@ class GeometryDialog(qt.QDialog):
 
     def __createPyfaiGeometry(self):
         geometry = self.__geometry
-        if not geometry.isValid():
+        if not geometry.isValid(checkWaveLength=False):
             raise RuntimeError("The geometry is not valid")
         dist = geometry.distance().value()
-        poni1 = geometry.distance().value()
-        poni2 = geometry.distance().value()
-        rot1 = geometry.distance().value()
-        rot2 = geometry.distance().value()
-        rot3 = geometry.distance().value()
-        wavelength = geometry.distance().value()
+        poni1 = geometry.poni1().value()
+        poni2 = geometry.poni2().value()
+        rot1 = geometry.rotation1().value()
+        rot2 = geometry.rotation2().value()
+        rot3 = geometry.rotation3().value()
+        wavelength = geometry.wavelength().value()
         result = Geometry(dist=dist,
                           poni1=poni1,
                           poni2=poni2,
@@ -280,7 +270,7 @@ class GeometryDialog(qt.QDialog):
             pass
         elif self.__detector is None:
             error = "No detector defined. It is needed to compute the Fit2D geometry."
-        elif not geometry.isValid():
+        elif not geometry.isValid(checkWaveLength=False):
             error = "The current geometry is not valid to compute the Fit2D one."
         else:
             pyFAIGeometry = self.__createPyfaiGeometry()
