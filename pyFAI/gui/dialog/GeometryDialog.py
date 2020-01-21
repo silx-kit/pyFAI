@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/01/2020"
+__date__ = "21/01/2020"
 
 from math import pi
 from silx.gui import qt
@@ -93,31 +93,21 @@ class GeometryDialog(qt.QDialog):
         self._pyfaiRotation3Unit.setUnitEditable(True)
 
         # Connect fit2d widgets to units
-        self._fit2dDistance.setDisplayedUnitModel(lengthUnit)
+        self._fit2dDistance.setDisplayedUnit(units.Unit.MILLIMETER)
         self._fit2dDistance.setModelUnit(units.Unit.MILLIMETER)
         self._fit2dDistanceUnit.setUnit(units.Unit.MILLIMETER)
-        # self._fit2dDistanceUnit.setUnitModel(lengthUnit)
-        # self._fit2dDistanceUnit.setUnitEditable(True)
         self._fit2dCenterX.setDisplayedUnitModel(pixelUnit)
         self._fit2dCenterX.setModelUnit(units.Unit.PIXEL)
         self._fit2dCenterXUnit.setUnit(units.Unit.PIXEL)
-        # self._fit2dCenterXUnit.setUnitModel(pixelUnit)
-        # self._fit2dCenterXUnit.setUnitEditable(True)
         self._fit2dCenterY.setDisplayedUnitModel(pixelUnit)
         self._fit2dCenterY.setModelUnit(units.Unit.PIXEL)
         self._fit2dCenterYUnit.setUnit(units.Unit.PIXEL)
-        # self._fit2dCenterYUnit.setUnitModel(pixelUnit)
-        # self._fit2dCenterYUnit.setUnitEditable(True)
-        self._fit2dTilt.setDisplayedUnitModel(angleUnit)
+        self._fit2dTilt.setDisplayedUnit(units.Unit.DEGREE)
         self._fit2dTilt.setModelUnit(units.Unit.DEGREE)
         self._fit2dTiltUnit.setUnit(units.Unit.DEGREE)
-        # self._fit2dTiltUnit.setUnitModel(angleUnit)
-        # self._fit2dTiltUnit.setUnitEditable(True)
-        self._fit2dTiltPlan.setDisplayedUnitModel(angleUnit)
+        self._fit2dTiltPlan.setDisplayedUnit(units.Unit.DEGREE)
         self._fit2dTiltPlan.setModelUnit(units.Unit.DEGREE)
         self._fit2dTiltPlanUnit.setUnit(units.Unit.DEGREE)
-        # self._fit2dTiltPlanUnit.setUnitModel(angleUnit)
-        # self._fit2dTiltPlanUnit.setUnitEditable(True)
 
         # Connect fit2d model-widget
         self._fit2dDistance.setModel(self.__fit2dGeometry.distance())
@@ -231,11 +221,11 @@ class GeometryDialog(qt.QDialog):
         else:
             pyFAIGeometry = Geometry(detector=self.__detector)
             try:
-                f2d_distance = geometry.distance().value() / 1000 #  convert ?
+                f2d_distance = geometry.distance().value()
                 f2d_centerX = geometry.centerX().value()
                 f2d_centerY = geometry.centerY().value()
-                f2d_tiltPlan = geometry.tiltPlan().value() * pi / 180 #  convert ?
-                f2d_tilt = geometry.tilt().value() * pi / 180 # convert ?
+                f2d_tiltPlan = geometry.tiltPlan().value()
+                f2d_tilt = geometry.tilt().value()
                 pyFAIGeometry.setFit2D(directDist=f2d_distance,
                                        centerX=f2d_centerX,
                                        centerY=f2d_centerY,
@@ -289,11 +279,11 @@ class GeometryDialog(qt.QDialog):
             except Exception:
                 error = "This geometry can't be modelized with Fit2D."
             else:
-                distance = result["directDist"] * 1000 #  convert ?
+                distance = result["directDist"]
                 centerX = result["centerX"]
                 centerY = result["centerY"]
-                tilt = result["tilt"] * 180 / pi #  convert ?
-                tiltPlan = result["tiltPlanRotation"] * 180 / pi #  convert to SI
+                tilt = result["tilt"]
+                tiltPlan = result["tiltPlanRotation"]
 
         self._fit2dError.setVisible(error is not None)
         self._fit2dError.setText(error)
