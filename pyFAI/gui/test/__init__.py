@@ -85,13 +85,16 @@ def suite():
     from . import test_calibration
     from . import test_detector_dialog
     from ..utils import test as test_utils
+    from ..widgets import test as test_widgets
+
     test_suite = unittest.TestSuite()
     test_suite.addTest(test_model.suite())
     test_suite.addTest(test_integrate_widget.suite())
     test_suite.addTest(test_scripts.suite())
     test_suite.addTest(test_calibration.suite())
-    test_suite.addTest(test_utils.suite())
     test_suite.addTest(test_detector_dialog.suite())
+    test_suite.addTest(test_utils.suite())
+    test_suite.addTest(test_widgets.suite())
     return test_suite
 
 
