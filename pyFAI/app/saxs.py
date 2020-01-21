@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2020"
+__date__ = "20/01/2020"
 __status__ = "production"
 
 import os
@@ -46,7 +46,6 @@ logger = logging.getLogger(__name__)
 try:
     # it should be loaded before h5py ... init looks like the right place
     import hdf5plugin  # noqa
-    raise ImportError
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
 
@@ -57,7 +56,6 @@ from pyFAI import utils
 from pyFAI.method_registry import IntegrationMethod
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 hc = units.hc
-
 
 
 def main():

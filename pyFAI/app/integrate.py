@@ -27,14 +27,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """GUI tool for configuring azimuthal integration on series of files."""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2020"
+__date__ = "20/01/2020"
 __satus__ = "production"
 
 import sys
@@ -52,12 +51,10 @@ logger = logging.getLogger(__name__)
 try:
     # it should be loaded before h5py ... init looks like the right place
     import hdf5plugin  # noqa
-    raise ImportError
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
 
 import fabio
-
 
 import pyFAI.utils
 import pyFAI.worker
@@ -67,8 +64,6 @@ from pyFAI.io import HDF5Writer
 from pyFAI.utils.shell import ProgressBar
 from pyFAI.utils import logging_utils
 from pyFAI.utils import header_utils
-
-
 
 try:
     from rfoo.utils import rconsole
@@ -133,6 +128,7 @@ def integrate_gui(options, args):
         moveCenterTo(dialog, center)
 
         class QtProcess(qt.QThread):
+
             def run(self):
                 observer = dialog.createObserver(qtSafe=True)
                 process(input_data, window.output_path, config, options.monitor_key, observer, options.write_mode)

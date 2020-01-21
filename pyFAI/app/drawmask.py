@@ -27,14 +27,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """Use silx library to provide a widget to customize a mask """
 
 __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2020"
+__date__ = "20/01/2020"
 __satus__ = "Production"
 
 import os
@@ -46,7 +45,6 @@ logger = logging.getLogger(__name__)
 try:
     # it should be loaded before h5py ... init looks like the right place
     import hdf5plugin  # noqa
-    raise ImportError
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
 
@@ -62,6 +60,7 @@ class AbstractMaskImageWidget(qt.QMainWindow):
     """
     Abstract window application which allow to create a mask manually.
     """
+
     def __init__(self):
         qt.QMainWindow.__init__(self)
         self.setWindowTitle("pyFAI drawmask")
@@ -97,6 +96,7 @@ class MaskImageWidget(AbstractMaskImageWidget):
     Window application which allow to create a mask manually.
     It is based on Silx library widgets.
     """
+
     def __init__(self):
         AbstractMaskImageWidget.__init__(self)
 
