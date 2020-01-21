@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2019"
+__date__ = "21/01/2020"
 __status__ = "development"
 
 import logging
@@ -49,6 +49,7 @@ logger = logging.getLogger(__name__)
 
 from silx.gui import qt
 from silx.gui import icons
+from silx.gui import colors
 
 from .. import worker as worker_mdl
 from .widgets.WorkerConfigurator import WorkerConfigurator
@@ -148,11 +149,13 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
             self._plot.setGraphXLabel("Radial")
             self._plot.setGraphYLabel("Azimuthal")
             origin, scale = computeLocation(result)
+            colormap = colors.Colormap("inferno", normalization=colors.Colormap.LOGARITHM)
             self._plot.addImage(
                 legend="result2d",
                 data=result.intensity,
                 origin=origin,
                 scale=scale,
+                colormap=colormap,
                 resetzoom=False)
         else:
             logger.error("Unsupported result type %s", type(result))
