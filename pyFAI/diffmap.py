@@ -26,6 +26,7 @@
 # THE SOFTWARE.
 
 from __future__ import absolute_import, print_function, division
+from builtins import property
 
 """Module with GUI for diffraction mapping experiments"""
 
@@ -33,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2019"
+__date__ = "23/01/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -54,6 +55,7 @@ from .units import to_unit
 from .third_party import six
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime
+from .worker import Worker, _reduce_images
 from argparse import ArgumentParser
 urlparse = six.moves.urllib.parse.urlparse
 
@@ -80,7 +82,8 @@ class DiffMap(object):
         self.fast_motor_name = "fast"
         self.offset = 0
         self.poni = None
-        self.ai = None
+        self.worker = Worker(unit="2th_deg")
+        self.worker.output = "raw" # exchange IntegrateResults, not numpy arrays
         self.dark = None
         self.flat = None
         self.mask = None
@@ -91,8 +94,6 @@ class DiffMap(object):
         self.dataset = None
         self.inputfiles = []
         self.timing = []
-        self.method = "csr"
-        self.unit = to_unit("2th_deg")
         self.stats = False
         self._idx = -1
         self.processed_file = []
@@ -103,6 +104,8 @@ class DiffMap(object):
         return "%s experiment with ntp_slow: %s ntp_fast: %s, npt_diff: %s" % \
             (self.experiment_title, self.npt_slow, self.npt_fast, self.npt_rad)
 
+
+    
     @staticmethod
     def to_tuple(name):
         """
@@ -371,11 +374,11 @@ If the number of files is too large, use double quotes like "*.edf" """
                           " no poni file provided"))
             raise RuntimeError("You must provide poni a file")
         if self.dark:
-            self.ai.set_darkfiles(self.dark)
+            self.ai.detector.set_darkcurrent(_reduce_images(self.dark))
         if self.flat:
-            self.ai.set_flatfiles(self.flat)
+            self.ai.detector.set_darkcurrent(_reduce_images(self.flat))
         if self.mask is not None:
-            self.ai.detector.set_maskfile(self.mask)
+            self.ai.detector.set_mask(_reduce_images(self.mask))
 
     def init_ai(self):
         """Force initialization of azimuthal intgrator
@@ -392,12 +395,14 @@ If the number of files is too large, use double quotes like "*.edf" """
         else:
             fimg = fabio.open(self.inputfiles[0])
             shape = fimg.data.shape
+        self.worker.shape = shape
+        self.worker.output = "raw"
         data = numpy.empty(shape, dtype=numpy.float32)
         print("Initialization of the Azimuthal Integrator using method %s" % (self.method, ))
         # enforce initialization of azimuthal integrator
         print(self.ai)
-        tth, _I = self.ai.integrate1d(data, self.npt_rad,
-                                      method=self.method, unit=self.unit)
+        res = self.worker.process(data)
+        tth = res.radial
         if self.dataset is None:
             self.makeHDF5()
         space, unit = str(self.unit).split("_")
@@ -478,9 +483,10 @@ If the number of files is too large, use double quotes like "*.edf" """
         elif pos.index < 0 or pos.rot < 0 or pos.trans < 0:
             return
 
-        _tth, I = self.ai.integrate1d(frame, self.npt_rad, safe=False,
-                                      method=self.method, unit=self.unit)
-        self.dataset[pos.rot, pos.trans, :] = I
+        res = self.worker.process(frame)
+#        _tth, I = self.ai.integrate1d(frame, self.npt_rad, safe=False,
+#                                      method=self.method, unit=self.unit)
+        self.dataset[pos.rot, pos.trans, :] = res.intensity
 
     def process(self):
         if self.dataset is None:
@@ -498,9 +504,42 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.nxs.close()
 
     def get_use_gpu(self):
-        return ("gpu" in self.method)
+        return self.method.impl_lower == "opencl"
 
     def set_use_gpu(self, value):
-        self.method = "csr_ocl_gpu" if value else "csr"
+        if value:
+            method = self.method.method.fixed("opencl")
+        else:
+            method = self.method.method.fixed("cython")
+        self.method = method
 
     use_gpu = property(get_use_gpu, set_use_gpu)
+
+    @property
+    def ai(self):
+        "return the azimuthal integrator stored in the worker, replaces the attribute"
+        if self.worker is None:
+            return None
+        else:
+            return self.worker.ai
+    @ai.setter
+    def ai(self, value):
+        if self.worker is None:
+            self.worker = Worker(value, unit=self.unit, shapeOut=(1, self.npt_rad))
+        else:
+            self.worker.ai = value
+    @property
+    def method(self):
+        if self.worker is not None:
+            return self.worker.method
+        return None
+    @method.setter
+    def method(self, value):
+        self.worker.set_method(value) 
+    
+    @property
+    def unit(self):
+        return self.worker.unit
+    @unit.setter
+    def unit(self, value):
+        self.worker.unit = value

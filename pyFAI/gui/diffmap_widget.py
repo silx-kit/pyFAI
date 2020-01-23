@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2020"
+__date__ = "23/01/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -440,19 +440,20 @@ class DiffMapWidget(qt.QWidget):
         t0 = time.time()
         with self.processing_sem:
             config = self.dump()
+            print(config)
             config_ai = config.get("ai", {})
             config_ai = config_ai.copy()
+            if "nbpt_rad" not in config_ai:
+                raise RuntimeError("The number of radial points is mandatory !")
 
             diffmap = DiffMap(npt_fast=config.get("fast_motor_points", 1),
                               npt_slow=config.get("slow_motor_points", 1),
                               npt_rad=config_ai.get("nbpt_rad", 1000),
                               npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
-            diffmap.ai = worker.make_ai(config_ai)
-            # TODO: This diffmap configuration file should be cleaned up
-            reader = ConfigurationReader(config_ai)
-            diffmap.method = reader.pop_method("csr")
-            diffmap.unit = to_unit(config_ai.get("unit", "2th_deg"))
+            diffmap.worker = worker.Worker()
+            diffmap.worker.set_config(config_ai, consume_keys=False)
+            print(diffmap.worker.get_config())
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data = diffmap.init_ai()
             self.data_h5 = diffmap.dataset

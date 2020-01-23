@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "23/01/2020"
 __status__ = "development"
 
 import threading
@@ -98,6 +98,7 @@ logger = logging.getLogger(__name__)
 
 from .third_party import six
 from . import average
+from . import method_registry
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
@@ -173,20 +174,17 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
-                ai.mask = data
+                ai.detector.mask = data
 
         filename = config.pop("dark_current", "")
         apply_process = config.pop("do_dark", True)
         if filename and apply_process:
-            filenames = _normalize_filenames(filename)
-            ai.set_darkfiles(filenames)
+            ai.detector.set_darkcurrent(_reduce_images(_normalize_filenames(filename)))
 
         filename = config.pop("flat_field", "")
         apply_process = config.pop("do_flat", True)
         if filename and apply_process:
-            filenames = _normalize_filenames(filename)
-            ai.set_flatfiles(filenames)
-
+            ai.detector.set_flatfield(_reduce_images(_normalize_filenames(filename)))
     return ai
 
 
@@ -223,39 +221,18 @@ def _reduce_images(filenames, method="mean"):
 class Worker(object):
     def __init__(self, azimuthalIntegrator=None,
                  shapeIn=(2048, 2048), shapeOut=(360, 500),
-                 unit="r_mm", dummy=None, delta_dummy=None,
-                 azimuthalIntgrator=None):
+                 unit="r_mm", dummy=None, delta_dummy=None):
         """
         :param AzimuthalIntegrator azimuthalIntegrator: An AzimuthalIntegrator instance
-        :param AzimuthalIntegrator azimuthalIntgrator: An AzimuthalIntegrator instance (deprecated)
         :param shapeIn: image size in input
         :param shapeOut: Integrated size: can be (1,2000) for 1D integration
         :param unit: can be "2th_deg, r_mm or q_nm^-1 ...
         """
-        # TODO remove it in few month (added on 2016-08-04)
-        if azimuthalIntgrator is not None:
-            logger.warning("'Worker(azimuthalIntgrator=...)' parameter is deprecated cause it contains a typo. Please use 'azimuthalIntegrator='")
-            azimuthalIntegrator = azimuthalIntgrator
-
         self._sem = threading.Semaphore()
         if azimuthalIntegrator is None:
             self.ai = AzimuthalIntegrator()
         else:
             self.ai = azimuthalIntegrator
-#        self.config = {}
-#        self.config_file = "azimInt.json"
-#        self.nbpt_azim = 0
-#        if type(config) == dict:
-#            self.config = config
-#        elif type(config) in types.StringTypes:
-#            if os.path.isfile(config):
-#                with open(config, "r") as f:
-#                    self.config = json.load(f)
-#                self.config_file(config)
-#            else:
-#                self.config = json.loads(config)
-#        if self.config:
-#            self.configure()
         self._normalization_factor = None  # Value of the monitor: divides the intensity by this value for normalization
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
@@ -341,7 +318,6 @@ class Worker(object):
                  "method": self.method,
                  "polarization_factor": self.polarization_factor,
                  # "filename": None,
-                 "safe": self.safe,
                  "data": data,
                  "correctSolidAngle": self.correct_solid_angle,
                  "safe": self.safe,
@@ -387,7 +363,7 @@ class Worker(object):
                 if variance is not None:
                     error = integrated_result.sigma
             else:
-                integrated_result = self.ai.integrate1d(**kwarg)
+                integrated_result = self.ai._integrate1d_legacy(**kwarg)
                 self.radial = integrated_result.radial
                 self.azimuthal = None
                 result = numpy.vstack(integrated_result).T
@@ -402,9 +378,7 @@ class Worker(object):
                     "ai:",
                     str(self.ai),
                     "method:",
-                    kwarg.get("method")
-                    # str(self.ai._csr_integrator),
-                    # "csr size: %s" % self.ai._lut_integrator.size
+                    str(kwarg.get("method"))
                     ]
             logger.error("\n".join(err2))
             raise err
@@ -435,22 +409,16 @@ class Worker(object):
         else:
             self.extension = None
 
-    def setDarkcurrentFile(self, imagefile):
-        self.ai.set_darkfiles(imagefile)
+    def set_dark_current_file(self, imagefile):
+        self.ai.detector.set_darkcurrent(_reduce_images(imagefile))
         self.dark_current_image = imagefile
-
-    def setFlatfieldFile(self, imagefile):
-        self.ai.set_flatfiles(imagefile)
+    setDarkcurrentFile = set_dark_current_file
+    
+    def set_flat_field_file(self, imagefile):
+        self.ai.detector.set_flatfield(_reduce_images(imagefile))
         self.flat_field_image = imagefile
-
-    def setJsonConfig(self, json_file):
-        if os.path.isfile(json_file):
-            with open(json_file, "r") as f:
-                config = json.load(f)
-        else:
-            config = json.loads(json_file)
-        self.set_config(config)
-
+    setFlatfieldFile = set_flat_field_file
+    
     def set_config(self, config, consume_keys=False):
         """
         Configure the working from the dictionary.
@@ -459,6 +427,7 @@ class Worker(object):
         :param bool consume_keys: If true the keys from the dictionary will be
             consumed when used.
         """
+        print("set_config", config)
         if not consume_keys:
             # Avoid to edit the input argument
             config = dict(config)
@@ -538,6 +507,7 @@ class Worker(object):
         apply_values = config.pop("do_radial_range", True)
         if apply_values and value1 is not None and value2 is not None:
             self.radial_range = float(value1), float(value2)
+            print("radial range", self.radial_range)
 
         value = config.pop("do_solid_angle", True)
         self.correct_solid_angle = bool(value)
@@ -562,7 +532,6 @@ class Worker(object):
 
     def get_unit(self):
         return self._unit
-
     unit = property(get_unit, set_unit)
 
     def set_error_model(self, value):
@@ -572,12 +541,10 @@ class Worker(object):
             self.do_poisson = False
         else:
             raise RuntimeError("Unsupported error model '%s'" % value)
-
     def get_error_model(self):
         if self.do_poisson:
             return "poisson"
         return None
-
     error_model = property(get_error_model, set_error_model)
 
     def get_config(self):
@@ -598,16 +565,41 @@ class Worker(object):
                 config[key] = self.__getattribute__(key)
             except:
                 pass
+        
+        for key in ["azimuth_range", "radial_range"]:
+            try:
+                value = self.__getattribute__(key)
+            except:
+                pass
+            else:
+                if value is not None:
+                    config["do_"+key] = True
+                    config[key+"_min"] = min(value)
+                    config[key+"_max"] = max(value)
+                else:
+                    config["do_"+key] = False
 
         return config
 
     def get_json_config(self):
         """return configuration as a JSON string"""
-        pass  # TODO
+        return json.dumps(self.get_config(), indent=2)
 
+    def set_json_config(self, json_file):
+        if os.path.isfile(json_file):
+            with open(json_file, "r") as f:
+                config = json.load(f)
+        else:
+            config = json.loads(json_file)
+        self.set_config(config)
+    setJsonConfig = set_json_config
+    
     def save_config(self, filename=None):
+        """Save the configuration as a JSON file"""
         if not filename:
             filename = self.config_file
+        with open(filename, "w") as w:
+            w.write(self.get_json_config())
 
     def warmup(self, sync=False):
         """
@@ -626,12 +618,29 @@ class Worker(object):
     def get_normalization_factor(self):
         with self._sem:
             return self._normalization_factor
-
     def set_normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
-
     normalization_factor = property(get_normalization_factor, set_normalization_factor)
+
+    def set_method(self, method="csr"):
+        "Set the integration method"
+        dim = 2 if self.do_2D() else 1
+        if method is None:
+            method = method_registry.Method(dim, "*", "*", "*", target=None)
+        elif isinstance(method, method_registry.Method):
+            method = method.fixed(dim=dim)
+        elif isinstance(method, six.string_types):
+            method = method_registry.Method.parsed(method)
+            method = method.fixed(dim=dim)
+        elif isinstance(method, (list, tuple)):
+            if len(method) != 3:
+                raise TypeError("Method size %s unsupported." % len(method))
+            split, algo, impl = method
+            method = method_registry.Method(dim, split, algo, impl, target=None)
+        else:
+            raise TypeError("Method type %s unsupported." % type(method))
+        return method
 
     __call__ = process
 
