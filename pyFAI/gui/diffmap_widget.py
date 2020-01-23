@@ -288,11 +288,18 @@ class DiffMapWidget(qt.QWidget):
         iw = IntegrateDialog(self)
         if self.integration_config:
             iw.widget.setConfig(self.integration_config)
-        res = iw.exec_()
-        if res == qt.QDialog.Accepted:
-            self.integration_config = iw.widget.getConfig()
+        while True:
+            res = iw.exec_()
+            if res == qt.QDialog.Accepted:
+                self.integration_config = iw.widget.getConfig()
+                if self.integration_config.get("nbpt_rad"):
+                    break
+                else:
+                    qt.QMessageBox.about(self, "Unconsistent configuration", "Some essential parameters are missing ... Did you set the radial number of points ?")
+            else:
+                break
         print(json.dumps(self.integration_config, indent=2))
-
+        
     def configure_output(self, *args, **kwargs):
         """
         called when clicking on "outputFileSelector"
