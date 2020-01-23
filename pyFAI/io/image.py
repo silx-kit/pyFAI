@@ -32,13 +32,12 @@ import os.path
 import fabio
 import silx.io
 
-
-def read_image_data(image_path):
+def read_data(image_path):
     """
     Returns a numpy.array image from a file name or a URL.
 
     :param str image_path: Path of the image file
-    :rtype: numpy.ndarray
+    :rtype: numpy.ndarray regardless the dimention or the content
     :raises IOError: if the data is not reachable
     :raises TypeError: if the data is not an image (wrong size, wrong dimension)
     """
@@ -55,10 +54,21 @@ def read_image_data(image_path):
             data = image.data
     else:
         raise IOError("Data from path '%s' is not supported or missing" % image_path)
+    return data
 
+
+def read_image_data(image_path):
+    """
+    Returns a numpy.array image from a file name or a URL.
+
+    :param str image_path: Path of the image file
+    :rtype: numpy.ndarray
+    :raises IOError: if the data is not reachable
+    :raises TypeError: if the data is not an image (wrong size, wrong dimension)
+    """
+    data = read_data(image_path)
     if len(data.shape) != 2:
         raise TypeError("Path %s identify a %dd-array, but a 2d is array is expected" % (image_path, len(data.shape)))
     if data.dtype.kind not in "fui":
         raise TypeError("Path %s identify an %s-kind array, but a numerical kind is expected" % (image_path, data.dtype.kind))
-
     return data
