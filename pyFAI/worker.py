@@ -427,7 +427,6 @@ class Worker(object):
         :param bool consume_keys: If true the keys from the dictionary will be
             consumed when used.
         """
-        print("set_config", config)
         if not consume_keys:
             # Avoid to edit the input argument
             config = dict(config)
@@ -507,7 +506,6 @@ class Worker(object):
         apply_values = config.pop("do_radial_range", True)
         if apply_values and value1 is not None and value2 is not None:
             self.radial_range = float(value1), float(value2)
-            print("radial range", self.radial_range)
 
         value = config.pop("do_solid_angle", True)
         self.correct_solid_angle = bool(value)
