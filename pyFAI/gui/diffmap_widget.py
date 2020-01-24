@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2020"
+__date__ = "24/01/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -86,10 +86,8 @@ class TreeModel(qt.QAbstractItemModel):
         new_labels = [i.label for i in new_root.children]
         old_lables = [i.label for i in self._root_item.children]
         if new_labels == old_lables:
-            print("update labels")
             self._root_item.update(new_root)
         else:
-            print("replace labels")
             self._root_item.children = []
             for child in new_root.children:
                 self._root_item.add_child(child)
@@ -136,7 +134,6 @@ class TreeModel(qt.QAbstractItemModel):
     def parent(self, midx):
         item = midx.internalPointer()
         if (item is None) or (item is self._root_item):
-            print(midx, midx.row(), midx.column())
             return  # QtCore.QModelIndex()
         pitem = item.parent
         if pitem is self._root_item:
@@ -276,7 +273,6 @@ class DiffMapWidget(qt.QWidget):
     def clear_selection(self, *args, **kwargs):
         """called to remove selected files from the list
         """
-        print(self.listFiles.selectedIndexes())
         logger.warning("remove all files for now !! not yet implemented")
         self.list_dataset.empty()
         self.list_model.update(self.list_dataset.as_tree())
@@ -298,7 +294,6 @@ class DiffMapWidget(qt.QWidget):
                     qt.QMessageBox.about(self, "Unconsistent configuration", "Some essential parameters are missing ... Did you set the radial number of points ?")
             else:
                 break
-        print(json.dumps(self.integration_config, indent=2))
         
     def configure_output(self, *args, **kwargs):
         """
@@ -447,7 +442,6 @@ class DiffMapWidget(qt.QWidget):
         t0 = time.time()
         with self.processing_sem:
             config = self.dump()
-            print(config)
             config_ai = config.get("ai", {})
             config_ai = config_ai.copy()
             if "nbpt_rad" not in config_ai:
@@ -460,7 +454,6 @@ class DiffMapWidget(qt.QWidget):
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
             diffmap.worker = worker.Worker()
             diffmap.worker.set_config(config_ai, consume_keys=False)
-            print(diffmap.worker.get_config())
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data = diffmap.init_ai()
             self.data_h5 = diffmap.dataset
