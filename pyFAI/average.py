@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2019"
+__date__ = "23/01/2020"
 __status__ = "production"
 
 import logging
@@ -50,6 +50,7 @@ from scipy.optimize.optimize import fminbound
 from .third_party import six
 from .utils import stringutil
 from .utils import header_utils
+from .io.image import read_data
 
 from ._version import calc_hexversion
 if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4, 0, "dev", 5)):
@@ -478,7 +479,7 @@ def _normalize_image_stack(image_stack):
         result = []
         for image in image_stack:
             if isinstance(image, six.string_types):
-                data = fabio.open(image).data
+                data = read_data(image)
             elif isinstance(image, numpy.ndarray) and image.ndim == 2:
                 data = image
             else:
@@ -720,13 +721,19 @@ class Average(object):
         for image_index, image in enumerate(image_list):
             if isinstance(image, six.string_types):
                 logger.info("Reading %s", image)
-                fabio_image = fabio.open(image)
-                if copy_data and fabio_image.nframes == 1:
-                    # copy the data so that we can close the file right now.
-                    fimg = fabio_image.convert(fabio_image.__class__)
-                    fimg.filename = image
-                    fabio_image.close()
-                    fabio_image = fimg
+                try:
+                    fabio_image = fabio.open(image)
+                except:
+                    # Handles the different URL like data
+                    data = read_data(image)
+                    fabio_image = fabio.numpyimage.NumpyImage(data)
+                else:
+                    if copy_data and fabio_image.nframes == 1:
+                        # copy the data so that we can close the file right now.
+                        fimg = fabio_image.convert(fabio_image.__class__)
+                        fimg.filename = image
+                        fabio_image.close()
+                        fabio_image = fimg
             elif isinstance(image, fabio.fabioimage.fabioimage):
                 fabio_image = image
             else:
