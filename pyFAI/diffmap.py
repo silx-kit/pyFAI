@@ -26,7 +26,6 @@
 # THE SOFTWARE.
 
 from __future__ import absolute_import, print_function, division
-from builtins import property
 
 """Module with GUI for diffraction mapping experiments"""
 
@@ -34,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2020"
+__date__ = "24/01/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -376,9 +375,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.dark:
             self.ai.detector.set_darkcurrent(_reduce_images(self.dark))
         if self.flat:
-            self.ai.detector.set_darkcurrent(_reduce_images(self.flat))
+            self.ai.detector.set_flatfield(_reduce_images(self.flat))
         if self.mask is not None:
-            self.ai.detector.set_mask(_reduce_images(self.mask))
+            self.ai.detector.set_mask(_reduce_images(self.mask, method="max"))
 
     def init_ai(self):
         """Force initialization of azimuthal intgrator
