@@ -59,6 +59,9 @@ then
             buster)
                 debian_version=10
                 ;;
+            bullseye)
+                debian_version=11
+                ;;
         esac
     fi
 
@@ -92,6 +95,7 @@ optional arguments:
     --debian8  Simulate a debian 8 Jessie system
     --debian9  Simulate a debian 9 Stretch system
     --debian10 Simulate a debian 10 Buster system
+    --debian11 Simulate a debian 11 Bullseye system
 "
 
 install=0
@@ -135,6 +139,13 @@ do
           ;;
       --debian10)
           debian_version=10
+          target_system=debian${debian_version}
+          dist_directory=${project_directory}/dist/${target_system}
+          build_directory=${project_directory}/build/${target_system}
+          shift
+          ;;
+      --debian11)
+          debian_version=11
           target_system=debian${debian_version}
           dist_directory=${project_directory}/dist/${target_system}
           build_directory=${project_directory}/build/${target_system}
