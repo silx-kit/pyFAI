@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/01/2020"
+__date__ = "28/01/2020"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -938,7 +938,7 @@ class AzimuthalIntegrator(Geometry):
                                                 unit=unit,
                                                 )
 
-    @deprecated(since_version="0.19", only_once=True, deprecated_since="0.19.0")
+    @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
     def _integrate1d_legacy(self, data, npt, filename=None,
                             correctSolidAngle=True,
                             variance=None, error_model=None,
@@ -1962,7 +1962,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
-    @deprecated(since_version="0.19", only_once=True, deprecated_since="0.19.0")
+    @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
     def _integrate2d_legacy(self, data, npt_rad, npt_azim=360,
                             filename=None, correctSolidAngle=True, variance=None,
                             error_model=None, radial_range=None, azimuth_range=None,
