@@ -968,7 +968,7 @@ def get_project_configuration(dry_run):
         # check dependencies and in this case raise an exception
         # FIXME we still have to investigate
         # "h5py",
-        "fabio",
+        "fabio>=0.5",
         "matplotlib",
         "scipy",
         "numexpr",
@@ -994,8 +994,12 @@ def get_project_configuration(dry_run):
         ]
     }
 
+    gui_requires = ['PyQt5', 'h5py', 'hdf5plugin']
+    opencl_requires = ['pybind11', 'pyopencl']
     extras_require = {
-        'calib2': ["fabio>=0.5"],
+        'gui': gui_requires,
+        'opencl': opencl_requires,
+        'full': gui_requires + opencl_requires,
     }
 
     console_scripts = [
