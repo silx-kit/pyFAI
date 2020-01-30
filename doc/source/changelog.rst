@@ -1,9 +1,28 @@
 :Author: Jérôme Kieffer
-:Date: 16/05/2019
+:Date: 28/01/2020
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
+
+0.19.0 28/01/2020
+-----------------
+* Minor revison with only 150 commits, mainly bug-fixes
+* Improvement on the GUI with many small bug-fixes
+* Support newer h5py (mode mandatory, [()], ...)
+* Build for debian 10 and 11 (also ubuntu 20.04)
+* Drop tests for Python 2 and 3.4, checked on 3.8
+* Improved comatibility with ImageD11
+* Use hdf5plugin to provide hdf5 io-filters in apps
+* Rework diffraciton mapping tools to use a worker
+* New generation azimuthal integrator using CSR algorithm
+  implemented in Python, Cython and OpenCL.
+* Sigma-clipping implemented in OpenCL
+* Publication on new generation integration, the GUI for
+  calibration and the goniometers accepted in J. Synch. Rad.
+  DOI: To be completed
+* A big thank to Florian from Germany, Bertrand from Xenocs, 
+  Alex from Soleil and Jon from ESF for their contributions
 
 0.18.0 15/05/2019
 -----------------

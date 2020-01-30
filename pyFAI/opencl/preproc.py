@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "05/12/2019"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -119,9 +119,9 @@ class OCL_Preproc(OpenclProcessing):
         self.on_host = {"dummy": dummy,
                         "delta_dummy": delta_dummy,
                         "empty": empty,
-                        "poissonian": poissonian,
                         "calc_variance": calc_variance,
-                        "split_result": split_result
+                        "split_result": split_result,
+                        "poissonian": poissonian
                         }
         self.set_kernel_arguments()
 
@@ -274,6 +274,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["corrections3"] = OrderedDict((("image", self.cl_mem["image"]),
+                                                           ("poissonian", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -295,24 +296,28 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("output", self.cl_mem["output"])))
 
-        self.cl_kernel_args["corrections3Poisson"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                                  ("do_dark", numpy.int8(0)),
-                                                                  ("dark", self.cl_mem["dark"]),
-                                                                  ("do_flat", numpy.int8(0)),
-                                                                  ("flat", self.cl_mem["flat"]),
-                                                                  ("do_solidangle", numpy.int8(0)),
-                                                                  ("solidangle", self.cl_mem["solidangle"]),
-                                                                  ("do_polarization", numpy.int8(0)),
-                                                                  ("polarization", self.cl_mem["polarization"]),
-                                                                  ("do_absorption", numpy.int8(0)),
-                                                                  ("absorption", self.cl_mem["absorption"]),
-                                                                  ("do_mask", numpy.int8(0)),
-                                                                  ("mask", self.cl_mem["mask"]),
-                                                                  ("do_dummy", do_dummy),
-                                                                  ("dummy", dummy),
-                                                                  ("delta_dummy", delta_dummy),
-                                                                  ("normalization_factor", numpy.float32(1.0)),
-                                                                  ("output", self.cl_mem["output"])))
+        self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
+                                                           ("poissonian", numpy.int8(0)),
+                                                           ("variance", self.cl_mem["variance"]),
+                                                           ("do_dark", numpy.int8(0)),
+                                                           ("dark", self.cl_mem["dark"]),
+                                                           ("do_dark_variance", numpy.int8(0)),
+                                                           ("dark_variance", self.cl_mem["dark_variance"]),
+                                                           ("do_flat", numpy.int8(0)),
+                                                           ("flat", self.cl_mem["flat"]),
+                                                           ("do_solidangle", numpy.int8(0)),
+                                                           ("solidangle", self.cl_mem["solidangle"]),
+                                                           ("do_polarization", numpy.int8(0)),
+                                                           ("polarization", self.cl_mem["polarization"]),
+                                                           ("do_absorption", numpy.int8(0)),
+                                                           ("absorption", self.cl_mem["absorption"]),
+                                                           ("do_mask", numpy.int8(0)),
+                                                           ("mask", self.cl_mem["mask"]),
+                                                           ("do_dummy", do_dummy),
+                                                           ("dummy", dummy),
+                                                           ("delta_dummy", delta_dummy),
+                                                           ("normalization_factor", numpy.float32(1.0)),
+                                                           ("output", self.cl_mem["output"])))
 
     def compile_kernels(self, kernel_files=None, compile_options=None):
         """Call the OpenCL compiler
@@ -349,7 +354,9 @@ class OCL_Preproc(OpenclProcessing):
                 dark=None,
                 variance=None,
                 dark_variance=None,
-                normalization_factor=1.0
+                normalization_factor=1.0,
+                poissonian=None,
+                split_result=None,
                 ):
         """Perform the pixel-wise operation of the array
 
@@ -358,6 +365,7 @@ class OCL_Preproc(OpenclProcessing):
         :param variance: numpy array with the variance of input image
         :param dark_variance: numpy array with the variance of dark-current image
         :param normalization_factor: divide the result by this
+        :param poissonian: set to true to set variance=signal (minimum 1). None uses the default from constructor
         :return: array with processed data,
                 may be an array of (data,variance,normalization) depending on class initialization
         """
@@ -378,29 +386,33 @@ class OCL_Preproc(OpenclProcessing):
                 if id(dark_variance) != id(self.on_device.get("dark_variance")):
                     self.send_buffer(dark_variance, "dark_variance")
 
-            if self.on_host.get("poissonian"):
-                kernel_name = "corrections3Poisson"
-            elif self.on_host.get("calc_variance"):
+            if poissonian is None:
+                poissonian = self.on_host.get("poissonian")
+            if split_result is None:
+                split_result = self.on_host.get("split_result")
+
+            if split_result == 4:
+                kernel_name = "corrections4"
+                dest = numpy.empty(self.on_device.get("image").shape + (4,), dtype=numpy.float32)
+
+            elif split_result == 3:
                 kernel_name = "corrections3"
-            elif self.on_host.get("split_result"):
+                dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)
+            elif split_result == 2:
                 kernel_name = "corrections2"
+                dest = numpy.empty(self.on_device.get("image").shape + (2,), dtype=numpy.float32)
             else:
                 kernel_name = "corrections"
+                dest = numpy.empty(self.on_device.get("image").shape, dtype=numpy.float32)
             kwargs = self.cl_kernel_args[kernel_name]
             kwargs["do_dark"] = do_dark
             kwargs["normalization_factor"] = numpy.float32(normalization_factor)
+            if split_result >= 3:
+                kwargs["poissonian"] = numpy.int8(poissonian)
             if (kernel_name == "corrections3") and (self.on_device.get("dark_variance") is not None):
                 kwargs["do_dark_variance"] = do_dark
             kernel = self.kernels.get_kernel(kernel_name)
             evt = kernel(self.queue, (self.size,), None, *list(kwargs.values()))
-            if kernel_name.startswith("corrections4"):
-                dest = numpy.empty(self.on_device.get("image").shape + (4,), dtype=numpy.float32)
-            elif kernel_name.startswith("corrections3"):
-                dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)
-            elif kernel_name == "corrections2":
-                dest = numpy.empty(self.on_device.get("image").shape + (2,), dtype=numpy.float32)
-            else:
-                dest = numpy.empty(self.on_device.get("image").shape, dtype=numpy.float32)
 
             copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["output"])
             copy_result.wait()
@@ -490,7 +502,7 @@ def preproc(raw,
 
       Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
 
-    * If poissonian is set to True, the variance is evaluated as (raw + dark)
+    * If poissonian is set to True, the variance is evaluated as (raw + dark) minimum (1)
     """
     if raw.dtype.itemsize > 4:  # use numpy to cast to float32
         raw = numpy.ascontiguousarray(raw, numpy.float32)

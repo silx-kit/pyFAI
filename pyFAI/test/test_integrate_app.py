@@ -100,7 +100,7 @@ class TestIntegrateApp(unittest.TestCase):
 
     def create_h5_cube_file(self, filename, datapath, data, monitor=None):
         path = os.path.join(self.tempDir, filename)
-        with h5py.File(path) as h5:
+        with h5py.File(path, "w") as h5:
             h5[datapath] = numpy.array(data)
             if monitor is not None:
                 h5["/monitor/data"] = numpy.array(monitor)

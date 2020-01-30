@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
+__date__ = "18/10/2019"
 
 
 import unittest
@@ -67,7 +67,7 @@ class TestReadImage(unittest.TestCase):
         ones = numpy.ones(shape=cls.shape)
         numpy.save(cls.a, ones)
 
-        with h5py.File(cls.b) as h5:
+        with h5py.File(cls.b, mode="w") as h5:
             h5["/image"] = ones
             h5["/number"] = 10
             h5["/group/foo"] = 10

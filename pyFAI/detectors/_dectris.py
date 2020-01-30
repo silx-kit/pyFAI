@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2019"
+__date__ = "28/01/2020"
 __status__ = "production"
 
 
@@ -568,6 +568,13 @@ class PilatusCdTe300kw(PilatusCdTe):
     """
     MAX_SHAPE = (195, 1475)
     aliases = ["Pilatus CdTe 300kw", "Pilatus 300kw CdTe", "Pilatus300kw CdTe", "Pilatus300kwCdTe"]
+
+class PilatusCdTe900kw(PilatusCdTe):
+    """
+    Pilatus CdTe 900k-wide detector
+    """
+    MAX_SHAPE = (195, 4439)
+    aliases = ["Pilatus CdTe 900kw", "Pilatus 900kw CdTe", "Pilatus900kw CdTe", "Pilatus900kwCdTe"]
 
 
 class PilatusCdTe1M(PilatusCdTe):

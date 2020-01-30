@@ -114,9 +114,7 @@ class TestCSR(utilstest.ParametricTestCase):
         # Validate the scipy integrator ....
         engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
         scipy_engine = CsrIntegrator1d(self.data.size,
-                                       data=engine.data,
-                                       indices=engine.indices,
-                                       indptr=engine.indptr,
+                                       lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,
                                        bin_centers=engine.bin_centers)
 
@@ -142,9 +140,7 @@ class TestCSR(utilstest.ParametricTestCase):
         # Validate the scipy integrator ....
         engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
         scipy_engine = CsrIntegrator1d(self.data.size,
-                                       data=engine.data,
-                                       indices=engine.indices,
-                                       indptr=engine.indptr,
+                                       lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,
                                        bin_centers=engine.bin_centers)
 
@@ -171,9 +167,7 @@ class TestCSR(utilstest.ParametricTestCase):
         # Validate the scipy integrator ....
         engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
         scipy_engine = CsrIntegrator2d(self.data.size,
-                                       data=engine.data,
-                                       indices=engine.indices,
-                                       indptr=engine.indptr,
+                                       lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,
                                        bin_centers0=engine.bin_centers0,
                                        bin_centers1=engine.bin_centers1)
@@ -202,9 +196,7 @@ class TestCSR(utilstest.ParametricTestCase):
         # Validate the scipy integrator ....
         engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
         scipy_engine = CsrIntegrator2d(self.data.size,
-                                       data=engine.data,
-                                       indices=engine.indices,
-                                       indptr=engine.indptr,
+                                       lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,
                                        bin_centers0=engine.bin_centers0,
                                        bin_centers1=engine.bin_centers1)

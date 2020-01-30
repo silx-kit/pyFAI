@@ -41,7 +41,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2018"
+__date__ = "06/12/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -59,7 +59,12 @@ from .third_party import six
 
 hc = CONST_hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
 """Product of h the Planck constant, and c the speed of light in vacuum
-in Angstrom.KeV. It is approximativly equal to 12.398419292004204."""
+in Angstrom.KeV. It is approximativly equal to:
+ 
+pyFAI reference 12.398419292004204
+scipy v1.3.1:   12.398419739640717
+scipy-1.4.0rc1: 12.398419843320026
+"""
 
 CONST_q = 1.602176565e-19
 """One electron-volt is equal to 1.602176565⋅10-19 joules"""

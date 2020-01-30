@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2019"
+__date__ = "18/10/2019"
 
 import unittest
 import numpy
@@ -121,7 +121,7 @@ class TestHdf5Monitor(unittest.TestCase):
         os.makedirs(cls.tempDir)
         cls.file = os.path.join(cls.tempDir, "file.h5")
 
-        h5 = h5py.File(cls.file)
+        h5 = h5py.File(cls.file, mode="w")
         data = numpy.array([1.0, 1.2, 1.3, 1.4]) + numpy.array([0, 0, 0]).reshape(-1, 1)
         h5["images"] = data.reshape(-1, 2, 2)
         h5["header/bar/vector"] = numpy.array([1.0, 1.2, 1.3])
