@@ -968,7 +968,7 @@ def get_project_configuration(dry_run):
         # check dependencies and in this case raise an exception
         # FIXME we still have to investigate
         # "h5py",
-        "fabio",
+        "fabio>=0.5",
         "matplotlib",
         "scipy",
         "numexpr",
@@ -994,8 +994,13 @@ def get_project_configuration(dry_run):
         ]
     }
 
+    gui_requires = ['PyQt5', 'h5py', 'hdf5plugin']
+    opencl_requires = ['pybind11', 'pyopencl']
     extras_require = {
-        'calib2': ["fabio>=0.5"],
+        'calib2': gui_requires,  # Keep compatibility
+        'gui': gui_requires,
+        'opencl': opencl_requires,
+        'full': gui_requires + opencl_requires,
     }
 
     console_scripts = [
@@ -1008,7 +1013,7 @@ def get_project_configuration(dry_run):
         'pyFAI-average = pyFAI.app.average:main',
         'pyFAI-benchmark = pyFAI.app.benchmark:main',
         'pyFAI-calib = pyFAI.app.calib:main',
-        'pyFAI-calib2 = pyFAI.app.calib2:main [calib2]',
+        'pyFAI-calib2 = pyFAI.app.calib2:main [gui]',
         'pyFAI-drawmask = pyFAI.app.drawmask:main',
         'pyFAI-diffmap = pyFAI.app.diff_map:main',
         'pyFAI-integrate = pyFAI.app.integrate:main',
