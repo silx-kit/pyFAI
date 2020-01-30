@@ -1012,7 +1012,7 @@ def get_project_configuration(dry_run):
         'pyFAI-average = pyFAI.app.average:main',
         'pyFAI-benchmark = pyFAI.app.benchmark:main',
         'pyFAI-calib = pyFAI.app.calib:main',
-        'pyFAI-calib2 = pyFAI.app.calib2:main [calib2]',
+        'pyFAI-calib2 = pyFAI.app.calib2:main [gui]',
         'pyFAI-drawmask = pyFAI.app.drawmask:main',
         'pyFAI-diffmap = pyFAI.app.diff_map:main',
         'pyFAI-integrate = pyFAI.app.integrate:main',
