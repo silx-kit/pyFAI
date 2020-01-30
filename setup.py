@@ -997,6 +997,7 @@ def get_project_configuration(dry_run):
     gui_requires = ['PyQt5', 'h5py', 'hdf5plugin']
     opencl_requires = ['pybind11', 'pyopencl']
     extras_require = {
+        'calib2': gui_requires,  # Keep compatibility
         'gui': gui_requires,
         'opencl': opencl_requires,
         'full': gui_requires + opencl_requires,
