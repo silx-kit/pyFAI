@@ -52,45 +52,6 @@ Description: Fast Azimuthal Integration scripts
  (transmission, reflection, off-axis, ...). It uses the Python library FabIO
  to read most images taken by diffractometer.
 
-Package: python-pyfai
-Architecture: any
-Section: python
-Depends: ${misc:Depends},
-         ${python:Depends},
-         ${shlibs:Depends},
-         python-fabio (>=0.5),
-         python-enum34,
-         python-imaging,
-         python-matplotlib,
-         python-scipy,
-         python-silx (>=0.10)
-Recommends: python-h5py,
-            python-pyopencl,
-            python-qt4|python-pyside|python-pyqt5
-Suggests: pymca,
-          python-rfoo
-Breaks: ${python:Breaks},
-        pyfai (<< 0.11.0+dfsg-2)
-Replaces: pyfai (<< 0.11.0+dfsg-2)
-Description: Fast Azimuthal Integration scripts - Python2
- PyFAI is a Python library for azimuthal integration; it allows the conversion
- of diffraction images taken with 2D detectors like CCD cameras into X-Ray
- powder patterns that can be used by other software like Rietveld refinement
- tools (i.e. FullProf), phase analysis or texture analysis.
- .
- As PyFAI is a library, its main goal is to be integrated in other tools like
- PyMca, LiMa or EDNA. To perform online data analysis, the precise description
- of the experimental setup has to be known. This is the reason why PyFAI
- includes geometry optimization code working on "powder rings" of reference
- samples. Alternatively, PyFAI can also import geometries fitted with other
- tools like Fit2D.
- .
- PyFAI has been designed to work with any kind of detector with any geometry
- (transmission, reflection, off-axis, ...). It uses the Python library FabIO
- to read most images taken by diffractometer.
- .
- This is the Python 2 version of the package.
-
 Package: python3-pyfai
 Architecture: any
 Section: python
