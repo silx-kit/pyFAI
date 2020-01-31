@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 20/07/2017
+:Date: 31/01/2019
 :Keywords: Installation procedure on Linux
 :Target: System administrators
 
@@ -69,15 +69,7 @@ One can also built from sources:
 
 .. code-block:: shell
 
-   sudo apt-get install cython cython-dbg cython3 cython3-dbg debhelper dh-python \
-   python-all-dev python-all-dbg python-fabio python-fabio-dbg python-fftw python-h5py \
-   python-lxml python-lxml-dbg python-matplotlib python-matplotlib-dbg python-numpy\
-   python-numpy-dbg python-qt4 python-qt4-dbg python-scipy python-scipy-dbg python-sphinx \
-   python-sphinxcontrib.programoutput python-tk python-tk-dbg python3-all-dev python3-all-dbg \
-   python3-fabio python3-fabio-dbg python3-lxml python3-lxml-dbg python3-matplotlib \
-   python3-matplotlib-dbg python3-numpy python3-numpy-dbg python3-pyqt4 python3-pyqt4-dbg \
-   python3-scipy python3-scipy-dbg python3-sphinx python3-sphinxcontrib.programoutput \
-   python3-tk python3-tk-dbg python-silx python3-silx
+   sudo apt-get build-dep pyfai
    wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
