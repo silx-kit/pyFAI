@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/05/2015
+:Date: 31/01/2020
 :Keywords: Installation procedure
 :Target: System administrators under windows
 
@@ -22,7 +22,7 @@ Unlike on Unix computers, Python is not available by default on Windows computer
 We recommend you to install the 64 bit version of `Python <http://python.org>`_,
 preferably the latest 64 bits version from the
 `3.6 series <https://www.python.org/downloads/release/python-3600/>`_.
-But Python 2.7, 3.4 and 3.5 are also very good candidates.
+Python 2.7 and 3.4 are no more supported since pyFAI v0.19.
 Python 2.6, 3.2 and 3.3 are no more supported since pyFAI v0.12.
 
 The 64 bits version is strongly advised if your hardware and operating system
@@ -33,14 +33,11 @@ memory available to the Python process,
 nevertheless, pyFAI is running on Windows 32 bits (but not as well).
 
 Alternative Scientific Python stacks exists, like
-`Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ ,
-`Canopy <https://www.enthought.com/products/canopy/>`_,
-`Anaconda <https://www.continuum.io/downloads>`_,
-`PythonXY <https://python-xy.github.io/>`_ or
+`Enthought Python Distribution <https://www.enthought.com>`_ ,
+`Anaconda <https://www.anaconda.com/>`_,
 `WinPython <http://winpython.github.io/>`_.
 They all offer most of the scientific packages already installed which makes
-the installation of
-dependencies much easier.
+the installation of dependencies much easier.
 On the other hand, they all offer different packaging system and we cannot
 support all of them.
 Moreover, distribution from *Enthought* and *Continuum* are not free so you
@@ -62,7 +59,7 @@ download and install software packages from there.
 PIP has revolutionize the way Python libraries are installed as it is able to
 select the right build for your system, or compile them from the sources,
 which could be extremely tricky otherwise.
-If you installed python 2.7.10, 3.4 or newer, PIP is already installed.
+If you installed Python compatible with pyFAI (3.5 or newer), PIP is already installed.
 If **pip** is not yet installed on your system, download
 `get_pip.py <https://bootstrap.pypa.io/get-pip.py>`_ and run it:
 
@@ -74,13 +71,17 @@ Assuming python.exe is already in your PATH.
 
 **Nota:**  Because PIP connects to the network, the *http_proxy* and *https_proxy*
 environment variable may need to be set-up properly.
-At ESRF, please get in contact with the hotline (24-24) to retrive those information.
+At ESRF, this is no more needed.
 
 
-Install the scientific stack
-----------------------------
+Install pyFAI via PIP
+---------------------
 
-The strict dependencies for pyFAI are:
+.. code-block:: shell
+
+   pip install pyFAI[gui] --upgrade
+
+This will install:
 
 * NumPy
 * SciPy
@@ -88,46 +89,8 @@ The strict dependencies for pyFAI are:
 * FabIO
 * h5py
 * silx
-
-Recommended dependencies are:
-
-* cython
 * h5py
-* pyopencl
 * PyQt5
-* rfoo
-* pyfftw3
-* lxml
-
-Using PIP
-.........
-
-Most of the dependencies are available via PIP:
-
-.. code-block:: shell
-
-   pip install numpy --upgrade
-   pip install scipy --upgrade
-   pip install matplotlib --upgrade
-   pip install PyQt5 --upgrade
-   pip install fabio --upgrade
-   pip install silx --upgrade
-
-Note that numpy/scipy/matplotlib are already installed in most "Scientific Python distribution"
-
-If one of the dependency is not available as a Wheel (i.e. binary package) but
-only as a source package, a compiler will be required.
-In this case, see the next paragraph.
-The generalization of Wheel packages should help and the installation of binary
-modules should become easier.
-
-**Nota:** This requires a network access and correct proxy settings.
-At ESRF, please get in contact with the hotline (24-24) to retrieve those information.
-
-.. code-block:: shell
-
-    set http_proxy=http://proxy.site.com:3128
-    set https_proxy=http://proxy.site.com:3128
 
 
 Using Christoph Gohlke repository
@@ -153,15 +116,6 @@ Alternatively, you can use the wheelhouse of the silx project:
 
    pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy scipy matplotlib fabio PyQt5
 
-Install pyFAI via PIP
----------------------
-
-The latest stable release of pyFAI should also be PIP-installable (starting at version 0.10.3):
-
-.. code-block:: shell
-
-   pip install numpy scipy matplotlib fabio silx h5py PyQt5 pyFAI --upgrade
-
 
 Install pyFAI from sources
 --------------------------
@@ -169,17 +123,16 @@ Install pyFAI from sources
 The sources of pyFAI are available at https://github.com/silx-kit/pyFAI/releases
 the development is performed on https://github.com/silx-kit/pyFAI
 
-In addition to the Python interpreter, you will need *the* C compiler compatible
-with your Python interpreter, for example you can find the one for Python2.7 at:
-http://aka.ms/vcpython27
+In addition to the Python interpreter, you will need `*the* C compiler compatible
+with your Python interpreter <https://wiki.python.org/moin/WindowsCompilers>`_.
 
 To upgrade the C-code in pyFAI, one needs in addition Cython:
 
 .. code-block:: shell
 
-   pip install cython --upgrade
+   pip install -r requirements.txt --upgrade
    python setup.py bdist_wheel
-   pip install --pre --no-index --find-links dist/ pyFAI
+   pip install --upgrade --pre --no-index --find-links dist/ pyFAI 
 
 Troubleshooting
 ---------------
@@ -196,6 +149,3 @@ When starting pyFAI you get a side-by-side error like::
 
 This means you are using a version of pyFAI which was compiled using the MSVC compiler
 (maybe not on your computer) but the Microsoft Visual C++ Redistributable Package is missing.
-For Python2.7, 64bits the missing DLL can be downloaded from::
-
-    http://www.microsoft.com/en-us/download/confirmation.aspx?id=2092

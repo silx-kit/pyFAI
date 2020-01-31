@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 30/01/2018
+:Date: 31/01/2020
 :Keywords: Installation procedure
 :Target: System administrators
 
@@ -26,13 +26,13 @@ Dependencies
 
 PyFAI is a Python library which relies on the scientific stack (numpy, scipy, matplotlib)
 
-* Python: version 2.7, 3.4 or newer
-* NumPy: version 1.8 or newer
-* SciPy: version 0.14 or newer
-* Matplotlib: verson 0.99 or newer
+* Python: version 3.5 or newer (version 2.7 and 3.4 were just dropped with 0.18)
+* NumPy: version 1.12 or newer (version 1.8 was dropped with 0.18) 
+* SciPy: version 0.18 or newer (version 0.14 was dropped with 0.18)
+* Matplotlib: verson 2.0 or newer (version 0.99 was dropped with 0.18)
 * FabIO: version 0.5 or newer
 * h5py (to access HDF5 files)
-* silx (version 0.7+ http://www.silx.org)
+* silx (version 0.10 http://www.silx.org)
 
 There are plenty of optional dependencies which will not prevent pyFAI from working
 by may impair performances or prevent tools from properly working:
@@ -40,7 +40,7 @@ by may impair performances or prevent tools from properly working:
 
 * pyopencl (for GPU computing)
 * fftw (for image analysis)
-* PyQt4 or PySide (for the graphical user interface)
+* PyQt5 or PyQt4 or PySide (for the graphical user interface)
 
 Build dependencies:
 -------------------

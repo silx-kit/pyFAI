@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019" 
+__date__ = "31/01/2020" 
 __status__ = "stable"
 
 
@@ -994,8 +994,8 @@ def get_project_configuration(dry_run):
         ]
     }
 
-    gui_requires = ['PyQt5', 'h5py', 'hdf5plugin']
-    opencl_requires = ['pybind11', 'pyopencl']
+    gui_requires = ['PyQt5', 'h5py', 'hdf5plugin', 'PyOpenGL']
+    opencl_requires = ['pyopencl']
     extras_require = {
         'calib2': gui_requires,  # Keep compatibility
         'gui': gui_requires,
@@ -1056,11 +1056,7 @@ def get_project_configuration(dry_run):
                         version=get_version(),
                         url="https://github.com/silx-kit/pyFAI",
                         download_url="https://github.com/silx-kit/pyFAI/releases",
-                        author="Jérôme Kieffer (python), \
-          Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
-          Vicente Armando Sole (algorithm), \
-          Dimitris Karkoulis (GPU), Jon Wright (adaptations) \
-          Frederic-Emmanuel Picca and Valentin Valls",
+                        author="Jérôme Kieffer (algo) & Valentin Valls (gui)",
                         author_email="jerome.kieffer@esrf.fr",
                         classifiers=classifiers,
                         description='Python implementation of fast azimuthal integration',
