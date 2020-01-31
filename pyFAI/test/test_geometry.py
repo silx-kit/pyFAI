@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019"
+__date__ = "31/01/2020"
 
 
 import unittest
@@ -59,10 +59,7 @@ from ..third_party import transformations
 from .utilstest import UtilsTest
 import fabio
 
-if sys.platform == "win32":
-    timer = time.clock
-else:
-    timer = time.time
+timer = time.perf_counter
 
 
 class TestSolidAngle(unittest.TestCase):
