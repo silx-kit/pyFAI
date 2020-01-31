@@ -21,6 +21,7 @@ Using a virtual environment:
 ----------------------------
 
 .. code-block:: shell
+
 	python3 -m venv pyfai
 	source pyfai/bin/activate
 	pip install pyFAI[full]
