@@ -9,3 +9,4 @@ silx
 PyOpenGL
 PyQt5
 hdf5plugin
+wheel

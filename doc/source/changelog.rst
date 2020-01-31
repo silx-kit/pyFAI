@@ -22,7 +22,7 @@ ChangeLog of Versions
   calibration and the goniometers accepted in J. Synch. Rad.
   DOI: To be completed
 * A big thank to Florian from Germany, Bertrand from Xenocs, 
-  Alex from Soleil and Jon from ESF for their contributions
+  Alex from Soleil and Jon from ESRF for their contributions
 
 0.18.0 15/05/2019
 -----------------
