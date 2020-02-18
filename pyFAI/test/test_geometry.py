@@ -36,11 +36,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2020"
+__date__ = "18/02/2020"
 
 
 import unittest
-import sys
 import random
 import time
 import numpy
@@ -58,8 +57,6 @@ from ..detectors import detector_factory
 from ..third_party import transformations
 from .utilstest import UtilsTest
 import fabio
-
-timer = time.perf_counter
 
 
 class TestSolidAngle(unittest.TestCase):
@@ -326,13 +323,13 @@ class TestFastPath(utilstest.ParametricTestCase):
         for data, space in params:
             with self.subTest(data=data, space=space):
                 geo = geometry.Geometry(**data)
-                t00 = timer()
+                t00 = time.perf_counter()
                 py_res = geo.corner_array(unit=space, use_cython=False, scale=False)
-                t01 = timer()
+                t01 = time.perf_counter()
                 geo.reset()
-                t10 = timer()
+                t10 = time.perf_counter()
                 cy_res = geo.corner_array(unit=space, use_cython=True, scale=False)
-                t11 = timer()
+                t11 = time.perf_counter()
                 delta = abs(py_res - cy_res)
                 # We expect precision on radial position
                 delta_r = delta[..., 0].max()
@@ -349,11 +346,11 @@ class TestFastPath(utilstest.ParametricTestCase):
         for geometryParams in geometries:
             with self.subTest(geometry=geometry):
                 geo = geometry.Geometry(**geometryParams)
-                t0 = timer()
+                t0 = time.perf_counter()
                 py_res = geo.calc_pos_zyx(corners=True, use_cython=False)
-                t1 = timer()
+                t1 = time.perf_counter()
                 cy_res = geo.calc_pos_zyx(corners=True, use_cython=True)
-                t2 = timer()
+                t2 = time.perf_counter()
                 delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
                 logger.debug("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
                              geometryParams["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
@@ -367,13 +364,13 @@ class TestFastPath(utilstest.ParametricTestCase):
         for geometryParams in geometries:
             with self.subTest(geometry=geometryParams):
                 geo = geometry.Geometry(**geometryParams)
-                t0 = timer()
+                t0 = time.perf_counter()
                 py_res = geo.deltaChi(use_cython=False)
-                # t1 = timer()
+                # t1 = time.perf_counter()
                 geo.reset()
-                t1 = timer()
+                t1 = time.perf_counter()
                 cy_res = geo.deltaChi(use_cython=True)
-                t2 = timer()
+                t2 = time.perf_counter()
                 delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
                 logger.debug("TIMINGS\t meth: deltaChi %s python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
                              geometryParams["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
@@ -432,11 +429,11 @@ class TestGeometry(utilstest.ParametricTestCase):
         for func, varargs, kwds in params:
             with self.subTest(function=func, varargs=varargs, kwds=kwds):
                 geo = geometry.Geometry(**kwds)
-                t0 = timer()
+                t0 = time.perf_counter()
                 oldret = getattr(geo, func)(self.D1, self.D2, path=varargs[0])
-                t1 = timer()
+                t1 = time.perf_counter()
                 newret = getattr(geo, func)(self.D1, self.D2, path=varargs[1])
-                t2 = timer()
+                t2 = time.perf_counter()
                 delta = abs(oldret - newret).max()
                 logger.debug("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s",
                              func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
@@ -451,11 +448,11 @@ class TestGeometry(utilstest.ParametricTestCase):
         for corners, kwds in params:
             with self.subTest(corners=corners, kwds=kwds):
                 geo = geometry.Geometry(**kwds)
-                t0 = timer()
+                t0 = time.perf_counter()
                 py_res = geo.calc_pos_zyx(None, self.D1, self.D2, corners=corners, use_cython=False)
-                t1 = timer()
+                t1 = time.perf_counter()
                 cy_res = geo.calc_pos_zyx(None, self.D1, self.D2, corners=corners, use_cython=True)
-                t2 = timer()
+                t2 = time.perf_counter()
                 delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
                 logger.debug("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s",
                              corners, t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
