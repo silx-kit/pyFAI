@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2020"
+__date__ = "18/02/2020"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -723,9 +723,9 @@ class AzimuthalIntegrator(Geometry):
                     integr.setDummyValue(dummy, delta_dummy)
                 if (correctSolidAngle and not param["solid_angle"]):
                     integr.setSolidAngle(flat * self.solidAngleArray(shape, correctSolidAngle))
-                elif (not correctSolidAngle) and param["solid_angle"] and (flat is 1):
+                elif (not correctSolidAngle) and param["solid_angle"] and (flat == 1):
                     integr.unsetSolidAngle()
-                elif not correctSolidAngle and not param["solid_angle"] and (flat is not 1):
+                elif not correctSolidAngle and not param["solid_angle"] and (flat != 1):
                     integr.setSolidAngle(flat)
                 if (mask is not None) and not param["mask"]:
                     integr.setMask(mask)
