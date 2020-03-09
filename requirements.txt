@@ -6,3 +6,7 @@ matplotlib
 numexpr
 h5py
 silx
+PyOpenGL
+PyQt5
+hdf5plugin
+wheel

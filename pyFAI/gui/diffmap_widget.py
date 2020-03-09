@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/02/2019"
+__date__ = "24/01/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -86,10 +86,8 @@ class TreeModel(qt.QAbstractItemModel):
         new_labels = [i.label for i in new_root.children]
         old_lables = [i.label for i in self._root_item.children]
         if new_labels == old_lables:
-            print("update labels")
             self._root_item.update(new_root)
         else:
-            print("replace labels")
             self._root_item.children = []
             for child in new_root.children:
                 self._root_item.add_child(child)
@@ -136,7 +134,6 @@ class TreeModel(qt.QAbstractItemModel):
     def parent(self, midx):
         item = midx.internalPointer()
         if (item is None) or (item is self._root_item):
-            print(midx, midx.row(), midx.column())
             return  # QtCore.QModelIndex()
         pitem = item.parent
         if pitem is self._root_item:
@@ -276,7 +273,6 @@ class DiffMapWidget(qt.QWidget):
     def clear_selection(self, *args, **kwargs):
         """called to remove selected files from the list
         """
-        print(self.listFiles.selectedIndexes())
         logger.warning("remove all files for now !! not yet implemented")
         self.list_dataset.empty()
         self.list_model.update(self.list_dataset.as_tree())
@@ -288,11 +284,17 @@ class DiffMapWidget(qt.QWidget):
         iw = IntegrateDialog(self)
         if self.integration_config:
             iw.widget.setConfig(self.integration_config)
-        res = iw.exec_()
-        if res == qt.QDialog.Accepted:
-            self.integration_config = iw.widget.getConfig()
-        print(json.dumps(self.integration_config, indent=2))
-
+        while True:
+            res = iw.exec_()
+            if res == qt.QDialog.Accepted:
+                self.integration_config = iw.widget.getConfig()
+                if self.integration_config.get("nbpt_rad"):
+                    break
+                else:
+                    qt.QMessageBox.about(self, "Unconsistent configuration", "Some essential parameters are missing ... Did you set the radial number of points ?")
+            else:
+                break
+        
     def configure_output(self, *args, **kwargs):
         """
         called when clicking on "outputFileSelector"
@@ -442,17 +444,16 @@ class DiffMapWidget(qt.QWidget):
             config = self.dump()
             config_ai = config.get("ai", {})
             config_ai = config_ai.copy()
+            if "nbpt_rad" not in config_ai:
+                raise RuntimeError("The number of radial points is mandatory !")
 
             diffmap = DiffMap(npt_fast=config.get("fast_motor_points", 1),
                               npt_slow=config.get("slow_motor_points", 1),
                               npt_rad=config_ai.get("nbpt_rad", 1000),
                               npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
-            diffmap.ai = worker.make_ai(config_ai)
-            # TODO: This diffmap configuration file should be cleaned up
-            reader = ConfigurationReader(config_ai)
-            diffmap.method = reader.pop_method("csr")
-            diffmap.unit = to_unit(config_ai.get("unit", "2th_deg"))
+            diffmap.worker = worker.Worker()
+            diffmap.worker.set_config(config_ai, consume_keys=False)
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data = diffmap.init_ai()
             self.data_h5 = diffmap.dataset
@@ -463,11 +464,11 @@ class DiffMapWidget(qt.QWidget):
                     logger.warning("Aborted by user")
                     self.progressbarChanged.emit(0, 0)
                     if diffmap.nxs:
-                        self.data_np = diffmap.dataset.value
+                        self.data_np = diffmap.dataset[()]
                         diffmap.nxs.close()
                     return
             if diffmap.nxs:
-                self.data_np = diffmap.dataset.value
+                self.data_np = diffmap.dataset[()]
                 diffmap.nxs.close()
         logger.warning("Processing finished in %.3fs", time.time() - t0)
         self.progressbarChanged.emit(len(self.list_dataset), 0)
@@ -509,7 +510,7 @@ class DiffMapWidget(qt.QWidget):
 
         with self.update_sem:
             try:
-                data = self.data_h5.value
+                data = self.data_h5[()]
             except ValueError:
                 data = self.data_np
             if self.radial_data is None:

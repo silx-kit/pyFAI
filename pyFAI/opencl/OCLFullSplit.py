@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "15/05/2019"
+__date__ = "18/02/2020"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -83,7 +83,7 @@ class OCLFullSplit1d(object):
         self.pos0Range = numpy.empty(2, dtype=numpy.float32)
         self.pos1Range = numpy.empty(2, dtype=numpy.float32)
 
-        if (pos0Range is not None) and (len(pos0Range) is 2):
+        if (pos0Range is not None) and (len(pos0Range) == 2):
             self.pos0Range[0] = min(pos0Range)  # do it on GPU?
             self.pos0Range[1] = max(pos0Range)
             if (not self.allow_pos0_neg) and (self.pos0Range[0] < 0):
@@ -96,7 +96,7 @@ class OCLFullSplit1d(object):
         else:
             self.pos0Range[0] = 0.0
             self.pos0Range[1] = 0.0
-        if (pos1Range is not None) and (len(pos1Range) is 2):
+        if (pos1Range is not None) and (len(pos1Range) == 2):
             self.pos1Range[0] = min(pos1Range)  # do it on GPU?
             self.pos1Range[1] = max(pos1Range)
             # self.pos1Range[0] = pos1Range[0]

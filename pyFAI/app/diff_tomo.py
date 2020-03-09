@@ -27,22 +27,26 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """CLI interface for diffraction tomography data reduction"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "21/01/2020"
 __satus__ = "Production"
 
-import logging
 import os
 import glob
+import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
-logger = logging.getLogger("diff_tomo")
+logger = logging.getLogger(__name__)
+try:
+    import hdf5plugin  # noqa
+except ImportError:
+    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
+
 from pyFAI import version as PyFAI_VERSION
 from pyFAI import date as PyFAI_DATE
 from pyFAI.diffmap import DiffMap
@@ -57,6 +61,7 @@ class DiffTomo(DiffMap):
     Basic class for diffraction tomography experiment using pyFAI.
 
     """
+
     def __init__(self, nTrans=1, nRot=1, nDiff=1000):
         """
         Constructor of the class

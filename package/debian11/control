@@ -9,9 +9,7 @@ Build-Depends: cython3,
                debhelper,
                dh-python,
                python3-all-dev,
-               python3-setuptools,
                python3-fabio,
-               python3-h5py,
                python3-silx,
                python3-lxml,
                python3-matplotlib,
@@ -22,7 +20,6 @@ Build-Depends: cython3,
                python3-sphinxcontrib.programoutput,
                python3-nbconvert,
                python3-nbsphinx,
-               python3-pkg-resources,
                help2man,
                devscripts
 Standards-Version: 3.9.6
@@ -36,11 +33,8 @@ Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
          ${shlibs:Depends},
-         python3-h5py,
          python3-pkg-resources,
-         python3-pyfai (>= ${source:Version}),
-         python3-pyopencl,
-         python3-pyqt5|python3-pyside
+         python3-pyfai (>= ${source:Version})
 Description: Fast Azimuthal Integration scripts
  PyFAI is a Python library for azimuthal integration; it allows the conversion
  of diffraction images taken with 2D detectors like CCD cameras into X-Ray
@@ -58,7 +52,6 @@ Description: Fast Azimuthal Integration scripts
  (transmission, reflection, off-axis, ...). It uses the Python library FabIO
  to read most images taken by diffractometer.
 
-
 Package: python3-pyfai
 Architecture: any
 Section: python
@@ -71,8 +64,8 @@ Depends: ${misc:Depends},
          python3-scipy,
          python3-silx (>=0.10)
 Recommends: python3-pyopencl,
-            python3-h5py,
             python3-pyqt5|python3-pyside
+Suggests: python3-h5py
 Description: Fast Azimuthal Integration scripts - Python3
  PyFAI is a Python library for azimuthal integration; it allows the conversion
  of diffraction images taken with 2D detectors like CCD cameras into X-Ray

@@ -33,13 +33,23 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2018"
+__date__ = "21/01/2020"
 __status__ = "production"
 
 import os
 import sys
 import time
+from argparse import ArgumentParser
+import logging
+logging.basicConfig(level=logging.INFO)
+logging.captureWarnings(True)
+logger = logging.getLogger(__name__)
+try:
+    import hdf5plugin  # noqa
+except ImportError:
+    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 import fabio
+
 from pyFAI import date, version as pyFAI_version
 from pyFAI import units
 from pyFAI import utils
@@ -47,12 +57,6 @@ from pyFAI.average import average_dark
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.method_registry import IntegrationMethod
 hc = units.hc
-import logging
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
-logger = logging.getLogger(__name__)
-
-from argparse import ArgumentParser
 
 
 def main():

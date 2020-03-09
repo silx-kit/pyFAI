@@ -27,14 +27,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """Use silx library to provide a widget to customize a mask """
 
 __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "21/01/2020"
 __satus__ = "Production"
 
 import os
@@ -42,9 +41,13 @@ import numpy
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
-import fabio
+logger = logging.getLogger(__name__)
+try:
+    import hdf5plugin  # noqa
+except ImportError:
+    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-_logger = logging.getLogger("drawmask")
+import fabio
 
 import silx.gui.plot
 from silx.gui import qt
@@ -56,6 +59,7 @@ class AbstractMaskImageWidget(qt.QMainWindow):
     """
     Abstract window application which allow to create a mask manually.
     """
+
     def __init__(self):
         qt.QMainWindow.__init__(self)
         self.setWindowTitle("pyFAI drawmask")
@@ -91,6 +95,7 @@ class MaskImageWidget(AbstractMaskImageWidget):
     Window application which allow to create a mask manually.
     It is based on Silx library widgets.
     """
+
     def __init__(self):
         AbstractMaskImageWidget.__init__(self)
 

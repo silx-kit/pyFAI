@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/05/2019"
+__date__ = "19/11/2019"
 
 import unittest
 import os
@@ -62,6 +62,7 @@ from pyFAI.utils.decorators import depreclog
 @unittest.skipIf(UtilsTest.low_mem, "test using >500M")
 class TestAzimPilatus(unittest.TestCase):
     """This test uses a lot of memory"""
+
     @classmethod
     def setUpClass(cls):
         cls.img = UtilsTest.getimage("Pilatus6M.cbf")
@@ -283,9 +284,13 @@ class TestAzimHalfFrelon(unittest.TestCase):
     def test_separate(self):
         "test separate with a mask. issue #209 regression test"
         msk = self.data < 100
-        bragg, amorphous = self.ai.separate(self.data, mask=msk)
-        self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
-        self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
+        res = self.ai.separate(self.data, mask=msk)
+        bragg, amorphous = res
+
+        self.assertLess(amorphous.max(), bragg.max(), "bragg is more intense than amorphous")
+        self.assertLess(amorphous.std(), bragg.std(), "bragg is more variatic than amorphous")
+        self.assertGreater(numpy.diff(res.radial).min(), 0, "radial position is stricly monotonic")
+        self.assertEqual(res.radial.shape, res.intensity.shape, "1D intensities are of proper shape")
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
@@ -490,6 +495,7 @@ class TestSaxs(unittest.TestCase):
 
 
 class TestSetter(unittest.TestCase):
+
     def setUp(self):
         self.ai = AzimuthalIntegrator()
         shape = (10, 15)
