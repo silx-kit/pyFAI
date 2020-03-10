@@ -69,7 +69,7 @@ All files are unpacked into the directory pyFAI-master::
 
 Build it & test it::
 
-    python setup.py build test
+    python3 setup.py build test
 
 For its tests, pyFAI downloads test images from the internet.
 Depending on your network connection and your local network configuration,
@@ -79,7 +79,7 @@ you may have to setup a proxy configuration like this (no more needed at ESRF)::
 
 Finally, install pyFAI in the virtualenv after testing it::
 
-    python setup.py bdist_wheel
+    python3 setup.py bdist_wheel
     pip install pyFAI --pre --find-links dist --no-index --upgrade
 
 If you prefer a local installation (only you will have access to the
@@ -92,7 +92,7 @@ repository::
 
     git clone https://github.com/silx-kit/pyFAI.git
     cd pyFAI
-    python setup.py build bdist_wheel
+    python3 setup.py build bdist_wheel
     pip install pyFAI --pre --find-links dist --no-index --upgrade
     
 If you want pyFAI to make use of your graphic card, please install
@@ -109,13 +109,14 @@ Documentation
 
 Documentation can be build using this command and Sphinx (installed on your computer)::
 
-    python setup.py build build_doc
+    python3 setup.py build build_doc
 
 
 Dependencies
 ------------
 
-Python 3.5, ... 3.8 are well tested.
+Python 3.5, ... 3.8 are well tested and officially supported.
+Python 2.7 and 3.4 has are no more supported since pyFAI 0.19
 Python 2.6, 3.2 and 3.3 are no more supported since pyFAI 0.12
 Python 3.4, 2.7 have been dropped with 0.19
 For full functionality of pyFAI the following modules need to be installed.
@@ -172,7 +173,7 @@ You will also need *cython* to re-generate the C-files and delete *src/histogram
 before running::
 
     pip install cython --upgrade
-    python setup.py build --force-cython --no-openmp
+    python3 setup.py build --force-cython --no-openmp
 
 
 Windows
