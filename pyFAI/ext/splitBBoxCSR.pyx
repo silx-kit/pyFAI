@@ -35,7 +35,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "05/08/2019"
+__date__ = "18/03/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -668,7 +668,7 @@ class HistoBBox1d(object):
                      ):
         """
         Actually perform the integration which in this case consists of:
-         * Calculate the signal and the normalization parts
+         * Calculate the signal, variance and the normalization parts
          * Perform the integration which is here a matrix-vector product
 
         :param weights: input image
@@ -687,12 +687,12 @@ class HistoBBox1d(object):
         :type solidAngle: ndarray
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
+        :param absorption: Apparent efficiency of a pixel due to parallax effect
+        :type absorption: ndarray        
         :param normalization_factor: divide the valid result by this value
-        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: 4-tuple of ndarrays
-
+        :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
         cdef:
             cnumpy.int32_t i, j, idx = 0, bins = self.bins, size = self.size
@@ -718,7 +718,7 @@ class HistoBBox1d(object):
                            solidangle=solidangle,
                            polarization=polarization,
                            absorption=absorption,
-                           mask=self.cmask,
+                           mask=self.cmask if self.check_mask else None,
                            dummy=dummy, 
                            delta_dummy=delta_dummy,
                            normalization_factor=normalization_factor, 
