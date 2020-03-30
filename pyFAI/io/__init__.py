@@ -38,14 +38,13 @@ TODO:
 - Add monitor to HDF5
 """
 
-
 from __future__ import absolute_import, print_function, division
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/10/2019"
+__date__ = "30/03/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -65,7 +64,6 @@ from .. import units
 from .. import version
 from .. import containers
 
-
 logger = logging.getLogger(__name__)
 try:
     import h5py
@@ -82,7 +80,6 @@ try:
 except ImportError:
     fabio = None
     logger.error("fabio module missing")
-
 
 from .nexus import get_isotime, from_isotime, is_hdf5, Nexus
 
@@ -382,7 +379,7 @@ class HDF5Writer(Writer):
             else:
                 dtype = numpy.dtype(dtype)
             # FIXME: Number of frames could be provided optionally to the constructor
-            self.dataset = self.nxdata.require_dataset(self.DATASET_NAME, shape, dtype=dtype, chunks=chunk,
+            self.dataset = self.nxdata.require_dataset(self.DATASET_NAME, tuple(shape), dtype=dtype, chunks=chunk,
                                                        maxshape=(None,) + chunk[1:])
             if do_2D:
                 self.nxdata.attrs["interpretation"] = u"image"
@@ -391,8 +388,8 @@ class HDF5Writer(Writer):
                 self.nxdata.attrs["interpretation"] = u"image"
                 self.dataset.attrs["interpretation"] = u"spectrum"
 
-            self.chunk = chunk
-            self.shape = shape
+            self.chunk = tuple(chunk)
+            self.shape = tuple(shape)
             name = "Mapping " if self.fast_scan_width else "Scanning "
             name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
             name += " experiment"
@@ -745,6 +742,7 @@ class AsciiWriter(Writer):
     """
     Ascii file writer (.xy or .dat)
     """
+
     def __init__(self, filename=None, prefix="fai_", extension=".dat"):
         """
 
@@ -831,6 +829,7 @@ class FabioWriter(Writer):
 
     TODO !!!
     """
+
     def __init__(self, filename=None):
         """
 
@@ -912,5 +911,4 @@ class FabioWriter(Writer):
             with open(filename, "w") as f:
                 f.write("# Processing time: %s%s" % (get_isotime(), self.header))
                 numpy.savetxt(f, data)
-
 
