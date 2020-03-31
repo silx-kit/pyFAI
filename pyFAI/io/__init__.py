@@ -44,7 +44,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/03/2020"
+__date__ = "31/03/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -82,6 +82,12 @@ except ImportError:
     logger.error("fabio module missing")
 
 from .nexus import get_isotime, from_isotime, is_hdf5, Nexus
+try:
+    import hdf5plugin
+except ImportError:
+    CMP = {}
+else:
+    CMP = hdf5plugin.Bitshuffle()
 
 
 class Writer(object):
@@ -196,8 +202,10 @@ class HDF5Writer(Writer):
         self.hdf5 = None
         self.entry = None
         self.process = None
-        self.nxdata = None
-        self.dataset = None
+        self.nxdata_grp = None
+        self.intensity_ds = None
+        self.error_ds = None
+
         self.config = None
         self.radial_values = None
         self.azimuthal_values = None
@@ -208,6 +216,7 @@ class HDF5Writer(Writer):
         self.chunk = None
         self.shape = None
         self.ndim = None
+        self.do2D = None
         self._current_frame = None
         self._append_frames = append_frames
         self._mode = mode
@@ -305,9 +314,9 @@ class HDF5Writer(Writer):
             self.process["version"] = u"%s" % version
             self.process.attrs["default"] = u"results"
 
-            self.nxdata = self.process.require_group("results")
-            self.nxdata.attrs["NX_class"] = u"NXdata"
-            self.nxdata.attrs["signal"] = u"%s" % self.DATASET_NAME
+            self.nxdata_grp = self.process.require_group("results")
+            self.nxdata_grp.attrs["NX_class"] = u"NXdata"
+            self.nxdata_grp.attrs["signal"] = u"%s" % self.DATASET_NAME
 
             self.config = self.process.require_group(self.CONFIG)
             self.config.attrs["NX_class"] = u"NXcollection"
@@ -326,25 +335,28 @@ class HDF5Writer(Writer):
 
             rad_name, rad_unit = str(self.fai_cfg.get("unit", "2th_deg")).split("_", 1)
 
-            self.radial_values = self.nxdata.require_dataset("radial", (self.fai_cfg["nbpt_rad"],), numpy.float32)
+            self.radial_values = self.nxdata_grp.require_dataset("radial", (self.fai_cfg["nbpt_rad"],), numpy.float32)
             self.radial_values.attrs["unit"] = u"%s" % rad_unit
             self.radial_values.attrs["interpretation"] = u"scalar"
             self.radial_values.attrs["name"] = u"%s" % rad_name
-            self.radial_values.attrs["long_name"] = u"Diffraction radial direction"
+            self.radial_values.attrs["long_name"] = u"Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
 
-            do_2D = self.fai_cfg.get("do_2D", self.fai_cfg.get("nbpt_azim", 0) > 0)
+            self.do2D = self.fai_cfg.get("do_2D", self.fai_cfg.get("nbpt_azim", 0) > 0)
 
-            if do_2D:
-                self.azimuthal_values = self.nxdata.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
+            if self.do2D:
+                self.azimuthal_values = self.nxdata_grp.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
                 self.azimuthal_values.attrs["unit"] = u"deg"
                 self.azimuthal_values.attrs["interpretation"] = u"scalar"
-                self.azimuthal_values.attrs["long_name"] = u"Azimuthal angle"
+                self.azimuthal_values.attrs["long_name"] = u"Azimuthal angle χ (degree)"
+                self.nxdata_grp["title"] = "2D azimuthaly integrated data"
+            else:
+                self.nxdata_grp["title"] = "Azimuthaly integrated data"
 
             if self.fast_scan_width:
                 self.fast_motor = self.entry.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
                 self.fast_motor.attrs["long_name"] = u"Fast motor position"
                 self.fast_motor.attrs["interpretation"] = u"scalar"
-                if do_2D:
+                if self.do2D:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 4
                     axis_definition = [u".", u"fast", u"chi", u"radial"]
@@ -353,7 +365,7 @@ class HDF5Writer(Writer):
                     self.ndim = 3
                     axis_definition = [u".", u"fast", u"radial"]
             else:
-                if do_2D:
+                if self.do2D:
                     axis_definition = [u".", u"chi", u"radial"]
                     chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
@@ -363,10 +375,10 @@ class HDF5Writer(Writer):
                     self.ndim = 2
 
             utf8vlen_dtype = h5py.special_dtype(vlen=six.text_type)
-            self.nxdata.attrs["axis"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
+            self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
 
-            if self.DATASET_NAME in self.nxdata:
-                del self.nxdata[self.DATASET_NAME]
+            if self.DATASET_NAME in self.nxdata_grp:
+                del self.nxdata_grp[self.DATASET_NAME]
             shape = list(chunk)
             if self.lima_cfg.get("number_of_frames", 0) > 0:
                 if self.fast_scan_width is not None:
@@ -378,18 +390,9 @@ class HDF5Writer(Writer):
                 dtype = numpy.float32
             else:
                 dtype = numpy.dtype(dtype)
-            # FIXME: Number of frames could be provided optionally to the constructor
-            self.dataset = self.nxdata.require_dataset(self.DATASET_NAME, tuple(shape), dtype=dtype, chunks=chunk,
-                                                       maxshape=(None,) + chunk[1:])
-            if do_2D:
-                self.nxdata.attrs["interpretation"] = u"image"
-                self.dataset.attrs["interpretation"] = u"image"
-            else:
-                self.nxdata.attrs["interpretation"] = u"image"
-                self.dataset.attrs["interpretation"] = u"spectrum"
-
             self.chunk = tuple(chunk)
             self.shape = tuple(shape)
+            self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
             name = "Mapping " if self.fast_scan_width else "Scanning "
             name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
             name += " experiment"
@@ -430,10 +433,11 @@ class HDF5Writer(Writer):
             with self._sem:
                 # Remove any links to HDF5 file
                 self.entry = None
-                self.nxdata = None
+                self.nxdata_grp = None
                 self.config = None
                 self.process = None
-                self.dataset = None
+                self.intensity_ds = None
+                self.error_ds = None
                 self.radial_values = None
                 self.azimuthal_values = None
                 self.fast_motor = None
@@ -480,18 +484,30 @@ class HDF5Writer(Writer):
                 else:
                     radial, intensity, error = data
         with self._sem:
-            if self.dataset is None:
+            if self.intensity_ds is None:
                 logger.warning("Writer not initialized !")
                 return
+            if error is not None and self.error_ds is None:
+                self.error_ds = self._require_dataset(self.DATASET_NAME + "_errors", dtype=error.dtype)
+
             if self.fast_scan_width:
                 index0, index1 = (index // self.fast_scan_width, index % self.fast_scan_width)
-                if index0 >= self.dataset.shape[0]:
-                    self.dataset.resize(index0 + 1, axis=0)
-                self.dataset[index0, index1] = data
+                if index0 >= self.intensity_ds.shape[0]:
+                    self.intensity_ds.resize(index0 + 1, axis=0)
+                    if error is not None:
+                        self.error_ds.resize(index0 + 1, axis=0)
+                self.intensity_ds[index0, index1] = data
+                if error is not None:
+                    self.error_ds [index0, index1] = error
             else:
-                if index >= self.dataset.shape[0]:
-                    self.dataset.resize(index + 1, axis=0)
-                self.dataset[index] = intensity
+                if index >= self.intensity_ds.shape[0]:
+                    self.intensity_ds.resize(index + 1, axis=0)
+                    if error is not None:
+                        self.error_ds.resize(index + 1, axis=0)
+                self.intensity_ds[index] = intensity
+                if error is not None:
+                    self.error_ds [index] = error
+
             if (not self.has_azimuthal_values) and \
                (azimuthal is not None) and \
                self.azimuthal_values is not None:
@@ -506,17 +522,26 @@ class HDF5Writer(Writer):
                self.radial_values is not None:
                 self.radial_values[:] = radial
                 self.has_radial_values = True
-            if error is not None:
-                dataset_error = self._require_errors(dtype=error.dtype)
-                dataset_error[index] = error
 
-    def _require_errors(self, dtype):
-        """Returns the dataset to store result error."""
-        result = self.nxdata.require_dataset("errors",
-                                             shape=self.shape,
-                                             dtype=dtype,
-                                             chunks=self.chunk,
-                                             maxshape=(None,) + self.chunk[1:])
+    def _require_dataset(self, name, dtype):
+        """Returns the dataset to store data/error ."""
+
+        if self.do2D:
+            result = self.nxdata_grp.require_dataset(name,
+                                                     shape=self.shape,
+                                                     dtype=dtype,
+                                                     chunks=self.chunk,
+                                                     maxshape=(None,) + self.chunk[1:],
+                                                     **CMP)
+            result.attrs["interpretation"] = u"image"
+        else:
+            result = self.nxdata_grp.require_dataset(name,
+                                                     shape=self.shape,
+                                                     dtype=dtype,
+                                                     chunks=self.chunk,
+                                                     maxshape=(None,) + self.chunk[1:])
+
+            result.attrs["interpretation"] = u"spectrum"
         return result
 
 
