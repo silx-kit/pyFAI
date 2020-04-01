@@ -44,7 +44,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2020"
+__date__ = "01/04/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -82,12 +82,19 @@ except ImportError:
     logger.error("fabio module missing")
 
 from .nexus import get_isotime, from_isotime, is_hdf5, Nexus
-try:
-    import hdf5plugin
-except ImportError:
-    CMP = {}
-else:
-    CMP = hdf5plugin.Bitshuffle()
+
+# Activating compression has an important performance penalty and,
+# as we are saving Float32, the compression obtained is far from optimal
+#
+# # If compression is activated, thetest pyFAI.test.test_io is likely to fail
+#
+# try:
+#     import hdf5plugin
+# except ImportError:
+#     CMP = {}
+# else:
+#     CMP = hdf5plugin.Bitshuffle()
+CMP = {}
 
 
 class Writer(object):
@@ -294,6 +301,10 @@ class HDF5Writer(Writer):
         """
         logger.debug("Init")
         Writer.init(self, fai_cfg, lima_cfg)
+
+        # TODO: rewrite using the Nexus class to factorize code
+        # create external link to input dataset
+
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
                 open("fai_cfg.debug.json", "w").write(json.dumps(self.fai_cfg, indent=4))
