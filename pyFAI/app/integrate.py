@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "01/04/2020"
 __satus__ = "production"
 
 import sys
@@ -681,6 +681,8 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
         writer.close()
         return 1
 
+    dataset_ids = set()
+
     # Integrate all the provided frames one by one
     for data_info in source.frames():
         logger.debug("Processing %s", item)
@@ -700,6 +702,15 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
             result = worker.process(data=data_info.data,
                                     normalization_factor=normalization_factor,
                                     writer=writer)
+        # Store reference to input data if possible
+        if isinstance(writer, HDF5Writer) and (data_info.fabio_image is not None):
+            fimg = data_info.fabio_image
+            if "dataset" in dir(fimg):
+                if isinstance(fimg.dataset, list):
+                    for ds in  fimg.dataset:
+                        writer.set_hdf5_input_dataset(ds)
+                else:
+                    writer.set_hdf5_input_dataset(fimg.dataset)
 
         if observer.is_interruption_requested():
             break

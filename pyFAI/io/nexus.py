@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2020"
+__date__ = "01/04/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -42,10 +42,19 @@ import sys
 import time
 import logging
 import numpy
-import h5py
 from ..utils.decorators import deprecated
 from .. import version
 logger = logging.getLogger(__name__)
+try:
+    import h5py
+except ImportError as error:
+    h5py = None
+    logger.error("h5py module missing")
+else:
+    try:
+        h5py._errors.silence_errors()
+    except AttributeError:  # old h5py
+        pass
 
 
 def get_isotime(forceTime=None):
@@ -168,6 +177,10 @@ class Nexus(object):
     def __exit__(self, *arg, **kwarg):
         self.close()
 
+    def flush(self):
+        if self.h5:
+            self.h5.flush()
+
     def get_entry(self, name):
         """
         Retrieves an entry from its name
@@ -214,14 +227,13 @@ class Nexus(object):
         return result
 
     def new_entry(self, entry="entry", program_name="pyFAI",
-                  title="description of experiment",
-                  force_time=None, force_name=False):
+                  title=None, force_time=None, force_name=False):
         """
         Create a new entry
 
         :param entry: name of the entry
         :param program_name: value of the field as string
-        :param title: value of the field as string
+        :param title: description of experiment
         :param force_time: enforce the start_time (as string!)
         :param force_name: force the entry name as such, without numerical suffix.
         :return: the corresponding HDF5 group
@@ -233,7 +245,8 @@ class Nexus(object):
         entry_grp = self.h5.require_group(entry)
         self.h5.attrs["default"] = entry
         entry_grp.attrs["NX_class"] = "NXentry"
-        entry_grp["title"] = str(title)
+        if title is not None:
+            entry_grp["title"] = str(title)
         entry_grp["program_name"] = str(program_name)
         if force_time:
             entry_grp["start_time"] = str(force_time)
