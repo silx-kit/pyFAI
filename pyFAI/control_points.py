@@ -242,69 +242,70 @@ class ControlPoints(object):
         wavelength = None
         dspacing = []
 
-        for line in open(filename, "r"):
-            if line.startswith("#"):
-                continue
-            elif ":" in line:
-                key, value = line.split(":", 1)
-                value = value.strip()
-                key = key.strip().lower()
-                if key == "calibrant":
-                    words = value.split()
-                    if words[0] in calibrant_names():
-                        calibrant = get_calibrant(words[0])
-                    try:
-                        wavelength = float(words[-1])
-                        calibrant.set_wavelength(wavelength)
-                    except Exception as error:
-                        logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
-                elif key == "wavelength":
-                    try:
-                        wavelength = float(value)
-                    except Exception as error:
-                        logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
-                elif key == "dspacing":
-                    for val in value.split():
+        with open(filename, 'r') as opened_file:
+            for line in opened_file:
+                if line.startswith("#"):
+                    continue
+                elif ":" in line:
+                    key, value = line.split(":", 1)
+                    value = value.strip()
+                    key = key.strip().lower()
+                    if key == "calibrant":
+                        words = value.split()
+                        if words[0] in calibrant_names():
+                            calibrant = get_calibrant(words[0])
                         try:
-                            fval = float(val)
-                        except Exception:
-                            fval = None
-                        dspacing.append(fval)
-                elif key == "ring":
-                    if value.lower() == "none":
-                        ring = None
-                    else:
-                        try:
-                            ring = int(value)
+                            wavelength = float(words[-1])
+                            calibrant.set_wavelength(wavelength)
                         except Exception as error:
-                            logger.error("ControlPoints.load: unable to convert to int %s (ring): %s", value, error)
-                elif key == "point":
-                    vx = None
-                    vy = None
-                    if "x=" in value:
-                        vx = value[value.index("x=") + 2:].split()[0]
-                    if "y=" in value:
-                        vy = value[value.index("y=") + 2:].split()[0]
-                    if (vx is not None) and (vy is not None):
+                            logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
+                    elif key == "wavelength":
                         try:
-                            x = float(vx)
-                            y = float(vy)
+                            wavelength = float(value)
                         except Exception as error:
-                            logger.error("ControlPoints.load: unable to convert to float %s (point): %s", value, error)
-                        else:
-                            points.append([y, x])
-                elif key.startswith("new"):
-                    if len(points) > 0:
-                        with self._sem:
-                            gpt = PointGroup(points, ring)
-                            self._groups[gpt.label] = gpt
-                            points = []
+                            logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
+                    elif key == "dspacing":
+                        for val in value.split():
+                            try:
+                                fval = float(val)
+                            except Exception:
+                                fval = None
+                            dspacing.append(fval)
+                    elif key == "ring":
+                        if value.lower() == "none":
                             ring = None
-                elif key in ["2theta"]:
-                    # Deprecated keys
-                    pass
-                else:
-                    logger.error("Unknown key: %s", key)
+                        else:
+                            try:
+                                ring = int(value)
+                            except Exception as error:
+                                logger.error("ControlPoints.load: unable to convert to int %s (ring): %s", value, error)
+                    elif key == "point":
+                        vx = None
+                        vy = None
+                        if "x=" in value:
+                            vx = value[value.index("x=") + 2:].split()[0]
+                        if "y=" in value:
+                            vy = value[value.index("y=") + 2:].split()[0]
+                        if (vx is not None) and (vy is not None):
+                            try:
+                                x = float(vx)
+                                y = float(vy)
+                            except Exception as error:
+                                logger.error("ControlPoints.load: unable to convert to float %s (point): %s", value, error)
+                            else:
+                                points.append([y, x])
+                    elif key.startswith("new"):
+                        if len(points) > 0:
+                            with self._sem:
+                                gpt = PointGroup(points, ring)
+                                self._groups[gpt.label] = gpt
+                                points = []
+                                ring = None
+                    elif key in ["2theta"]:
+                        # Deprecated keys
+                        pass
+                    else:
+                        logger.error("Unknown key: %s", key)
         if len(points) > 0:
             with self._sem:
                 gpt = PointGroup(points, ring)

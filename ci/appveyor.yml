@@ -30,11 +30,6 @@ environment:
         VENV_TEST_DIR: "venv_test"
 
     matrix:
-        # Python 2.7
-        #- PYTHON_DIR: "C:\\Python27-x64"
-        #  PYTHON_VERSION: "2.7.11"
-        #  PYTHON_ARCH: "64"
-        #  BUILD_ARGS: ""
 
         # Python 3.5
         - PYTHON_DIR: "C:\\Python35-x64"
@@ -49,6 +44,10 @@ environment:
 
         # Python 3.7
         - PYTHON_DIR: "C:\\Python37-x64"
+          PYTHON_ARCH: "64"
+
+        # Python 3.8
+        - PYTHON_DIR: "C:\\Python38-x64"
           PYTHON_ARCH: "64"
 
 

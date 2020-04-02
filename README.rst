@@ -34,11 +34,12 @@ With PIP
 
 As most Python packages, pyFAI is available via PIP::
 
-   pip install pyFAI [--user]
+   pip install pyFAI[gui]
 
 Provide the *--user* to perform an installation local to your user.
 Under UNIX, you may have to run the command via *sudo* to gain root access an
-perform a system wide installation.
+perform a system wide installation. 
+The best solution remaining to install the software into a vituralenv.
 
 With conda
 ..........
@@ -68,36 +69,32 @@ All files are unpacked into the directory pyFAI-master::
 
 Build it & test it::
 
-    python setup.py build test
+    python3 setup.py build test
 
 For its tests, pyFAI downloads test images from the internet.
 Depending on your network connection and your local network configuration,
-you may have to setup a proxy configuration like this::
+you may have to setup a proxy configuration like this (no more needed at ESRF)::
 
    export http_proxy=http://proxy.site.org:3128
-   python setup.py build test
 
-This is especially true at ESRF, where you will have to phone the hotline
-(24-24) to get this information or grab it from the intranet.
+Finally, install pyFAI in the virtualenv after testing it::
 
-Finally, install pyFAI computer-wise if you have local root access.
-This command may request your password to gain root-access::
-
-    sudo pip install . --upgrade
+    python3 setup.py bdist_wheel
+    pip install pyFAI --pre --find-links dist --no-index --upgrade
 
 If you prefer a local installation (only you will have access to the
-installed version)::
+installed version), use in addition the --user option::
 
-    pip install . --upgrade --user
+    pip install pyFAI --pre --find-links dist --no-index --upgrade --user
 
 The newest development version can also be obtained by checking out from the git
 repository::
 
     git clone https://github.com/silx-kit/pyFAI.git
     cd pyFAI
-    python setup.py build bdist_wheel
-    sudo pip install . --upgrade
-
+    python3 setup.py build bdist_wheel
+    pip install pyFAI --pre --find-links dist --no-index --upgrade
+    
 If you want pyFAI to make use of your graphic card, please install
 `pyopencl <http://mathema.tician.de/software/pyopencl>`_
 
@@ -112,15 +109,16 @@ Documentation
 
 Documentation can be build using this command and Sphinx (installed on your computer)::
 
-    python setup.py build build_doc
+    python3 setup.py build build_doc
 
 
 Dependencies
 ------------
 
-Python 2.7, 3.5, 3.6 and 3.7 are well tested.
+Python 3.5, ... 3.8 are well tested and officially supported.
+Python 2.7 and 3.4 has are no more supported since pyFAI 0.19
 Python 2.6, 3.2 and 3.3 are no more supported since pyFAI 0.12
-Python 3.4 has beed dropped with 0.19
+Python 3.4, 2.7 have been dropped with 0.19
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -150,21 +148,19 @@ or using apt-get on from the command line in a terminal::
 
 The extra Ubuntu packages needed are:
 
-* ``python-numpy``
-* ``python-scipy``
-* ``python-matplotlib``
-* ``python-dev``
-* ``python-fabio``
-* ``python-pyopencl``
-* ``python-pyqt5``
-* ``python-silx``
-* ``python-numexpr``
+* ``python3-numpy``
+* ``python3-scipy``
+* ``python3-matplotlib``
+* ``python3-dev``
+* ``python3-fabio``
+* ``python3-pyopencl``
+* ``python3-pyqt5``
+* ``python3-silx``
+* ``python3-numexpr``
 
-and the same with python3
 using apt-get these can be installed as::
 
-    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-pyqt5 python-silx python-numexpr
-    sudo apt-get install python3-numpy python3-scipy python3-matplotlib  python3-dev python3-fabio python3-pyopencl python3-pyqt5 python3-silx python3-numexpr 
+    sudo apt-get build-dep pyfai
 
 MacOSX
 ------
@@ -176,9 +172,8 @@ in binary modules.
 You will also need *cython* to re-generate the C-files and delete *src/histogram.c*
 before running::
 
-    pip install cython --user --upgrade
-    rm pyFAI/ext/histogram.c
-    python setup.py build --force-cython --no-openmp
+    pip install cython --upgrade
+    python3 setup.py build --force-cython --no-openmp
 
 
 Windows
@@ -205,11 +200,11 @@ Maintainers
 -----------
 
 * Jérôme Kieffer (ESRF)
+* Valentin Valls (ESRF)
 
 Contributors
 ------------
 
-* Valentin Valls (ESRF)
 * Frédéric-Emmanuel Picca (Soleil)
 * Thomas Vincent (ESRF)
 * Dimitris Karkoulis (ESRF)

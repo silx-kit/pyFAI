@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019" 
+__date__ = "31/01/2020" 
 __status__ = "stable"
 
 
@@ -968,7 +968,7 @@ def get_project_configuration(dry_run):
         # check dependencies and in this case raise an exception
         # FIXME we still have to investigate
         # "h5py",
-        "fabio",
+        "fabio>=0.5",
         "matplotlib",
         "scipy",
         "numexpr",
@@ -994,8 +994,13 @@ def get_project_configuration(dry_run):
         ]
     }
 
+    gui_requires = ['PyQt5', 'h5py', 'hdf5plugin', 'PyOpenGL']
+    opencl_requires = ['pyopencl']
     extras_require = {
-        'calib2': ["fabio>=0.5"],
+        'calib2': gui_requires,  # Keep compatibility
+        'gui': gui_requires,
+        'opencl': opencl_requires,
+        'full': gui_requires + opencl_requires,
     }
 
     console_scripts = [
@@ -1008,7 +1013,7 @@ def get_project_configuration(dry_run):
         'pyFAI-average = pyFAI.app.average:main',
         'pyFAI-benchmark = pyFAI.app.benchmark:main',
         'pyFAI-calib = pyFAI.app.calib:main',
-        'pyFAI-calib2 = pyFAI.app.calib2:main [calib2]',
+        'pyFAI-calib2 = pyFAI.app.calib2:main',
         'pyFAI-drawmask = pyFAI.app.drawmask:main',
         'pyFAI-diffmap = pyFAI.app.diff_map:main',
         'pyFAI-integrate = pyFAI.app.integrate:main',
@@ -1051,11 +1056,7 @@ def get_project_configuration(dry_run):
                         version=get_version(),
                         url="https://github.com/silx-kit/pyFAI",
                         download_url="https://github.com/silx-kit/pyFAI/releases",
-                        author="Jérôme Kieffer (python), \
-          Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
-          Vicente Armando Sole (algorithm), \
-          Dimitris Karkoulis (GPU), Jon Wright (adaptations) \
-          Frederic-Emmanuel Picca and Valentin Valls",
+                        author="Jérôme Kieffer (algo) & Valentin Valls (gui)",
                         author_email="jerome.kieffer@esrf.fr",
                         classifiers=classifiers,
                         description='Python implementation of fast azimuthal integration',

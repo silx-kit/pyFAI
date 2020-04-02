@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "18/02/2020"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -77,14 +77,14 @@ class OCL_Hist_Pixelsplit(object):
             raise RuntimeError("pos.size != 8 * image_size")
         self.pos0Range = numpy.zeros(1, pyopencl.array.vec.float2)
         self.pos1Range = numpy.zeros(1, pyopencl.array.vec.float2)
-        if (pos0Range is not None) and (len(pos0Range) is 2):
+        if (pos0Range is not None) and (len(pos0Range) == 2):
             self.pos0Range[0][0] = min(pos0Range)
             self.pos0Range[0][1] = max(pos0Range)
         else:
             self.pos0Range[0][0] = -float("inf")
             self.pos0Range[0][1] = +float("inf")
 
-        if (pos1Range is not None) and (len(pos1Range) is 2):
+        if (pos1Range is not None) and (len(pos1Range) == 2):
             self.pos1Range[0][0] = min(pos1Range)
             self.pos1Range[0][1] = max(pos1Range)
         else:

@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "05/08/2019"
+__date__ = "18/03/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -51,7 +51,8 @@ from libc.stdio cimport printf, fflush, stdout
 
 from ..utils import crc32
 from ..utils.decorators import deprecated
-
+from .preproc import preproc
+from ..containers import Integrate1dtpl
 cdef struct Function:
     float slope
     float intersect
@@ -583,9 +584,111 @@ class FullSplitCSR_1d(object):
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
     def outPos(self):
         return self.bin_centers
+    
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def integrate_ng(self, 
+                     weights,
+                     variance=None,
+                     dummy=None,
+                     delta_dummy=None,
+                     dark=None,
+                     flat=None,
+                     solidangle=None,
+                     polarization=None,
+                     absorption=None,
+                     data_t normalization_factor=1.0,):
+        """
+        Actually perform the integration which in this case consists of:
+         * Calculate the signal, variance and the normalization parts
+         * Perform the integration which is here a matrix-vector product
 
-    def integrate_ng(self, *arg, **kwargs):
-        raise NotImplementedError("Please fix pyFAI/ext/splitPixelFullCSR.pyx")
+        :param weights: input image
+        :type weights: ndarray
+        :param variance: the variance associate to the image
+        :type variance: ndarray 
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param absorption: Apparent efficiency of a pixel due to parallax effect
+        :type absorption: ndarray        
+        :param normalization_factor: divide the valid result by this value
+
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: Integrate1dtpl 4-named-tuple of ndarrays
+        """
+        cdef:
+            cnumpy.int32_t i, j, idx = 0, bins = self.bins, size = self.size
+            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
+            data_t empty
+            acc_t[::1] sum_sig = numpy.zeros(bins, dtype=acc_d)
+            acc_t[::1] sum_var = numpy.zeros(bins, dtype=acc_d)
+            acc_t[::1] sum_norm = numpy.zeros(bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
+            data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
+            data_t[::1] error = numpy.zeros(bins, dtype=data_d)
+            data_t[::1] ccoef = self.data
+            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
+            data_t[:, ::1] preproc4
+        assert weights.size == size, "weights size"
+        empty = dummy if dummy is not None else self.empty
+        #Call the preprocessor ...
+        preproc4 = preproc(weights.ravel(),
+                           dark=dark,
+                           flat=flat,
+                           solidangle=solidangle,
+                           polarization=polarization,
+                           absorption=absorption,
+                           mask=self.cmask if self.check_mask else None,
+                           dummy=dummy, 
+                           delta_dummy=delta_dummy,
+                           normalization_factor=normalization_factor, 
+                           empty=self.empty,
+                           split_result=4,
+                           variance=variance,
+                           dtype=data_d)
+
+        for i in prange(bins, nogil=True, schedule="guided"):
+            acc_sig = 0.0
+            acc_var = 0.0
+            acc_norm = 0.0
+            acc_count = 0.0
+            for j in range(indptr[i], indptr[i + 1]):
+                idx = indices[j]
+                coef = ccoef[j]
+                if coef == 0.0:
+                    continue
+                acc_sig = acc_sig + coef * preproc4[idx, 0]
+                acc_var = acc_var + coef * coef * preproc4[idx, 1]
+                acc_norm = acc_norm + coef * preproc4[idx, 2] 
+                acc_count = acc_count + coef * preproc4[idx, 3]
+
+            sum_sig[i] += acc_sig
+            sum_var[i] += acc_var
+            sum_norm[i] += acc_norm
+            sum_count[i] += acc_count
+            if acc_count > epsilon:
+                merged[i] += acc_sig / acc_norm
+                error[i] += sqrt(acc_var) / acc_norm
+            else:
+                merged[i] += empty
+                error[i] += empty
+        #"position intensity error signal variance normalization count"
+        return Integrate1dtpl(self.bin_centers, 
+                              numpy.asarray(merged),numpy.asarray(error) ,
+                              numpy.asarray(sum_sig),numpy.asarray(sum_var), 
+                              numpy.asarray(sum_norm), numpy.asarray(sum_count))
+
 
 ################################################################################
 # Bidimensionnal regrouping

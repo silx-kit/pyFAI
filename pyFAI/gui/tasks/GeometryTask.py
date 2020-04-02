@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/05/2019"
+__date__ = "28/01/2020"
 
 import logging
 import numpy
@@ -276,7 +276,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         if event.type() == qt.QEvent.ToolTip:
             if self.__tth is not None:
                 pos = widget.mapFromGlobal(event.globalPos())
-                coord = widget.pixelToData(pos.x(), pos.y(), axis="left", check=False)
+                coord = widget.pixelToData(pos.x(), pos.y(), axis="left")
 
                 pos = coord[0], coord[1]
                 x, y = self.__clampOnImage(pos)

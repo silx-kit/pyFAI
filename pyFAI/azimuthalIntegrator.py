@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2019"
+__date__ = "18/02/2020"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -54,7 +54,6 @@ from .utils.decorators import deprecated, deprecated_warning
 from .containers import Integrate1dResult, Integrate2dResult, SeparateResult
 from .io import DefaultAiWriter
 error = None
-from .containers import Integrate1dtpl, Integrate2dtpl
 from .method_registry import IntegrationMethod
 
 from .engines.preproc import preproc as preproc_np
@@ -130,6 +129,16 @@ else:
                       class_funct=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate))
     IntegrationMethod(2, "bbox", "CSR", "cython", old_method="csr",
                       class_funct=(splitBBoxCSR.HistoBBox2d, splitBBoxCSR.HistoBBox2d.integrate))
+    from .engines import CSR_engine as py_CSR_engine
+    IntegrationMethod(1, "no", "CSR", "python",
+                      class_funct=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+    IntegrationMethod(2, "no", "CSR", "python",
+                      class_funct=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+    # error propagation does not work properly with pixel splitting for now
+#     IntegrationMethod(1, "bbox", "CSR", "python",
+#                       class_funct=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+#     IntegrationMethod(2, "bbox", "CSR", "python",
+#                       class_funct=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
 
 try:
     from .ext import splitBBoxLUT
@@ -714,9 +723,9 @@ class AzimuthalIntegrator(Geometry):
                     integr.setDummyValue(dummy, delta_dummy)
                 if (correctSolidAngle and not param["solid_angle"]):
                     integr.setSolidAngle(flat * self.solidAngleArray(shape, correctSolidAngle))
-                elif (not correctSolidAngle) and param["solid_angle"] and (flat is 1):
+                elif (not correctSolidAngle) and param["solid_angle"] and (flat == 1):
                     integr.unsetSolidAngle()
-                elif not correctSolidAngle and not param["solid_angle"] and (flat is not 1):
+                elif not correctSolidAngle and not param["solid_angle"] and (flat != 1):
                     integr.setSolidAngle(flat)
                 if (mask is not None) and not param["mask"]:
                     integr.setMask(mask)
@@ -812,7 +821,10 @@ class AzimuthalIntegrator(Geometry):
                                             allow_pos0_neg=False,
                                             unit=unit)
 
-    def setup_CSR(self, shape, npt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, unit=units.TTH, split="bbox"):
+    def setup_CSR(self, shape, npt, mask=None, 
+                  pos0_range=None, pos1_range=None, 
+                  mask_checksum=None, unit=units.TTH, 
+                  split="bbox"):
         """
         Prepare a look-up-table
 
@@ -926,7 +938,7 @@ class AzimuthalIntegrator(Geometry):
                                                 unit=unit,
                                                 )
 
-    @deprecated(since_version="0.19", only_once=True, deprecated_since="0.19.0")
+    @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
     def _integrate1d_legacy(self, data, npt, filename=None,
                             correctSolidAngle=True,
                             variance=None, error_model=None,
@@ -1472,11 +1484,37 @@ class AzimuthalIntegrator(Geometry):
                         method="csr", unit=units.Q, safe=True,
                         normalization_factor=1.0,
                         metadata=None):
-        """Demonstrator for the new azimuthal integrator taking care of the normalization,
+        """Calculate the azimuthal integration (1d) of a 2D image.
 
-        Early stage prototype
+        Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
+        Takes extra care of normalization and performs proper variance propagation.
+
+        :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt: number of points in the output pattern
+        :param str filename: output filename in 2/3 column ascii format
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True 
+        :param ndarray variance: array containing the variance of the data. 
+        :param str error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
+        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (min, max). Values outside the range are ignored.
+        :type radial_range: (float, float), optional
+        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (min, max). Values outside the range are ignored.
+        :type azimuth_range: (float, float), optional
+        :param ndarray mask: array with  0 for valid pixels, all other are masked (static mask)
+        :param float dummy: value for dead/masked pixels (dynamic mask)
+        :param float delta_dummy: precision for dummy value 
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+               0 for circular polarization or random,
+               None for no correction,
+               True for using the former correction 
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param Unit unit: Output units, can be "q_nm^-1" (default), "2th_deg", "r_mm" for now.
+        :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
+        :param float normalization_factor: Value of a normalization monitor 
+        :param metadata: JSON serializable object containing the metadata, usually a dictionary.
+        :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
-
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         assert method.dimension == 1
         unit = units.to_unit(unit)
@@ -1601,7 +1639,7 @@ class AzimuthalIntegrator(Geometry):
                                             solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor)
-            elif method.impl_lower == "opencl":
+            else: # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
                     # instanciated the engine
                     engine = self.engines[method] = Engine()
@@ -1641,38 +1679,60 @@ class AzimuthalIntegrator(Geometry):
                     if reset:
                         logger.info("ai.integrate1d_ng: Resetting ocl_csr integrator because %s", reset)
                         csr_integr = self.engines[cython_method].engine
-
-                        try:
-                            print(method.class_funct.klass.__module__)
-                            integr = method.class_funct.klass(csr_integr.lut,
-                                                              image_size=data.size,
-                                                              checksum=csr_integr.lut_checksum,
+                        if method.impl_lower == "opencl":
+                            try:
+                                integr = method.class_funct.klass(csr_integr.lut,
+                                                                  image_size=data.size,
+                                                                  checksum=csr_integr.lut_checksum,
+                                                                  empty=empty,
+                                                                  unit=unit,
+                                                                  bin_centers=csr_integr.bin_centers,
+                                                                  platformid=method.target[0],
+                                                                  deviceid=method.target[1])
+                                # Copy some properties from the cython integrator
+                                integr.check_mask = csr_integr.check_mask
+                                integr.mask_checksum = csr_integr.mask_checksum 
+                                integr.pos0Range = csr_integr.pos0Range
+                                integr.pos1Range = csr_integr.pos1Range
+                            except MemoryError:
+                                logger.warning("MemoryError: falling back on default forward implementation")
+                                self.reset_engines()
+                                method = self.DEFAULT_METHOD_1D
+                            else:
+                                engine.set_engine(integr)
+                        elif method.impl_lower == "python":
+                            integr = method.class_funct.klass(image_size=data.size,
+                                                              lut=csr_integr.lut,
                                                               empty=empty,
                                                               unit=unit,
-                                                              bin_centers=csr_integr.bin_centers,
-                                                              platformid=method.target[0],
-                                                              deviceid=method.target[1])
-                        except MemoryError:
-                            logger.warning("MemoryError: falling back on default forward implementation")
-                            self.reset_engines()
-                            method = self.DEFAULT_METHOD_1D
-                        else:
+                                                              bin_centers=csr_integr.bin_centers)
+                            # Copy some properties from the cython integrator
+                            integr.check_mask = csr_integr.check_mask
+                            integr.pos0Range = csr_integr.pos0Range
+                            integr.pos1Range = csr_integr.pos1Range
                             engine.set_engine(integr)
+                        else:
+                            raise RuntimeError("Unexpected configuration")
+                            
                     else:
                         integr = self.engines[method].engine
+                if method.impl_lower == "opencl":
+                    ocl_kwargs = {"polarization_checksum":polarization_checksum}
+                else:
+                    ocl_kwargs = {}
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
                                             variance=variance,
                                             flat=flat, solidangle=solidangle,
-                                            polarization=polarization, polarization_checksum=polarization_checksum,
-                                            normalization_factor=normalization_factor)
-            elif method.impl_lower == "python":
-                raise NotImplementedError()
+                                            polarization=polarization,
+                                            normalization_factor=normalization_factor,
+                                            **ocl_kwargs)
             # This section is common to all 3 CSR implementations...
             if variance is None:
-                result = Integrate1dResult(intpl.position, intpl.intensity)
+                result = Integrate1dResult(intpl.position * unit.scale,
+                                           intpl.intensity)
             else:
-                result = Integrate1dResult(intpl.position,
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.error)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
@@ -1708,9 +1768,10 @@ class AzimuthalIntegrator(Geometry):
                            radial_range=radial_range)
 
             if variance is None:
-                result = Integrate1dResult(intpl.position, intpl.intensity)
+                result = Integrate1dResult(intpl.position * unit.scale,
+                                           intpl.intensity)
             else:
-                result = Integrate1dResult(intpl.position,
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.error)
             result._set_compute_engine(integr.__module__ + "." + integr.__name__)
@@ -1762,17 +1823,20 @@ class AzimuthalIntegrator(Geometry):
                     else:
                         engine.set_engine(integr)
                 intpl = integr(data, dark=dark,
-                               dummy=dummy, delta_dummy=delta_dummy,
+                               dummy=dummy,
+                               delta_dummy=delta_dummy,
                                variance=variance,
                                flat=flat, solidangle=solidangle,
-                               polarization=polarization, polarization_checksum=polarization_checksum,
+                               polarization=polarization,
+                               polarization_checksum=polarization_checksum,
                                normalization_factor=normalization_factor,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range)
             if variance is None:
-                result = Integrate1dResult(intpl.position, intpl.intensity)
+                result = Integrate1dResult(intpl.position * unit.scale,
+                                           intpl.intensity)
             else:
-                result = Integrate1dResult(intpl.position,
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.error)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
@@ -1813,7 +1877,7 @@ class AzimuthalIntegrator(Geometry):
             norm = self.integrate1d(normalization_image, **kwargs)
             signal = self._integrate1d_legacy(data, dark=dark, ** kwargs)
             sigma2 = self._integrate1d_legacy(variance, **kwargs)
-            result = Integrate1dResult(norm.radial,
+            result = Integrate1dResult(norm.radial * unit.scale,
                                        signal.sum / norm.sum,
                                        numpy.sqrt(sigma2.sum) / norm.sum)
             result._set_compute_engine(norm.compute_engine)
@@ -1823,7 +1887,17 @@ class AzimuthalIntegrator(Geometry):
             result._set_sum_variance(sigma2.sum)
             result._set_count(signal.count)
         result._set_method(method)
+        result._set_has_dark_correction(has_dark)
+        result._set_has_flat_correction(has_flat)
+        result._set_has_mask_applied(has_mask)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
         result._set_method_called("integrate1d_ng")
+        result._set_metadata(metadata)
+        if filename is not None:
+            writer = DefaultAiWriter(filename, self)
+            writer.write(result)
+
         return result
 
     def integrate_radial(self, data, npt, npt_rad=100,
@@ -1888,7 +1962,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
-    @deprecated(since_version="0.19", only_once=True, deprecated_since="0.19.0")
+    @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
     def _integrate2d_legacy(self, data, npt_rad, npt_azim=360,
                             filename=None, correctSolidAngle=True, variance=None,
                             error_model=None, radial_range=None, azimuth_range=None,
@@ -3107,12 +3181,12 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
-    def sigma_clip(self, data, npt_rad=1024, npt_azim=512,
-                   correctSolidAngle=True,
-                   polarization_factor=None, dark=None, flat=None,
-                   method="splitpixel", unit=units.Q,
-                   thres=3, max_iter=5, dummy=None, delta_dummy=None,
-                   mask=None, normalization_factor=1.0, metadata=None):
+    def _sigma_clip_legacy(self, data, npt_rad=1024, npt_azim=512,
+                           correctSolidAngle=True,
+                           polarization_factor=None, dark=None, flat=None,
+                           method="splitpixel", unit=units.Q,
+                           thres=3, max_iter=5, dummy=None, delta_dummy=None,
+                           mask=None, normalization_factor=1.0, metadata=None):
         """Perform the 2D integration and perform a sigm-clipping iterative
         filter along each row. see the doc of scipy.stats.sigmaclip for the
         options.
@@ -3247,6 +3321,268 @@ class AzimuthalIntegrator(Geometry):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         return result
+
+    def sigma_clip_ng(self, data, 
+                      npt=1024,
+                      correctSolidAngle=True,
+                      polarization_factor=None, 
+                      variance = None,
+                      error_model=None,
+                      dark=None, 
+                      flat=None,
+                      method=("no", "csr", "cython"), 
+                      unit=units.Q,
+                      thres=5.0, 
+                      max_iter=5, 
+                      dummy=None, 
+                      delta_dummy=None,
+                      mask=None, 
+                      normalization_factor=1.0, 
+                      metadata=None, 
+                      safe=True,
+                       **kwargs):
+        """Performs iteratively the 1D integration with variance propagation 
+        and performs a sigm-clipping at each iteration, i.e.
+        all pixel which intensity differs more than thres*std is 
+        discarded for next iteration.
+        
+        Keep only pixels with intensty:
+        
+            |I - <I>| < thres * std(I)
+
+        This enforces a gaussian distibution and is very good at extracting 
+        background or amorphous isotropic scattering out of Bragg peaks.
+
+        :param data: input image as numpy array
+        :param npt_rad: number of radial points
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param float polarization_factor: polarization factor between:
+                -1 (vertical) 
+                +1 (horizontal).
+                - 0 for circular polarization or random,
+                - None for no correction,
+                - True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param ndarray variance: the variance of the 
+        :param unit: unit to be used for integration
+        :param method: pathway for integration and sort
+        :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres.
+        :param max_iter: maximum number of iterations        
+        :param mask: masked out pixels array
+        :param float normalization_factor: Value of a normalization monitor
+        :param metadata: any other metadata,
+        :type metadata: JSON serializable dict
+        :param safe: set to False to skip some tests
+        :return: Integrate1D like result like
+        
+        The difference with the previous version is that there is not 
+        The standard deviation is usually smaller the the signal cleaner. It is also slightly faster.
+        
+        The In
+        
+        """
+        if "npt_azim" in kwargs:
+            logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D intergration is performed anymore")
+        
+        unit = units.to_unit(unit)
+        method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
+        
+        if mask is None:
+            has_mask = "from detector"
+            mask = self.mask
+            mask_crc = self.detector.get_mask_crc()
+            if mask is None:
+                has_mask = False
+                mask_crc = None
+        else:
+            has_mask = "user provided"
+            mask = numpy.ascontiguousarray(mask)
+            mask_crc = crc32(mask)
+            
+        if correctSolidAngle:
+            solidangle = self.solidAngleArray(data.shape, correctSolidAngle)
+        else:
+            solidangle = None
+
+        if polarization_factor is None:
+            polarization = polarization_checksum = None
+        else:
+            polarization, polarization_checksum = self.polarization(data.shape, polarization_factor, with_checksum=True)
+            
+        print(method, method.algo_lower)
+        if (method.algo_lower == "csr"):
+            "This is the only method implemented for now ..."
+            # Prepare LUT if needed!
+            # initialize the CSR integrator in Cython as it may be needed later on.
+            cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
+            if cython_method not in self.engines:
+                cython_engine = self.engines[cython_method] = Engine()
+            else:
+                cython_engine = self.engines[cython_method]
+            with cython_engine.lock:
+                # Validate that the engine used is the proper one
+                cython_integr = cython_engine.engine
+                cython_reset = None
+                if cython_integr is None:
+                    cython_reset = "of first initialization"
+                if (not cython_reset) and safe:
+                    if cython_integr.unit != unit:
+                        cython_reset = "unit was changed"
+                    if cython_integr.bins != npt:
+                        cython_reset = "number of points changed"
+                    if cython_integr.size != data.size:
+                        cython_reset = "input image size changed"
+                    if cython_integr.empty != self._empty:
+                        cython_reset = "empty value changed "
+                    if (mask is not None) and (not cython_integr.check_mask):
+                        cython_reset = "mask but CSR was without mask"
+                    elif (mask is None) and (cython_integr.check_mask):
+                        cython_reset = "no mask but CSR has mask"
+                    elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
+                        cython_reset = "mask changed"
+#                     if (radial_range is None) and (cython_integr.pos0Range is not None):
+#                         cython_reset = "radial_range was defined in CSR"
+#                     elif (radial_range is not None) and cython_integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
+#                         cython_reset = "radial_range is defined but not the same as in CSR"
+#                     if (azimuth_range is None) and (cython_integr.pos1Range is not None):
+#                         cython_reset = "azimuth_range not defined and CSR had azimuth_range defined"
+#                     elif (azimuth_range is not None) and cython_integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
+#                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
+                error = False
+                if cython_reset:
+                    logger.info("AI.sigma_clip_ng: Resetting Cython integrator because %s", cython_reset)
+                    split = method.split_lower
+                    if split == "pseudo":
+                        split = "full"
+                    try:
+                        cython_integr = self.setup_CSR(data.shape, npt, mask,
+                                                       pos0_range=None, pos1_range=None,
+                                                       mask_checksum=mask_crc,
+                                                       unit=unit, split=split)
+                    except MemoryError:  # CSR method is hungry...
+                        logger.warning("MemoryError: falling back on forward implementation")
+                        cython_integr = None
+                        self.reset_engines()
+                        method = self.DEFAULT_METHOD_1D
+                    else:
+                        cython_engine.set_engine(cython_integr)
+            if method not in self.engines:
+                # instanciated the engine
+                engine = self.engines[method] = Engine()
+            else:
+                engine = self.engines[method]
+            with engine.lock:
+                # Validate that the engine used is the proper one
+                integr = engine.engine
+                reset = None
+
+                # This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
+                if method.impl_lower == "cython":  
+                    # The integrator has already been initialized previously
+                    integr = self.engines[method].engine
+                    raise RuntimeError("Not implemplemented, sorry")
+    #                 intpl = integr.integrate_ng(data,
+    #                                             variance=variance,
+    #                                             dummy=dummy,
+    #                                             delta_dummy=delta_dummy,
+    #                                             dark=dark,
+    #                                             flat=flat,
+    #                                             solidangle=solidangle,
+    #                                             polarization=polarization,
+    #                                             normalization_factor=normalization_factor)
+                else:  #method.impl_lower in ("python", "opencl")
+                    # Validate that the engine used is the proper one
+                    if integr is None:
+                        reset = "of first initialization"
+                    if (not reset) and safe:
+                        if integr.unit != unit:
+                            reset = "unit was changed"
+                        if integr.bins != npt:
+                            reset = "number of points changed"
+                        if integr.size != data.size:
+                            reset = "input image size changed"
+                        if integr.empty != self._empty:
+                            reset = "empty value changed "
+                        if (mask is not None) and (not integr.check_mask):
+                            reset = "mask but CSR was without mask"
+                        elif (mask is None) and (integr.check_mask):
+                            reset = "no mask but CSR has mask"
+                        elif (mask is not None) and (integr.mask_checksum != mask_crc):
+                            reset = "mask changed"
+#                         if (radial_range is None) and (integr.pos0Range is not None):
+#                             reset = "radial_range was defined in CSR"
+#                         elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
+#                             reset = "radial_range is defined but not the same as in CSR"
+#                         if (azimuth_range is None) and (integr.pos1Range is not None):
+#                             reset = "azimuth_range not defined and CSR had azimuth_range defined"
+#                         elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
+#                             reset = "azimuth_range requested and CSR's azimuth_range don't match"
+                    error = False
+
+                    if reset:
+                        logger.info("ai.sigma_clip_ng: Resetting ocl_csr integrator because %s", reset)
+                        csr_integr = self.engines[cython_method].engine
+                        if method.impl_lower ==  "opencl":
+                            try:
+                                integr = method.class_funct.klass(csr_integr.lut,
+                                                                  image_size=data.size,
+                                                                  checksum=csr_integr.lut_checksum,
+                                                                  empty=self._empty,
+                                                                  unit=unit,
+                                                                  bin_centers=csr_integr.bin_centers,
+                                                                  platformid=method.target[0],
+                                                                  deviceid=method.target[1])
+                                # Copy some properties from the cython integrator
+                                integr.check_mask = csr_integr.check_mask
+                                integr.mask_checksum = csr_integr.mask_checksum 
+                                integr.pos0Range = csr_integr.pos0Range
+                                integr.pos1Range = csr_integr.pos1Range
+                            except MemoryError:
+                                logger.warning("MemoryError: falling back on default forward implementation")
+                                self.reset_engines()
+                                method = self.DEFAULT_METHOD_1D
+                            else:
+                                engine.set_engine(integr)
+                        elif method.impl_lower ==  "python":
+                            integr = method.class_funct.klass(csr_integr.lut,
+                                                              image_size=data.size,
+                                                              empty=self._empty,
+                                                              unit=unit,
+                                                              bin_centers=csr_integr.bin_centers)
+                            # Copy some properties from the cython integrator
+                            integr.check_mask = csr_integr.check_mask
+                            integr.pos0_range = csr_integr.pos0Range
+                            integr.pos1_range = csr_integr.pos1Range
+                            integr.set_geometry(self)
+                            engine.set_engine(integr)
+                    else:
+                        integr = self.engines[method].engine
+                    kwargs = {"dark":dark, "dummy":dummy, "delta_dummy":delta_dummy,
+                              "variance":variance, "dark_variance":None,
+                              "flat":flat, "solidangle":solidangle, "polarization":polarization, "absorption":None,
+                              "error_model":error_model, "normalization_factor":normalization_factor,
+                              "cutoff":thres, "cycle":max_iter}
+
+                    intpl = integr.sigma_clip(data, **kwargs)
+        else:
+            raise RuntimeError("Not yet implemented. Sorry")
+        result = Integrate1dResult(intpl.position, intpl.intensity, intpl.error)  
+        result._set_method_called("sigma_clip_ng")
+        result._set_compute_engine(str(method))
+        result._set_percentile(thres)
+        result._set_unit(unit)
+        result._set_has_mask_applied(has_mask)
+        result._set_metadata(metadata)
+        result._set_sum_signal(intpl.signal)
+        result._set_sum_normalization(intpl.normalization)
+        result._set_sum_variance(intpl.variance)
+        result._set_count(intpl.count)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
+        return result
+
+    sigma_clip = _sigma_clip_legacy
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):

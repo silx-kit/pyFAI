@@ -27,27 +27,29 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """extracts the mask from an Eiger master file."""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2018"
+__date__ = "21/01/2020"
 __satus__ = "development"
-
 
 import os
 import sys
+from argparse import ArgumentParser
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
-logger = logging.getLogger("eiger-mask")
-import fabio
+logger = logging.getLogger(__name__)
+try:
+    import hdf5plugin  # noqa
+except ImportError:
+    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
+import fabio
 import pyFAI
-from argparse import ArgumentParser
 
 try:
     import h5py

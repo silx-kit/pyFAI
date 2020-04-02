@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2019"
+__date__ = "18/10/2019"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -254,7 +254,7 @@ class HDF5Writer(Writer):
             if mode == self.MODE_DELETE:
                 logger.error("File can't be read. File %s deleted.", self.filename)
                 os.unlink(self.filename)
-                self.hdf5 = h5py.File(self.filename)
+                self.hdf5 = h5py.File(self.filename, mode="w")
             else:
                 raise
 
@@ -267,7 +267,7 @@ class HDF5Writer(Writer):
                 self.hdf5.close()
                 logger.warning("File already contains an entry. File %s deleted.", self.filename)
                 os.unlink(self.filename)
-                self.hdf5 = h5py.File(self.filename)
+                self.hdf5 = h5py.File(self.filename, mode="w")
             elif mode == self.MODE_APPEND:
                 name = self._find_unused_name(self.hpath)
             elif mode == self.MODE_OVERWRITE:
