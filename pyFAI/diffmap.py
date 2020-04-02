@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2020"
+__date__ = "01/04/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -48,12 +48,12 @@ logger = logging.getLogger(__name__)
 import numpy
 import fabio
 import json
-
+import __main__ as main
 from .opencl import ocl
 from .units import to_unit
 from .third_party import six
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
-from .io import Nexus, get_isotime
+from .io import Nexus, get_isotime, h5py
 from .worker import Worker, _reduce_images
 from argparse import ArgumentParser
 urlparse = six.moves.urllib.parse.urlparse
@@ -66,6 +66,7 @@ class DiffMap(object):
     """
     Basic class for diffraction mapping experiment using pyFAI
     """
+
     def __init__(self, npt_fast=0, npt_slow=1, npt_rad=1000, npt_azim=None):
         """Constructor of the class DiffMap for diffraction mapping
 
@@ -82,29 +83,28 @@ class DiffMap(object):
         self.offset = 0
         self.poni = None
         self.worker = Worker(unit="2th_deg")
-        self.worker.output = "raw" # exchange IntegrateResults, not numpy arrays
+        self.worker.output = "raw"  # exchange IntegrateResults, not numpy arrays
         self.dark = None
         self.flat = None
         self.mask = None
         self.I0 = None
         self.hdf5 = None
-        self.hdf5path = "diff_map/data/map"
-        self.group = None
+        self.nxdata_grp = None
         self.dataset = None
         self.inputfiles = []
         self.timing = []
         self.stats = False
         self._idx = -1
         self.processed_file = []
+        self.stored_input = set()
         self.nxs = None
+        self.entry_grp = None
         self.experiment_title = "Diffraction Mapping"
 
     def __repr__(self):
         return "%s experiment with ntp_slow: %s ntp_fast: %s, npt_diff: %s" % \
             (self.experiment_title, self.npt_slow, self.npt_fast, self.npt_rad)
 
-
-    
     @staticmethod
     def to_tuple(name):
         """
@@ -302,7 +302,8 @@ If the number of files is too large, use double quotes like "*.edf" """
         """
         Create the HDF5 structure if needed ...
         """
-        import h5py
+        if h5py is None:
+            raise RuntimeError("h5py is needed to create HDF5 files")
         dtype = h5py.special_dtype(vlen=six.text_type)
 
         if self.hdf5 is None:
@@ -312,56 +313,48 @@ If the number of files is too large, use double quotes like "*.edf" """
         if os.path.exists(self.hdf5) and rewrite:
             os.unlink(self.hdf5)
 
-        spath = self.hdf5path.split("/")
-        assert len(spath) > 2
-        nxs = Nexus(self.hdf5, mode="w")
-        entry = nxs.new_entry(entry=spath[0], program_name="pyFAI", title="diffmap")
-        grp = entry
-        for subgrp in spath[1:-2]:
-            entry.attrs["default"] = subgrp
-            grp = nxs.new_class(grp, name=subgrp, class_type="NXcollection")
+        nxs = Nexus(self.hdf5, mode="w", creator="pyFAI")
+        self.entry_grp = entry_grp = nxs.new_entry(entry="entry",
+                                                   program_name="pyFAI",
+                                                   title="diff_map")
 
-        processgrp = nxs.new_class(grp, "pyFAI", class_type="NXprocess")
-        processgrp["program"] = numpy.array([i for i in sys.argv], dtype=dtype)
-        processgrp["version"] = PyFAI_VERSION
-        processgrp["date"] = get_isotime()
+        process_grp = nxs.new_class(entry_grp, "pyFAI", class_type="NXprocess")
+        process_grp["program"] = main.__file__
+        process_grp["version"] = PyFAI_VERSION
+        process_grp["date"] = get_isotime()
         if self.mask:
-            processgrp["maskfile"] = self.mask
+            process_grp["maskfile"] = self.mask
         if self.flat:
-            processgrp["flatfiles"] = numpy.array([i for i in self.flat], dtype=dtype)
+            process_grp["flatfiles"] = numpy.array([i for i in self.flat], dtype=dtype)
         if self.dark:
-            processgrp["darkfiles"] = numpy.array([i for i in self.dark], dtype=dtype)
-        processgrp["inputfiles"] = numpy.array([i for i in self.inputfiles], dtype=dtype)
+            process_grp["darkfiles"] = numpy.array([i for i in self.dark], dtype=dtype)
         if self.poni is not None:
-            processgrp["PONIfile"] = self.poni
+            process_grp["PONIfile"] = self.poni
+        process_grp["inputfiles"] = numpy.array([i for i in self.inputfiles], dtype=dtype)
 
-        processgrp["dim0"] = self.npt_slow
-        processgrp["dim0"].attrs["axis"] = self.slow_motor_name
-        processgrp["dim1"] = self.npt_fast
-        processgrp["dim1"].attrs["axis"] = self.fast_motor_name
-        processgrp["dim2"] = self.npt_rad
-        processgrp["dim2"].attrs["axis"] = "diffraction"
-        for k, v in self.ai.getPyFAI().items():
-            processgrp[k] = v
+        process_grp["dim0"] = self.npt_slow
+        process_grp["dim0"].attrs["axis"] = self.slow_motor_name
+        process_grp["dim1"] = self.npt_fast
+        process_grp["dim1"].attrs["axis"] = self.fast_motor_name
+        process_grp["dim2"] = self.npt_rad
+        process_grp["dim2"].attrs["axis"] = "diffraction"
+        config = nxs.new_class(process_grp, "configuration", "NXnote")
+        config["type"] = "text/json"
+        config["data"] = json.dumps(self.worker.get_config(), indent=2, separators=(",\r\n", ": "))
 
-        nxdataName = spath[-2]
-        self.group = nxs.new_class(grp, name=nxdataName, class_type="NXdata")
-        grp.attrs["default"] = nxdataName
+        self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
+        entry_grp.attrs["default"] = self.nxdata_grp.name.split("/", 2)[2]
 
-        if posixpath.basename(self.hdf5path) in self.group:
-            self.dataset = self.group[posixpath.basename(self.hdf5path)]
-        else:
-            self.dataset = self.group.create_dataset(
-                name=posixpath.basename(self.hdf5path),
-                shape=(self.npt_slow, self.npt_fast, self.npt_rad),
-                dtype="float32",
-                chunks=(1, self.npt_fast, self.npt_rad),
-                maxshape=(None, None, self.npt_rad))
-            self.dataset.attrs["signal"] = "1"
-            self.dataset.attrs["interpretation"] = "spectrum"
-            self.dataset.attrs["axes"] = str(self.unit).split("_")[0]
-            self.dataset.attrs["creator"] = "pyFAI"
-            self.dataset.attrs["long_name"] = str(self)
+        self.dataset = self.nxdata_grp.create_dataset(
+                        name="intensity",
+                        shape=(self.npt_slow, self.npt_fast, self.npt_rad),
+                        dtype="float32",
+                        chunks=(1, self.npt_fast, self.npt_rad),
+                        maxshape=(None, None, self.npt_rad))
+        self.dataset.attrs["interpretation"] = "spectrum"
+        self.nxdata_grp.attrs["signal"] = self.dataset.name.split("/")[-1]
+        self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]
+        self.dataset.attrs["title"] = str(self)
         self.nxs = nxs
 
     def setup_ai(self):
@@ -386,7 +379,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         """
         if not self.ai:
             self.setup_ai()
-        if not self.group:
+        if not self.nxdata_grp:
             self.makeHDF5(rewrite=False)
         if self.ai.detector.shape:
             # shape of detector undefined: reading the first image to guess it
@@ -397,7 +390,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.worker.shape = shape
         self.worker.output = "raw"
         data = numpy.empty(shape, dtype=numpy.float32)
-        print("Initialization of the Azimuthal Integrator using method %s" % (self.method, ))
+        print("Initialization of the Azimuthal Integrator using method %s" % (self.method,))
         # enforce initialization of azimuthal integrator
         print(self.ai)
         res = self.worker.process(data)
@@ -405,12 +398,12 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.dataset is None:
             self.makeHDF5()
         space, unit = str(self.unit).split("_")
-        if space not in self.group:
-            self.group[space] = tth
-            self.group[space].attrs["axes"] = 3
-            self.group[space].attrs["unit"] = unit
-            self.group[space].attrs["long_name"] = self.unit.label
-            self.group[space].attrs["interpretation"] = "scalar"
+        if space not in self.nxdata_grp:
+            self.nxdata_grp[space] = tth
+            self.nxdata_grp[space].attrs["axes"] = 3
+            self.nxdata_grp[space].attrs["unit"] = unit
+            self.nxdata_grp[space].attrs["long_name"] = self.unit.label
+            self.nxdata_grp[space].attrs["interpretation"] = "scalar"
         return tth
 
     def show_stats(self):
@@ -459,6 +452,12 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         t = time.time()
         fimg = fabio.open(filename)
+        if "dataset" in dir(fimg):
+            if isinstance(fimg.dataset, list):
+                for ds in fimg.dataset:
+                    self.set_hdf5_input_dataset(ds)
+            else:
+                self.set_hdf5_input_dataset(fimg.dataset)
         self.process_one_frame(fimg.data)
         if fimg.nframes > 1:
             for i in range(fimg.nframes - 1):
@@ -469,6 +468,29 @@ If the number of files is too large, use double quotes like "*.edf" """
               (os.path.basename(filename), -1000.0 * t, fimg.nframes))
         self.timing.append(-t)
         self.processed_file.append(filename)
+
+    def set_hdf5_input_dataset(self, dataset):
+        "record the input dataset with an external link"
+        if not isinstance(dataset, h5py.Dataset):
+            return
+        if not (self.nxs and self.nxs.h5 and self.entry_grp):
+            return
+        id_ = id(dataset)
+        if id_ in self.stored_input:
+            return
+        else:
+            self.stored_input.add(id_)
+        # Process 0: measurement group
+        if "measurement" in self.entry_grp:
+            measurement_grp = self.entry_grp["measurement"]
+        else:
+            measurement_grp = self.nxs.new_class(self.entry_grp, "measurement", "NXdata")
+        here = os.path.dirname(os.path.abspath(self.nxs.filename))
+        there = os.path.abspath(dataset.file.filename)
+        name = "images_%04i" % len(self.stored_input)
+        measurement_grp[name] = h5py.ExternalLink(os.path.relpath(there, here), dataset.name)
+        if "signal" not in measurement_grp.attrs:
+            measurement_grp.attrs["signal"] = name
 
     def process_one_frame(self, frame):
         """
@@ -521,24 +543,28 @@ If the number of files is too large, use double quotes like "*.edf" """
             return None
         else:
             return self.worker.ai
+
     @ai.setter
     def ai(self, value):
         if self.worker is None:
             self.worker = Worker(value, unit=self.unit, shapeOut=(1, self.npt_rad))
         else:
             self.worker.ai = value
+
     @property
     def method(self):
         if self.worker is not None:
             return self.worker.method
         return None
+
     @method.setter
     def method(self, value):
-        self.worker.set_method(value) 
-    
+        self.worker.set_method(value)
+
     @property
     def unit(self):
         return self.worker.unit
+
     @unit.setter
     def unit(self, value):
         self.worker.unit = value
