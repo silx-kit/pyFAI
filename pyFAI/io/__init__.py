@@ -44,7 +44,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2020"
+__date__ = "02/04/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -249,8 +249,35 @@ class HDF5Writer(Writer):
                 self.nxs = Nexus(self.filename, mode="w", creator="pyFAI")
             else:
                 raise
-        entry = self.nxs.new_entry(entry=self.hpath or self._entry_template.split("_")[0],
-                                   program_name="pyFAI", title=None)
+
+        name = self.hpath or self._entry_template.split("_")[0]
+        if "/" in name:
+            logger.error("NXentry should always be at the NXroot level. Please consider using a NXsubentry then")
+            force_name = True
+        else:
+            force_name = False
+
+        try:
+            entry = self.nxs.new_entry(entry=name, program_name="pyFAI",
+                                       title=None, force_name=force_name)
+        except TypeError:  # object already exists
+            nb_entries = len(self.nxs.get_entries())
+            entry_base = self.hpath or self._entry_template.split("_")[0]
+            entry_name = "%s_%04i" % (entry_base, nb_entries)
+            if mode == self.MODE_OVERWRITE:
+                del self.nxs.h5[entry_name]
+                entry = self.nxs.new_entry(entry=entry_name, force_name=True,
+                                           program_name="pyFAI", title=None)
+            elif mode == self.MODE_ERROR:
+                raise IOError("Entry name %s::%s already exists" % (self.filename, entry_name))
+            elif mode == self.MODE_APPEND:
+                while entry_name in self.nxs.h5:
+                    nb_entries += 1
+                    entry_name = "%s_%04i" % (entry_base, nb_entries)
+                entry = self.nxs.new_entry(entry=entry_name, force_name=True,
+                                           program_name="pyFAI", title=None)
+            else:
+                assert(False)
         entry["program_name"].attrs["version"] = version
         self.hpath = entry.name
         return entry

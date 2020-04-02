@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2020"
+__date__ = "02/04/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -238,11 +238,13 @@ class Nexus(object):
         :param force_name: force the entry name as such, without numerical suffix.
         :return: the corresponding HDF5 group
         """
-
         if not force_name:
             nb_entries = len(self.get_entries())
             entry = "%s_%04i" % (entry, nb_entries)
-        entry_grp = self.h5.require_group(entry)
+        entry_grp = self.h5
+        for i in entry.split("/"):
+            if i:
+                entry_grp = entry_grp.require_group(i)
         self.h5.attrs["default"] = entry
         entry_grp.attrs["NX_class"] = "NXentry"
         if title is not None:
