@@ -78,14 +78,13 @@ Here are the valid keys:
 - "method"
 """
 
-
 from __future__ import with_statement, print_function, division
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2020"
+__date__ = "01/04/2020"
 __status__ = "development"
 
 import threading
@@ -93,6 +92,7 @@ import os.path
 import logging
 import json
 import numpy
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -219,6 +219,7 @@ def _reduce_images(filenames, method="mean"):
 
 
 class Worker(object):
+
     def __init__(self, azimuthalIntegrator=None,
                  shapeIn=(2048, 2048), shapeOut=(360, 500),
                  unit="r_mm", dummy=None, delta_dummy=None):
@@ -412,13 +413,15 @@ class Worker(object):
     def set_dark_current_file(self, imagefile):
         self.ai.detector.set_darkcurrent(_reduce_images(imagefile))
         self.dark_current_image = imagefile
+
     setDarkcurrentFile = set_dark_current_file
-    
+
     def set_flat_field_file(self, imagefile):
         self.ai.detector.set_flatfield(_reduce_images(imagefile))
         self.flat_field_image = imagefile
+
     setFlatfieldFile = set_flat_field_file
-    
+
     def set_config(self, config, consume_keys=False):
         """
         Configure the working from the dictionary.
@@ -530,6 +533,7 @@ class Worker(object):
 
     def get_unit(self):
         return self._unit
+
     unit = property(get_unit, set_unit)
 
     def set_error_model(self, value):
@@ -539,10 +543,12 @@ class Worker(object):
             self.do_poisson = False
         else:
             raise RuntimeError("Unsupported error model '%s'" % value)
+
     def get_error_model(self):
         if self.do_poisson:
             return "poisson"
         return None
+
     error_model = property(get_error_model, set_error_model)
 
     def get_config(self):
@@ -550,7 +556,8 @@ class Worker(object):
 
         FIXME: The returned dictionary is not exhaustive.
         """
-        config = {"unit": str(self.unit)}
+        config = OrderedDict()
+        config["unit"] = str(self.unit)
         for key in ["dist", "poni1", "poni2", "rot1", "rot3", "rot2", "pixel1", "pixel2", "splineFile", "wavelength"]:
             try:
                 config[key] = self.ai.__getattribute__(key)
@@ -563,7 +570,7 @@ class Worker(object):
                 config[key] = self.__getattribute__(key)
             except:
                 pass
-        
+
         for key in ["azimuth_range", "radial_range"]:
             try:
                 value = self.__getattribute__(key)
@@ -571,11 +578,11 @@ class Worker(object):
                 pass
             else:
                 if value is not None:
-                    config["do_"+key] = True
-                    config[key+"_min"] = min(value)
-                    config[key+"_max"] = max(value)
+                    config["do_" + key] = True
+                    config[key + "_min"] = min(value)
+                    config[key + "_max"] = max(value)
                 else:
-                    config["do_"+key] = False
+                    config["do_" + key] = False
 
         return config
 
@@ -590,8 +597,9 @@ class Worker(object):
         else:
             config = json.loads(json_file)
         self.set_config(config)
+
     setJsonConfig = set_json_config
-    
+
     def save_config(self, filename=None):
         """Save the configuration as a JSON file"""
         if not filename:
@@ -616,9 +624,11 @@ class Worker(object):
     def get_normalization_factor(self):
         with self._sem:
             return self._normalization_factor
+
     def set_normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
+
     normalization_factor = property(get_normalization_factor, set_normalization_factor)
 
     def set_method(self, method="csr"):
@@ -647,6 +657,7 @@ class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
+
     def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None,
                  empty=None, dtype="float32"):
@@ -736,6 +747,7 @@ class DistortionWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
+
     def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """Constructor of the worker
