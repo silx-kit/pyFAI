@@ -289,7 +289,6 @@ class TestIntegrateApp(unittest.TestCase):
             # Store something
             h5["entry_0000"] = 10
             h5["my_entry"] = 10
-        print(options, file1)
         pyFAI.app.integrate.integrate_shell(options, [file1])
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
