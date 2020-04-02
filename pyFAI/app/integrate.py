@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2020"
+__date__ = "02/04/2020"
 __satus__ = "production"
 
 import sys
@@ -680,8 +680,6 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
         logger.info("Options: --delete (always delete the file) --append (create a new entry) --overwrite (overwrite this entry)")
         writer.close()
         return 1
-
-    dataset_ids = set()
 
     # Integrate all the provided frames one by one
     for data_info in source.frames():

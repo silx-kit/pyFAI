@@ -290,9 +290,6 @@ class HDF5Writer(Writer):
         logger.debug("Init")
         Writer.init(self, fai_cfg, lima_cfg)
 
-        # TODO: rewrite using the Nexus class to factorize code
-        # create external link to input dataset
-
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
                 open("fai_cfg.debug.json", "w").write(json.dumps(self.fai_cfg, indent=4))
