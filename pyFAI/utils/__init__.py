@@ -163,7 +163,7 @@ def _get_data_path(filename):
     resources = [
         os.environ.get("PYFAI_DATA"),
         data_dir,
-        os.path.join(os.path.dirname(__file__), "..")]
+        os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))]
     try:
         import xdg.BaseDirectory
         resources += xdg.BaseDirectory.load_data_paths("pyFAI")
