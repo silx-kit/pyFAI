@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 18/10/2018
+:Date: 02/04/2020
 :Keywords: Tutorials
 :Target: Scientists
 
@@ -227,3 +227,21 @@ Conclusion
 
 This tutorial explained the 5 steps needed to perform the calibration of the
 detector position prior to any diffraction experiment on a synchrotron.
+
+Video recording
+---------------
+
+This tutorial was given at the **Hercules** courses in 2020, the data files used are here:
+`Calibration_Al2O3.h5 <http://www.silx.org/pub/pyFAI/pyFAI_UM_2020/data_ID13/Calibration_Al2O3.h5>`_ and
+`kevlar.h5 <http://www.silx.org/pub/pyFAI/pyFAI_UM_2020/data_ID13/kevlar.h5>`_. 
+This 65mn tutorial presents also *silx view*, *pyFAI-average* and *pyFAI-integrate*.
+
+
+.. raw:: html
+
+	<center>
+	<video width="640" height="360" controls>
+		<source src="http://www.silx.org/pub/pyFAI/video/pyFAI_example_ID13.mp4" type="video/mp4">
+		Your browser does not support the video tag.
+	</video>
+	</center>
