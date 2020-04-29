@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,8 +35,8 @@ to bilinear interpolations.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "17/05/2019"
-__copyright__ = "2011-2015, ESRF"
+__date__ = "29/04/2020"
+__copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -45,9 +49,6 @@ import logging
 logger = logging.getLogger("pyFAI.ext.bilinear")
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.cdivision(True)
 def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
                              float[:, :, :, ::1] pos,
                              bint is_flat=True):
@@ -145,9 +146,6 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
         return numpy.asarray(out1), numpy.asarray(out2), numpy.asarray(out3)
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.cdivision(True)
 def convert_corner_2D_to_4D(int ndim,
                             floating[:, ::1] d1 not None,
                             floating[:, ::1] d2 not None,

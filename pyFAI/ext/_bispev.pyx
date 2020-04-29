@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:   Zubair Nawaz <zubair.nawaz@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -32,7 +36,7 @@ scipy."""
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/05/2019"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -86,7 +90,7 @@ def bisplev(x, y, tck, dx=0, dy=0):
     """
     cdef:
         int kx, ky
-        float[:] tx, ty, c, cy_x, cy_y
+        float[::1] tx, ty, c, cy_x, cy_y
     tx = numpy.ascontiguousarray(tck[0], dtype=numpy.float32)
     ty = numpy.ascontiguousarray(tck[1], dtype=numpy.float32)
     c = numpy.ascontiguousarray(tck[2], dtype=numpy.float32)
@@ -118,23 +122,21 @@ def bisplev(x, y, tck, dx=0, dy=0):
     return z[0][0]
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.cdivision(True)
-cdef void fpbspl(float[:]t,
+cdef void fpbspl(float[::1]t,
                  int n,
                  int k,
                  float x,
                  int l,
-                 float[:] h,
-                 float[:] hh) nogil:
+                 float[::1] h,
+                 float[::1] hh) nogil:
     """
     subroutine fpbspl evaluates the (k+1) non-zero b-splines of
     degree k at t(l) <= x < t(l+1) using the stable recurrence
     relation of de boor and cox.
 
+    TODO: Unused argument 'n' !
     """
-    cdef int i, j, li, lj
+    cdef int i, j
     cdef float f
 
     h[0] = 1.00
@@ -148,8 +150,7 @@ cdef void fpbspl(float[:]t,
             h[i + 1] = f * (x - t[l + i - j])
 
 
-@cython.boundscheck(False)
-cdef void init_w(float[:] t, int k, float[:] x, cnumpy.int32_t[:] lx, float[:, :] w) nogil:
+cdef void init_w(float[::1] t, int k, float[::1] x, cnumpy.int32_t[::1] lx, float[:, ::1] w) nogil:
     """
     Initialize w array for a 1D array
 
@@ -159,9 +160,9 @@ cdef void init_w(float[:] t, int k, float[:] x, cnumpy.int32_t[:] lx, float[:, :
     :param w:
     """
     cdef:
-        int i, l1, l2, n, m
+        int i, l1, l2, n, m, j
         float arg, tb, te
-        float[:] h, hh
+        float[::1] h, hh
 
     tb = t[k]
     with gil:
@@ -189,16 +190,13 @@ cdef void init_w(float[:] t, int k, float[:] x, cnumpy.int32_t[:] lx, float[:, :
             w[i, j] = h[j]
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.cdivision(True)
-cdef cy_bispev(float[:] tx,
-               float[:] ty,
-               float[:] c,
+cdef cy_bispev(float[::1] tx,
+               float[::1] ty,
+               float[::1] c,
                int kx,
                int ky,
-               float[:] x,
-               float[:] y):
+               float[::1] x,
+               float[::1] y):
     """
     Actual implementation of bispev in Cython
 
@@ -206,15 +204,15 @@ cdef cy_bispev(float[:] tx,
     :param ty: array of float size ny containing position of knots in y
     """
     cdef:
-        int nx = tx.size
-        int ny = ty.size
-        int mx = x.size
-        int my = y.size
+        #int nx = tx.shape[0]
+        int ny = ty.shape[0]
+        int mx = x.shape[0]
+        int my = y.shape[0]
 
         int kx1 = kx + 1
         int ky1 = ky + 1
 
-        int nkx1 = nx - kx1
+        #int nkx1 = nx - kx1
         int nky1 = ny - ky1
 
         # initializing scratch space
@@ -224,12 +222,12 @@ cdef cy_bispev(float[:] tx,
         cnumpy.int32_t[::1] lx = numpy.empty(mx, dtype=numpy.int32)
         cnumpy.int32_t[::1] ly = numpy.empty(my, dtype=numpy.int32)
 
-        int i, j, m, i1, l2, j1
+        int i, j, i1, l2, j1
         int size_z = mx * my
 
         # initializing z and h
         float[::1] z = numpy.zeros(size_z, dtype=numpy.float32)
-        float arg, sp, err, tmp, a
+        float sp, err, tmp, a
 
     with nogil:
         # cannot be initialized in parallel, why ? segfaults on MacOSX
