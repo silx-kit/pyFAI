@@ -386,7 +386,7 @@ cdef floating[:, ::1]c4_preproc(floating[::1] data,
     check_mask = mask is not None
     do_variance = variance is not None
     do_dark_variance = dark_variance is not None
-    result = numpy.zeros((size, 4), numpy.dtype(data.typcode))
+    result = numpy.zeros((size, 4), data.base.dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
