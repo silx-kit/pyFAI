@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,8 +29,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-# cython: language_level=3, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
-
 """Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done on the pixel's bounding box like fit2D,
@@ -35,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/03/2020"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -64,7 +66,6 @@ class HistoBBox1d(object):
 
     Nota: nnz = indptr[-1]
     """
-    @cython.boundscheck(False)
     def __init__(self,
                  pos0,
                  delta_pos0,
@@ -151,8 +152,6 @@ class HistoBBox1d(object):
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])      
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries(self, pos0Range):
         """
         Calculate self.pos0_min and self.pos0_max
@@ -202,8 +201,6 @@ class HistoBBox1d(object):
             self.pos0_min = 0
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries_nosplit(self, pos0Range):
         """
         Calculate self.pos0_min and self.pos0_max when no splitting is requested
@@ -215,7 +212,7 @@ class HistoBBox1d(object):
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0
-            position_t upper, lower, pos0_max, pos0_min, c, d
+            position_t pos0_max, pos0_min, c
             bint allow_pos0_neg = self.allow_pos0_neg
             int idx
 
@@ -248,9 +245,6 @@ class HistoBBox1d(object):
             self.pos0_min = 0
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_lut(self):
         '''
         calculate the max number of elements in the LUT and populate it
@@ -258,7 +252,7 @@ class HistoBBox1d(object):
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, 
             position_t min0, max0, fbin0_min, fbin0_max
-            cnumpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0_min, bin0_max, bins = self.bins, size, nnz
+            cnumpy.int32_t k, idx, i, j, bin0_min, bin0_max, bins = self.bins, size, nnz
             bint check_mask, check_pos1
             cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             cnumpy.int32_t[::1] indptr, indices
@@ -266,6 +260,7 @@ class HistoBBox1d(object):
             position_t[::1] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
             mask_t[::1] cmask
             acc_t inv_area, delta_left, delta_right
+            int memsize, key_page_cnt, key_page_size, lut_nbytes
 
         size = self.size
         if self.check_mask:
@@ -398,17 +393,15 @@ class HistoBBox1d(object):
         self.data = numpy.asarray(data)
         self.indices = numpy.asarray(indices)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_lut_nosplit(self):
         '''
         calculate the max number of elements in the LUT and populate it
         '''
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
-            cnumpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0, bins = self.bins, size, nnz
+            cnumpy.int32_t k, idx, bin0, bins = self.bins, size, nnz
             bint check_mask, check_pos1
+            int memsize, key_page_cnt, key_page_size, lut_nbytes
             cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             cnumpy.int32_t[::1] indptr, indices
             float[::1] data
@@ -496,9 +489,6 @@ class HistoBBox1d(object):
         self.data = numpy.asarray(data)
         self.indices = numpy.asarray(indices)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate_legacy(self,
                          weights,
                          dummy=None,
@@ -651,9 +641,6 @@ class HistoBBox1d(object):
     def outPos(self):
         return self.bin_centers
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate_ng(self,
                      weights,
                      variance=None,
@@ -792,9 +779,10 @@ class HistoBBox2d(object):
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+        :param empty: unused ??? TODO fix this
         """
         cdef: 
-            int i, size, bin0, bin1
+            int bins0, bins1
         self.size = pos0.size
         assert pos1.size == self.size, "pos1 size"
 
@@ -810,7 +798,7 @@ class HistoBBox2d(object):
 
         self.chiDiscAtPi = 1 if chiDiscAtPi else 0
         self.allow_pos0_neg = allow_pos0_neg
-        self.empty = 0.0
+        self.empty = empty
         try:
             bins0, bins1 = tuple(bins)
         except TypeError:
@@ -868,8 +856,6 @@ class HistoBBox2d(object):
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_checksum = crc32(self.data)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries(self, pos0Range, pos1Range):
         """
         Calculate self.pos0_min/max and self.pos1_min/max
@@ -878,7 +864,7 @@ class HistoBBox2d(object):
         :param pos1Range: 2-tuple containing the requested range
         """
         cdef:
-            int size = self.cpos0.size
+            int idx, size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
@@ -953,8 +939,6 @@ class HistoBBox2d(object):
         self.cpos1_sup = cpos1_sup
         self.cpos1_inf = cpos1_inf
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries_nosplit(self, pos0Range, pos1Range):
         """
         Calculate self.pos0_min/max and self.pos1_min/max
@@ -963,13 +947,13 @@ class HistoBBox2d(object):
         :param pos1Range: 2-tuple containing the requested range
         """
         cdef:
-            int size = self.cpos0.size
+            int idx, size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             double[::1] cpos0
             double[::1] cpos1
-            double upper0, lower0, pos0_max, pos0_min, c0, d0
-            double upper1, lower1, pos1_max, pos1_min, c1, d1
+            double pos0_max, pos0_min, c0
+            double pos1_max, pos1_min, c1
             bint allow_pos0_neg = self.allow_pos0_neg
             bint chiDiscAtPi = self.chiDiscAtPi
 
@@ -1018,9 +1002,6 @@ class HistoBBox2d(object):
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
         self.pos1_max = calc_upper_bound(<position_t> self.pos1_maxin)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.cdivision(True)
     def calc_lut(self):
         'calculate the max number of elements in the LUT and populate it'
         cdef:
@@ -1028,7 +1009,8 @@ class HistoBBox2d(object):
             position_t delta1 = self.delta1, pos1_min = self.pos1_min, min1, max1, fbin1_min, fbin1_max
             int bin0_min, bin0_max, bins0 = self.bins[0]
             int bin1_min, bin1_max, bins1 = self.bins[1]
-            int k, idx, lut_size, i, j, size = self.size, nnz
+            int k, idx, i, j, size = self.size, nnz
+            int memsize, key_page_cnt, key_page_size, lut_nbytes
             bint check_mask
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
@@ -1248,9 +1230,6 @@ class HistoBBox2d(object):
         self.data = numpy.asarray(data)
         self.indices = numpy.asarray(indices)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.cdivision(True)
     def calc_lut_nosplit(self):
         """
         "calculate the max number of elements in the LUT and populate it
@@ -1260,10 +1239,11 @@ class HistoBBox2d(object):
         """
         cdef:
             float delta0 = self.delta0, pos0_min = self.pos0_min, c0, fbin0
-            float delta1 = self.delta1, pos1_min = self.pos1_min, c1, fbin1, fbin1_max
+            float delta1 = self.delta1, pos1_min = self.pos1_min, c1, fbin1
             int bin0, bins0 = self.bins[0]
             int bin1, bins1 = self.bins[1]
-            cnumpy.int32_t k, idx, lut_size, i, j, size = self.size, nnz
+            int memsize, key_page_cnt, key_page_size, lut_nbytes
+            cnumpy.int32_t k, idx, size = self.size, nnz
             bint check_mask
             double[::1] cpos0 = self.cpos0
             double[::1] cpos1 = self.cpos1
@@ -1344,9 +1324,6 @@ class HistoBBox2d(object):
         self.data = numpy.asarray(data)
         self.indices = numpy.asarray(indices)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate(self, weights,
                   dummy=None,
                   delta_dummy=None,

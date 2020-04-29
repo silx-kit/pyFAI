@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -164,8 +164,6 @@ class HistoBBox1d(object):
         self.unit = unit
         self.lut_nbytes = self._lut.nbytes
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries(self, pos0Range):
         """
         Called by constructor to calculate the boundaries and the bin position
@@ -212,9 +210,6 @@ class HistoBBox1d(object):
             self.pos0_min = 0
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_lut(self):
         """
         calculate the max number of elements in the LUT and populate it
@@ -392,9 +387,6 @@ class HistoBBox1d(object):
             self.lut
         return self._lut_checksum
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate_legacy(self, weights,
                          dummy=None,
                          delta_dummy=None,
@@ -550,9 +542,6 @@ class HistoBBox1d(object):
                 numpy.asarray(sum_data), 
                 numpy.asarray(sum_count))
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate_kahan(self, weights,
                         dummy=None,
                         delta_dummy=None,
@@ -841,8 +830,6 @@ class HistoBBox2d(object):
         # Calculated at export time to python
         self._lut_checksum = None
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries(self, pos0Range, pos1Range):
         """
         Called by constructor to calculate the boundaries and the bin position
@@ -924,9 +911,6 @@ class HistoBBox2d(object):
         self.cpos1_sup = cpos1_sup
         self.cpos1_inf = cpos1_inf
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.cdivision(True)
     def calc_lut(self):
         'calculate the max number of elements in the LUT and populate it'
         cdef:
@@ -1187,9 +1171,6 @@ class HistoBBox2d(object):
             self.lut
         return self._lut_checksum
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate(self, weights,
                   dummy=None,
                   delta_dummy=None,
