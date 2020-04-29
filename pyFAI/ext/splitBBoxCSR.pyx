@@ -260,7 +260,7 @@ class HistoBBox1d(object):
             position_t[::1] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
             mask_t[::1] cmask
             acc_t inv_area, delta_left, delta_right
-            cnumpy.int64_t memsize, key_page_cnt, key_page_size, lut_nbytes
+            long memsize, key_page_cnt, key_page_size, lut_nbytes
 
         size = self.size
         if self.check_mask:
@@ -401,7 +401,7 @@ class HistoBBox1d(object):
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
             cnumpy.int32_t k, idx, bin0, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            cnumpy.int64_t memsize, key_page_cnt, key_page_size, lut_nbytes
+            long memsize, key_page_cnt, key_page_size, lut_nbytes
             cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             cnumpy.int32_t[::1] indptr, indices
             float[::1] data
@@ -1010,7 +1010,7 @@ class HistoBBox2d(object):
             int bin0_min, bin0_max, bins0 = self.bins[0]
             int bin1_min, bin1_max, bins1 = self.bins[1]
             int k, idx, i, j, size = self.size, nnz
-            cnumpy.int64_t memsize, key_page_cnt, key_page_size, lut_nbytes
+            long memsize, key_page_cnt, key_page_size, lut_nbytes
             bint check_mask
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
@@ -1242,7 +1242,7 @@ class HistoBBox2d(object):
             float delta1 = self.delta1, pos1_min = self.pos1_min, c1, fbin1
             int bin0, bins0 = self.bins[0]
             int bin1, bins1 = self.bins[1]
-            cnumpy.int64_t memsize, key_page_cnt, key_page_size, lut_nbytes
+            long memsize, key_page_cnt, key_page_size, lut_nbytes
             cnumpy.int32_t k, idx, size = self.size, nnz
             bint check_mask
             double[::1] cpos0 = self.cpos0

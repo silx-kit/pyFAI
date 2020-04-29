@@ -218,7 +218,7 @@ class HistoBBox1d(object):
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max 
             acc_t delta_left, delta_right, inv_area
-            int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size, key_page_size, key_page_cnt, memsize, lut_nbytes
+            int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
             bint check_mask, check_pos1
             cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             position_t[:] cpos0_sup = self.cpos0_sup
@@ -226,6 +226,7 @@ class HistoBBox1d(object):
             position_t[:] cpos1_min, cpos1_max
             lut_t[:, :] lut
             mask_t[:] cmask
+            long memsize, key_page_size, key_page_cnt, lut_nbytes
 
         size = self.size
         if self.check_mask:
@@ -292,8 +293,8 @@ class HistoBBox1d(object):
                     pass
                 else:
                     if memsize < lut_nbytes:
-                        raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s" %
-                                          (bins, lut_size, lut_nbytes/2.**30, memsize/2.**30))
+                        raise MemoryError("Lookup-table (%i, %i) is %sGB whereas the memory of the system is only %sGB" %
+                                          (bins, lut_size, lut_nbytes>>30, memsize>>30))
         # else hope we have enough memory
 
         if (bins == 0) or (lut_size == 0):
@@ -918,7 +919,7 @@ class HistoBBox2d(object):
             position_t delta1 = self.delta1, pos1_min = self.pos1_min, min1, max1, fbin1_min, fbin1_max
             int bin0_min, bin0_max, bins0 = self.bins[0]
             int bin1_min, bin1_max, bins1 = self.bins[1]
-            int k, idx, lut_size, i, j, lut_nbytes, key_page_cnt, key_page_size, memsize, size = self.size
+            int k, idx, lut_size, i, j, size = self.size
             bint check_mask
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
@@ -928,6 +929,7 @@ class HistoBBox2d(object):
             lut_t[:, :, ::1] lut
             mask_t[:] cmask
             acc_t inv_area, delta_down, delta_up, delta_right, delta_left
+            long lut_nbytes, key_page_cnt, key_page_size, memsize
         if self.check_mask:
             cmask = self.cmask
             check_mask = True
@@ -982,8 +984,8 @@ class HistoBBox2d(object):
                     pass
                 else:
                     if memsize < lut_nbytes:
-                        raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
-                                          (bins0, bins1, lut_size, lut_nbytes, memsize))
+                        raise MemoryError("Lookup-table (%i, %i, %i) is %sGB whereas the memory of the system is only %sGB" %
+                                          (bins0, bins1, lut_size, lut_nbytes>>30, memsize>>30))
 
         # else hope we have enough memory
         lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_t), format="if")
