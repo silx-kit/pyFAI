@@ -96,7 +96,7 @@ cdef floating[::1]c1_preproc(floating[::1] data,
     do_absorption = absorption is not None
     do_polarization = polarization is not None
     check_mask = mask is not None
-    result = numpy.zeros(size, dtype=numpy.dtype(data.typcode))
+    result = numpy.zeros(size, dtype=data.base.dtype)
     
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
@@ -182,7 +182,7 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
     do_absorption = absorption is not None
     do_polarization = polarization is not None
     check_mask = mask is not None
-    result = numpy.zeros((size, 2), dtype=numpy.dtype(data.typcode))
+    result = numpy.zeros((size, 2), dtype=data.base.dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
@@ -278,7 +278,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
     check_mask = mask is not None
     do_variance = variance is not None
     do_dark_variance = dark_variance is not None
-    result = numpy.zeros((size, 3), dtype=numpy.dtype(data.typcode))
+    result = numpy.zeros((size, 3), dtype=data.base.dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
