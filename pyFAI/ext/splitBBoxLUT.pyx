@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "05/08/2019"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -167,7 +171,7 @@ class HistoBBox1d(object):
         Called by constructor to calculate the boundaries and the bin position
         """
         cdef:
-            int size = self.cpos0.size
+            int idx, size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf,
@@ -219,7 +223,7 @@ class HistoBBox1d(object):
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max 
             acc_t delta_left, delta_right, inv_area
-            int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
+            int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size, key_page_size, key_page_cnt, memsize, lut_nbytes
             bint check_mask, check_pos1
             cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             position_t[:] cpos0_sup = self.cpos0_sup
@@ -779,7 +783,8 @@ class HistoBBox2d(object):
         :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
         :param unit: can be 2th_deg or r_nm^-1 ...
         """
-        cdef cnumpy.int32_t i, size, bin0, bin1
+        cdef: 
+            cnumpy.int32_t size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
         assert pos1.size == self.size, "pos1 size"
@@ -843,7 +848,7 @@ class HistoBBox2d(object):
         Called by constructor to calculate the boundaries and the bin position
         """
         cdef:
-            cnumpy.int32_t size = self.cpos0.size
+            cnumpy.int32_t idx, size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
@@ -929,7 +934,7 @@ class HistoBBox2d(object):
             position_t delta1 = self.delta1, pos1_min = self.pos1_min, min1, max1, fbin1_min, fbin1_max
             int bin0_min, bin0_max, bins0 = self.bins[0]
             int bin1_min, bin1_max, bins1 = self.bins[1]
-            int k, idx, lut_size, i, j, size = self.size
+            int k, idx, lut_size, i, j, lut_nbytes, key_page_cnt, key_page_size, memsize, size = self.size
             bint check_mask
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
@@ -1152,13 +1157,18 @@ class HistoBBox2d(object):
         """Getter for the LUT as actual numpy array
         Hack against a bug in ref-counting under python2.6
         """
-        cdef int rc_before, rc_after
+        cdef:
+            tuple shape
+            int rc_before, rc_after
+            lut_t[:, :, :] lut
+            bint need_decref
+            numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_t[:, :, :] lut = self._lut
+        lut  = self._lut
         rc_after = sys.getrefcount(self._lut)
-        cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
+        need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         shape = (self._lut.shape[0] * self._lut.shape[1], self._lut.shape[2])
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
+        tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
         memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], self._lut.nbytes)
         self._lut_checksum = crc32(tmp_ary)
 
