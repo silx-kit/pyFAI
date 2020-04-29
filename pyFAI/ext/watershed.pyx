@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+#cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/10/2019"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -77,10 +81,6 @@ cdef class Region:
         return "Region %s of size %s:\n neighbors: %s\n border: %s\n" % (self.index, self.size, self.neighbors, self.border) + \
                "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s" % (self.peaks, self.maxi, self.mini, self.highest_pass, self.pass_to)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.initializedcheck(False)
     def init_values(self, float[::1] flat):
         """
         Initialize the values : maxi, mini and pass both height and so on
@@ -88,7 +88,7 @@ cdef class Region:
         :return: True if there is a problem and the region should be removed
         """
         cdef:
-            int i, k, imax, imin
+            int i, k, imax#, imin
             float mini, maxi, val
             int border_size = len(self.border)
             int neighbors_size = len(self.neighbors)
@@ -98,7 +98,7 @@ cdef class Region:
             print(self)
             return True
         if neighbors_size:
-            imax = imin = 0
+            imax = 0 #imin = 0
             i = self.border[imax]
             val = mini = maxi = flat[i]
             for k in range(1, border_size):
@@ -106,7 +106,7 @@ cdef class Region:
                 val = flat[i]
                 if val < mini:
                     mini = val
-                    imin = k
+                    #imin = k
                 elif val > maxi:
                     maxi = val
                     imax = k
@@ -141,10 +141,6 @@ cdef class Region:
     def get_neighbors(self):
         return self.neighbors
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.initializedcheck(False)
     def merge(self, Region other):
         """
         merge 2 regions
@@ -271,10 +267,6 @@ class InverseWatershed(object):
         # self.merge_intense(self.thres)
         logger.info("found %s regions, after merge remains %s" % (len(self.regions), len(set(self.regions.values()))))
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.initializedcheck(False)
     def init_labels(self):
         cdef:
             int i, j, width = self.width, height = self.height, idx, res
@@ -289,13 +281,9 @@ class InverseWatershed(object):
                 if idx == res:
                     regions[res] = Region(res)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.initializedcheck(False)
     def init_borders(self):
         cdef:
-            int i, j, width = self.width, height = self.height, idx, res
+            int i, j, width = self.width, height = self.height, res
             numpy.int32_t[:, :] labels = self.labels
             numpy.uint8_t[:, :] borders = self.borders
             numpy.uint8_t neighb
@@ -322,10 +310,6 @@ class InverseWatershed(object):
                     neighb |= 1 << 7
                 borders[i, j] = neighb
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.initializedcheck(False)
     def init_regions(self):
         cdef:
             int i, j, idx, res
@@ -363,18 +347,11 @@ class InverseWatershed(object):
                 elif get_bit(neighb, 6):
                     region.neighbors.append(labels[i + 1, j - 1])
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def init_pass(self):
         cdef:
-            int i, j, k, imax, imin
             float[::1] flat = self.data.ravel()
-            numpy.uint8_t neighb = 0
             Region region
             dict regions = self.regions
-            float val, maxi, mini
-            int width = self.width
         for region in list(regions.values()):
             if region.init_values(flat):
                 regions.pop(region.index)
@@ -450,14 +427,10 @@ class InverseWatershed(object):
         A -> B and B -> A
         """
         cdef:
-            int i, j, k, imax, imin, key1, key2, key
+            int key1, key2, key
             float[:] flat = self.data.ravel()
-            numpy.uint8_t neighb = 0
             Region region1, region2, region
             dict regions = self.regions
-            float val, maxi, mini
-            bint found = True
-            int width = self.width
             int cnt = 0
         for key1 in list(regions.keys()):
             region1 = regions[key1]
@@ -466,8 +439,8 @@ class InverseWatershed(object):
             if region1 == region2:
                 continue
             if (region2.pass_to in region1.peaks and region1.pass_to in region2.peaks):
-                idx1 = region1.index
-                idx2 = region2.index
+                #idx1 = region1.index
+                #idx2 = region2.index
                 # logger.info("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
                 region = region1.merge(region2)
                 region.init_values(flat)
@@ -484,7 +457,7 @@ class InverseWatershed(object):
             logger.warning("Cannot increase threshold: was %s, requested %s. You should re-init the object." % self._actual_thres, thres)
         self._actual_thres = thres
         cdef:
-            int key1, key2, idx1, idx2
+            int key1, key2
             Region region1, region2, region
             dict regions = self.regions
             float ratio
@@ -498,9 +471,9 @@ class InverseWatershed(object):
             ratio = (region1.highest_pass - region1.mini) / (region1.maxi - region1.mini)
             if ratio >= thres:
                 key2 = region1.pass_to
-                idx1 = region1.index
+                #idx1 = region1.index
                 region2 = regions[key2]
-                idx2 = region2.index
+                #idx2 = region2.index
                 # print("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
                 region = region1.merge(region2)
                 region.init_values(flat)
@@ -518,7 +491,7 @@ class InverseWatershed(object):
         :param dmin: minimum distance from
         """
         cdef:
-            int i, j, l, x, y, width = self.width
+            int i, j, x, y, width = self.width
             numpy.uint8_t[:] mask_flat = numpy.ascontiguousarray(mask.ravel(), numpy.uint8)
             int[:] input_points = numpy.where(mask_flat)[0].astype(numpy.int32)
             numpy.int32_t[:] labels = self.labels.ravel()
@@ -537,8 +510,8 @@ class InverseWatershed(object):
             for j in region.peaks:
                 if mask_flat[j]:
                     intensities.append(data[j])
-                    x = j % self.width
-                    y = j // self.width
+                    x = j % width
+                    y = j // width
                     output_points.append((y, x))
         if refine:
             for i in range(len(output_points)):
