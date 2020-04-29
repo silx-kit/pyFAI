@@ -1,10 +1,14 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2012-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-20120 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,9 +38,9 @@ Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jerome Kieffer"
-__date__ = "17/05/2019"
+__date__ = "29/04/2020"
 __license__ = "MIT"
-__copyright__ = "2011-2019, ESRF"
+__copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 
@@ -57,9 +61,6 @@ from ..containers import Integrate1dtpl, Integrate2dtpl
 _COMPILED_WITH_OPENMP = _openmp.COMPILED_WITH_OPENMP
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def _histogram_omp(cnumpy.ndarray pos not None,
                    cnumpy.ndarray weights not None,
                    int bins=100,
@@ -86,7 +87,7 @@ def _histogram_omp(cnumpy.ndarray pos not None,
     assert pos.size == weights.size
     assert bins > 1
     cdef:
-        int  size = pos.size
+        int size = pos.size
         position_t[::1] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         acc_t[::1] out_data = numpy.zeros(bins, dtype=acc_d)
@@ -154,9 +155,6 @@ def _histogram_omp(cnumpy.ndarray pos not None,
             numpy.asarray(out_count))
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def _histogram_nomp(cnumpy.ndarray pos,
                     cnumpy.ndarray weights,
                     int bins=100,
@@ -239,9 +237,6 @@ else:
     histogram = _histogram_nomp
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def histogram2d(cnumpy.ndarray pos0 not None,
                 cnumpy.ndarray pos1 not None,
                 bins not None,
@@ -329,9 +324,6 @@ def histogram2d(cnumpy.ndarray pos0 not None,
             numpy.asarray(out_count))
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def histogram_preproc(pos,
                       weights,
                       int bins=100,
@@ -392,9 +384,6 @@ def histogram_preproc(pos,
             numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins))
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def histogram1d_engine(radial, int npt,
                        raw,
                        dark=None,
@@ -504,9 +493,6 @@ def histogram1d_engine(radial, int npt,
                           numpy.asarray(histo_count))
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def histogram2d_preproc(cnumpy.ndarray pos0 not None,
                         cnumpy.ndarray pos1 not None,
                         bins,
