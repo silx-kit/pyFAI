@@ -1,12 +1,15 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+#cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2018-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#    Principal author:       Valentin Valls (Valentin.Valls@ESRF.eu)
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +31,7 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "21/01/2019"
+__date__ = "30/04/2020"
 __copyright__ = "2018, ESRF"
 
 import numpy
@@ -48,44 +51,31 @@ cimport cython
 from cython cimport floating
 
 include "sparse_builder.pxi"
+include "regrid_common.pxi"
 
-cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-
-
-@cython.cdivision(True)
-cdef inline floating calc_upper_bound(floating maximum_value) nogil:
-    if maximum_value > 0:
-        return maximum_value * EPS32
-    else:
-        return maximum_value / EPS32
-
-
-@cython.cdivision(True)
-cdef inline floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil:
-    return (x0 - pos0_min) / delta
-
-
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def feed_histogram(SparseBuilder builder not None,
                    cnumpy.ndarray pos not None,
                    cnumpy.ndarray weights not None,
                    int bins=100,
                    double empty=0.0,
                    double normalization_factor=1.0):
+    """Missing docstring for feed_histogram
+    Is this just a demo ?
+    
+    warning: 
+        * Unused argument 'empty'
+        * Unused argument 'normalization_factor'
+
+    """
     assert pos.size == weights.size
     assert bins > 1
     cdef:
         int  size = pos.size
-        cnumpy.float32_t[::1] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
-        cnumpy.float32_t delta, min0, max0, maxin0
-        cnumpy.float32_t a = 0.0
-        cnumpy.float32_t d = 0.0
-        cnumpy.float32_t fbin = 0.0
-        cnumpy.float32_t tmp_count, tmp_data = 0.0
-        cnumpy.float32_t epsilon = 1e-10
-        int bin = 0, i, idx
+        float[::1] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
+        float delta, min0, max0, maxin0
+        float a = 0.0
+        float fbin = 0.0
+        int bin = 0, i
 
     min0 = pos.min()
     maxin0 = pos.max()

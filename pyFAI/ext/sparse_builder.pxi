@@ -28,7 +28,7 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "16/07/2018"
+__date__ = "30/04/2020"
 __copyright__ = "2018, ESRF"
 
 import numpy
@@ -158,7 +158,7 @@ cdef cppclass Heap:
     chained_pixel_t* alloc_pixel() nogil:
         cdef:
             chained_pixel_t *data
-            int foo
+#             int foo
         if this._current_pixel_block == NULL or this._pixel_pos + 1 > this._block_size:
             data = <chained_pixel_t *>libc.stdlib.malloc(this._block_size * sizeof(chained_pixel_t))
             this._current_pixel_block = data
@@ -171,7 +171,7 @@ cdef cppclass Heap:
     packed_data_t* alloc_packed_data() nogil:
         cdef:
             packed_data_t *data
-            int foo
+#             int foo
         if this._current_packed_block == NULL or this._packed_pos + 1 > this._block_size:
             data = <packed_data_t *>libc.stdlib.malloc(this._block_size * sizeof(packed_data_t))
             this._current_packed_block = data
@@ -235,7 +235,7 @@ cdef cppclass PixelBlock:
     __dealloc__() nogil:
         cdef:
             PixelElementaryBlock* element
-            int i = 0
+#             int i = 0
             clist[PixelElementaryBlock*].iterator it
         it = this._blocks.begin()
         while it != this._blocks.end():
@@ -467,8 +467,8 @@ cdef class SparseBuilder(object):
         """Release memory."""
         cdef:
             PixelBin *pixel_bin
-            clist[PixelElementaryBlock*].iterator it_points
-            PixelElementaryBlock* heap
+#             clist[PixelElementaryBlock*].iterator it_points
+#             PixelElementaryBlock* heap
             int i
 
         if self._use_blocks:
@@ -782,7 +782,7 @@ cdef class SparseBuilder(object):
             cnumpy.float32_t[:] coefs
             cnumpy.float32_t *coefs_ptr
             int size
-            int begin, end
+#             int begin, end
             int bin_id
             int bin_size
             int pos
@@ -889,17 +889,17 @@ cdef class SparseBuilder(object):
     @cython.cdivision(True)
     def _to_lut_from_packed(self):
         cdef:
-            cnumpy.int32_t[:] current_bin_pos
-            cnumpy.int32_t[:] indexes
-            cnumpy.int32_t *indexes_ptr
-            cnumpy.float32_t[:] coefs
-            cnumpy.float32_t *coefs_ptr
+#             cnumpy.int32_t[:] current_bin_pos
+#             cnumpy.int32_t[:] indexes
+#             cnumpy.int32_t *indexes_ptr
+#             cnumpy.float32_t[:] coefs
+#             cnumpy.float32_t *coefs_ptr
             pixel_t[:, :] lut
             int size
             int max_size
-            int begin, end
+#             int begin, end
             int bin_id
-            int bin_size
+#             int bin_size
             int pos
             packed_data_t *packed_block
             packed_data_t *packed_data
@@ -956,13 +956,13 @@ cdef class SparseBuilder(object):
             pixel_t[:, :] lut
             pixel_t *data_ptr
             int bin_id
-            int i
+#             int i
             int max_size
             int size
-            cnumpy.int32_t[:] indexes
-            cnumpy.float32_t[:] coefs
-            cnumpy.float32_t *coefs_ptr
-            cnumpy.int32_t *indexes_ptr
+#             cnumpy.int32_t[:] indexes
+#             cnumpy.float32_t[:] coefs
+#             cnumpy.float32_t *coefs_ptr
+#             cnumpy.int32_t *indexes_ptr
 
         if self._use_packed_list:
             return self._to_lut_from_packed()

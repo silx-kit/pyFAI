@@ -1,4 +1,5 @@
 # coding: utf-8
+#cython: embedsignature=True, language_level=3
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
