@@ -226,7 +226,7 @@ class HistoBBox1d(object):
             position_t[:] cpos1_min, cpos1_max
             lut_t[:, :] lut
             mask_t[:] cmask
-            long memsize, key_page_size, key_page_cnt, lut_nbytes
+            Py_ssize_t memsize, key_page_size, key_page_cnt, lut_nbytes
 
         size = self.size
         if self.check_mask:
@@ -929,7 +929,7 @@ class HistoBBox2d(object):
             lut_t[:, :, ::1] lut
             mask_t[:] cmask
             acc_t inv_area, delta_down, delta_up, delta_right, delta_left
-            long lut_nbytes, key_page_cnt, key_page_size, memsize
+            Py_ssize_t lut_nbytes, key_page_cnt, key_page_size, memsize
         if self.check_mask:
             cmask = self.cmask
             check_mask = True
