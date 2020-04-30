@@ -1,11 +1,14 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +32,7 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "26/10/2018"
+__date__ = "30/04/2020"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -140,7 +143,6 @@ def polar_inpaint(floating[:, :] img not None,
     """
     cdef:
         int row, col, npt_radial, npt_azim, idx_col, idx_row, tar_row, radius
-        int start_col, end_col, start_row, end_row
         float[:, ::1] res
         bint do_dummy = empty is not None
         float value, dummy, dist
