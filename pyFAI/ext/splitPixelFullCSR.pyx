@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/03/2020"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -242,14 +246,14 @@ class FullSplitCSR_1d(object):
             mask_t[::1] cmask
             numpy.int32_t[::1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
             numpy.int32_t[::1] indptr
-            float pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
+            float pos0_min = 0, pos1_min = 0, pos1_maxin = 0
             float max0, min0
             float areaPixel = 0, delta = 0, areaPixel2 = 0
             float A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
             float A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
-            float oneOverArea = 0, partialArea = 0, tmp = 0
+            float partialArea = 0, oneOverPixelArea
             Function AB, BC, CD, DA
-            int bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, bin1_min, pixel_bins = 0, k = 0, size = 0
+            int bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0
             bint check_pos1 = False, check_mask = False
 
         bins = self.bins
@@ -270,9 +274,7 @@ class FullSplitCSR_1d(object):
         self.delta = (self.pos0_max - self.pos0_min) / (<double> (bins))
 
         pos0_min = self.pos0_min
-        pos0_max = self.pos0_max
         pos1_min = self.pos1_min
-        pos1_max = self.pos1_max
         delta = self.delta
 
         size = self.size
@@ -777,18 +779,18 @@ class FullSplitCSR_2d(object):
             mask_t[:] cmask
             numpy.int32_t[:, ::1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
             numpy.int32_t[::1] indptr
-            float pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
+            float pos0_min = 0, pos1_min = 0
             float max0, min0, min1, max1
-            float areaPixel = 0, delta0 = 0, delta1 = 0, areaPixel2 = 0
+            float areaPixel = 0, delta0 = 0, delta1 = 0
             float A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
             float A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
-            float oneOverArea = 0, partialArea = 0, tmp_f = 0, var = 0
+            float partialArea = 0, var = 0, oneOverPixelArea
             Function AB, BC, CD, DA
             MyPoint A, B, C, D, S, E
             MyPoly list1, list2
             int bins0, bins1, i = 0, j = 0, idx = 0, bin = 0, bin0 = 0, bin1 = 0, bin0_max = 0, bin0_min = 0, bin1_min = 0, bin1_max = 0, k = 0, size = 0
-            int all_bins0 = self.bins[0], all_bins1 = self.bins[1], all_bins = self.bins[0] * self.bins[1], pixel_bins = 0, tmp_i, index
-            bint check_pos1 = False, check_mask = False
+            int all_bins0 = self.bins[0], all_bins1 = self.bins[1], all_bins = self.bins[0] * self.bins[1], tmp_i, index
+            bint check_mask = False
 
         bins = self.bins
         if self.pos0Range is not None:
@@ -809,9 +811,7 @@ class FullSplitCSR_2d(object):
         self.delta1 = (self.pos1_max - self.pos1_min) / (<float> (all_bins1))
 
         pos0_min = self.pos0_min
-        pos0_max = self.pos0_max
         pos1_min = self.pos1_min
-        pos1_max = self.pos1_max
         delta0 = self.delta0
         delta1 = self.delta1
 

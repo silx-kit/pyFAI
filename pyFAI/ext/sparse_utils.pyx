@@ -1,9 +1,13 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2015-2020 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,14 +33,13 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/11/2018"
+__date__ = "30/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "sparse_common.pxi"
 
 
-@cython.boundscheck(False)
 def LUT_to_CSR(lut):
     """Conversion between sparse matrix representations
 
@@ -47,7 +50,7 @@ def LUT_to_CSR(lut):
     cdef:
         int nrow, ncol
 
-    ncol = lut.shape[-1]
+    ncol = lut.shape[1]
     nrow = lut.shape[0]
 
     cdef:
@@ -73,7 +76,6 @@ def LUT_to_CSR(lut):
     return numpy.asarray(data[:nelt]), numpy.asarray(indices[:nelt]), numpy.asarray(indptr)
 
 
-@cython.boundscheck(False)
 def CSR_to_LUT(data, indices, indptr):
     """Conversion between sparse matrix representations
 
@@ -86,8 +88,8 @@ def CSR_to_LUT(data, indices, indptr):
     cdef:
         int nrow, ncol
 
-    nrow = indptr.size - 1
-    ncol = (indptr[1:] - indptr[:-1]).max()
+    nrow = indptr.shape[0] - 1
+    ncol = (indptr[1:] - indptr[:nrow]).max()
     assert nrow > 0, "nrow >0"
     assert ncol > 0, "ncol >0"
 
@@ -143,9 +145,6 @@ cdef class Vector:
     def get_data(self):
         return numpy.asarray(self.idx[:self.size]), numpy.asarray(self.coef[:self.size])
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.initializedcheck(False)
     cdef inline void _append(self, int idx, float coef):
         cdef:
             int pos, new_allocated
@@ -186,6 +185,7 @@ cdef class ArrayBuilder:
             self.lines[i] = Vector(min_size=min_size)
 
     def __dealloc__(self):
+        cdef int i
         for i in range(self.size):
             self.lines[i] = None
         self.lines = None
@@ -207,9 +207,6 @@ cdef class ArrayBuilder:
             sum += self.lines[i].nbytes
         return sum
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.initializedcheck(False)
     cdef inline void _append(self, int line, int col, float value):
         cdef:
             Vector vector
@@ -222,7 +219,7 @@ cdef class ArrayBuilder:
 
     def as_LUT(self):
         cdef:
-            int i, max_size = 0
+            int i, j, max_size = 0
             cnumpy.int32_t[::1] local_idx
             cnumpy.float32_t[:] local_coef
             lut_t[:, :] lut
@@ -240,10 +237,8 @@ cdef class ArrayBuilder:
 
     def as_CSR(self):
         cdef:
-            int i, val, start, end, total_size = 0
+            int i, start, end, total_size = 0
             Vector vector
-            lut_t[:, :] lut
-            lut_t[:] data
             cnumpy.int32_t[:] idptr, idx, local_idx
             cnumpy.float32_t[:] coef, local_coef
         idptr = numpy.zeros(len(self.lines) + 1, dtype=numpy.int32)

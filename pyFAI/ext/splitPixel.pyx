@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "02/05/2019"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -72,9 +76,6 @@ cdef inline floating calc_area(floating I1, floating I2, floating slope, floatin
     return 0.5 * ((I2 - I1) * (slope * (I2 + I1) + 2 * intercept))
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.cdivision(True)
 cdef inline void integrate(acc_t[::1] buffer, int buffer_size, position_t start0, position_t start1, position_t stop0, position_t stop1) nogil:
     "Integrate in a box a line between start and stop"
 
@@ -104,9 +105,6 @@ cdef inline void integrate(acc_t[::1] buffer, int buffer_size, position_t start0
                 buffer[istop0] += calc_area(floor(stop0 + 1), stop0, slope, intercept)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def fullSplit1D(cnumpy.ndarray pos not None,
                 cnumpy.ndarray weights not None,
                 int bins=100,
@@ -348,9 +346,6 @@ def fullSplit1D(cnumpy.ndarray pos not None,
     return (bin_centers, numpy.asarray(merged), numpy.asarray(sum_data), numpy.asarray(sum_count))
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def fullSplit2D(cnumpy.ndarray pos not None,
                 cnumpy.ndarray weights not None,
                 bins not None,
@@ -658,9 +653,6 @@ def fullSplit2D(cnumpy.ndarray pos not None,
             numpy.asarray(sum_count).T)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def pseudoSplit2D_ng(pos not None,
                      weights not None,
                      bins not None,

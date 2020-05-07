@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Giannis Ashiotis
 #
@@ -34,7 +38,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2018"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -79,7 +83,6 @@ cdef inline position_t integrate(position_t A0, position_t B0, Function AB) nogi
         return AB.slope * (B0 * B0 - A0 * A0) * 0.5 + AB.intersect * (B0 - A0)
 
 
-@cython.cdivision(True)
 cdef inline position_t getBin1Nr(position_t x0, position_t pos0_min, position_t delta, int on_boundary) nogil:
     """
     calculate the bin number for any point
@@ -107,7 +110,6 @@ cdef struct MyPoly:
     MyPoint[8] data
 
 
-@cython.cdivision(True)
 cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, double clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = clipEdge
@@ -115,7 +117,6 @@ cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, double clipEdge) 
     return intersection
 
 
-@cython.cdivision(True)
 cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, double clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = (E.i - S.i) * (clipEdge - S.j) / (E.j - S.j) + S.i
@@ -123,7 +124,6 @@ cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, double clipEdge) 
     return intersection
 
 
-@cython.cdivision(True)
 cdef inline int point_and_line(double x0, double y0, double x1, double y1, double x, double y) nogil:
     cdef double tmp = (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0)
     return (tmp > 0) - (tmp < 0)
@@ -159,9 +159,6 @@ cdef double area_n(MyPoly poly) nogil:
                               poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[4].i * poly.data[3].j - poly.data[5].i * poly.data[4].j - poly.data[6].i * poly.data[5].j - poly.data[7].i * poly.data[6].j - poly.data[0].i * poly.data[7].j)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def fullSplit1D(numpy.ndarray pos not None,
                 numpy.ndarray weights not None,
                 size_t bins=100,
@@ -220,7 +217,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         data_t[:] cflat, cdark, cpolarization, csolidangle
         data_t cdummy = 0, cddummy = 0, data = 0
         double pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
-        double areaPixel = 0, dpos = 0, fbin0_min = 0, fbin0_max = 0  # , fbin1_min, fbin1_max
+        double areaPixel = 0, dpos = 0
         double A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
         double A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
         double oneOverArea = 0, partialArea = 0, tmp = 0
@@ -228,9 +225,9 @@ def fullSplit1D(numpy.ndarray pos not None,
         Function AB, BC, CD, DA
         double epsilon = 1e-10
         int lut_size = 0
-        bint check_pos1 = False, check_mask = False, do_dummy = False, do_dark = False
+        bint check_pos1 = False, check_mask = False, check_dummy = False, do_dark = False
         bint do_flat = False, do_polarization = False, do_solidangle = False
-        int i = 0, idx = 0, bin = 0, bin0, bin0_max = 0, bin0_min = 0, pixel_bins = 0, cur_bin
+        int i = 0, idx = 0, bin = 0, bin0, bin0_max = 0, bin0_min = 0
 
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
@@ -246,7 +243,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     else:
         pos1_min = pos[:, :, 1].min()
         pos1_maxin = pos[:, :, 1].max()
-    pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+    pos1_max = pos1_maxin * EPS32
     # pos1_max = pos1_maxin * 1.00001
     dpos = (pos0_max - pos0_min) / (<double> (bins))
 
@@ -387,9 +384,6 @@ def fullSplit1D(numpy.ndarray pos not None,
     return bin_centers, outMerge, outData, outCount
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def fullSplit2D(numpy.ndarray pos not None,
                 numpy.ndarray weights not None,
                 bins not None,
@@ -422,6 +416,8 @@ def fullSplit2D(numpy.ndarray pos not None,
     :param solidangle: array (of float64)with solid angle corrections
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
+    
+    TODO: warning: pyFAI/ext/splitPixelFull.pyx:400:16: Unused argument 'normalization_factor'
 
     :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
@@ -453,20 +449,20 @@ def fullSplit2D(numpy.ndarray pos not None,
         numpy.int8_t[:] cmask
         double[:] cflat, cdark, cpolarization, csolidangle
         double pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
-        bint check_mask = False, do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
+        bint check_mask = False, check_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
         double cdummy = 0, cddummy = 0, data = 0
 
         double max0, min0, min1, max1
         double areaPixel = 0, delta0 = 0, delta1 = 0, areaPixel2 = 0
         double A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
         double A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
-        double oneOverArea = 0, partialArea = 0, tmp_f = 0,
+        double partialArea = 0, tmp_f = 0,
         bint split = False
         Function AB, BC, CD, DA
         MyPoint A, B, C, D, S, E
         MyPoly list1, list2
-        int bins0, bins1, i = 0, j = 0, idx = 0, bin = 0, bin0 = 0, bin1 = 0, bin0_max = 0, bin0_min = 0, bin1_min = 0, bin1_max = 0, k = 0
-        int all_bins = all_bins0 * all_bins1, pixel_bins = 0, tmp_i, index
+        int bins0, bins1, i = 0, j = 0, idx = 0, bin0 = 0, bin1 = 0, bin0_max = 0, bin0_min = 0, bin1_min = 0, bin1_max = 0
+        int all_bins = all_bins0 * all_bins1, tmp_i, index
         double epsilon = 1e-10
         #  int range1 = 0, range2 = 0
         numpy.int8_t[:, :] is_inside = numpy.zeros((<int> (1.5 * sqrt(size) / all_bins0), <int> (1.5 * sqrt(size) / all_bins1)), dtype=numpy.int8)

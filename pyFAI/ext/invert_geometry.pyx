@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +37,7 @@ coordinate.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "17/05/2019"
+__date__ = "30/04/2020"
 __copyright__ = "2018-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -41,6 +45,7 @@ include "regrid_common.pxi"
 
 import logging
 logger = logging.getLogger("pyFAI.ext.invert_geometry")
+
 
 cdef class InvertGeometry:
     """
@@ -98,9 +103,6 @@ cdef class InvertGeometry:
         self.radius = None
         self.angle = None
 
-    @cython.wraparound(False)
-    @cython.boundscheck(False)
-    @cython.cdivision(True)
     def __call__(self, position_t rad, position_t ang, bint refined=True):
         """Calculate the pixel coordinate leading to the value (rad, angle)
 

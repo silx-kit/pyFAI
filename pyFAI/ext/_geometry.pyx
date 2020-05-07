@@ -1,5 +1,8 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,8 +37,8 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "17/05/2019"
-__copyright__ = "2011-2016, ESRF"
+__date__ = "29/04/2020"
+__copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 
@@ -398,7 +401,7 @@ def calc_q(double L, double rot1, double rot2, double rot3,
         double cosRot2 = cos(rot2)
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
-        ssize_t  size = pos1.size, i = 0, ndim
+        ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)

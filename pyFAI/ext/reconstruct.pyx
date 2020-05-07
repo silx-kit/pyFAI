@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility,  France
+#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility,  France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +37,7 @@ image (masked) to be able to use more common algorithms.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/05/2019"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -45,15 +49,10 @@ from libc.math cimport sqrt, fabs
 from cython.parallel import prange
 
 
-@cython.cdivision(True)
 cdef float invert_distance(size_t i0, size_t i1, size_t p0, size_t p1) nogil:
     return 1. / sqrt(<float> ((i0 - p0) ** 2 + (i1 - p1) ** 2))
 
 
-@cython.boundscheck(False)
-@cython.cdivision(True)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 cdef inline float processPoint(float[:, ::1] data,
                                cnumpy.int8_t[:, ::1] mask,
                                size_t p0,
@@ -106,10 +105,6 @@ cdef inline float processPoint(float[:, ::1] data,
     return sum / count
 
 
-@cython.boundscheck(False)
-@cython.cdivision(True)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def reconstruct(cnumpy.ndarray data not None, 
                 cnumpy.ndarray mask=None, 
                 dummy=None, 
@@ -128,7 +123,7 @@ def reconstruct(cnumpy.ndarray data not None,
     cdef:
         ssize_t d0 = data.shape[0]
         ssize_t d1 = data.shape[1]
-        ssize_t p0, p1, i, l
+        ssize_t p0, p1
         float[:, ::1] cdata
         cnumpy.int8_t[:, ::1] cmask 
         bint is_masked, do_dummy
