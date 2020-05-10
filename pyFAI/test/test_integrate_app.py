@@ -26,7 +26,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 import json
 import os
 import fabio
@@ -63,6 +62,9 @@ class TestIntegrateApp(unittest.TestCase):
             self.json = None
             self.monitor_key = None
             self.write_mode = None
+
+        def __repr__(self):
+            return "\n".join(["%s: %s" % (k, self.__getattribute__(k)) for k in dir(self) if "_" not in k])
 
     def get_path(self, filename):
         path = os.path.join(self.tempDir, filename)

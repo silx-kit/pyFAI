@@ -1,10 +1,14 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +37,7 @@ It is used to flag from largest regions to the smallest.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/05/2019"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 

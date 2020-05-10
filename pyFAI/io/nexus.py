@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2020"
+__date__ = "02/04/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -42,9 +42,19 @@ import sys
 import time
 import logging
 import numpy
-import h5py
+from ..utils.decorators import deprecated
 from .. import version
 logger = logging.getLogger(__name__)
+try:
+    import h5py
+except ImportError as error:
+    h5py = None
+    logger.error("h5py module missing")
+else:
+    try:
+        h5py._errors.silence_errors()
+    except AttributeError:  # old h5py
+        pass
 
 
 def get_isotime(forceTime=None):
@@ -136,6 +146,9 @@ class Nexus(object):
                 self.mode = "r"
             else:
                 self.mode = "a"
+        elif "w" in mode:
+            pre_existing = False
+
         self.h5 = h5py.File(self.filename, mode=self.mode)
         self.to_close = []
 
@@ -146,12 +159,12 @@ class Nexus(object):
             self.h5.attrs["HDF5_Version"] = h5py.version.hdf5_version
             self.h5.attrs["creator"] = creator or self.__class__.__name__
 
-    def close(self):
+    def close(self, end_time=None):
         """
         close the filename and update all entries
         """
         if self.mode != "r":
-            end_time = get_isotime()
+            end_time = get_isotime(end_time)
             for entry in self.to_close:
                 entry["end_time"] = end_time
             self.h5.attrs["file_update_time"] = get_isotime()
@@ -163,6 +176,10 @@ class Nexus(object):
 
     def __exit__(self, *arg, **kwarg):
         self.close()
+
+    def flush(self):
+        if self.h5:
+            self.h5.flush()
 
     def get_entry(self, name):
         """
@@ -210,31 +227,33 @@ class Nexus(object):
         return result
 
     def new_entry(self, entry="entry", program_name="pyFAI",
-                  title="description of experiment",
-                  force_time=None, force_name=False):
+                  title=None, force_time=None, force_name=False):
         """
         Create a new entry
 
         :param entry: name of the entry
         :param program_name: value of the field as string
-        :param title: value of the field as string
+        :param title: description of experiment
         :param force_time: enforce the start_time (as string!)
         :param force_name: force the entry name as such, without numerical suffix.
         :return: the corresponding HDF5 group
         """
-
         if not force_name:
             nb_entries = len(self.get_entries())
             entry = "%s_%04i" % (entry, nb_entries)
-        entry_grp = self.h5.require_group(entry)
+        entry_grp = self.h5
+        for i in entry.split("/"):
+            if i:
+                entry_grp = entry_grp.require_group(i)
         self.h5.attrs["default"] = entry
-        entry_grp.attrs["NX_class"] = numpy.string_("NXentry")
-        entry_grp["title"] = numpy.string_(title)
-        entry_grp["program_name"] = numpy.string_(program_name)
+        entry_grp.attrs["NX_class"] = "NXentry"
+        if title is not None:
+            entry_grp["title"] = str(title)
+        entry_grp["program_name"] = str(program_name)
         if force_time:
-            entry_grp["start_time"] = numpy.string_(force_time)
+            entry_grp["start_time"] = str(force_time)
         else:
-            entry_grp["start_time"] = numpy.string_(get_isotime())
+            entry_grp["start_time"] = get_isotime()
         self.to_close.append(entry_grp)
         return entry_grp
 
@@ -257,7 +276,7 @@ class Nexus(object):
         :return: subgroup created
         """
         sub = grp.require_group(name)
-        sub.attrs["NX_class"] = numpy.string_(class_type)
+        sub.attrs["NX_class"] = str(class_type)
         return sub
 
     def new_detector(self, name="detector", entry="entry", subentry="pyFAI"):
@@ -270,8 +289,8 @@ class Nexus(object):
         """
         entry_grp = self.new_entry(entry)
         pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
-        pyFAI_grp["definition_local"] = numpy.string_("pyFAI")
-        pyFAI_grp["definition_local"].attrs["version"] = numpy.string_(version)
+        pyFAI_grp["definition_local"] = str("pyFAI")
+        pyFAI_grp["definition_local"].attrs["version"] = str(version)
         det_grp = self.new_class(pyFAI_grp, name, "NXdetector")
         return det_grp
 
@@ -287,9 +306,11 @@ class Nexus(object):
                 self.get_attr(grp[name], "NX_class") == class_type]
         return coll
 
+    @deprecated(reason="WRONG", since_version="0.20")
     def get_data(self, grp, class_type="NXdata"):
         """
         return all dataset of the the NeXus class NXdata
+        WRONG, do not use...
 
         :param grp: HDF5 group
         :param class_type: name of the NeXus class
@@ -297,6 +318,20 @@ class Nexus(object):
         coll = [grp[name] for name in grp
                 if isinstance(grp[name], h5py.Dataset) and
                 self.get_attr(grp[name], "NX_class") == class_type]
+        return coll
+
+    def get_dataset(self, grp, attr=None, value=None):
+        """return list of dataset of the group matching 
+        the given attribute having the given value 
+
+        :param grp: HDF5 group
+        :param attr: name of an attribute
+        :param value: requested value for the attribute
+        :return: list of dataset
+        """
+        coll = [grp[name] for name in grp
+                if isinstance(grp[name], h5py.Dataset) and
+                self.get_attr(grp[name], attr) == value]
         return coll
 
     def deep_copy(self, name, obj, where="/", toplevel=None, excluded=None, overwrite=False):

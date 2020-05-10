@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2020"
+__date__ = "23/04/2020"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -821,9 +821,9 @@ class AzimuthalIntegrator(Geometry):
                                             allow_pos0_neg=False,
                                             unit=unit)
 
-    def setup_CSR(self, shape, npt, mask=None, 
-                  pos0_range=None, pos1_range=None, 
-                  mask_checksum=None, unit=units.TTH, 
+    def setup_CSR(self, shape, npt, mask=None,
+                  pos0_range=None, pos1_range=None,
+                  mask_checksum=None, unit=units.TTH,
                   split="bbox"):
         """
         Prepare a look-up-table
@@ -1070,7 +1070,6 @@ class AzimuthalIntegrator(Geometry):
         sum_ = None
 
         if method.algo_lower == "lut":
-            mask_crc = None
             if EXT_LUT_ENGINE not in self.engines:
                 engine = self.engines[EXT_LUT_ENGINE] = Engine()
             else:
@@ -1639,7 +1638,7 @@ class AzimuthalIntegrator(Geometry):
                                             solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor)
-            else: # method.impl_lower in ("opencl", "python"):
+            else:  # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
                     # instanciated the engine
                     engine = self.engines[method] = Engine()
@@ -1691,7 +1690,7 @@ class AzimuthalIntegrator(Geometry):
                                                                   deviceid=method.target[1])
                                 # Copy some properties from the cython integrator
                                 integr.check_mask = csr_integr.check_mask
-                                integr.mask_checksum = csr_integr.mask_checksum 
+                                integr.mask_checksum = csr_integr.mask_checksum
                                 integr.pos0Range = csr_integr.pos0Range
                                 integr.pos1Range = csr_integr.pos1Range
                             except MemoryError:
@@ -1713,7 +1712,7 @@ class AzimuthalIntegrator(Geometry):
                             engine.set_engine(integr)
                         else:
                             raise RuntimeError("Unexpected configuration")
-                            
+
                     else:
                         integr = self.engines[method].engine
                 if method.impl_lower == "opencl":
@@ -3322,23 +3321,23 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
-    def sigma_clip_ng(self, data, 
+    def sigma_clip_ng(self, data,
                       npt=1024,
                       correctSolidAngle=True,
-                      polarization_factor=None, 
-                      variance = None,
+                      polarization_factor=None,
+                      variance=None,
                       error_model=None,
-                      dark=None, 
+                      dark=None,
                       flat=None,
-                      method=("no", "csr", "cython"), 
+                      method=("no", "csr", "cython"),
                       unit=units.Q,
-                      thres=5.0, 
-                      max_iter=5, 
-                      dummy=None, 
+                      thres=5.0,
+                      max_iter=5,
+                      dummy=None,
                       delta_dummy=None,
-                      mask=None, 
-                      normalization_factor=1.0, 
-                      metadata=None, 
+                      mask=None,
+                      normalization_factor=1.0,
+                      metadata=None,
                       safe=True,
                        **kwargs):
         """Performs iteratively the 1D integration with variance propagation 
@@ -3384,10 +3383,10 @@ class AzimuthalIntegrator(Geometry):
         """
         if "npt_azim" in kwargs:
             logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D intergration is performed anymore")
-        
+
         unit = units.to_unit(unit)
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
-        
+
         if mask is None:
             has_mask = "from detector"
             mask = self.mask
@@ -3399,7 +3398,7 @@ class AzimuthalIntegrator(Geometry):
             has_mask = "user provided"
             mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
-            
+
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape, correctSolidAngle)
         else:
@@ -3409,7 +3408,7 @@ class AzimuthalIntegrator(Geometry):
             polarization = polarization_checksum = None
         else:
             polarization, polarization_checksum = self.polarization(data.shape, polarization_factor, with_checksum=True)
-            
+
         print(method, method.algo_lower)
         if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."
@@ -3478,7 +3477,7 @@ class AzimuthalIntegrator(Geometry):
                 reset = None
 
                 # This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
-                if method.impl_lower == "cython":  
+                if method.impl_lower == "cython":
                     # The integrator has already been initialized previously
                     integr = self.engines[method].engine
                     raise RuntimeError("Not implemplemented, sorry")
@@ -3491,7 +3490,7 @@ class AzimuthalIntegrator(Geometry):
     #                                             solidangle=solidangle,
     #                                             polarization=polarization,
     #                                             normalization_factor=normalization_factor)
-                else:  #method.impl_lower in ("python", "opencl")
+                else:  # method.impl_lower in ("python", "opencl")
                     # Validate that the engine used is the proper one
                     if integr is None:
                         reset = "of first initialization"
@@ -3523,7 +3522,7 @@ class AzimuthalIntegrator(Geometry):
                     if reset:
                         logger.info("ai.sigma_clip_ng: Resetting ocl_csr integrator because %s", reset)
                         csr_integr = self.engines[cython_method].engine
-                        if method.impl_lower ==  "opencl":
+                        if method.impl_lower == "opencl":
                             try:
                                 integr = method.class_funct.klass(csr_integr.lut,
                                                                   image_size=data.size,
@@ -3535,7 +3534,7 @@ class AzimuthalIntegrator(Geometry):
                                                                   deviceid=method.target[1])
                                 # Copy some properties from the cython integrator
                                 integr.check_mask = csr_integr.check_mask
-                                integr.mask_checksum = csr_integr.mask_checksum 
+                                integr.mask_checksum = csr_integr.mask_checksum
                                 integr.pos0Range = csr_integr.pos0Range
                                 integr.pos1Range = csr_integr.pos1Range
                             except MemoryError:
@@ -3544,7 +3543,7 @@ class AzimuthalIntegrator(Geometry):
                                 method = self.DEFAULT_METHOD_1D
                             else:
                                 engine.set_engine(integr)
-                        elif method.impl_lower ==  "python":
+                        elif method.impl_lower == "python":
                             integr = method.class_funct.klass(csr_integr.lut,
                                                               image_size=data.size,
                                                               empty=self._empty,
@@ -3567,7 +3566,7 @@ class AzimuthalIntegrator(Geometry):
                     intpl = integr.sigma_clip(data, **kwargs)
         else:
             raise RuntimeError("Not yet implemented. Sorry")
-        result = Integrate1dResult(intpl.position, intpl.intensity, intpl.error)  
+        result = Integrate1dResult(intpl.position, intpl.intensity, intpl.error)
         result._set_method_called("sigma_clip_ng")
         result._set_compute_engine(str(method))
         result._set_percentile(thres)

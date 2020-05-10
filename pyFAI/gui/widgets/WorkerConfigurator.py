@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2019"
+__date__ = "01/04/2020"
 __status__ = "development"
 
 import logging
@@ -208,6 +208,7 @@ class WorkerConfigurator(qt.QWidget):
 
         :return: dict with all information.
         """
+
         def splitFiles(filenames):
             """In case files was provided with comma.
 
@@ -365,28 +366,29 @@ class WorkerConfigurator(qt.QWidget):
             filenames = filenames.strip()
             return filenames
 
-        setup_data = {"do_dummy": self.do_dummy.setChecked,
-                      "do_dark": self.do_dark.setChecked,
-                      "do_flat": self.do_flat.setChecked,
-                      "do_polarization": self.do_polarization.setChecked,
-                      "val_dummy": lambda a: self.val_dummy.setText(str_(a)),
-                      "delta_dummy": lambda a: self.delta_dummy.setText(str_(a)),
-                      "do_mask": self.do_mask.setChecked,
-                      "mask_file": lambda a: self.__model.maskFileModel.setFilename(str_(a)),
-                      "dark_current": lambda a: self.__model.darkFileModel.setFilename(normalizeFiles(a)),
-                      "flat_field": lambda a: self.__model.flatFileModel.setFilename(normalizeFiles(a)),
-                      "polarization_factor": self.polarization_factor.setValue,
-                      "nbpt_rad": lambda a: self.nbpt_rad.setText(str_(a)),
-                      "nbpt_azim": lambda a: self.nbpt_azim.setText(str_(a)),
-                      "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
-                      "do_radial_range": self.do_radial_range.setChecked,
-                      "do_azimuthal_range": self.do_azimuthal_range.setChecked,
-                      "do_poisson": self.do_poisson.setChecked,
-                      "radial_range_min": lambda a: self.radial_range_min.setText(str_(a)),
-                      "radial_range_max": lambda a: self.radial_range_max.setText(str_(a)),
-                      "azimuth_range_min": lambda a: self.azimuth_range_min.setText(str_(a)),
-                      "azimuth_range_max": lambda a: self.azimuth_range_max.setText(str_(a)),
-                      "do_solid_angle": self.do_solid_angle.setChecked}
+        setup_data = collections.OrderedDict()
+        setup_data["val_dummy"] = lambda a: self.val_dummy.setText(str_(a))
+        setup_data["delta_dummy"] = lambda a: self.delta_dummy.setText(str_(a))
+        setup_data["mask_file"] = lambda a: self.__model.maskFileModel.setFilename(str_(a))
+        setup_data["dark_current"] = lambda a: self.__model.darkFileModel.setFilename(normalizeFiles(a))
+        setup_data["flat_field"] = lambda a: self.__model.flatFileModel.setFilename(normalizeFiles(a))
+        setup_data["polarization_factor"] = self.polarization_factor.setValue
+        setup_data["nbpt_rad"] = lambda a: self.nbpt_rad.setText(str_(a))
+        setup_data["nbpt_azim"] = lambda a: self.nbpt_azim.setText(str_(a))
+        setup_data["chi_discontinuity_at_0"] = self.chi_discontinuity_at_0.setChecked
+        setup_data["radial_range_min"] = lambda a: self.radial_range_min.setText(str_(a))
+        setup_data["radial_range_max"] = lambda a: self.radial_range_max.setText(str_(a))
+        setup_data["azimuth_range_min"] = lambda a: self.azimuth_range_min.setText(str_(a))
+        setup_data["azimuth_range_max"] = lambda a: self.azimuth_range_max.setText(str_(a))
+        setup_data["do_solid_angle"] = self.do_solid_angle.setChecked
+        setup_data["do_dummy"] = self.do_dummy.setChecked
+        setup_data["do_dark"] = self.do_dark.setChecked
+        setup_data["do_flat"] = self.do_flat.setChecked
+        setup_data["do_polarization"] = self.do_polarization.setChecked
+        setup_data["do_mask"] = self.do_mask.setChecked
+        setup_data["do_radial_range"] = self.do_radial_range.setChecked
+        setup_data["do_azimuthal_range"] = self.do_azimuthal_range.setChecked
+        setup_data["do_poisson"] = self.do_poisson.setChecked
 
         for key, value in setup_data.items():
             if key in dico and (value is not None):

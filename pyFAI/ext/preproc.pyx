@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+################################################################################
+# #This is for developping
+# #cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True 
+################################################################################
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2011-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2011-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,8 +38,8 @@ flat-field normalization... taking care of masked values and normalization.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "05/12/2019"
-__copyright__ = "2011-2018, ESRF"
+__date__ = "29/04/2020"
+__copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 include "regrid_common.pxi"
@@ -41,16 +47,11 @@ include "regrid_common.pxi"
 import cython
 from cython.parallel import prange
 
-
 from libc.math cimport fabs
 from .isnan cimport isnan
 from cython cimport floating
 
 
-@cython.boundscheck(False)
-@cython.cdivision(True)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 cdef floating[::1]c1_preproc(floating[::1] data,
                              floating[::1] dark=None,
                              floating[::1] flat=None,
@@ -62,7 +63,7 @@ cdef floating[::1]c1_preproc(floating[::1] data,
                              floating delta_dummy=0.0,
                              bint check_dummy=False,
                              floating normalization_factor=1.0,
-                             ) nogil:
+                             ) with gil:
     """Common preprocessing step for all routines: C-implementation
 
     :param data: raw value, as a numpy array, 1D or 2D
@@ -85,18 +86,18 @@ cdef floating[::1]c1_preproc(floating[::1] data,
         bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,
         bint do_polarization, is_valid
         floating[::1] result
-        floating one_value, one_num, one_den, one_flat
+        floating one_num, one_den, one_flat
 
-    with gil:
-        size = data.size
-        do_dark = dark is not None
-        do_flat = flat is not None
-        do_solidangle = solidangle is not None
-        do_absorption = absorption is not None
-        do_polarization = polarization is not None
-        check_mask = mask is not None
-        result = numpy.zeros_like(data)
-
+    
+    size = data.shape[0]
+    do_dark = dark is not None
+    do_flat = flat is not None
+    do_solidangle = solidangle is not None
+    do_absorption = absorption is not None
+    do_polarization = polarization is not None
+    check_mask = mask is not None
+    result = numpy.zeros(size, dtype=data.base.dtype)
+    
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
         one_den = normalization_factor
@@ -137,10 +138,6 @@ cdef floating[::1]c1_preproc(floating[::1] data,
     return result
 
 
-@cython.boundscheck(False)
-@cython.cdivision(True)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 cdef floating[:, ::1]c2_preproc(floating[::1] data,
                                 floating[::1] dark=None,
                                 floating[::1] flat=None,
@@ -152,7 +149,7 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
                                 floating delta_dummy=0,
                                 bint check_dummy=False,
                                 floating normalization_factor=1.0,
-                                ) nogil:
+                                ) with gil:
     """Common preprocessing step for all routines: C-implementation
     with split_result without variance
 
@@ -176,17 +173,16 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
         bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization
         bint is_valid
         floating[:, ::1] result
-        floating one_num, one_result, one_flat, one_den
+        floating one_num, one_flat, one_den
 
-    with gil:
-        size = data.size
-        do_dark = dark is not None
-        do_flat = flat is not None
-        do_solidangle = solidangle is not None
-        do_absorption = absorption is not None
-        do_polarization = polarization is not None
-        check_mask = mask is not None
-        result = numpy.zeros((size, 2), dtype=numpy.asarray(data).dtype)
+    size = data.shape[0]
+    do_dark = dark is not None
+    do_flat = flat is not None
+    do_solidangle = solidangle is not None
+    do_absorption = absorption is not None
+    do_polarization = polarization is not None
+    check_mask = mask is not None
+    result = numpy.zeros((size, 2), dtype=data.base.dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
@@ -230,10 +226,7 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
         result[i, 1] += one_den
     return result
 
-@cython.boundscheck(False)
-@cython.cdivision(True)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
+
 cdef floating[:, ::1]c3_preproc(floating[::1] data,
                                 floating[::1] dark=None,
                                 floating[::1] flat=None,
@@ -248,7 +241,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
                                 floating[::1] variance=None,
                                 floating[::1] dark_variance=None,
                                 bint poissonian=False,
-                                ) nogil:
+                                ) with gil:
     """Common preprocessing step for all routines: C-implementation
     with split_result with variance in second position: (signal, variance, normalization)
 
@@ -274,20 +267,18 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
         bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,
         bint is_valid, do_polarization, do_variance, do_dark_variance
         floating[:, ::1] result
-        floating one_num, one_result, one_flat, one_den, one_var
+        floating one_num, one_flat, one_den, one_var
 
-    with gil:
-        size = data.size
-        do_dark = dark is not None
-        do_flat = flat is not None
-        do_solidangle = solidangle is not None
-        do_absorption = absorption is not None
-        do_polarization = polarization is not None
-        check_mask = mask is not None
-        do_variance = variance is not None
-        
-        do_dark_variance = dark_variance is not None
-        result = numpy.zeros((size, 3), dtype=numpy.asarray(data).dtype)
+    size = data.shape[0]
+    do_dark = dark is not None
+    do_flat = flat is not None
+    do_solidangle = solidangle is not None
+    do_absorption = absorption is not None
+    do_polarization = polarization is not None
+    check_mask = mask is not None
+    do_variance = variance is not None
+    do_dark_variance = dark_variance is not None
+    result = numpy.zeros((size, 3), dtype=data.base.dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
@@ -344,10 +335,6 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
     return result
 
 
-@cython.boundscheck(False)
-@cython.cdivision(True)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 cdef floating[:, ::1]c4_preproc(floating[::1] data,
                                 floating[::1] dark=None,
                                 floating[::1] flat=None,
@@ -362,7 +349,7 @@ cdef floating[:, ::1]c4_preproc(floating[::1] data,
                                 floating[::1] variance=None,
                                 floating[::1] dark_variance=None,
                                 bint poissonian=False,
-                                ) nogil:
+                                ) with gil:
     """Common preprocessing step for all routines: C-implementation
     with split_result to return (signal, variance, normalization, count)
 
@@ -388,19 +375,18 @@ cdef floating[:, ::1]c4_preproc(floating[::1] data,
         bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,
         bint is_valid, do_polarization, do_variance, do_dark_variance
         floating[:, ::1] result
-        floating one_num, one_result, one_flat, one_den, one_var, one_count
+        floating one_num, one_flat, one_den, one_var, one_count
 
-    with gil:
-        size = data.size
-        do_dark = dark is not None
-        do_flat = flat is not None
-        do_solidangle = solidangle is not None
-        do_absorption = absorption is not None
-        do_polarization = polarization is not None
-        check_mask = mask is not None
-        do_variance = variance is not None
-        do_dark_variance = dark_variance is not None
-        result = numpy.zeros((size, 4), dtype=numpy.asarray(data).dtype)
+    size = data.shape[0]
+    do_dark = dark is not None
+    do_flat = flat is not None
+    do_solidangle = solidangle is not None
+    do_absorption = absorption is not None
+    do_polarization = polarization is not None
+    check_mask = mask is not None
+    do_variance = variance is not None
+    do_dark_variance = dark_variance is not None
+    result = numpy.zeros((size, 4), data.base.dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
@@ -463,12 +449,8 @@ cdef floating[:, ::1]c4_preproc(floating[::1] data,
     return result
 
 
-@cython.boundscheck(False)
-@cython.cdivision(True)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def _preproc(floating[::1] raw,
-             shape,
+             tuple shape,
              bint check_dummy,
              floating dummy,
              floating delta_dummy,
@@ -506,12 +488,9 @@ def _preproc(floating[::1] raw,
     NaN are always considered as invalid
     """
     cdef:
-        int size
         floating[::1] res1d
         floating[:, ::1] res2d
-
-    # initialization of values:
-    size = raw.size
+        list out_shape
 
     if split_result or (variance is not None) or poissonian:
         out_shape = list(shape)
@@ -582,6 +561,8 @@ def preproc(raw,
     """
     cdef:
         bint check_dummy
+        tuple shape
+        int size
 
     shape = raw.shape
     size = raw.size

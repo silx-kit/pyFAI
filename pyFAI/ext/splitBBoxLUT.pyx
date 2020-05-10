@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "05/08/2019"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -160,14 +164,12 @@ class HistoBBox1d(object):
         self.unit = unit
         self.lut_nbytes = self._lut.nbytes
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries(self, pos0Range):
         """
         Called by constructor to calculate the boundaries and the bin position
         """
         cdef:
-            int size = self.cpos0.size
+            int idx, size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf,
@@ -208,9 +210,6 @@ class HistoBBox1d(object):
             self.pos0_min = 0
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_lut(self):
         """
         calculate the max number of elements in the LUT and populate it
@@ -227,6 +226,7 @@ class HistoBBox1d(object):
             position_t[:] cpos1_min, cpos1_max
             lut_t[:, :] lut
             mask_t[:] cmask
+            Py_ssize_t memsize, key_page_size, key_page_cnt, lut_nbytes
 
         size = self.size
         if self.check_mask:
@@ -293,8 +293,8 @@ class HistoBBox1d(object):
                     pass
                 else:
                     if memsize < lut_nbytes:
-                        raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s" %
-                                          (bins, lut_size, lut_nbytes/2.**30, memsize/2.**30))
+                        raise MemoryError("Lookup-table (%i, %i) is %sGB whereas the memory of the system is only %sGB" %
+                                          (bins, lut_size, lut_nbytes>>30, memsize>>30))
         # else hope we have enough memory
 
         if (bins == 0) or (lut_size == 0):
@@ -388,9 +388,6 @@ class HistoBBox1d(object):
             self.lut
         return self._lut_checksum
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate_legacy(self, weights,
                          dummy=None,
                          delta_dummy=None,
@@ -546,9 +543,6 @@ class HistoBBox1d(object):
                 numpy.asarray(sum_data), 
                 numpy.asarray(sum_count))
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate_kahan(self, weights,
                         dummy=None,
                         delta_dummy=None,
@@ -779,7 +773,8 @@ class HistoBBox2d(object):
         :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
         :param unit: can be 2th_deg or r_nm^-1 ...
         """
-        cdef cnumpy.int32_t i, size, bin0, bin1
+        cdef: 
+            cnumpy.int32_t size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
         assert pos1.size == self.size, "pos1 size"
@@ -836,14 +831,12 @@ class HistoBBox2d(object):
         # Calculated at export time to python
         self._lut_checksum = None
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries(self, pos0Range, pos1Range):
         """
         Called by constructor to calculate the boundaries and the bin position
         """
         cdef:
-            cnumpy.int32_t size = self.cpos0.size
+            cnumpy.int32_t idx, size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
@@ -919,9 +912,6 @@ class HistoBBox2d(object):
         self.cpos1_sup = cpos1_sup
         self.cpos1_inf = cpos1_inf
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.cdivision(True)
     def calc_lut(self):
         'calculate the max number of elements in the LUT and populate it'
         cdef:
@@ -939,6 +929,7 @@ class HistoBBox2d(object):
             lut_t[:, :, ::1] lut
             mask_t[:] cmask
             acc_t inv_area, delta_down, delta_up, delta_right, delta_left
+            Py_ssize_t lut_nbytes, key_page_cnt, key_page_size, memsize
         if self.check_mask:
             cmask = self.cmask
             check_mask = True
@@ -993,8 +984,8 @@ class HistoBBox2d(object):
                     pass
                 else:
                     if memsize < lut_nbytes:
-                        raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" %
-                                          (bins0, bins1, lut_size, lut_nbytes, memsize))
+                        raise MemoryError("Lookup-table (%i, %i, %i) is %sGB whereas the memory of the system is only %sGB" %
+                                          (bins0, bins1, lut_size, lut_nbytes>>30, memsize>>30))
 
         # else hope we have enough memory
         lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_t), format="if")
@@ -1152,13 +1143,18 @@ class HistoBBox2d(object):
         """Getter for the LUT as actual numpy array
         Hack against a bug in ref-counting under python2.6
         """
-        cdef int rc_before, rc_after
+        cdef:
+            tuple shape
+            int rc_before, rc_after
+            lut_t[:, :, :] lut
+            bint need_decref
+            numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_t[:, :, :] lut = self._lut
+        lut  = self._lut
         rc_after = sys.getrefcount(self._lut)
-        cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
+        need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         shape = (self._lut.shape[0] * self._lut.shape[1], self._lut.shape[2])
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
+        tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
         memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], self._lut.nbytes)
         self._lut_checksum = crc32(tmp_ary)
 
@@ -1177,9 +1173,6 @@ class HistoBBox2d(object):
             self.lut
         return self._lut_checksum
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate(self, weights,
                   dummy=None,
                   delta_dummy=None,

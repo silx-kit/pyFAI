@@ -2,7 +2,7 @@
    sphinx-quickstart on Mon Nov 19 13:19:53 2012.
 
 :Author: Jérôme Kieffer
-:Date: 01/12/2016
+:Date: 02/04/2020
 :Keywords: generic description of the geometry
 :Target: General audience
 
@@ -11,9 +11,29 @@ Fast Azimuthal Integration using Python
 
 PyFAI is a python libary for azimuthal integration of diffraction data acquired
 with 2D detectors, providing high performance thanks to GPU computing.
-Most concepts have been presented at EuroScipy 2014 in this
-`video <https://www.youtube.com/watch?v=QSlo_Nyzeig>`_
-as well as the `proceedings <http://arxiv.org/abs/1412.6367>`_.
+
+Here are a few recorded presentation which were given about pyFAI:
+
+* A general introduction to understand what pyFAI is about 
+  with an introduction of the new graphical user interface, 
+  recorded during the **Hercules** courses in 2020*:
+
+.. raw:: html
+
+	<center>
+	<video width="320" height="240" controls>
+		<source src="http://www.silx.org/pub/pyFAI/video/pyFAI_presentation.mp4" type="video/mp4">
+		Your browser does not support the video tag.
+	</video>
+	</center>
+
+* A presentation of the pyFAI at the **EuroScipy 2014** more focused on the numerical aspects, 
+  also available in the `proceedings <http://arxiv.org/abs/1412.6367>`_ of the conference.
+.. raw:: html
+
+	<center>
+    <iframe width="320" height="240" src="http://www.youtube.com/embed/QSlo_Nyzeig?rel=0" frameborder="0" allowfullscreen></iframe>
+	</center>
 
 The documentation starts with a general descriptions of the pyFAI library.
 This first chapter contains an introduction to pyFAI, what it is, what it aims at

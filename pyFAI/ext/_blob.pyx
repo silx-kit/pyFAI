@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:   Aurore Deschildre <auroredeschildre@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -34,7 +38,7 @@ It is used to find peaks in images by performing subsequent blurs.
 
 __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/05/2019"
+__date__ = "30/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -43,10 +47,6 @@ cimport numpy
 from cython.parallel import prange
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
-@cython.cdivision(True)
 def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):
     """Calculate if a point is a maximum in a 3D space: (scale, y, x)
 
