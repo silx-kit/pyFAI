@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2019"
+__date__ = "18/05/2020"
 __status__ = "development"
 
 from logging import getLogger
@@ -204,7 +204,7 @@ class IntegrationMethod:
         if method is not None:
             dim, split, algo, impl, target = method
             if isinstance(target, (list, tuple)):
-                target, target_type = target, None
+                target, target_type = tuple(target), None
             else:
                 target, target_type = None, method.target
             return cls.select_method(dim, split, algo, impl,
@@ -228,6 +228,8 @@ class IntegrationMethod:
         target_type = target_type.lower() if target_type else "*"
         if target_type in any_values:
             target_type = "*"
+        if isinstance(target, list):
+            target = tuple(target)
         method_nt = Method(dim, split, algo, impl, target)
         if method_nt in cls._registry:
             return [cls._registry[method_nt]]
