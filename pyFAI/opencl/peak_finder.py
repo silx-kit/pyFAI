@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "06/12/2019"
+__date__ = "08/06/2020"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -97,10 +97,14 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         else:
             self.mask = None
         assert image_size == radius.size
-        nbin = lut[2].size-1
+        nbin = lut[2].size - 1
         self.buffers += [BufferDescription("radius1d", nbin, numpy.float32, mf.READ_ONLY),
                          BufferDescription("counter", 1, numpy.float32, mf.WRITE_ONLY),
                          ]
+        if radius is None:
+            raise RuntimeError("2D radius position is mandatory")
+        if bin_centers is None:
+            raise RuntimeError("1D bin center position is mandatory")
         OCL_CSR_Integrator.__init__(self, lut, image_size, checksum,
                  empty, unit, bin_centers,
                  ctx, devicetype, platformid, deviceid,
@@ -127,7 +131,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                           ("noise", numpy.float32(1.0)),
                                                           ("counter", self.cl_mem["counter"]),
                                                           ("peak_position", self.cl_mem["peak_position"])))
-        
+
     def peak_finder(self, data, dark=None, dummy=None, delta_dummy=None,
                    variance=None, dark_variance=None,
                    flat=None, solidangle=None, polarization=None, absorption=None,
@@ -272,7 +276,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             else:
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
-            
+
             if error_model.startswith("poisson"):
                 kw_corr["poissonian"] = numpy.int8(1)
             else:
@@ -301,7 +305,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             # now perform the calc_from_1d on the device and count the number of pixels
             memset1 = self.program.memset_int(self.queue, self.wdim_data, self.workgroup_size["corrections"], self.cl_mem["peak_position"], numpy.int32(0), numpy.int32(self.size))
             memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
-            events+=[EventDescription("memset peak_position", memset1), EventDescription("memset counter", memset2)]
+            events += [EventDescription("memset peak_position", memset1), EventDescription("memset counter", memset2)]
 
             if radial_range is not None:
                 kw_proj["radius_min"] = numpy.float32(min(radial_range))
@@ -311,11 +315,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
             kw_proj["noise"] = numpy.float32(noise)
-            
+
+            print("Call find_peaks", self.wdim_data, self.workgroup_size)
+            for k, v in kw_proj.items():
+                print(" ", k, ": ", v)
+
             peak_search = self.program.find_peaks(self.queue, self.wdim_data, self.workgroup_size["corrections4"], *list(kw_proj.values()))
             events.append(EventDescription("peak_search", peak_search))
             # call the find_peaks kernel
-            
+
             # Return the number of peaks
             cnt = numpy.empty(1, dtype=numpy.int32)
             ev = pyopencl.enqueue_copy(self.queue, cnt, self.cl_mem["counter"])
@@ -346,8 +354,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 #             events.append(EventDescription("copy D->H merged8", ev))
         if self.profile:
             self.events += events
-        #res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
-        #"position intensity error signal variance normalization count"
+        # res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
+        # "position intensity error signal variance normalization count"
         return high
 
     # Name of the default "process" method
