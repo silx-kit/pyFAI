@@ -906,6 +906,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
         return self._flatfield_crc
 
     def set_flatfield(self, flat):
+        if numpy.isscalar(flat):
+            flat_ = numpy.empty(self.shape, dtype=numpy.float32)
+            flat_[...] = flat
+            flat = flat_
         self._flatfield = flat
         self._flatfield_crc = crc32(flat) if flat is not None else None
 
@@ -944,6 +948,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
         return self._darkcurrent_crc
 
     def set_darkcurrent(self, dark):
+        if numpy.isscalar(dark):
+            dark_ = numpy.empty(self.shape, dtype=numpy.float32)
+            dark_[...] = dark
+            dark = dark_
         self._darkcurrent = dark
         self._darkcurrent_crc = crc32(dark) if dark is not None else None
 
