@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "18/06/2020"
 
 import os
 import tempfile
@@ -156,6 +156,12 @@ class TestDetector(unittest.TestCase):
         # check a non standard binning
         sx165.binning = 10
         self.assertAlmostEqual(sx165.pixel1, sx165.pixel2)
+
+    def test_detector_jungfrau(self):
+        j = detector_factory("Jungfrau")
+        last = j.get_pixel_corners()[-1, -1]
+        self.assertAlmostEqual(last[:,1].max(), 514*75e-6, places=7, msg="height match")
+        self.assertAlmostEqual(last[:,2].max(), 1030*75e-6, places=7, msg="width match")
 
     def test_nexus_detector(self):
         tmpdir = tempfile.mkdtemp()

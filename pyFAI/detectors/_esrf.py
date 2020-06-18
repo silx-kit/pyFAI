@@ -30,8 +30,6 @@
 Detectors manufactured by ESRF
 """
 
-from __future__ import print_function, division, absolute_import, with_statement
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"

@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2018"
+__date__ = "18/06/2020"
 __status__ = "stable"
 
 
@@ -44,8 +44,9 @@ from ._dectris import *
 from ._imxpad import *
 from ._rayonix import *
 from ._esrf import *
+from ._psi import *
 from ._others import *
-
+from ..utils import mathutil
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
