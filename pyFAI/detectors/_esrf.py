@@ -27,7 +27,7 @@
 #  THE SOFTWARE.
 
 """
-Description of the `Dectris <https://www.dectris.com/>`_ detectors.
+Detectors manufactured by ESRF
 """
 
 from __future__ import print_function, division, absolute_import, with_statement
@@ -36,9 +36,9 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2018"
+__date__ = "18/06/2020"
 __status__ = "production"
-
+ 
 
 import numpy
 import logging
