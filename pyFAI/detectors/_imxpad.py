@@ -36,14 +36,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/01/2019"
+__date__ = "18/06/2020"
 __status__ = "production"
 
 import functools
 import numpy
 import json
 from ._common import Detector
-from pyFAI.utils import mathutil
+from ..utils import mathutil
 
 import logging
 logger = logging.getLogger(__name__)
