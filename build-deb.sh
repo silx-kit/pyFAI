@@ -259,7 +259,7 @@ build_stdeb () {
     tarname=${project}-${strictversion}.tar.gz
     clean_up
 
-    python setup.py sdist
+    python3 setup.py sdist
     cp -f dist/${tarname} ${build_directory}
     cd ${build_directory}
     tar -xzf ${tarname}
