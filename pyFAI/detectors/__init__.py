@@ -46,7 +46,6 @@ from ._rayonix import *
 from ._esrf import *
 from ._psi import *
 from ._others import *
-from ..utils import mathutil
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory

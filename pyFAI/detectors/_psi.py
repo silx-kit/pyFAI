@@ -110,24 +110,6 @@ class Jungfrau(Detector):
             self._pixel_edges = pixel_edges1, pixel_edges2
         return self._pixel_edges
 
-#     def calc_mask(self):
-#         """
-#         Calculate the mask
-#         """
-#         dims = []
-#         for dim in (0, 1):
-#             pos = numpy.zeros(self.max_shape[dim], dtype=numpy.int8)
-#             n = self.max_shape[dim] // self.module_size[dim]
-#             for i in range(1, n):
-#                 pos[i * self.module_size[dim] - 1] = 1
-#                 pos[i * self.module_size[dim]] = 1
-#             pos[0] = 1
-#             pos[-1] = 1
-#             dims.append(numpy.atleast_2d(pos))
-#         # This is just an "outer_or"
-#         mask = numpy.logical_or(dims[0].T, dims[1])
-#         return mask.astype(numpy.int8)
-
     def get_pixel_corners(self, d1=None, d2=None):
         """
         Calculate the position of the corner of the pixels
