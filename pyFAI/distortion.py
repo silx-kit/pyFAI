@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/12/2018"
+__date__ = "22/06/2020"
 __status__ = "development"
 
 import logging
@@ -57,7 +57,7 @@ except ImportError:
     _distortion = None
 
 try:
-    from scipy.sparse import linalg, csr_matrix
+    from scipy.sparse import linalg, csr_matrix, identity
 except IOError:
     logger.warning("Scipy is missing ... uncorrection will be handled the old way")
     linalg = None
@@ -109,15 +109,25 @@ class Distortion(object):
         self.bin_size = None
         self.max_size = None
         self.pos = None
-        self.lut = None
-        self.delta1 = self.delta2 = None  # max size of an pixel on a regular grid ...
-        self.offset1 = self.offset2 = 0  # position of the first bin
-        self.integrator = None
-        self.empty = empty  # "dummy" value for empty bins
         if not method:
             self.method = "lut"
         else:
             self.method = method.lower()
+        if (self.detector.uniform_pixel and self.detector.IS_FLAT):
+            csr = identity(numpy.prod(self.detector.shape), 
+                           dtype=numpy.float32, 
+                           format="csr")
+            if self.method == "lut":
+                self.lut = sparse_utils.CSR_to_LUT(csr.data, csr.indices, csr.indptr)
+            else:
+                self.lut = csr.data, csr.indices, csr.indptr
+        else:
+            #initialize the LUT later
+            self.lut = None
+        self.delta1 = self.delta2 = None  # max size of an pixel on a regular grid ...
+        self.offset1 = self.offset2 = 0  # position of the first bin
+        self.integrator = None
+        self.empty = empty  # "dummy" value for empty bins
         self.device = device
         if not workgroup:
             self.workgroup = 8
