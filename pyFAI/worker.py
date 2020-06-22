@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -78,13 +78,11 @@ Here are the valid keys:
 - "method"
 """
 
-from __future__ import with_statement, print_function, division
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2020"
+__date__ = "22/06/2020"
 __status__ = "development"
 
 import threading
@@ -105,6 +103,14 @@ from . import units
 from .io import integration_config
 import pyFAI.io.image
 from .engines.preproc import preproc as preproc_numpy
+try:
+    import numexpr
+except ImportError as err:
+    logger.warning("Unable to import Cython version of preproc: %s", err)
+    USE_NUMEXPR = False
+else:
+    USE_NUMEXPR = True
+    
 try:
     from .ext.preproc import preproc
 except ImportError as err:
@@ -788,11 +794,17 @@ class DistortionWorker(object):
         self.delta_dummy = delta_dummy
         if device is not None:
             logger.warning("GPU is not yet implemented")
+            #Some explainations: the pre-processing and the distortion corrections should both be performed on the GPU.
+            #It kind of works when no variance propagation is involved but not whenn propagating errors.
 
         if detector is None:
             self.distortion = None
         else:
-            self.distortion = Distortion(detector, method="LUT", device=device,
+            if (detector.uniform_pixel and detector.IS_FLAT):
+                #No distortion correction are actually needed !
+                self.distortion = None
+            else:
+                self.distortion = Distortion(detector, method="LUT", device=device,
                                          mask=self.mask, empty=self.dummy or 0)
 
     def process(self, data, variance=None,
@@ -804,6 +816,8 @@ class DistortionWorker(object):
         :param normalization: normalization factor
         :return: processed data
         """
+        #TODO as part of issue #1360: expose a correct_ng which would perform simultaneously the preprocessing and the distortion correction
+        # This could be implemented on GPU as the code already exists. 
         proc_data = preproc(data,
                             variance=variance,
                             dark=self.dark,
@@ -820,6 +834,23 @@ class DistortionWorker(object):
         if self.distortion is not None:
             return self.distortion.correct(proc_data, self.dummy, self.delta_dummy)
         else:
-            return data
+            if variance is not None:
+                pp_signal = proc_data[...,0]
+                pp_variance = proc_data[...,1]
+                pp_normalisation = proc_data[...,2]
+                if numexpr is None:
+                    # Cheap, muthithreaded way:
+                    res_signal = numexpr.evaluate("where(pp_normalisation==0.0, 0.0, pp_signal / pp_normalisation)")
+                    res_error = numexpr.evaluate("where(pp_normalisation==0.0, 0.0, sqrt(pp_variance) / abs(pp_normalisation))")
+                else:
+                    # Take the numpy road:
+                    res_signal = numpy.zeros_like(pp_signal)
+                    res_error = numpy.zeros_like(pp_signal)
+                    msk = numpy.where(pp_normalisation!=0)
+                    res_signal[msk] = pp_signal[msk] / pp_normalisation[msk]
+                    res_error[msk] = numpy.sqrt(pp_variance[msk]) / abs(pp_normalisation[msk])
+                return res_signal, res_error
+            else:
+                return proc_data
 
     __call__ = process
