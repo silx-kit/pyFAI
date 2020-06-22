@@ -814,7 +814,7 @@ class DistortionWorker(object):
         :param data: input data
         :param variance: the variance associated to the data
         :param normalization: normalization factor
-        :return: processed data
+        :return: processed data as either an array (data) or two (data, error)
         """
         #TODO as part of issue #1360: expose a correct_ng which would perform simultaneously the preprocessing and the distortion correction
         # This could be implemented on GPU as the code already exists. 
