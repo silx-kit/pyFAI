@@ -294,8 +294,8 @@ class HistoBBox1d(CsrIntegrator):
 
                 fbin0_min = get_bin_number(min0, pos0_min, delta)
                 fbin0_max = get_bin_number(max0, pos0_min, delta)
-                bin0_min = < int > fbin0_min
-                bin0_max = < int > fbin0_max
+                bin0_min = <int> fbin0_min
+                bin0_max = <int> fbin0_max
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
@@ -305,7 +305,7 @@ class HistoBBox1d(CsrIntegrator):
                     bin0_min = 0
 
                 if bin0_min == bin0_max:
-                    #  All pixel is within a single bin
+                    # All pixel is within a single bin
                     outmax[bin0_min] += 1
 
                 else:  # We have pixel splitting.
@@ -492,13 +492,18 @@ class HistoBBox1d(CsrIntegrator):
         return self.bin_centers
 
 
-
 ################################################################################
 # Bidimensionnal regrouping
 ################################################################################
 
 
 class HistoBBox2d(object):
+    """
+    2D histogramming with pixel splitting based on a look-up table
+
+    The initialization of the class can take quite a while (operation are not parallelized)
+    but each integrate is parallelized and quite efficient.
+    """
     @cython.boundscheck(False)
     def __init__(self,
                  pos0,

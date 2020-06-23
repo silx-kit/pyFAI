@@ -2,7 +2,7 @@
 #cython: embedsignature=True, language_level=3
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -110,7 +110,9 @@ class HistoBBox1d(LutIntegrator):
         """
 
         self.size = pos0.size
-        assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
+        if "size" not in dir(delta_pos0) or delta_pos0.size != self.size:
+            logger.warning("Pixel splitting desactivated !")
+            delta_pos0 = None
         self.bins = bins
         self.allow_pos0_neg = allow_pos0_neg
         if mask is not None:
@@ -325,6 +327,8 @@ class HistoBBox1d(LutIntegrator):
         lut_size = numpy.max(outmax)
         # just recycle the outmax array
         outmax[:] = 0
+
+        self.lut_size = lut_size
 
         lut_nbytes = bins * lut_size * sizeof(lut_t)
         #Check we have enough memory
@@ -945,13 +949,22 @@ class HistoBBox2d(object):
         cdef:
             tuple shape
             int rc_before, rc_after
-            lut_t[:, :, :] lut = self._lut
+            lut_t[:, :, :] lut
+            bint need_decref
             numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary
-
+        rc_before = sys.getrefcount(self._lut)
+        lut  = self._lut
+        rc_after = sys.getrefcount(self._lut)
+        need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         shape = (self._lut.shape[0] * self._lut.shape[1], self._lut.shape[2])
         tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
         memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], self._lut.nbytes)
         self._lut_checksum = crc32(tmp_ary)
+
+        # Ugly against bug#89
+        if need_decref and (sys.getrefcount(self._lut) >= rc_before + 2):
+            print("Warning: Decref needed")
+            Py_XDECREF(<PyObject *> self._lut)
 
         return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
                                         shape=shape, dtype=lut_d,
@@ -1004,8 +1017,13 @@ class HistoBBox2d(object):
             acc_t[:, ::1] sum_count = numpy.zeros(self.bins, dtype=numpy.float64)
             data_t[:, ::1] merged = numpy.zeros(self.bins, dtype=numpy.float32)
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            cdef lut_t[:, :, ::1] lut = self._lut
-            
+        # Ugly hack against bug #89
+            int rc_before, rc_after
+        rc_before = sys.getrefcount(self._lut)
+        cdef lut_t[:, :, ::1] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
+        cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
+
         assert weights.size == size, "weights size"
 
         if dummy is not None:
@@ -1099,6 +1117,10 @@ class HistoBBox2d(object):
                     merged[i0, i1] += <data_t> (acc_data / acc_count / normalization_factor)
                 else:
                     merged[i0, i1] += cdummy
+
+        # Ugly against bug #89
+        if need_decref and (sys.getrefcount(self._lut) >= rc_before + 2):
+            Py_XDECREF(<PyObject *> self._lut)
 
         return (numpy.asarray(merged).T, 
                 self.bin_centers0, self.bin_centers1, 
