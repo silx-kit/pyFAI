@@ -131,13 +131,22 @@ class TestSparseUtils(unittest.TestCase):
         "Compare the matrices generated without pixel splitting"
         detector = detector_factory("Pilatus100k")
         ai = AzimuthalIntegrator(detector=detector)
-        img = numpy.zeros(detector.shape)
-#         from ..method_registry import IntegrationMethod
-#         print("\n".join(IntegrationMethod.list_available()))
+        img = numpy.random.random(detector.shape)
         res_csr = ai.integrate1d_ng(img, 100, method=("no", "csr", "cython"), unit="r_mm")
         res_lut = ai.integrate1d_ng(img, 100, method=("no", "lut", "cython"), unit="r_mm")
-        self.assertLess(abs(res_csr.radial,res_lut.radial).max(), 0, "radial matches")
-        raise NotImplementedError("I got you")
+        self.assertEqual(abs(res_csr.intensity-res_lut.intensity).max(), 0, "intensity matches")
+        self.assertEqual(abs(res_csr.radial-res_lut.radial).max(), 0, "radial matches")
+        sparse = {}
+        for k,v in ai.engines.items():
+            sparse[k.algo_lower] = v.engine.lut
+        lut2 = sparse_utils.CSR_to_LUT(*sparse["csr"])
+        self.assertEqual(abs(lut2["coef"]-sparse["lut"].coef).max(), 0, "LUT coef matches")
+        self.assertEqual(abs(lut2["idx"]-sparse["lut"].idx).max(), 0, "LUT idx matches")
+
+        csr2 = sparse_utils.LUT_to_CSR(sparse["lut"])
+        self.assertEqual(abs(sparse["csr"][0]-csr2[0]).max(), 0, "CSR data matches")
+        self.assertEqual(abs(sparse["csr"][1]-csr2[1]).max(), 0, "CSR indices matches")
+        self.assertEqual(abs(sparse["csr"][2]-csr2[2]).max(), 0, "CSR indptr matches")
 
 class TestContainer(unittest.TestCase):
     def test_vector(self):
