@@ -1,4 +1,5 @@
-numpy
+numpy <1.19 ; python_version <= '3.5'
+numpy; python_version>= '3.6'
 h5py
 fabio
 sphinx
