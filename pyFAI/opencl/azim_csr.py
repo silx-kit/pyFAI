@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/silx-kit
+#             https://github.com/silx-kit/pyFAI
 #
-#
-#    Copyright (C) 2014-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -29,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "20/12/2019"
+__date__ = "23/06/2020"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -211,13 +210,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
 
+        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
+                          (self.bins, self.size, self.BLOCK_SIZE)
         try:
             default_compiler_options = self.get_compiler_options(x87_volatile=True)
         except AttributeError:  # Silx version too old
             logger.warning("Please upgrade to silx v0.10+")
             default_compiler_options = get_x87_volatile_option(self.ctx)
-        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
-                          (self.bins, self.size, self.BLOCK_SIZE)
+
         if default_compiler_options:
             compile_options += " " + default_compiler_options
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
@@ -258,7 +258,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("sum_data", self.cl_mem["sum_data"]),
                                                             ("sum_count", self.cl_mem["sum_count"]),
                                                             ("merged", self.cl_mem["merged"])))
-
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
                                                            ("poissonian", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
