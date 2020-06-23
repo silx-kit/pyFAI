@@ -15,6 +15,8 @@ scipy
 matplotlib
 mako
 pybind11
+pytools <2020.3 ; python_version <= '3.5'
+pytools; python_version>= '3.6'
 pyopencl
 numexpr
 silx
