@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2020"
+__date__ = "23/06/2020"
 __status__ = "development"
 
 import logging
@@ -412,6 +412,87 @@ class Distortion(object):
             logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
             raise
         return out
+
+    def correct_ng(self, image, variance=None, dark=None, flat=None, dummy=None, delta_dummy=None):
+        """
+        Correct an image based on the look-up table calculated ...
+        Like the integrate_ng it provides
+        * Dark current correction
+        * Normalisation with flatfield (or solid angle, polarization, absorption, ...)
+        * Error propagation   
+
+        :param image: 2D-array with the image
+        :param variance: 2D-array with the associated image
+        :param dummy: value suggested for bad pixels
+        :param delta_dummy: precision of the dummy value
+        :return: corrected 2D image
+        """
+        if image.ndim == 2:
+            if _distortion:
+                image = _distortion.resize_image_2D(image, self.shape_in)
+            else:
+                logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ...", image.shape, self.shape_in)
+                new_img = numpy.zeros(self.shape_in, dtype=image.dtype)
+                common_shape = [min(i, j) for i, j in zip(image.shape, self.shape_in)]
+                new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
+                image = new_img
+        else:  # assume 2d+nchanel
+            if _distortion:
+                image = _distortion.resize_image_3D(image, self.shape_in)
+            else:
+                assert image.ndim == 3, "image is 3D"
+                shape_in0, shape_in1 = self.shape_in
+                shape_img0, shape_img1, nchan = image.shape
+                if not ((shape_img0 == shape_in0) and (shape_img1 == shape_in1)):
+                    new_image = numpy.zeros((shape_in0, shape_in1, nchan), dtype=numpy.float32)
+                    if shape_img0 < shape_in0:
+                        if shape_img1 < shape_in1:
+                            new_image[:shape_img0, :shape_img1, :] = image
+                        else:
+                            new_image[:shape_img0, :, :] = image[:, :shape_in1, :]
+                    else:
+                        if shape_img1 < shape_in1:
+                            new_image[:, :shape_img1, :] = image[:shape_in0, :, :]
+                        else:
+                            new_image[:, :, :] = image[:shape_in0, :shape_in1, :]
+                    logger.warning("Patching image of shape %ix%i on expected size of %ix%i",
+                                   shape_img1, shape_img0, shape_in1, shape_in0)
+                image = new_image
+        if self.device:
+            if self.integrator is None:
+                self.calc_init()
+            out = self.integrator.integrate(image)[1]
+        else:
+            if self.lut is None:
+                self.calc_LUT()
+            if _distortion is not None:
+                out = _distortion.correct(image, self.shape_in, self._shape_out, self.lut,
+                                          dummy=dummy or self.empty, delta_dummy=delta_dummy)
+            else:
+                if self.method == "lut":
+                    big = image.ravel().take(self.lut.idx) * self.lut.coef
+                    out = big.sum(axis=-1)
+                elif self.method == "csr":
+                    big = self.lut[0] * image.ravel().take(self.lut[1])
+                    indptr = self.lut[2]
+                    out = numpy.zeros(indptr.size - 1)
+                    for i in range(indptr.size - 1):
+                        out[i] = big[indptr[i]:indptr[i + 1]].sum()
+        try:
+            if image.ndim == 2:
+                out.shape = self._shape_out
+            else:
+                for ds in out:
+                    if ds.ndim == 2:
+                        ds.shape = self._shape_out
+                    else:
+                        ds.shape = self._shape_out + ds.shape[2:]
+
+        except ValueError as _err:
+            logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
+            raise
+        return out
+
 
     def uncorrect(self, image, use_cython=False):
         """
