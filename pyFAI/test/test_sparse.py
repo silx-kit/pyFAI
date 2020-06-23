@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2018"
+__date__ = "23/06/2020"
 
 
 import unittest
@@ -43,6 +43,8 @@ import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from .. import load
+from ..detectors import detector_factory
+from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..ext import splitBBox
 from ..ext import sparse_utils
 import fabio
@@ -125,6 +127,17 @@ class TestSparseUtils(unittest.TestCase):
         self.assertTrue(numpy.allclose(csr_out[1], csr_ref[1]), "coef are the same in CSR")
         self.assertTrue(numpy.allclose(csr_out[0], csr_ref[0]), "coef are the same in CSR")
 
+    def test_matrix_conversion(self):
+        "Compare the matrices generated without pixel splitting"
+        detector = detector_factory("Pilatus100k")
+        ai = AzimuthalIntegrator(detector=detector)
+        img = numpy.zeros(detector.shape)
+#         from ..method_registry import IntegrationMethod
+#         print("\n".join(IntegrationMethod.list_available()))
+        res_csr = ai.integrate1d_ng(img, 100, method=("no", "csr", "cython"), unit="r_mm")
+        res_lut = ai.integrate1d_ng(img, 100, method=("no", "lut", "cython"), unit="r_mm")
+        self.assertLess(abs(res_csr.radial,res_lut.radial).max(), 0, "radial matches")
+        raise NotImplementedError("I got you")
 
 class TestContainer(unittest.TestCase):
     def test_vector(self):
