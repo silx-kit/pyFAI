@@ -29,8 +29,8 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "23/06/2020"
-__copyright__ = "2012-2017, ESRF, Grenoble"
+__date__ = "24/06/2020"
+__copyright__ = "2012-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -60,6 +60,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
     """
     BLOCK_SIZE = 32
     buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("output4", 4, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
@@ -84,7 +85,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
                numpy.int32: "s32_to_float"
                }
 
-    def __init__(self, lut, image_size, checksum=None, empty=None,
+    def __init__(self, lut, image_size, checksum=None,
+                 empty=None, unit=None, bin_centers=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """Constructor of the OCL_LUT_Integrator class
@@ -93,6 +95,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
         :param image_size: Expected image size: image.size
         :param checksum: pre-calculated checksum of the LUT to prevent re-calculating it :)
         :param empty: value to be assigned to bins without contribution from any pixel
+        :param unit: Storage for the unit related to the LUT
+        :param bin_centers: the radial position of the bin_center, place_holder
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
@@ -109,8 +113,11 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
-        self.profile = None
         self.empty = empty or 0.0
+        self.unit = unit
+        self.bin_centers = bin_centers
+        # a few place-folders
+        self.pos0Range = self.pos1Range = self.check_mask = None
 
         if not checksum:
             checksum = calc_checksum(self._lut)
@@ -133,7 +140,10 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                             ("lut_size", numpy.int32)], mf.READ_ONLY),
                          BufferDescription("sum_data", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("averint", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("stderr", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
                          ]
         self.allocate_buffers()
         self.compile_kernels()
@@ -257,13 +267,11 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                            ("output4", self.cl_mem["output4"])))
 
         self.cl_kernel_args["lut_integrate4"] = OrderedDict((("output4", self.cl_mem["output4"]),
-                                                            ("data", self.cl_mem["data"]),
-                                                            ("indices", self.cl_mem["indices"]),
-                                                            ("indptr", self.cl_mem["indptr"]),
+                                                            ("lut", self.cl_mem["lut"]),
                                                             ("merged8", self.cl_mem["merged8"]),
                                                             ("averint", self.cl_mem["averint"]),
                                                             ("stderr", self.cl_mem["stderr"]),
-                                                             ))
+                                                            ))
 
         self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
         self.cl_kernel_args["memset_ng"] = OrderedDict(((i, self.cl_mem[i]) for i in ("averint", "stderr", "merged8")))
@@ -489,12 +497,12 @@ class OCL_LUT_Integrator(OpenclProcessing):
         events = []
         with self.sem:
             self.send_buffer(data, "image")
-            wg = self.workgroup_size["memset_ng"]
+            wg = self.workgroup_size
             wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
             memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
             kw_corr = self.cl_kernel_args["corrections4"]
-            kw_int = self.cl_kernel_args["csr_integrate4"]
+            kw_int = self.cl_kernel_args["lut_integrate4"]
 
             if dummy is not None:
                 do_dummy = numpy.int8(1)
@@ -576,19 +584,11 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
 
-            wg = self.workgroup_size["corrections4"]
-            ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
-            events.append(EventDescription("corrections", ev))
+            ev = self.kernels.corrections4(self.queue, self.wdim_data, self.workgroup_size, *list(kw_corr.values()))
+            events.append(EventDescription("corrections4", ev))
 
-            wg = self.workgroup_size["csr_integrate4"][0]
-
-            wdim_bins = (self.bins * wg),
-            if wg == 1:
-                integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate4_single", integrate))
-            else:
-                integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate4", integrate))
+            integrate = self.kernels.lut_integrate4(self.queue, wdim_bins, self.workgroup_size, *kw_int.values())
+            events.append(EventDescription("integrate4", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)

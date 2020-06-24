@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/08/2019"
+__date__ = "24/06/2020"
 
 import logging
 import numpy
@@ -68,7 +68,6 @@ class TestOclAzimCSR(unittest.TestCase):
             else:
                 cls.PROFILE = False
                 cls.queue = pyopencl.CommandQueue(cls.ctx)
-            cls.max_valid_wg = 0
             if "cl_khr_int64_base_atomics" in cls.ctx.devices[0].extensions:
                 cls.precise = True
             else:
@@ -78,7 +77,7 @@ class TestOclAzimCSR(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         super(TestOclAzimCSR, cls).tearDownClass()
-        print("Maximum valid workgroup size %s on device %s" % (cls.max_valid_wg, cls.ctx.devices[0]))
+        logger.debug("Maximum valid workgroup size %s on device %s" % (cls.ctx.devices[0].max_work_group_size, cls.ctx.devices[0]))
         cls.ctx = None
         cls.queue = None
         cls.ai = None
@@ -91,19 +90,19 @@ class TestOclAzimCSR(unittest.TestCase):
         from ..azim_csr import OCL_CSR_Integrator
         data = numpy.ones(self.ai.detector.shape)
         npt = 500
-        method = IntegrationMethod.select_one_available(("no", "histogram", "numpy"),
+        unit = "r_mm"
+        method = IntegrationMethod.select_one_available(("no", "histogram", "python"),
                                                         dim=1, default=None, degradable=True)
         csr_method = IntegrationMethod.select_one_available(("no", "csr", "cython"),
                                                             dim=1, default=None, degradable=False)
 
         # Retrieve the CSR array
-        cpu_integrate = self.ai._integrate1d_legacy(data, npt, unit="r_m", method=csr_method)
+        cpu_integrate = self.ai._integrate1d_legacy(data, npt, unit=unit, method=csr_method)
         r_m = cpu_integrate[0]
         csr_engine = list(self.ai.engines.values())[0]
         csr = csr_engine.engine.lut
-        ref = self.ai._integrate1d_ng(data, npt, unit="r_m", method=method)
-        # print(ref)
-        integrator = OCL_CSR_Integrator(csr, data.size,)
+        ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method)
+        integrator = OCL_CSR_Integrator(csr, data.size)
         solidangle = self.ai.solidAngleArray()
         res = integrator.integrate_ng(data, solidangle=solidangle)
         # for info, res contains: position intensity error signal variance normalization count
@@ -120,13 +119,13 @@ class TestOclAzimCSR(unittest.TestCase):
         self.assertLessEqual(abs(delta.max()), 1e-5, "intensity is almost the same")
 
         # histogram of normalization
-        ref = self.ai._integrate1d_ng(solidangle, npt, unit="r_m", method=method).sum_signal
+        ref = self.ai._integrate1d_ng(solidangle, npt, unit=unit, method=method).sum_signal
         sig = res.normalization
         err = abs((sig - ref).max())
         self.assertLess(err, 5e-5, "normalization content is the same: %s<5e-5" % (err))
 
         # histogram of signal
-        ref = self.ai._integrate1d_ng(data, npt, unit="r_m", method=method).sum_signal
+        ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method).sum_signal
         sig = res.signal
         self.assertLess(abs((sig - ref).sum()), 5e-5, "signal content is the same")
 

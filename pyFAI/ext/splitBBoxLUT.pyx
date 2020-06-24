@@ -114,7 +114,9 @@ class HistoBBox1d(LutIntegrator):
             logger.warning("Pixel splitting desactivated !")
             delta_pos0 = None
         self.bins = bins
+        #self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
+        #self.empty = empty
         if mask is not None:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
@@ -137,6 +139,7 @@ class HistoBBox1d(LutIntegrator):
             self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
             self.calc_boundaries(pos0Range)
+
         if pos1Range is not None:
             assert pos1.size == self.size, "pos1 size"
             assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
@@ -151,7 +154,7 @@ class HistoBBox1d(LutIntegrator):
             self.pos1_max = None
 
         self.delta = (self.pos0_max - self.pos0_min) / (<position_t> bins)
-        
+
         self.lut_max_idx = None
         self._lut_checksum = None
         if delta_pos0 is not None:
@@ -168,6 +171,7 @@ class HistoBBox1d(LutIntegrator):
 
         self.unit = unit
         self.lut_nbytes = lut.nbytes
+	#self.lut_checksum = crc32(self.lut)
 
     def calc_boundaries(self, pos0Range):
         """
@@ -185,9 +189,9 @@ class HistoBBox1d(LutIntegrator):
         cpos0_inf = self.cpos0_inf
         cpos0 = self.cpos0
         dpos0 = self.dpos0
-        pos0_min = cpos0[0]
-        pos0_max = cpos0[0]
-
+        pos0_min = pos0_max = cpos0[0]
+        if not allow_pos0_neg and pos0_min < 0:
+                    pos0_min = pos0_max = 0
         if check_mask:
             cmask = self.cmask
         with nogil:
@@ -320,7 +324,7 @@ class HistoBBox1d(LutIntegrator):
                     # All pixel is within a single bin
                     outmax[bin0_min] += 1
 
-                else:  # we have pixel spliting.
+                else:  # We have pixel spliting.
                     for i in range(bin0_min, bin0_max + 1):
                         outmax[i] += 1
 
@@ -561,7 +565,8 @@ class HistoBBox2d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 chiDiscAtPi=True
+                 chiDiscAtPi=True,
+                 empty=0.0
                  ):
         """
         :param pos0: 1D array with pos0: tth or q_vect
@@ -1103,7 +1108,7 @@ class HistoBBox2d(object):
                 for j in range(lut_size):
                     idx = lut[i0, i1, j].idx
                     coef = lut[i0, i1, j].coef
-                    if idx <= 0 and coef <= 0.0:
+                    if coef == 0.0 or idx < 0:
                         continue
                     data = cdata[idx]
                     if do_dummy and data == cdummy:

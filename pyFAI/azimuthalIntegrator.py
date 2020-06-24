@@ -1129,10 +1129,14 @@ class AzimuthalIntegrator(Geometry):
                                  " LUT's azimuth_range don't match")
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s", reset)
+                    split = method.split_lower
+                    if split == "pseudo":
+                        split = "full"
                     try:
                         integr = self.setup_LUT(shape, npt, mask,
                                                 radial_range, azimuth_range,
-                                                mask_checksum=mask_crc, unit=unit)
+                                                mask_checksum=mask_crc, 
+                                                unit=unit, split=split)
 
                     except MemoryError:
                         # LUT method is hungry...
@@ -1488,10 +1492,9 @@ class AzimuthalIntegrator(Geometry):
             return res
 
         return result
-
     integrate1d = _integrate1d_legacy
 
-    def _integrate1d_ng(self, data, npt, filename=None,
+    def integrate1d_ng(self, data, npt, filename=None,
                         correctSolidAngle=True,
                         variance=None, error_model=None,
                         radial_range=None, azimuth_range=None,
@@ -1920,7 +1923,7 @@ class AzimuthalIntegrator(Geometry):
             writer.write(result)
 
         return result
-    integrate1d_ng = _integrate1d_ng
+    _integrate1d_ng = integrate1d_ng
     
     def integrate_radial(self, data, npt, npt_rad=100,
                          correctSolidAngle=True,

@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "23/06/2020"
+__date__ = "24/06/2020"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -646,7 +646,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wg = self.workgroup_size["corrections4"]
             ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
-            events.append(EventDescription("corrections", ev))
+            events.append(EventDescription("corrections4", ev))
 
             wg = self.workgroup_size["csr_integrate4"][0]
 

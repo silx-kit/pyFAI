@@ -77,8 +77,7 @@ class HistoBBox1d(CsrIntegrator):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 empty=0.0
-                 ):
+                 empty=0.0):
         """
         :param pos0: 1D array with pos0: tth or q_vect or r ...
         :param delta_pos0: 1D array with delta pos0: max center-corner distance
@@ -90,8 +89,7 @@ class HistoBBox1d(CsrIntegrator):
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
-        :param empty: value to be assigned to bins without contribution from any pixel
-
+        :param empty: value for bins without contributing pixels
         """
         self.size = pos0.size
         if "size" not in dir(delta_pos0) or delta_pos0.size != self.size:
@@ -352,8 +350,8 @@ class HistoBBox1d(CsrIntegrator):
 
                 fbin0_min = get_bin_number(min0, pos0_min, delta)
                 fbin0_max = get_bin_number(max0, pos0_min, delta)
-                bin0_min = < int > fbin0_min
-                bin0_max = < int > fbin0_max
+                bin0_min = <int> fbin0_min
+                bin0_max = <int> fbin0_max
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue

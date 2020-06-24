@@ -3,11 +3,11 @@
  *            Kernel with full pixel-split using a CSR sparse matrix
  *
  *
- *   Copyright (C) 2012-2018 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2020 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 02/10/2018
+ *   Last revision: 24/06/2020
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -575,7 +575,7 @@ csr_integrate_single(  const   global  float   *weights,
  * \brief Performs 1d azimuthal integration based on CSR sparse matrix multiplication on preprocessed data
  *  Unlike the former kernel, it works with a workgroup size of ONE (tailor made form MacOS bug)
  *
- * @param weights     Float pointer to global memory storing the input image.
+ * @param weights     Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
  * @param indptr     Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
