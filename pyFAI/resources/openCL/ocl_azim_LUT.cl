@@ -198,14 +198,16 @@ lut_integrate4( const   global  float4  *weights,
                         global  float   *stderr)
 {
     int bin_num = get_global_id(0);
-    float8 result = LUTxVec4(weights, lut);
-    summed[bin_num] = result;
-    if (result.s4 > 0.0f) {
-            averint[bin_num] =  result.s0 / result.s4;
-            stderr[bin_num] = sqrt(result.s2) / result.s4;
+    if(bin_num < NBINS){
+    	float8 result = LUTxVec4(weights, lut);
+		summed[bin_num] = result;
+		if (result.s4 > 0.0f) {
+				averint[bin_num] =  result.s0 / result.s4;
+				stderr[bin_num] = sqrt(result.s2) / result.s4;
+		}
+		else {
+				averint[bin_num] = NAN;
+				stderr[bin_num] = NAN;
+		} //end else
     }
-    else {
-            averint[bin_num] = NAN;
-            stderr[bin_num] = NAN;
-    } //end else
 }//end kernel
