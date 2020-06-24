@@ -128,7 +128,7 @@ class TestOclAzimLUT(unittest.TestCase):
         ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method).sum_signal
         sig = res.signal
         self.assertLess(abs((sig - ref).sum()), 5e-5, "signal content is the same")
-
+        
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
