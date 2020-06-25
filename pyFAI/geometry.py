@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France" 
-__date__ = "13/12/2019"    
+__date__ = "25/06/2020"    
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -305,7 +305,7 @@ class Geometry(object):
         else:
             L = dist + d0
         if corners:
-            tmp = self.detector.get_pixel_corners()
+            tmp = self.detector.get_pixel_corners(correct_binning=True)
             p1 = tmp[..., 1]
             p2 = tmp[..., 2]
             p3 = tmp[..., 0]

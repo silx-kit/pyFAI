@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2020"
+__date__ = "25/06/2020"
 __status__ = "production"
  
 
@@ -110,7 +110,7 @@ class Jungfrau(Detector):
             self._pixel_edges = pixel_edges1, pixel_edges2
         return self._pixel_edges
 
-    def get_pixel_corners(self, d1=None, d2=None):
+    def get_pixel_corners(self, correct_binning=False):
         """
         Calculate the position of the corner of the pixels
 
@@ -148,7 +148,12 @@ class Jungfrau(Detector):
                     #     self._pixel_corners[:, :, 1, 0] = p3[1:, :-1]
                     #     self._pixel_corners[:, :, 2, 0] = p3[1:, 1:]
                     #     self._pixel_corners[:, :, 3, 0] = p3[:-1, 1:]
-        return self._pixel_corners
+        if correct_binning and self._pixel_corners.shape[:2] != self.shape:
+            return self._rebin_pixel_corners()
+        else:
+            return self._pixel_corners
+
+
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
