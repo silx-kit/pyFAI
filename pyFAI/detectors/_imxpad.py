@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2020"
+__date__ = "25/06/2020"
 __status__ = "production"
 
 import functools
@@ -141,7 +141,7 @@ class ImXPadS10(Detector):
         mask = numpy.logical_or(dims[0].T, dims[1])
         return mask.astype(numpy.int8)
 
-    def get_pixel_corners(self, d1=None, d2=None):
+    def get_pixel_corners(self, correct_binning=False):
         """
         Calculate the position of the corner of the pixels
 
@@ -179,7 +179,11 @@ class ImXPadS10(Detector):
                     #     self._pixel_corners[:, :, 1, 0] = p3[1:, :-1]
                     #     self._pixel_corners[:, :, 2, 0] = p3[1:, 1:]
                     #     self._pixel_corners[:, :, 3, 0] = p3[:-1, 1:]
-        return self._pixel_corners
+        if correct_binning and self._pixel_corners.shape[:2] != self.shape:
+            return self._rebin_pixel_corners()
+        else:
+            return self._pixel_corners
+
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -432,7 +436,7 @@ class Xpad_flat(ImXPadS10):
             p2 = p2.astype(numpy.float32)
         return p1, p2, None
 
-    def get_pixel_corners(self):
+    def get_pixel_corners(self, correct_binning=False):
         """
         Calculate the position of the corner of the pixels
 
@@ -483,7 +487,11 @@ class Xpad_flat(ImXPadS10):
                     corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
                     corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
                     self._pixel_corners = corners
-        return self._pixel_corners
+        if correct_binning and self._pixel_corners.shape[:2] != self.shape:
+            return self._rebin_pixel_corners()
+        else:
+            return self._pixel_corners
+
 
 
 class Cirpad(ImXPadS10):
@@ -601,12 +609,16 @@ class Cirpad(ImXPadS10):
         result = numpy.ascontiguousarray(result, result.dtype)
         return result
 
-    def get_pixel_corners(self):
+    def get_pixel_corners(self, correct_binning=False):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
                     self._pixel_corners = self._get_pixel_corners()
-        return self._pixel_corners
+        if correct_binning and self._pixel_corners.shape[:2] != self.shape:
+            return self._rebin_pixel_corners()
+        else:
+            return self._pixel_corners
+
 
     # TODO !!!
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):

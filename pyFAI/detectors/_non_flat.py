@@ -108,12 +108,13 @@ class CylindricalDetector(Detector):
         "The core function which calculates the pixel corner coordinates"
         raise NotImplementedError("This is an abtract class")
     
-    def get_pixel_corners(self, use_cython=True):
+    def get_pixel_corners(self, correct_binning=False, use_cython=True):
         """
         Calculate the position of the corner of the pixels
 
         This should be overwritten by class representing non-contiguous detector (Xpad, ...)
-
+        :param correct_binning: If True, check that the produced array have the right shape regarding binning
+        :param use_cython: set to False for testing
         :return:  4D array containing:
                     pixel index (slow dimension)
                     pixel index (fast dimension)
@@ -150,7 +151,12 @@ class CylindricalDetector(Detector):
                         corners[:, :, 3, 1] = p1[:-1, :]
                         corners[:, :, 3, 2] = p2[:, 1:]
                     self._pixel_corners = corners
-        return self._pixel_corners
+        if correct_binning and self._pixel_corners.shape[:2] != self.shape:
+            return self._rebin_pixel_corners()
+        else:
+            return self._pixel_corners
+
+
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
