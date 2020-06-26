@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2020"
+__date__ = "26/06/2020"
 __status__ = "development"
 
 import logging
@@ -65,6 +65,19 @@ else:
     if v < (0, 11):
         logger.warning("Scipy is too old ... uncorrection will be handled the old way")
         linalg = None
+        
+
+def resize_image_2D_numpy(image, shape_in):
+    "numpy implementation of resize_image_2D"
+    new_img = numpy.zeros(shape_in, dtype=image.dtype)
+    common_shape = [min(i, j) for i, j in zip(image.shape, shape_in)]
+    new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
+    return new_img
+    
+if _distortion is None:
+    resize_image_2D = resize_image_2D_numpy
+else:
+    from .ext._distortion import resize_image_2D
 
 
 class Distortion(object):
@@ -348,14 +361,7 @@ class Distortion(object):
         :return: corrected 2D image
         """
         if image.ndim == 2:
-            if _distortion:
-                image = _distortion.resize_image_2D(image, self.shape_in)
-            else:
-                logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ...", image.shape, self.shape_in)
-                new_img = numpy.zeros(self.shape_in, dtype=image.dtype)
-                common_shape = [min(i, j) for i, j in zip(image.shape, self.shape_in)]
-                new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
-                image = new_img
+            image = resize_image_2D(image, self.shape_in)
         else:  # assume 2d+nchanel
             if _distortion:
                 image = _distortion.resize_image_3D(image, self.shape_in)
@@ -413,7 +419,13 @@ class Distortion(object):
             raise
         return out
 
-    def correct_ng(self, image, variance=None, dark=None, flat=None, dummy=None, delta_dummy=None):
+    def correct_ng(self, image, 
+                   variance=None, 
+                   dark=None, 
+                   flat=None, 
+                   dummy=None, 
+                   delta_dummy=None, 
+                   normalisation_factor=1):
         """
         Correct an image based on the look-up table calculated ...
         Like the integrate_ng it provides
@@ -425,43 +437,25 @@ class Distortion(object):
         :param variance: 2D-array with the associated image
         :param dummy: value suggested for bad pixels
         :param delta_dummy: precision of the dummy value
+        :param normaisation
         :return: corrected 2D image
         """
-        if image.ndim == 2:
-            if _distortion:
-                image = _distortion.resize_image_2D(image, self.shape_in)
-            else:
-                logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ...", image.shape, self.shape_in)
-                new_img = numpy.zeros(self.shape_in, dtype=image.dtype)
-                common_shape = [min(i, j) for i, j in zip(image.shape, self.shape_in)]
-                new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
-                image = new_img
-        else:  # assume 2d+nchanel
-            if _distortion:
-                image = _distortion.resize_image_3D(image, self.shape_in)
-            else:
-                assert image.ndim == 3, "image is 3D"
-                shape_in0, shape_in1 = self.shape_in
-                shape_img0, shape_img1, nchan = image.shape
-                if not ((shape_img0 == shape_in0) and (shape_img1 == shape_in1)):
-                    new_image = numpy.zeros((shape_in0, shape_in1, nchan), dtype=numpy.float32)
-                    if shape_img0 < shape_in0:
-                        if shape_img1 < shape_in1:
-                            new_image[:shape_img0, :shape_img1, :] = image
-                        else:
-                            new_image[:shape_img0, :, :] = image[:, :shape_in1, :]
-                    else:
-                        if shape_img1 < shape_in1:
-                            new_image[:, :shape_img1, :] = image[:shape_in0, :, :]
-                        else:
-                            new_image[:, :, :] = image[:shape_in0, :shape_in1, :]
-                    logger.warning("Patching image of shape %ix%i on expected size of %ix%i",
-                                   shape_img1, shape_img0, shape_in1, shape_in0)
-                image = new_image
+        assert image.ndim == 2
+        if variance is not None:
+            assert variance.shape == image.shape
+             
+        if image.shape != self.shape_in:
+            logger.warning("The image shape %s is not the same as the detector %s", image.shape, self.shape_in)
+            image = resize_image_2D(image, self.shape_in)
+            if variance is not None:
+                variance = resize_image_2D(variance, self.shape_in)
+            if dark is not None:
+                dark = resize_image_2D(dark, self.shape_in)
+
         if self.device:
             if self.integrator is None:
                 self.calc_init()
-            out = self.integrator.integrate(image)[1]
+            res = self.integrator.integrate_ng(image)
         else:
             if self.lut is None:
                 self.calc_LUT()

@@ -82,7 +82,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2020"
+__date__ = "26/06/2020"
 __status__ = "development"
 
 import threading
@@ -807,7 +807,9 @@ class DistortionWorker(object):
                 self.distortion = Distortion(detector, method="LUT", device=device,
                                          mask=self.mask, empty=self.dummy or 0)
 
-    def process(self, data, variance=None,
+    def process(self, 
+                data,
+                variance=None,
                 normalization_factor=1.0):
         """
         Process the data and apply a normalization factor
