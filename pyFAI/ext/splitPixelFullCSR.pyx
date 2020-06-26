@@ -289,13 +289,13 @@ class FullSplitCSR_1d(CsrIntegrator):
                     continue
 
                 A0 = get_bin_number(<float> cpos[idx, 0, 0], pos0_min, delta)
-                A1 = < float > cpos[idx, 0, 1]
+                A1 = <float> cpos[idx, 0, 1]
                 B0 = get_bin_number(<float> cpos[idx, 1, 0], pos0_min, delta)
-                B1 = < float > cpos[idx, 1, 1]
+                B1 = <float> cpos[idx, 1, 1]
                 C0 = get_bin_number(<float> cpos[idx, 2, 0], pos0_min, delta)
-                C1 = < float > cpos[idx, 2, 1]
+                C1 = <float> cpos[idx, 2, 1]
                 D0 = get_bin_number(<float> cpos[idx, 3, 0], pos0_min, delta)
-                D1 = < float > cpos[idx, 3, 1]
+                D1 = <float> cpos[idx, 3, 1]
 
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
@@ -382,41 +382,12 @@ class FullSplitCSR_1d(CsrIntegrator):
                     oneOverPixelArea = 1.0 / areaPixel
 
                     for bin in range(bin0_min, bin0_max + 1):
+
                         bin0 = bin - bin0_min
                         A_lim = (A0 <= bin0) * (A0 <= (bin0 + 1)) * bin0 + (A0 > bin0) * (A0 <= (bin0 + 1)) * A0 + (A0 > bin0) * (A0 > (bin0 + 1)) * (bin0 + 1)
                         B_lim = (B0 <= bin0) * (B0 <= (bin0 + 1)) * bin0 + (B0 > bin0) * (B0 <= (bin0 + 1)) * B0 + (B0 > bin0) * (B0 > (bin0 + 1)) * (bin0 + 1)
                         C_lim = (C0 <= bin0) * (C0 <= (bin0 + 1)) * bin0 + (C0 > bin0) * (C0 <= (bin0 + 1)) * C0 + (C0 > bin0) * (C0 > (bin0 + 1)) * (bin0 + 1)
                         D_lim = (D0 <= bin0) * (D0 <= (bin0 + 1)) * bin0 + (D0 > bin0) * (D0 <= (bin0 + 1)) * D0 + (D0 > bin0) * (D0 > (bin0 + 1)) * (bin0 + 1)
-
-                        # khan summation
-                        # area_sum = 0.0
-                        # corr = 0.0
-
-                        # partialArea = integrate(A_lim, B_lim, AB)
-                        # y = partialArea - corr
-                        # t = area_sum + y
-                        # corr = (t - area_sum) - y
-                        # area_sum = t
-
-                        # partialArea = integrate(B_lim, C_lim, BC)
-                        # y = partialArea - corr
-                        # t = area_sum + y
-                        # corr = (t - area_sum) - y
-                        # area_sum = t
-
-                        # partialArea = integrate(C_lim, D_lim, CD)
-                        # y = partialArea - corr
-                        # t = area_sum + y
-                        # corr = (t - area_sum) - y
-                        # area_sum = t
-
-                        # partialArea = integrate(D_lim, A_lim, DA)
-                        # y = partialArea - corr
-                        # t = area_sum + y
-                        # corr = (t - area_sum) - y
-                        # area_sum = t
-
-                        # tmp = fabs(area_sum) * oneOverPixelArea
 
                         partialArea = integrate(A_lim, B_lim, AB)
                         partialArea += integrate(B_lim, C_lim, BC)
