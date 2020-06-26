@@ -33,7 +33,6 @@ __date__ = "26/06/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
-include "regrid_common.pxi"
 
 import cython
 from cython.parallel import prange
