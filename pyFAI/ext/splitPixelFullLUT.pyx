@@ -105,13 +105,7 @@ cdef inline float integrate(float A0, float B0, Function AB) nogil:
 
 class HistoLUT1dFullSplit(LutIntegrator):
     """
-    Now uses CSR (Compressed Sparse raw) with main attributes:
-    * nnz: number of non zero elements
-    * data: coefficient of the matrix in a 1D vector of float32
-    * indices: Column index position for the data (same size as
-    * indptr: row pointer indicates the start of a given row. len nrow+1
-
-    Nota: nnz = indptr[-1]
+    Now uses LUT representation for the integration
     """
     @cython.boundscheck(False)
     def __init__(self,
