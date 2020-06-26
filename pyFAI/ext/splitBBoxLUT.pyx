@@ -37,11 +37,11 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/04/2020"
+__date__ = "26/06/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
-include "sparse_common.pxi"
+include "LUT_common.pxi"
 #check LUT is propely represented in C and numpy
 
 import cython
@@ -156,7 +156,7 @@ class HistoBBox1d(object):
         self._lut = None
         self.lut_max_idx = None
         self._lut_checksum = None
-        self.calc_lut()
+        lut = self.calc_lut()
         self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
                                           self.pos0_max - 0.5 * self.delta,
                                           self.bins)
@@ -360,6 +360,7 @@ class HistoBBox1d(object):
 
         self.lut_max_idx = outmax
         self._lut = lut
+        return lut
 
     @property
     def lut(self):

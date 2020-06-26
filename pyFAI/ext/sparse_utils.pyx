@@ -33,11 +33,11 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "30/04/2020"
+__date__ = "26/06/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
-include "sparse_common.pxi"
+include "regrid_common.pxi"
 
 
 def LUT_to_CSR(lut):
@@ -55,9 +55,9 @@ def LUT_to_CSR(lut):
 
     cdef:
         lut_t[:, ::1] lut_ = numpy.ascontiguousarray(lut, lut_d)
-        cnumpy.float32_t[::1] data = numpy.zeros(nrow * ncol, numpy.float32)
-        cnumpy.int32_t[::1]  indices = numpy.zeros(nrow * ncol, numpy.int32)
-        cnumpy.int32_t[::1] indptr = numpy.zeros(nrow + 1, numpy.int32)
+        data_t[::1] data = numpy.zeros(nrow * ncol, data_d)
+        index_t[::1]  indices = numpy.zeros(nrow * ncol, index_d)
+        index_t[::1] indptr = numpy.zeros(nrow + 1, index_d)
         int i, j, nelt
         lut_t point
     with nogil:
@@ -94,9 +94,9 @@ def CSR_to_LUT(data, indices, indptr):
     assert ncol > 0, "ncol >0"
 
     cdef:
-        cnumpy.float32_t[::1] data_ = numpy.ascontiguousarray(data, dtype=numpy.float32)
-        cnumpy.int32_t[::1]  indices_ = numpy.ascontiguousarray(indices, dtype=numpy.int32)
-        cnumpy.int32_t[::1] indptr_ = numpy.ascontiguousarray(indptr, dtype=numpy.int32)
+        data_t[::1] data_ = numpy.ascontiguousarray(data, dtype=data_d)
+        index_t[::1]  indices_ = numpy.ascontiguousarray(indices, dtype=index_d)
+        index_t[::1] indptr_ = numpy.ascontiguousarray(indptr, dtype=index_d)
         lut_t[:, ::1] lut = numpy.zeros((nrow, ncol), dtype=lut_d)
         lut_t point
         int i, j, nelt
@@ -119,13 +119,13 @@ cdef class Vector:
     """Variable size vector"""
     cdef:
         readonly int size, allocated
-        cnumpy.float32_t[::1] coef
-        cnumpy.int32_t[::1] idx
+        data_t[::1] coef
+        index_t[::1] idx
 
     def __cinit__(self, int min_size=4):
         self.allocated = min_size
-        self.coef = numpy.empty(self.allocated, dtype=numpy.float32)
-        self.idx = numpy.empty(self.allocated, dtype=numpy.int32)
+        self.coef = numpy.empty(self.allocated, dtype=data_d)
+        self.idx = numpy.empty(self.allocated, dtype=index_d)
         self.size = 0
 
     def __dealloc__(self):
@@ -148,16 +148,16 @@ cdef class Vector:
     cdef inline void _append(self, int idx, float coef):
         cdef:
             int pos, new_allocated
-            cnumpy.int32_t[::1] newidx
-            cnumpy.float32_t[::1] newcoef
+            index_t[::1] newidx
+            data_t[::1] newcoef
         pos = self.size
         self.size = pos + 1
         if pos >= self.allocated - 1:
             new_allocated = self.allocated * 2
-            newcoef = numpy.empty(new_allocated, dtype=numpy.float32)
+            newcoef = numpy.empty(new_allocated, dtype=data_d)
             newcoef[:pos] = self.coef[:pos]
             self.coef = newcoef
-            newidx = numpy.empty(new_allocated, dtype=numpy.int32)
+            newidx = numpy.empty(new_allocated, dtype=index_d)
             newidx[:pos] = self.idx[:pos]
             self.idx = newidx
             self.allocated = new_allocated
@@ -220,8 +220,8 @@ cdef class ArrayBuilder:
     def as_LUT(self):
         cdef:
             int i, j, max_size = 0
-            cnumpy.int32_t[::1] local_idx
-            cnumpy.float32_t[:] local_coef
+            index_t[::1] local_idx
+            data_t[:] local_coef
             lut_t[:, :] lut
             Vector vector
         for i in range(len(self.lines)):
@@ -239,9 +239,9 @@ cdef class ArrayBuilder:
         cdef:
             int i, start, end, total_size = 0
             Vector vector
-            cnumpy.int32_t[:] idptr, idx, local_idx
-            cnumpy.float32_t[:] coef, local_coef
-        idptr = numpy.zeros(len(self.lines) + 1, dtype=numpy.int32)
+            index_t[:] idptr, idx, local_idx
+            data_t[:] coef, local_coef
+        idptr = numpy.zeros(len(self.lines) + 1, dtype=index_d)
         for i in range(len(self.lines)):
             total_size += len(self.lines[i])
             idptr[i + 1] = total_size
