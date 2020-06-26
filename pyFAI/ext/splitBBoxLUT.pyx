@@ -49,7 +49,6 @@ import os
 import sys
 import logging
 logger = logging.getLogger(__name__)
-from cpython.ref cimport PyObject, Py_XDECREF
 from cython.parallel import prange
 from libc.string cimport memset, memcpy
 from cython cimport view
