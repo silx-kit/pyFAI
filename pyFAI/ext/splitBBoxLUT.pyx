@@ -954,7 +954,7 @@ class HistoBBox2d(object):
         cdef:
             tuple shape
             int rc_before, rc_after
-            lut_t[:, :, :] lut
+            lut_t[:, :, ::1] lut=self._lut
             numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary
         shape = (self._lut.shape[0] * self._lut.shape[1], self._lut.shape[2])
         tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
