@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/06/2020"
+__date__ = "01/07/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -161,9 +161,9 @@ class HistoBBox1d(LutIntegrator):
             lut = self.calc_lut()
         else:
             lut = self.calc_lut_nosplit()
-        
+
         #Call the constructor of the parent class
-        super().__init__(lut, pos0.size, empty)    
+        super().__init__(lut, pos0.size, empty)
 
         self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
                                           self.pos0_max - 0.5 * self.delta,
@@ -269,7 +269,7 @@ class HistoBBox1d(LutIntegrator):
 
         """
         cdef:
-            position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max 
+            position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max
             acc_t delta_left, delta_right, inv_area
             int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
             bint check_mask, check_pos1
@@ -332,7 +332,7 @@ class HistoBBox1d(LutIntegrator):
         # just recycle the outmax array
         outmax[:] = 0
 
-        self.lut_size = lut_size
+        #self.lut_size = lut_size
 
         lut_nbytes = bins * lut_size * sizeof(lut_t)
         #Check we have enough memory
@@ -464,7 +464,7 @@ class HistoBBox1d(LutIntegrator):
         # just recycle the outmax array
         outmax[:] = 0
 
-        self.lut_size = lut_size
+        #self.lut_size = lut_size
 
         lut_nbytes = bins * lut_size * sizeof(lut_t)
         #Check we have enough memory
@@ -517,7 +517,7 @@ class HistoBBox1d(LutIntegrator):
     @property
     def lut(self):
         """Getter for the LUT as actual numpy array"""
-        
+
         cdef lut_t[:, ::1] lut = self._lut
         cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
         memcpy(&tmp_ary[0, 0], &lut[0, 0], self._lut.nbytes)
@@ -581,7 +581,7 @@ class HistoBBox2d(object):
         :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
         :param unit: can be 2th_deg or r_nm^-1 ...
         """
-        cdef: 
+        cdef:
             cnumpy.int32_t size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
@@ -629,11 +629,11 @@ class HistoBBox2d(object):
         self.lut_max_idx = None
         self._lut = None
         self.calc_lut()
-        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
-                                           self.pos0_max - 0.5 * self.delta0, 
+        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0,
+                                           self.pos0_max - 0.5 * self.delta0,
                                            bins0)
-        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
-                                           self.pos1_max - 0.5 * self.delta1, 
+        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1,
+                                           self.pos1_max - 0.5 * self.delta1,
                                            bins1)
         self.unit = unit
         # Calculated at export time to python
@@ -955,21 +955,11 @@ class HistoBBox2d(object):
             tuple shape
             int rc_before, rc_after
             lut_t[:, :, :] lut
-            bint need_decref
             numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary
-        rc_before = sys.getrefcount(self._lut)
-        lut  = self._lut
-        rc_after = sys.getrefcount(self._lut)
-        need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         shape = (self._lut.shape[0] * self._lut.shape[1], self._lut.shape[2])
         tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
         memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], self._lut.nbytes)
         self._lut_checksum = crc32(tmp_ary)
-
-        # Ugly against bug#89
-        if need_decref and (sys.getrefcount(self._lut) >= rc_before + 2):
-            print("Warning: Decref needed")
-            Py_XDECREF(<PyObject *> self._lut)
 
         return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
                                         shape=shape, dtype=lut_d,
@@ -1022,12 +1012,7 @@ class HistoBBox2d(object):
             acc_t[:, ::1] sum_count = numpy.zeros(self.bins, dtype=numpy.float64)
             data_t[:, ::1] merged = numpy.zeros(self.bins, dtype=numpy.float32)
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-        # Ugly hack against bug #89
-            int rc_before, rc_after
-        rc_before = sys.getrefcount(self._lut)
-        cdef lut_t[:, :, ::1] lut = self._lut
-        rc_after = sys.getrefcount(self._lut)
-        cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
+            lut_t[:, :, ::1] lut = self._lut
 
         assert weights.size == size, "weights size"
 
@@ -1123,13 +1108,9 @@ class HistoBBox2d(object):
                 else:
                     merged[i0, i1] += cdummy
 
-        # Ugly against bug #89
-        if need_decref and (sys.getrefcount(self._lut) >= rc_before + 2):
-            Py_XDECREF(<PyObject *> self._lut)
-
-        return (numpy.asarray(merged).T, 
-                self.bin_centers0, self.bin_centers1, 
-                numpy.asarray(sum_data).T, 
+        return (numpy.asarray(merged).T,
+                self.bin_centers0, self.bin_centers1,
+                numpy.asarray(sum_data).T,
                 numpy.asarray(sum_count).T)
 
     @property
