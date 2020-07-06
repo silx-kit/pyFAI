@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2020"
+__date__ = "06/07/2020"
 __status__ = "development"
 
 import logging
@@ -103,10 +103,12 @@ class Distortion(object):
         else:  # we assume it is a Detector instance
             self.detector = detector
         self.shape_in = self.detector.shape
-        if mask is not None:
-            self.mask = numpy.ascontiguousarray(mask, numpy.int8)
-        else:
+        if mask is None:
             self.mask = numpy.ascontiguousarray(self.detector.mask, numpy.int8)
+        elif mask is False:
+            self.mask = numpy.zeros(self.detector.mask.shape, numpy.int8)
+        else:
+            self.mask = numpy.ascontiguousarray(mask, numpy.int8)
         self.resize = resize
         if shape is not None:
             self._shape_out = tuple([int(i) for i in shape])
@@ -423,9 +425,11 @@ class Distortion(object):
                    variance=None, 
                    dark=None, 
                    flat=None, 
+                   solidangle=None, 
+                   polarization=None,
                    dummy=None, 
                    delta_dummy=None, 
-                   normalisation_factor=1):
+                   normalization_factor=1.0):
         """
         Correct an image based on the look-up table calculated ...
         Like the integrate_ng it provides
@@ -435,9 +439,13 @@ class Distortion(object):
 
         :param image: 2D-array with the image
         :param variance: 2D-array with the associated image
+        :param dark: array with dark-current values
+        :param flat: array with values for a flat image
+        :param solidangle: solid-angle array
+        :param polarization: numpy array with 2D polarization corrections
         :param dummy: value suggested for bad pixels
         :param delta_dummy: precision of the dummy value
-        :param normaisation
+        :param normalization_factor: multiply all normalization with this value
         :return: corrected 2D image
         """
         assert image.ndim == 2
@@ -455,7 +463,27 @@ class Distortion(object):
         if self.device:
             if self.integrator is None:
                 self.calc_init()
-            res = self.integrator.integrate_ng(image)
+            res = self.integrator.integrate_ng(image,
+                                               variance=variance,
+                                               flat=flat,
+                                               dark=dark,
+                                               solidangle=solidangle,
+                                               polarization=polarization,
+                                               dummy=dummy,
+                                               delta_dummy=delta_dummy,
+                                               normalization_factor=normalization_factor,
+                                               )
+            print(res)
+            if variance is not None:
+                if image.ndim == 2:
+                    out = res.intensity.reshape(self._shape_out)
+                else:
+                    out = res.intensity
+            else:
+                if image.ndim == 2:
+                    out = (res.intensity.reshape(self._shape_out), res.error.reshape(self._shape_out))
+                else:
+                    out = (res.intensity, res.error)
         else:
             if self.lut is None:
                 self.calc_LUT()
@@ -472,19 +500,19 @@ class Distortion(object):
                     out = numpy.zeros(indptr.size - 1)
                     for i in range(indptr.size - 1):
                         out[i] = big[indptr[i]:indptr[i + 1]].sum()
-        try:
-            if image.ndim == 2:
-                out.shape = self._shape_out
-            else:
-                for ds in out:
-                    if ds.ndim == 2:
-                        ds.shape = self._shape_out
-                    else:
-                        ds.shape = self._shape_out + ds.shape[2:]
-
-        except ValueError as _err:
-            logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
-            raise
+            try:
+                if image.ndim == 2:
+                    out.shape = self._shape_out
+                else:
+                    for ds in out:
+                        if ds.ndim == 2:
+                            ds.shape = self._shape_out
+                        else:
+                            ds.shape = self._shape_out + ds.shape[2:]
+    
+            except ValueError as _err:
+                logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
+                raise
         return out
 
 
