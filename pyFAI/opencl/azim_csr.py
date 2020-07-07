@@ -28,8 +28,8 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "24/06/2020"
-__copyright__ = "2014-2019, ESRF, Grenoble"
+__date__ = "07/07/2020"
+__copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -477,15 +477,18 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.events += events
                 ev.wait()
                 return image
-            wg = self.workgroup_size["csr_integrate"][0]
 
+            wg = self.workgroup_size["csr_integrate"][0]
             wdim_bins = (self.bins * wg),
             if wg == 1:
+                wg = self.workgroup_size["csr_integrate_single"][0]
+                wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
                 integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate_single", integrate))
+                events.append(EventDescription("csr_integrate_single", integrate))
             else:
+                wdim_bins = (self.bins * wg),
                 integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate", integrate))
+                events.append(EventDescription("csr_integrate", integrate))
             if out_merged is None:
                 merged = numpy.empty(self.bins, dtype=numpy.float32)
             else:
@@ -649,14 +652,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
             events.append(EventDescription("corrections4", ev))
 
             wg = self.workgroup_size["csr_integrate4"][0]
-
-            wdim_bins = (self.bins * wg),
             if wg == 1:
+                wg = self.workgroup_size["csr_integrate4_single"][0]
+                wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
                 integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate4_single", integrate))
+                events.append(EventDescription("csr_integrate4_single", integrate))
             else:
+                wdim_bins = (self.bins * wg),
                 integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate4", integrate))
+                events.append(EventDescription("csr_integrate4", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
