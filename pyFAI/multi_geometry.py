@@ -27,13 +27,11 @@
 """Module for treating simultaneously multiple detector configuration
 within a single integration"""
 
-from __future__ import absolute_import, print_function, with_statement, division
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2019"
+__date__ = "26/06/2020"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -153,7 +151,7 @@ class MultiGeometry(object):
             if res.sigma is not None:
                 if sigma2 is None:
                     sigma2 = numpy.zeros(npt, dtype=numpy.float64)
-                sigma2 += (res.sigma ** 2) / monitor
+                sigma2 += (res.count*res.sigma) ** 2 / monitor
 
         tiny = numpy.finfo("float32").tiny
         norm = numpy.maximum(count, tiny)
@@ -244,7 +242,7 @@ class MultiGeometry(object):
             if res.sigma is not None:
                 if sigma2 is None:
                     sigma2 = count = numpy.zeros_like(sum_)
-                sigma2 += (res.sigma ** 2) / monitor
+                sigma2 += (res.sigma*res.count) ** 2 / monitor
 
         tiny = numpy.finfo("float32").tiny
         norm = numpy.maximum(count, tiny)
