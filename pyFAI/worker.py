@@ -801,8 +801,8 @@ class DistortionWorker(object):
             self.distortion.reset(prepare=True) # enfoce initization
         else:
             self.distortion = None
-            
-    def process(self, 
+
+    def process(self,
                 data,
                 variance=None,
                 normalization_factor=1.0):
@@ -814,14 +814,14 @@ class DistortionWorker(object):
         :return: processed data as either an array (data) or two (data, error)
         """
         if self.distortion is not None:
-            return self.distortion.correct_ng(data,     
-                                              variance=variance, 
-                                              dark=self.dark, 
-                                              flat=self.flat, 
-                                              solidangle=self.solidangle, 
+            return self.distortion.correct_ng(data,
+                                              variance=variance,
+                                              dark=self.dark,
+                                              flat=self.flat,
+                                              solidangle=self.solidangle,
                                               polarization=self.polarization,
-                                              dummy=self.dummy, 
-                                              delta_dummy=self.delta_dummy, 
+                                              dummy=self.dummy,
+                                              delta_dummy=self.delta_dummy,
                                               normalization_factor=normalization_factor)
         else:
             proc_data = preproc(data,
