@@ -65,7 +65,7 @@ else:
     if v < (0, 11):
         logger.warning("Scipy is too old ... uncorrection will be handled the old way")
         linalg = None
-        
+
 
 def resize_image_2D_numpy(image, shape_in):
     "numpy implementation of resize_image_2D"
@@ -73,7 +73,7 @@ def resize_image_2D_numpy(image, shape_in):
     common_shape = [min(i, j) for i, j in zip(image.shape, shape_in)]
     new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
     return new_img
-    
+
 if _distortion is None:
     resize_image_2D = resize_image_2D_numpy
 else:
@@ -87,7 +87,7 @@ class Distortion(object):
     New version compatible both with CSR and LUT...
     """
     def __init__(self, detector="detector", shape=None, resize=False, empty=0,
-                 mask=None, method="CSR", device=None, workgroup=8):
+                 mask=None, method="CSR", device=None, workgroup=32):
         """
         :param detector: detector instance or detector name
         :param shape: shape of the output image
@@ -127,9 +127,12 @@ class Distortion(object):
         else:
             self.method = method.lower()
         if (self.detector.uniform_pixel and self.detector.IS_FLAT):
-            csr = identity(numpy.prod(self.detector.shape), 
-                           dtype=numpy.float32, 
+            csr = identity(numpy.prod(self.detector.shape),
+                           dtype=numpy.float32,
                            format="csr")
+            if self.detector.mask is not None:
+                masked = numpy.where(self.detector.mask)
+                csr[masked] = 0.0
             if self.method == "lut":
                 self.lut = sparse_utils.CSR_to_LUT(csr.data, csr.indices, csr.indptr)
             else:
@@ -143,7 +146,7 @@ class Distortion(object):
         self.empty = empty  # "dummy" value for empty bins
         self.device = device
         if not workgroup:
-            self.workgroup = 8
+            self.workgroup = 1
         else:
             self.workgroup = int(workgroup)
 
@@ -274,6 +277,7 @@ class Distortion(object):
                                                                       self._shape_out[0] * self._shape_out[1],
                                                                       devicetype=self.device,
                                                                       block_size=self.workgroup)
+                    self.integrator.workgroup_size["csr_integrate4"] = 1,
             else:
                 if self.method == "lut":
                     self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut,
@@ -285,6 +289,7 @@ class Distortion(object):
                                                                       self._shape_out[0] * self._shape_out[1],
                                                                       platformid=self.device[0], deviceid=self.device[1],
                                                                       block_size=self.workgroup)
+                    self.integrator.workgroup_size["csr_integrate4"] = 1,
 
     def calc_LUT(self, use_common=True):
         """Calculate the Look-up table
