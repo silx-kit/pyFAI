@@ -26,13 +26,11 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-from __future__ import absolute_import, print_function, with_statement, division
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2020"
+__date__ = "02/07/2020"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -841,7 +839,7 @@ class AzimuthalIntegrator(Geometry):
     def setup_CSR(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
                   mask_checksum=None, unit=units.TTH,
-                  split="bbox"):
+                  split="bbox", scale=True):
         """
         Prepare a look-up-table
 
@@ -860,7 +858,10 @@ class AzimuthalIntegrator(Geometry):
         :param unit: use to propagate the LUT object for further checkings
         :type unit: pyFAI.units.Unit
         :param split: Splitting scheme: valid options are "no", "bbox", "full"
-
+        :param scale: set to False for working in S.I. units for pos0_range 
+                      which is faster. By default assumes pos0_range has `units` 
+                      Note that pos1_range, the chi-angle, is expected in radians
+        
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
         datatset. It is possible to customize the number of point of
@@ -887,6 +888,11 @@ class AzimuthalIntegrator(Geometry):
         for further checkings: The aim is to prevent an integration to
         be performed in 2th-space when the LUT was setup in q space.
         """
+
+        if scale and pos0_range:
+            unit = units.to_unit(unit)
+            pos0_scale = unit.scale
+            pos0_range = tuple(pos0_range[i] / pos0_scale for i in (0, -1))
 
         if "__len__" in dir(npt) and len(npt) == 2:
             int2d = True
@@ -1248,7 +1254,8 @@ class AzimuthalIntegrator(Geometry):
                         integr = self.setup_CSR(shape, npt, mask,
                                                 radial_range, azimuth_range,
                                                 mask_checksum=mask_crc,
-                                                unit=unit, split=split)
+                                                unit=unit, split=split,
+                                                scale=False)
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         integr = None
@@ -1638,12 +1645,14 @@ class AzimuthalIntegrator(Geometry):
                             cython_integr = self.setup_CSR(shape, npt, mask,
                                                            radial_range, azimuth_range,
                                                            mask_checksum=mask_crc,
-                                                           unit=unit, split=split)
+                                                           unit=unit, split=split,
+                                                          scale=False)
                         else:
                             cython_integr = self.setup_LUT(shape, npt, mask,
                                                            radial_range, azimuth_range,
                                                            mask_checksum=mask_crc,
-                                                           unit=unit, split=split)
+                                                           unit=unit, split=split, 
+                                                           scale=False)
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         cython_integr = None
@@ -2241,7 +2250,8 @@ class AzimuthalIntegrator(Geometry):
                         integr = self.setup_CSR(shape, npt, mask,
                                                 radial_range, azimuth_range,
                                                 mask_checksum=mask_crc,
-                                                unit=unit, split=split)
+                                                unit=unit, split=split,
+                                                scale=False)
                     except MemoryError:
                         logger.warning("MemoryError: falling back on default forward implementation")
                         integr = None
@@ -2684,7 +2694,8 @@ class AzimuthalIntegrator(Geometry):
                         integr = self.setup_CSR(shape, npt, mask,
                                                 radial_range, azimuth_range,
                                                 mask_checksum=mask_crc,
-                                                unit=unit, split=split)
+                                                unit=unit, split=split,
+                                                scale=False)
                     except MemoryError:
                         logger.warning("MemoryError: falling back on default forward implementation")
                         integr = None
@@ -3484,7 +3495,8 @@ class AzimuthalIntegrator(Geometry):
                         cython_integr = self.setup_CSR(data.shape, npt, mask,
                                                        pos0_range=None, pos1_range=None,
                                                        mask_checksum=mask_crc,
-                                                       unit=unit, split=split)
+                                                       unit=unit, split=split,
+                                                       scale=False)
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         cython_integr = None
