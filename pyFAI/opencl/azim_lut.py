@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "24/06/2020"
+__date__ = "08/07/2020"
 __copyright__ = "2012-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -281,7 +281,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        
+
     def send_buffer(self, data, dest, checksum=None):
         """Send a numpy array to the device, including the cast on the device if possible
 
@@ -429,29 +429,38 @@ class OCL_LUT_Integrator(OpenclProcessing):
             events.append(EventDescription("integrate", integrate))
             if out_merged is None:
                 merged = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_merge is False:
+                merged = None
             else:
                 merged = out_merged.data
             if out_sum_count is None:
                 sum_count = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_sum_count is False:
+                sum_count is None
             else:
                 sum_count = out_sum_count.data
             if out_sum_data is None:
                 sum_data = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_sum_data is False:
+                sum_data = None
             else:
                 sum_data = out_sum_data.data
-            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
-            events.append(EventDescription("copy D->H merged", ev))
-            ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
-            events.append(EventDescription("copy D->H sum_data", ev))
-            ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
-            events.append(EventDescription("copy D->H sum_count", ev))
+            if merged is not None:
+                ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
+                events.append(EventDescription("copy D->H merged", ev))
+            if sum_data is not None:
+                ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
+                events.append(EventDescription("copy D->H sum_data", ev))
+            if sum_count is not None:
+                ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
+                events.append(EventDescription("copy D->H sum_count", ev))
             ev.wait()
         if self.profile:
             self.events += events
         return merged, sum_data, sum_count
-    
+
     integrate = integrate_legacy
-    
+
     def integrate_ng(self, data, dark=None, dummy=None, delta_dummy=None,
                      poissonian=None, variance=None, dark_variance=None,
                      flat=None, solidangle=None, polarization=None, absorption=None,
@@ -592,14 +601,20 @@ class OCL_LUT_Integrator(OpenclProcessing):
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
+            elif out_merged is False:
+                merged = None
             else:
                 merged = out_merged.data
             if out_avgint is None:
                 avgint = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_avgint is False:
+                avgint = None
             else:
                 avgint = out_avgint.data
             if out_stderr is None:
                 stderr = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_stderr is False:
+                stderr = None
             else:
                 stderr = out_stderr.data
 
@@ -608,12 +623,14 @@ class OCL_LUT_Integrator(OpenclProcessing):
 
             ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderr"])
             events.append(EventDescription("copy D->H stderr", ev))
-            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
-            events.append(EventDescription("copy D->H merged8", ev))
+            if merged is None:
+                res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged, merged, merged, merged)
+            else:
+                ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+                events.append(EventDescription("copy D->H merged8", ev))
+                res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
+                "position intensity error signal variance normalization count"
         if self.profile:
             self.events += events
-        res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
-        "position intensity error signal variance normalization count"
         return res
 
-    
