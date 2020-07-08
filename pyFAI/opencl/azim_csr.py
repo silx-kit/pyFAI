@@ -491,23 +491,32 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 events.append(EventDescription("csr_integrate", integrate))
             if out_merged is None:
                 merged = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_merge is False:
+                merged = None
             else:
                 merged = out_merged.data
             if out_sum_count is None:
                 sum_count = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_sum_count is False:
+                sum_count = None
             else:
                 sum_count = out_sum_count.data
             if out_sum_data is None:
                 sum_data = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_sum_data is False:
+                sum_data = None
             else:
                 sum_data = out_sum_data.data
 
-            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
-            events.append(EventDescription("copy D->H merged", ev))
-            ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
-            events.append(EventDescription("copy D->H sum_data", ev))
-            ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
-            events.append(EventDescription("copy D->H sum_count", ev))
+            if merged is not None:
+                ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
+                events.append(EventDescription("copy D->H merged", ev))
+            if  sum_data is not None:
+                ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
+                events.append(EventDescription("copy D->H sum_data", ev))
+            if sum_count is not None:
+                ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
+                events.append(EventDescription("copy D->H sum_count", ev))
             ev.wait()
         if self.profile:
             self.events += events
@@ -664,28 +673,37 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
+            elif out_merged is False:
+                merged = None
             else:
                 merged = out_merged.data
             if out_avgint is None:
                 avgint = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_avgint is False:
+                avgint = None
             else:
                 avgint = out_avgint.data
             if out_stderr is None:
                 stderr = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_stderr is  False:
+                stderr = None
             else:
                 stderr = out_stderr.data
 
-            ev = pyopencl.enqueue_copy(self.queue, avgint, self.cl_mem["averint"])
-            events.append(EventDescription("copy D->H avgint", ev))
-
-            ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderr"])
-            events.append(EventDescription("copy D->H stderr", ev))
-            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
-            events.append(EventDescription("copy D->H merged8", ev))
+            if avgint is not None:
+                ev = pyopencl.enqueue_copy(self.queue, avgint, self.cl_mem["averint"])
+                events.append(EventDescription("copy D->H avgint", ev))
+            if stderr is not None:
+                ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderr"])
+                events.append(EventDescription("copy D->H stderr", ev))
+            if merged is None:
+                res = Integrate1dtpl(self.bin_centers, avgint, stderr, None, None, None, None)
+            else:
+                ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+                events.append(EventDescription("copy D->H merged8", ev))
+                res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
         if self.profile:
             self.events += events
-        res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
-        "position intensity error signal variance normalization count"
         return res
 
     def sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,
