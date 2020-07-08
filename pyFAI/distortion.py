@@ -426,21 +426,21 @@ class Distortion(object):
             raise
         return out
 
-    def correct_ng(self, image, 
-                   variance=None, 
-                   dark=None, 
-                   flat=None, 
-                   solidangle=None, 
+    def correct_ng(self, image,
+                   variance=None,
+                   dark=None,
+                   flat=None,
+                   solidangle=None,
                    polarization=None,
-                   dummy=None, 
-                   delta_dummy=None, 
+                   dummy=None,
+                   delta_dummy=None,
                    normalization_factor=1.0):
         """
         Correct an image based on the look-up table calculated ...
         Like the integrate_ng it provides
         * Dark current correction
         * Normalisation with flatfield (or solid angle, polarization, absorption, ...)
-        * Error propagation   
+        * Error propagation
 
         :param image: 2D-array with the image
         :param variance: 2D-array with the associated image
@@ -456,7 +456,7 @@ class Distortion(object):
         assert image.ndim == 2
         if variance is not None:
             assert variance.shape == image.shape
-             
+
         if image.shape != self.shape_in:
             logger.warning("The image shape %s is not the same as the detector %s", image.shape, self.shape_in)
             image = resize_image_2D(image, self.shape_in)
@@ -477,8 +477,8 @@ class Distortion(object):
                                                dummy=dummy,
                                                delta_dummy=delta_dummy,
                                                normalization_factor=normalization_factor,
+                                               out_merged=False
                                                )
-            print(res)
             if variance is not None:
                 if image.ndim == 2:
                     out = res.intensity.reshape(self._shape_out)
@@ -514,7 +514,7 @@ class Distortion(object):
                             ds.shape = self._shape_out
                         else:
                             ds.shape = self._shape_out + ds.shape[2:]
-    
+
             except ValueError as _err:
                 logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
                 raise
