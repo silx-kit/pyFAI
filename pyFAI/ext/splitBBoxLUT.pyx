@@ -611,8 +611,6 @@ class HistoBBox1d(LutIntegrator):
         # just recycle the outmax array
         outmax[:] = 0
 
-        self.lut_size = lut_size
-
         lut_nbytes = bins * lut_size * sizeof(lut_t)
         #Check we have enough memory
         if (os.name == "posix"):
