@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/06/2020"
+__date__ = "10/07/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -1112,9 +1112,9 @@ class HistoBBox2d(object):
             acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
             data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
-            data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
+            acc_t[::1] sum_data = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.empty(bins, dtype=acc_d)
+            data_t[::1] merged = numpy.empty(bins, dtype=data_d)
             data_t[::1] ccoef = self.data, 
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
@@ -1151,7 +1151,7 @@ class HistoBBox2d(object):
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-            cdata = numpy.zeros(size, dtype=data_d)
+            cdata = numpy.empty(size, dtype=data_d)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -1180,17 +1180,17 @@ class HistoBBox2d(object):
                         data = data / cpolarization[i]
                     if do_solidAngle:
                         data = data / csolidAngle[i]
-                    cdata[i] += data
+                    cdata[i] = data
         else:
             if do_dummy:
                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-                cdata = numpy.zeros(size, dtype=data_d)
+                cdata = numpy.empty(size, dtype=data_d)
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] += data
+                        cdata[i] = data
                     else:
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
 
@@ -1207,12 +1207,12 @@ class HistoBBox2d(object):
                     continue
                 acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
-            sum_data[i] += acc_data
-            sum_count[i] += acc_count
+            sum_data[i] = acc_data
+            sum_count[i] = acc_count
             if acc_count > epsilon:
-                merged[i] += acc_data / acc_count / normalization_factor
+                merged[i] = acc_data / acc_count / normalization_factor
             else:
-                merged[i] += cdummy
+                merged[i] = cdummy
         return (numpy.asarray(merged).reshape(self.bins).T, 
                 self.bin_centers0, 
                 self.bin_centers1, 

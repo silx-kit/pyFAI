@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/06/2020"
+__date__ = "10/07/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -175,7 +175,7 @@ cdef class CsrIntegrator(object):
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-            cdata = numpy.zeros(size, dtype=data_d)
+            cdata = numpy.empty(size, dtype=data_d)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -189,9 +189,9 @@ cdef class CsrIntegrator(object):
                             data = data / cpolarization[i]
                         if do_solidAngle:
                             data = data / csolidAngle[i]
-                        cdata[i] += data
+                        cdata[i] = data
                     else:  # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -203,7 +203,7 @@ cdef class CsrIntegrator(object):
                         data = data / cpolarization[i]
                     if do_solidAngle:
                         data = data / csolidAngle[i]
-                    cdata[i] += data
+                    cdata[i] = data
         else:
             if do_dummy:
                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
@@ -211,9 +211,9 @@ cdef class CsrIntegrator(object):
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] += data
+                        cdata[i] = data
                     else:
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
 
@@ -231,12 +231,12 @@ cdef class CsrIntegrator(object):
                 acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
 
-            sum_data[i] += acc_data
-            sum_count[i] += acc_count
+            sum_data[i] = acc_data
+            sum_count[i] = acc_count
             if acc_count > epsilon:
-                merged[i] += acc_data / acc_count / normalization_factor
+                merged[i] = acc_data / acc_count / normalization_factor
             else:
-                merged[i] += cdummy
+                merged[i] = cdummy
         return (self.bin_centers, 
                 numpy.asarray(merged), 
                 numpy.asarray(sum_data), 
@@ -288,12 +288,12 @@ cdef class CsrIntegrator(object):
             cnumpy.int32_t i, j, idx = 0, bins = self.bins, size = self.size
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
             data_t empty
-            acc_t[::1] sum_sig = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_var = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_norm = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
-            data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
-            data_t[::1] error = numpy.zeros(bins, dtype=data_d)
+            acc_t[::1] sum_sig = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_var = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_norm = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.empty(bins, dtype=acc_d)
+            data_t[::1] merged = numpy.empty(bins, dtype=data_d)
+            data_t[::1] error = numpy.empty(bins, dtype=data_d)
             data_t[:, ::1] preproc4
             
         assert weights.size == size, "weights size"
@@ -329,16 +329,16 @@ cdef class CsrIntegrator(object):
                 acc_norm = acc_norm + coef * preproc4[idx, 2] 
                 acc_count = acc_count + coef * preproc4[idx, 3]
 
-            sum_sig[i] += acc_sig
-            sum_var[i] += acc_var
-            sum_norm[i] += acc_norm
-            sum_count[i] += acc_count
+            sum_sig[i] = acc_sig
+            sum_var[i] = acc_var
+            sum_norm[i] = acc_norm
+            sum_count[i] = acc_count
             if acc_count > epsilon:
-                merged[i] += acc_sig / acc_norm
-                error[i] += sqrt(acc_var) / acc_norm
+                merged[i] = acc_sig / acc_norm
+                error[i] = sqrt(acc_var) / acc_norm
             else:
-                merged[i] += empty
-                error[i] += empty
+                merged[i] = empty
+                error[i] = empty
         #"position intensity error signal variance normalization count"
         return Integrate1dtpl(self.bin_centers, 
                               numpy.asarray(merged),numpy.asarray(error) ,
