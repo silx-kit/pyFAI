@@ -82,7 +82,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2020"
+__date__ = "06/07/2020"
 __status__ = "development"
 
 import threading
@@ -755,14 +755,16 @@ class DistortionWorker(object):
     """
 
     def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
-                 mask=None, dummy=None, delta_dummy=None, device=None):
+                 mask=None, dummy=None, delta_dummy=None, method="LUT", device=None):
         """Constructor of the worker
         :param dark: array
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
+        :param dummy: value for bad pixels
+        :param delta_dummy: precision for dummies
+        :param method: LUT or CSR for the correction
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
-
         """
 
         self.ctx = None
@@ -792,22 +794,17 @@ class DistortionWorker(object):
 
         self.dummy = dummy
         self.delta_dummy = delta_dummy
-        if device is not None:
-            logger.warning("GPU is not yet implemented")
-            #Some explainations: the pre-processing and the distortion corrections should both be performed on the GPU.
-            #It kind of works when no variance propagation is involved but not whenn propagating errors.
 
-        if detector is None:
-            self.distortion = None
+        if detector is not None:
+            self.distortion = Distortion(detector, method=method, device=device,
+                                     mask=self.mask, empty=self.dummy or 0)
+            self.distortion.reset(prepare=True) # enfoce initization
         else:
-            if (detector.uniform_pixel and detector.IS_FLAT):
-                #No distortion correction are actually needed !
-                self.distortion = None
-            else:
-                self.distortion = Distortion(detector, method="LUT", device=device,
-                                         mask=self.mask, empty=self.dummy or 0)
+            self.distortion = None
 
-    def process(self, data, variance=None,
+    def process(self,
+                data,
+                variance=None,
                 normalization_factor=1.0):
         """
         Process the data and apply a normalization factor
@@ -816,24 +813,29 @@ class DistortionWorker(object):
         :param normalization: normalization factor
         :return: processed data as either an array (data) or two (data, error)
         """
-        #TODO as part of issue #1360: expose a correct_ng which would perform simultaneously the preprocessing and the distortion correction
-        # This could be implemented on GPU as the code already exists. 
-        proc_data = preproc(data,
-                            variance=variance,
-                            dark=self.dark,
-                            flat=self.flat,
-                            solidangle=self.solidangle,
-                            polarization=self.polarization,
-                            absorption=None,
-                            mask=self.mask,
-                            dummy=self.dummy,
-                            delta_dummy=self.delta_dummy,
-                            normalization_factor=normalization_factor,
-                            empty=None)
-
         if self.distortion is not None:
-            return self.distortion.correct(proc_data, self.dummy, self.delta_dummy)
+            return self.distortion.correct_ng(data,
+                                              variance=variance,
+                                              dark=self.dark,
+                                              flat=self.flat,
+                                              solidangle=self.solidangle,
+                                              polarization=self.polarization,
+                                              dummy=self.dummy,
+                                              delta_dummy=self.delta_dummy,
+                                              normalization_factor=normalization_factor)
         else:
+            proc_data = preproc(data,
+                                variance=variance,
+                                dark=self.dark,
+                                flat=self.flat,
+                                solidangle=self.solidangle,
+                                polarization=self.polarization,
+                                absorption=None,
+                                mask=self.mask,
+                                dummy=self.dummy,
+                                delta_dummy=self.delta_dummy,
+                                normalization_factor=normalization_factor,
+                                empty=None)
             if variance is not None:
                 pp_signal = proc_data[...,0]
                 pp_variance = proc_data[...,1]

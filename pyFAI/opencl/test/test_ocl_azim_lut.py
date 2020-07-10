@@ -26,7 +26,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 """
-Simple test of ocl_azim_csr within pyFAI
+Simple test of ocl_azim_lut within pyFAI
 """
 
 from __future__ import division, print_function
@@ -54,11 +54,11 @@ logger = logging.getLogger(__name__)
 
 @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
 @unittest.skipUnless(ocl, "PyOpenCl is missing")
-class TestOclAzimCSR(unittest.TestCase):
+class TestOclAzimLUT(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestOclAzimCSR, cls).setUpClass()
+        super(TestOclAzimLUT, cls).setUpClass()
         if ocl:
             cls.ctx = ocl.create_context()
             if logger.getEffectiveLevel() <= logging.INFO:
@@ -76,7 +76,7 @@ class TestOclAzimCSR(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestOclAzimCSR, cls).tearDownClass()
+        super(TestOclAzimLUT, cls).tearDownClass()
         logger.debug("Maximum valid workgroup size %s on device %s" % (cls.ctx.devices[0].max_work_group_size, cls.ctx.devices[0]))
         cls.ctx = None
         cls.queue = None
@@ -87,22 +87,22 @@ class TestOclAzimCSR(unittest.TestCase):
         """
         tests the 1d histogram kernel
         """
-        from ..azim_csr import OCL_CSR_Integrator
+        from ..azim_lut import OCL_LUT_Integrator
         data = numpy.ones(self.ai.detector.shape)
         npt = 500
         unit = "r_mm"
         method = IntegrationMethod.select_one_available(("no", "histogram", "python"),
                                                         dim=1, default=None, degradable=True)
-        csr_method = IntegrationMethod.select_one_available(("no", "csr", "cython"),
+        lut_method = IntegrationMethod.select_one_available(("no", "lut", "cython"),
                                                             dim=1, default=None, degradable=False)
 
-        # Retrieve the CSR array
-        cpu_integrate = self.ai._integrate1d_legacy(data, npt, unit=unit, method=csr_method)
+        # Retrieve the LUT array
+        cpu_integrate = self.ai._integrate1d_legacy(data, npt, unit=unit, method=lut_method)
         r_m = cpu_integrate[0]
-        csr_engine = list(self.ai.engines.values())[0]
-        csr = csr_engine.engine.lut
-        ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method)
-        integrator = OCL_CSR_Integrator(csr, data.size)
+        lut_engine = list(self.ai.engines.values())[0]
+        lut = lut_engine.engine.lut
+        ref = self.ai.integrate1d_ng(data, npt, unit=unit, method=method)
+        integrator = OCL_LUT_Integrator(lut, data.size)
         solidangle = self.ai.solidAngleArray()
         res = integrator.integrate_ng(data, solidangle=solidangle)
         # for info, res contains: position intensity error signal variance normalization count
@@ -128,12 +128,12 @@ class TestOclAzimCSR(unittest.TestCase):
         ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method).sum_signal
         sig = res.signal
         self.assertLess(abs((sig - ref).sum()), 5e-5, "signal content is the same")
-
+        
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testSuite = unittest.TestSuite()
-    testSuite.addTest(loader(TestOclAzimCSR))
+    testSuite.addTest(loader(TestOclAzimLUT))
     return testSuite
 
 

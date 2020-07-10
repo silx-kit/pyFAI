@@ -151,6 +151,8 @@ else:
                       class_funct=(splitBBoxLUT.HistoBBox1d, splitBBoxLUT.HistoBBox1d.integrate_ng))
     IntegrationMethod(2, "bbox", "LUT", "cython", old_method="lut",
                       class_funct=(splitBBoxLUT.HistoBBox2d, splitBBoxLUT.HistoBBox2d.integrate))
+    IntegrationMethod(1, "no", "LUT", "cython", old_method="nosplit_lut",
+                      class_funct=(splitBBoxLUT.HistoBBox1d, splitBBoxLUT.HistoBBox1d.integrate_ng))
 
 try:
     from .ext import splitPixelFullLUT
@@ -736,7 +738,8 @@ class AzimuthalIntegrator(Geometry):
 
     def setup_LUT(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
-                  mask_checksum=None, unit=units.TTH):
+                  mask_checksum=None, unit=units.TTH,
+                  split="bbox", scale=True):
         """
         Prepare a look-up-table
 
@@ -754,6 +757,11 @@ class AzimuthalIntegrator(Geometry):
         :type mask_checksum: int (or anything else ...)
         :param unit: use to propagate the LUT object for further checkings
         :type unit: pyFAI.units.Unit
+        :param split: Splitting scheme: valid options are "no", "bbox", "full"
+        :param scale: set to False for working in S.I. units for pos0_range
+                      which is faster. By default assumes pos0_range has `units`
+                      Note that pos1_range, the chi-angle, is expected in radians
+
 
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
@@ -781,13 +789,29 @@ class AzimuthalIntegrator(Geometry):
         for further checkings: The aim is to prevent an integration to
         be performed in 2th-space when the LUT was setup in q space.
         """
+        if scale and pos0_range:
+            unit = units.to_unit(unit)
+            pos0_scale = unit.scale
+            pos0_range = tuple(pos0_range[i] / pos0_scale for i in (0, -1))
 
         if "__len__" in dir(npt) and len(npt) == 2:
             int2d = True
         else:
             int2d = False
         pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-        dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
+        if split == "no":
+            dpos0 = None
+        else:
+            dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
+        if (pos1_range is None) and (not int2d):
+            pos1 = None
+            dpos1 = None
+        else:
+            pos1 = self.chiArray(shape)
+            if split == "no":
+                dpos1 = None
+            else:
+                dpos1 = self.deltaChi(shape)
         if (pos1_range is None) and (not int2d):
             pos1 = None
             dpos1 = None
@@ -841,10 +865,10 @@ class AzimuthalIntegrator(Geometry):
         :param unit: use to propagate the LUT object for further checkings
         :type unit: pyFAI.units.Unit
         :param split: Splitting scheme: valid options are "no", "bbox", "full"
-        :param scale: set to False for working in S.I. units for pos0_range 
-                      which is faster. By default assumes pos0_range has `units` 
+        :param scale: set to False for working in S.I. units for pos0_range
+                      which is faster. By default assumes pos0_range has `units`
                       Note that pos1_range, the chi-angle, is expected in radians
-        
+
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
         datatset. It is possible to customize the number of point of
@@ -1118,10 +1142,14 @@ class AzimuthalIntegrator(Geometry):
                                  " LUT's azimuth_range don't match")
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s", reset)
+                    split = method.split_lower
+                    if split == "pseudo":
+                        split = "full"
                     try:
                         integr = self.setup_LUT(shape, npt, mask,
                                                 radial_range, azimuth_range,
-                                                mask_checksum=mask_crc, unit=unit)
+                                                mask_checksum=mask_crc,
+                                                unit=unit, split=split, scale=False)
 
                     except MemoryError:
                         # LUT method is hungry...
@@ -1478,10 +1506,9 @@ class AzimuthalIntegrator(Geometry):
             return res
 
         return result
-
     integrate1d = _integrate1d_legacy
 
-    def _integrate1d_ng(self, data, npt, filename=None,
+    def integrate1d_ng(self, data, npt, filename=None,
                         correctSolidAngle=True,
                         variance=None, error_model=None,
                         radial_range=None, azimuth_range=None,
@@ -1578,8 +1605,8 @@ class AzimuthalIntegrator(Geometry):
                     variance = abs(data) + abs(dark)
 
         # Prepare LUT if needed!
-        if method.algo_lower == "csr":
-            # initialize the CSR integrator in Cython as it may be needed later on.
+        if method.algo_lower in ("csr", "lut"):
+            # initialize the CSR/LUT integrator in Cython as it may be needed later on.
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
             if cython_method not in self.engines:
                 cython_engine = self.engines[cython_method] = Engine()
@@ -1601,19 +1628,19 @@ class AzimuthalIntegrator(Geometry):
                     if cython_integr.empty != empty:
                         cython_reset = "empty value changed "
                     if (mask is not None) and (not cython_integr.check_mask):
-                        cython_reset = "mask but CSR was without mask"
+                        cython_reset = "mask but %s was without mask"%method.algo_lower.upper()
                     elif (mask is None) and (cython_integr.check_mask):
-                        cython_reset = "no mask but CSR has mask"
+                        cython_reset = "no mask but %s has mask"%method.algo_lower.upper()
                     elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
                         cython_reset = "mask changed"
                     if (radial_range is None) and (cython_integr.pos0Range is not None):
-                        cython_reset = "radial_range was defined in CSR"
+                        cython_reset = "radial_range was defined in %s"%method.algo_lower.upper()
                     elif (radial_range is not None) and cython_integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
-                        cython_reset = "radial_range is defined but not the same as in CSR"
+                        cython_reset = "radial_range is defined but not the same as in %s"%method.algo_lower.upper()
                     if (azimuth_range is None) and (cython_integr.pos1Range is not None):
-                        cython_reset = "azimuth_range not defined and CSR had azimuth_range defined"
+                        cython_reset = "azimuth_range not defined and %s had azimuth_range defined"%method.algo_lower.upper()
                     elif (azimuth_range is not None) and cython_integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
-                        cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
+                        cython_reset = "azimuth_range requested and %s's azimuth_range don't match"%method.algo_lower.upper()
                 error = False
                 if cython_reset:
                     logger.info("AI.integrate1d_ng: Resetting Cython integrator because %s", cython_reset)
@@ -1621,11 +1648,18 @@ class AzimuthalIntegrator(Geometry):
                     if split == "pseudo":
                         split = "full"
                     try:
-                        cython_integr = self.setup_CSR(shape, npt, mask,
-                                                       radial_range, azimuth_range,
-                                                       mask_checksum=mask_crc,
-                                                       unit=unit, split=split,
-                                                       scale=False)
+                        if method.algo_lower == "csr":
+                            cython_integr = self.setup_CSR(shape, npt, mask,
+                                                           radial_range, azimuth_range,
+                                                           mask_checksum=mask_crc,
+                                                           unit=unit, split=split,
+                                                          scale=False)
+                        else:
+                            cython_integr = self.setup_LUT(shape, npt, mask,
+                                                           radial_range, azimuth_range,
+                                                           mask_checksum=mask_crc,
+                                                           unit=unit, split=split,
+                                                           scale=False)
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         cython_integr = None
@@ -1668,19 +1702,19 @@ class AzimuthalIntegrator(Geometry):
                         if integr.empty != empty:
                             reset = "empty value changed "
                         if (mask is not None) and (not integr.check_mask):
-                            reset = "mask but CSR was without mask"
+                            reset = "mask but %s was without mask"%method.algo_lower.upper()
                         elif (mask is None) and (integr.check_mask):
-                            reset = "no mask but CSR has mask"
+                            reset = "no mask but %s has mask"%method.algo_lower.upper()
                         elif (mask is not None) and (integr.mask_checksum != mask_crc):
                             reset = "mask changed"
                         if (radial_range is None) and (integr.pos0Range is not None):
-                            reset = "radial_range was defined in CSR"
+                            reset = "radial_range was defined in %s"%method.algo_lower.upper()
                         elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
-                            reset = "radial_range is defined but not the same as in CSR"
+                            reset = "radial_range is defined but not the same as in %s"%method.algo_lower.upper()
                         if (azimuth_range is None) and (integr.pos1Range is not None):
-                            reset = "azimuth_range not defined and CSR had azimuth_range defined"
+                            reset = "azimuth_range not defined and %s had azimuth_range defined"%method.algo_lower.upper()
                         elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
-                            reset = "azimuth_range requested and CSR's azimuth_range don't match"
+                            reset = "azimuth_range requested and %s's azimuth_range don't match"%method.algo_lower.upper()
                     error = False
 
                     if reset:
@@ -1749,8 +1783,7 @@ class AzimuthalIntegrator(Geometry):
             if variance is not None:
                 result._set_sum_variance(intpl.variance)
             result._set_count(intpl.count)
-
-        # END of CSR implementations
+        # END of CSR/LUT common implementations
         elif (method.method[1:4] == ("no", "histogram", "python") or
                 method.method[1:4] == ("no", "histogram", "cython")):
             integr = method.class_funct.function  # should be histogram[_engine].histogram1d_engine
@@ -1906,7 +1939,8 @@ class AzimuthalIntegrator(Geometry):
             writer.write(result)
 
         return result
-
+    _integrate1d_ng = integrate1d_ng
+    
     def integrate_radial(self, data, npt, npt_rad=100,
                          correctSolidAngle=True,
                          radial_range=None, azimuth_range=None,
@@ -2130,7 +2164,8 @@ class AzimuthalIntegrator(Geometry):
                 if reset:
                     logger.info("ai.integrate2d: Resetting integrator because %s", reset)
                     try:
-                        integr = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
+                        integr = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range,
+                                                mask_checksum=mask_crc, unit=unit, scale=False)
                     except MemoryError:
                         # LUT method is hungry im memory...
                         logger.warning("MemoryError: falling back on forward implementation")
@@ -2571,7 +2606,8 @@ class AzimuthalIntegrator(Geometry):
                 if reset:
                     logger.info("ai.integrate2d: Resetting integrator because %s", reset)
                     try:
-                        integr = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
+                        integr = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range,
+                                                mask_checksum=mask_crc, unit=unit, scale=False)
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         integr = None

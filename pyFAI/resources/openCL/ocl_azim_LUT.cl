@@ -126,3 +126,88 @@ lut_integrate(  const     global    float              *weights,
             merged[bin_num] = dummy;
   };//if NBINS
 };//end kernel
+
+
+/**
+ * \brief OpenCL function for 1d azimuthal integration based on LUT matrix multiplication after normalization !
+ *
+ * @param data        float4 array in global memory storing the data as signal/variance/normalization/count.
+ * @param lut         lut_point 2d array in global memory holding the coeficient part of the LUT
+ * @return (sum_signal_main, sum_signal_neg, sum_variance_main, sum_variance_neg,
+ *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
+ *
+ */
+float8 static inline LUTxVec4(const   global  float4  *data, 
+                              const   global    struct lut_point_t *lut)
+{
+	
+	int bin_num, k, j;
+	bin_num= get_global_id(0);
+    float2 sum_signal_K = (float2)(0.0f, 0.0f);
+    float2 sum_variance_K = (float2)(0.0f, 0.0f);
+    float2 sum_norm_K = (float2)(0.0f, 0.0f); 
+    float2 sum_count_K = (float2)(0.0f, 0.0f);
+    if(bin_num < NBINS){
+        for (j=0;j<NLUT;j++){
+            if (ON_CPU){
+                //On CPU best performances are obtained  when each single thread reads adjacent memory
+                k = bin_num*NLUT+j;
+            }
+            else{
+                //On GPU best performances are obtained  when threads are reading adjacent memory
+                k = j*NBINS+bin_num;
+            }
+    
+            int idx = lut[k].idx;
+            float coef = lut[k].coef;
+            if((coef != 0.0f) && (idx >= 0)){//
+                   float4 quatret = data[idx];
+                   float signal = quatret.s0;
+                   float variance = quatret.s1;
+                   float norm = quatret.s2;
+                   float count = quatret.s3;
+                   if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0))
+                   {
+                       // defined in kahan.cl
+                       sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
+                       sum_variance_K = kahan_sum(sum_variance_K, coef * coef * variance);
+                       sum_norm_K = kahan_sum(sum_norm_K, coef * norm);
+                       sum_count_K = kahan_sum(sum_count_K, coef * count);
+                   };//end if finite
+            } //end if valid point
+        }//end for j
+    }// if bin_num
+    return (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+}//end function
+
+/**
+ * \brief Performs 1d azimuthal integration based on LUT sparse matrix multiplication on preprocessed data
+ *
+* @param weights     Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
+ * @param lut         Pointer to an 2D-array of (unsigned integers,float) containing the index of input pixels and the fraction of pixel going to the bin
+ * @param summed      Pointer to the output 1D array with all the histograms: (sum_signal_Kahan, sum_variance_Kahan, sum_norm_Kahan, sum_count_Kahan) 
+ * @param averint   Float pointer to the output 1D array with the unweighted histogram
+ * @param stderr      Float pointer to the output 1D array with the diffractogram
+ *
+ */
+kernel void
+lut_integrate4( const   global  float4  *weights,
+                const   global    struct lut_point_t *lut,
+                        global  float8  *summed,
+                        global  float   *averint,
+                        global  float   *stderr)
+{
+    int bin_num = get_global_id(0);
+    if(bin_num < NBINS){
+    	float8 result = LUTxVec4(weights, lut);
+		summed[bin_num] = result;
+		if (result.s4 > 0.0f) {
+				averint[bin_num] =  result.s0 / result.s4;
+				stderr[bin_num] = sqrt(result.s2) / result.s4;
+		}
+		else {
+				averint[bin_num] = NAN;
+				stderr[bin_num] = NAN;
+		} //end else
+    }
+}//end kernel
