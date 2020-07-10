@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 #
 #    Project: Fast Azimuthal Integration
@@ -28,20 +28,18 @@
 
 """Test suites for multi_geometry modules"""
 
-from __future__ import absolute_import, print_function, with_statement, division
-
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "26/06/2020"
 
 import unittest
 import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
-
+import numpy
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..multi_geometry import MultiGeometry
 from ..detectors import Detector
@@ -86,14 +84,20 @@ class TestMultiGeometry(unittest.TestCase):
         self.range = self.ais = self.mg = self.N = None
 
     def test_integrate1d(self):
-        tth_ref, I_ref = self.ai.integrate1d(self.data, radial_range=self.range,
-                                             npt=self.N, unit="2th_deg", method="splitpixel")
-        obt = self.mg.integrate1d(self.lst_data, self.N)
-        tth_obt, I_obt = obt
+        tth_ref, I_ref, sigma_ref = self.ai.integrate1d(self.data, radial_range=self.range,
+                                                        npt=self.N, unit="2th_deg", method="splitpixel",
+                                                        variance = numpy.ones_like(self.data))
+        lst_var = [numpy.ones_like(i) for i in self.lst_data]
+        obt = self.mg.integrate1d(self.lst_data, self.N, lst_variance=lst_var)
+        tth_obt, I_obt, sigma_obt = obt
+        
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
         delta = (abs(I_obt * 1e-6 - I_ref).max())
         self.assertTrue(delta < 9e-5, "Intensity is the same delta=%s" % delta)
+        
+        delta = (abs(sigma_obt * 1e-6 - sigma_ref).max())
+        self.assertTrue(delta < 9e-5, "Standard deviation is the same delta=%s" % delta)
 
     def test_integrate1d_withpol(self):
         tth_ref, I_ref = self.ai.integrate1d(self.data, radial_range=self.range,
