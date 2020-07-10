@@ -120,11 +120,11 @@ except ImportError as error:
 else:
     # Register splitBBoxCSR integrators
     IntegrationMethod(1, "no", "CSR", "cython", old_method="nosplit_csr",
-                      class_funct=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate))
+                      class_funct=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate_legacy))
     IntegrationMethod(2, "no", "CSR", "cython", old_method="nosplit_csr",
                       class_funct=(splitBBoxCSR.HistoBBox2d, splitBBoxCSR.HistoBBox2d.integrate))
     IntegrationMethod(1, "bbox", "CSR", "cython", old_method="csr",
-                      class_funct=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate))
+                      class_funct=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate_legacy))
     IntegrationMethod(2, "bbox", "CSR", "cython", old_method="csr",
                       class_funct=(splitBBoxCSR.HistoBBox2d, splitBBoxCSR.HistoBBox2d.integrate))
     from .engines import CSR_engine as py_CSR_engine

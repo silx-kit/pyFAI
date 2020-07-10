@@ -37,11 +37,12 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/04/2020"
+__date__ = "26/06/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
+include "CSR_common.pxi"
 
 import cython
 import os
@@ -53,10 +54,8 @@ import numpy
 from libc.math cimport sqrt
 from ..utils import crc32
 from ..utils.decorators import deprecated
-from .preproc import preproc
-from ..containers import Integrate1dtpl
 
-class HistoBBox1d(object):
+class HistoBBox1d(CsrIntegrator):
     """
     Now uses CSR (Compressed Sparse raw) with main attributes:
     * nnz: number of non zero elements
@@ -99,9 +98,9 @@ class HistoBBox1d(object):
             logger.warning("Pixel splitting desactivated !")
             delta_pos0 = None
         self.bins = bins
-        self.lut_size = 0
+        #self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
-        self.empty = empty
+        #self.empty = empty
         if mask is not None:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
@@ -113,7 +112,7 @@ class HistoBBox1d(object):
         else:
             self.check_mask = False
             self.mask_checksum = None
-        self.data = self.nnz = self.indices = self.indptr = None
+        #self.data = self.nnz = self.indices = self.indptr = None
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
@@ -140,16 +139,20 @@ class HistoBBox1d(object):
 
         self.delta = (self.pos0_max - self.pos0_min) / (<position_t> bins)
         if delta_pos0 is not None:
-            self.calc_lut()
+            lut = self.calc_lut()
         else:
-            self.calc_lut_nosplit()
-
+            lut = self.calc_lut_nosplit()
+        
+        #Call the constructor of the parent class
+        super().__init__(lut, pos0.size, empty)    
+        
         self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
                                           self.pos0_max - 0.5 * self.delta,
                                           self.bins)
-        self.lut_checksum = crc32(self.data)
+        self.lut = (numpy.asarray(self.data), numpy.asarray(self.indices), numpy.asarray(self.indptr))
+        self.lut_checksum = crc32(self.lut[0])
         self.unit = unit
-        self.lut = (self.data, self.indices, self.indptr)
+        
         self.lut_nbytes = sum([i.nbytes for i in self.lut])      
 
     def calc_boundaries(self, pos0Range):
@@ -311,9 +314,7 @@ class HistoBBox1d(object):
 
         indptr = numpy.concatenate(([numpy.int32(0)], 
                                     numpy.asarray(outmax).cumsum(dtype=numpy.int32)))
-        self.indptr = numpy.asarray(indptr)
-        self.nnz = nnz = indptr[bins]
-
+        nnz = indptr[bins]
         # just recycle the outmax array
         outmax[:] = 0
 
@@ -390,8 +391,7 @@ class HistoBBox1d(object):
                             data[indptr[i] + k] = (inv_area)
                             outmax[i] += 1
 
-        self.data = numpy.asarray(data)
-        self.indices = numpy.asarray(indices)
+        return data, indices, indptr
 
     def calc_lut_nosplit(self):
         '''
@@ -441,9 +441,7 @@ class HistoBBox1d(object):
                     outmax[bin0] += 1
 
         indptr = numpy.concatenate((numpy.zeros(1, dtype=numpy.int32), numpy.asarray(outmax).cumsum(dtype=numpy.int32)))
-        self.indptr = numpy.asarray(indptr)
-        self.nnz = nnz = indptr[bins]
-
+        nnz = indptr[bins]
         # just recycle the outmax array
         outmax[:] = 0
 
@@ -486,264 +484,13 @@ class HistoBBox1d(object):
                 data[indptr[bin0] + k] = onef
                 outmax[bin0] += 1  # k+1
 
-        self.data = numpy.asarray(data)
-        self.indices = numpy.asarray(indices)
-
-    def integrate_legacy(self,
-                         weights,
-                         dummy=None,
-                         delta_dummy=None,
-                         dark=None,
-                         flat=None,
-                         solidAngle=None,
-                         polarization=None,
-                         double normalization_factor=1.0,
-                         int coef_power=1):
-        """
-        Actually perform the integration which in this case looks more like a matrix-vector product
-
-        :param weights: input image
-        :type weights: ndarray
-        :param dummy: value for dead pixels (optional)
-        :type dummy: float
-        :param delta_dummy: precision for dead-pixel value in dynamic masking
-        :type delta_dummy: float
-        :param dark: array with the dark-current value to be subtracted (if any)
-        :type dark: ndarray
-        :param flat: array with the dark-current value to be divided by (if any)
-        :type flat: ndarray
-        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        :type solidAngle: ndarray
-        :param polarization: array with the polarization correction values to be divided by (if any)
-        :type polarization: ndarray
-        :param normalization_factor: divide the valid result by this value
-        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-
-        :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: 4-tuple of ndarrays
-
-        """
-        cdef:
-            cnumpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
-            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
-            data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
-            bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            acc_t[::1] sum_data = numpy.zeros(self.bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.zeros(self.bins, dtype=acc_d)
-            data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
-            data_t[::1] ccoef = self.data
-            data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
-        assert weights.size == size, "weights size"
-
-        if dummy is not None:
-            do_dummy = True
-            cdummy = <data_t> float(dummy)
-
-            if delta_dummy is None:
-                cddummy = <data_t> 0.0
-            else:
-                cddummy = <data_t> float(delta_dummy)
-        else:
-            do_dummy = False
-            cdummy = <data_t> self.empty
-
-        if flat is not None:
-            do_flat = True
-            assert flat.size == size, "flat-field array size"
-            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=data_d)
-        if dark is not None:
-            do_dark = True
-            assert dark.size == size, "dark current array size"
-            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=data_d)
-        if solidAngle is not None:
-            do_solidAngle = True
-            assert solidAngle.size == size, "Solid angle array size"
-            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=data_d)
-        if polarization is not None:
-            do_polarization = True
-            assert polarization.size == size, "polarization array size"
-            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=data_d)
-
-        if (do_dark + do_flat + do_polarization + do_solidAngle):
-            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-            cdata = numpy.zeros(size, dtype=data_d)
-            if do_dummy:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        # Nota: -= and /= operatore are seen as reduction in cython parallel.
-                        if do_dark:
-                            data = data - cdark[i]
-                        if do_flat:
-                            data = data / cflat[i]
-                        if do_polarization:
-                            data = data / cpolarization[i]
-                        if do_solidAngle:
-                            data = data / csolidAngle[i]
-                        cdata[i] += data
-                    else:  # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] += cdummy
-            else:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if do_dark:
-                        data = data - cdark[i]
-                    if do_flat:
-                        data = data / cflat[i]
-                    if do_polarization:
-                        data = data / cpolarization[i]
-                    if do_solidAngle:
-                        data = data / csolidAngle[i]
-                    cdata[i] += data
-        else:
-            if do_dummy:
-                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-                cdata = numpy.zeros(size, dtype=data_d)
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] += data
-                    else:
-                        cdata[i] += cdummy
-            else:
-                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-
-        for i in prange(bins, nogil=True, schedule="guided"):
-            acc_data = 0.0
-            acc_count = 0.0
-            for j in range(indptr[i], indptr[i + 1]):
-                idx = indices[j]
-                coef = ccoef[j]
-                if coef == 0.0:
-                    continue
-                data = cdata[idx]
-                if do_dummy and (data == cdummy):
-                    continue
-                acc_data = acc_data + (coef ** coef_power) * data
-                acc_count = acc_count + coef
-
-            sum_data[i] += acc_data
-            sum_count[i] += acc_count
-            if acc_count > epsilon:
-                merged[i] += acc_data / acc_count / normalization_factor
-            else:
-                merged[i] += cdummy
-        return (self.bin_centers, 
-                numpy.asarray(merged), 
-                numpy.asarray(sum_data), 
-                numpy.asarray(sum_count))
-
-    integrate = integrate_legacy
+        return data, indices, indptr
 
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
     def outPos(self):
         return self.bin_centers
 
-    def integrate_ng(self,
-                     weights,
-                     variance=None,
-                     dummy=None,
-                     delta_dummy=None,
-                     dark=None,
-                     flat=None,
-                     solidangle=None,
-                     polarization=None,
-                     absorption=None,
-                     data_t normalization_factor=1.0,
-                     ):
-        """
-        Actually perform the integration which in this case consists of:
-         * Calculate the signal, variance and the normalization parts
-         * Perform the integration which is here a matrix-vector product
-
-        :param weights: input image
-        :type weights: ndarray
-        :param variance: the variance associate to the image
-        :type variance: ndarray 
-        :param dummy: value for dead pixels (optional)
-        :type dummy: float
-        :param delta_dummy: precision for dead-pixel value in dynamic masking
-        :type delta_dummy: float
-        :param dark: array with the dark-current value to be subtracted (if any)
-        :type dark: ndarray
-        :param flat: array with the dark-current value to be divided by (if any)
-        :type flat: ndarray
-        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        :type solidAngle: ndarray
-        :param polarization: array with the polarization correction values to be divided by (if any)
-        :type polarization: ndarray
-        :param absorption: Apparent efficiency of a pixel due to parallax effect
-        :type absorption: ndarray        
-        :param normalization_factor: divide the valid result by this value
-
-        :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: Integrate1dtpl 4-named-tuple of ndarrays
-        """
-        cdef:
-            cnumpy.int32_t i, j, idx = 0, bins = self.bins, size = self.size
-            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
-            data_t empty
-            acc_t[::1] sum_sig = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_var = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_norm = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
-            data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
-            data_t[::1] error = numpy.zeros(bins, dtype=data_d)
-            data_t[::1] ccoef = self.data
-            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
-            data_t[:, ::1] preproc4
-            
-            
-        assert weights.size == size, "weights size"
-        empty = dummy if dummy is not None else self.empty
-        #Call the preprocessor ...
-        preproc4 = preproc(weights.ravel(),
-                           dark=dark,
-                           flat=flat,
-                           solidangle=solidangle,
-                           polarization=polarization,
-                           absorption=absorption,
-                           mask=self.cmask if self.check_mask else None,
-                           dummy=dummy, 
-                           delta_dummy=delta_dummy,
-                           normalization_factor=normalization_factor, 
-                           empty=self.empty,
-                           split_result=4,
-                           variance=variance,
-                           dtype=data_d)
-
-        for i in prange(bins, nogil=True, schedule="guided"):
-            acc_sig = 0.0
-            acc_var = 0.0
-            acc_norm = 0.0
-            acc_count = 0.0
-            for j in range(indptr[i], indptr[i + 1]):
-                idx = indices[j]
-                coef = ccoef[j]
-                if coef == 0.0:
-                    continue
-                acc_sig = acc_sig + coef * preproc4[idx, 0]
-                acc_var = acc_var + coef * coef * preproc4[idx, 1]
-                acc_norm = acc_norm + coef * preproc4[idx, 2] 
-                acc_count = acc_count + coef * preproc4[idx, 3]
-
-            sum_sig[i] += acc_sig
-            sum_var[i] += acc_var
-            sum_norm[i] += acc_norm
-            sum_count[i] += acc_count
-            if acc_count > epsilon:
-                merged[i] += acc_sig / acc_norm
-                error[i] += sqrt(acc_var) / acc_norm
-            else:
-                merged[i] += empty
-                error[i] += empty
-        #"position intensity error signal variance normalization count"
-        return Integrate1dtpl(self.bin_centers, 
-                              numpy.asarray(merged),numpy.asarray(error) ,
-                              numpy.asarray(sum_sig),numpy.asarray(sum_var), 
-                              numpy.asarray(sum_norm), numpy.asarray(sum_count))
 
 
 ################################################################################
