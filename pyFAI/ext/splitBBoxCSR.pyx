@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/07/2020"
+__date__ = "13/07/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -1165,7 +1165,6 @@ class HistoBBox2d(object):
                             data = data / cpolarization[i]
                         if do_solidAngle:
                             data = data / csolidAngle[i]
-                        cdata[i] += data
                     else:
                         # set all dummy_like values to cdummy. simplifies further processing
                         cdata[i] += cdummy
