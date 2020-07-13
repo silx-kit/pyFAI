@@ -1165,9 +1165,10 @@ class HistoBBox2d(object):
                             data = data / cpolarization[i]
                         if do_solidAngle:
                             data = data / csolidAngle[i]
+                        cdata[i] = data
                     else:
                         # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
