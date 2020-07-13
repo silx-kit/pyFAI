@@ -31,7 +31,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/06/2020"
+__date__ = "10/07/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -925,9 +925,9 @@ class HistoLUT2dFullSplit(object):
         cdef float sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
         cdef float data = 0, coef = 0, cdummy = 0, cddummy = 0
         cdef bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] outData = numpy.zeros(bins, dtype=numpy.float64)
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] outCount = numpy.zeros(bins, dtype=numpy.float64)
-        cdef numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] outData = numpy.empty(bins, dtype=numpy.float64)
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] outCount = numpy.empty(bins, dtype=numpy.float64)
+        cdef numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.empty(bins, dtype=numpy.float32)
         cdef float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
 
         cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
@@ -974,9 +974,9 @@ class HistoLUT2dFullSplit(object):
                             data = data / cpolarization[i]
                         if do_solidAngle:
                             data = data / csolidAngle[i]
-                        cdata[i] += data
+                        cdata[i] = data
                     else:  # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -988,7 +988,7 @@ class HistoLUT2dFullSplit(object):
                         data = data / cpolarization[i]
                     if do_solidAngle:
                         data = data / csolidAngle[i]
-                    cdata[i] += data
+                    cdata[i] = data
         else:
             if do_dummy:
                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
@@ -996,9 +996,9 @@ class HistoLUT2dFullSplit(object):
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] += data
+                        cdata[i] = data
                     else:
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
 
@@ -1015,10 +1015,10 @@ class HistoLUT2dFullSplit(object):
                     continue
                 sum_data = sum_data + coef * data
                 sum_count = sum_count + coef
-            outData[i] += sum_data
-            outCount[i] += sum_count
+            outData[i] = sum_data
+            outCount[i] = sum_count
             if sum_count > epsilon:
-                outMerge[i] += sum_data / sum_count
+                outMerge[i] = sum_data / sum_count
             else:
-                outMerge[i] += cdummy
+                outMerge[i] = cdummy
         return outMerge, outData, outCount
