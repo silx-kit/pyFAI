@@ -248,6 +248,16 @@ class Eiger16M(Eiger):
     aliases = ["Eiger 16M"]
 
 
+class Eiger2_4M(Eiger):
+    """
+    Eiger2 4M detector
+    """
+    MAX_SHAPE =  (2162, 2068)
+    MODULE_SIZE = (512, 1028)
+    MODULE_GAP = (38, 12)
+    aliases = ["Eiger2 4M"]
+    
+    
 class Mythen(_Dectris):
     "Mythen dtrip detector from Dectris"
     aliases = ["Mythen 1280"]
