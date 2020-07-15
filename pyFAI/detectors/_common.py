@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2020"
+__date__ = "15/07/2020"
 __status__ = "stable"
 
 
@@ -70,6 +70,7 @@ except ImportError:
 
 
 EPSILON = 1e-6
+"Precision for the positionning of a pixel: 1µm"
 
 
 class DetectorMeta(type):
@@ -209,8 +210,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
         self._maskfile = None
         self._splineFile = None
         self.spline = None
-        self._dx = None
-        self._dy = None
         self._flatfield = None
         self._flatfield_crc = None  # not saved as part of HDF5 structure
         self._darkcurrent = None
@@ -241,7 +240,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                      "_darkcurrent_crc", "flatfiles", "darkfiles"]
-        mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
+        mutable = ['_mask', '_flatfield', "_darkcurrent"]
         new = self.__class__()
         for key in unmutable + mutable:
             new.__setattr__(key, self.__getattribute__(key))
@@ -259,7 +258,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                      "_darkcurrent_crc", "flatfiles", "darkfiles"]
-        mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
+        mutable = ['_mask', '_flatfield', "_darkcurrent"]
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -365,13 +364,18 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_dx(self, dx=None):
         """
-        set the pixel-wise displacement along X (dim2):
+        set the pixel-wise displacement along X (dim2)
+        
+        units: fraction of pixels
         """
         if dx is not None:
             if not self.max_shape:
                 raise RuntimeError("Set detector shape before setting the distortion")
             if dx.shape == self.max_shape:
-                self._dx = dx
+                if self._pixel_corners is None:
+                    self.get_pixel_corners()
+                self._pixel_corners[:, :, :, 2] += numpy.atleast_3d(self._pixel2 * dx)
+                
             elif dx.shape == tuple(i + 1 for i in self.max_shape):
                 if self._pixel_corners is None:
                     self.get_pixel_corners()
@@ -385,19 +389,22 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 raise RuntimeError("detector shape:%s while distortionarray: %s" % (self.max_shape, dx.shape))
             self.uniform_pixel = False
         else:
-            self._dx = None
             self.uniform_pixel = True
 
     def set_dy(self, dy=None):
         """
-        set the pixel-wise displacement along Y (dim1):
+        set the pixel-wise displacement along Y (dim1)
+        
+        unit: fraction of pixel
         """
         if dy is not None:
             if not self.max_shape:
                 raise RuntimeError("Set detector shape before setting the distortion")
 
             if dy.shape == self.max_shape:
-                self._dy = dy
+                if self._pixel_corners is None:
+                    self.get_pixel_corners()
+                self._pixel_corners[:, :, :, 1] += numpy.atleast_3d(self._pixel1 * dy)
             elif dy.shape == tuple(i + 1 for i in self.max_shape):
                 if self._pixel_corners is None:
                     self.get_pixel_corners()
@@ -615,15 +622,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
             else:
                 dX = self.spline.splineFuncX(d2c, d1c)
                 dY = self.spline.splineFuncY(d2c, d1c)
-        elif self._dx is not None:
-            if self._binning == (1, 1):
-                binned_x = self._dx
-                binned_y = self._dy
-            else:
-                binned_x = binning(self._dx, self._binning)
-                binned_y = binning(self._dy, self._binning)
-            dX = numpy.interp(d2, numpy.arange(binned_x.shape[1]), binned_x, left=0, right=0)
-            dY = numpy.interp(d1, numpy.arange(binned_y.shape[0]), binned_y, left=0, right=0)
         else:
             dX = 0.
             dY = 0.
