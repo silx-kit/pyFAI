@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "02/05/2019"
+__date__ = "26/06/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -70,6 +70,22 @@ acc_d = numpy.float64
 # type of the mask:
 ctypedef cnumpy.int8_t mask_t
 mask_d = numpy.int8
+
+# type of the indexes:
+ctypedef cnumpy.int32_t index_t
+index_d = numpy.int32
+
+cdef struct lut_t:
+    index_t idx
+    data_t coef
+
+LUT_ITEMSIZE = int(sizeof(lut_t))
+
+# Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
+if _numpy_1_12_py2_bug:
+    lut_d = numpy.dtype([(b"idx", index_d), (b"coef", data_d)])
+else:
+    lut_d = numpy.dtype([("idx", index_d), ("coef", numpy.float32)])
 
 # Type used for propagating variance
 if _numpy_1_12_py2_bug:

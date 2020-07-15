@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2018"
+__date__ = "23/06/2020"
 
 
 import unittest
@@ -43,6 +43,8 @@ import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from .. import load
+from ..detectors import detector_factory
+from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..ext import splitBBox
 from ..ext import sparse_utils
 import fabio
@@ -125,6 +127,26 @@ class TestSparseUtils(unittest.TestCase):
         self.assertTrue(numpy.allclose(csr_out[1], csr_ref[1]), "coef are the same in CSR")
         self.assertTrue(numpy.allclose(csr_out[0], csr_ref[0]), "coef are the same in CSR")
 
+    def test_matrix_conversion(self):
+        "Compare the matrices generated without pixel splitting"
+        detector = detector_factory("Pilatus100k")
+        ai = AzimuthalIntegrator(detector=detector)
+        img = numpy.random.random(detector.shape)
+        res_csr = ai.integrate1d_ng(img, 100, method=("no", "csr", "cython"), unit="r_mm")
+        res_lut = ai.integrate1d_ng(img, 100, method=("no", "lut", "cython"), unit="r_mm")
+        self.assertEqual(abs(res_csr.intensity-res_lut.intensity).max(), 0, "intensity matches")
+        self.assertEqual(abs(res_csr.radial-res_lut.radial).max(), 0, "radial matches")
+        sparse = {}
+        for k,v in ai.engines.items():
+            sparse[k.algo_lower] = v.engine.lut
+        lut2 = sparse_utils.CSR_to_LUT(*sparse["csr"])
+        self.assertEqual(abs(lut2["coef"]-sparse["lut"].coef).max(), 0, "LUT coef matches")
+        self.assertEqual(abs(lut2["idx"]-sparse["lut"].idx).max(), 0, "LUT idx matches")
+
+        csr2 = sparse_utils.LUT_to_CSR(sparse["lut"])
+        self.assertEqual(abs(sparse["csr"][0]-csr2[0]).max(), 0, "CSR data matches")
+        self.assertEqual(abs(sparse["csr"][1]-csr2[1]).max(), 0, "CSR indices matches")
+        self.assertEqual(abs(sparse["csr"][2]-csr2[2]).max(), 0, "CSR indptr matches")
 
 class TestContainer(unittest.TestCase):
     def test_vector(self):

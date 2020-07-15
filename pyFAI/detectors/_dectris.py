@@ -248,6 +248,51 @@ class Eiger16M(Eiger):
     aliases = ["Eiger 16M"]
 
 
+class Eiger2(Eiger):
+    MODULE_SIZE = (512, 1028)
+    MODULE_GAP = (38, 12)
+
+
+class Eiger2_500k(Eiger2):
+    """
+    Eiger2 500k detector
+    """
+    MAX_SHAPE =  (512, 1028)
+    aliases = ["Eiger2 500k"]
+    
+    
+class Eiger2_1M(Eiger2):
+    """
+    Eiger2 1M detector
+    """
+    MAX_SHAPE =  (1062, 1028)
+    aliases = ["Eiger2 1M"]
+
+
+class Eiger2_4M(Eiger2):
+    """
+    Eiger2 4M detector
+    """
+    MAX_SHAPE =  (2162, 2068)
+    aliases = ["Eiger2 4M"]
+    
+    
+class Eiger2_9M(Eiger2):
+    """
+    Eiger2 9M detector
+    """
+    MAX_SHAPE =  (3262, 3108)
+    aliases = ["Eiger2 9M"]
+
+
+class Eiger2_16M(Eiger2):
+    """
+    Eiger2 16M detector
+    """
+    MAX_SHAPE =  (4362, 4148)
+    aliases = ["Eiger2 16M"]
+
+    
 class Mythen(_Dectris):
     "Mythen dtrip detector from Dectris"
     aliases = ["Mythen 1280"]

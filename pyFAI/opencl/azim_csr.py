@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/silx-kit
+#             https://github.com/silx-kit/pyFAI
 #
-#
-#    Copyright (C) 2014-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -29,8 +28,8 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "20/12/2019"
-__copyright__ = "2014-2019, ESRF, Grenoble"
+__date__ = "07/07/2020"
+__copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -211,13 +210,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
 
+        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
+                          (self.bins, self.size, self.BLOCK_SIZE)
         try:
             default_compiler_options = self.get_compiler_options(x87_volatile=True)
         except AttributeError:  # Silx version too old
             logger.warning("Please upgrade to silx v0.10+")
             default_compiler_options = get_x87_volatile_option(self.ctx)
-        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
-                          (self.bins, self.size, self.BLOCK_SIZE)
+
         if default_compiler_options:
             compile_options += " " + default_compiler_options
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
@@ -258,7 +258,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("sum_data", self.cl_mem["sum_data"]),
                                                             ("sum_count", self.cl_mem["sum_count"]),
                                                             ("merged", self.cl_mem["merged"])))
-
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
                                                            ("poissonian", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
@@ -478,34 +477,46 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.events += events
                 ev.wait()
                 return image
-            wg = self.workgroup_size["csr_integrate"][0]
 
+            wg = self.workgroup_size["csr_integrate"][0]
             wdim_bins = (self.bins * wg),
             if wg == 1:
+                wg = self.workgroup_size["csr_integrate_single"][0]
+                wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
                 integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate_single", integrate))
+                events.append(EventDescription("csr_integrate_single", integrate))
             else:
+                wdim_bins = (self.bins * wg),
                 integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate", integrate))
+                events.append(EventDescription("csr_integrate", integrate))
             if out_merged is None:
                 merged = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_merge is False:
+                merged = None
             else:
                 merged = out_merged.data
             if out_sum_count is None:
                 sum_count = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_sum_count is False:
+                sum_count = None
             else:
                 sum_count = out_sum_count.data
             if out_sum_data is None:
                 sum_data = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_sum_data is False:
+                sum_data = None
             else:
                 sum_data = out_sum_data.data
 
-            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
-            events.append(EventDescription("copy D->H merged", ev))
-            ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
-            events.append(EventDescription("copy D->H sum_data", ev))
-            ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
-            events.append(EventDescription("copy D->H sum_count", ev))
+            if merged is not None:
+                ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
+                events.append(EventDescription("copy D->H merged", ev))
+            if  sum_data is not None:
+                ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
+                events.append(EventDescription("copy D->H sum_data", ev))
+            if sum_count is not None:
+                ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
+                events.append(EventDescription("copy D->H sum_count", ev))
             ev.wait()
         if self.profile:
             self.events += events
@@ -647,42 +658,52 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wg = self.workgroup_size["corrections4"]
             ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
-            events.append(EventDescription("corrections", ev))
+            events.append(EventDescription("corrections4", ev))
 
             wg = self.workgroup_size["csr_integrate4"][0]
-
-            wdim_bins = (self.bins * wg),
             if wg == 1:
+                wg = self.workgroup_size["csr_integrate4_single"][0]
+                wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
                 integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate4_single", integrate))
+                events.append(EventDescription("csr_integrate4_single", integrate))
             else:
+                wdim_bins = (self.bins * wg),
                 integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate4", integrate))
+                events.append(EventDescription("csr_integrate4", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
+            elif out_merged is False:
+                merged = None
             else:
                 merged = out_merged.data
             if out_avgint is None:
                 avgint = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_avgint is False:
+                avgint = None
             else:
                 avgint = out_avgint.data
             if out_stderr is None:
                 stderr = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_stderr is  False:
+                stderr = None
             else:
                 stderr = out_stderr.data
 
-            ev = pyopencl.enqueue_copy(self.queue, avgint, self.cl_mem["averint"])
-            events.append(EventDescription("copy D->H avgint", ev))
-
-            ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderr"])
-            events.append(EventDescription("copy D->H stderr", ev))
-            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
-            events.append(EventDescription("copy D->H merged8", ev))
+            if avgint is not None:
+                ev = pyopencl.enqueue_copy(self.queue, avgint, self.cl_mem["averint"])
+                events.append(EventDescription("copy D->H avgint", ev))
+            if stderr is not None:
+                ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderr"])
+                events.append(EventDescription("copy D->H stderr", ev))
+            if merged is None:
+                res = Integrate1dtpl(self.bin_centers, avgint, stderr, None, None, None, None)
+            else:
+                ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+                events.append(EventDescription("copy D->H merged8", ev))
+                res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
         if self.profile:
             self.events += events
-        res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
-        "position intensity error signal variance normalization count"
         return res
 
     def sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,

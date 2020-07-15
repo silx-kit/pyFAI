@@ -35,11 +35,11 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "30/04/2020"
+__date__ = "26/06/2020"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-include "sparse_common.pxi"
+include "regrid_common.pxi"
 
 import cython
 cimport numpy as cnumpy

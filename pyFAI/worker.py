@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -78,13 +78,11 @@ Here are the valid keys:
 - "method"
 """
 
-from __future__ import with_statement, print_function, division
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2020"
+__date__ = "06/07/2020"
 __status__ = "development"
 
 import threading
@@ -105,6 +103,14 @@ from . import units
 from .io import integration_config
 import pyFAI.io.image
 from .engines.preproc import preproc as preproc_numpy
+try:
+    import numexpr
+except ImportError as err:
+    logger.warning("Unable to import Cython version of preproc: %s", err)
+    USE_NUMEXPR = False
+else:
+    USE_NUMEXPR = True
+    
 try:
     from .ext.preproc import preproc
 except ImportError as err:
@@ -749,14 +755,16 @@ class DistortionWorker(object):
     """
 
     def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
-                 mask=None, dummy=None, delta_dummy=None, device=None):
+                 mask=None, dummy=None, delta_dummy=None, method="LUT", device=None):
         """Constructor of the worker
         :param dark: array
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
+        :param dummy: value for bad pixels
+        :param delta_dummy: precision for dummies
+        :param method: LUT or CSR for the correction
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
-
         """
 
         self.ctx = None
@@ -786,40 +794,65 @@ class DistortionWorker(object):
 
         self.dummy = dummy
         self.delta_dummy = delta_dummy
-        if device is not None:
-            logger.warning("GPU is not yet implemented")
 
-        if detector is None:
-            self.distortion = None
+        if detector is not None:
+            self.distortion = Distortion(detector, method=method, device=device,
+                                     mask=self.mask, empty=self.dummy or 0)
+            self.distortion.reset(prepare=True) # enfoce initization
         else:
-            self.distortion = Distortion(detector, method="LUT", device=device,
-                                         mask=self.mask, empty=self.dummy or 0)
+            self.distortion = None
 
-    def process(self, data, variance=None,
+    def process(self,
+                data,
+                variance=None,
                 normalization_factor=1.0):
         """
         Process the data and apply a normalization factor
         :param data: input data
         :param variance: the variance associated to the data
         :param normalization: normalization factor
-        :return: processed data
+        :return: processed data as either an array (data) or two (data, error)
         """
-        proc_data = preproc(data,
-                            variance=variance,
-                            dark=self.dark,
-                            flat=self.flat,
-                            solidangle=self.solidangle,
-                            polarization=self.polarization,
-                            absorption=None,
-                            mask=self.mask,
-                            dummy=self.dummy,
-                            delta_dummy=self.delta_dummy,
-                            normalization_factor=normalization_factor,
-                            empty=None)
-
         if self.distortion is not None:
-            return self.distortion.correct(proc_data, self.dummy, self.delta_dummy)
+            return self.distortion.correct_ng(data,
+                                              variance=variance,
+                                              dark=self.dark,
+                                              flat=self.flat,
+                                              solidangle=self.solidangle,
+                                              polarization=self.polarization,
+                                              dummy=self.dummy,
+                                              delta_dummy=self.delta_dummy,
+                                              normalization_factor=normalization_factor)
         else:
-            return data
+            proc_data = preproc(data,
+                                variance=variance,
+                                dark=self.dark,
+                                flat=self.flat,
+                                solidangle=self.solidangle,
+                                polarization=self.polarization,
+                                absorption=None,
+                                mask=self.mask,
+                                dummy=self.dummy,
+                                delta_dummy=self.delta_dummy,
+                                normalization_factor=normalization_factor,
+                                empty=None)
+            if variance is not None:
+                pp_signal = proc_data[...,0]
+                pp_variance = proc_data[...,1]
+                pp_normalisation = proc_data[...,2]
+                if numexpr is None:
+                    # Cheap, muthithreaded way:
+                    res_signal = numexpr.evaluate("where(pp_normalisation==0.0, 0.0, pp_signal / pp_normalisation)")
+                    res_error = numexpr.evaluate("where(pp_normalisation==0.0, 0.0, sqrt(pp_variance) / abs(pp_normalisation))")
+                else:
+                    # Take the numpy road:
+                    res_signal = numpy.zeros_like(pp_signal)
+                    res_error = numpy.zeros_like(pp_signal)
+                    msk = numpy.where(pp_normalisation!=0)
+                    res_signal[msk] = pp_signal[msk] / pp_normalisation[msk]
+                    res_error[msk] = numpy.sqrt(pp_variance[msk]) / abs(pp_normalisation[msk])
+                return res_signal, res_error
+            else:
+                return proc_data
 
     __call__ = process

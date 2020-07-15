@@ -29,31 +29,20 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "02/01/2020"
+__date__ = "10/07/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
-include "regrid_common.pxi"
 
 import cython
 from cython.parallel import prange
 import numpy
 cimport numpy as cnumpy
 
-cdef struct lut_t:
-    cnumpy.int32_t idx
-    cnumpy.float32_t coef
+from .preproc import preproc
+from ..containers import Integrate1dtpl
 
-LUT_ITEMSIZE = int(sizeof(lut_t))
-
-# Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
-if _numpy_1_12_py2_bug:
-    lut_d = numpy.dtype([(b"idx", numpy.int32), (b"coef", numpy.float32)])
-else:
-    lut_d = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
-
-
-class CsrIntegrator2d(object):
+cdef class CsrIntegrator(object):
     """Abstract class which implements only the integrator...
 
     Now uses CSR (Compressed Sparse raw) with main attributes:
@@ -62,58 +51,54 @@ class CsrIntegrator2d(object):
     * indices: Column index position for the data (same size as
     * indptr: row pointer indicates the start of a given row. len nrow+1
 
-    Nota: nnz = indptr[-1]
+    Nota: nnz = indptr[-1]+1 = len(indices) = len(data)
     """
+    cdef:
+        readonly index_t input_size, output_size, nnz
+        readonly data_t empty
+        readonly data_t[::1] _data
+        readonly index_t[::1] _indices, _indptr
+
     def __init__(self,
-                 int size,
-                 lut=None,
-                 data_t empty=0.0,
-                 bin_centers0=None,
-                 bin_centers1=None):
+                  tuple lut,
+                  int image_size,
+                  data_t empty=0.0):
 
-        """Constructor of the abstract class
+        """Constructor for a CSR generic integrator
 
-        :param bins: number of output bins
+        :param lut: Sparse matrix in CSR format, tuple of 3 arrays with (data, indices, indptr)
         :param size: input image size
-        :param lut: tuple of 3 arrays with data, indices and indptr,
-                     index of the start of line in the CSR matrix        
         :param empty: value for empty pixels
-        :param bin_centers0: position of the bin center along dim0
-        :param bin_centers0: position of the bin center along dim1
         """
         self.empty = empty
-        self.bin_centers0 = bin_centers0
-        self.bin_centers1 = bin_centers1
-        self.size = size
-        self._csr = None
-        self.lut_size = 0  # actually nnz
-        self.data = None
-        self.indices = None
-        self.indptr = None
-        if lut is not None:
-            assert len(lut) == 3
-            self.set_matrix(*lut)
+        self.input_size = image_size
+        assert len(lut) == 3, "Sparse matrix is expected as 3-tuple CSR with (data, indices, indptr)"
+        assert len(lut[1]) == len(lut[0]),  "Sparse matrix in CSR format is expected to have len(data) == len(indices) is expected as 3-tuple CSR with (data, indices, indptr)"
+        self._data = numpy.ascontiguousarray(lut[0], dtype=data_d)
+        self._indices = numpy.ascontiguousarray(lut[1], dtype=numpy.int32)
+        self._indptr = numpy.ascontiguousarray(lut[2], dtype=numpy.int32)
+        self.nnz = len(lut[1])
+        self.output_size = len(lut[2])-1
+    
+    def __dealloc__(self):
+        self._data = None
+        self._indices = None
+        self._indpts = None
+        self.empty = 0
+        self.input_size = 0
+        self.output_size = 0 
+        self.nnz = 0
 
-    def set_matrix(self,
-                   cnumpy.float32_t[::1] data not None,
-                   cnumpy.int_t[::1] indices not None,
-                   cnumpy.int_t[::1] indptr not None):
-        """Actually create the CSR_matrix"""
-        from scipy.sparse import csr_matrix
+    @property
+    def data(self):
+        return numpy.asarray(self._data)
+    @property
+    def indices(self):
+        return numpy.asarray(self._indices)
+    @property
+    def indptr(self):
+        return numpy.asarray(self._indptr)
 
-        self.data = data
-        self.indices = indices
-        self.indptr = indptr
-        self.lut_size = len(indices)
-
-        self._csr = csr_matrix((data, indices, indptr))
-        if (self.bin_centers0 is not None) and (self.bin_centers1 is not None):
-            assert len(self.bin_centers0) * len(self.bin_centers1) == len(indptr) - 1
-            self.bins = (len(self.bin_centers0), len(self.bin_centers1))
-
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate_legacy(self,
                          weights,
                          dummy=None,
@@ -149,16 +134,14 @@ class CsrIntegrator2d(object):
 
         """
         cdef:
-            cnumpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
+            index_t i = 0, j = 0, idx = 0, bins = self.output_size, size = self.input_size 
             acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
             data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
             acc_t[::1] sum_data = numpy.zeros(self.bins, dtype=acc_d)
             acc_t[::1] sum_count = numpy.zeros(self.bins, dtype=acc_d)
             data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
-            data_t[::1] ccoef = self.data
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
         assert weights.size == size, "weights size"
 
         if dummy is not None:
@@ -192,7 +175,7 @@ class CsrIntegrator2d(object):
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-            cdata = numpy.zeros(size, dtype=data_d)
+            cdata = numpy.empty(size, dtype=data_d)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -206,9 +189,9 @@ class CsrIntegrator2d(object):
                             data = data / cpolarization[i]
                         if do_solidAngle:
                             data = data / csolidAngle[i]
-                        cdata[i] += data
+                        cdata[i] = data
                     else:  # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -220,7 +203,7 @@ class CsrIntegrator2d(object):
                         data = data / cpolarization[i]
                     if do_solidAngle:
                         data = data / csolidAngle[i]
-                    cdata[i] += data
+                    cdata[i] = data
         else:
             if do_dummy:
                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
@@ -228,18 +211,18 @@ class CsrIntegrator2d(object):
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] += data
+                        cdata[i] = data
                     else:
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
 
         for i in prange(bins, nogil=True, schedule="guided"):
             acc_data = 0.0
             acc_count = 0.0
-            for j in range(indptr[i], indptr[i + 1]):
-                idx = indices[j]
-                coef = ccoef[j]
+            for j in range(self._indptr[i], self._indptr[i + 1]):
+                idx = self._indices[j]
+                coef = self._data[j]
                 if coef == 0.0:
                     continue
                 data = cdata[idx]
@@ -248,14 +231,116 @@ class CsrIntegrator2d(object):
                 acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
 
-            sum_data[i] += acc_data
-            sum_count[i] += acc_count
+            sum_data[i] = acc_data
+            sum_count[i] = acc_count
             if acc_count > epsilon:
-                merged[i] += acc_data / acc_count / normalization_factor
+                merged[i] = acc_data / acc_count / normalization_factor
             else:
-                merged[i] += cdummy
-        return (self.bin_centers,
-                numpy.asarray(merged),
-                numpy.asarray(sum_data),
+                merged[i] = cdummy
+        return (self.bin_centers, 
+                numpy.asarray(merged), 
+                numpy.asarray(sum_data), 
                 numpy.asarray(sum_count))
 
+    integrate = integrate_legacy
+
+    def integrate_ng(self,
+                     weights,
+                     variance=None,
+                     dummy=None,
+                     delta_dummy=None,
+                     dark=None,
+                     flat=None,
+                     solidangle=None,
+                     polarization=None,
+                     absorption=None,
+                     data_t normalization_factor=1.0,
+                     ):
+        """
+        Actually perform the integration which in this case consists of:
+         * Calculate the signal, variance and the normalization parts
+         * Perform the integration which is here a matrix-vector product
+
+        :param weights: input image
+        :type weights: ndarray
+        :param variance: the variance associate to the image
+        :type variance: ndarray 
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param absorption: Apparent efficiency of a pixel due to parallax effect
+        :type absorption: ndarray        
+        :param normalization_factor: divide the valid result by this value
+
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: Integrate1dtpl 4-named-tuple of ndarrays
+        """
+        cdef:
+            cnumpy.int32_t i, j, idx = 0, bins = self.bins, size = self.size
+            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
+            data_t empty
+            acc_t[::1] sum_sig = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_var = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_norm = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.empty(bins, dtype=acc_d)
+            data_t[::1] merged = numpy.empty(bins, dtype=data_d)
+            data_t[::1] error = numpy.empty(bins, dtype=data_d)
+            data_t[:, ::1] preproc4
+            
+        assert weights.size == size, "weights size"
+        empty = dummy if dummy is not None else self.empty
+        #Call the preprocessor ...
+        preproc4 = preproc(weights.ravel(),
+                           dark=dark,
+                           flat=flat,
+                           solidangle=solidangle,
+                           polarization=polarization,
+                           absorption=absorption,
+                           mask=self.cmask if self.check_mask else None,
+                           dummy=dummy, 
+                           delta_dummy=delta_dummy,
+                           normalization_factor=normalization_factor, 
+                           empty=self.empty,
+                           split_result=4,
+                           variance=variance,
+                           dtype=data_d)
+
+        for i in prange(bins, nogil=True, schedule="guided"):
+            acc_sig = 0.0
+            acc_var = 0.0
+            acc_norm = 0.0
+            acc_count = 0.0
+            for j in range(self._indptr[i], self._indptr[i + 1]):
+                idx = self._indices[j]
+                coef = self._data[j]
+                if coef == 0.0:
+                    continue
+                acc_sig = acc_sig + coef * preproc4[idx, 0]
+                acc_var = acc_var + coef * coef * preproc4[idx, 1]
+                acc_norm = acc_norm + coef * preproc4[idx, 2] 
+                acc_count = acc_count + coef * preproc4[idx, 3]
+
+            sum_sig[i] = acc_sig
+            sum_var[i] = acc_var
+            sum_norm[i] = acc_norm
+            sum_count[i] = acc_count
+            if acc_count > epsilon:
+                merged[i] = acc_sig / acc_norm
+                error[i] = sqrt(acc_var) / acc_norm
+            else:
+                merged[i] = empty
+                error[i] = empty
+        #"position intensity error signal variance normalization count"
+        return Integrate1dtpl(self.bin_centers, 
+                              numpy.asarray(merged),numpy.asarray(error) ,
+                              numpy.asarray(sum_sig),numpy.asarray(sum_var), 
+                              numpy.asarray(sum_norm), numpy.asarray(sum_count))

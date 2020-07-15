@@ -232,8 +232,8 @@ build_deb() {
             ;;
     esac
 
-    dch -v ${debianversion}-1 "upstream development build of ${project} ${version}"
-    dch -D ${debian_name}-backports -l~bpo${debian_version}+ "${project} snapshot ${version} built for ${target_system}"
+    dch --force-distribution -v ${debianversion}-1 "upstream development build of ${project} ${version}"
+    dch --force-distribution -D ${debian_name}-backports -l~bpo${debian_version}+ "${project} snapshot ${version} built for ${target_system}"
     #dch --bpo "${project} snapshot ${version} built for ${target_system}"
     dpkg-buildpackage -r
     rc=$?
@@ -259,7 +259,7 @@ build_stdeb () {
     tarname=${project}-${strictversion}.tar.gz
     clean_up
 
-    python setup.py sdist
+    python3 setup.py sdist
     cp -f dist/${tarname} ${build_directory}
     cd ${build_directory}
     tar -xzf ${tarname}
@@ -293,7 +293,7 @@ else
     build_deb
 fi
 if [ $install -eq 1 ]; then
-  sudo -v su -c  "dpkg -i ${dist_directory}/*.deb"
+  sudo  su -c  "dpkg -i ${dist_directory}/*.deb"
 fi
 
 exit "$rc"
