@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2020"
+__date__ = "15/07/2020"
 
 import os
 import tempfile
@@ -296,8 +296,28 @@ class TestDetector(unittest.TestCase):
         import copy
         cloned = copy.copy(detector)
         numpy.testing.assert_array_almost_equal(detector.get_pixel_corners(), cloned.get_pixel_corners())
+    
+    def test_bug_1378(self):
+        from ..detectors import Detector
+        from ..calibrant import CalibrantFactory
+        from pyFAI.geometryRefinement import GeometryRefinement
+        calibrant_factory = CalibrantFactory()
+        ceo2 = calibrant_factory("CeO2")
+        img_shape=(280, 290)
+        detector = Detector(100e-6, 110e-6)
+        detector.max_shape = detector.shape = img_shape
 
+        dx = dy = numpy.ones(shape=img_shape)
 
+        detector.set_dx(dx)
+        detector.set_dy(dy)
+
+        pattern_geometry = GeometryRefinement([[1, 1, 0],[2,1,1]],
+                                              dist=1,
+                                              wavelength=0.3344e-10,
+                                              detector=detector,
+                                              calibrant=ceo2)
+        
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
