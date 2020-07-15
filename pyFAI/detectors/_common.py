@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2020"
+__date__ = "15/07/2020"
 __status__ = "stable"
 
 
@@ -70,6 +70,7 @@ except ImportError:
 
 
 EPSILON = 1e-6
+"Precision for the positionning of a pixel: 1µm"
 
 
 class DetectorMeta(type):
@@ -365,13 +366,18 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_dx(self, dx=None):
         """
-        set the pixel-wise displacement along X (dim2):
+        set the pixel-wise displacement along X (dim2)
+        
+        units: fraction of pixels
         """
         if dx is not None:
             if not self.max_shape:
                 raise RuntimeError("Set detector shape before setting the distortion")
             if dx.shape == self.max_shape:
-                self._dx = dx
+                if self._pixel_corners is None:
+                    self.get_pixel_corners()
+                self._pixel_corners[:, :, :, 2] += numpy.atleast_3d(self._pixel2 * dx)
+                
             elif dx.shape == tuple(i + 1 for i in self.max_shape):
                 if self._pixel_corners is None:
                     self.get_pixel_corners()
@@ -390,14 +396,18 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_dy(self, dy=None):
         """
-        set the pixel-wise displacement along Y (dim1):
+        set the pixel-wise displacement along Y (dim1)
+        
+        unit: fraction of pixel
         """
         if dy is not None:
             if not self.max_shape:
                 raise RuntimeError("Set detector shape before setting the distortion")
 
             if dy.shape == self.max_shape:
-                self._dy = dy
+                if self._pixel_corners is None:
+                    self.get_pixel_corners()
+                self._pixel_corners[:, :, :, 1] += numpy.atleast_3d(self._pixel1 * dy)
             elif dy.shape == tuple(i + 1 for i in self.max_shape):
                 if self._pixel_corners is None:
                     self.get_pixel_corners()
