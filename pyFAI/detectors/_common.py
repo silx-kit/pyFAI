@@ -210,8 +210,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
         self._maskfile = None
         self._splineFile = None
         self.spline = None
-        self._dx = None
-        self._dy = None
         self._flatfield = None
         self._flatfield_crc = None  # not saved as part of HDF5 structure
         self._darkcurrent = None
@@ -242,7 +240,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                      "_darkcurrent_crc", "flatfiles", "darkfiles"]
-        mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
+        mutable = ['_mask', '_flatfield', "_darkcurrent"]
         new = self.__class__()
         for key in unmutable + mutable:
             new.__setattr__(key, self.__getattribute__(key))
@@ -260,7 +258,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                      "_darkcurrent_crc", "flatfiles", "darkfiles"]
-        mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
+        mutable = ['_mask', '_flatfield', "_darkcurrent"]
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -391,7 +389,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 raise RuntimeError("detector shape:%s while distortionarray: %s" % (self.max_shape, dx.shape))
             self.uniform_pixel = False
         else:
-            self._dx = None
             self.uniform_pixel = True
 
     def set_dy(self, dy=None):
@@ -625,15 +622,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
             else:
                 dX = self.spline.splineFuncX(d2c, d1c)
                 dY = self.spline.splineFuncY(d2c, d1c)
-        elif self._dx is not None:
-            if self._binning == (1, 1):
-                binned_x = self._dx
-                binned_y = self._dy
-            else:
-                binned_x = binning(self._dx, self._binning)
-                binned_y = binning(self._dy, self._binning)
-            dX = numpy.interp(d2, numpy.arange(binned_x.shape[1]), binned_x, left=0, right=0)
-            dY = numpy.interp(d1, numpy.arange(binned_y.shape[0]), binned_y, left=0, right=0)
         else:
             dX = 0.
             dY = 0.
