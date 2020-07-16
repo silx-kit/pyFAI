@@ -578,13 +578,11 @@ csr_integrate_single(  const   global  float   *weights,
  * @param weights     Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
- * @param indptr     Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
- * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy       Float: value for bad pixels
- * @param coef_power  Set to 2 for variance propagation, leave to 1 for mean calculation
- * @param sum_data    Float pointer to the output 1D array with the weighted histogram
- * @param sum_count   Float pointer to the output 1D array with the unweighted histogram
- * @param merged      Float pointer to the output 1D array with the diffractogram
+ * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
+ * @param empty       Float: value for bad pixels, NaN is a good guess
+ * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
+ * @param averint     Float pointer to the output 1D array with the averaged signal
+ * @param stderr      Float pointer to the output 1D array with the propagated error
  *
  */
 kernel void
@@ -592,6 +590,7 @@ csr_integrate4(  const   global  float4  *weights,
                  const   global  float   *coefs,
                  const   global  int     *indices,
                  const   global  int     *indptr,
+                 const           float    empty,
                          global  float8  *summed,
                          global  float   *averint,
                          global  float   *stderr)
@@ -606,8 +605,8 @@ csr_integrate4(  const   global  float4  *weights,
             stderr[bin_num] = sqrt(result.s2) / result.s4;
         }
         else {
-            averint[bin_num] = NAN;
-            stderr[bin_num] = NAN;
+            averint[bin_num] = empty;
+            stderr[bin_num] = empty;
         } //end else
     } // end if thread0 
 };//end kernel
@@ -620,13 +619,11 @@ csr_integrate4(  const   global  float4  *weights,
  * @param weights     Float pointer to global memory storing the input image.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
- * @param indptr     Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
- * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy       Float: value for bad pixels
- * @param coef_power  Set to 2 for variance propagation, leave to 1 for mean calculation
- * @param sum_data    Float pointer to the output 1D array with the weighted histogram
- * @param sum_count   Float pointer to the output 1D array with the unweighted histogram
- * @param merged      Float pointer to the output 1D array with the diffractogram
+ * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
+ * @param empty       Float: value for bad pixels, NaN is a good guess
+ * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
+ * @param averint     Float pointer to the output 1D array with the averaged signal
+ * @param stderr      Float pointer to the output 1D array with the propagated error
  *
  */
 kernel void
@@ -634,6 +631,7 @@ csr_integrate4_single(  const   global  float4  *weights,
                         const   global  float   *coefs,
                         const   global  int     *indices,
                         const   global  int     *indptr,
+                        const           float    empty,
                                 global  float8  *summed,
                                 global  float   *averint,
                                 global  float   *stderr)
@@ -645,7 +643,6 @@ csr_integrate4_single(  const   global  float4  *weights,
     float2 sum_variance_K = (float2)(0.0f, 0.0f);
     float2 sum_norm_K = (float2)(0.0f, 0.0f);
     float2 sum_count_K = (float2)(0.0f, 0.0f);
-    const float epsilon = 1e-10f;
 
     for (int j=indptr[bin_num];j<indptr[bin_num+1];j++) {
         float coef = coefs[j];
@@ -673,8 +670,8 @@ csr_integrate4_single(  const   global  float4  *weights,
         stderr[bin_num] = sqrt(sum_variance_K.s0) / sum_norm_K.s0;
     }
     else {
-        averint[bin_num] = NAN;
-        stderr[bin_num] = NAN;
+        averint[bin_num] = empty;
+        stderr[bin_num] = empty;
     }
 }//end kernel
 
