@@ -127,13 +127,14 @@ class Distortion(object):
         else:
             self.method = method.lower()
         if (self.detector.uniform_pixel and self.detector.IS_FLAT):
-            lil = identity(numpy.prod(self.detector.shape),
-                           dtype=numpy.float32,
-                           format="lil")
+            sparse = identity(numpy.prod(self.detector.shape),
+                              dtype=numpy.float32,
+                              format="coo")
             if self.detector.mask is not None:
-                masked = numpy.where(self.detector.mask)
-                lil[masked] = 0.0
-            csr = lil.tocsr()
+                masked = numpy.where(self.detector.mask.ravel())
+                sparse.data[masked] = 0.0
+                sparse.eliminate_zeros()
+            csr = sparse.tocsr()
             if self.method == "lut":
                 self.lut = sparse_utils.CSR_to_LUT(csr.data, csr.indices, csr.indptr)
             else:
