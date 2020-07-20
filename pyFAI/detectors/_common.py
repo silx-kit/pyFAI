@@ -429,7 +429,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 raise RuntimeError("detector shape:%s while distortion array: %s" % (self.max_shape, dy.shape))
             self.uniform_pixel = False
         else:
-            # Reset a regular grid, uniform_pixel is not necessary True due to y
+            # Reset a regular grid, uniform_pixel is not necessary True due to x
             origin = numpy.atleast_3d(numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1])))
             corners = numpy.array([0., 1., 1., 0.]) # this is specific to Y alias direction1, A and B are not  the same Y, 
             positions1 = self._pixel1 * (origin + corners[numpy.newaxis, numpy.newaxis, :])
