@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2018"
+__date__ = "20/07/2020"
 
 
 import unittest
@@ -385,7 +385,8 @@ class TestOther(unittest.TestCase):
 
     def test_mask(self):
         d = detectors.detector_factory("Pilatus200k")
-        dc = distortion.Distortion(d, empty=-1)
+        dc = distortion.Distortion(d, empty=-1, method="csr")
+        self.assertEqual(len(dc.lut[0]), numpy.prod(d.shape)-d.mask.sum(), "All empty bins have been removed")
         a = numpy.random.randint(1, 100, size=d.shape)
         b = dc.correct_ng(a)
         self.assertGreater(a.min(), 0) #1 is the lowset
