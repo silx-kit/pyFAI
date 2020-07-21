@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "08/07/2020"
+__date__ = "16/07/2020"
 __copyright__ = "2012-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -113,7 +113,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
-        self.empty = empty or 0.0
+        self.empty = empty or 0 # numpy.NaN
         self.unit = unit
         self.bin_centers = bin_centers
         # a few place-folders
@@ -268,6 +268,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
 
         self.cl_kernel_args["lut_integrate4"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                             ("lut", self.cl_mem["lut"]),
+                                                            ("empty", numpy.float32(self.empty)),
                                                             ("merged8", self.cl_mem["merged8"]),
                                                             ("averint", self.cl_mem["averint"]),
                                                             ("stderr", self.cl_mem["stderr"]),
@@ -596,6 +597,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             ev = self.kernels.corrections4(self.queue, self.wdim_data, self.workgroup_size, *list(kw_corr.values()))
             events.append(EventDescription("corrections4", ev))
 
+            kw_int["empty"] = dummy
             integrate = self.kernels.lut_integrate4(self.queue, wdim_bins, self.workgroup_size, *kw_int.values())
             events.append(EventDescription("integrate4", integrate))
 

@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "07/07/2020"
+__date__ = "16/07/2020"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -119,7 +119,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             raise RuntimeError("data.shape[0] != indices.shape[0]")
         self.data_size = self._data.shape[0]
         self.size = image_size
-        self.empty = empty or 0.0
+        self.empty = empty or 0
         self.unit = unit
         self.bin_centers = bin_centers
         # a few place-folders
@@ -285,6 +285,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("data", self.cl_mem["data"]),
                                                             ("indices", self.cl_mem["indices"]),
                                                             ("indptr", self.cl_mem["indptr"]),
+                                                            ("empty", numpy.float32(self.empty)),
                                                             ("merged8", self.cl_mem["merged8"]),
                                                             ("averint", self.cl_mem["averint"]),
                                                             ("stderr", self.cl_mem["stderr"]),
@@ -660,6 +661,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
             events.append(EventDescription("corrections4", ev))
 
+            kw_int["empty"] = dummy
             wg = self.workgroup_size["csr_integrate4"][0]
             if wg == 1:
                 wg = self.workgroup_size["csr_integrate4_single"][0]

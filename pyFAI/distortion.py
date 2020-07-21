@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/07/2020"
+__date__ = "16/07/2020"
 __status__ = "development"
 
 import logging
@@ -479,7 +479,7 @@ class Distortion(object):
                                                normalization_factor=normalization_factor,
                                                out_merged=False
                                                )
-            if variance is not None:
+            if variance is None:
                 if image.ndim == 2:
                     out = res.intensity.reshape(self._shape_out)
                 else:
