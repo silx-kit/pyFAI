@@ -484,7 +484,7 @@ class Distortion(object):
                                                normalization_factor=normalization_factor,
                                                out_merged=False
                                                )
-            if variance is not None:
+            if variance is None:
                 if image.ndim == 2:
                     out = res.intensity.reshape(self._shape_out)
                 else:
