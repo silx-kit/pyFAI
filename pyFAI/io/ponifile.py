@@ -28,12 +28,10 @@
 """Module function to manage poni files.
 """
 
-from __future__ import absolute_import, print_function, division
-
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019"
+__date__ = "21/07/2020"
 __docformat__ = 'restructuredtext'
 
 
@@ -43,7 +41,7 @@ import json
 import logging
 
 _logger = logging.getLogger(__name__)
-
+import numpy
 from .. import detectors
 from ..third_party import six
 
@@ -67,6 +65,9 @@ class PoniFile(object):
             self.read_from_file(data)
         else:
             self.read_from_duck(data)
+
+    def __repr__(self):
+        return json.dumps(self.as_dict(), indent=4)
 
     def read_from_file(self, filename):
         data = collections.OrderedDict()
@@ -145,13 +146,19 @@ class PoniFile(object):
         The duck object must provide dist, poni1, poni2, rot1, rot2, rot3,
         wavelength, and detector.
         """
-        # TODO: It would be good to test attribute types
+        assert numpy.isreal(duck.dist)
         self._dist = duck.dist
+        assert numpy.isreal(duck.poni1)
         self._poni1 = duck.poni1
+        assert numpy.isreal(duck.poni2)
         self._poni2 = duck.poni2
+        assert numpy.isreal(duck.rot1)
         self._rot1 = duck.rot1
+        assert numpy.isreal(duck.rot2)
         self._rot2 = duck.rot2
+        assert numpy.isreal(duck.rot3)
         self._rot3 = duck.rot3
+        assert numpy.isreal(duck.wavelength)
         self._wavelength = duck.wavelength
         self._detector = duck.detector
 
