@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2020"
+__date__ = "17/07/2020"
 __status__ = "stable"
 
 
@@ -70,6 +70,7 @@ except ImportError:
 
 
 EPSILON = 1e-6
+"Precision for the positionning of a pixel: 1µm"
 
 
 class DetectorMeta(type):
@@ -209,8 +210,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
         self._maskfile = None
         self._splineFile = None
         self.spline = None
-        self._dx = None
-        self._dy = None
         self._flatfield = None
         self._flatfield_crc = None  # not saved as part of HDF5 structure
         self._darkcurrent = None
@@ -241,7 +240,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                      "_darkcurrent_crc", "flatfiles", "darkfiles"]
-        mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
+        mutable = ['_mask', '_flatfield', "_darkcurrent"]
         new = self.__class__()
         for key in unmutable + mutable:
             new.__setattr__(key, self.__getattribute__(key))
@@ -259,7 +258,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                      '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                      "_darkcurrent_crc", "flatfiles", "darkfiles"]
-        mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
+        mutable = ['_mask', '_flatfield', "_darkcurrent"]
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -365,42 +364,61 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_dx(self, dx=None):
         """
-        set the pixel-wise displacement along X (dim2):
+        set the pixel-wise displacement along X (dim2)
+        
+        units: Displacement of a fraction of pixel in the direction X (along axis2)
         """
+        if not self.max_shape:
+            raise RuntimeError("Set detector shape before setting the distortion")
+        
+        if self._pixel_corners is None:
+            self.get_pixel_corners()
+
         if dx is not None:
-            if not self.max_shape:
-                raise RuntimeError("Set detector shape before setting the distortion")
             if dx.shape == self.max_shape:
-                self._dx = dx
+                origin = numpy.atleast_3d(numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1])) + dx)
+                corners = numpy.array([0., 0., 1., 1.]) # this is specific to X alias direction2, A and B are on the same X, 
+                positions2 = self._pixel2 * (origin + corners[numpy.newaxis, numpy.newaxis, :])
+                self._pixel_corners[..., 2] = positions2
+                
             elif dx.shape == tuple(i + 1 for i in self.max_shape):
-                if self._pixel_corners is None:
-                    self.get_pixel_corners()
                 d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1))
                 p2 = (self._pixel2 * (dx + d2))
                 self._pixel_corners[:, :, 0, 2] = p2[:-1, :-1]
                 self._pixel_corners[:, :, 1, 2] = p2[1:, :-1]
                 self._pixel_corners[:, :, 2, 2] = p2[1:, 1:]
                 self._pixel_corners[:, :, 3, 2] = p2[:-1, 1:]
+
             else:
                 raise RuntimeError("detector shape:%s while distortionarray: %s" % (self.max_shape, dx.shape))
             self.uniform_pixel = False
+
         else:
-            self._dx = None
-            self.uniform_pixel = True
+            # Reset a regular grid, uniform_pixel is not necessary True due to y
+            origin = numpy.atleast_3d(numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1])))
+            corners = numpy.array([0., 0., 1., 1.]) # this is specific to X alias direction2, A and B are on the same X, 
+            positions2 = self._pixel2 * (origin + corners[numpy.newaxis, numpy.newaxis, :])
+            self._pixel_corners[..., 2] = positions2            
 
     def set_dy(self, dy=None):
         """
-        set the pixel-wise displacement along Y (dim1):
+        set the pixel-wise displacement along Y (dim1)
+        
+        unit: Displacement of a fraction of pixel in the Y direction (along dim1) 
         """
-        if dy is not None:
-            if not self.max_shape:
-                raise RuntimeError("Set detector shape before setting the distortion")
+        if not self.max_shape:
+            raise RuntimeError("Set detector shape before setting the distortion")
 
+        if self._pixel_corners is None:
+            self.get_pixel_corners()
+
+        if dy is not None:
             if dy.shape == self.max_shape:
-                self._dy = dy
+                origin = numpy.atleast_3d(numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1])) + dy)
+                corners = numpy.array([0., 1., 1., 0.]) # this is specific to Y alias direction1, A and B are not  the same Y, 
+                positions1 = self._pixel1 * (origin + corners[numpy.newaxis, numpy.newaxis, :])
+                self._pixel_corners[..., 1] = positions1
             elif dy.shape == tuple(i + 1 for i in self.max_shape):
-                if self._pixel_corners is None:
-                    self.get_pixel_corners()
                 d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1))
                 p1 = (self._pixel1 * (dy + d1))
                 self._pixel_corners[:, :, 0, 1] = p1[:-1, :-1]
@@ -411,8 +429,11 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 raise RuntimeError("detector shape:%s while distortion array: %s" % (self.max_shape, dy.shape))
             self.uniform_pixel = False
         else:
-            self._dy = None
-            self.uniform_pixel = True
+            # Reset a regular grid, uniform_pixel is not necessary True due to x
+            origin = numpy.atleast_3d(numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1])))
+            corners = numpy.array([0., 1., 1., 0.]) # this is specific to Y alias direction1, A and B are not  the same Y, 
+            positions1 = self._pixel1 * (origin + corners[numpy.newaxis, numpy.newaxis, :])
+            self._pixel_corners[..., 1] = positions1            
 
     def get_binning(self):
         return self._binning
@@ -615,15 +636,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
             else:
                 dX = self.spline.splineFuncX(d2c, d1c)
                 dY = self.spline.splineFuncY(d2c, d1c)
-        elif self._dx is not None:
-            if self._binning == (1, 1):
-                binned_x = self._dx
-                binned_y = self._dy
-            else:
-                binned_x = binning(self._dx, self._binning)
-                binned_y = binning(self._dy, self._binning)
-            dX = numpy.interp(d2, numpy.arange(binned_x.shape[1]), binned_x, left=0, right=0)
-            dY = numpy.interp(d1, numpy.arange(binned_y.shape[0]), binned_y, left=0, right=0)
         else:
             dX = 0.
             dY = 0.

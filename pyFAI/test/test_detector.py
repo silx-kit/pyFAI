@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2020"
+__date__ = "20/07/2020"
 
 import os
 import tempfile
@@ -296,8 +296,57 @@ class TestDetector(unittest.TestCase):
         import copy
         cloned = copy.copy(detector)
         numpy.testing.assert_array_almost_equal(detector.get_pixel_corners(), cloned.get_pixel_corners())
+    
+    def test_bug_1378(self):
+        from ..detectors import Detector
+        from ..calibrant import CalibrantFactory
+        from pyFAI.geometryRefinement import GeometryRefinement
+        calibrant_factory = CalibrantFactory()
+        ceo2 = calibrant_factory("CeO2")
+        img_shape=(280, 290)
+        detector = Detector(100e-6, 110e-6)
+        detector.max_shape = detector.shape = img_shape
 
+        dx = dy = numpy.ones(shape=img_shape)
 
+        detector.set_dx(dx)
+        detector.set_dy(dy)
+
+        pattern_geometry = GeometryRefinement([[1, 1, 0],[2,1,1]],
+                                              dist=1,
+                                              wavelength=0.3344e-10,
+                                              detector=detector,
+                                              calibrant=ceo2)
+    def test_displacements(self):
+        from ..detectors import Detector
+        import copy
+        detector =  Detector(pixel1=90e-6, pixel2=110e-6, splineFile=None, max_shape=(110,90))
+        ref =  detector.get_pixel_corners()
+        
+        delta_y = 0.3 #pixel
+        delta_x = 0.1 #pixel
+        
+        detector_a = copy.copy(detector)
+        dx = numpy.ones(detector_a.shape) * delta_x 
+        dy = numpy.ones(detector_a.shape) * delta_y 
+        detector_a.set_dx(dx)
+        detector_a.set_dy(dy)
+        obt_a = detector_a.get_pixel_corners()
+        self.assertTrue(numpy.allclose(obt_a[..., 1] - detector.pixel1*delta_y, ref[...,1]), msg="dy on center")
+        self.assertTrue(numpy.allclose(obt_a[..., 2] - detector.pixel2*delta_x, ref[...,2]), msg="dx on center")    
+
+        detector_b = copy.copy(detector)
+        big_shape = tuple(i+1 for i in detector.shape)
+        dx = numpy.ones(big_shape) * delta_x 
+        dy = numpy.ones(big_shape) * delta_y 
+        detector_b.set_dx(dx)
+        detector_b.set_dy(dy)
+        obt_b = detector_b.get_pixel_corners()
+        self.assertTrue(numpy.allclose(obt_b[..., 1] - detector.pixel1*delta_y, ref[...,1]), msg="dy on edge")
+        self.assertTrue(numpy.allclose(obt_b[..., 2] - detector.pixel2*delta_x, ref[...,2]), msg="dx on edge")    
+
+        self.assertTrue(numpy.allclose(obt_b, obt_a))
+        
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
