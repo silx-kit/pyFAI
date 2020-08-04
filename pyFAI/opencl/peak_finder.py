@@ -29,15 +29,18 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "06/12/2019"
+__date__ = "04/08/2020"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
+import math
 from ..utils import EPS32
-from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl
+from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
+from . import get_x87_volatile_option
+from . import kernel_workgroup_size
 
 logger = logging.getLogger(__name__)
 
@@ -353,3 +356,257 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
     # Name of the default "process" method
     __call__ = peak_finder
 
+class OCL_SimplePeakFinder(OpenclProcessing):
+    BLOCK_SIZE = 1024 #works with 32x32 patches (1024 threads)
+
+    kernel_files = ["pyfai:openCL/simple_peak_picker.cl"]
+    buffers = [BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
+               BufferDescription("output", 1, numpy.int32, mf.WRITE_ONLY)
+               ]
+
+    mapping = {numpy.int8: "s8_to_float",
+               numpy.uint8: "u8_to_float",
+               numpy.int16: "s16_to_float",
+               numpy.uint16: "u16_to_float",
+               numpy.uint32: "u32_to_float",
+               numpy.int32: "s32_to_float",
+               numpy.float32: "f32_to_float"
+               }
+
+    def __init__(self, image_shape=None, mask=None,
+                 ctx=None, devicetype="all", platformid=None, deviceid=None,
+                 block_size=None, profile=False):
+        """
+        :param image_shape: 2-tuple with the size of the image
+        :param mask: array with invalid pixel flagged.
+        :param ctx: actual working context, left to None for automatic
+                    initialization from device type or platformid/deviceid
+        :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
+        :param platformid: integer with the platform_identifier, as given by clinfo
+        :param deviceid: Integer with the device identifier, as given by clinfo
+        :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation.
+        :param profile: switch on profiling to be able to profile at the kernel level,
+                        store profiling elements (makes code slightly slower)
+        """
+        OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
+                                  platformid=platformid, deviceid=deviceid,
+                                  block_size=block_size, profile=profile)
+
+        if mask is not None:
+            if  image_shape:
+                assert mask.shape == image_shape
+            else:
+                image_shape = mask.shape
+            self.do_mask = True
+        else:
+            assert len(image_shape) == 2, "expect a 2-tuple with the size of the image"
+            mask = numpy.zeros(image_shape, dtype=numpy.int8) 
+            self.do_mask = False
+        self.shape = image_shape
+        self.on_device = {"mask": mask}
+
+        if block_size is None:
+            block_size = self.BLOCK_SIZE
+
+        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
+        self.workgroup_size = {}
+        self.wg = self.size_to_doublet(self.BLOCK_SIZE)
+        self.wdim = tuple((shape + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1) for shape, BLOCK_SIZE in zip(self.shape[-1::-1], self.wg))
+
+        self.buffers = [BufferDescription(i.name, i.size * numpy.prod(self.shape), i.dtype, i.flags)
+                        for i in self.__class__.buffers]
+        self.buffers.append(BufferDescription("count", 1, numpy.int32, mf.WRITE_ONLY))
+        
+        try:
+            self.set_profiling(profile)
+            self.allocate_buffers()
+            self.compile_kernels()
+            self.set_kernel_arguments()
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
+            raise MemoryError(error)
+        self.send_buffer(numpy.ascontiguousarray(mask, dtype=numpy.int8), "mask")
+
+    def __copy__(self):
+        """Shallow copy of the object
+
+        :return: copy of the object
+        """
+        return self.__class__(self.shape,
+                              mask=self.on_device.get("data"),
+                              ctx=self.ctx,
+                              block_size=self.block_size,
+                              profile=self.profile)
+
+    def __deepcopy__(self, memo=None):
+        """deep copy of the object
+
+        :return: deepcopy of the object
+        """
+        if memo is None:
+            memo = {}
+        mask = self.on_device.get("data")
+        new_mask = mask.copy()
+        memo[id(mask)] = new_mask
+        new_obj = self.__class__(self.shape,
+                                 mask = new_mask,
+                                 ctx=self.ctx,
+                                 block_size=self.block_size,
+                                 profile=self.profile)
+        memo[id(self)] = new_obj
+        return new_obj
+
+    @staticmethod
+    def size_to_doublet(size):
+        "Try to find the squarrest possible 2-tuple of this size"        
+        small = 2**int(math.log(size ** 0.5, 2))
+        large = size//small
+        return (large,small)
+
+    def compile_kernels(self, kernel_file=None):
+        """
+        Call the OpenCL compiler
+        :param kernel_file: path to the kernel (by default use the one in the resources directory)
+        """
+        # concatenate all needed source files into a single openCL module
+        kernel_file = kernel_file or self.kernel_files[-1]
+        kernels = self.kernel_files[:-1] + [kernel_file]
+
+        try:
+            default_compiler_options = self.get_compiler_options(x87_volatile=True)
+        except AttributeError:  # Silx version too old
+            logger.warning("Please upgrade to silx v0.10+")
+            default_compiler_options = get_x87_volatile_option(self.ctx)
+
+        if default_compiler_options:
+            compile_options = default_compiler_options
+        else:
+            compile_options = ""
+        OpenclProcessing.compile_kernels(self, kernels, compile_options)
+        for kernel_name, kernel in self.kernels.get_kernels().items():
+            wg = kernel_workgroup_size(self.program, kernel)
+            doublet1 = self.size_to_doublet(wg)
+            self.workgroup_size[kernel_name] = tuple(min(a,b) for a,b in zip(doublet1, self.wg))
+
+    def set_kernel_arguments(self):
+        """Tie arguments of OpenCL kernel-functions to the actual kernels
+        """
+        cast_kernel = OrderedDict([("image_raw", self.cl_mem["image_raw"]),
+                                   ("height", numpy.int32(self.shape[0])),
+                                   ("width", numpy.int32(self.shape[1])),
+                                   ("do_mask", numpy.int8(self.do_mask)),
+                                   ("mask", self.cl_mem["mask"]),
+                                   ("image", self.cl_mem["image"])])
+                                   
+        self.cl_kernel_args["u8_to_float"] = cast_kernel
+        self.cl_kernel_args["s8_to_float"] = cast_kernel
+        self.cl_kernel_args["u16_to_float"] = cast_kernel
+        self.cl_kernel_args["s16_to_float"] = cast_kernel
+        self.cl_kernel_args["u32_to_float"] = cast_kernel
+        self.cl_kernel_args["s32_to_float"] = cast_kernel
+        self.cl_kernel_args["f32_to_float"] = cast_kernel
+        self.cl_kernel_args["memset_int"] = OrderedDict([("count", self.cl_mem["count"]),
+                                                        ("pattern", numpy.int32(0)),
+                                                        ("size", numpy.int32(1))])
+        self.cl_kernel_args["simple_spot_finder"] = OrderedDict([("image", self.cl_mem["image"]),
+                                                                 ("height", numpy.int32(self.shape[0])),
+                                                                 ("width", numpy.int32(self.shape[1])),
+                                                                 ("half_wind_height", numpy.int32(3)),
+                                                                 ("half_wind_width", numpy.int32(3)),
+                                                                 ("threshold", numpy.float32(3.0)),
+                                                                 ("radius", numpy.float32(1.0)),
+                                                                 ("noise", numpy.float32(1.0)),
+                                                                 ("count", self.cl_mem["count"]),
+                                                                 ("output", self.cl_mem["output"]),
+                                                                 ("output_size", numpy.int32(numpy.prod(self.shape))),
+                                                                 ("local_high", pyopencl.LocalMemory(self.BLOCK_SIZE*4)),
+                                                                 ("local_size", numpy.int32(self.BLOCK_SIZE))])
+
+    def send_buffer(self, data, dest, checksum=None, force_cast=False):
+        """Send a numpy array to the device, including the cast on the device if possible
+
+        :param data: numpy array with data
+        :param dest: name of the buffer as registered in the class
+        """
+
+        dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
+        events = []
+        if isinstance(data, pyopencl.array.Array):
+            if (data.dtype == dest_type) and not force_cast:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
+                events.append(EventDescription("copy D->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                kw = self.cl_kernel_args[kernel_name].copy()
+                kw["image"] = self.cl_mem[dest]
+                cast_to_float = kernel(self.queue, self.wdim, self.workgroup_size[kernel_name], *list(kw.values()))
+                events += [EventDescription("copy raw D->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
+        else:
+            # Assume it is a numpy array
+            if ((data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize)) and not force_cast:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
+                events.append(EventDescription("copy H->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                kw = self.cl_kernel_args[kernel_name].copy()
+                kw["image"] = self.cl_mem[dest]
+                cast_to_float = kernel(self.queue, self.wdim, self.workgroup_size[kernel_name], *list(kw.values()))
+                events += [EventDescription("copy raw H->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
+        if self.profile:
+            self.events += events
+        if checksum is not None:
+            self.on_device[dest] = checksum
+
+    def search(self, 
+               image,
+               window=7,
+               threshold=3.0,
+               radius=1.0,
+               noise=1.0
+               ):
+        """
+        Search for peaks in this image and return a list of them
+        
+        :param image: 2d array with an image
+        :param window: size of the window, i.e. 7 for 7x7 patch size.
+        :param threshhold: keep peaks with I > mean + threshold*std
+        :param radius: keep points with centroid on center within this radius (in pixel)
+        :param noise: minimum signal for peak to discard noisy region.
+        :return: array of peak coordinates.  
+        """
+        events = []
+        assert image.shape == self.shape
+        with self.sem:
+            self.send_buffer(image, "image", force_cast=True)
+            self.kernels.memset_int(self.queue, (1,), (1,), *list(self.cl_kernel_args["memset_int"].values()))
+            
+            kw = self.cl_kernel_args["simple_spot_finder"]
+            kw["half_wind_height"]=kw["half_wind_width"]=numpy.int32(window//2)
+            kw["threshold"] = numpy.float32(threshold)
+            kw["radius"] = numpy.float32(radius)
+            kw["noise"] = numpy.float32(noise)
+            wg = self.workgroup_size["simple_spot_finder"]
+            ev = self.kernels.simple_spot_finder(self.queue, self.wdim, wg, *list(kw.values()))
+            events.append(EventDescription("simple_spot_finder", ev))
+            count = numpy.empty(1, dtype=numpy.int32)
+            copy_count = pyopencl.enqueue_copy(self.queue, count, self.cl_mem["count"])
+            events.append(EventDescription("copy_count", copy_count))
+            indexes = numpy.empty(count[0], dtype=numpy.int32)
+            copy_index = pyopencl.enqueue_copy(self.queue, indexes, self.cl_mem["output"])
+            events.append(EventDescription("copy_index", copy_index))
+        if self.profile:
+            self.events += events
+        peaks = numpy.empty(count, dtype=numpy.dtype([("x", numpy.int32),("y", numpy.int32)]))
+        peaks["x"] = indexes % self.shape[1]
+        peaks["y"] = indexes // self.shape[1]
+        return peaks
+    
+    __call__ = search
+        
