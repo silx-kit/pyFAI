@@ -32,11 +32,11 @@
 #include "for_eclipse.h"
 
 //read without caching. Profiling demonstrated this kernel best works without manual cache. 
-float inline read_simple(global int *img, 
-                     	 int height,
-						 int width,
-						 int row,
-						 int col){
+float inline read_simple(global float *img, 
+                         int height,
+                         int width,
+                         int row,
+                         int col){
     //This kernel reads the value and returns it without active caching
     float value = NAN;
     
@@ -77,14 +77,15 @@ float inline read_simple(global int *img,
  *  
  */
 // workgroup size of kernel: as big as possible, (32x32) is working well. 1000 points as local peak cache 
-kernel void simple_spot_finder(global int *img, 
+kernel void simple_spot_finder(
+                        global float *img, 
                                int height,
                                int width,
                                int half_wind_height,
                                int half_wind_width,
                                float threshold,
                                float radius,
-							   float noise,
+                               float noise,
                         global int *cnt_high, //output
                         global int *high,     //output
                                int high_size,
@@ -110,46 +111,49 @@ kernel void simple_spot_finder(global int *img,
     }
     barrier(CLK_LOCAL_MEM_FENCE);        
     
-    
-    //Calculate mean + std + centroids
-    mean = 0.0f;
-    M2 = 0.0f;
-    centroid_r = 0.0f;
-    centroid_c = 0.0f;
-    cnt = 0;
-    
-    for (i=-half_wind_height; i<=half_wind_height; i++){
-        for (j=-half_wind_width; j<=half_wind_width; j++){
-            value = read_simple(img, height, width, row+i, col+j);
-            if (isfinite(value)){
-                centroid_r += value*i; 
-                centroid_c += value*j;
-                cnt += 1;
-                delta = value - mean;
-                mean += delta / cnt;
-                delta2 = value - mean;
-                M2 += delta * delta2;
-            }                
-        }
-    }
-    if (cnt){
-        dist = mean*radius*cnt;
-        std = sqrt(M2 / cnt);
-        target_value = read_simple(img, height, width, row, col);
-        centroid = sqrt(centroid_r*centroid_r + centroid_c*centroid_c);
-        if (((target_value-mean)>min(threshold*std, noise)) && (centroid_r<dist)){
-                where = atomic_inc(local_cnt_high);
-                if (where<local_size){
-                    local_high[where] = col+width*row;
+    // basic check if target_value is worth processing ...
+    target_value = read_simple(img, height, width, row, col);
+    if (isfinite(target_value) && (target_value>noise)){
+        //Calculate mean + std + centroids
+        mean = target_value;
+        M2 = 0.0f;
+        centroid_r = 0.0f;
+        centroid_c = 0.0f;
+        cnt = 1;
+        
+        for (i=-half_wind_height; i<=half_wind_height; i++){
+            for (j=-half_wind_width; j<=half_wind_width; j++){
+                if (i || j){
+                    value = read_simple(img, height, width, row+i, col+j);
+                    if (isfinite(value)){
+                        centroid_r += value*i; 
+                        centroid_c += value*j;
+                        cnt += 1;
+                        delta = value - mean;
+                        mean += delta / cnt;
+                        delta2 = value - mean;
+                        M2 += delta * delta2;
+                    }                    
                 }
+            }
+        }
+        std = sqrt(M2 / cnt);
+        centroid = sqrt(centroid_r*centroid_r + centroid_c*centroid_c)/(mean*cnt);
+        if (((target_value-mean) > threshold*std) && (centroid<radius)){
+            //printf("x=%4d y=%4d value=%6.3f mean=%6.3f std=%6.3f radius %6.3f\n",col, row, target_value, mean, std, centroid);
+            where = atomic_inc(local_cnt_high);
+            if (where<local_size){
+                local_high[where] = col+width*row;
+            }
         } // if intense signal properly centered
-    } // if patch not empty            
-    
+    } // if value worth processing            
+         
     //Store the results in global memory
     barrier(CLK_LOCAL_MEM_FENCE);
     if (tid==0) {
         cnt = local_cnt_high[0];
         if ((cnt>0) && (cnt<local_size)) {
+            //printf("group %d, %d found %d peaks\n",cnt, (int)get_group_id(0), (int)get_group_id(1), cnt);
             where = atomic_add(cnt_high, cnt);
             if (where+cnt>high_size){
                 cnt = high_size-where; //store what we can
@@ -164,3 +168,219 @@ kernel void simple_spot_finder(global int *img,
         high[local_cnt_high[1]+i+tid] = local_high[i+tid];
     }//store results
 } //kernel
+
+
+
+
+// Simple kernel for resetting a buffer
+kernel void
+memset_int(global int *array, 
+                  int pattern, 
+                  int size){
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if (i < size)
+  {
+    array[i] = pattern;
+  }
+}
+
+/**
+ * \brief cast values of an array of int8 into a float output array.
+ *
+ * - array_s8: Pointer to global memory with the input data as signed8 array
+ * - array_float:  Pointer to global memory with the output data as float array
+ */
+kernel void
+s8_to_float(global char  *array_int,
+                    int height,
+                    int width,
+                    char do_mask,
+            global char *mask,
+            global float  *array_float){
+    int x, y, pos;
+    x = get_global_id(0);
+    y = get_global_id(1);
+    //Global memory guard for padding
+    if ((x<width) && (y<height)){
+        pos = x + y*width;
+        if (do_mask && mask[pos]){
+            array_float[pos] = NAN;
+        }
+        else{
+            array_float[pos] = (float)(array_int[pos]);    
+        }
+    }
+}
+
+
+/**
+ * \brief cast values of an array of uint8 into a float output array.
+ *
+ * - array_u8: Pointer to global memory with the input data as unsigned8 array
+ * - array_float:  Pointer to global memory with the output data as float array
+ */
+kernel void
+u8_to_float(global unsigned char  *array_int,
+                            int height,
+                            int width,
+                            char do_mask,
+            global char *mask, 
+            global float *array_float){
+    int x, y, pos;
+    x = get_global_id(0);
+    y = get_global_id(1);
+    //Global memory guard for padding
+    if ((x<width) && (y<height)){
+        pos = x + y*width;
+        if (do_mask && mask[pos]){
+            array_float[pos] = NAN;
+        }
+        else{
+            array_float[pos] = (float)(array_int[pos]);    
+        }
+    }
+}
+
+
+/**
+ * \brief cast values of an array of int16 into a float output array.
+ *
+ * - array_s16: Pointer to global memory with the input data as signed16 array
+ * - array_float:  Pointer to global memory with the output data as float array
+ */
+kernel void
+s16_to_float(global short *array_int,
+                    int height,
+                    int width,
+                    char do_mask,
+             global char *mask, 
+             global float  *array_float){
+    int x, y, pos;
+    x = get_global_id(0);
+    y = get_global_id(1);
+    //Global memory guard for padding
+    if ((x<width) && (y<height)){
+        pos = x + y*width;
+        if (do_mask && mask[pos]){
+            array_float[pos] = NAN;
+        }
+        else{
+            array_float[pos] = (float)(array_int[pos]);    
+        }
+    }
+}
+
+
+
+/**
+ * \brief cast values of an array of uint16 into a float output array.
+ *
+ * - array_u16: Pointer to global memory with the input data as unsigned16 array
+ * - array_float:  Pointer to global memory with the output data as float array
+ */
+kernel void
+u16_to_float(global unsigned short *array_int,
+                    int height,
+                    int width,
+                    char do_mask,
+             global char *mask, 
+             global float  *array_float){
+    int x, y, pos;
+    x = get_global_id(0);
+    y = get_global_id(1);
+    //Global memory guard for padding
+    if ((x<width) && (y<height)){
+        pos = x + y*width;
+        if (do_mask && mask[pos]){
+            array_float[pos] = NAN;
+        }
+        else{
+            array_float[pos] = (float)(array_int[pos]);    
+        }
+    }
+}
+
+/**
+ * \brief cast values of an array of uint32 into a float output array.
+ *
+ * - array_u32: Pointer to global memory with the input data as unsigned32 array
+ * - array_float:  Pointer to global memory with the output data as float array
+ */
+kernel void
+u32_to_float(global unsigned int  *array_int,
+                    int height,
+                    int width,
+                    char do_mask,
+             global char *mask, 
+             global float  *array_float){
+    int x, y, pos;
+    x = get_global_id(0);
+    y = get_global_id(1);
+    //Global memory guard for padding
+    if ((x<width) && (y<height)){
+        pos = x + y*width;
+        if (do_mask && mask[pos]){
+            array_float[pos] = NAN;
+        }
+        else{
+            array_float[pos] = (float)(array_int[pos]);    
+        }
+    }
+}
+
+/**
+ * \brief convert values of an array of int32 into a float output array.
+ *
+ * - array_int:  Pointer to global memory with the data as unsigned32 array
+ * - array_float:  Pointer to global memory with the data float array
+ */
+kernel void
+s32_to_float(global int  *array_int,
+                    int height,
+                    int width,
+                    char do_mask,
+             global char *mask,
+             global float  *array_float){
+  int x, y, pos;
+  x = get_global_id(0);
+  y = get_global_id(1);
+  //Global memory guard for padding
+  if ((x<width) && (y<height)){
+	pos = x + y*width;
+	if (do_mask && mask[pos]){
+	    array_float[pos] = NAN;
+	}
+	else{
+	    array_float[pos] = (float)(array_int[pos]);    
+	}
+  }
+}
+
+/**
+ * \brief convert values of an array of int32 into a float output array.
+ *
+ * - array_int:  Pointer to global memory with the data as unsigned32 array
+ * - array_float:  Pointer to global memory with the data float array
+ */
+kernel void
+f32_to_float(global float  *array_inp,
+                    int height,
+                    int width,
+                    char do_mask,
+             global char *mask,
+             global float *array_float){
+  int x, y, pos;
+  x = get_global_id(0);
+  y = get_global_id(1);
+  //Global memory guard for padding
+  if ((x<width) && (y<height)){
+    pos = x + y*width;
+    if (do_mask && mask[pos]){
+        array_float[pos] = NAN;
+    }
+    else{
+        array_float[pos] = (array_inp[pos]);    
+    }
+  }
+}
