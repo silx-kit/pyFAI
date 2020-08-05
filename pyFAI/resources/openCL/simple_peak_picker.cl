@@ -166,7 +166,9 @@ kernel void simple_spot_finder(
     barrier(CLK_LOCAL_MEM_FENCE);
     //copy the data from local to global memory
     for (i=0; i<local_cnt_high[0]; i+=blocksize){
-        high[local_cnt_high[1]+i+tid] = local_high[i+tid];
+        if ((i+tid) < local_cnt_high[0]){
+            high[local_cnt_high[1]+i+tid] = local_high[i+tid];
+        }        
     }//store results
 } //kernel
 
