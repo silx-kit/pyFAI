@@ -192,6 +192,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         if isinstance(error_model, str):
             error_model = error_model.lower()
         else:
+            if variance is None:
+                logger.warning("Nor variance not error-model is provided ...")
             error_model = ""
         with self.sem:
             self.send_buffer(data, "image")
