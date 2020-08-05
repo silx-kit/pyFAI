@@ -40,12 +40,11 @@ import numpy
 
 import unittest
 from .. import ocl
-if ocl:
-    import pyopencl.array
 import fabio
 from ...test.utilstest import UtilsTest
 from ...azimuthalIntegrator import AzimuthalIntegrator
-from ..peak_finder import OCL_SimplePeakFinder
+if ocl:
+    from ..peak_finder import OCL_SimplePeakFinder
 logger = logging.getLogger(__name__)
 
 
