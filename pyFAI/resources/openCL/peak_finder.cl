@@ -40,7 +40,7 @@
  * 
  * For every pixel in the preproc array, the value for the background level 
  * and the std are interpolated.
- * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are maked as peak-pixel, 
+ * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are marked as peak-pixel, 
  * counted and their index registered in highidx
  * 
  * The kernel uses local memory for keeping track of peak count and positions 
@@ -90,7 +90,7 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
         } //check radius range
         preproc4[gid] = value;
     } //pixel in image
-     
+    
     //Update global memory counter
     barrier(CLK_LOCAL_MEM_FENCE);
     if (local_counter[0]){
@@ -133,8 +133,8 @@ kernel void seach_maximum(       global  float4 *preproc4, //both input and outp
 			int x, y, where, there;
 			float4 value4 = preproc4[here];
 			float value = _calc_intensity(value4);
-			int where = 0; // where is left at zero if we are on a local maximum
-			
+			where = 0; // where is left at zero if we are on a local maximum
+			//TODO: finish
 		}
 	}
 	
@@ -142,5 +142,6 @@ kernel void seach_maximum(       global  float4 *preproc4, //both input and outp
 
 /* this kernel takes an images 
 kernel void peak_dilation(){
-	
+	TODO
 }
+*/
