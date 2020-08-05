@@ -44,7 +44,7 @@ import fabio
 from ...test.utilstest import UtilsTest
 from ...azimuthalIntegrator import AzimuthalIntegrator
 if ocl:
-    from ..peak_finder import OCL_SimplePeakFinder
+    from ..peak_finder import OCL_SimplePeakFinder, OCL_PeakFinder
 logger = logging.getLogger(__name__)
 
 
@@ -83,6 +83,24 @@ class TestOclPeakFinder(unittest.TestCase):
         
         msk = self.img<0
         pf = OCL_SimplePeakFinder(mask=msk)
+        res = pf(self.img, window=11)
+        s1 = set((i["x"], i["y"]) for i in self.ref) 
+        s2 = set((i["x"], i["y"]) for i in res)
+        self.assertGreater(len(res), len(self.ref), "Many more peaks with default settings")            
+        self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_azimuthal_peak_finder(self):
+        """
+        test for peak picker with background calculate from an azimuthal sigma-clipping
+        """
+        unit = "r_m"
+        msk = self.img<0
+        engine = self.ai.setup_CSR(self.img.shape, 128, mask=msk, split="no", unit=unit)
+        bin_centers = engine.bin_centers 
+        lut =  engine.lut
+        distance = self.ai._cached_array["r_center"]  
+        pf = OCL_PeakFinder(lut, numpy.prod(self.img.shape), unit=unit, radius=distance, bin_centers=bin_centers)
         res = pf(self.img, window=11)
         s1 = set((i["x"], i["y"]) for i in self.ref) 
         s2 = set((i["x"], i["y"]) for i in res)

@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "04/08/2020"
+__date__ = "05/08/2020"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -101,17 +101,19 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             self.mask = None
         assert image_size == radius.size
         nbin = lut[2].size - 1
-        self.buffers += [BufferDescription("radius1d", nbin, numpy.float32, mf.READ_ONLY),
-                         BufferDescription("counter", 1, numpy.float32, mf.WRITE_ONLY),
-                         ]
         if radius is None:
             raise RuntimeError("2D radius position is mandatory")
         if bin_centers is None:
             raise RuntimeError("1D bin center position is mandatory")
+        extra_buffers = [
+                         BufferDescription("radius1d", nbin, numpy.float32, mf.READ_ONLY),
+                         BufferDescription("counter", 1, numpy.float32, mf.WRITE_ONLY),
+                         ]
+
         OCL_CSR_Integrator.__init__(self, lut, image_size, checksum,
                  empty, unit, bin_centers,
                  ctx, devicetype, platformid, deviceid,
-                 block_size, profile)
+                 block_size, profile, extra_buffers=extra_buffers)
 
         if self.mask is not None:
             self.send_buffer(self.mask, "mask")
@@ -304,6 +306,13 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             else:
                 integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("csr_sigma_clip4", integrate))
+
+            #Debug:
+            merged = numpy.empty((self.bins, 8), "float32")
+            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+            events.append(EventDescription("copy D->H merged8", ev))
+            print(merged)
+            
 
             # now perform the calc_from_1d on the device and count the number of pixels
             memset1 = self.program.memset_int(self.queue, self.wdim_data, self.workgroup_size["corrections"], self.cl_mem["peak_position"], numpy.int32(0), numpy.int32(self.size))
