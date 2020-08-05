@@ -89,7 +89,7 @@ kernel void simple_spot_finder(
                         global int *cnt_high, //output
                         global int *high,     //output
                                int high_size,
-                        local  int *local_high,
+                        volatile local  int *local_high,
                                int local_size){
     //decaration of variables
     int col, row, cnt, i, j, where, tid, blocksize;
@@ -98,7 +98,7 @@ kernel void simple_spot_finder(
     row = get_global_id(1);
     
     //Initialization of output array in shared
-    local int local_cnt_high[2];
+    volatile local int local_cnt_high[2];
     blocksize = get_local_size(0) * get_local_size(1);
     tid = get_local_id(0) + get_local_id(1) * get_local_size(0);
     if (tid < 2){
@@ -139,7 +139,7 @@ kernel void simple_spot_finder(
         }
         std = sqrt(M2 / cnt);
         centroid = sqrt(centroid_r*centroid_r + centroid_c*centroid_c)/(mean*cnt);
-        if (((target_value-mean) > threshold*std) && (centroid<radius)){
+        if (((target_value-mean) > max(noise, threshold*std)) && (centroid<radius)){
             //printf("x=%4d y=%4d value=%6.3f mean=%6.3f std=%6.3f radius %6.3f\n",col, row, target_value, mean, std, centroid);
             where = atomic_inc(local_cnt_high);
             if (where<local_size){
@@ -152,8 +152,9 @@ kernel void simple_spot_finder(
     barrier(CLK_LOCAL_MEM_FENCE);
     if (tid==0) {
         cnt = local_cnt_high[0];
-        if ((cnt>0) && (cnt<local_size)) {
+        if (cnt) {
             //printf("group %d, %d found %d peaks\n",cnt, (int)get_group_id(0), (int)get_group_id(1), cnt);
+            cnt = min(cnt, local_size);
             where = atomic_add(cnt_high, cnt);
             if (where+cnt>high_size){
                 cnt = high_size-where; //store what we can
