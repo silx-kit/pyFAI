@@ -58,9 +58,9 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
                               global  int    *highidx){
     int tid = get_local_id(0);
     // all thread in this WG share this local counter, upgraded at the end
-    local int local_counter[1];
-    local int to_upgrade[1];
-    local int local_highidx[WORKGROUP_SIZE];
+    volatile local int local_counter[1];
+    volatile local int to_upgrade[1];
+    volatile  local int local_highidx[WORKGROUP_SIZE];
     local_highidx[tid] = 0;
     if (tid == 0)
         local_counter[0] = 0;
