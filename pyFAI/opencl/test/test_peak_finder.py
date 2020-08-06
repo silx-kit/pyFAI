@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/08/2020"
+__date__ = "06/08/2020"
 
 import logging
 import numpy
@@ -101,7 +101,7 @@ class TestOclPeakFinder(unittest.TestCase):
         lut =  engine.lut
         distance = self.ai._cached_array["r_center"]  
         pf = OCL_PeakFinder(lut, numpy.prod(self.img.shape), unit=unit, radius=distance, bin_centers=bin_centers)
-        res = pf(self.img, window=11)
+        res = pf(self.img, error_model="poisson")
         s1 = set((i["x"], i["y"]) for i in self.ref) 
         s2 = set((i["x"], i["y"]) for i in res)
         self.assertGreater(len(res), len(self.ref), "Many more peaks with default settings")            

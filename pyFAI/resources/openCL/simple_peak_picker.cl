@@ -387,3 +387,18 @@ f32_to_float(global float  *array_inp,
     }
   }
 }
+
+// A simple kernel to copy the intensities of the peak
+
+kernel void copy_peak(global int *peak_position,
+                      global int *counter,
+                      global float *preprocessed,
+                      global float *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] =  preprocessed[peak_position[tid]];
+    }
+}
+

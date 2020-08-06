@@ -58,12 +58,13 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
                               global  int    *highidx){
     int tid = get_local_id(0);
     // all thread in this WG share this local counter, upgraded at the end
-    volatile local int local_counter[1];
-    volatile local int to_upgrade[1];
-    volatile  local int local_highidx[WORKGROUP_SIZE];
+    volatile local int local_counter[2];
+    volatile local int local_highidx[WORKGROUP_SIZE];
+    
+    //
     local_highidx[tid] = 0;
-    if (tid == 0)
-        local_counter[0] = 0;
+    if (tid < 2)
+        local_counter[tid] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
     
     int gid = get_global_id(0);
@@ -95,10 +96,10 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
     barrier(CLK_LOCAL_MEM_FENCE);
     if (local_counter[0]){
         if (tid == 0) 
-            to_upgrade[0] = atomic_add(counter, local_counter[0]);
+            local_counter[1] = atomic_add(counter, local_counter[0]);
         barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid<to_upgrade[0])
-            highidx[tid + to_upgrade[0]] = local_highidx[tid];
+        if (tid<local_counter[0])
+            highidx[tid +local_counter[1]] = local_highidx[tid];
     } // end update global memory
 
 } //end kernel find_peaks
@@ -106,6 +107,20 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
 // function returning the diffraction signal intensity i.e. (Icorrected - Ibackground)
 static float _calc_intensity(float4 value){
 	return value.s1 - value.s2;
+}
+
+// A simple kernel to copy the intensities of the peak
+
+kernel void copy_peak(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global float *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] =  preprocessed[peak_position[tid]].s0;
+    }
 }
 
 /* this kernel takes the list of high-pixels, searches for the local maximum.
