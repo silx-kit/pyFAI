@@ -71,7 +71,7 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
     if (gid<NIMAGE) {
         float radius = radius2d[gid];
         float4 value = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-        if ((radius>=radius_min) && (radius<radius_max)) {
+        if (isfinite(radius) && (radius>=radius_min) && (radius<radius_max)) {
             value = preproc4[gid];
             if (value.s2>0.0) {
                 value.s1 = value.s0 / value.s2; 

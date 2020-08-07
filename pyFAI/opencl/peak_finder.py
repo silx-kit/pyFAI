@@ -96,17 +96,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
         """
-        self.radius = radius
-        if mask is not None:
-            self.mask = numpy.ascontiguousarray(mask, "int8")
-        else:
-            self.mask = None
         assert image_size == radius.size
         nbin = lut[2].size - 1
-        if radius is None:
-            raise RuntimeError("2D radius position is mandatory")
-        if bin_centers is None:
-            raise RuntimeError("1D bin center position is mandatory")
         extra_buffers = [
                          BufferDescription("radius1d", nbin, numpy.float32, mf.READ_ONLY),
                          BufferDescription("counter", 1, numpy.float32, mf.WRITE_ONLY),
@@ -117,13 +108,28 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                  ctx, devicetype, platformid, deviceid,
                  block_size, profile, extra_buffers=extra_buffers)
 
-        if self.mask is not None:
-            self.send_buffer(self.mask, "mask")
-            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
-        if self.bin_centers is not None:
+        if mask is None:
+            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(0)
+            self.mask=None
+        else:
+            self.mask = numpy.ascontiguousarray(mask, numpy.int8)
+            self.send_buffer(self.mask, "mask")            
+            
+        if self.bin_centers is None:
+            raise RuntimeError("1D bin center position is mandatory")
+        else:
             self.send_buffer(self.bin_centers, "radius1d")
-        if self.radius is not None:
-            self.send_buffer(self.radius, "radius2d")
+            
+        if radius is None:
+            raise RuntimeError("2D radius position is mandatory")
+        else:
+            self.radius2d = numpy.array(radius, dtype=numpy.float32) #this makes explicitely a copy
+            if self.mask is not None:
+                msk = numpy.where(self.mask)
+                self.radius2d[msk] = numpy.nan
+            self.send_buffer(self.radius2d, "radius2d")
+            
+            
 
     def set_kernel_arguments(self):
         OCL_CSR_Integrator.set_kernel_arguments(self)
@@ -458,15 +464,13 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             self.events += [EventDescription("copy D->H background_avg", ev1),
                             EventDescription("copy D->H background_std", ev2)]
 
-        
         result = SparseFrame(indexes, values)
         result._shape = data.shape
         result._compute_engine = self.__class__.__name__
-        result._mask = self.mask
+        result._mask = self.radius2d
         result._cutoff = cutoff
         result._noise = noise
         result._radius = self.bin_centers
-        
         result._background_avg = background_avg
         result._background_std = background_std
         result._unit = self.unit
