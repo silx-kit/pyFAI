@@ -66,7 +66,7 @@ float inline read_simple(global float *img,
  * width: the width of the image
  * half_wind_height: window size, i.e. 3 for a 7x7 window
  * half_wind_width: window size, i.e. 3 for a 7x7 window
- * threshold: keep (value-mean)/sigma>threshold
+ * cutoff: keep (value-mean)/sigma>cutoff
  * radius: keep pixel where centroid of patch is centered at less then this radius (1 pixel)
  * noise: minimal value for a peak, or noise level i.e. absolute threshold
  * cnt_high: returns the number of peaks found
@@ -83,7 +83,7 @@ kernel void simple_spot_finder(
                                int width,
                                int half_wind_height,
                                int half_wind_width,
-                               float threshold,
+                               float cutoff,
                                float radius,
                                float noise,
                         global int *cnt_high, //output
@@ -139,7 +139,7 @@ kernel void simple_spot_finder(
         }
         std = sqrt(M2 / cnt);
         centroid = sqrt(centroid_r*centroid_r + centroid_c*centroid_c)/(mean*cnt);
-        if (((target_value-mean) > max(noise, threshold*std)) && (centroid<radius)){
+        if (((target_value-mean) > max(noise, cutoff*std)) && (centroid<radius)){
             //printf("x=%4d y=%4d value=%6.3f mean=%6.3f std=%6.3f radius %6.3f\n",col, row, target_value, mean, std, centroid);
             where = atomic_inc(local_cnt_high);
             if (where<local_size){

@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "06/08/2020"
+__date__ = "07/08/2020"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,6 +37,7 @@ import logging
 from collections import OrderedDict
 import numpy
 import math
+from ..containers import SparseFrame
 from ..utils import EPS32
 from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
 from . import get_x87_volatile_option
@@ -142,16 +143,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                         ("output4", self.cl_mem["output4"]),
                                                         ("peak_intensity", self.cl_mem["peak_intensity"])))
 
-    def _peak_counter(self, data, dark=None, dummy=None, delta_dummy=None,
-                   variance=None, dark_variance=None,
-                   flat=None, solidangle=None, polarization=None, absorption=None,
-                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-                   polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-                   safe=True, error_model=None,
-                   normalization_factor=1.0,
-                   cutoff=4.0, cycle=5, noise=1.0,
-                   radial_range=None):
-
+    def _count(self, data, dark=None, dummy=None, delta_dummy=None,
+               variance=None, dark_variance=None,
+               flat=None, solidangle=None, polarization=None, absorption=None,
+               dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+               polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+               safe=True, error_model=None,
+               normalization_factor=1.0,
+               cutoff=4.0, cycle=5, noise=1.0,
+               radial_range=None):
         """
         Count the number of peaks by:
         * sigma_clipping within a radial bin to measure the mean and the deviation of the background 
@@ -174,14 +174,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
         :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
         :param cycle: perform at maximum this number of cycles. 5 is common.
-        :param out_avgint: destination array or pyopencl array for sum of all data
-        :param out_stderr: destination array or pyopencl array for sum of the number of pixels
-        :param out_merged: destination array or pyopencl array for averaged data (float8!)
-        :return: out_avgint, out_stderr, out_merged
+        :return: number of pixel of high intensity found
         """
         events = []
         self.send_buffer(data, "image")
@@ -321,19 +317,64 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             self.events += events
         return cnt[0]
 
+    def count(self, data, dark=None, dummy=None, delta_dummy=None,
+               variance=None, dark_variance=None,
+               flat=None, solidangle=None, polarization=None, absorption=None,
+               dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+               polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+               safe=True, error_model=None,
+               normalization_factor=1.0,
+               cutoff=4.0, cycle=5, noise=1.0,
+               radial_range=None):
+        """
+        Count the number of peaks by:
+        * sigma_clipping within a radial bin to measure the mean and the deviation of the background 
+        * reconstruct the background in 2D
+        * count the number of peaks above mean + cutoff*sigma  
+        
+        :param data: 2D array with the signal
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidangle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
+        :param normalization_factor: divide raw signal by this value
+        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
+        :param cycle: perform at maximum this number of cycles. 5 is common.
+        :return: number of pixel of high intensity found
+        """
+        if isinstance(error_model, str):
+            error_model = error_model.lower()
+        else:
+            if variance is None:
+                logger.warning("Nor variance not error-model is provided ...")
+            error_model = ""
+        with self.sem:
+            count = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, safe, error_model, normalization_factor, cutoff, cycle, noise, radial_range)
+        return count
+
     def _peak_finder(self, data, dark=None, dummy=None, delta_dummy=None,
-                   variance=None, dark_variance=None,
-                   flat=None, solidangle=None, polarization=None, absorption=None,
-                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-                   polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-                   safe=True, error_model=None,
-                   normalization_factor=1.0,
-                   cutoff=4.0, cycle=5, noise=1.0,
-                   radial_range=None):
+                     variance=None, dark_variance=None,
+                     flat=None, solidangle=None, polarization=None, absorption=None,
+                     dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                     polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+                     safe=True, error_model=None,
+                     normalization_factor=1.0,
+                     cutoff=4.0, cycle=5, noise=1.0,
+                     radial_range=None):
         """
-        Unlocked version of peak_finder
+        Unlocked version of sparsify
         """
-        cnt = self._peak_counter(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, safe, error_model, normalization_factor, cutoff, cycle, noise, radial_range)
+        cnt = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, safe, error_model, normalization_factor, cutoff, cycle, noise, radial_range)
         indexes = numpy.empty(cnt, dtype=numpy.int32)
         signal = numpy.empty(cnt, dtype=numpy.float32)
         
@@ -353,15 +394,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         return indexes, signal
 
 
-    def peak_finder(self, data, dark=None, dummy=None, delta_dummy=None,
-                   variance=None, dark_variance=None,
-                   flat=None, solidangle=None, polarization=None, absorption=None,
-                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-                   polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-                   safe=True, error_model=None,
-                   normalization_factor=1.0,
-                   cutoff=4.0, cycle=5, noise=1.0,
-                   radial_range=None):
+    def sparsify(self, data, dark=None, dummy=None, delta_dummy=None,
+                 variance=None, dark_variance=None,
+                 flat=None, solidangle=None, polarization=None, absorption=None,
+                 dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                 polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+                 safe=True, error_model=None,
+                 normalization_factor=1.0,
+                 cutoff=4.0, cycle=5, noise=1.0,
+                 radial_range=None):
         """
         Perform a sigma-clipping iterative filter within each along each row. 
         see the doc of scipy.stats.sigmaclip for more descriptions.
@@ -398,10 +439,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param normalization_factor: divide raw signal by this value
         :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
         :param cycle: perform at maximum this number of cycles. 5 is common.
-        :param out_avgint: destination array or pyopencl array for sum of all data
-        :param out_stderr: destination array or pyopencl array for sum of the number of pixels
-        :param out_merged: destination array or pyopencl array for averaged data (float8!)
-        :return: out_avgint, out_stderr, out_merged
+        :return: SparseFrame object, see `intensity`, `x` and `y` properties   
+
         """
         if isinstance(error_model, str):
             error_model = error_model.lower()
@@ -410,18 +449,49 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 logger.warning("Nor variance not error-model is provided ...")
             error_model = ""
         with self.sem:
-            index, signal = self._peak_finder(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, safe, error_model, normalization_factor, cutoff, cycle, noise, radial_range)
-        peaks = numpy.empty(index.size, dtype=numpy.dtype([("x", numpy.int32),("y", numpy.int32), ("I", numpy.float32)]))
-        peaks["x"] = index % data.shape[1]
-        peaks["y"] = index // data.shape[1]
-        peaks["I"] = signal
-        return peaks
+            indexes, values = self._peak_finder(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, safe, error_model, normalization_factor, cutoff, cycle, noise, radial_range)
+            background_avg = numpy.zeros(self.bins, dtype=numpy.float32)
+            background_std = numpy.zeros(self.bins, dtype=numpy.float32)
+            ev1 = pyopencl.enqueue_copy(self.queue, background_avg, self.cl_mem["averint"])
+            ev2 = pyopencl.enqueue_copy(self.queue, background_std, self.cl_mem["stderr"])
+        if self.profile:
+            self.events += [EventDescription("copy D->H background_avg", ev1),
+                            EventDescription("copy D->H background_std", ev2)]
 
-    def sparsify(self):
-        #TODO
-        pass
+        
+        result = SparseFrame(indexes, values)
+        result._shape = data.shape
+        result._compute_engine = self.__class__.__name__
+        result._mask = self.mask
+        result._cutoff = cutoff
+        result._noise = noise
+        result._radius = self.bin_centers
+        
+        result._background_avg = background_avg
+        result._background_std = background_std
+        result._unit = self.unit
+        result._has_dark_correction = dark is not None
+        result._has_flat_correction = flat is not None
+        result._normalization_factor = normalization_factor
+        result._has_polarization_correction = polarization is not None
+        result._has_solidangle_correction = solidangle is not None
+        result._has_absorption_correction = absorption is not None
+        result._metadata = None
+        result._method = "sparsify"
+        result._method_called = None
+        result._background_cycle=cycle 
+        result._radial_range=radial_range
+        result.dummy = dummy
+        result.delta_dummy = delta_dummy
+        
+        return result
+
     # Name of the default "process" method
-    __call__ = peak_finder
+    __call__ = sparsify
+
+#===============================================================================
+# Simple variante
+#===============================================================================
 
 class OCL_SimplePeakFinder(OpenclProcessing):
     BLOCK_SIZE = 1024 #works with 32x32 patches (1024 threads)
@@ -582,7 +652,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                                                                  ("width", numpy.int32(self.shape[1])),
                                                                  ("half_wind_height", numpy.int32(3)),
                                                                  ("half_wind_width", numpy.int32(3)),
-                                                                 ("threshold", numpy.float32(3.0)),
+                                                                 ("cutoff", numpy.float32(3.0)),
                                                                  ("radius", numpy.float32(1.0)),
                                                                  ("noise", numpy.float32(1.0)),
                                                                  ("count", self.cl_mem["count"]),
@@ -639,24 +709,23 @@ class OCL_SimplePeakFinder(OpenclProcessing):
     def _count(self, 
                image,
                window=7,
-               threshold=3.0,
+               cutoff=3.0,
                radius=1.0,
                noise=1.0
                ):
-        """method that just count the number of peaks
+        """Just count the number of peaks
         
         Note: this method in unprotected
         
-        See doc of `search`
+        See doc of `count`
         :return: number of peak found in image
         """ 
-        assert image.shape == self.shape
         self.send_buffer(image, "image", force_cast=True)
         self.kernels.memset_int(self.queue, (1,), (1,), *list(self.cl_kernel_args["memset_int"].values()))
         
         kw = self.cl_kernel_args["simple_spot_finder"]
         kw["half_wind_height"]=kw["half_wind_width"]=numpy.int32(window//2)
-        kw["threshold"] = numpy.float32(threshold)
+        kw["cutoff"] = numpy.float32(cutoff)
         kw["radius"] = numpy.float32(radius)
         kw["noise"] = numpy.float32(noise)
         wg = self.workgroup_size["simple_spot_finder"]
@@ -669,27 +738,52 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                 EventDescription("simple_spot_finder", ev),
                 EventDescription("copy_count", copy_count)]
         return count[0]
-    
-    def search(self, 
+
+    def count(self,
                image,
                window=7,
-               threshold=3.0,
+               cutoff=3.0,
                radius=1.0,
                noise=1.0
                ):
+        """Just count the number of peaks in the image
+        
+        A peak is a positive outlier at background + cutoff * deviation 
+        where the background is assessed as the mean over a patch of size (window x window)
+        The deviation is the std of the same patch. 
+        
+        :param image: 2d array with an image
+        :param window: size of the window, i.e. 7 for 7x7 patch size.
+        :param threshhold: keep peaks with I > mean + cutoff*std
+        :param radius: keep points with centroid on center within this radius (in pixel)
+        :param noise: minimum signal for peak to discard noisy region.        
+        :return: number of peak found in image
+        """ 
+        assert image.shape == self.shape
+        with self.sem:
+            return self._count(image, window, cutoff, radius, noise)
+
+        
+    def sparsify(self, 
+                 image,
+                 window=7,
+                 cutoff=3.0,
+                 radius=1.0,
+                 noise=1.0
+                 ):
         """
         Search for peaks in this image and return a list of them
         
         :param image: 2d array with an image
         :param window: size of the window, i.e. 7 for 7x7 patch size.
-        :param threshhold: keep peaks with I > mean + threshold*std
+        :param threshhold: keep peaks with I > mean + cutoff*std
         :param radius: keep points with centroid on center within this radius (in pixel)
         :param noise: minimum signal for peak to discard noisy region.
-        :return: array of peak coordinates with their intensity  
+        :return: SparseFrame object, see `intensity`, `x` and `y` properties   
         """
         assert image.shape == self.shape
         with self.sem:
-            count = self._count(image, window, threshold, radius, noise)
+            count = self._count(image, window, cutoff, radius, noise)
             kw = self.cl_kernel_args["copy_peak"]
             size = (count + self.BLOCK_SIZE-1)&~(self.BLOCK_SIZE-1)
             
@@ -706,15 +800,14 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                           EventDescription("copy D->H index", copy_index),
                           EventDescription("copy D->H values", copy_value)
                           ]
-                          
-        peaks = numpy.empty(count, dtype=numpy.dtype([("x", numpy.int32),
-                                                      ("y", numpy.int32),
-                                                      ("I", numpy.float32),
-                                                      ]))
-        peaks["x"] = indexes % self.shape[1]
-        peaks["y"] = indexes // self.shape[1]
-        peaks["I"] = values
-        return peaks
+        result = SparseFrame(indexes, values)
+        result._compute_engine = self.__class__.__name__
+        result._mask = self.on_device["mask"]
+        result._shape = self.shape
+        result._cutoff = cutoff
+        result._noise = noise
+        result._radius = radius
+        return result
     
-    __call__ = search
+    __call__ = sparsify
         
