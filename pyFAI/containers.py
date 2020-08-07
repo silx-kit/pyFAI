@@ -730,8 +730,8 @@ class SparseFrame(tuple):
         self._shape = None
         self._mask = None
         self._radial = None
-        self._background = None
-        self._background_err = None
+        self._background_avg = None
+        self._background_std = None
         self._unit = None
         self._has_dark_correction = None
         self._has_flat_correction = None
@@ -807,3 +807,12 @@ class SparseFrame(tuple):
     @property
     def radius(self):
         return self._radius
+
+    @property 
+    def background_avg(self):
+        return self._background_avg
+    
+    @property 
+    def _background_std(self):
+        return self._background_std
+
