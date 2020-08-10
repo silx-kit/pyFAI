@@ -57,17 +57,18 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
                               global  int    *counter,
                               global  int    *highidx){
     int tid = get_local_id(0);
+    int gid = get_global_id(0);
     // all thread in this WG share this local counter, upgraded at the end
     volatile local int local_counter[2];
-    volatile local int local_highidx[WORKGROUP_SIZE];
-    
-    //
+    volatile local int local_highidx[WORKGROUP_SIZE];    
     local_highidx[tid] = 0;
-    if (tid < 2)
-        local_counter[tid] = 0;
-    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int i=0; i<2; i+=WORKGROUP_SIZE){
+        if (i+tid < 2){
+            local_counter[i+tid] = 0;
+        }
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);    
     
-    int gid = get_global_id(0);
     if (gid<NIMAGE) {
         float radius = radius2d[gid];
         float4 value = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
