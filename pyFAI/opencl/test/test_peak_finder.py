@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2020"
+__date__ = "10/08/2020"
 
 import logging
 import numpy
@@ -44,7 +44,7 @@ import fabio
 from ...test.utilstest import UtilsTest
 from ...azimuthalIntegrator import AzimuthalIntegrator
 if ocl:
-    from ..peak_finder import OCL_SimplePeakFinder, OCL_PeakFinder
+    from ..peak_finder import OCL_SimplePeakFinder, OCL_PeakFinder, densify
 logger = logging.getLogger(__name__)
 
 
@@ -99,12 +99,20 @@ class TestOclPeakFinder(unittest.TestCase):
         bin_centers = engine.bin_centers 
         lut =  engine.lut
         distance = self.ai._cached_array["r_center"]  
-        pf = OCL_PeakFinder(lut, numpy.prod(self.img.shape), unit=unit, radius=distance, bin_centers=bin_centers)
-        res = pf(self.img, error_model="poisson")
+        pf = OCL_PeakFinder(lut, numpy.prod(self.img.shape), unit=unit, radius=distance, bin_centers=bin_centers, mask=msk)
+        res = pf(self.img, error_model="poisson", dummy=-1)
         s1 = set((i["x"], i["y"]) for i in self.ref) 
         s2 = set(zip(res.x, res.y))
         self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")            
         self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
+        
+        #Test densification function
+        dense = densify(res)
+        self.assertLess(abs(dense-self.img).max(), 20, "max difference is contained")
+        self.assertLess(abs((dense-self.img).mean()), 1, "mean of difference is close to zero")
+        self.assertLess((dense-self.img).std(), 3, "standard deviation of difference is contained")
+        #self.assertTrue(numpy.allclose(self.img, dense), "Reconstructed image matches")
+        
 
 
 def suite():

@@ -728,7 +728,9 @@ class SparseFrame(tuple):
 
     def __init__(self, index, intensity):
         self._shape = None
+        self._dtype = None
         self._mask = None
+        self._dummy = None
         self._radial = None
         self._background_avg = None
         self._background_std = None
@@ -773,13 +775,6 @@ class SparseFrame(tuple):
         :rtype: numpy.ndarray
         """
         return self._mask
-    @mask.setter
-    def mask(self, mask):
-        assert mask.ndim == 2
-        if self._mask is None:
-            self._mask = mask
-        else:
-            raise TypeError('SparseFrame object does not support item re-assignment')
      
     @property
     def x(self):
@@ -816,3 +811,14 @@ class SparseFrame(tuple):
     def background_std(self):
         return self._background_std
 
+    @property
+    def shape(self):
+        return self._shape
+    
+    @property
+    def dtype(self):
+        return self._dtype
+    
+    @property
+    def dummy(self):
+        return self._dummy

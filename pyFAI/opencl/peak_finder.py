@@ -29,14 +29,14 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "07/08/2020"
+__date__ = "10/08/2020"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
+import math, copy
 import numpy
-import math
 from ..containers import SparseFrame
 from ..utils import EPS32
 from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
@@ -466,6 +466,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
         result = SparseFrame(indexes, values)
         result._shape = data.shape
+        result._dtype = data.dtype
         result._compute_engine = self.__class__.__name__
         result._mask = self.radius2d
         result._cutoff = cutoff
@@ -485,14 +486,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         result._method_called = None
         result._background_cycle=cycle 
         result._radial_range=radial_range
-        result.dummy = dummy
-        result.delta_dummy = delta_dummy
+        result._dummy = dummy
+        #result.delta_dummy = delta_dummy
         
         return result
 
     # Name of the default "process" method
     __call__ = sparsify
-
+ 
+     
 #===============================================================================
 # Simple variante
 #===============================================================================
@@ -805,9 +807,9 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                           EventDescription("copy D->H values", copy_value)
                           ]
         result = SparseFrame(indexes, values)
+        result._shape = self.shape
         result._compute_engine = self.__class__.__name__
         result._mask = self.on_device["mask"]
-        result._shape = self.shape
         result._cutoff = cutoff
         result._noise = noise
         result._radius = radius
@@ -815,3 +817,32 @@ class OCL_SimplePeakFinder(OpenclProcessing):
     
     __call__ = sparsify
         
+#===============================================================================
+# Rebuild an array from sparse informations
+#===============================================================================
+
+def densify(sparse):
+    """Convert a SparseFrame object into a dense image
+    
+    :param sparse: SparseFrame object
+    :return: dense image as numpy array
+    """
+    assert isinstance(sparse, SparseFrame)
+    background = numpy.array(sparse.background_avg, dtype=numpy.float64) #explicitly make a copy
+    if background is None:
+        dense = numpy.zeros(sparse.shape)
+    else:
+        # the mask contains the 2D radius with NaNs at masked positions 
+        dense = numpy.interp(sparse.mask, sparse.radius, background)
+    flat = dense.ravel()
+    flat[sparse.index] = sparse.intensity
+    if sparse.mask is not None:
+        if numpy.issubdtype(sparse.mask.dtype, numpy.integer):
+            masked = numpy.where(sparse.mask)
+        else:
+            masked = numpy.where(numpy.logical_not(numpy.isfinite(sparse.mask)))
+    if numpy.issubdtype(sparse.dtype, numpy.integer):
+        dense[masked] = sparse.dummy
+    else:
+        dense[masked] = numpy.NaN
+    return numpy.ascontiguousarray(dense, sparse.dtype)
