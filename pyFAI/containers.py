@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2020"
+__date__ = "10/08/2020"
 __status__ = "development"
 
 from collections import namedtuple
@@ -813,6 +813,6 @@ class SparseFrame(tuple):
         return self._background_avg
     
     @property 
-    def _background_std(self):
+    def background_std(self):
         return self._background_std
 
