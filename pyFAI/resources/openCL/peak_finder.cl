@@ -120,9 +120,82 @@ kernel void copy_peak(global int *peak_position,
     tid = get_global_id(0);    
     cnt = counter[0];
     if (tid<cnt){
-        peak_intensity[tid] =  preprocessed[peak_position[tid]].s0;
+        peak_intensity[tid] = preprocessed[peak_position[tid]].s0;
     }
 }
+
+kernel void copy_peak_uint8(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global unsigned char *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (unsigned char)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_int8(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global char *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (char)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_uint16(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global unsigned short *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (unsigned short)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_int16(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global short *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (short)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_uint32(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global unsigned int *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (unsigned int)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_int32(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global int *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (int)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
 
 /* this kernel takes the list of high-pixels, searches for the local maximum.
  * 

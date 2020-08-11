@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "10/08/2020"
+__date__ = "11/08/2020"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -382,19 +382,27 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         """
         cnt = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, safe, error_model, normalization_factor, cutoff, cycle, noise, radial_range)
         indexes = numpy.empty(cnt, dtype=numpy.int32)
-        signal = numpy.empty(cnt, dtype=numpy.float32)
+        dtype = data.dtype
+        if dtype.kind == 'f':
+            dtype = numpy.float32
+            kernel = self.program.copy_peak
+        elif dtype.kind in "iu":
+            if dtype.itemsize>4:
+                dtype = numpy.dtype("uint32") if dtype.kind=="u" else numpy.dtype("int32")
+            kernel =  self.program.__getattr__("copy_peak_"+dtype.name)
+        signal = numpy.empty(cnt, dtype)
         
         #Call kernel to copy intensities
         kw = self.cl_kernel_args["copy_peak"]
         size = (cnt + self.BLOCK_SIZE-1)&~(self.BLOCK_SIZE-1)
-        ev0 = self.program.copy_peak(self.queue,(size,), (self.BLOCK_SIZE,),
+        ev0 = kernel(self.queue,(size,), (self.BLOCK_SIZE,),
                                  *list(kw.values()))
         
         ev1 = pyopencl.enqueue_copy(self.queue, indexes, self.cl_mem["peak_position"])
         ev2 = pyopencl.enqueue_copy(self.queue, signal, self.cl_mem["peak_intensity"])
 
         if self.profile:
-            self.events += [EventDescription("copy D->D peak_intenity", ev0),
+            self.events += [EventDescription("copy D->D + cast %s intenity"%dtype.name, ev0),
                             EventDescription("copy D->H peak_position", ev1),
                             EventDescription("copy D->H peak_intensty", ev2)]
         return indexes, signal
@@ -842,6 +850,7 @@ def densify(sparse):
         else:
             masked = numpy.where(numpy.logical_not(numpy.isfinite(sparse.mask)))
     if numpy.issubdtype(sparse.dtype, numpy.integer):
+        dense = numpy.round(dense)
         dense[masked] = sparse.dummy
     else:
         dense[masked] = numpy.NaN

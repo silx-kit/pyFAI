@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/08/2020"
+__date__ = "11/08/2020"
 
 import logging
 import numpy
@@ -105,7 +105,6 @@ class TestOclPeakFinder(unittest.TestCase):
         s2 = set(zip(res.x, res.y))
         self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")            
         self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
-        
         #Test densification function
         dense = densify(res)
         self.assertLess(abs(dense-self.img).max(), 20, "max difference is contained")
