@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/08/2020"
+__date__ = "12/08/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -78,8 +78,8 @@ def save_sparse(filename, frames, beamline="ESRF_ID00", ai=None):
     with Nexus(filename, mode="w", creator="pyFAI_%s"%version) as nexus:
         instrument = nexus.new_instrument(instrument_name=beamline)
         sparse_grp = nexus.new_class(instrument, "sparse_frames", class_type="NXcollection")
-        sparse_grp["frame_ptr"] = numpy.concatenate(([0],numpy.cumsum([i.intensity.size for i in frames])),dtype=numpy.int32)
-        index = numpy.concatenate([i.index for i in frames]).astype("int32")
+        sparse_grp["frame_ptr"] = numpy.concatenate(([0],numpy.cumsum([i.intensity.size for i in frames]))).astype(dtype=numpy.uint32)
+        index = numpy.concatenate([i.index for i in frames]).astype(numpy.uint32)
         intensity = numpy.concatenate([i.intensity for i in frames])
         sparse_grp["script"] = _generate_densify_script(numpy.issubdtype(frames[0].dtype, numpy.integer))
         sparse_grp.create_dataset("index", data=index, **cmp)
@@ -103,7 +103,7 @@ def save_sparse(filename, frames, beamline="ESRF_ID00", ai=None):
             config_grp["type"] = "text/json"
             config_grp["data"] = json.dumps(ai.get_config(), indent=2, separators=(",\r\n", ": "))
         
-            detector_grp = nexus.new_class(instrument, str(ai.detector), "NXdetector")
+            detector_grp = nexus.new_class(instrument, ai.detector.name, "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)
             dist_ds.attrs["units"] = "m"
             xpix_ds = detector_grp.create_dataset("x_pixel_size", data=ai.pixel2)
