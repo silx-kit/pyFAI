@@ -496,7 +496,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         result._dtype = data.dtype
         result._compute_engine = self.__class__.__name__
         result._mask = self.radius2d
-        result._cutoff = cutoff
+        result._cutoff = cutoff_pick
         result._noise = noise
         result._radius = self.bin_centers
         result._background_avg = background_avg
