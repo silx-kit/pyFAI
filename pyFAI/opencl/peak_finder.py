@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "11/08/2020"
+__date__ = "12/08/2020"
 __copyright__ = "2014-2019, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -156,7 +156,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                safe=True, error_model=None,
                normalization_factor=1.0,
-               cutoff=4.0, cycle=5, noise=1.0,
+               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
                radial_range=None):
         """
         Count the number of peaks by:
@@ -181,8 +181,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param normalization_factor: divide raw signal by this value
-        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common 
         :param cycle: perform at maximum this number of cycles. 5 is common.
+        :param noise: minimum meaningful signal. Fixed threshold for picking 
+        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search. 
         :return: number of pixel of high intensity found
         """
         events = []
@@ -191,10 +194,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
         memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
         events.append(EventDescription("memset_ng", memset))
+        
+        # Prepare preprocessing
         kw_corr = self.cl_kernel_args["corrections4"]
-        kw_int = self.cl_kernel_args["csr_sigma_clip4"]
-        kw_proj = self.cl_kernel_args["find_peaks"]
-
         if dummy is not None:
             do_dummy = numpy.int8(1)
             dummy = numpy.float32(dummy)
@@ -282,9 +284,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
         events.append(EventDescription("corrections", ev))
 
+        # Prepare sigma-clipping
+        kw_int = self.cl_kernel_args["csr_sigma_clip4"]        
         wg = self.workgroup_size["csr_sigma_clip4"][0]
-        kw_proj["cutoff"] = kw_int["cutoff"] = numpy.float32(cutoff)
+        kw_int["cutoff"] = numpy.float32(cutoff_clip)
         kw_int["cycle"] = numpy.int32(cycle)
+        
         if error_model.startswith("azim"):
             kw_int["azimuthal"] = numpy.int32(1)
         else:
@@ -303,14 +308,16 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset2))
 
+        # Prepare picking
+        kw_proj = self.cl_kernel_args["find_peaks"]
+        kw_proj["cutoff"] = numpy.float32(cutoff_pick)
+        kw_proj["noise"] = numpy.float32(noise)
         if radial_range is not None:
             kw_proj["radius_min"] = numpy.float32(min(radial_range))
             kw_proj["radius_max"] = numpy.float32(max(radial_range) * EPS32)
         else:
             kw_proj["radius_min"] = numpy.float32(0.0)
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
-
-        kw_proj["noise"] = numpy.float32(noise)
 
         peak_search = self.program.find_peaks(self.queue, self.wdim_data, self.workgroup_size["corrections4"], *list(kw_proj.values()))
         events.append(EventDescription("peak_search", peak_search))
@@ -330,7 +337,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                safe=True, error_model=None,
                normalization_factor=1.0,
-               cutoff=4.0, cycle=5, noise=1.0,
+               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
                radial_range=None):
         """
         Count the number of peaks by:
@@ -354,8 +361,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common 
         :param cycle: perform at maximum this number of cycles. 5 is common.
+        :param noise: minimum meaningful signal. Fixed threshold for picking 
+        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
         :return: number of pixel of high intensity found
         """
         if isinstance(error_model, str):
@@ -365,7 +375,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 logger.warning("Nor variance not error-model is provided ...")
             error_model = ""
         with self.sem:
-            count = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, safe, error_model, normalization_factor, cutoff, cycle, noise, radial_range)
+            count = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, 
+                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, 
+                                safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
         return count
 
     def _peak_finder(self, data, dark=None, dummy=None, delta_dummy=None,
@@ -375,12 +387,14 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                      polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                      safe=True, error_model=None,
                      normalization_factor=1.0,
-                     cutoff=4.0, cycle=5, noise=1.0,
+                     cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
                      radial_range=None):
         """
         Unlocked version of sparsify
         """
-        cnt = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, safe, error_model, normalization_factor, cutoff, cycle, noise, radial_range)
+        cnt = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, 
+                          dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, 
+                          safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
         indexes = numpy.empty(cnt, dtype=numpy.int32)
         dtype = data.dtype
         if dtype.kind == 'f':
@@ -415,7 +429,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                  polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                  safe=True, error_model=None,
                  normalization_factor=1.0,
-                 cutoff=4.0, cycle=5, noise=1.0,
+                 cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
                  radial_range=None):
         """
         Perform a sigma-clipping iterative filter within each along each row. 
@@ -451,8 +465,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common 
         :param cycle: perform at maximum this number of cycles. 5 is common.
+        :param noise: minimum meaningful signal. Fixed threshold for picking 
+        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
         :return: SparseFrame object, see `intensity`, `x` and `y` properties   
 
         """
@@ -463,7 +480,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 logger.warning("Nor variance not error-model is provided ...")
             error_model = ""
         with self.sem:
-            indexes, values = self._peak_finder(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, safe, error_model, normalization_factor, cutoff, cycle, noise, radial_range)
+            indexes, values = self._peak_finder(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, 
+                                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, 
+                                                safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
             background_avg = numpy.zeros(self.bins, dtype=numpy.float32)
             background_std = numpy.zeros(self.bins, dtype=numpy.float32)
             ev1 = pyopencl.enqueue_copy(self.queue, background_avg, self.cl_mem["averint"])
