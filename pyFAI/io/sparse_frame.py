@@ -53,13 +53,12 @@ def _generate_densify_script(integer):
     res = """#python
 import numpy
 frames = []
+masked = numpy.where(numpy.logical_not(numpy.isfinite(mask)))
 for idx, bg in enumerate(background_avg):
     dense = numpy.interp(mask, radius, bg)
     flat = dense.ravel()
-    start = frame_ptr[idx]
-    stop = frame_ptr[idx+1]
-    flat[index[start:stop] = intensity[start:stop]
-    masked = numpy.where(numpy.logical_not(numpy.isfinite(mask)))"""
+    start, stop = frame_ptr[idx:idx+2]
+    flat[index[start:stop]] = intensity[start:stop]"""
     if integer:
         res += """
     dense = numpy.round(dense)
@@ -81,11 +80,19 @@ def save_sparse(filename, frames, beamline="ESRF_ID00", ai=None):
         sparse_grp["frame_ptr"] = numpy.concatenate(([0],numpy.cumsum([i.intensity.size for i in frames]))).astype(dtype=numpy.uint32)
         index = numpy.concatenate([i.index for i in frames]).astype(numpy.uint32)
         intensity = numpy.concatenate([i.intensity for i in frames])
-        sparse_grp["script"] = _generate_densify_script(numpy.issubdtype(frames[0].dtype, numpy.integer))
+        is_integer = numpy.issubdtype(intensity.dtype, numpy.integer)
+        sparse_grp["script"] = _generate_densify_script(is_integer)
         sparse_grp.create_dataset("index", data=index, **cmp)
         sparse_grp.create_dataset("intensity", data=intensity, **cmp)
         radius = frames[0].radius
         mask = frames[0].mask
+        dummy = frames[0].dummy
+        if dummy is None:
+            if is_integer:
+                dummy = 0
+            else:
+                dummy = numpy.NaN
+        sparse_grp.create_dataset("dummy", data=dummy)
         sparse_grp.create_dataset("radius", data=radius, dtype=numpy.float32)
         sparse_grp.create_dataset("mask", data=mask, **cmp)
         background_avg = numpy.vstack([f.background_avg for f in frames])
