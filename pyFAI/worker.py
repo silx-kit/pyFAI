@@ -82,7 +82,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/07/2020"
+__date__ = "02/09/2020"
 __status__ = "development"
 
 import threading
@@ -148,10 +148,22 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
     if not consume_keys:
         config = dict(config)
 
-#   #This sets only what is part of the poni-file
-    config_reader = integration_config.ConfigurationReader(config)
-    poni = config_reader.pop_ponifile()
-    ai._init_from_poni(poni)
+    # Geometry
+    for key in ("dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
+        value = config.pop(key, None)
+        if value is not None:
+            ai.__setattr__(key, value)
+    wavelength = config.pop("wavelength", None)
+    if wavelength:
+        if wavelength <= 0 or wavelength > 1e-6:
+            logger.warning("Wavelength is in meter... unlikely value %s", wavelength)
+        ai.wavelength = wavelength
+
+    # Detector
+    reader = integration_config.ConfigurationReader(config)
+    detector = reader.pop_detector()
+    if detector is not None:
+        ai.detector = detector
 
     value = config.pop("chi_discontinuity_at_0", False)
     if value:
