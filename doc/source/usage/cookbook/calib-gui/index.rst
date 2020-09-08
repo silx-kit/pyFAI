@@ -10,10 +10,10 @@ Calibration of a diffraction setup using the Graphical User Interface (GUI)
 
 Here is the *cookbook* which will explain you how to calibrate the setup of a
 diffraction experiment within five minutes.
-No advanced feature are presented.
+No advanced features are presented.
 
 The graphical tool for geometry calibration is called ``pyFAI-calib2``,
-just open a terminal and type its name plus return to startup the application
+just open a terminal and type its name plus return to start up the application
 which looks like this:
 
 .. code-block:: shell
@@ -42,7 +42,7 @@ This task contains all entries relative to the experiment setup.
 It is the place where you can enter the energy of the beam (or the wavelength),
 the calibrant and the detector used.
 
-You have to provide the calibration image which is then displayed in the cental panel.
+You have to provide the calibration image which is then displayed in the central panel.
 For example the file used in this cookbook can be downloaded from this link:
 `Eiger4M_Al2O3_13.45keV.edf <http://www.silx.org/pub/pyFAI/cookbook/calibration/Eiger4M_Al2O3_13.45keV.edf>`_.
 Click on the ``...`` on the right of ``Image file`` to open the file-browser
@@ -73,17 +73,17 @@ There are 3 drawing tools:
 
 * rectangular selection
 * polygonal selection (click on the first point to finish edition)
-* Pencil selection
+* pencil selection
 
 In addition, the mask can often be setup easily using one or two thresholds, or
 by discarding infinite values or `NaN`.
 Finally, masks can be inverted, saved and restored.
 
 In our test-image, the Eiger detector has flagged overflow pixel with a very high value.
-Discarding pixel above 65000 removes automatically all invalid pixels.
+Discarding pixel values above 65000 removes automatically all invalid pixels.
 To remove pixels with some shadow, like the beam stop, the easiest is to use the
 polygon tool (click on the square of the first point to finish the edition)
-as in the figure bellow:
+as in the figure below:
 
 
 .. figure:: 2_mask.png
@@ -103,7 +103,7 @@ image, and to assign the proper ring number to each group.
 
 You will need to pick at least two rings.
 Selecting the inner-most (2 or 3) rings is advised as they are the most intense
-and miss assignment is unlikely.
+and misassignment is unlikely.
 
 .. figure:: 3_picking.png
    :align: center
@@ -139,13 +139,13 @@ Results may be displayed in various units by right-clicking on the unit.
 ------------
 
 As soon as a geometry is computed, it can be displayed as a 3D rendering.
-This view is available from the fitting screen, as a dedicated dialog.
+This view is available from the fitting screen, as a dedicated dialog box.
 
-It uses the internal modelization of pyFAI: each pixels of the redector is
-spacialized. It textures them using the mask and the calibration image.
+It uses the internal modelization of pyFAI: each pixel of the detector is
+spatialized. It textures them using the mask and the calibration image.
 
 The beam is displayed a red cylinder smaller than the detector pixel size.
-It hit a symbol of the sample on one side, and according to the geometry can hit
+It hits a symbol of the sample on one side, and according to the geometry can hit
 the detector on the other side.
 
 .. figure:: 4_3d_view.png
@@ -156,7 +156,7 @@ Automatic peak-extraction
 -------------------------
 
 Depending on the result, one may want to come back on the ``Peak picking`` task to
-re-assign the ring number or select different peaks.
+re-assign the ring numbers or select different peaks.
 
 Or if it looks good, extracting many rings will allow for a more reliable fit.
 For this, set the ``number of rings`` in the ``Recalibrate`` part and click ``Extract``,
