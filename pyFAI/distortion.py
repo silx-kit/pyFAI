@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/07/2020"
+__date__ = "02/09/2020"
 __status__ = "development"
 
 import logging
@@ -106,7 +106,7 @@ class Distortion(object):
         if mask is None:
             self.mask = numpy.ascontiguousarray(self.detector.mask, numpy.int8)
         elif mask is False:
-            self.mask = numpy.zeros(self.detector.mask.shape, numpy.int8)
+            self.mask = numpy.zeros(self.detector.shape, numpy.int8)
         else:
             self.mask = numpy.ascontiguousarray(mask, numpy.int8)
         self.resize = resize
@@ -127,12 +127,14 @@ class Distortion(object):
         else:
             self.method = method.lower()
         if (self.detector.uniform_pixel and self.detector.IS_FLAT):
-            csr = identity(numpy.prod(self.detector.shape),
-                           dtype=numpy.float32,
-                           format="csr")
+            sparse = identity(numpy.prod(self.detector.shape),
+                              dtype=numpy.float32,
+                              format="coo")
             if self.detector.mask is not None:
-                masked = numpy.where(self.detector.mask)
-                csr[masked] = 0.0
+                masked = numpy.where(self.detector.mask.ravel())
+                sparse.data[masked] = 0.0
+                sparse.eliminate_zeros()
+            csr = sparse.tocsr()
             if self.method == "lut":
                 self.lut = sparse_utils.CSR_to_LUT(csr.data, csr.indices, csr.indptr)
             else:
@@ -196,6 +198,7 @@ class Distortion(object):
         :return: pixel corner positions (in pixel units) on the regular grid
         :rtype: ndarray of shape (nrow, ncol, 4, 2)
         """
+        logger.debug("in Distortion.calc_pos")
         if self.delta1 is None:
             with self._sem:
                 if self.delta1 is None:
@@ -235,11 +238,12 @@ class Distortion(object):
         [-17.48634 : 1027.0543, -22.768829 : 2028.3689]
         We chose to discard pixels falling outside the [0:1025,0:2048] range with a lose of intensity
         """
-        if self.pos is None:
-            pos = self.calc_pos()
-        else:
-            pos = self.pos
+        logger.debug("in Distortion.calc_size")
         if self.max_size is None:
+            if self.pos is None:
+                pos = self.calc_pos()
+            else:
+                pos = self.pos
             with self._sem:
                 if self.max_size is None:
                     if _distortion and use_cython:
@@ -262,8 +266,7 @@ class Distortion(object):
     def calc_init(self):
         """Initialize all arrays
         """
-        self.calc_pos()
-        self.calc_size()
+        logger.debug("in Distortion.calc_init")
         self.calc_LUT()
         if ocl and self.device is not None:
             if "lower" in dir(self.device):
@@ -296,12 +299,14 @@ class Distortion(object):
 
         :return: look up table either in CSR or LUT format depending on serl.method
         """
-        if self.pos is None:
-            self.calc_pos()
+        logger.debug("in Distortion.calc_LUT")
 
-        if self.max_size is None and not use_common:
-            self.calc_size()
         if self.lut is None:
+            if self.pos is None:
+                self.calc_pos()
+    
+            if self.max_size is None and not use_common:
+                self.calc_size()
             with self._sem:
                 if self.lut is None:
                     mask = self.mask
@@ -479,7 +484,7 @@ class Distortion(object):
                                                normalization_factor=normalization_factor,
                                                out_merged=False
                                                )
-            if variance is not None:
+            if variance is None:
                 if image.ndim == 2:
                     out = res.intensity.reshape(self._shape_out)
                 else:

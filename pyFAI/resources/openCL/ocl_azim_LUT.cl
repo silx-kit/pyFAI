@@ -183,16 +183,18 @@ float8 static inline LUTxVec4(const   global  float4  *data,
 /**
  * \brief Performs 1d azimuthal integration based on LUT sparse matrix multiplication on preprocessed data
  *
-* @param weights     Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
+* @param weights      Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
  * @param lut         Pointer to an 2D-array of (unsigned integers,float) containing the index of input pixels and the fraction of pixel going to the bin
+ * @param empty       value given for empty bins, NaN is a good guess
  * @param summed      Pointer to the output 1D array with all the histograms: (sum_signal_Kahan, sum_variance_Kahan, sum_norm_Kahan, sum_count_Kahan) 
- * @param averint   Float pointer to the output 1D array with the unweighted histogram
- * @param stderr      Float pointer to the output 1D array with the diffractogram
+ * @param averint     Float pointer to the output 1D array with the averaged signal
+ * @param stderr      Float pointer to the output 1D array with the propagated error
  *
  */
 kernel void
 lut_integrate4( const   global  float4  *weights,
-                const   global    struct lut_point_t *lut,
+                const   global  struct  lut_point_t *lut,
+                const           float   empty,
                         global  float8  *summed,
                         global  float   *averint,
                         global  float   *stderr)
@@ -206,8 +208,8 @@ lut_integrate4( const   global  float4  *weights,
 				stderr[bin_num] = sqrt(result.s2) / result.s4;
 		}
 		else {
-				averint[bin_num] = NAN;
-				stderr[bin_num] = NAN;
+				averint[bin_num] = empty;
+				stderr[bin_num] = empty;
 		} //end else
     }
 }//end kernel

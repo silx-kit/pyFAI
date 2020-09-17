@@ -36,13 +36,11 @@ detector and transform it. It is rather a description of the experimental setup.
 
 """
 
-from __future__ import division, print_function
-
 __author__ = "Jerome Kieffer" 
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France" 
-__date__ = "25/06/2020"    
+__date__ = "21/07/2020"    
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1226,7 +1224,7 @@ class Geometry(object):
 
         :param filename: name of the file to load
         :type filename: string
-        :return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
+        :return: instance of Geometry of AzimuthalIntegrator set-up with the parameter from the file.
         """
         inst = cls()
         inst.load(filename)
@@ -1240,8 +1238,17 @@ class Geometry(object):
         :type filename: string
         :return: itself with updated parameters
         """
-        poni = ponifile.PoniFile(data=filename)
+        try:
+            with open(filename) as f:
+                dico = json.load(f) 
+        except Exception:
+            logger.info("Unable to parse %s as JSON file, defaulting to PoniParser", filename)
+            poni = ponifile.PoniFile(data=filename)
+        else:
+            config = integration_config.ConfigurationReader(dico)
+            poni = config.pop_ponifile()
         self._init_from_poni(poni)
+            
         return self
 
     read = load

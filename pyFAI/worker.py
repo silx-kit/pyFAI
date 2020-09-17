@@ -82,7 +82,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/07/2020"
+__date__ = "02/09/2020"
 __status__ = "development"
 
 import threading
@@ -148,22 +148,10 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
     if not consume_keys:
         config = dict(config)
 
-    # Geometry
-    for key in ("dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
-        value = config.pop(key, None)
-        if value is not None:
-            ai.__setattr__(key, value)
-    wavelength = config.pop("wavelength", None)
-    if wavelength:
-        if wavelength <= 0 or wavelength > 1e-6:
-            logger.warning("Wavelength is in meter... unlikely value %s", wavelength)
-        ai.wavelength = wavelength
-
-    # Detector
-    reader = integration_config.ConfigurationReader(config)
-    detector = reader.pop_detector()
-    if detector is not None:
-        ai.detector = detector
+#   #This sets only what is part of the poni-file
+    config_reader = integration_config.ConfigurationReader(config)
+    poni = config_reader.pop_ponifile()
+    ai._init_from_poni(poni)
 
     value = config.pop("chi_discontinuity_at_0", False)
     if value:
@@ -787,17 +775,18 @@ class DistortionWorker(object):
 
         if mask is None:
             self.mask = False
+            mask = numpy.zeros(detector.shape, dtype=bool)
         elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
-            self.mask = (mask < 0)
+            mask = self.mask = (mask < 0)
         else:
-            self.mask = mask.astype(bool)
+            mask = self.mask = mask.astype(bool)
 
         self.dummy = dummy
         self.delta_dummy = delta_dummy
 
         if detector is not None:
             self.distortion = Distortion(detector, method=method, device=device,
-                                     mask=self.mask, empty=self.dummy or 0)
+                                     mask=mask, empty=self.dummy or 0)
             self.distortion.reset(prepare=True) # enfoce initization
         else:
             self.distortion = None
