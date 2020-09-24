@@ -25,12 +25,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""
-
-Utilities, mainly for image treatment
-
-"""
-
 __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
@@ -309,7 +303,7 @@ def bounding_box(img):
     Tries to guess the bounding box around a valid massif
 
     :param img: 2D array like
-    :return: 4-typle (d0_min, d1_min, d0_max, d1_max)
+    :return: 4-tuple (d0_min, d1_min, d0_max, d1_max)
     """
     img = img.astype(numpy.int)
     img0 = (img.sum(axis=1) > 0).astype(numpy.int)
@@ -329,12 +323,12 @@ def bounding_box(img):
 
 def remove_saturated_pixel(ds, threshold=0.1, minimum=None, maximum=None):
     """
-    Remove saturated fixes from an array inplace.
+    Remove saturated fixes from an array in place.
 
     :param ds: a dataset as ndarray
     :param float threshold: what is the upper limit?
-        all pixel > max*(1-threshold) are discareded.
-    :param float minimum: minumum valid value (or True for auto-guess)
+        all pixel > max*(1-threshold) are discarded.
+    :param float minimum: minimum valid value (or True for auto-guess)
     :param float maximum: maximum valid value
     :return: the input dataset
     """
@@ -357,7 +351,7 @@ def remove_saturated_pixel(ds, threshold=0.1, minimum=None, maximum=None):
     invalid = (ds > maxt)
     if minimum:
         if minimum is True:
-            # automatic guess of the best minimum TODO: use the HWHM to guess the minumum...
+            # automatic guess of the best minimum TODO: use the HWHM to guess the minimum...
             data_min = ds.min()
             x, y = numpy.histogram(numpy.log(ds - data_min + 1.0), bins=100)
             f = interp1d((y[1:] + y[:-1]) / 2.0, -x, bounds_error=False, fill_value=-x.min())
@@ -369,7 +363,7 @@ def remove_saturated_pixel(ds, threshold=0.1, minimum=None, maximum=None):
             else:
                 min_center = max_hi
             minimum = float(numpy.exp(y[((min_center / y) > 1).sum() - 1])) - 1.0 + data_min
-            logger.debug("removeSaturatedPixel: best minimum guessed is %s", minimum)
+            logger.debug("remove_saturated_pixel: best minimum guessed is %s", minimum)
         ds[ds < minimum] = minimum
         ds -= minimum  # - 1.0
 
@@ -395,7 +389,7 @@ def remove_saturated_pixel(ds, threshold=0.1, minimum=None, maximum=None):
 
 def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)):
     """
-    Averages a serie of dark (or flat) images.
+    Averages a series of dark (or flat) images.
     Centers the result on the mean or the median ...
     but averages all frames within  cutoff*std
 
@@ -714,7 +708,7 @@ class Average(object):
         self._fabio_images = []
         self._nb_frames = 0
         if len(image_list) > 100:
-            # if too many files are opened, it may crash. The har limit is 1024
+            # if too many files are opened, it may crash. The hard limit is 1024
             copy_data = True
         else:
             copy_data = False
@@ -766,7 +760,7 @@ class Average(object):
         processing the average.
 
         :param threshold: what is the upper limit?
-            all pixel > max*(1-threshold) are discareded.
+            all pixel > max*(1-threshold) are discarded.
         :param minimum: minimum valid value or True
         :param maximum: maximum valid value
         """
@@ -911,7 +905,7 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None,
     :param listImages: list of string representing the filenames
     :param output: name of the optional output file
     :param threshold: what is the upper limit? all pixel > max*(1-threshold)
-        are discareded.
+        are discarded.
     :param minimum: minimum valid value or True
     :param maximum: maximum valid value
     :param darks: list of dark current images for subtraction
