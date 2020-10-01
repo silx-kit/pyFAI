@@ -1,10 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,11 +32,12 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "22/10/2018"
+__date__ = "30/09/2020"
 
 import sys
+import os
 import logging
-if "ps1" in dir(sys):
+if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
     logging.basicConfig()
 
 import os
@@ -55,7 +56,6 @@ if sys.version_info < (2, 6):
     raise RuntimeError("pyFAI required a python version >= 2.6, now we are running: %s" % sys.version)
 
 from .utils import decorators
-
 
 use_opencl = True
 """Global configuration which allow to disable OpenCL programatically.
