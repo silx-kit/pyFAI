@@ -48,7 +48,7 @@ __status__ = "status"
 import os
 import sys
 import time
-from argparse import ArgumentParser
+import argparse
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -60,14 +60,14 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 import fabio
-from .. import version
+from .. import version, load
 from ..units import R_M
 from silx.opencl import ocl
 if ocl is None:
     raise RuntimeError("Sparsfy requires a valid OpenCL stack to be installed")
 from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
-from ..io import sparse
+from ..io.sparse_frame import save_sparse
 # Define few constants:
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
@@ -109,6 +109,8 @@ def parse():
 #                        help="show the list of available formats and exit")
     group.add_argument("-o", "--output", default='sparse.h5', type=str,
                        help="Output filename")
+    group.add_argument("--save-source", action='store_true', dest="save_source", default=False,
+                       help="save the path for all source files")
 
 # TODO: implement those
 #     group = parser.add_argument_group("optional behaviour arguments")
@@ -133,6 +135,8 @@ def parse():
 #                        help="do everything except modifying the file system")
 
     group = parser.add_argument_group("Experimental setup options")
+    group.add_argument("-b", "--beamline", type=str, default="beamline",
+                       help="Name of the instument (for the HDF5 NXinstrument)")
     group.add_argument("-p", "--poni", type=str, default=None,
                        help="geometry description file")
     group.add_argument("-m", "--mask", type=str, default=None,
@@ -151,10 +155,10 @@ def parse():
                        help="precision for dummy value")
     group.add_argument("--cutoff-clip", dest="cutoff_clip", type=float, default=5.0,
                        help="Threshold to be used when performing the sigma-clipping")
-    group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=5.0,
+    group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=3.0,
                        help="Threshold to be used when picking the pixels to be saved")
-    group.add_argument("--error-model", dest="error_model", type=str, default=None,
-                       help="Statistical model for the signal error, may be `poisson`(default) or `azim` (slower)")
+    group.add_argument("--error-model", dest="error_model", type=str, default="poisson",
+                       help="Statistical model for the signal error, may be `poisson`(default) or `azimuthal` (slower)")
     group.add_argument("--noise", type=float, default=0.5,
                        help="Noise level: n-sigma cannot be smaller than this value")
 
@@ -189,12 +193,21 @@ def process(options):
     :param options: The argument parsed by agrparse.
     :return: EXIT_SUCCESS or EXIT_FAILURE
     """
+    if options.verbose:
+        pb = None
+    else:
+        pb = ProgressBar("Sparsification", 100, 30)
+
     logger.debug("Count the number of frames")
+    if pb:
+        pb.update(0, message="Count the number of frames")
     dense = [fabio.open(f) for f in options.images]
     nframes = sum([f.nframes for f in dense])
 
     logger.debug("Initialize the geometry")
-    ai = load(args.poni)
+    if pb:
+        pb.update(0, message="Initialize the geometry", max_value=nframes)
+    ai = load(options.poni)
     if options.mask is not None:
         mask = fabio.open(options.mask).data
         ai.detector.mask = mask
@@ -202,8 +215,8 @@ def process(options):
         mask = ai.detector.mask
     shape = dense[0].shape
 
-    if option.radial_range is not None:
-        rrange = [ i * numpy.mean(ai.detector.pixel1, ai.detector.pixel2) for i in option.radial_range]
+    if options.radial_range is not None:
+        rrange = [ i * numpy.mean(ai.detector.pixel1, ai.detector.pixel2) for i in options.radial_range]
     else:
         rrange = None
 
@@ -215,7 +228,10 @@ def process(options):
                               split="no",
                               scale=False)
 
-    logger.debug("Initialize the device")
+    logger.debug("Initialize the OpenCL device")
+    if pb:
+        pb.update(0, message="Initialize the OpenCL device")
+
     if options.device is not None:
         ctx = ocl.create_context(platformid=options.device[0], deviceid=options.device[1],)
     else:
@@ -223,9 +239,9 @@ def process(options):
 
     logger.debug("Initialize the sparsificator")
     pf = OCL_PeakFinder(integrator.lut,
-                        image_size=numpy.prod(shape),
+                        image_size=shape[0] * shape[1],
                         empty=options.dummy,
-                        unit=R_m,
+                        unit=R_M,
                         bin_centers=integrator.bin_centers,
                         radius=ai._cached_array["r_center"],
                         mask=mask,
@@ -233,11 +249,6 @@ def process(options):
 
     logger.debug("Start sparsification")
     frames = []
-
-    if options.verbose:
-        pb = None
-    else:
-        pb = ProgressBar("Sparsification of %i frames" % nframes, nframes, 30)
 
     cnt = 0
 
@@ -250,21 +261,37 @@ def process(options):
                   "noise": options.noise,
                   "cutoff_pick":options.cutoff_pick,
                   "radial_range": rrange}
-
     for fabioimage in dense:
         for frame in fabioimage:
-            current = pf.sparsify(frame, **parameters)
+            current = pf.sparsify(frame.data, **parameters)
             frames.append(current)
             if pb:
-                pb.update(cnt, message="%s: %i pixels" % (os.path.basename(fabioimage.filename), len(frame.intensity)))
+                pb.update(cnt, message="%s: %i pixels" % (os.path.basename(fabioimage.filename), current.intensity.size))
             else:
-                print("%s frame #%d, found %d intense pixels" % (fabioimage.filename, fabioimage.currentframe, len(frame.intensity)))
+                print("%s frame #%d, found %d intense pixels" % (fabioimage.filename, fabioimage.currentframe, current.intensity.size))
             cnt += 1
+
     logger.debug("Save data")
+    if pb:
+        pb.update(nframes, message="Saving: " + options.output)
+    else:
+        print("Saving: " + options.output)
+
+    save_sparse(options.output,
+                frames,
+                beamline=options.beamline,
+                ai=ai,
+                source=options.images if options.save_source else None)
+    return EXIT_SUCCESS
+
+
+def main():
+    options = parse()
+    if options == EXIT_ARGUMENT_FAILURE:
+        sys.exit(EXIT_ARGUMENT_FAILURE)
+    res = process(options)
+    sys.exit(res)
 
 
 if __name__ == "__main__":
-    options = parse()
-    if options == EXIT_ARGUMENT_FAILURE:
-        sys.exit(result)
-    res = process(options)
+    main()
