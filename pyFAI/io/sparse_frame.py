@@ -31,12 +31,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/08/2020"
+__date__ = "02/10/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import json
 import numpy
+import logging
+logger = logging.getLogger(__name__)
 from .. import version
 from .nexus import Nexus, get_isotime
 
@@ -46,7 +48,7 @@ except:
     cmp = {}
 else:
     cmp = hdf5plugin.Bitshuffle()
-    
+
 
 def _generate_densify_script(integer):
     "Provide a script to densify those data"
@@ -71,13 +73,15 @@ for idx, bg in enumerate(background_avg):
 """
     return res
 
-def save_sparse(filename, frames, beamline="ESRF_ID00", ai=None):
+
+def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
     "Write the list of frames in HDF5"
     assert len(frames)
-    with Nexus(filename, mode="w", creator="pyFAI_%s"%version) as nexus:
+    with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
         instrument = nexus.new_instrument(instrument_name=beamline)
-        sparse_grp = nexus.new_class(instrument, "sparse_frames", class_type="NXcollection")
-        sparse_grp["frame_ptr"] = numpy.concatenate(([0],numpy.cumsum([i.intensity.size for i in frames]))).astype(dtype=numpy.uint32)
+        sparse_grp = nexus.new_class(instrument, "sparse_frames", class_type="NXdata")
+        instrument.parent.attrs["default"] = sparse_grp.name
+        sparse_grp["frame_ptr"] = numpy.concatenate(([0], numpy.cumsum([i.intensity.size for i in frames]))).astype(dtype=numpy.uint32)
         index = numpy.concatenate([i.index for i in frames]).astype(numpy.uint32)
         intensity = numpy.concatenate([i.intensity for i in frames])
         is_integer = numpy.issubdtype(intensity.dtype, numpy.integer)
@@ -93,37 +97,48 @@ def save_sparse(filename, frames, beamline="ESRF_ID00", ai=None):
             else:
                 dummy = numpy.NaN
         sparse_grp.create_dataset("dummy", data=dummy)
-        sparse_grp.create_dataset("radius", data=radius, dtype=numpy.float32)
-        sparse_grp.create_dataset("mask", data=mask, **cmp)
+        rds = sparse_grp.create_dataset("radius", data=radius, dtype=numpy.float32)
+        rds.attrs["interpretation"] = "spectrum"
+        mskds = sparse_grp.create_dataset("mask", data=mask, **cmp)
+        mskds.attrs["interpretation"] = "image"
         background_avg = numpy.vstack([f.background_avg for f in frames])
         background_std = numpy.vstack([f.background_std for f in frames])
-        sparse_grp.create_dataset("background_avg", data=background_avg, **cmp)
-        sparse_grp.create_dataset("background_std", data=background_std, **cmp)
-        
+        bgavgds = sparse_grp.create_dataset("background_avg", data=background_avg, **cmp)
+        bgavgds.attrs["interpretation"] = "spectrum"
+        bgavgds.attrs["signal"] = 1
+        bgavgds.attrs["long_name"] = "Average value of background"
+        bgstdds = sparse_grp.create_dataset("background_std", data=background_std, **cmp)
+        sparse_grp["errors"] = bgstdds
+        bgstdds.attrs["interpretation"] = "spectrum"
+        bgstdds.attrs["long_name"] = "Standard deviation of background"
+        sparse_grp.attrs["signal"] = "background_avg"
+        try:
+            sparse_grp.attrs["axes"] = [".", "radius"]
+        except TypeError:
+            logger.error("Please upgrade your installation of h5py !!!")
+
         if ai is not None:
             sparsify_grp = nexus.new_class(instrument, "sparsify", class_type="NXprocess")
             sparsify_grp["program"] = "pyFAI"
             sparsify_grp["sequence_index"] = 1
             sparsify_grp["version"] = version
             sparsify_grp["date"] = get_isotime()
+            if source is not None:
+                sparsify_grp["source"] = source
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")
             config_grp["type"] = "text/json"
             config_grp["data"] = json.dumps(ai.get_config(), indent=2, separators=(",\r\n", ": "))
-        
+
             detector_grp = nexus.new_class(instrument, ai.detector.name, "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)
             dist_ds.attrs["units"] = "m"
             xpix_ds = detector_grp.create_dataset("x_pixel_size", data=ai.pixel2)
             xpix_ds.attrs["units"] = "m"
-            ypix_ds = detector_grp.create_dataset("y_pixel_size", data= ai.pixel1)
-            ypix_ds.attrs["units"] ="m"
+            ypix_ds = detector_grp.create_dataset("y_pixel_size", data=ai.pixel1)
+            ypix_ds.attrs["units"] = "m"
             f2d = ai.getFit2D()
             xbc_ds = detector_grp.create_dataset("beam_center_x", data=f2d["centerX"])
             xbc_ds.attrs["units"] = "pixel"
             ybc_ds = detector_grp.create_dataset("beam_center_y", data=f2d["centerY"])
             ybc_ds.attrs["units"] = "pixel"
 
-            
-            
-        
-    
