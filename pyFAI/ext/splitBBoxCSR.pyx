@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,8 +29,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-# cython: language_level=3, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
-
 """Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done on the pixel's bounding box like fit2D,
@@ -35,11 +37,12 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/03/2020"
+__date__ = "13/07/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
+include "CSR_common.pxi"
 
 import cython
 import os
@@ -51,10 +54,8 @@ import numpy
 from libc.math cimport sqrt
 from ..utils import crc32
 from ..utils.decorators import deprecated
-from .preproc import preproc
-from ..containers import Integrate1dtpl
 
-class HistoBBox1d(object):
+class HistoBBox1d(CsrIntegrator):
     """
     Now uses CSR (Compressed Sparse raw) with main attributes:
     * nnz: number of non zero elements
@@ -64,7 +65,6 @@ class HistoBBox1d(object):
 
     Nota: nnz = indptr[-1]
     """
-    @cython.boundscheck(False)
     def __init__(self,
                  pos0,
                  delta_pos0,
@@ -77,8 +77,7 @@ class HistoBBox1d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 empty=0.0
-                 ):
+                 empty=0.0):
         """
         :param pos0: 1D array with pos0: tth or q_vect or r ...
         :param delta_pos0: 1D array with delta pos0: max center-corner distance
@@ -90,17 +89,16 @@ class HistoBBox1d(object):
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
-        :param empty: value to be assigned to bins without contribution from any pixel
-
+        :param empty: value for bins without contributing pixels
         """
         self.size = pos0.size
         if "size" not in dir(delta_pos0) or delta_pos0.size != self.size:
             logger.warning("Pixel splitting desactivated !")
             delta_pos0 = None
         self.bins = bins
-        self.lut_size = 0
+        #self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
-        self.empty = empty
+        #self.empty = empty
         if mask is not None:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
@@ -112,7 +110,7 @@ class HistoBBox1d(object):
         else:
             self.check_mask = False
             self.mask_checksum = None
-        self.data = self.nnz = self.indices = self.indptr = None
+        #self.data = self.nnz = self.indices = self.indptr = None
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
@@ -139,20 +137,22 @@ class HistoBBox1d(object):
 
         self.delta = (self.pos0_max - self.pos0_min) / (<position_t> bins)
         if delta_pos0 is not None:
-            self.calc_lut()
+            lut = self.calc_lut()
         else:
-            self.calc_lut_nosplit()
-
+            lut = self.calc_lut_nosplit()
+        
+        #Call the constructor of the parent class
+        super().__init__(lut, pos0.size, empty)    
+        
         self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
                                           self.pos0_max - 0.5 * self.delta,
                                           self.bins)
-        self.lut_checksum = crc32(self.data)
+        self.lut = (numpy.asarray(self.data), numpy.asarray(self.indices), numpy.asarray(self.indptr))
+        self.lut_checksum = crc32(self.lut[0])
         self.unit = unit
-        self.lut = (self.data, self.indices, self.indptr)
+        
         self.lut_nbytes = sum([i.nbytes for i in self.lut])      
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries(self, pos0Range):
         """
         Calculate self.pos0_min and self.pos0_max
@@ -202,8 +202,6 @@ class HistoBBox1d(object):
             self.pos0_min = 0
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries_nosplit(self, pos0Range):
         """
         Calculate self.pos0_min and self.pos0_max when no splitting is requested
@@ -215,7 +213,7 @@ class HistoBBox1d(object):
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0
-            position_t upper, lower, pos0_max, pos0_min, c, d
+            position_t pos0_max, pos0_min, c
             bint allow_pos0_neg = self.allow_pos0_neg
             int idx
 
@@ -248,9 +246,6 @@ class HistoBBox1d(object):
             self.pos0_min = 0
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_lut(self):
         '''
         calculate the max number of elements in the LUT and populate it
@@ -258,7 +253,7 @@ class HistoBBox1d(object):
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, 
             position_t min0, max0, fbin0_min, fbin0_max
-            cnumpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0_min, bin0_max, bins = self.bins, size, nnz
+            cnumpy.int32_t k, idx, i, j, bin0_min, bin0_max, bins = self.bins, size, nnz
             bint check_mask, check_pos1
             cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             cnumpy.int32_t[::1] indptr, indices
@@ -266,6 +261,7 @@ class HistoBBox1d(object):
             position_t[::1] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
             mask_t[::1] cmask
             acc_t inv_area, delta_left, delta_right
+            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
 
         size = self.size
         if self.check_mask:
@@ -296,8 +292,8 @@ class HistoBBox1d(object):
 
                 fbin0_min = get_bin_number(min0, pos0_min, delta)
                 fbin0_max = get_bin_number(max0, pos0_min, delta)
-                bin0_min = < int > fbin0_min
-                bin0_max = < int > fbin0_max
+                bin0_min = <int> fbin0_min
+                bin0_max = <int> fbin0_max
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
@@ -307,7 +303,7 @@ class HistoBBox1d(object):
                     bin0_min = 0
 
                 if bin0_min == bin0_max:
-                    #  All pixel is within a single bin
+                    # All pixel is within a single bin
                     outmax[bin0_min] += 1
 
                 else:  # We have pixel splitting.
@@ -316,9 +312,7 @@ class HistoBBox1d(object):
 
         indptr = numpy.concatenate(([numpy.int32(0)], 
                                     numpy.asarray(outmax).cumsum(dtype=numpy.int32)))
-        self.indptr = numpy.asarray(indptr)
-        self.nnz = nnz = indptr[bins]
-
+        nnz = indptr[bins]
         # just recycle the outmax array
         outmax[:] = 0
 
@@ -356,8 +350,8 @@ class HistoBBox1d(object):
 
                 fbin0_min = get_bin_number(min0, pos0_min, delta)
                 fbin0_max = get_bin_number(max0, pos0_min, delta)
-                bin0_min = < int > fbin0_min
-                bin0_max = < int > fbin0_max
+                bin0_min = <int> fbin0_min
+                bin0_max = <int> fbin0_max
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
@@ -395,20 +389,17 @@ class HistoBBox1d(object):
                             data[indptr[i] + k] = (inv_area)
                             outmax[i] += 1
 
-        self.data = numpy.asarray(data)
-        self.indices = numpy.asarray(indices)
+        return data, indices, indptr
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_lut_nosplit(self):
         '''
         calculate the max number of elements in the LUT and populate it
         '''
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
-            cnumpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0, bins = self.bins, size, nnz
+            cnumpy.int32_t k, idx, bin0, bins = self.bins, size, nnz
             bint check_mask, check_pos1
+            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
             cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             cnumpy.int32_t[::1] indptr, indices
             float[::1] data
@@ -448,9 +439,7 @@ class HistoBBox1d(object):
                     outmax[bin0] += 1
 
         indptr = numpy.concatenate((numpy.zeros(1, dtype=numpy.int32), numpy.asarray(outmax).cumsum(dtype=numpy.int32)))
-        self.indptr = numpy.asarray(indptr)
-        self.nnz = nnz = indptr[bins]
-
+        nnz = indptr[bins]
         # just recycle the outmax array
         outmax[:] = 0
 
@@ -467,7 +456,7 @@ class HistoBBox1d(object):
                 else:
                     if memsize < lut_nbytes:
                         raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" %
-                                          (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
+                                          (bins, self.nnz, lut_nbytes>>30, memsize >> 30))
         # else hope we have enough memory
 
         data = numpy.empty(nnz, dtype=numpy.float32)
@@ -493,270 +482,12 @@ class HistoBBox1d(object):
                 data[indptr[bin0] + k] = onef
                 outmax[bin0] += 1  # k+1
 
-        self.data = numpy.asarray(data)
-        self.indices = numpy.asarray(indices)
-
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def integrate_legacy(self,
-                         weights,
-                         dummy=None,
-                         delta_dummy=None,
-                         dark=None,
-                         flat=None,
-                         solidAngle=None,
-                         polarization=None,
-                         double normalization_factor=1.0,
-                         int coef_power=1):
-        """
-        Actually perform the integration which in this case looks more like a matrix-vector product
-
-        :param weights: input image
-        :type weights: ndarray
-        :param dummy: value for dead pixels (optional)
-        :type dummy: float
-        :param delta_dummy: precision for dead-pixel value in dynamic masking
-        :type delta_dummy: float
-        :param dark: array with the dark-current value to be subtracted (if any)
-        :type dark: ndarray
-        :param flat: array with the dark-current value to be divided by (if any)
-        :type flat: ndarray
-        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        :type solidAngle: ndarray
-        :param polarization: array with the polarization correction values to be divided by (if any)
-        :type polarization: ndarray
-        :param normalization_factor: divide the valid result by this value
-        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-
-        :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: 4-tuple of ndarrays
-
-        """
-        cdef:
-            cnumpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, size = self.size
-            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
-            data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
-            bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            acc_t[::1] sum_data = numpy.zeros(self.bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.zeros(self.bins, dtype=acc_d)
-            data_t[::1] merged = numpy.zeros(self.bins, dtype=data_d)
-            data_t[::1] ccoef = self.data
-            data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
-        assert weights.size == size, "weights size"
-
-        if dummy is not None:
-            do_dummy = True
-            cdummy = <data_t> float(dummy)
-
-            if delta_dummy is None:
-                cddummy = <data_t> 0.0
-            else:
-                cddummy = <data_t> float(delta_dummy)
-        else:
-            do_dummy = False
-            cdummy = <data_t> self.empty
-
-        if flat is not None:
-            do_flat = True
-            assert flat.size == size, "flat-field array size"
-            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=data_d)
-        if dark is not None:
-            do_dark = True
-            assert dark.size == size, "dark current array size"
-            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=data_d)
-        if solidAngle is not None:
-            do_solidAngle = True
-            assert solidAngle.size == size, "Solid angle array size"
-            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=data_d)
-        if polarization is not None:
-            do_polarization = True
-            assert polarization.size == size, "polarization array size"
-            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=data_d)
-
-        if (do_dark + do_flat + do_polarization + do_solidAngle):
-            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-            cdata = numpy.zeros(size, dtype=data_d)
-            if do_dummy:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        # Nota: -= and /= operatore are seen as reduction in cython parallel.
-                        if do_dark:
-                            data = data - cdark[i]
-                        if do_flat:
-                            data = data / cflat[i]
-                        if do_polarization:
-                            data = data / cpolarization[i]
-                        if do_solidAngle:
-                            data = data / csolidAngle[i]
-                        cdata[i] += data
-                    else:  # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] += cdummy
-            else:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if do_dark:
-                        data = data - cdark[i]
-                    if do_flat:
-                        data = data / cflat[i]
-                    if do_polarization:
-                        data = data / cpolarization[i]
-                    if do_solidAngle:
-                        data = data / csolidAngle[i]
-                    cdata[i] += data
-        else:
-            if do_dummy:
-                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-                cdata = numpy.zeros(size, dtype=data_d)
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] += data
-                    else:
-                        cdata[i] += cdummy
-            else:
-                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-
-        for i in prange(bins, nogil=True, schedule="guided"):
-            acc_data = 0.0
-            acc_count = 0.0
-            for j in range(indptr[i], indptr[i + 1]):
-                idx = indices[j]
-                coef = ccoef[j]
-                if coef == 0.0:
-                    continue
-                data = cdata[idx]
-                if do_dummy and (data == cdummy):
-                    continue
-                acc_data = acc_data + (coef ** coef_power) * data
-                acc_count = acc_count + coef
-
-            sum_data[i] += acc_data
-            sum_count[i] += acc_count
-            if acc_count > epsilon:
-                merged[i] += acc_data / acc_count / normalization_factor
-            else:
-                merged[i] += cdummy
-        return (self.bin_centers, 
-                numpy.asarray(merged), 
-                numpy.asarray(sum_data), 
-                numpy.asarray(sum_count))
-
-    integrate = integrate_legacy
+        return data, indices, indptr
 
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
     def outPos(self):
         return self.bin_centers
-
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def integrate_ng(self,
-                     weights,
-                     variance=None,
-                     dummy=None,
-                     delta_dummy=None,
-                     dark=None,
-                     flat=None,
-                     solidangle=None,
-                     polarization=None,
-                     absorption=None,
-                     data_t normalization_factor=1.0,
-                     ):
-        """
-        Actually perform the integration which in this case consists of:
-         * Calculate the signal, variance and the normalization parts
-         * Perform the integration which is here a matrix-vector product
-
-        :param weights: input image
-        :type weights: ndarray
-        :param variance: the variance associate to the image
-        :type variance: ndarray 
-        :param dummy: value for dead pixels (optional)
-        :type dummy: float
-        :param delta_dummy: precision for dead-pixel value in dynamic masking
-        :type delta_dummy: float
-        :param dark: array with the dark-current value to be subtracted (if any)
-        :type dark: ndarray
-        :param flat: array with the dark-current value to be divided by (if any)
-        :type flat: ndarray
-        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        :type solidAngle: ndarray
-        :param polarization: array with the polarization correction values to be divided by (if any)
-        :type polarization: ndarray
-        :param absorption: Apparent efficiency of a pixel due to parallax effect
-        :type absorption: ndarray        
-        :param normalization_factor: divide the valid result by this value
-
-        :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: Integrate1dtpl 4-named-tuple of ndarrays
-        """
-        cdef:
-            cnumpy.int32_t i, j, idx = 0, bins = self.bins, size = self.size
-            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
-            data_t empty
-            acc_t[::1] sum_sig = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_var = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_norm = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
-            data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
-            data_t[::1] error = numpy.zeros(bins, dtype=data_d)
-            data_t[::1] ccoef = self.data
-            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
-            data_t[:, ::1] preproc4
-            
-            
-        assert weights.size == size, "weights size"
-        empty = dummy if dummy is not None else self.empty
-        #Call the preprocessor ...
-        preproc4 = preproc(weights.ravel(),
-                           dark=dark,
-                           flat=flat,
-                           solidangle=solidangle,
-                           polarization=polarization,
-                           absorption=absorption,
-                           mask=self.cmask if self.check_mask else None,
-                           dummy=dummy, 
-                           delta_dummy=delta_dummy,
-                           normalization_factor=normalization_factor, 
-                           empty=self.empty,
-                           split_result=4,
-                           variance=variance,
-                           dtype=data_d)
-
-        for i in prange(bins, nogil=True, schedule="guided"):
-            acc_sig = 0.0
-            acc_var = 0.0
-            acc_norm = 0.0
-            acc_count = 0.0
-            for j in range(indptr[i], indptr[i + 1]):
-                idx = indices[j]
-                coef = ccoef[j]
-                if coef == 0.0:
-                    continue
-                acc_sig = acc_sig + coef * preproc4[idx, 0]
-                acc_var = acc_var + coef * coef * preproc4[idx, 1]
-                acc_norm = acc_norm + coef * preproc4[idx, 2] 
-                acc_count = acc_count + coef * preproc4[idx, 3]
-
-            sum_sig[i] += acc_sig
-            sum_var[i] += acc_var
-            sum_norm[i] += acc_norm
-            sum_count[i] += acc_count
-            if acc_count > epsilon:
-                merged[i] += acc_sig / acc_norm
-                error[i] += sqrt(acc_var) / acc_norm
-            else:
-                merged[i] += empty
-                error[i] += empty
-        #"position intensity error signal variance normalization count"
-        return Integrate1dtpl(self.bin_centers, 
-                              numpy.asarray(merged),numpy.asarray(error) ,
-                              numpy.asarray(sum_sig),numpy.asarray(sum_var), 
-                              numpy.asarray(sum_norm), numpy.asarray(sum_count))
 
 
 ################################################################################
@@ -765,6 +496,12 @@ class HistoBBox1d(object):
 
 
 class HistoBBox2d(object):
+    """
+    2D histogramming with pixel splitting based on a look-up table
+
+    The initialization of the class can take quite a while (operation are not parallelized)
+    but each integrate is parallelized and quite efficient.
+    """
     @cython.boundscheck(False)
     def __init__(self,
                  pos0,
@@ -792,9 +529,10 @@ class HistoBBox2d(object):
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+        :param empty: unused ??? TODO fix this
         """
         cdef: 
-            int i, size, bin0, bin1
+            int bins0, bins1
         self.size = pos0.size
         assert pos1.size == self.size, "pos1 size"
 
@@ -810,7 +548,7 @@ class HistoBBox2d(object):
 
         self.chiDiscAtPi = 1 if chiDiscAtPi else 0
         self.allow_pos0_neg = allow_pos0_neg
-        self.empty = 0.0
+        self.empty = empty
         try:
             bins0, bins1 = tuple(bins)
         except TypeError:
@@ -868,8 +606,6 @@ class HistoBBox2d(object):
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_checksum = crc32(self.data)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries(self, pos0Range, pos1Range):
         """
         Calculate self.pos0_min/max and self.pos1_min/max
@@ -878,7 +614,7 @@ class HistoBBox2d(object):
         :param pos1Range: 2-tuple containing the requested range
         """
         cdef:
-            int size = self.cpos0.size
+            int idx, size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
@@ -953,8 +689,6 @@ class HistoBBox2d(object):
         self.cpos1_sup = cpos1_sup
         self.cpos1_inf = cpos1_inf
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_boundaries_nosplit(self, pos0Range, pos1Range):
         """
         Calculate self.pos0_min/max and self.pos1_min/max
@@ -963,13 +697,13 @@ class HistoBBox2d(object):
         :param pos1Range: 2-tuple containing the requested range
         """
         cdef:
-            int size = self.cpos0.size
+            int idx, size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             double[::1] cpos0
             double[::1] cpos1
-            double upper0, lower0, pos0_max, pos0_min, c0, d0
-            double upper1, lower1, pos1_max, pos1_min, c1, d1
+            double pos0_max, pos0_min, c0
+            double pos1_max, pos1_min, c1
             bint allow_pos0_neg = self.allow_pos0_neg
             bint chiDiscAtPi = self.chiDiscAtPi
 
@@ -1018,9 +752,6 @@ class HistoBBox2d(object):
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
         self.pos1_max = calc_upper_bound(<position_t> self.pos1_maxin)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.cdivision(True)
     def calc_lut(self):
         'calculate the max number of elements in the LUT and populate it'
         cdef:
@@ -1028,7 +759,8 @@ class HistoBBox2d(object):
             position_t delta1 = self.delta1, pos1_min = self.pos1_min, min1, max1, fbin1_min, fbin1_max
             int bin0_min, bin0_max, bins0 = self.bins[0]
             int bin1_min, bin1_max, bins1 = self.bins[1]
-            int k, idx, lut_size, i, j, size = self.size, nnz
+            int k, idx, i, j, size = self.size, nnz
+            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
             bint check_mask
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
@@ -1097,8 +829,8 @@ class HistoBBox2d(object):
                     pass
                 else:
                     if memsize < lut_nbytes:
-                        raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" %
-                                          (lut_nbytes/(2.**30), memsize/(2.**30)))
+                        raise MemoryError("CSR Matrix is %sGB whereas the memory of the system is only %s" %
+                                          (lut_nbytes>>30, memsize>>30))
         # else hope we have enough memory
 
         data = numpy.zeros(nnz, dtype=numpy.float32)
@@ -1248,9 +980,6 @@ class HistoBBox2d(object):
         self.data = numpy.asarray(data)
         self.indices = numpy.asarray(indices)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.cdivision(True)
     def calc_lut_nosplit(self):
         """
         "calculate the max number of elements in the LUT and populate it
@@ -1260,10 +989,11 @@ class HistoBBox2d(object):
         """
         cdef:
             float delta0 = self.delta0, pos0_min = self.pos0_min, c0, fbin0
-            float delta1 = self.delta1, pos1_min = self.pos1_min, c1, fbin1, fbin1_max
+            float delta1 = self.delta1, pos1_min = self.pos1_min, c1, fbin1
             int bin0, bins0 = self.bins[0]
             int bin1, bins1 = self.bins[1]
-            cnumpy.int32_t k, idx, lut_size, i, j, size = self.size, nnz
+            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
+            cnumpy.int32_t k, idx, size = self.size, nnz
             bint check_mask
             double[::1] cpos0 = self.cpos0
             double[::1] cpos1 = self.cpos1
@@ -1344,9 +1074,6 @@ class HistoBBox2d(object):
         self.data = numpy.asarray(data)
         self.indices = numpy.asarray(indices)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate(self, weights,
                   dummy=None,
                   delta_dummy=None,
@@ -1385,9 +1112,9 @@ class HistoBBox2d(object):
             acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
             data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
-            data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
+            acc_t[::1] sum_data = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.empty(bins, dtype=acc_d)
+            data_t[::1] merged = numpy.empty(bins, dtype=data_d)
             data_t[::1] ccoef = self.data, 
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
@@ -1424,7 +1151,7 @@ class HistoBBox2d(object):
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-            cdata = numpy.zeros(size, dtype=data_d)
+            cdata = numpy.empty(size, dtype=data_d)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -1438,10 +1165,10 @@ class HistoBBox2d(object):
                             data = data / cpolarization[i]
                         if do_solidAngle:
                             data = data / csolidAngle[i]
-                        cdata[i] += data
+                        cdata[i] = data
                     else:
                         # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -1453,17 +1180,17 @@ class HistoBBox2d(object):
                         data = data / cpolarization[i]
                     if do_solidAngle:
                         data = data / csolidAngle[i]
-                    cdata[i] += data
+                    cdata[i] = data
         else:
             if do_dummy:
                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-                cdata = numpy.zeros(size, dtype=data_d)
+                cdata = numpy.empty(size, dtype=data_d)
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] += data
+                        cdata[i] = data
                     else:
-                        cdata[i] += cdummy
+                        cdata[i] = cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
 
@@ -1480,12 +1207,12 @@ class HistoBBox2d(object):
                     continue
                 acc_data = acc_data + (coef ** coef_power) * data
                 acc_count = acc_count + coef
-            sum_data[i] += acc_data
-            sum_count[i] += acc_count
+            sum_data[i] = acc_data
+            sum_count[i] = acc_count
             if acc_count > epsilon:
-                merged[i] += acc_data / acc_count / normalization_factor
+                merged[i] = acc_data / acc_count / normalization_factor
             else:
-                merged[i] += cdummy
+                merged[i] = cdummy
         return (numpy.asarray(merged).reshape(self.bins).T, 
                 self.bin_centers0, 
                 self.bin_centers1, 

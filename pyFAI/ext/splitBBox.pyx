@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/07/2019"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -41,9 +45,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def histoBBox1d(weights,
                 pos0,
                 delta_pos0,
@@ -257,9 +258,6 @@ def histoBBox1d(weights,
     return bin_centers, numpy.asarray(out_merge), numpy.asarray(sum_data), numpy.asarray(sum_count)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def histoBBox2d(weights,
                 pos0,
                 delta_pos0,
@@ -578,9 +576,6 @@ def histoBBox2d(weights,
             numpy.asarray(sum_count).T)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def histoBBox2d_ng(weights,
                    pos0,
                    delta_pos0,

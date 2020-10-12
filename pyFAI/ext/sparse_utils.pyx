@@ -1,9 +1,13 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2015-2020 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,14 +33,16 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/11/2018"
+__date__ = "26/06/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
-include "sparse_common.pxi"
+
+include "regrid_common.pxi"
+include "CSR_common.pxi"
+include "LUT_common.pxi"
 
 
-@cython.boundscheck(False)
 def LUT_to_CSR(lut):
     """Conversion between sparse matrix representations
 
@@ -47,14 +53,14 @@ def LUT_to_CSR(lut):
     cdef:
         int nrow, ncol
 
-    ncol = lut.shape[-1]
+    ncol = lut.shape[1]
     nrow = lut.shape[0]
 
     cdef:
         lut_t[:, ::1] lut_ = numpy.ascontiguousarray(lut, lut_d)
-        cnumpy.float32_t[::1] data = numpy.zeros(nrow * ncol, numpy.float32)
-        cnumpy.int32_t[::1]  indices = numpy.zeros(nrow * ncol, numpy.int32)
-        cnumpy.int32_t[::1] indptr = numpy.zeros(nrow + 1, numpy.int32)
+        data_t[::1] data = numpy.zeros(nrow * ncol, data_d)
+        index_t[::1]  indices = numpy.zeros(nrow * ncol, index_d)
+        index_t[::1] indptr = numpy.zeros(nrow + 1, index_d)
         int i, j, nelt
         lut_t point
     with nogil:
@@ -73,7 +79,6 @@ def LUT_to_CSR(lut):
     return numpy.asarray(data[:nelt]), numpy.asarray(indices[:nelt]), numpy.asarray(indptr)
 
 
-@cython.boundscheck(False)
 def CSR_to_LUT(data, indices, indptr):
     """Conversion between sparse matrix representations
 
@@ -86,15 +91,15 @@ def CSR_to_LUT(data, indices, indptr):
     cdef:
         int nrow, ncol
 
-    nrow = indptr.size - 1
-    ncol = (indptr[1:] - indptr[:-1]).max()
+    nrow = indptr.shape[0] - 1
+    ncol = (indptr[1:] - indptr[:nrow]).max()
     assert nrow > 0, "nrow >0"
     assert ncol > 0, "ncol >0"
 
     cdef:
-        cnumpy.float32_t[::1] data_ = numpy.ascontiguousarray(data, dtype=numpy.float32)
-        cnumpy.int32_t[::1]  indices_ = numpy.ascontiguousarray(indices, dtype=numpy.int32)
-        cnumpy.int32_t[::1] indptr_ = numpy.ascontiguousarray(indptr, dtype=numpy.int32)
+        data_t[::1] data_ = numpy.ascontiguousarray(data, dtype=data_d)
+        index_t[::1]  indices_ = numpy.ascontiguousarray(indices, dtype=index_d)
+        index_t[::1] indptr_ = numpy.ascontiguousarray(indptr, dtype=index_d)
         lut_t[:, ::1] lut = numpy.zeros((nrow, ncol), dtype=lut_d)
         lut_t point
         int i, j, nelt
@@ -117,13 +122,13 @@ cdef class Vector:
     """Variable size vector"""
     cdef:
         readonly int size, allocated
-        cnumpy.float32_t[::1] coef
-        cnumpy.int32_t[::1] idx
+        data_t[::1] coef
+        index_t[::1] idx
 
     def __cinit__(self, int min_size=4):
         self.allocated = min_size
-        self.coef = numpy.empty(self.allocated, dtype=numpy.float32)
-        self.idx = numpy.empty(self.allocated, dtype=numpy.int32)
+        self.coef = numpy.empty(self.allocated, dtype=data_d)
+        self.idx = numpy.empty(self.allocated, dtype=index_d)
         self.size = 0
 
     def __dealloc__(self):
@@ -143,22 +148,19 @@ cdef class Vector:
     def get_data(self):
         return numpy.asarray(self.idx[:self.size]), numpy.asarray(self.coef[:self.size])
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.initializedcheck(False)
     cdef inline void _append(self, int idx, float coef):
         cdef:
             int pos, new_allocated
-            cnumpy.int32_t[::1] newidx
-            cnumpy.float32_t[::1] newcoef
+            index_t[::1] newidx
+            data_t[::1] newcoef
         pos = self.size
         self.size = pos + 1
         if pos >= self.allocated - 1:
             new_allocated = self.allocated * 2
-            newcoef = numpy.empty(new_allocated, dtype=numpy.float32)
+            newcoef = numpy.empty(new_allocated, dtype=data_d)
             newcoef[:pos] = self.coef[:pos]
             self.coef = newcoef
-            newidx = numpy.empty(new_allocated, dtype=numpy.int32)
+            newidx = numpy.empty(new_allocated, dtype=index_d)
             newidx[:pos] = self.idx[:pos]
             self.idx = newidx
             self.allocated = new_allocated
@@ -186,6 +188,7 @@ cdef class ArrayBuilder:
             self.lines[i] = Vector(min_size=min_size)
 
     def __dealloc__(self):
+        cdef int i
         for i in range(self.size):
             self.lines[i] = None
         self.lines = None
@@ -207,9 +210,6 @@ cdef class ArrayBuilder:
             sum += self.lines[i].nbytes
         return sum
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.initializedcheck(False)
     cdef inline void _append(self, int line, int col, float value):
         cdef:
             Vector vector
@@ -222,9 +222,9 @@ cdef class ArrayBuilder:
 
     def as_LUT(self):
         cdef:
-            int i, max_size = 0
-            cnumpy.int32_t[::1] local_idx
-            cnumpy.float32_t[:] local_coef
+            int i, j, max_size = 0
+            index_t[::1] local_idx
+            data_t[:] local_coef
             lut_t[:, :] lut
             Vector vector
         for i in range(len(self.lines)):
@@ -240,13 +240,11 @@ cdef class ArrayBuilder:
 
     def as_CSR(self):
         cdef:
-            int i, val, start, end, total_size = 0
+            int i, start, end, total_size = 0
             Vector vector
-            lut_t[:, :] lut
-            lut_t[:] data
-            cnumpy.int32_t[:] idptr, idx, local_idx
-            cnumpy.float32_t[:] coef, local_coef
-        idptr = numpy.zeros(len(self.lines) + 1, dtype=numpy.int32)
+            index_t[:] idptr, idx, local_idx
+            data_t[:] coef, local_coef
+        idptr = numpy.zeros(len(self.lines) + 1, dtype=index_d)
         for i in range(len(self.lines)):
             total_size += len(self.lines[i])
             idptr[i + 1] = total_size

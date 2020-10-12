@@ -2,7 +2,7 @@
 # coding: utf8
 # /*##########################################################################
 #
-# Copyright (c) 2015-2019 European Synchrotron Radiation Facility
+# Copyright (c) 2015-2020 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,6 @@ logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger("pyFAI.setup")
 
-
 from distutils.command.clean import clean as Clean
 from distutils.command.build import build as _build
 try:
@@ -49,7 +48,12 @@ try:
     from setuptools.command.build_py import build_py as _build_py
     from setuptools.command.build_ext import build_ext
     from setuptools.command.sdist import sdist
-    logger.info("Use setuptools")
+    try:
+        from Cython.Build import build_ext
+        logger.info("Use setuptools with cython")
+    except ImportError:
+        from setuptools.command.build_ext import build_ext
+        logger.info("Use setuptools, cython is missing")
 except ImportError:
     try:
         from numpy.distutils.core import Command
@@ -58,8 +62,12 @@ except ImportError:
     from distutils.command.build_py import build_py as _build_py
     from distutils.command.build_ext import build_ext
     from distutils.command.sdist import sdist
-    logger.info("Use distutils")
-
+    try:
+        from Cython.Build import build_ext
+        logger.info("Use distutils with cython")
+    except ImportError:
+        from distutils.command.build_ext import build_ext
+        logger.info("Use distutils, cython is missing")
 try:
     import sphinx
     import sphinx.util.console
@@ -99,8 +107,11 @@ def get_readme():
 # double check classifiers on https://pypi.python.org/pypi?%3Aaction=list_classifiers
 classifiers = ["Development Status :: 5 - Production/Stable",
                "Intended Audience :: Developers",
-               "Programming Language :: Python :: 2",
                "Programming Language :: Python :: 3",
+               "Programming Language :: Python :: 3.5",
+               "Programming Language :: Python :: 3.6",
+               "Programming Language :: Python :: 3.7",
+               "Programming Language :: Python :: 3.8",
                "Programming Language :: Cython",
                "Environment :: Console",
                "Environment :: X11 Applications :: Qt",
@@ -304,7 +315,11 @@ class BuildMan(Command):
         if not os.path.isdir("build/man"):
             os.makedirs("build/man")
         import subprocess
+        import tempfile
+        import stat
         script_name = None
+        workdir = tempfile.mkdtemp()
+
         entry_points = self.entry_points_iterator()
         for target_name, module_name, function_name in entry_points:
             logger.info("Build man for entry-point target '%s'" % target_name)
@@ -312,14 +327,16 @@ class BuildMan(Command):
             # we create it, execute it, and delete it at the end
 
             py3 = sys.version_info >= (3, 0)
-
             try:
-                script = ["#!%s" % sys.executable,
-                          "import logging",
-                          "logging.basicConfig(level=logging.ERROR)",
-                          "import %s as app" % module_name,
-                          "app.%s()" % function_name]
-                script_name = self._write_script(target_name, script)
+                # create a launcher using the right python interpreter
+                script_name = os.path.join(workdir, target_name)
+                with open(script_name, "wt") as script:
+                    script.write("#!%s\n" % sys.executable)
+                    script.write("import %s as app\n" % module_name)
+                    script.write("app.%s()\n" % function_name)
+                # make it executable
+                mode = os.stat(script_name).st_mode
+                os.chmod(script_name, mode + stat.S_IEXEC)
 
                 # execute help2man
                 man_file = "build/man/%s.1" % target_name
@@ -350,9 +367,11 @@ class BuildMan(Command):
                 # clean up the script
                 if script_name is not None:
                     os.remove(script_name)
+        os.rmdir(workdir)
 
 
 if sphinx is not None:
+
     class BuildDocCommand(BuildDoc):
         """Command to build documentation using sphinx.
 
@@ -395,11 +414,13 @@ else:
 # ################### #
 
 if sphinx is not None:
+
     class TestDocCommand(BuildDoc):
         """Command to test the documentation using sphynx doctest.
 
         http://www.sphinx-doc.org/en/1.4.8/ext/doctest.html
         """
+
         def run(self):
             # make sure the python path is pointing to the newly built
             # code so that the documentation is built on this and not a
@@ -477,6 +498,8 @@ class Build(_build):
     def finalize_options(self):
         _build.finalize_options(self)
         self.finalize_cython_options(min_version='0.21.1')
+        if not self.force_cython:
+            self.force_cython = self._parse_env_as_bool("FORCE_CYTHON") is True
         self.finalize_openmp_options()
 
     def _parse_env_as_bool(self, key):
@@ -503,9 +526,9 @@ class Build(_build):
         elif self.no_openmp:
             use_openmp = False
         else:
-            env_force_cython = self._parse_env_as_bool("WITH_OPENMP")
-            if env_force_cython is not None:
-                use_openmp = env_force_cython
+            env_with_openmp = self._parse_env_as_bool("WITH_OPENMP")
+            if env_with_openmp is not None:
+                use_openmp = env_with_openmp
             else:
                 # Use it by default
                 use_openmp = True
@@ -626,14 +649,14 @@ class BuildExt(build_ext):
         if not self.use_cython:
             self.patch_with_default_cythonized_files(ext)
         else:
-            from Cython.Build import cythonize
-            patched_exts = cythonize(
-                [ext],
-                compiler_directives={'embedsignature': True,
-                                     'language_level': 3},
-                force=self.force_cython,
-            )
-            ext.sources = patched_exts[0].sources
+        	from Cython.Build import cythonize
+        	patched_exts = cythonize(
+                	                 [ext],
+                	                 compiler_directives={'embedsignature': True,
+                	                 'language_level': 3},
+                	                 force=self.force_cython
+        				)
+	        ext.sources = patched_exts[0].sources
 
         # Remove OpenMP flags if OpenMP is disabled
         if not self.use_openmp:

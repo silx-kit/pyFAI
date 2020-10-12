@@ -16,7 +16,7 @@ Here are a few recorded presentation which were given about pyFAI:
 
 * A general introduction to understand what pyFAI is about 
   with an introduction of the new graphical user interface, 
-  recorded during the **Hercules** courses in 2020**:
+  recorded during the **Hercules** courses in 2020*:
 
 .. raw:: html
 
@@ -27,7 +27,7 @@ Here are a few recorded presentation which were given about pyFAI:
 	</video>
 	</center>
 
-* A presentation of the pyFAI at the **EuroScipy 2014* more focused on the numerical aspects, 
+* A presentation of the pyFAI at the **EuroScipy 2014** more focused on the numerical aspects, 
   also available in the `proceedings <http://arxiv.org/abs/1412.6367>`_ of the conference.
 .. raw:: html
 

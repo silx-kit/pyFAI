@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2019"
+__date__ = "13/07/2020"
 
 import unittest
 import os
@@ -299,13 +299,15 @@ class TestAzimHalfFrelon(unittest.TestCase):
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_ocl_csr")
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d median Rwp = %.3f", rwp)
-        self.assertLess(rwp, 1, "Rwp medfilt1d Numpy/OpenCL: %.3f" % rwp)
+#        print("cython", ref.intensity.min(), ref.intensity.max(), ref.intensity.mean(), ref.intensity.std())
+#        print("opencl", ocl.intensity.min(), ocl.intensity.max(), ocl.intensity.mean(), ocl.intensity.std())
+        self.assertLess(rwp, 1, "Rwp medfilt1d Cython/OpenCL: %.3f" % rwp)
 
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_csr", percentile=(20, 80))
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_ocl_csr", percentile=(20, 80))
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
-        self.assertLess(rwp, 3, "Rwp trimmed-mean Numpy/OpenCL: %.3f" % rwp)
+        self.assertLess(rwp, 3, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
         ref = ocl = rwp = None
         gc.collect()
 

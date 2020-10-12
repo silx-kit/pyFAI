@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2019"
+__date__ = "10/08/2020"
 __status__ = "development"
 
 from collections import namedtuple
@@ -719,3 +719,106 @@ class SeparateResult(tuple):
 
     def _set_npt_azim(self, value):
         self._npt_azim = value
+
+
+class SparseFrame(tuple):
+    """Result of the sparsification of a diffraction frame"""
+    def __new__(self, index, intensity):
+        return tuple.__new__(SparseFrame, (index, intensity))
+
+    def __init__(self, index, intensity):
+        self._shape = None
+        self._dtype = None
+        self._mask = None
+        self._dummy = None
+        self._radial = None
+        self._background_avg = None
+        self._background_std = None
+        self._unit = None
+        self._has_dark_correction = None
+        self._has_flat_correction = None
+        self._normalization_factor = None
+        self._polarization_factor = None
+        self._metadata = None
+        self._percentile = None
+        self._method = None
+        self._method_called = None
+        self._compute_engine = None
+        self._cutoff=None
+        self._background_cycle=None 
+        self._noise=None
+        self._radial_range=None
+
+    @property
+    def index(self):
+        """
+        Contains the index position of bragg peaks 
+
+        :rtype: numpy.ndarray
+        """
+        return self[0]
+
+    @property
+    def intensity(self):
+        """
+        Contains the intensity of bragg peaks 
+
+        :rtype: numpy.ndarray
+        """
+        return self[1]
+
+    @property
+    def mask(self):
+        """
+        Contains the mask used (encodes for the shape of the image as well) 
+
+        :rtype: numpy.ndarray
+        """
+        return self._mask
+     
+    @property
+    def x(self):
+        if self._shape is None:
+            return self[0]
+        else:
+            return self[0]%self._shape[-1]
+            
+
+    @property
+    def y(self):
+        if self._shape is None:
+            return 0
+        else:
+            return self[0]//self._shape[-1]
+        
+    @property
+    def cutoff(self):
+        return self._cutoff
+    
+    @property
+    def noise(self):
+        return self._noise
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @property 
+    def background_avg(self):
+        return self._background_avg
+    
+    @property 
+    def background_std(self):
+        return self._background_std
+
+    @property
+    def shape(self):
+        return self._shape
+    
+    @property
+    def dtype(self):
+        return self._dtype
+    
+    @property
+    def dummy(self):
+        return self._dummy

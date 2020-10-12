@@ -1,10 +1,13 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,11 +35,11 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "17/05/2019"
+__date__ = "26/06/2020"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-include "sparse_common.pxi"
+include "regrid_common.pxi"
 
 import cython
 cimport numpy as cnumpy
@@ -106,9 +109,6 @@ cdef inline float _ceil_max4(float a, float b, float c, float d) nogil:
     return ceil(res)
 
 
-@cython.wraparound(False)
-@cython.boundscheck(False)
-@cython.cdivision(True)
 cdef inline void integrate(cnumpy.float32_t[:, ::1] box, float start, float stop, float slope, float intercept) nogil:
     """Integrate in a box a line between start and stop, line defined by its slope & intercept
 
@@ -245,10 +245,6 @@ cdef inline void integrate(cnumpy.float32_t[:, ::1] box, float start, float stop
 # Functions used in python classes from PyFAI.distortion
 ################################################################################
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
              float pixel1, float pixel2, shape_out=None):
     """Calculate the pixel boundary position on the regular grid
@@ -310,10 +306,6 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
     return res
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def calc_size(floating[:, :, :, ::1] pos not None,
               shape,
               cnumpy.int8_t[:, ::1] mask=None,
@@ -370,10 +362,6 @@ def calc_size(floating[:, :, :, ::1] pos not None,
     return numpy.asarray(lut_size)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
              cnumpy.int8_t[:, :] mask=None):
     """
@@ -403,7 +391,7 @@ def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_p
     cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
     outMax[:, :] = 0
     buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
-    buffer_nbytes = buffer.nbytes
+    #buffer_nbytes = buffer.nbytes
     if (size == 0):  # fix 271
         raise RuntimeError("The look-up table has dimension 0 which is a non-sense." +
                            " Did you mask out all pixel or is your image out of the geometry range?")
@@ -513,10 +501,6 @@ def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_p
                                     copy=True)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def calc_CSR(cnumpy.float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
              cnumpy.int8_t[:, ::1] mask=None):
     """Calculate the Look-up table as CSR format
@@ -648,9 +632,6 @@ def calc_CSR(cnumpy.float32_t[:, :, :, :] pos not None, shape, bin_size, max_pix
     return (numpy.asarray(data), numpy.asarray(indices), numpy.asarray(indptr))
 
 
-@cython.boundscheck(False)
-@cython.boundscheck(False)
-@cython.cdivision(True)
 def calc_sparse(cnumpy.float32_t[:, :, :, ::1] pos not None,
                 shape,
                 max_pixel_size=(8, 8),
@@ -677,8 +658,8 @@ def calc_sparse(cnumpy.float32_t[:, :, :, ::1] pos not None,
     shape_in1 = pos.shape[1]
     size_in = shape_in0 * shape_in1
     cdef:
-        int i, j, k, ms, ml, ns, nl
-        int i0, i1, lut_size, offset0, offset1, box_size0, box_size1
+        int i, j, ms, ml, ns, nl
+        int lut_size, offset0, offset1, box_size0, box_size1
         int counter, bin_number
         int idx, err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
@@ -844,9 +825,6 @@ def calc_sparse(cnumpy.float32_t[:, :, :, ::1] pos not None,
     return res
 
 
-@cython.boundscheck(False)
-@cython.boundscheck(False)
-@cython.cdivision(True)
 def calc_sparse_v2(cnumpy.float32_t[:, :, :, ::1] pos not None,
                    shape,
                    max_pixel_size=(8, 8),
@@ -873,17 +851,15 @@ def calc_sparse_v2(cnumpy.float32_t[:, :, :, ::1] pos not None,
     shape_in1 = pos.shape[1]
     size_in = shape_in0 * shape_in1
     cdef:
-        int i, j, k, ms, ml, ns, nl
-        int i0, i1, lut_size, offset0, offset1, box_size0, box_size1
+        int i, j, ms, ml, ns, nl
+        int offset0, offset1, box_size0, box_size1
         int counter, bin_number
         int idx, err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        cnumpy.int32_t[::1] indptr, indices, idx_bin, idx_pixel
-        cnumpy.float32_t[::1] data, large_data
         cnumpy.float32_t[:, ::1] buffer
         bint do_mask = mask is not None
-        lut_t[:, :] lut
+
     if do_mask:
         assert shape_in0 == mask.shape[0], "shape_in0 == mask.shape[0]"
         assert shape_in1 == mask.shape[1], "shape_in1 == mask.shape[1]"
@@ -1103,8 +1079,6 @@ def correct(image, shape_in, shape_out, LUT not None, dummy=None, delta_dummy=No
         # LUT format
         if preprocessed_data:
             shape_out0, shape_out1 = shape_out
-            lshape0 = LUT.shape[0]
-            lshape1 = LUT.shape[1]
             assert shape_out0 * shape_out1 == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
 #             if method == "kahan":
 #                 return correct_LUT_preproc_kahan(image, shape_out, LUT, dummy, delta_dummy)
@@ -1115,10 +1089,6 @@ def correct(image, shape_in, shape_out, LUT not None, dummy=None, delta_dummy=No
             return correct_LUT(image, shape_in, shape_out, LUT, dummy, delta_dummy, method)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def correct_LUT(image, shape_in, shape_out, lut_t[:, ::1] LUT not None,
                 dummy=None, delta_dummy=None, method="double"):
     """Correct an image based on the look-up table calculated ...
@@ -1136,8 +1106,6 @@ def correct_LUT(image, shape_in, shape_out, lut_t[:, ::1] LUT not None,
     :return: corrected 2D image
     """
     shape_out0, shape_out1 = shape_out
-    lshape0 = LUT.shape[0]
-    lshape1 = LUT.shape[1]
     assert shape_out0 * shape_out1 == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
     image = resize_image_2D(image, shape_in)
     if method == "kahan":
@@ -1146,10 +1114,6 @@ def correct_LUT(image, shape_in, shape_out, lut_t[:, ::1] LUT not None,
         return correct_LUT_double(image, shape_out, LUT, dummy, delta_dummy)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
                       dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
@@ -1163,8 +1127,7 @@ def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
     :return: corrected 2D image
     """
     cdef:
-        int i, j, lshape0, lshape1, idx, size
-        int shape_in0, shape_in1, shape_out0, shape_out1, shape_img0, shape_img1
+        int i, j, idx, size
         float coef, sum, error, t, y, value, cdummy, cdelta_dummy
         cnumpy.float32_t[::1] lout, lin
         bint do_dummy = dummy is not None
@@ -1174,18 +1137,16 @@ def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
             cdelta_dummy = 0.0
     else:
         cdummy = cdelta_dummy = numpy.Nan
-    lshape0 = LUT.shape[0]
-    lshape1 = LUT.shape[1]
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
 
     out = numpy.zeros(shape_out, dtype=numpy.float32)
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
     size = lin.size
-    for i in prange(lshape0, nogil=True, schedule="static"):
+    for i in prange(LUT.shape[0], nogil=True, schedule="static"):
         sum = 0.0
         error = 0.0  # Implement Kahan summation
-        for j in range(lshape1):
+        for j in range(LUT.shape[1]):
             idx = LUT[i, j].idx
             coef = LUT[i, j].coef
             if coef <= 0:
@@ -1207,10 +1168,6 @@ def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
     return out
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
                        dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
@@ -1225,7 +1182,7 @@ def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
     :return: corrected 2D image
     """
     cdef:
-        int i, j, lshape0, lshape1, idx, size
+        int i, j, idx, size
         float value, cdummy, cdelta_dummy
         double sum, coef
         cnumpy.float32_t[::1] lout, lin
@@ -1238,17 +1195,15 @@ def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
         cdummy = numpy.NaN
         cdelta_dummy = 0.0
 
-    lshape0 = LUT.shape[0]
-    lshape1 = LUT.shape[1]
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
 
     out = numpy.zeros(shape_out, dtype=numpy.float32)
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
     size = lin.size
-    for i in prange(lshape0, nogil=True, schedule="static"):
+    for i in prange(LUT.shape[0], nogil=True, schedule="static"):
         sum = 0.0
-        for j in range(lshape1):
+        for j in range(LUT.shape[1]):
             idx = LUT[i, j].idx
             coef = LUT[i, j].coef
             if coef <= 0:
@@ -1267,10 +1222,6 @@ def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
     return out
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None,
                 variance=None, method="double"):
     """
@@ -1282,6 +1233,7 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None,
     :param LUT: Look up table, here a 3-tuple array of ndarray
     :param dummy: value for invalid pixels
     :param delta_dummy: precision for invalid pixels
+    :param variance: unused for now ... TODO: propagate variance.
     :param method: integration method: can be "kahan" using single precision compensated for error or "double" in double precision (64 bits)
     :return: corrected 2D image
 
@@ -1296,10 +1248,6 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None,
         return correct_CSR_double(image, shape_out, LUT, dummy, delta_dummy)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
     """
     Correct an image based on the look-up table calculated ...
@@ -1315,7 +1263,7 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
     """
     cdef:
         int i, j, idx, size, bins
-        float coef, tmp, error, sum, y, t, value, cdummy, cdelta_dummy
+        float coef, error, sum, y, t, value, cdummy, cdelta_dummy
         cnumpy.float32_t[::1] lout, lin, data
         int[::1] indices, indptr
         bint do_dummy = dummy is not None
@@ -1329,7 +1277,7 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
         cdelta_dummy = 0.0
 
     data, indices, indptr = LUT
-    bins = indptr.size - 1
+    bins = indptr.shape[0] - 1
 
     out = numpy.zeros(shape_out, dtype=numpy.float32)
     lout = out.ravel()
@@ -1361,10 +1309,6 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
     return out
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
     """
     Correct an image based on the look-up table calculated ...
@@ -1423,10 +1367,6 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
     return out
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def correct_LUT_preproc_double(image, shape_out,
                                lut_t[:, ::1] LUT not None,
                                dummy=None, delta_dummy=None,
@@ -1448,7 +1388,7 @@ def correct_LUT_preproc_double(image, shape_out,
     """
 
     cdef:
-        int i, j, lshape0, lshape1, idx, size, nchan
+        int i, j, idx, size, nchan
         float value, cdummy, cdelta_dummy
         double sum_sig, sum_var, sum_norm, coef
         cnumpy.float32_t[::1]  lout, lerr
@@ -1461,8 +1401,6 @@ def correct_LUT_preproc_double(image, shape_out,
             cdelta_dummy = 0.0
     else:
         cdummy = empty
-    lshape0 = LUT.shape[0]
-    lshape1 = LUT.shape[1]
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
 
     nchan = image.shape[2]
@@ -1477,11 +1415,11 @@ def correct_LUT_preproc_double(image, shape_out,
         err = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
         lerr = err.ravel()
     size = lin.shape[0]
-    for i in prange(lshape0, nogil=True, schedule="static"):
+    for i in prange(LUT.shape[0], nogil=True, schedule="static"):
         sum_sig = 0.0
         sum_var = 0.0
         sum_norm = 0.0
-        for j in range(lshape1):
+        for j in range(LUT.shape[1]):
             idx = LUT[i, j].idx
             coef = LUT[i, j].coef
             if coef <= 0:
@@ -1530,10 +1468,6 @@ def correct_LUT_preproc_double(image, shape_out,
         return out, prop
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def correct_CSR_preproc_double(image, shape_out,
                                LUT not None,
                                dummy=None, delta_dummy=None,
@@ -1555,7 +1489,7 @@ def correct_CSR_preproc_double(image, shape_out,
     """
 
     cdef:
-        int i, j, lshape0, lshape1, idx, size, bins, nchan
+        int i, j, idx, size, bins, nchan
         float value, cdummy, cdelta_dummy
         double sum_sig, sum_var, sum_norm, coef
         cnumpy.float32_t[::1]  lout, lerr, data
@@ -1568,7 +1502,7 @@ def correct_CSR_preproc_double(image, shape_out,
         if delta_dummy is None:
             cdelta_dummy = 0.0
     else:
-        cdummy = numpy.NaN
+        cdummy = empty
     data, indices, indptr = LUT
     bins = indptr.size - 1
     assert numpy.prod(shape_out) == bins, "shape_out0*shape_out1 == indptr.size-1"
@@ -1641,10 +1575,6 @@ def correct_CSR_preproc_double(image, shape_out,
         return out, prop
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def uncorrect_LUT(image, shape, lut_t[:, :]LUT):
     """
     Take an image which has been corrected and transform it into it's raw (with loss of information)
@@ -1682,10 +1612,6 @@ def uncorrect_LUT(image, shape, lut_t[:, :]LUT):
     return out, mask
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def uncorrect_CSR(image, shape, LUT):
     """Take an image which has been corrected and transform it into it's raw (with loss of information)
 
@@ -1768,7 +1694,7 @@ class Distortion(object):
                     d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False) - 0.5
                     d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True) - 0.5
                     p = self.detector.calc_cartesian_positions(d1, d2)
-                    if p[-1] is not None:
+                    if p[2] is not None:
                         logger.warning("makes little sense to correct for distortion non-flat detectors: %s",
                                        self.detector)
                     pos_corners[:, :, 0], pos_corners[:, :, 1] = p[:2]
@@ -1827,7 +1753,7 @@ class Distortion(object):
     @cython.cdivision(True)
     def calc_LUT(self):
         cdef:
-            int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
+            int i, j, ms, ml, ns, nl, shape0, shape1, size
             int offset0, offset1, box_size0, box_size1
             cnumpy.int32_t k, idx = 0
             float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
@@ -1848,7 +1774,7 @@ class Distortion(object):
                     memset(&lut[0, 0, 0], 0, size)
                     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], size / 1.0e6))
                     buffer = numpy.empty((self.delta0, self.delta1), dtype=numpy.float32)
-                    buffer_size = self.delta0 * self.delta1 * sizeof(float)
+                    #buffer_size = self.delta0 * self.delta1 * sizeof(float)
                     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], self.lut_size))
                     with nogil:
                         # i,j, idx are indexes of the raw image uncorrected
@@ -1937,8 +1863,6 @@ class Distortion(object):
 #             ab._append(i, i, 1.0)
 #         return ab
 
-    @cython.wraparound(False)
-    @cython.boundscheck(False)
     def correct(self, image):
         """
         Correct an image based on the look-up table calculated ...
@@ -1947,15 +1871,13 @@ class Distortion(object):
         :return: corrected 2D image
         """
         cdef:
-            int i, j, lshape0, lshape1, idx, size
+            int i, j, idx, size
             float coef
             lut_t[:, ::1] LUT
             cnumpy.float32_t[::1] lout, lin
         if self.LUT is None:
             self.calc_LUT()
         LUT = self.LUT
-        lshape0 = LUT.shape[0]
-        lshape1 = LUT.shape[1]
         img_shape = image.shape
         if (img_shape[0] < self.shape[0]) or (img_shape[1] < self.shape[1]):
             new_image = numpy.zeros(self.shape, dtype=numpy.float32)
@@ -1967,8 +1889,8 @@ class Distortion(object):
         lout = out.ravel()
         lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
         size = lin.size
-        for i in prange(lshape0, nogil=True, schedule="static"):
-            for j in range(lshape1):
+        for i in prange(LUT.shape[0], nogil=True, schedule="static"):
+            for j in range(LUT.shape[1]):
                 idx = LUT[i, j].idx
                 coef = LUT[i, j].coef
                 if coef <= 0:

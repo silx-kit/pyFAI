@@ -38,14 +38,13 @@ TODO:
 - Add monitor to HDF5
 """
 
-
 from __future__ import absolute_import, print_function, division
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/10/2019"
+__date__ = "02/04/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -58,33 +57,34 @@ import sys
 import threading
 import time
 from collections import OrderedDict
-
+import __main__ as main
 from pyFAI.third_party import six
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
 from .. import version
 from .. import containers
 
-
 logger = logging.getLogger(__name__)
-try:
-    import h5py
-except ImportError as error:
-    h5py = None
-    logger.error("h5py module missing")
-else:
-    try:
-        h5py._errors.silence_errors()
-    except AttributeError:  # old h5py
-        pass
 try:
     import fabio
 except ImportError:
     fabio = None
     logger.error("fabio module missing")
 
+from .nexus import get_isotime, from_isotime, is_hdf5, Nexus, h5py
 
-from .nexus import get_isotime, from_isotime, is_hdf5, Nexus
+# Activating compression has an important performance penalty and,
+# as we are saving Float32, the compression obtained is far from optimal
+#
+# # If compression is activated, thetest pyFAI.test.test_io is likely to fail
+#
+# try:
+#     import hdf5plugin
+# except ImportError:
+#     CMP = {}
+# else:
+#     CMP = hdf5plugin.Bitshuffle()
+CMP = {}
 
 
 class Writer(object):
@@ -196,39 +196,31 @@ class HDF5Writer(Writer):
                 self.fast_scan_width = int(fast_scan_width)
             except ValueError:
                 pass
-        self.hdf5 = None
-        self.entry = None
-        self.process = None
-        self.nxdata = None
-        self.dataset = None
-        self.config = None
-        self.radial_values = None
-        self.azimuthal_values = None
-        self.error_values = None
+        self.nxs = None
+        self.entry_grp = None
+        self.process_grp = None
+        self.nxdata_grp = None
+        self.intensity_ds = None
+        self.error_ds = None
+        self.stored_input = set()
+
+        self.config_grp = None
+        self.radial_ds = None
+        self.azimuthal_ds = None
+        self.error_ds = None
         self.has_radial_values = False
         self.has_azimuthal_values = False
         self.has_error_values = False
         self.chunk = None
         self.shape = None
         self.ndim = None
+        self.do2D = None
         self._current_frame = None
         self._append_frames = append_frames
         self._mode = mode
 
     def __repr__(self):
         return "HDF5 writer on file %s:%s %sinitialized" % (self.filename, self.hpath, "" if self._initialized else "un")
-
-    def _find_unused_name(self, prefix=None):
-        if prefix is not None:
-            template = prefix + "_{num:04}"
-        else:
-            template = self._entry_template
-
-        for i in range(1, 9999):
-            name = template.format(num=i)
-            if name not in self.hdf5:
-                return name
-        raise IOError("No entry name available")
 
     def _require_main_entry(self, mode):
         """
@@ -247,38 +239,47 @@ class HDF5Writer(Writer):
 
         try:
             if mode == self.MODE_DELETE:
-                self.hdf5 = h5py.File(self.filename, mode="w")
+                self.nxs = Nexus(self.filename, mode="w", creator="pyFAI")
             else:
-                self.hdf5 = h5py.File(self.filename, mode="a")
+                self.nxs = Nexus(self.filename, mode="a", creator="pyFAI")
         except IOError:  # typically a corrupted HDF5 file !
             if mode == self.MODE_DELETE:
                 logger.error("File can't be read. File %s deleted.", self.filename)
                 os.unlink(self.filename)
-                self.hdf5 = h5py.File(self.filename, mode="w")
+                self.nxs = Nexus(self.filename, mode="w", creator="pyFAI")
             else:
                 raise
 
-        name = self.hpath
-        if name is None:
-            name = self._entry_template.format(num=0)
+        name = self.hpath or self._entry_template.split("_")[0]
+        if "/" in name:
+            logger.error("NXentry should always be at the NXroot level. Please consider using a NXsubentry then")
+            force_name = True
+        else:
+            force_name = False
 
-        if name in self.hdf5:
-            if mode == self.MODE_DELETE:
-                self.hdf5.close()
-                logger.warning("File already contains an entry. File %s deleted.", self.filename)
-                os.unlink(self.filename)
-                self.hdf5 = h5py.File(self.filename, mode="w")
-            elif mode == self.MODE_APPEND:
-                name = self._find_unused_name(self.hpath)
-            elif mode == self.MODE_OVERWRITE:
-                del self.hdf5[name]
+        try:
+            entry = self.nxs.new_entry(entry=name, program_name="pyFAI",
+                                       title=None, force_name=force_name)
+        except TypeError:  # object already exists
+            nb_entries = len(self.nxs.get_entries())
+            entry_base = self.hpath or self._entry_template.split("_")[0]
+            entry_name = "%s_%04i" % (entry_base, nb_entries)
+            if mode == self.MODE_OVERWRITE:
+                del self.nxs.h5[entry_name]
+                entry = self.nxs.new_entry(entry=entry_name, force_name=True,
+                                           program_name="pyFAI", title=None)
             elif mode == self.MODE_ERROR:
-                raise IOError("Entry name %s::%s already exists" % (self.filename, name))
+                raise IOError("Entry name %s::%s already exists" % (self.filename, entry_name))
+            elif mode == self.MODE_APPEND:
+                while entry_name in self.nxs.h5:
+                    nb_entries += 1
+                    entry_name = "%s_%04i" % (entry_base, nb_entries)
+                entry = self.nxs.new_entry(entry=entry_name, force_name=True,
+                                           program_name="pyFAI", title=None)
             else:
                 assert(False)
-
-        entry = self.hdf5.require_group(name)
-        self.hpath = name
+        entry["program_name"].attrs["version"] = version
+        self.hpath = entry.name
         return entry
 
     def init(self, fai_cfg=None, lima_cfg=None):
@@ -288,6 +289,7 @@ class HDF5Writer(Writer):
         """
         logger.debug("Init")
         Writer.init(self, fai_cfg, lima_cfg)
+
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
                 open("fai_cfg.debug.json", "w").write(json.dumps(self.fai_cfg, indent=4))
@@ -295,81 +297,71 @@ class HDF5Writer(Writer):
 
             self.fai_cfg["nbpt_rad"] = self.fai_cfg.get("nbpt_rad", 1000)
 
-            self.entry = self._require_main_entry(self._mode)
+            self.entry_grp = self._require_main_entry(self._mode)
 
-            self.hdf5.attrs["default"] = u"%s" % self.hpath
+            self.nxs.h5.attrs["default"] = self.hpath
+            self.entry_grp.attrs["default"] = "integrate/results"
+            self.process_grp = self.nxs.new_class(self.entry_grp, "integrate", class_type="NXprocess")
+            self.process_grp["program"] = getattr(main, '__file__', u'pyFAI')
+            self.process_grp["version"] = version
+            self.process_grp["date"] = get_isotime()
+            self.process_grp["sequence_index"] = 1
+            self.process_grp.attrs["default"] = "results"
 
-            self.entry.attrs["NX_class"] = u"NXentry"
-            self.entry.attrs["default"] = u"integrate/results"
+            self.nxdata_grp = self.nxs.new_class(self.process_grp, "results", "NXdata")
+            self.nxdata_grp.attrs["signal"] = self.DATASET_NAME
 
-            self.process = self.entry.require_group("integrate")
-            self.process.attrs["NX_class"] = u"NXprocess"
-            self.process["program"] = u"PyFAI"
-            self.process["version"] = u"%s" % version
-            self.process.attrs["default"] = u"results"
-
-            self.nxdata = self.process.require_group("results")
-            self.nxdata.attrs["NX_class"] = u"NXdata"
-            self.nxdata.attrs["signal"] = u"%s" % self.DATASET_NAME
-
-            self.config = self.process.require_group(self.CONFIG)
-            self.config.attrs["NX_class"] = u"NXcollection"
-            self.config.attrs["desc"] = u"PyFAI worker configuration"
-            for key, value in self.fai_cfg.items():
-                if value is None:
-                    continue
-                try:
-                    if isinstance(value, (tuple, list, dict)):
-                        value = json.dumps(value)
-                    self.config[key] = value
-                except Exception as e:
-                    logger.error("Unable to set %s: %s", key, value)
-                    logger.debug("Backtrace", exc_info=True)
-                    raise RuntimeError(e.args[0])
+            self.config_grp = self.nxs.new_class(self.process_grp, self.CONFIG, "NXnote")
+            self.config_grp.attrs["desc"] = "PyFAI worker configuration"
+            self.config_grp["type"] = "text/json"
+            self.config_grp["data"] = json.dumps(self.fai_cfg, indent=2, separators=(",\r\n", ": "))
 
             rad_name, rad_unit = str(self.fai_cfg.get("unit", "2th_deg")).split("_", 1)
 
-            self.radial_values = self.nxdata.require_dataset("radial", (self.fai_cfg["nbpt_rad"],), numpy.float32)
-            self.radial_values.attrs["unit"] = u"%s" % rad_unit
-            self.radial_values.attrs["interpretation"] = u"scalar"
-            self.radial_values.attrs["name"] = u"%s" % rad_name
-            self.radial_values.attrs["long_name"] = u"Diffraction radial direction"
+            self.radial_ds = self.nxdata_grp.require_dataset("radial", (self.fai_cfg["nbpt_rad"],), numpy.float32)
+            self.radial_ds.attrs["unit"] = rad_unit
+            self.radial_ds.attrs["interpretation"] = "scalar"
+            self.radial_ds.attrs["name"] = rad_name
+            self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
 
-            do_2D = self.fai_cfg.get("do_2D", self.fai_cfg.get("nbpt_azim", 0) > 0)
+            self.do2D = self.fai_cfg.get("do_2D", self.fai_cfg.get("nbpt_azim", 0) > 0)
 
-            if do_2D:
-                self.azimuthal_values = self.nxdata.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
-                self.azimuthal_values.attrs["unit"] = u"deg"
-                self.azimuthal_values.attrs["interpretation"] = u"scalar"
-                self.azimuthal_values.attrs["long_name"] = u"Azimuthal angle"
+            if self.do2D:
+                self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
+                self.azimuthal_ds.attrs["unit"] = "deg"
+                self.azimuthal_ds.attrs["interpretation"] = "scalar"
+                self.azimuthal_ds.attrs["long_name"] = "Azimuthal angle χ (degree)"
+                self.nxdata_grp["title"] = "2D azimuthaly integrated data"
+            else:
+                self.nxdata_grp["title"] = "Azimuthaly integrated data"
 
             if self.fast_scan_width:
-                self.fast_motor = self.entry.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
-                self.fast_motor.attrs["long_name"] = u"Fast motor position"
-                self.fast_motor.attrs["interpretation"] = u"scalar"
-                if do_2D:
+                self.fast_motor = self.entry_grp.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
+                self.fast_motor.attrs["long_name"] = "Fast motor position"
+                self.fast_motor.attrs["interpretation"] = "scalar"
+                if self.do2D:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 4
-                    axis_definition = [u".", u"fast", u"chi", u"radial"]
+                    axis_definition = [".", "fast", "chi", "radial"]
                 else:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
-                    axis_definition = [u".", u"fast", u"radial"]
+                    axis_definition = [".", "fast", "radial"]
             else:
-                if do_2D:
-                    axis_definition = [u".", u"chi", u"radial"]
+                if self.do2D:
+                    axis_definition = [".", "chi", "radial"]
                     chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
                 else:
-                    axis_definition = [u".", u"radial"]
+                    axis_definition = [".", "radial"]
                     chunk = 1, self.fai_cfg["nbpt_rad"]
                     self.ndim = 2
 
             utf8vlen_dtype = h5py.special_dtype(vlen=six.text_type)
-            self.nxdata.attrs["axis"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
+            self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
 
-            if self.DATASET_NAME in self.nxdata:
-                del self.nxdata[self.DATASET_NAME]
+            if self.DATASET_NAME in self.nxdata_grp:
+                del self.nxdata_grp[self.DATASET_NAME]
             shape = list(chunk)
             if self.lima_cfg.get("number_of_frames", 0) > 0:
                 if self.fast_scan_width is not None:
@@ -381,24 +373,13 @@ class HDF5Writer(Writer):
                 dtype = numpy.float32
             else:
                 dtype = numpy.dtype(dtype)
-            # FIXME: Number of frames could be provided optionally to the constructor
-            self.dataset = self.nxdata.require_dataset(self.DATASET_NAME, shape, dtype=dtype, chunks=chunk,
-                                                       maxshape=(None,) + chunk[1:])
-            if do_2D:
-                self.nxdata.attrs["interpretation"] = u"image"
-                self.dataset.attrs["interpretation"] = u"image"
-            else:
-                self.nxdata.attrs["interpretation"] = u"image"
-                self.dataset.attrs["interpretation"] = u"spectrum"
-
-            self.chunk = chunk
-            self.shape = shape
+            self.chunk = tuple(chunk)
+            self.shape = tuple(shape)
+            self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
             name = "Mapping " if self.fast_scan_width else "Scanning "
             name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
             name += " experiment"
-            self.entry["title"] = u"%s" % name
-            self.entry["start_time"] = u"%s" % get_isotime()
-            self.process["start_time"] = u"%s" % get_isotime()
+            self.entry_grp["title"] = name
 
     def flush(self, radial=None, azimuthal=None):
         """
@@ -408,41 +389,38 @@ class HDF5Writer(Writer):
         :param  azimuthal: position in azimuthal direction
         """
         with self._sem:
-            if not self.hdf5:
+            if not (self.nxs and self.nxs.h5):
                 raise RuntimeError('No opened file')
             if radial is not None:
-                if radial.shape == self.radial_values.shape:
-                    self.radial_values[:] = radial
+                if radial.shape == self.radial_ds.shape:
+                    self.radial_ds[:] = radial
                 else:
                     logger.warning("Unable to assign radial axis position")
             if azimuthal is not None:
-                if azimuthal.shape == self.azimuthal_values.shape:
-                    self.azimuthal_values[:] = azimuthal
+                if azimuthal.shape == self.azimuthal_ds.shape:
+                    self.azimuthal_ds[:] = azimuthal
                 else:
                     logger.warning("Unable to assign azimuthal axis position")
-            if self.process is not None:
-                self.process["end_time"] = u"%s" % get_isotime()
-            if self.entry is not None:
-                self.entry["end_time"] = u"%s" % get_isotime()
-            self.hdf5.flush()
+            self.nxs.flush()
 
     def close(self):
         logger.debug("Close")
-        if self.hdf5:
+        if self.nxs:
             self.flush()
             with self._sem:
                 # Remove any links to HDF5 file
-                self.entry = None
-                self.nxdata = None
-                self.config = None
-                self.process = None
-                self.dataset = None
-                self.radial_values = None
-                self.azimuthal_values = None
+                self.entry_grp = None
+                self.nxdata_grp = None
+                self.config_grp = None
+                self.process_grp = None
+                self.intensity_ds = None
+                self.error_ds = None
+                self.radial_ds = None
+                self.azimuthal_ds = None
                 self.fast_motor = None
                 # Close the file
-                self.hdf5.close()
-                self.hdf5 = None
+                self.nxs.close()
+                self.nxs = None
 
     def write(self, data, index=None):
         """
@@ -483,44 +461,88 @@ class HDF5Writer(Writer):
                 else:
                     radial, intensity, error = data
         with self._sem:
-            if self.dataset is None:
+            if self.intensity_ds is None:
                 logger.warning("Writer not initialized !")
                 return
+            if error is not None and self.error_ds is None:
+                self.error_ds = self._require_dataset(self.DATASET_NAME + "_errors", dtype=error.dtype)
+
             if self.fast_scan_width:
                 index0, index1 = (index // self.fast_scan_width, index % self.fast_scan_width)
-                if index0 >= self.dataset.shape[0]:
-                    self.dataset.resize(index0 + 1, axis=0)
-                self.dataset[index0, index1] = data
+                if index0 >= self.intensity_ds.shape[0]:
+                    self.intensity_ds.resize(index0 + 1, axis=0)
+                    if error is not None:
+                        self.error_ds.resize(index0 + 1, axis=0)
+                self.intensity_ds[index0, index1] = data
+                if error is not None:
+                    self.error_ds [index0, index1] = error
             else:
-                if index >= self.dataset.shape[0]:
-                    self.dataset.resize(index + 1, axis=0)
-                self.dataset[index] = intensity
+                if index >= self.intensity_ds.shape[0]:
+                    self.intensity_ds.resize(index + 1, axis=0)
+                    if error is not None:
+                        self.error_ds.resize(index + 1, axis=0)
+                self.intensity_ds[index] = intensity
+                if error is not None:
+                    self.error_ds [index] = error
+
             if (not self.has_azimuthal_values) and \
                (azimuthal is not None) and \
-               self.azimuthal_values is not None:
-                self.azimuthal_values[:] = azimuthal
+               self.azimuthal_ds is not None:
+                self.azimuthal_ds[:] = azimuthal
             if (not self.has_azimuthal_values) and \
                (azimuthal is not None) and \
-               self.azimuthal_values is not None:
-                self.azimuthal_values[:] = azimuthal
+               self.azimuthal_ds is not None:
+                self.azimuthal_ds[:] = azimuthal
                 self.has_azimuthal_values = True
             if (not self.has_radial_values) and \
                (radial is not None) and \
-               self.radial_values is not None:
-                self.radial_values[:] = radial
+               self.radial_ds is not None:
+                self.radial_ds[:] = radial
                 self.has_radial_values = True
-            if error is not None:
-                dataset_error = self._require_errors(dtype=error.dtype)
-                dataset_error[index] = error
 
-    def _require_errors(self, dtype):
-        """Returns the dataset to store result error."""
-        result = self.nxdata.require_dataset("errors",
-                                             shape=self.shape,
-                                             dtype=dtype,
-                                             chunks=self.chunk,
-                                             maxshape=(None,) + self.chunk[1:])
+    def _require_dataset(self, name, dtype):
+        """Returns the dataset to store data/error ."""
+
+        if self.do2D:
+            result = self.nxdata_grp.require_dataset(name,
+                                                     shape=self.shape,
+                                                     dtype=dtype,
+                                                     chunks=self.chunk,
+                                                     maxshape=(None,) + self.chunk[1:],
+                                                     **CMP)
+            result.attrs["interpretation"] = u"image"
+        else:
+            result = self.nxdata_grp.require_dataset(name,
+                                                     shape=self.shape,
+                                                     dtype=dtype,
+                                                     chunks=self.chunk,
+                                                     maxshape=(None,) + self.chunk[1:])
+
+            result.attrs["interpretation"] = u"spectrum"
         return result
+
+    def set_hdf5_input_dataset(self, dataset):
+        "record the input dataset with an external link"
+        if not isinstance(dataset, h5py.Dataset):
+            return
+        if not (self.nxs and self.nxs.h5 and self.entry_grp):
+            return
+        id_ = id(dataset)
+        if id_ in self.stored_input:
+            return
+        else:
+            self.stored_input.add(id_)
+        # Process 0: measurement group
+        if "measurement" in self.entry_grp:
+            measurement_grp = self.entry_grp["measurement"]
+        else:
+            measurement_grp = self.nxs.new_class(self.entry_grp, "measurement", "NXdata")
+        here = os.path.dirname(os.path.abspath(self.nxs.filename))
+        there = os.path.abspath(dataset.file.filename)
+        name = "images_%04i" % len(self.stored_input)
+        measurement_grp[name] = h5py.ExternalLink(os.path.relpath(there, here), dataset.name)
+        if "signal" not in measurement_grp.attrs:
+            measurement_grp.attrs["signal"] = name
 
 
 class DefaultAiWriter(Writer):
@@ -745,6 +767,7 @@ class AsciiWriter(Writer):
     """
     Ascii file writer (.xy or .dat)
     """
+
     def __init__(self, filename=None, prefix="fai_", extension=".dat"):
         """
 
@@ -831,6 +854,7 @@ class FabioWriter(Writer):
 
     TODO !!!
     """
+
     def __init__(self, filename=None):
         """
 
@@ -912,5 +936,4 @@ class FabioWriter(Writer):
             with open(filename, "w") as f:
                 f.write("# Processing time: %s%s" % (get_isotime(), self.header))
                 numpy.savetxt(f, data)
-
 

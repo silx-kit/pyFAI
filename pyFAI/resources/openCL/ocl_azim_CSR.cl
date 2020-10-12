@@ -3,11 +3,11 @@
  *            Kernel with full pixel-split using a CSR sparse matrix
  *
  *
- *   Copyright (C) 2012-2018 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2020 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 02/10/2018
+ *   Last revision: 07/07/2020
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -204,7 +204,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
                               const   global  float    *coefs,
                               const   global  int      *indices,
                               const   global  int      *indptr,
-                                      local   float8   *super_sum)
+                              volatile local  float8   *super_sum)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -283,8 +283,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
  * @param aver        average over the region
  * @param std         standard deviation of the average
  * @param cutoff      cut values above so many sigma, set count to NAN 
- * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
- *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
+ * @return number of pixel discarded in workgroup
  *
  */
 
@@ -296,7 +295,7 @@ static inline int _sigma_clip4(         global  float4   *data,
                                                 float    aver,
                                                 float    std,
                                                 float    cutoff,
-                                        local   int      *counter){
+                               volatile local   int      *counter){
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int cnt, j, k, idx;
     counter[0] = 0;
@@ -304,7 +303,6 @@ static inline int _sigma_clip4(         global  float4   *data,
     int thread_id_loc = get_local_id(0);
     int active_threads = get_local_size(0);
     int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
-    
     barrier(CLK_LOCAL_MEM_FENCE);
     for (j=bin_bounds.s0; j<bin_bounds.s1; j+=WORKGROUP_SIZE){
         k = j + thread_id_loc;
@@ -317,13 +315,11 @@ static inline int _sigma_clip4(         global  float4   *data,
                 if (fabs(signal-aver) > cutoff*std){
                     data[idx].s3 = NAN;
                     atomic_inc(counter);
-                }
-                     
+                }       
             } // if finite
         }// in bounds
     }// loop
     barrier(CLK_LOCAL_MEM_FENCE);
-    barrier(CLK_GLOBAL_MEM_FENCE);
     return counter[0];
 }// functions
 
@@ -337,7 +333,7 @@ static inline float2 _azimuthal_deviation(        global  float4   *data,
                                           const   global  int      *indices,
                                           const   global  int      *indptr,
                                           const           float    aver,
-                                                 local   float4  *shared4)
+                                          volatile local  float4  *shared4)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -540,7 +536,7 @@ csr_integrate_single(  const   global  float   *weights,
                                global  float   *merged)
 {
     // each workgroup of size=warp is assinged to 1 bin
-    int bin_num = get_group_id(0);
+    int bin_num = get_global_id(0);
     // we use _K suffix to highlight it is float2 used for Kahan summation
     float2 sum_data_K = (float2)(0.0f, 0.0f);
     float2 sum_count_K = (float2)(0.0f, 0.0f);
@@ -575,16 +571,14 @@ csr_integrate_single(  const   global  float   *weights,
  * \brief Performs 1d azimuthal integration based on CSR sparse matrix multiplication on preprocessed data
  *  Unlike the former kernel, it works with a workgroup size of ONE (tailor made form MacOS bug)
  *
- * @param weights     Float pointer to global memory storing the input image.
+ * @param weights     Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
- * @param indptr     Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
- * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy       Float: value for bad pixels
- * @param coef_power  Set to 2 for variance propagation, leave to 1 for mean calculation
- * @param sum_data    Float pointer to the output 1D array with the weighted histogram
- * @param sum_count   Float pointer to the output 1D array with the unweighted histogram
- * @param merged      Float pointer to the output 1D array with the diffractogram
+ * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
+ * @param empty       Float: value for bad pixels, NaN is a good guess
+ * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
+ * @param averint     Float pointer to the output 1D array with the averaged signal
+ * @param stderr      Float pointer to the output 1D array with the propagated error
  *
  */
 kernel void
@@ -592,6 +586,7 @@ csr_integrate4(  const   global  float4  *weights,
                  const   global  float   *coefs,
                  const   global  int     *indices,
                  const   global  int     *indptr,
+                 const           float    empty,
                          global  float8  *summed,
                          global  float   *averint,
                          global  float   *stderr)
@@ -606,8 +601,8 @@ csr_integrate4(  const   global  float4  *weights,
             stderr[bin_num] = sqrt(result.s2) / result.s4;
         }
         else {
-            averint[bin_num] = NAN;
-            stderr[bin_num] = NAN;
+            averint[bin_num] = empty;
+            stderr[bin_num] = empty;
         } //end else
     } // end if thread0 
 };//end kernel
@@ -615,18 +610,16 @@ csr_integrate4(  const   global  float4  *weights,
 
 /**
  * \brief Performs 1d azimuthal integration based on CSR sparse matrix multiplication on preprocessed data
- *  Unlike the former kernel, it works with a workgroup size of ONE (tailor made form MacOS bug)
+ *  Unlike the former kernel, it works with a any workgroup size, especialy  ONE (tailor made form MacOS bug)
  *
  * @param weights     Float pointer to global memory storing the input image.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
- * @param indptr     Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
- * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy       Float: value for bad pixels
- * @param coef_power  Set to 2 for variance propagation, leave to 1 for mean calculation
- * @param sum_data    Float pointer to the output 1D array with the weighted histogram
- * @param sum_count   Float pointer to the output 1D array with the unweighted histogram
- * @param merged      Float pointer to the output 1D array with the diffractogram
+ * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
+ * @param empty       Float: value for bad pixels, NaN is a good guess
+ * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
+ * @param averint     Float pointer to the output 1D array with the averaged signal
+ * @param stderr      Float pointer to the output 1D array with the propagated error
  *
  */
 kernel void
@@ -634,18 +627,18 @@ csr_integrate4_single(  const   global  float4  *weights,
                         const   global  float   *coefs,
                         const   global  int     *indices,
                         const   global  int     *indptr,
+                        const           float    empty,
                                 global  float8  *summed,
                                 global  float   *averint,
                                 global  float   *stderr)
 {
     // each workgroup of size=warp is assinged to 1 bin
-    int bin_num = get_group_id(0);
+    int bin_num = get_global_id(0);
     // we use _K suffix to highlight it is float2 used for Kahan summation
     float2 sum_signal_K = (float2)(0.0f, 0.0f);
     float2 sum_variance_K = (float2)(0.0f, 0.0f);
     float2 sum_norm_K = (float2)(0.0f, 0.0f);
     float2 sum_count_K = (float2)(0.0f, 0.0f);
-    const float epsilon = 1e-10f;
 
     for (int j=indptr[bin_num];j<indptr[bin_num+1];j++) {
         float coef = coefs[j];
@@ -673,8 +666,8 @@ csr_integrate4_single(  const   global  float4  *weights,
         stderr[bin_num] = sqrt(sum_variance_K.s0) / sum_norm_K.s0;
     }
     else {
-        averint[bin_num] = NAN;
-        stderr[bin_num] = NAN;
+        averint[bin_num] = empty;
+        stderr[bin_num] = empty;
     }
 }//end kernel
 
@@ -710,7 +703,8 @@ csr_sigma_clip4(          global  float4  *data4,
     int bin_num = get_group_id(0);
     float aver, std, sem;
     int cnt;
-    local float8 shared8[WORKGROUP_SIZE];
+    volatile local float8 shared8[WORKGROUP_SIZE];
+    volatile local int counter[1];
     
     // first calculation of azimuthal integration to initialize aver & std
     
@@ -718,7 +712,7 @@ csr_sigma_clip4(          global  float4  *data4,
     if (result.s4 > 0.0f){
         aver = result.s0 / result.s4;
         if (azimuthal){
-            float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (__local float4*) shared8);
+            float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
             std = res2.s0;
             sem = res2.s1;
         }             
@@ -738,7 +732,7 @@ csr_sigma_clip4(          global  float4  *data4,
         if ( ! (isfinite(aver) && isfinite(std)))
             break;
 
-        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, cutoff, (__local int*) shared8);
+        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, cutoff, counter);
 
         if (! cnt) 
             break;
@@ -748,7 +742,7 @@ csr_sigma_clip4(          global  float4  *data4,
         if (result.s4 > 0.0f) {
             aver = result.s0 / result.s4;
             if (azimuthal){
-            	float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (__local float4*) shared8);
+            	float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
             	std = res2.s0;
             	sem = res2.s1;
             }                

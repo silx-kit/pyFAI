@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+#cython: embedsignature=True, language_level=3
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping:
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:   Pierre Paleo <pierre.paleo@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -34,19 +38,16 @@ algorithm.
 
 __authors__ = ["Pierre Paleo", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/05/2019"
+__date__ = "29/04/2020"
 __status__ = "stable"
 __license__ = "MIT"
+
 import cython
 import numpy
 cimport numpy
 from cython.parallel import prange
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def horizontal_convolution(float[:, ::1] img, float[::1] filter):
     """
     Implements a 1D horizontal convolution with a filter.
@@ -59,7 +60,7 @@ def horizontal_convolution(float[:, ::1] img, float[::1] filter):
     cdef:
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
-        int x, y, pos, fIndex, newpos, c
+        int x, y, fIndex, newpos
         float sum, err, val, tmp
         float[:, ::1] output
 
@@ -92,10 +93,6 @@ def horizontal_convolution(float[:, ::1] img, float[::1] filter):
     return numpy.asarray(output)
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 def vertical_convolution(float[:, ::1] img, float[::1] filter):
     """
     Implements a 1D vertical convolution with a filter.
@@ -108,7 +105,7 @@ def vertical_convolution(float[:, ::1] img, float[::1] filter):
     cdef:
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
-        int x, y, pos, fIndex, newpos, c
+        int x, y, fIndex, newpos
         float sum, err, val, tmp
         float[:, ::1] output
 
@@ -141,7 +138,6 @@ def vertical_convolution(float[:, ::1] img, float[::1] filter):
     return numpy.asarray(output)
 
 
-@cython.embedsignature(True)
 def gaussian(sigma, width=None):
     """
     Return a Gaussian window of length "width" with standard-deviation "sigma".
@@ -165,7 +161,6 @@ def gaussian(sigma, width=None):
     return g / g.sum()
 
 
-@cython.embedsignature(True)
 def gaussian_filter(img, sigma):
     """
     Performs a gaussian bluring using a gaussian kernel.
