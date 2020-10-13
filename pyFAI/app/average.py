@@ -54,7 +54,7 @@ from pyFAI import average
 
 
 def parse_algorithms(options):
-    """Return a list of initilized algorithms from the command line"""
+    """Return a list of initialized algorithms from the command line"""
 
     methods = options.method.split(",")
     methods = set(methods) - set([""])
@@ -69,8 +69,8 @@ def parse_algorithms(options):
             q2 = 1.0 - q1
         quantiles = (float(q1), float(q2))
 
-        if "quanties" not in methods:
-            logger.warning("Add quantiles to the set of methods as quantiles parameters is defined.")
+        if "quantiles" not in methods:
+            logger.warning("Add quantiles to the set of methods when quantiles parameters are defined.")
             methods.add("quantiles")
     else:
         quantiles = None
