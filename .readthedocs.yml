@@ -21,8 +21,8 @@ formats:
 python:
   version: 3.7
   install:
-    - method: setuptools
-      path:  .
     - requirements: requirements.txt
     - requirements: ci/requirements_rtd.txt
+    - method: setuptools
+      path:  .
       
