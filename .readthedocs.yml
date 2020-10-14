@@ -23,5 +23,6 @@ python:
   install:
     - method: setuptools
       path:  .
+    - requirements: requirements.txt
     - requirements: ci/requirements_rtd.txt
       
