@@ -23,12 +23,15 @@
 
 "Benchmark for Azimuthal integration of PyFAI"
 
+
 from __future__ import print_function, division
 
+
 __author__ = "Jérôme Kieffer"
-__date__ = "16/10/2020"
+__date__ = "09/05/2019"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
+
 
 from collections import OrderedDict
 import json
@@ -58,12 +61,14 @@ except ImportError:
     def update_fig(*args, **kwargs):
         pass
 
+
 ds_list = ["Pilatus1M.poni",
            "halfccd.poni",
            "Frelon2k.poni",
            "Pilatus6M.poni",
            "Mar3450.poni",
            "Fairchild.poni"]
+
 
 datasets = {"Fairchild.poni": "Fairchild.edf",
             "halfccd.poni": "halfccd.edf",
@@ -232,7 +237,7 @@ class Bench(object):
         self._cpu = None
         self.fig = None
         self.ax = None
-        self.starttime = time.perf_counter()
+        self.starttime = time.time()
         self.plot = None
         self.plot_x = []
         self.plot_y = []
@@ -368,11 +373,11 @@ class Bench(object):
                 continue
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(file_name), size, bench_test.N))
             try:
-                t0 = time.perf_counter()
+                t0 = time.time()
                 res = bench_test.stmt()
-                t1 = time.perf_counter()
+                t1 = time.time()
                 res2 = bench_test.stmt()
-                t2 = time.perf_counter()
+                t2 = time.time()
                 loops = int(1.0 + self.nbr / (t2 - t1))
                 self.print_init2(t1 - t0, t2 - t1, loops)
 
@@ -484,9 +489,9 @@ class Bench(object):
             size = bench_test.data.size / 1.0e6
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(file_name), size, bench_test.N))
             try:
-                t0 = time.perf_counter()
+                t0 = time.time()
                 _res = bench_test.stmt()
-                self.print_init(time.perf_counter() - t0)
+                self.print_init(time.time() - t0)
             except memory_error as error:
                 print(error)
                 break
@@ -555,9 +560,9 @@ class Bench(object):
             print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(file_name), size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
 
             try:
-                t0 = time.perf_counter()
+                t0 = time.time()
                 res = ai.xrpd_OpenCL(data, N, devicetype=devicetype, useFp64=useFp64, platformid=platformid, deviceid=deviceid)
-                t1 = time.perf_counter()
+                t1 = time.time()
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
                 continue
@@ -670,7 +675,7 @@ class Bench(object):
         """
         if not self.do_memprofile:
             return
-        self.memory_profile[0].append(time.perf_counter() - self.starttime)
+        self.memory_profile[0].append(time.time() - self.starttime)
         self.memory_profile[1].append(self.get_mem())
         if pylab:
             if not self.fig_mp:
@@ -705,7 +710,6 @@ class Bench(object):
                 size = s
         size.sort()
         return size
-
     size = property(get_size)
 
 
