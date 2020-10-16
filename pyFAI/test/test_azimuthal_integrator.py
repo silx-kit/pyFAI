@@ -28,13 +28,11 @@
 
 """test suite for Azimuthal integrator class"""
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/07/2020"
+__date__ = "16/10/2020"
 
 import unittest
 import os
@@ -215,7 +213,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         logger.info(self.ai.__repr__())
         self.ai.corner_array(self.data.shape, unit=units.TTH_RAD, scale=False)
         # this was just to enforce the initalization of the array
-        t0 = time.time()
+        t0 = time.perf_counter()
         logger.info("in test_cythonSP_vs_fit2d Before SP")
 
         tth, I = self.ai.integrate1d(self.data,
@@ -225,7 +223,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                      correctSolidAngle=False,
                                      unit="2th_deg")
         logger.info("in test_cythonSP_vs_fit2d Before")
-        t1 = time.time() - t0
+        t1 = time.perf_counter() - t0
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f", t1, rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:

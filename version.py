@@ -44,11 +44,10 @@ Thus 2.1.0a3 is hexversion 0x020100a3.
 
 """
 
-from __future__ import absolute_import, print_function, division
 __authors__ = ["Jérôme Kieffer", "V. Valls"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2020"
+__date__ = "16/10/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 __all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion",

@@ -26,14 +26,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
 """Test suite for masked arrays"""
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019"
+__date__ = "16/10/2020"
 
 import unittest
 from silx.utils.testutils import ParametricTestCase

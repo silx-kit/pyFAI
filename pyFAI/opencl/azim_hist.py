@@ -26,8 +26,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-from __future__ import absolute_import, print_function, with_statement, division
-
 """
 C++ less implementation of Dimitris' code based on PyOpenCL
 
@@ -42,7 +40,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "05/12/2019"
+__date__ = "16/10/2020"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 

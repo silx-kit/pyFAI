@@ -28,14 +28,11 @@
 
 "Test suite for worker"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2019"
-
+__date__ = "16/10/2020"
 
 import unittest
 import logging
@@ -52,7 +49,6 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
 from . import utilstest
-
 
 logger = logging.getLogger(__name__)
 

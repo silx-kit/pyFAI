@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/08/2019"
+__date__ = "16/10/2020"
 __status__ = "production"
 
 import logging
@@ -52,7 +52,6 @@ except ImportError:
     logger.debug("Backtrace", exc_info=True)
     _relabel = None
 
-
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 
@@ -65,9 +64,9 @@ def deg2rad(dd, disc=1):
     """
     # range [0:2pi[
     rp = (dd / 180.0) % 2.0
-    if disc: # range [-pi:pi[
+    if disc:  # range [-pi:pi[
         if rp >= 1.0:
-            rp -= 2.0 
+            rp -= 2.0
     return rp * math.pi
 
 
@@ -465,11 +464,11 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     shape = img1.shape
     logs = []
     assert img2.shape == shape
-    t0 = time.time()
+    t0 = time.perf_counter()
     i1f = numpy.fft.fft2(img1)
     i2f = numpy.fft.fft2(img2)
     res = numpy.fft.ifft2(i1f * i2f.conjugate()).real
-    t1 = time.time()
+    t1 = time.perf_counter()
 
     ################################################################################
     # END of convolutions
@@ -498,7 +497,7 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     if listOffset[1] > shape[1] // 2:
         listOffset[1] -= shape[1]
     offset = tuple(listOffset)
-    t2 = time.time()
+    t2 = time.perf_counter()
     logs.append("MeasureOffset: fine result: %s %s" % offset)
     logs.append("MeasureOffset: execution time: %.3fs with %.3fs for FFTs" % (t2 - t0, t1 - t0))
     if withLog:
@@ -757,6 +756,7 @@ def rwp(obt, ref):
     non_null = abs(big_mean) > 1e-10
     return numpy.sqrt(((big_delta[non_null]) ** 2 / ((big_mean[non_null]) ** 2)).sum())
 
+
 def chi_square(obt, ref):
     """Compute :math:`\\sqrt{\\sum \\frac{4\\cdot(obt-ref)^2}{(obt + ref)^2}}`.
 
@@ -776,9 +776,9 @@ def chi_square(obt, ref):
     big_ref_int = numpy.interp(big_pos, ref_pos, ref_int, 0.0, 0.0)
     big_obt_int = numpy.interp(big_pos, obt_pos, obt_int, 0.0, 0.0)
     big_delta_int = (big_ref_int - big_obt_int)
-    
-    big_ref_var = numpy.interp(big_pos, ref_pos, ref_std, 0.0, 0.0)**2
-    big_obt_var = numpy.interp(big_pos, obt_pos, obt_std, 0.0, 0.0)**2
+
+    big_ref_var = numpy.interp(big_pos, ref_pos, ref_std, 0.0, 0.0) ** 2
+    big_obt_var = numpy.interp(big_pos, obt_pos, obt_std, 0.0, 0.0) ** 2
     big_variance = (big_ref_var + big_obt_var) / 2.0
     non_null = abs(big_variance) > 1e-10
     return (big_delta_int[non_null] ** 2 / big_variance[non_null]).mean()

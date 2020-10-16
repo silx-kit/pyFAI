@@ -23,11 +23,8 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-
 
 import numpy
 from .DataModel import DataModel

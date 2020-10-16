@@ -29,13 +29,11 @@
 Simple test of ocl_azim_csr within pyFAI
 """
 
-from __future__ import division, print_function
-
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2020"
+__date__ = "16/10/2020"
 
 import logging
 import numpy
@@ -106,7 +104,7 @@ class TestOclAzimCSR(unittest.TestCase):
         solidangle = self.ai.solidAngleArray()
         res = integrator.integrate_ng(data, solidangle=solidangle)
         # for info, res contains: position intensity error signal variance normalization count
-        
+
         # Start with smth easy: the position
         self.assertTrue(numpy.allclose(r_m, ref[0]), "position are the same")
         # A bit harder: the count of pixels

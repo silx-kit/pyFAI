@@ -30,15 +30,12 @@
 Description of the `Dectris <https://www.dectris.com/>`_ detectors.
 """
 
-from __future__ import print_function, division, absolute_import, with_statement
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2020"
+__date__ = "16/10/2020"
 __status__ = "production"
-
 
 import os
 import numpy
@@ -257,15 +254,15 @@ class Eiger2_500k(Eiger2):
     """
     Eiger2 500k detector
     """
-    MAX_SHAPE =  (512, 1028)
+    MAX_SHAPE = (512, 1028)
     aliases = ["Eiger2 500k"]
-    
-    
+
+
 class Eiger2_1M(Eiger2):
     """
     Eiger2 1M detector
     """
-    MAX_SHAPE =  (1062, 1028)
+    MAX_SHAPE = (1062, 1028)
     aliases = ["Eiger2 1M"]
 
 
@@ -273,15 +270,15 @@ class Eiger2_4M(Eiger2):
     """
     Eiger2 4M detector
     """
-    MAX_SHAPE =  (2162, 2068)
+    MAX_SHAPE = (2162, 2068)
     aliases = ["Eiger2 4M"]
-    
-    
+
+
 class Eiger2_9M(Eiger2):
     """
     Eiger2 9M detector
     """
-    MAX_SHAPE =  (3262, 3108)
+    MAX_SHAPE = (3262, 3108)
     aliases = ["Eiger2 9M"]
 
 
@@ -289,10 +286,10 @@ class Eiger2_16M(Eiger2):
     """
     Eiger2 16M detector
     """
-    MAX_SHAPE =  (4362, 4148)
+    MAX_SHAPE = (4362, 4148)
     aliases = ["Eiger2 16M"]
 
-    
+
 class Mythen(_Dectris):
     "Mythen dtrip detector from Dectris"
     aliases = ["Mythen 1280"]
@@ -384,6 +381,7 @@ class Pilatus(_Dectris):
         else:
             self._splineFile = None
             self.uniform_pixel = True
+
     splineFile = property(get_splineFile, set_splineFile)
 
     def calc_mask(self):
@@ -575,6 +573,7 @@ class PilatusCdTe(Pilatus):
     Pilatus CdTe detector: Like the Pilatus with an extra 3 pixel in the middle
     of every module (vertically)
     """
+
     def calc_mask(self):
         """
         Returns a generic mask for Pilatus detectors...
@@ -613,6 +612,7 @@ class PilatusCdTe300kw(PilatusCdTe):
     """
     MAX_SHAPE = (195, 1475)
     aliases = ["Pilatus CdTe 300kw", "Pilatus 300kw CdTe", "Pilatus300kw CdTe", "Pilatus300kwCdTe"]
+
 
 class PilatusCdTe900kw(PilatusCdTe):
     """

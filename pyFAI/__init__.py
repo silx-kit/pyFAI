@@ -26,13 +26,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-#
-
-from __future__ import absolute_import, print_function, with_statement, division
-
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "22/10/2018"
+__date__ = "16/10/2020"
 
 import sys
 import logging
@@ -55,7 +51,6 @@ if sys.version_info < (2, 6):
     raise RuntimeError("pyFAI required a python version >= 2.6, now we are running: %s" % sys.version)
 
 from .utils import decorators
-
 
 use_opencl = True
 """Global configuration which allow to disable OpenCL programatically.

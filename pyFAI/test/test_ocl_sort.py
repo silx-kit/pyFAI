@@ -27,9 +27,8 @@
 
 """Test for OpenCL sorting on GPU"""
 
-from __future__ import absolute_import, print_function, division
 __license__ = "MIT"
-__date__ = "08/10/2018"
+__date__ = "16/10/2020"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -41,7 +40,6 @@ import warnings
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
-
 
 from ..opencl import ocl
 if ocl:

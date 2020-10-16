@@ -28,11 +28,9 @@
 
 """Test module for pyFAI GUI"""
 
-from __future__ import absolute_import, division, print_function
-
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/03/2019"
+__date__ = "16/10/2020"
 
 import sys
 import os
@@ -41,11 +39,11 @@ import logging
 
 from pyFAI.test.utilstest import test_options
 
-
 _logger = logging.getLogger(__name__)
 
 
 class SkipGuiTest(unittest.TestCase):
+
     def __init__(self, methodName='runTest', reason=None):
         self._reason = reason
         unittest.TestCase.__init__(self, methodName=methodName)

@@ -25,15 +25,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, print_function, division
-
 """Module with GUI for diffraction mapping experiments"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2020"
+__date__ = "16/10/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -59,6 +57,7 @@ logger = logging.getLogger(__name__)
 
 
 class IntegrateDialog(qt.QDialog):
+
     def __init__(self, parent=None):
         qt.QDialog.__init__(self)
         self.widget = WorkerConfigurator(self)
@@ -75,6 +74,7 @@ class IntegrateDialog(qt.QDialog):
 
 
 class TreeModel(qt.QAbstractItemModel):
+
     def __init__(self, win, root_item):
         super(TreeModel, self).__init__(win)
         self._root_item = root_item
@@ -294,7 +294,7 @@ class DiffMapWidget(qt.QWidget):
                     qt.QMessageBox.about(self, "Unconsistent configuration", "Some essential parameters are missing ... Did you set the radial number of points ?")
             else:
                 break
-        
+
     def configure_output(self, *args, **kwargs):
         """
         called when clicking on "outputFileSelector"
@@ -439,7 +439,7 @@ class DiffMapWidget(qt.QWidget):
         Called in a separate thread
         """
         logger.info("process")
-        t0 = time.time()
+        t0 = time.perf_counter()
         with self.processing_sem:
             config = self.dump()
             config_ai = config.get("ai", {})
@@ -470,7 +470,7 @@ class DiffMapWidget(qt.QWidget):
             if diffmap.nxs:
                 self.data_np = diffmap.dataset[()]
                 diffmap.nxs.close()
-        logger.warning("Processing finished in %.3fs", time.time() - t0)
+        logger.warning("Processing finished in %.3fs", time.perf_counter() - t0)
         self.progressbarChanged.emit(len(self.list_dataset), 0)
 
     def display_processing(self, config):

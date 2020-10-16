@@ -29,13 +29,11 @@
 Simple test of an addition
 """
 
-from __future__ import division, print_function
-
 __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2019"
+__date__ = "16/10/2020"
 
 import logging
 import numpy

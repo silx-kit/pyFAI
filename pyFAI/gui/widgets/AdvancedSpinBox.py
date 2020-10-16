@@ -23,16 +23,13 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/04/2019"
+__date__ = "16/10/2020"
 
 import logging
 
 from silx.gui import qt
-
 
 _logger = logging.getLogger(__name__)
 

@@ -25,12 +25,8 @@
 """Helper to transform or extract information from the abstratc model.
 """
 
-from __future__ import division
-
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-
 
 import numpy
 

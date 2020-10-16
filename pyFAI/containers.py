@@ -26,13 +26,11 @@
 
 """Module containing holder classes, like returned objects."""
 
-from __future__ import absolute_import, print_function, division, with_statement
-
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2019"
+__date__ = "16/10/2020"
 __status__ = "development"
 
 from collections import namedtuple

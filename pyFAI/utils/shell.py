@@ -25,12 +25,10 @@
 
 """Module containing utilities around shell command line."""
 
-from __future__ import absolute_import, print_function, division
-
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "16/10/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -42,6 +40,7 @@ class ProgressBar:
     """
     Progress bar in shell mode
     """
+
     def __init__(self, title, max_value, bar_width):
         """
         Create a progress bar using a title, a maximum value and a graphical size.

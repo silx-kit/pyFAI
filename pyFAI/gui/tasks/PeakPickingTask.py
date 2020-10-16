@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "16/10/2020"
 
 import logging
 import numpy
@@ -58,7 +56,6 @@ from ..helper import model_transform
 from ..widgets.ColoredCheckBox import ColoredCheckBox
 from ..widgets.AdvancedSpinBox import AdvancedSpinBox
 from ..dialog import MessageBox
-
 
 _logger = logging.getLogger(__name__)
 
@@ -1086,6 +1083,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
             def selectRing(ringNumber):
                 self.__ringSelection.selectRing(ringNumber)
+
             action.triggered.connect(functools.partial(selectRing, i))
             action.setShortcut(qt.QKeySequence(key))
             self.addAction(action)

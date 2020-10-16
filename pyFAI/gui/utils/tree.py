@@ -25,15 +25,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, print_function, division
-
 """Module with list <-> tree conversion"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "16/10/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -63,6 +61,7 @@ except ImportError:
         add size property which calculate the size of the subtree
         add a next/previous method
         """
+
         def __init__(self, label=None, parent=None):
             self.children = []
             self.parent = parent
@@ -146,6 +145,7 @@ except ImportError:
 
 
 class DataSet(object):
+
     def __init__(self, path, h5=None, nframes=None, shape=None):
         self.path = path
         self.h5 = h5

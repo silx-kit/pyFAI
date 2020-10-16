@@ -28,14 +28,11 @@
 
 """Test suites for sparse matrix multiplication modules"""
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2020"
-
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -91,6 +88,7 @@ class TestSparseBBox(unittest.TestCase):
 
 
 class TestSparseUtils(unittest.TestCase):
+
     def test_conversion(self):
         dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
         shape = 99, 101
@@ -134,21 +132,23 @@ class TestSparseUtils(unittest.TestCase):
         img = numpy.random.random(detector.shape)
         res_csr = ai.integrate1d_ng(img, 100, method=("no", "csr", "cython"), unit="r_mm")
         res_lut = ai.integrate1d_ng(img, 100, method=("no", "lut", "cython"), unit="r_mm")
-        self.assertEqual(abs(res_csr.intensity-res_lut.intensity).max(), 0, "intensity matches")
-        self.assertEqual(abs(res_csr.radial-res_lut.radial).max(), 0, "radial matches")
+        self.assertEqual(abs(res_csr.intensity - res_lut.intensity).max(), 0, "intensity matches")
+        self.assertEqual(abs(res_csr.radial - res_lut.radial).max(), 0, "radial matches")
         sparse = {}
-        for k,v in ai.engines.items():
+        for k, v in ai.engines.items():
             sparse[k.algo_lower] = v.engine.lut
         lut2 = sparse_utils.CSR_to_LUT(*sparse["csr"])
-        self.assertEqual(abs(lut2["coef"]-sparse["lut"].coef).max(), 0, "LUT coef matches")
-        self.assertEqual(abs(lut2["idx"]-sparse["lut"].idx).max(), 0, "LUT idx matches")
+        self.assertEqual(abs(lut2["coef"] - sparse["lut"].coef).max(), 0, "LUT coef matches")
+        self.assertEqual(abs(lut2["idx"] - sparse["lut"].idx).max(), 0, "LUT idx matches")
 
         csr2 = sparse_utils.LUT_to_CSR(sparse["lut"])
-        self.assertEqual(abs(sparse["csr"][0]-csr2[0]).max(), 0, "CSR data matches")
-        self.assertEqual(abs(sparse["csr"][1]-csr2[1]).max(), 0, "CSR indices matches")
-        self.assertEqual(abs(sparse["csr"][2]-csr2[2]).max(), 0, "CSR indptr matches")
+        self.assertEqual(abs(sparse["csr"][0] - csr2[0]).max(), 0, "CSR data matches")
+        self.assertEqual(abs(sparse["csr"][1] - csr2[1]).max(), 0, "CSR indices matches")
+        self.assertEqual(abs(sparse["csr"][2] - csr2[2]).max(), 0, "CSR indptr matches")
+
 
 class TestContainer(unittest.TestCase):
+
     def test_vector(self):
         nelem = 12
         cont = sparse_utils.Vector()
