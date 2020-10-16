@@ -1,10 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,8 +31,9 @@ __license__ = "MIT"
 __date__ = "16/10/2020"
 
 import sys
+import os
 import logging
-if "ps1" in dir(sys):
+if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
     logging.basicConfig()
 
 import os

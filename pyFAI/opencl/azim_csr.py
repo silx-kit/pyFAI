@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "16/07/2020"
+__date__ = "05/08/2020"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -88,7 +88,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     def __init__(self, lut, image_size, checksum=None,
                  empty=None, unit=None, bin_centers=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
-                 block_size=None, profile=False):
+                 block_size=None, profile=False, extra_buffers=None):
         """
         :param lut: 3-tuple of arrays
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
@@ -107,6 +107,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
+        :param extra_buffers: List of additional buffer description  needed by derived classes 
         """
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
@@ -145,6 +146,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
+
+        if extra_buffers is not None:
+            self.buffers += extra_buffers
 
         self.buffers += [BufferDescription("data", self.data_size, numpy.float32, mf.READ_ONLY),
                          BufferDescription("indices", self.data_size, numpy.int32, mf.READ_ONLY),

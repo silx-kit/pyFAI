@@ -19,3 +19,4 @@ The subsequent ones are about measuring this distortion, often based on the imag
    CCD_Calibration/CCD_calibration
    Pilatus_Calibration/Pilatus_ID15
    Pilatus_Calibration/Pilatus900kw-ID06
+   Eiger_Calibration/Eiger2-ID11

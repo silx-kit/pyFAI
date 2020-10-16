@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2020"
+__date__ = "02/09/2020"
 __status__ = "development"
 
 import logging
@@ -106,7 +106,7 @@ class Distortion(object):
         if mask is None:
             self.mask = numpy.ascontiguousarray(self.detector.mask, numpy.int8)
         elif mask is False:
-            self.mask = numpy.zeros(self.detector.mask.shape, numpy.int8)
+            self.mask = numpy.zeros(self.detector.shape, numpy.int8)
         else:
             self.mask = numpy.ascontiguousarray(mask, numpy.int8)
         self.resize = resize

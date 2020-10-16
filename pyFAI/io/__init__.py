@@ -300,7 +300,7 @@ class HDF5Writer(Writer):
             self.nxs.h5.attrs["default"] = self.hpath
             self.entry_grp.attrs["default"] = "integrate/results"
             self.process_grp = self.nxs.new_class(self.entry_grp, "integrate", class_type="NXprocess")
-            self.process_grp["program"] = main.__file__
+            self.process_grp["program"] = getattr(main, '__file__', u'pyFAI')
             self.process_grp["version"] = version
             self.process_grp["date"] = get_isotime()
             self.process_grp["sequence_index"] = 1

@@ -58,15 +58,37 @@ logger = logging.getLogger(__name__)
 class _Dectris(Detector):
 
     MANUFACTURER = "Dectris"
+    # This detector does not exist but those are place-holder
+    MODULE_SIZE = (64, 128)
+    MODULE_GAP = (9, 11)
+    force_pixel = True
+
+    def calc_mask(self):
+        """
+        Returns a generic mask for module based detectors...
+        """
+        if self.max_shape is None:
+            raise NotImplementedError("Generic Dectris detector does not know"
+                                      "its max size ...")
+        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+        # workinng in dim0 = Y
+        for i in range(self.module_size[0], self.max_shape[0],
+                       self.module_size[0] + self.MODULE_GAP[0]):
+            mask[i: i + self.MODULE_GAP[0], :] = 1
+        # workinng in dim1 = X
+        for i in range(self.module_size[1], self.max_shape[1],
+                       self.module_size[1] + self.MODULE_GAP[1]):
+            mask[:, i: i + self.MODULE_GAP[1]] = 1
+        return mask
 
 
 class Eiger(_Dectris):
     """
     Eiger detector: generic description containing mask algorithm
-    
-    Nota: 512k modules (514*1030) are made of 2x4 submodules of 256*256 pixels. 
-    Two missing pixels are interpolated at each sub-module boundary which explains 
-    the +2 and the +6 pixels.    
+
+    Nota: 512k modules (514*1030) are made of 2x4 submodules of 256*256 pixels.
+    Two missing pixels are interpolated at each sub-module boundary which explains
+    the +2 and the +6 pixels.
     """
     MODULE_SIZE = (514, 1030)
     MODULE_GAP = (37, 10)
@@ -83,24 +105,6 @@ class Eiger(_Dectris):
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._pixel1, self._pixel2)
-
-    def calc_mask(self):
-        """
-        Returns a generic mask for Pilatus detectors...
-        """
-        if self.max_shape is None:
-            raise NotImplementedError("Generic Pilatus detector does not know"
-                                      "the max size ...")
-        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
-        for i in range(self.module_size[0], self.max_shape[0],
-                       self.module_size[0] + self.MODULE_GAP[0]):
-            mask[i: i + self.MODULE_GAP[0], :] = 1
-        # workinng in dim1 = X
-        for i in range(self.module_size[1], self.max_shape[1],
-                       self.module_size[1] + self.MODULE_GAP[1]):
-            mask[:, i: i + self.MODULE_GAP[1]] = 1
-        return mask
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -154,7 +158,8 @@ class Eiger(_Dectris):
                     delta1 = delta1 / 100.0  # Offsets are in percent of pixel
                     delta2 = delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s", self.offset1.shape, d1.shape)
+                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s",
+                                   self.offset1.shape, d1.shape)
                     delta1 = delta2 = 0.
         if center:
             # Eiger detectors images are re-built to be contiguous
@@ -290,8 +295,67 @@ class Eiger2_16M(Eiger2):
     aliases = ["Eiger2 16M"]
 
 
+class Eiger2CdTe(Eiger2):
+    """
+    Eiger2 CdTe detector: Like the Eiger2 with an extra 2-pixel gap in the middle
+    of every module (vertically)
+    """
+
+    def calc_mask(self):
+        """
+        Mask out an extra 2 pixels in the middle of each module
+        """
+        mask = super().calc_mask()
+        # Add the small gaps in the middle of the module
+        for i in range(self.module_size[1] // 2, self.max_shape[1],
+                       self.module_size[1] + self.MODULE_GAP[1]):
+            mask[:, i - 1: i + 1] = 1
+
+        return mask
+
+
+class Eiger2CdTe_500k(Eiger2CdTe):
+    """
+    Eiger2 CdTe 500k detector
+    """
+    MAX_SHAPE = (512, 1028)
+    aliases = ["Eiger2 CdTe 500k"]
+
+
+class Eiger2CdTe_1M(Eiger2CdTe):
+    """
+    Eiger2 CdTe 1M detector
+    """
+    MAX_SHAPE = (1062, 1028)
+    aliases = ["Eiger2 CdTe 1M"]
+
+
+class Eiger2CdTe_4M(Eiger2CdTe):
+    """
+    Eiger2 CdTe 4M detector
+    """
+    MAX_SHAPE = (2162, 2068)
+    aliases = ["Eiger2 CdTe 4M"]
+
+
+class Eiger2CdTe_9M(Eiger2CdTe):
+    """
+    Eiger2 CdTe 9M detector
+    """
+    MAX_SHAPE = (3262, 3108)
+    aliases = ["Eiger2 CdTe 9M"]
+
+
+class Eiger2CdTe_16M(Eiger2CdTe):
+    """
+    Eiger2 CdTe 16M detector
+    """
+    MAX_SHAPE = (4362, 4148)
+    aliases = ["Eiger2 CdTe 16M"]
+
+
 class Mythen(_Dectris):
-    "Mythen dtrip detector from Dectris"
+    "Mythen strip detector from Dectris"
     aliases = ["Mythen 1280"]
     force_pixel = True
     MAX_SHAPE = (1, 1280)
@@ -306,6 +370,10 @@ class Mythen(_Dectris):
         """
         return OrderedDict((("pixel1", self._pixel1),
                             ("pixel2", self._pixel2)))
+
+    def calc_mask(self):
+        "Mythen have no masks"
+        return None
 
 
 class Pilatus(_Dectris):
@@ -383,24 +451,6 @@ class Pilatus(_Dectris):
             self.uniform_pixel = True
 
     splineFile = property(get_splineFile, set_splineFile)
-
-    def calc_mask(self):
-        """
-        Returns a generic mask for Pilatus detectors...
-        """
-        if self.max_shape is None:
-            raise NotImplementedError("Generic Pilatus detector does not know "
-                                      "its max size ...")
-        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
-        for i in range(self.module_size[0], self.max_shape[0],
-                       self.module_size[0] + self.MODULE_GAP[0]):
-            mask[i: i + self.MODULE_GAP[0], :] = 1
-        # workinng in dim1 = X
-        for i in range(self.module_size[1], self.max_shape[1],
-                       self.module_size[1] + self.MODULE_GAP[1]):
-            mask[:, i: i + self.MODULE_GAP[1]] = 1
-        return mask
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -576,21 +626,10 @@ class PilatusCdTe(Pilatus):
 
     def calc_mask(self):
         """
-        Returns a generic mask for Pilatus detectors...
+        Mask out an extra 3 pixel in the middle of each module
         """
-        if self.max_shape is None:
-            raise NotImplementedError("Generic Pilatus detector does not know "
-                                      "its max size ...")
-        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
-        for i in range(self.module_size[0], self.max_shape[0],
-                       self.module_size[0] + self.MODULE_GAP[0]):
-            mask[i: i + self.MODULE_GAP[0], :] = 1
-        # workinng in dim1 = X
-        for i in range(self.module_size[1], self.max_shape[1],
-                       self.module_size[1] + self.MODULE_GAP[1]):
-            mask[:, i: i + self.MODULE_GAP[1]] = 1
-        # Small gaps in the middle of the module
+        mask = super().calc_mask()
+        # Add the small gaps in the middle of the module
         for i in range(self.module_size[1] // 2, self.max_shape[1],
                        self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i - 1: i + 2] = 1

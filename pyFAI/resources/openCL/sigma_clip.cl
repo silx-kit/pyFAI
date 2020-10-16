@@ -103,7 +103,7 @@ static float8 sum_vector(float8 data)
 static float2 mean_and_deviation(uint local_id,
                                  uint local_size,
                                  float8 input,
-                                 local float *l_data)
+                                 volatile local float *l_data)
 {
     // inspired from: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
     float8 map = sum_vector(input);
@@ -231,7 +231,7 @@ kernel void mean_std_vertical(global float *src,
                               global float *mean,
                               global float *std,
                               float dummy,
-                              local float *l_data
+                              volatile local float *l_data
                               )
 {
     // we need to read 8 float position along the vertical axis
@@ -294,7 +294,7 @@ kernel void mean_std_horizontal(global float *src,
                                  global float *mean,
                                  global float *std,
                                  float dummy,
-                                 local float *l_data)
+                                 volatile local float *l_data)
 {
     float8 input;
     float2 result;
@@ -360,14 +360,14 @@ kernel void sigma_clip_vertical(global float *src,
                                 float sigma_lo,
                                 float sigma_hi,
                                 int max_iter,
-                                local float *l_data)
+                                volatile local float *l_data)
 {
     // we need to read 8 float position along the vertical axis
     float8 input;
     float2 result;
     uint id, global_start, padding, i;
     float value;
-    local int discarded[1];
+    volatile local int discarded[1];
 
     // Find global address
     padding = get_global_size(1);
@@ -451,14 +451,14 @@ kernel void sigma_clip_horizontal(global float *src,
                                   float sigma_lo,
                                   float sigma_hi,
                                   int max_iter,
-                                  local float *l_data)
+                                  volatile local float *l_data)
 {
     // we need to read 8 float position along the vertical axis
     float8 input;
     float2 result;
     float value;
     uint global_start, offset, i;
-    local int discarded[1];
+    volatile local int discarded[1];
 
     // Find global address
     offset = get_global_size(1) * get_global_id(0) * 8;

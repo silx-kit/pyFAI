@@ -40,7 +40,7 @@
  * 
  * For every pixel in the preproc array, the value for the background level 
  * and the std are interpolated.
- * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are maked as peak-pixel, 
+ * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are marked as peak-pixel, 
  * counted and their index registered in highidx
  * 
  * The kernel uses local memory for keeping track of peak count and positions 
@@ -57,20 +57,22 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
                               global  int    *counter,
                               global  int    *highidx){
     int tid = get_local_id(0);
-    // all thread in this WG share this local counter, upgraded at the end
-    local int local_counter[1];
-    local int to_upgrade[1];
-    local int local_highidx[WORKGROUP_SIZE];
-    local_highidx[tid] = 0;
-    if (tid == 0)
-        local_counter[0] = 0;
-    barrier(CLK_LOCAL_MEM_FENCE);
-    
     int gid = get_global_id(0);
+    // all thread in this WG share this local counter, upgraded at the end
+    volatile local int local_counter[2];
+    volatile local int local_highidx[WORKGROUP_SIZE];    
+    local_highidx[tid] = 0;
+    for (int i=0; i<2; i+=WORKGROUP_SIZE){
+        if (i+tid < 2){
+            local_counter[i+tid] = 0;
+        }
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);    
+    
     if (gid<NIMAGE) {
         float radius = radius2d[gid];
         float4 value = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-        if ((radius>=radius_min) && (radius<radius_max)) {
+        if (isfinite(radius) && (radius>=radius_min) && (radius<radius_max)) {
             value = preproc4[gid];
             if (value.s2>0.0) {
                 value.s1 = value.s0 / value.s2; 
@@ -90,15 +92,15 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
         } //check radius range
         preproc4[gid] = value;
     } //pixel in image
-     
+    
     //Update global memory counter
     barrier(CLK_LOCAL_MEM_FENCE);
     if (local_counter[0]){
         if (tid == 0) 
-            to_upgrade[0] = atomic_add(counter, local_counter[0]);
+            local_counter[1] = atomic_add(counter, local_counter[0]);
         barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid<to_upgrade[0])
-            highidx[tid + to_upgrade[0]] = local_highidx[tid];
+        if (tid<local_counter[0])
+            highidx[tid +local_counter[1]] = local_highidx[tid];
     } // end update global memory
 
 } //end kernel find_peaks
@@ -107,6 +109,93 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
 static float _calc_intensity(float4 value){
 	return value.s1 - value.s2;
 }
+
+// A simple kernel to copy the intensities of the peak
+
+kernel void copy_peak(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global float *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = preprocessed[peak_position[tid]].s0;
+    }
+}
+
+kernel void copy_peak_uint8(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global unsigned char *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (unsigned char)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_int8(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global char *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (char)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_uint16(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global unsigned short *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (unsigned short)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_int16(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global short *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (short)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_uint32(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global unsigned int *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (unsigned int)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_int32(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global int *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (int)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
 
 /* this kernel takes the list of high-pixels, searches for the local maximum.
  * 
@@ -133,8 +222,8 @@ kernel void seach_maximum(       global  float4 *preproc4, //both input and outp
 			int x, y, where, there;
 			float4 value4 = preproc4[here];
 			float value = _calc_intensity(value4);
-			int where = 0; // where is left at zero if we are on a local maximum
-			
+			where = 0; // where is left at zero if we are on a local maximum
+			//TODO: finish
 		}
 	}
 	
@@ -142,5 +231,6 @@ kernel void seach_maximum(       global  float4 *preproc4, //both input and outp
 
 /* this kernel takes an images 
 kernel void peak_dilation(){
-	
+	TODO
 }
+*/
