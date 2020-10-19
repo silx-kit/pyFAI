@@ -31,8 +31,6 @@ Code according to Sivia and David, J. Appl. Cryst. (2001). 34, 318-324
 * Version: 0.2 2016/10/07: OOP implementation
 """
 
-
-
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
