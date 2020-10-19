@@ -82,7 +82,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/07/2020"
+__date__ = "02/09/2020"
 __status__ = "development"
 
 import threading
@@ -775,17 +775,18 @@ class DistortionWorker(object):
 
         if mask is None:
             self.mask = False
+            mask = numpy.zeros(detector.shape, dtype=bool)
         elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
-            self.mask = (mask < 0)
+            mask = self.mask = (mask < 0)
         else:
-            self.mask = mask.astype(bool)
+            mask = self.mask = mask.astype(bool)
 
         self.dummy = dummy
         self.delta_dummy = delta_dummy
 
         if detector is not None:
             self.distortion = Distortion(detector, method=method, device=device,
-                                     mask=self.mask, empty=self.dummy or 0)
+                                     mask=mask, empty=self.dummy or 0)
             self.distortion.reset(prepare=True) # enfoce initization
         else:
             self.distortion = None
