@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "05/12/2019"
+__date__ = "02/10/2020"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -258,11 +258,6 @@ class Integrator1d(object):
 
         if self.useFp64:
             compile_options += " -D ENABLE_FP64"
-
-        try:
-            default_compiler_options = self.get_compiler_options(x87_volatile=True)
-        except AttributeError:  # Silx version too old
-            logger.warning("Please upgrade to silx v0.10+")
             default_compiler_options = get_x87_volatile_option(self._ctx)
 
         if default_compiler_options:
@@ -273,6 +268,8 @@ class Integrator1d(object):
             self._cl_program.build(options=compile_options)
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
+        except pyopencl._cl.RuntimeError as error:
+            raise RuntimeError(error)
 
     def _set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -969,12 +966,7 @@ class OCL_Histogram1d(OpenclProcessing):
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
-
-        try:
-            default_compiler_options = self.get_compiler_options(x87_volatile=True)
-        except AttributeError:  # Silx version too old
-            logger.warning("Please upgrade to silx v0.10+")
-            default_compiler_options = get_x87_volatile_option(self.ctx)
+        default_compiler_options = get_x87_volatile_option(self.ctx)
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
                           (self.bins, self.size, self.BLOCK_SIZE)
         if default_compiler_options:

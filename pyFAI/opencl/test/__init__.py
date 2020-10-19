@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
-#    Project: silx
+#    Project: pyFAI
 #             https://github.com/silx-kit/silx
 #
-#    Copyright (C) 2012-2016  European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2020  European Synchrotron Radiation Facility, Grenoble, France
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -24,7 +24,7 @@
 
 __authors__ = ["J. Kieffer"]
 __license__ = "MIT"
-__date__ = "05/08/2020"
+__date__ = "02/10/2020"
 
 import unittest
 from ...test.utilstest import UtilsTest

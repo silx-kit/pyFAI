@@ -1,10 +1,10 @@
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,11 @@
 
 """Module containing holder classes, like returned objects."""
 
-from __future__ import absolute_import, print_function, division, with_statement
-
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/08/2020"
+__date__ = "02/10/2020"
 __status__ = "development"
 
 from collections import namedtuple
@@ -723,6 +721,7 @@ class SeparateResult(tuple):
 
 class SparseFrame(tuple):
     """Result of the sparsification of a diffraction frame"""
+
     def __new__(self, index, intensity):
         return tuple.__new__(SparseFrame, (index, intensity))
 
@@ -744,10 +743,10 @@ class SparseFrame(tuple):
         self._method = None
         self._method_called = None
         self._compute_engine = None
-        self._cutoff=None
-        self._background_cycle=None 
-        self._noise=None
-        self._radial_range=None
+        self._cutoff = None
+        self._background_cycle = None
+        self._noise = None
+        self._radial_range = None
 
     @property
     def index(self):
@@ -775,26 +774,25 @@ class SparseFrame(tuple):
         :rtype: numpy.ndarray
         """
         return self._mask
-     
+
     @property
     def x(self):
         if self._shape is None:
             return self[0]
         else:
-            return self[0]%self._shape[-1]
-            
+            return self[0] % self._shape[-1]
 
     @property
     def y(self):
         if self._shape is None:
             return 0
         else:
-            return self[0]//self._shape[-1]
-        
+            return self[0] // self._shape[-1]
+
     @property
     def cutoff(self):
         return self._cutoff
-    
+
     @property
     def noise(self):
         return self._noise
@@ -803,22 +801,22 @@ class SparseFrame(tuple):
     def radius(self):
         return self._radius
 
-    @property 
+    @property
     def background_avg(self):
         return self._background_avg
-    
-    @property 
+
+    @property
     def background_std(self):
         return self._background_std
 
     @property
     def shape(self):
         return self._shape
-    
+
     @property
     def dtype(self):
         return self._dtype
-    
+
     @property
     def dummy(self):
         return self._dummy
