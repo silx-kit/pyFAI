@@ -1,7 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+# coding: utf-8
 #
-#    Project: Sift implementation in Python + OpenCL
+#    Project: Basic OpenCL test
 #             https://github.com/silx-kit/silx
 #
 # Permission is hereby granted, free of charge, to any person

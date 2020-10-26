@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+# coding: utf-8
 #
 #    Project: Simple histogram in Python + OpenCL
 #             https://github.com/silx-kit/pyFAI
@@ -32,7 +32,8 @@ Simple test of histgrams within pyFAI
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
-__copyright__ = "2019 European Synchrotron Radiation Facility, Grenoble, France"
+
+__copyright__ = "2019-2020 European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/10/2020"
 
 import logging

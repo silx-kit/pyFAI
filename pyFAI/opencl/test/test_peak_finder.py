@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
 #    Project: PyFAI: diffraction signal analysis
 #             https://github.com/silx-kit/pyFAI
@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/08/2020"
+__date__ = "02/10/2020"
 
 import logging
 import numpy
@@ -60,10 +60,10 @@ class TestOclPeakFinder(unittest.TestCase):
                 cls.PROFILE = True
             else:
                 cls.PROFILE = False
-        cls.ref = numpy.array([(  88,  705), (1097,  907), ( 833,  930), (1520, 1083),
+        cls.ref = numpy.array([(88, 705), (1097, 907), (833, 930), (1520, 1083),
                                (1463, 1249), (1721, 1281), (1274, 1316), (1662, 1372),
-                               ( 165, 1433), ( 304, 1423), (1058, 1449), (1260, 1839),
-                               ( 806, 2006), ( 129, 2149), (1981, 2272), (1045, 2446)],
+                               (165, 1433), (304, 1423), (1058, 1449), (1260, 1839),
+                               (806, 2006), (129, 2149), (1981, 2272), (1045, 2446)],
                                dtype=[('x', '<i4'), ('y', '<i4')])
         cls.img = fabio.open(UtilsTest.getimage("Pilatus6M.cbf")).data
         cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus6M.poni"))
@@ -80,12 +80,12 @@ class TestOclPeakFinder(unittest.TestCase):
         """
         test for simple peak picker
         """
-        msk = self.img<0
+        msk = self.img < 0
         pf = OCL_SimplePeakFinder(mask=msk)
         res = pf(self.img, window=11)
-        s1 = set((i["x"], i["y"]) for i in self.ref) 
+        s1 = set((i["x"], i["y"]) for i in self.ref)
         s2 = set(zip(res.x, res.y))
-        self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")            
+        self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")
         self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
@@ -94,24 +94,23 @@ class TestOclPeakFinder(unittest.TestCase):
         test for peak picker with background calculate from an azimuthal sigma-clipping
         """
         unit = "r_m"
-        msk = self.img<0
+        msk = self.img < 0
         engine = self.ai.setup_CSR(self.img.shape, 128, mask=msk, split="no", unit=unit)
-        bin_centers = engine.bin_centers 
-        lut =  engine.lut
-        distance = self.ai._cached_array["r_center"]  
+        bin_centers = engine.bin_centers
+        lut = engine.lut
+        distance = self.ai._cached_array["r_center"]
         pf = OCL_PeakFinder(lut, numpy.prod(self.img.shape), unit=unit, radius=distance, bin_centers=bin_centers, mask=msk)
         res = pf(self.img, error_model="poisson", dummy=-1)
-        s1 = set((i["x"], i["y"]) for i in self.ref) 
+        s1 = set((i["x"], i["y"]) for i in self.ref)
         s2 = set(zip(res.x, res.y))
-        self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")            
+        self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")
         self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
-        #Test densification function
+        # Test densification function
         dense = densify(res)
-        self.assertLess(abs(dense-self.img).max(), 20, "max difference is contained")
-        self.assertLess(abs((dense-self.img).mean()), 1, "mean of difference is close to zero")
-        self.assertLess((dense-self.img).std(), 3, "standard deviation of difference is contained")
-        #self.assertTrue(numpy.allclose(self.img, dense), "Reconstructed image matches")
-        
+        self.assertLess(abs(dense - self.img).max(), 20, "max difference is contained")
+        self.assertLess(abs((dense - self.img).mean()), 1, "mean of difference is close to zero")
+        self.assertLess((dense - self.img).std(), 3, "standard deviation of difference is contained")
+        # self.assertTrue(numpy.allclose(self.img, dense), "Reconstructed image matches")
 
 
 def suite():

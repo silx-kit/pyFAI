@@ -4,7 +4,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2014-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,8 +29,8 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "12/08/2020"
-__copyright__ = "2014-2019, ESRF, Grenoble"
+__date__ = "02/10/2020"
+__copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -110,26 +110,24 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
         if mask is None:
             self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(0)
-            self.mask=None
+            self.mask = None
         else:
             self.mask = numpy.ascontiguousarray(mask, numpy.int8)
-            self.send_buffer(self.mask, "mask")            
-            
+            self.send_buffer(self.mask, "mask")
+
         if self.bin_centers is None:
             raise RuntimeError("1D bin center position is mandatory")
         else:
             self.send_buffer(self.bin_centers, "radius1d")
-            
+
         if radius is None:
             raise RuntimeError("2D radius position is mandatory")
         else:
-            self.radius2d = numpy.array(radius, dtype=numpy.float32) #this makes explicitely a copy
+            self.radius2d = numpy.array(radius, dtype=numpy.float32)  # this makes explicitely a copy
             if self.mask is not None:
                 msk = numpy.where(self.mask)
                 self.radius2d[msk] = numpy.nan
             self.send_buffer(self.radius2d, "radius2d")
-            
-            
 
     def set_kernel_arguments(self):
         OCL_CSR_Integrator.set_kernel_arguments(self)
@@ -194,7 +192,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
         memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
         events.append(EventDescription("memset_ng", memset))
-        
+
         # Prepare preprocessing
         kw_corr = self.cl_kernel_args["corrections4"]
         if dummy is not None:
@@ -285,11 +283,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         events.append(EventDescription("corrections", ev))
 
         # Prepare sigma-clipping
-        kw_int = self.cl_kernel_args["csr_sigma_clip4"]        
+        kw_int = self.cl_kernel_args["csr_sigma_clip4"]
         wg = self.workgroup_size["csr_sigma_clip4"][0]
         kw_int["cutoff"] = numpy.float32(cutoff_clip)
         kw_int["cycle"] = numpy.int32(cycle)
-        
+
         if error_model.startswith("azim"):
             kw_int["azimuthal"] = numpy.int32(1)
         else:
@@ -302,7 +300,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             events.append(EventDescription("integrate4_single", integrate))
         else:
             integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg,), *kw_int.values())
-            events.append(EventDescription("csr_sigma_clip4", integrate))        
+            events.append(EventDescription("csr_sigma_clip4", integrate))
 
         # now perform the calc_from_1d on the device and count the number of pixels
         memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
@@ -375,8 +373,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 logger.warning("Nor variance not error-model is provided ...")
             error_model = ""
         with self.sem:
-            count = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, 
-                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, 
+            count = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
+                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
                                 safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
         return count
 
@@ -392,35 +390,35 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         """
         Unlocked version of sparsify
         """
-        cnt = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, 
-                          dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, 
+        cnt = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
+                          dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
                           safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
+
         indexes = numpy.empty(cnt, dtype=numpy.int32)
         dtype = data.dtype
         if dtype.kind == 'f':
             dtype = numpy.float32
             kernel = self.program.copy_peak
         elif dtype.kind in "iu":
-            if dtype.itemsize>4:
-                dtype = numpy.dtype("uint32") if dtype.kind=="u" else numpy.dtype("int32")
-            kernel =  self.program.__getattr__("copy_peak_"+dtype.name)
+            if dtype.itemsize > 4:
+                dtype = numpy.dtype("uint32") if dtype.kind == "u" else numpy.dtype("int32")
+            kernel = self.program.__getattr__("copy_peak_" + dtype.name)
         signal = numpy.empty(cnt, dtype)
-        
-        #Call kernel to copy intensities
-        kw = self.cl_kernel_args["copy_peak"]
-        size = (cnt + self.BLOCK_SIZE-1)&~(self.BLOCK_SIZE-1)
-        ev0 = kernel(self.queue,(size,), (self.BLOCK_SIZE,),
-                                 *list(kw.values()))
-        
-        ev1 = pyopencl.enqueue_copy(self.queue, indexes, self.cl_mem["peak_position"])
-        ev2 = pyopencl.enqueue_copy(self.queue, signal, self.cl_mem["peak_intensity"])
+        if cnt > 0:
+            # Call kernel to copy intensities
+            kw = self.cl_kernel_args["copy_peak"]
+            size = (cnt + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1)
+            ev0 = kernel(self.queue, (size,), (self.BLOCK_SIZE,),
+                                     *list(kw.values()))
 
-        if self.profile:
-            self.events += [EventDescription("copy D->D + cast %s intenity"%dtype.name, ev0),
-                            EventDescription("copy D->H peak_position", ev1),
-                            EventDescription("copy D->H peak_intensty", ev2)]
+            ev1 = pyopencl.enqueue_copy(self.queue, indexes, self.cl_mem["peak_position"])
+            ev2 = pyopencl.enqueue_copy(self.queue, signal, self.cl_mem["peak_intensity"])
+
+            if self.profile:
+                self.events += [EventDescription("copy D->D + cast %s intenity" % dtype.name, ev0),
+                                EventDescription("copy D->H peak_position", ev1),
+                                EventDescription("copy D->H peak_intensty", ev2)]
         return indexes, signal
-
 
     def sparsify(self, data, dark=None, dummy=None, delta_dummy=None,
                  variance=None, dark_variance=None,
@@ -480,8 +478,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 logger.warning("Nor variance not error-model is provided ...")
             error_model = ""
         with self.sem:
-            indexes, values = self._peak_finder(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption, 
-                                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum, 
+            indexes, values = self._peak_finder(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
+                                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
                                                 safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
             background_avg = numpy.zeros(self.bins, dtype=numpy.float32)
             background_std = numpy.zeros(self.bins, dtype=numpy.float32)
@@ -511,23 +509,23 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         result._metadata = None
         result._method = "sparsify"
         result._method_called = None
-        result._background_cycle=cycle 
-        result._radial_range=radial_range
+        result._background_cycle = cycle
+        result._radial_range = radial_range
         result._dummy = dummy
-        #result.delta_dummy = delta_dummy
-        
+        # result.delta_dummy = delta_dummy
+
         return result
 
     # Name of the default "process" method
     __call__ = sparsify
- 
-     
+
 #===============================================================================
 # Simple variante
 #===============================================================================
 
+
 class OCL_SimplePeakFinder(OpenclProcessing):
-    BLOCK_SIZE = 1024 #works with 32x32 patches (1024 threads)
+    BLOCK_SIZE = 1024  # works with 32x32 patches (1024 threads)
 
     kernel_files = ["pyfai:openCL/simple_peak_picker.cl"]
     buffers = [BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
@@ -573,7 +571,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
             self.do_mask = True
         else:
             assert len(image_shape) == 2, "expect a 2-tuple with the size of the image"
-            mask = numpy.zeros(image_shape, dtype=numpy.int8) 
+            mask = numpy.zeros(image_shape, dtype=numpy.int8)
             self.do_mask = False
         self.shape = image_shape
         self.on_device = {"mask": mask}
@@ -589,7 +587,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         self.buffers = [BufferDescription(i.name, i.size * numpy.prod(self.shape), i.dtype, i.flags)
                         for i in self.__class__.buffers]
         self.buffers.append(BufferDescription("count", 1, numpy.int32, mf.WRITE_ONLY))
-        
+
         try:
             self.set_profiling(profile)
             self.allocate_buffers()
@@ -621,7 +619,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         new_mask = mask.copy()
         memo[id(mask)] = new_mask
         new_obj = self.__class__(self.shape,
-                                 mask = new_mask,
+                                 mask=new_mask,
                                  ctx=self.ctx,
                                  block_size=self.block_size,
                                  profile=self.profile)
@@ -630,10 +628,10 @@ class OCL_SimplePeakFinder(OpenclProcessing):
 
     @staticmethod
     def size_to_doublet(size):
-        "Try to find the squarrest possible 2-tuple of this size"        
-        small = 2**int(math.log(size ** 0.5, 2))
-        large = size//small
-        return (large,small)
+        "Try to find the squarrest possible 2-tuple of this size"
+        small = 2 ** int(math.log(size ** 0.5, 2))
+        large = size // small
+        return (large, small)
 
     def compile_kernels(self, kernel_file=None):
         """
@@ -658,7 +656,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         for kernel_name, kernel in self.kernels.get_kernels().items():
             wg = kernel_workgroup_size(self.program, kernel)
             doublet1 = self.size_to_doublet(wg)
-            self.workgroup_size[kernel_name] = tuple(min(a,b) for a,b in zip(doublet1, self.wg))
+            self.workgroup_size[kernel_name] = tuple(min(a, b) for a, b in zip(doublet1, self.wg))
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -669,7 +667,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                                    ("do_mask", numpy.int8(self.do_mask)),
                                    ("mask", self.cl_mem["mask"]),
                                    ("image", self.cl_mem["image"])])
-                                   
+
         self.cl_kernel_args["u8_to_float"] = cast_kernel
         self.cl_kernel_args["s8_to_float"] = cast_kernel
         self.cl_kernel_args["u16_to_float"] = cast_kernel
@@ -691,7 +689,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                                                                  ("count", self.cl_mem["count"]),
                                                                  ("output", self.cl_mem["output"]),
                                                                  ("output_size", numpy.int32(numpy.prod(self.shape))),
-                                                                 ("local_high", pyopencl.LocalMemory(self.BLOCK_SIZE*4)),
+                                                                 ("local_high", pyopencl.LocalMemory(self.BLOCK_SIZE * 4)),
                                                                  ("local_size", numpy.int32(self.BLOCK_SIZE))])
         self.cl_kernel_args["copy_peak"] = OrderedDict((("peak_position", self.cl_mem["output"]),
                                                         ("count", self.cl_mem["count"]),
@@ -739,7 +737,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         if checksum is not None:
             self.on_device[dest] = checksum
 
-    def _count(self, 
+    def _count(self,
                image,
                window=7,
                cutoff=3.0,
@@ -752,12 +750,12 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         
         See doc of `count`
         :return: number of peak found in image
-        """ 
+        """
         self.send_buffer(image, "image", force_cast=True)
         self.kernels.memset_int(self.queue, (1,), (1,), *list(self.cl_kernel_args["memset_int"].values()))
-        
+
         kw = self.cl_kernel_args["simple_spot_finder"]
-        kw["half_wind_height"]=kw["half_wind_width"]=numpy.int32(window//2)
+        kw["half_wind_height"] = kw["half_wind_width"] = numpy.int32(window // 2)
         kw["cutoff"] = numpy.float32(cutoff)
         kw["radius"] = numpy.float32(radius)
         kw["noise"] = numpy.float32(noise)
@@ -767,7 +765,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         copy_count = pyopencl.enqueue_copy(self.queue, count, self.cl_mem["count"])
 
         if self.profile:
-            self.events+=[
+            self.events += [
                 EventDescription("simple_spot_finder", ev),
                 EventDescription("copy_count", copy_count)]
         return count[0]
@@ -791,13 +789,12 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         :param radius: keep points with centroid on center within this radius (in pixel)
         :param noise: minimum signal for peak to discard noisy region.        
         :return: number of peak found in image
-        """ 
+        """
         assert image.shape == self.shape
         with self.sem:
             return self._count(image, window, cutoff, radius, noise)
 
-        
-    def sparsify(self, 
+    def sparsify(self,
                  image,
                  window=7,
                  cutoff=3.0,
@@ -818,18 +815,18 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         with self.sem:
             count = self._count(image, window, cutoff, radius, noise)
             kw = self.cl_kernel_args["copy_peak"]
-            size = (count + self.BLOCK_SIZE-1)&~(self.BLOCK_SIZE-1)
-            
-            copy_peak = self.program.copy_peak(self.queue,(size,), (self.BLOCK_SIZE,),
+            size = (count + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1)
+
+            copy_peak = self.program.copy_peak(self.queue, (size,), (self.BLOCK_SIZE,),
                                            *list(kw.values()))
 
             indexes = numpy.empty(count, dtype=numpy.int32)
             values = numpy.empty(count, dtype=numpy.float32)
-            
+
             copy_index = pyopencl.enqueue_copy(self.queue, indexes, self.cl_mem["output"])
             copy_value = pyopencl.enqueue_copy(self.queue, values, self.cl_mem["peak_intensity"])
         if self.profile:
-            self.events+=[EventDescription("copy D->D values", copy_peak),
+            self.events += [EventDescription("copy D->D values", copy_peak),
                           EventDescription("copy D->H index", copy_index),
                           EventDescription("copy D->H values", copy_value)
                           ]
@@ -841,12 +838,13 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         result._noise = noise
         result._radius = radius
         return result
-    
+
     __call__ = sparsify
-        
+
 #===============================================================================
 # Rebuild an array from sparse informations
 #===============================================================================
+
 
 def densify(sparse):
     """Convert a SparseFrame object into a dense image
@@ -855,11 +853,11 @@ def densify(sparse):
     :return: dense image as numpy array
     """
     assert isinstance(sparse, SparseFrame)
-    background = numpy.array(sparse.background_avg, dtype=numpy.float64) #explicitly make a copy
+    background = numpy.array(sparse.background_avg, dtype=numpy.float64)  # explicitly make a copy
     if background is None:
         dense = numpy.zeros(sparse.shape)
     else:
-        # the mask contains the 2D radius with NaNs at masked positions 
+        # the mask contains the 2D radius with NaNs at masked positions
         dense = numpy.interp(sparse.mask, sparse.radius, background)
     flat = dense.ravel()
     flat[sparse.index] = sparse.intensity
