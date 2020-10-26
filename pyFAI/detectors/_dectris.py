@@ -271,13 +271,29 @@ class Eiger2_1M(Eiger2):
     aliases = ["Eiger2 1M"]
 
 
+class Eiger2_1MW(Eiger2):
+    """
+    Eiger2 1M-Wide detector
+    """
+    MAX_SHAPE = (512, 2068)
+    aliases = ["Eiger2 1M-W"]
+
+
+class Eiger2_2MW(Eiger2):
+    """
+    Eiger2 2M-Wide detector
+    """
+    MAX_SHAPE = (512, 4148)
+    aliases = ["Eiger2 2M-W"]
+
+    
 class Eiger2_4M(Eiger2):
     """
     Eiger2 4M detector
     """
     MAX_SHAPE = (2162, 2068)
     aliases = ["Eiger2 4M"]
-
+    
 
 class Eiger2_9M(Eiger2):
     """
@@ -328,6 +344,22 @@ class Eiger2CdTe_1M(Eiger2CdTe):
     """
     MAX_SHAPE = (1062, 1028)
     aliases = ["Eiger2 CdTe 1M"]
+
+
+class Eiger2CdTe_1MW(Eiger2CdTe):
+    """
+    Eiger2 CdTe 1M-Wide detector
+    """
+    MAX_SHAPE = (512, 2068)
+    aliases = ["Eiger2 CdTe 1M-W"]
+
+
+class Eiger2CdTe_2MW(Eiger2CdTe):
+    """
+    Eiger2 CdTe 2M-Wide detector
+    """
+    MAX_SHAPE = (512, 4148)
+    aliases = ["Eiger2 CdTe 2M-W"]
 
 
 class Eiger2CdTe_4M(Eiger2CdTe):
