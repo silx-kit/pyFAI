@@ -662,7 +662,9 @@ class SingleGeometry(object):
         """
         geo = self.geometry_refinement.getPyFAI()
         geo["detector"] = self.detector
-        return AzimuthalIntegrator(**geo)
+        ai = AzimuthalIntegrator()
+        ai.setPyFAI(**geo)
+        return ai
 
 
 class GoniometerRefinement(Goniometer):
