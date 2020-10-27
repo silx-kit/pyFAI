@@ -26,13 +26,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-#
-
-from __future__ import absolute_import, print_function, with_statement, division
-
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "30/09/2020"
+__date__ = "16/10/2020"
 
 import sys
 import os

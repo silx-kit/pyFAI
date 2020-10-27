@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "16/10/2020"
 
 import numpy
 import logging
@@ -246,14 +244,13 @@ class ExperimentTask(AbstractCalibrationTask):
             text = u" × ".join(text)
             self._detectorSize.setText(text)
             try:
-                text = ["%0.1f" % (s * 10**6) for s in [detector.pixel1, detector.pixel2]]
+                text = ["%0.1f" % (s * 10 ** 6) for s in [detector.pixel1, detector.pixel2]]
                 text = u" × ".join(text)
             except Exception as e:
                 # Is heterogeneous detectors have pixel sixe?
                 _logger.debug(e, exc_info=True)
                 text = "N.A."
             self._detectorPixelSize.setText(text)
-
 
             if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
                 fileDescription = detector.get_splineFile()

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2020"
+__date__ = "16/10/2020"
 __satus__ = "production"
 
 import sys
@@ -530,17 +530,17 @@ class Statistics(object):
         self._execution = 0
 
     def execution_started(self):
-        self._start_time = time.time()
+        self._start_time = time.perf_counter()
 
     def execution_finished(self):
-        t = time.time()
+        t = time.perf_counter()
         self._execution = t - self._start_time
 
     @contextlib.contextmanager
     def time_processing(self):
-        t1 = time.time()
+        t1 = time.perf_counter()
         yield
-        t2 = time.time()
+        t2 = time.perf_counter()
         processing = t2 - t1
         if self._processing == 0:
             self._first_processing = processing
@@ -549,9 +549,9 @@ class Statistics(object):
 
     @contextlib.contextmanager
     def time_reading(self):
-        t1 = time.time()
+        t1 = time.perf_counter()
         yield
-        t2 = time.time()
+        t2 = time.perf_counter()
         reading = t2 - t1
         self._reading += reading
 

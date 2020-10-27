@@ -27,14 +27,11 @@
 # THE SOFTWARE.
 "test suite for masked arrays"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/08/2019"
-
+__date__ = "16/10/2020"
 
 import tempfile
 import contextlib
@@ -46,7 +43,7 @@ import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..containers import Integrate1dResult, Integrate2dResult 
+from ..containers import Integrate1dResult, Integrate2dResult
 from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
 from ..utils import mathutil
@@ -128,24 +125,24 @@ class TestIntegrate1D(unittest.TestCase):
         methods = IntegrationMethod.select_method(dim=1, split="no")
         radial_range = (0.5, 7.0)
         for m in methods:
-            logger.info("Processing %s"%m)
+            logger.info("Processing %s" % m)
             res[m] = self.ai._integrate1d_ng(self.data, self.npt,
-                                             variance=self.data, 
+                                             variance=self.data,
                                              method=m, radial_range=radial_range)
         keys = list(res.keys())
-        norm = lambda a: a.sum(axis=-1, dtype="float64") if a.ndim==2 else a
+        norm = lambda a: a.sum(axis=-1, dtype="float64") if a.ndim == 2 else a
         for i, a in enumerate(keys):
             for b in keys[i:]:
-                if a==b: continue
+                if a == b: continue
                 R = mathutil.rwp(res[a][:2], res[b][:2])
-                err_msg = ["test_ng_nosplit: %s vs %s got R=%.2f !<%s. Max delta values:"%(a,b,R,self.Rmax)]
-                err_msg.append(" Radial: %.1f"% abs(norm(res[a].radial)-norm(res[b].radial)).max())
-                err_msg.append(" Intensity: %.1f"% abs(norm(res[a].intensity)-norm(res[b].intensity)).max())
-                err_msg.append(" Sigma: %.1f"% (abs(norm(res[a].sigma)-norm(res[b].sigma)).max()))                
-                err_msg.append(" Signal: %.1f"% abs(norm(res[a].sum_signal)-norm(res[b].sum_signal)).max())
-                err_msg.append(" Normalization: %.1f"% abs(norm(res[a].sum_normalization)-norm(res[b].sum_normalization)).max())
-                err_msg.append(" Variance: %.1f"% abs(norm(res[a].sum_variance)-norm(res[b].sum_variance)).max())
-                err_msg.append(" Count: %.1f"% abs(norm(res[a].count)-norm(res[b].count)).max())
+                err_msg = ["test_ng_nosplit: %s vs %s got R=%.2f !<%s. Max delta values:" % (a, b, R, self.Rmax)]
+                err_msg.append(" Radial: %.1f" % abs(norm(res[a].radial) - norm(res[b].radial)).max())
+                err_msg.append(" Intensity: %.1f" % abs(norm(res[a].intensity) - norm(res[b].intensity)).max())
+                err_msg.append(" Sigma: %.1f" % (abs(norm(res[a].sigma) - norm(res[b].sigma)).max()))
+                err_msg.append(" Signal: %.1f" % abs(norm(res[a].sum_signal) - norm(res[b].sum_signal)).max())
+                err_msg.append(" Normalization: %.1f" % abs(norm(res[a].sum_normalization) - norm(res[b].sum_normalization)).max())
+                err_msg.append(" Variance: %.1f" % abs(norm(res[a].sum_variance) - norm(res[b].sum_variance)).max())
+                err_msg.append(" Count: %.1f" % abs(norm(res[a].count) - norm(res[b].count)).max())
                 if R > self.Rmax:
                     logger.error(os.linesep.join(err_msg))
                 else:
@@ -158,7 +155,6 @@ class TestIntegrate1D(unittest.TestCase):
                 else:
                     logger.info(mesg)
                 self.assertLess(R, self.Rmax, mesg)
-
 
     def test_filename(self):
         with resulttempfile() as filename:
@@ -175,6 +171,7 @@ class TestIntegrate1D(unittest.TestCase):
 
 
 class TestIntegrate2D(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
         cls.npt = 500

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "16/10/2020"
 __status__ = "production"
 
 import os
@@ -168,13 +168,13 @@ def main():
             sys.stdout.write("Integrating %s --> " % afile)
             outfile = os.path.splitext(afile)[0] + options.ext
             azimFile = os.path.splitext(afile)[0] + ".azim"
-            t0 = time.time()
+            t0 = time.perf_counter()
             fabimg = fabio.open(afile)
             if options.multiframe:
                 data = average_dark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
             else:
                 data = fabimg.data
-            t1 = time.time()
+            t1 = time.perf_counter()
             integrator.integrate1d(data,
                                    options.npt or min(fabimg.data.shape),
                                    filename=outfile,
@@ -186,7 +186,7 @@ def main():
                                    polarization_factor=options.polarization_factor,
                                    metadata=fabimg.header
                                    )
-            t2 = time.time()
+            t2 = time.perf_counter()
             if options.do_2d:
                 integrator.integrate2d(data,
                                        options.npt or min(fabimg.data.shape),
@@ -201,7 +201,7 @@ def main():
                                        metadata=fabimg.header
                                        )
                 msg = "%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs."
-                print(msg % (outfile, t1 - t0, t2 - t1, time.time() - t2))
+                print(msg % (outfile, t1 - t0, t2 - t1, time.perf_counter() - t2))
             else:
                 msg = "%s,\t reading: %.3fs\t 1D integration: %.3fs."
                 print(msg % (outfile, t1 - t0, t2 - t1))

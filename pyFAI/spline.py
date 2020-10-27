@@ -31,12 +31,10 @@ describing for geometric corrections of the 2D detectors using cubic-spline.
 Mainly used at ESRF with FReLoN CCD camera.
 """
 
-from __future__ import print_function, division
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "25/02/2019"
+__date__ = "16/10/2020"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -312,7 +310,7 @@ class Spline(object):
         if self.xDispArray is None:
             x_1d_array = numpy.arange(self.xmin, self.xmax + 1)
             y_1d_array = numpy.arange(self.ymin, self.ymax + 1)
-            startTime = time.time()
+            startTime = time.perf_counter()
             self.xDispArray = fitpack.bisplev(x_1d_array, y_1d_array,
                                               [self.xSplineKnotsX,
                                                self.xSplineKnotsY,
@@ -320,7 +318,7 @@ class Spline(object):
                                                self.splineOrder,
                                                self.splineOrder],
                                               dx=0, dy=0).transpose()
-            intermediateTime = time.time()
+            intermediateTime = time.perf_counter()
             self.yDispArray = fitpack.bisplev(x_1d_array, y_1d_array,
                                               [self.ySplineKnotsX,
                                                self.ySplineKnotsY,
@@ -332,7 +330,7 @@ class Spline(object):
                 logger.info("Timing for: X-Displacement spline evaluation: %.3f sec,"
                             " Y-Displacement Spline evaluation:  %.3f sec." %
                             ((intermediateTime - startTime),
-                             (time.time() - intermediateTime)))
+                             (time.perf_counter() - intermediateTime)))
         return self.xDispArray, self.yDispArray
 
     def splineFuncX(self, x, y, list_of_points=False):
@@ -445,7 +443,7 @@ class Spline(object):
         self.ymax = self.yDispArray.shape[0] - 1.0
 
         if timing:
-            startTime = time.time()
+            startTime = time.perf_counter()
 
         xRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
             numpy.arange(self.xmax + 1.0),
@@ -454,7 +452,7 @@ class Spline(object):
             s=smoothing)
 
         if timing:
-            intermediateTime = time.time()
+            intermediateTime = time.perf_counter()
 
         yRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
             numpy.arange(self.xmax + 1.0),
@@ -464,7 +462,7 @@ class Spline(object):
 
         if timing:
             logger.info("X-Displ evaluation= %.3f sec, Y-Displ evaluation=  %.3f sec.",
-                        intermediateTime - startTime, time.time() - intermediateTime)
+                        intermediateTime - startTime, time.perf_counter() - intermediateTime)
 
         xknots = xRectBivariateSpline.get_knots()
         self.xSplineKnotsX = xknots[0]
@@ -613,7 +611,7 @@ class Spline(object):
                 self.read(self.filename)
         logger.info(u"center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm", center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize)
         if timing:
-            startTime = time.time()
+            startTime = time.perf_counter()
         distance = 1.0e6 * distanceSampleDetector  # from meters to microns
         cosb = numpy.cos(numpy.radians(tiltPlanRot))
         sinb = numpy.sin(numpy.radians(tiltPlanRot))
@@ -648,7 +646,7 @@ class Spline(object):
         tiltedSpline.yDispArray = tiltArrayY
         # tiltedSpline.array2spline(smoothing=1e-6, timing=True)
         if timing:
-            logger.info("Time for the generation of the distorted spline: %.3f sec", time.time() - startTime)
+            logger.info("Time for the generation of the distorted spline: %.3f sec", time.perf_counter() - startTime)
         return tiltedSpline
 
     def getDetectorSize(self):

@@ -31,12 +31,10 @@ Code according to Sivia and David, J. Appl. Cryst. (2001). 34, 318-324
 * Version: 0.2 2016/10/07: OOP implementation
 """
 
-from __future__ import absolute_import, print_function, division
-
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "16/10/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 

@@ -28,7 +28,7 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2020"
+__date__ = "16/10/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 

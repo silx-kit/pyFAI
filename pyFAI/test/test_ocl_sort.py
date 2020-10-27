@@ -28,7 +28,7 @@
 """Test for OpenCL sorting on GPU"""
 
 __license__ = "MIT"
-__date__ = "02/10/2020"
+__date__ = "16/10/2020"
 __copyright__ = "2015-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 

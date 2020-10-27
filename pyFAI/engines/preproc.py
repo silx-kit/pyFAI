@@ -27,13 +27,11 @@
 """Module providing common pixel-wise pre-processing of data.
 """
 
-from __future__ import absolute_import, print_function, with_statement
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2019"
+__date__ = "16/10/2020"
 __status__ = "development"
 
 import warnings

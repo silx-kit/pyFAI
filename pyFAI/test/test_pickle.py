@@ -26,16 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
 """Test suite for pickled objects"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/10/2018"
-
+__date__ = "16/10/2020"
 
 import numpy
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator

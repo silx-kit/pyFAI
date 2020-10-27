@@ -32,13 +32,11 @@ ControlPoints: a set of control points associated with a calibration image
 PointGroup: a group of points
 """
 
-from __future__ import absolute_import, print_function, with_statement, division
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2018"
+__date__ = "16/10/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -62,6 +60,7 @@ class ControlPoints(object):
     This class contains a set of control points with (optionally) their
     ring number hence d-spacing and diffraction  2Theta angle...
     """
+
     def __init__(self, filename=None, calibrant=None, wavelength=None):
         self._sem = threading.Semaphore()
         self._groups = OrderedDict()

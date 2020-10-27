@@ -25,13 +25,9 @@
 """This module provides convenient functions to use with Qt objects.
 """
 
-from __future__ import division
-
-
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "27/11/2018"
-
+__date__ = "16/10/2020"
 
 import numpy
 

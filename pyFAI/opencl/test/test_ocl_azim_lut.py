@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2020"
+__date__ = "16/10/2020"
 
 import logging
 import numpy

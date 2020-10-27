@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "16/10/2020"
 
 from .AbstractModel import AbstractModel
 

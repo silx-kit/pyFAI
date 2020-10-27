@@ -19,17 +19,14 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """CSR rebinning engine implemented in pure python (with bits of scipy !) 
 """
-
-from __future__ import absolute_import, print_function, with_statement
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/01/2020"
+__date__ = "16/10/2020"
 __status__ = "development"
 
 import logging
@@ -49,6 +46,7 @@ from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
 class CSRIntegrator(object):
+
     def __init__(self,
                  image_size,
                  lut=None,
@@ -64,7 +62,7 @@ class CSRIntegrator(object):
         self.empty = empty
         self.bins = None
         self._csr = None
-        self._csr2 = None # Used for propagating variance
+        self._csr2 = None  # Used for propagating variance
         self.lut_size = 0  # actually nnz
         self.data = None
         self.indices = None
@@ -86,7 +84,7 @@ class CSRIntegrator(object):
         self.bins = len(indptr) - 1
         print(self.bins, self.size)
         self._csr = csr_matrix((data, indices, indptr), shape=(self.bins, self.size))
-        self._csr2 = csr_matrix((data * data, indices, indptr), shape=(self.bins, self.size)) # contains the coef squared, used for variance propagation
+        self._csr2 = csr_matrix((data * data, indices, indptr), shape=(self.bins, self.size))  # contains the coef squared, used for variance propagation
 
     def integrate(self,
                   signal,
@@ -145,6 +143,7 @@ class CSRIntegrator(object):
 
 
 class CsrIntegrator1d(CSRIntegrator):
+
     def __init__(self,
                  image_size,
                  lut=None,
@@ -245,8 +244,9 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         return Integrate1dtpl(self.bin_centers,
                               intensity, error,
                               signal, variance, normalization, count)
+
     integrate_ng = integrate
-    
+
     def sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,
                    variance=None, dark_variance=None,
                    flat=None, solidangle=None, polarization=None, absorption=None,
@@ -288,10 +288,10 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         """
         shape = data.shape
         error_model = error_model.lower() if error_model else ""
-        
+
         if self._geometry is None:
             raise RuntimeError("Set geometry first")
-        
+
         prep = preproc(data,
                        dark=dark,
                        flat=flat,
@@ -316,26 +316,26 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
             std = numpy.sqrt(res[:, 1] / res[:, 2])
             avg[msk] = 0
             std[msk] = 0
-            
+
             avg2d = self._geometry.calcfrom1d(self.bin_centers, avg, shape=shape,
                     dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
             std2d = self._geometry.calcfrom1d(self.bin_centers, std, shape=shape,
                     dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
-            cnt = abs(prep[..., 0]/prep[..., 2] - avg2d)/std2d
-            msk2d = numpy.logical_and(numpy.logical_not(numpy.isfinite(cnt)), cnt> cutoff)
+            cnt = abs(prep[..., 0] / prep[..., 2] - avg2d) / std2d
+            msk2d = numpy.logical_and(numpy.logical_not(numpy.isfinite(cnt)), cnt > cutoff)
             prep[msk2d, :] = 0
             res = self._csr.dot(prep_flat)
         msk = res[:, 2] == 0
         avg = res[:, 0] / res[:, 2]
         std = numpy.sqrt(res[:, 1] / res[:, 2])
         avg[msk] = 0
-        std[msk] = 0        
+        std[msk] = 0
 
-        return Integrate1dtpl(self.bin_centers,avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
-        
-        
+        return Integrate1dtpl(self.bin_centers, avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
+
 
 class CsrIntegrator2d(CSRIntegrator):
+
     def __init__(self,
                  image_size,
                  lut=None,

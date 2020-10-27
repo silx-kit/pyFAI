@@ -27,13 +27,11 @@
 # THE SOFTWARE.
 "test suite for masked arrays"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/08/2018"
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -42,6 +40,7 @@ from ..ext.invert_geometry import InvertGeometry
 
 
 class TestInvertGeometry(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         detector = "pilatus 100k"

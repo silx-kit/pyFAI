@@ -38,13 +38,11 @@ TODO:
 - Add monitor to HDF5
 """
 
-from __future__ import absolute_import, print_function, division
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2020"
+__date__ = "16/10/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 

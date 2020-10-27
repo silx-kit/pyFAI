@@ -30,14 +30,11 @@
 FIXME : make some tests that the functions do what is expected
 """
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2020"
-
+__date__ = "16/10/2020"
 
 import unittest
 import random
@@ -181,6 +178,7 @@ class TestBug88SolidAngle(unittest.TestCase):
 class TestRecprocalSpacingSquarred(unittest.TestCase):
     """
     """
+
     def setUp(self):
         from pyFAI.detectors import Detector
         self.shape = (50, 49)
@@ -410,12 +408,12 @@ class TestGeometry(utilstest.ParametricTestCase):
         pixels = {"detector": "Pilatus100k",
                   "wavelength": 1e-10}
         geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
-                      {'dist': 1, 'rot1': -1, 'rot2': 1, 'rot3': 1},
-                      {'dist': 1, 'rot1': -.2, 'rot2': 1, 'rot3': -.1},
-                      {'dist': 1, 'rot1': -1, 'rot2': -.2, 'rot3': 1},
+                      {'dist': 1, 'rot1':-1, 'rot2': 1, 'rot3': 1},
+                      {'dist': 1, 'rot1':-.2, 'rot2': 1, 'rot3':-.1},
+                      {'dist': 1, 'rot1':-1, 'rot2':-.2, 'rot3': 1},
                       {'dist': 1, 'rot1': 1, 'rot2': 5, 'rot3': .4},
-                      {'dist': 1, 'rot1': -1.2, 'rot2': 1, 'rot3': 1},
-                      {'dist': 100, 'rot1': -2, 'rot2': 2, 'rot3': 1},
+                      {'dist': 1, 'rot1':-1.2, 'rot2': 1, 'rot3': 1},
+                      {'dist': 100, 'rot1':-2, 'rot2': 2, 'rot3': 1},
                       ]
         for g in geometries:
             g.update(pixels)

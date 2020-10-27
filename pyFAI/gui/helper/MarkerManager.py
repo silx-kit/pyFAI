@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/05/2019"
+__date__ = "16/10/2020"
 
 import logging
 import functools
@@ -41,7 +39,6 @@ from ..utils import eventutils
 from ..CalibrationContext import CalibrationContext
 from pyFAI.ext.invert_geometry import InvertGeometry
 import pyFAI.units
-
 
 _logger = logging.getLogger(__name__)
 

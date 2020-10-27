@@ -26,16 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
-from __future__ import division, print_function, absolute_import
-
 """Test suite for math utilities library"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2018"
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -46,7 +43,6 @@ logger = logging.getLogger(__name__)
 from .. import utils
 
 import scipy.ndimage
-
 
 _ROUND_FFT_VALUES = [
     (2, 2), (3, 3), (5, 5), (7, 7), (11, 11), (13, 13), (17, 18), (19, 20),

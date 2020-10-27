@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2020"
+__date__ = "16/10/2020"
 
 import unittest
 import os
@@ -262,9 +262,9 @@ class TestSort(unittest.TestCase):
 
     def test_reference_book(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
-        t0 = time.time()
+        t0 = time.perf_counter()
         hs_data = numpy.sort(self.h_data)
-        t1 = time.time()
+        t1 = time.perf_counter()
         time_sort = 1e3 * (t1 - t0)
 
         evt = self.prg.bsort_book(self.queue, (self.ws,), (self.ws,), d_data.data, self.local_mem)
@@ -281,9 +281,9 @@ class TestSort(unittest.TestCase):
 
     def test_reference_file(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
-        t0 = time.time()
+        t0 = time.perf_counter()
         hs_data = numpy.sort(self.h_data)
-        t1 = time.time()
+        t1 = time.perf_counter()
         time_sort = 1e3 * (t1 - t0)
 
         evt = self.prg.bsort_file(self.queue, (self.ws,), (self.ws,), d_data.data, self.local_mem)
@@ -297,9 +297,9 @@ class TestSort(unittest.TestCase):
 
     def test_sort_all(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
-        t0 = time.time()
+        t0 = time.perf_counter()
         hs_data = numpy.sort(self.h_data)
-        t1 = time.time()
+        t1 = time.perf_counter()
         time_sort = 1e3 * (t1 - t0)
 
         evt = self.prg.bsort_all(self.queue, (self.ws,), (self.ws,), d_data.data, self.local_mem)
@@ -312,9 +312,9 @@ class TestSort(unittest.TestCase):
 
     def test_sort_horizontal(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
-        t0 = time.time()
+        t0 = time.perf_counter()
         h2s_data = numpy.sort(self.h2_data, axis=-1)
-        t1 = time.time()
+        t1 = time.perf_counter()
         time_sort = 1e3 * (t1 - t0)
         evt = self.prg.bsort_horizontal(self.queue, (self.N, self.ws), (1, self.ws), d2_data.data, self.local_mem)
         evt.wait()
@@ -325,9 +325,9 @@ class TestSort(unittest.TestCase):
 
     def test_sort_vertical(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
-        t0 = time.time()
+        t0 = time.perf_counter()
         h2s_data = numpy.sort(self.h2_data, axis=0)
-        t1 = time.time()
+        t1 = time.perf_counter()
         time_sort = 1e3 * (t1 - t0)
         evt = self.prg.bsort_vertical(self.queue, (self.ws, self.N), (self.ws, 1), d2_data.data, self.local_mem)
         evt.wait()
