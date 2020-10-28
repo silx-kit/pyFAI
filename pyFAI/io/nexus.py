@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "28/10/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -144,8 +144,8 @@ class Nexus(object):
                 self.mode = "r"
             else:
                 self.mode = "a"
-        
-        if self.mode == "r":
+
+        if self.mode == "r" and h5py.version.version_tuple >= (2, 9):
             self.file_handle = open(self.filename, mode=self.mode + "b")
             self.h5 = h5py.File(self.file_handle, mode=self.mode)
         else:
@@ -336,7 +336,7 @@ class Nexus(object):
                 if isinstance(grp[name], h5py.Dataset) and
                 self.get_attr(grp[name], attr) == value]
         return coll
-    
+
     def get_default_NXdata(self):
         """Return the default plot configured in the nexus structure.
         
