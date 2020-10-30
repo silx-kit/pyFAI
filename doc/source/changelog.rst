@@ -1,9 +1,9 @@
 :Author: Jérôme Kieffer
-:Date: 31/01/2020
+:Date: 30/10/2020
 :Keywords: changelog
 
-ChangeLog of Versions
-=====================
+Change-log of versions
+======================
 
 0.19.0 31/01/2020
 -----------------
@@ -20,7 +20,7 @@ ChangeLog of Versions
 * Sigma-clipping implemented in OpenCL
 * Publication on new generation integration, the GUI for
   calibration and the goniometers accepted in J. Synch. Rad.
-  DOI: to be completed
+  DOI: 10.1107/S1600577520000776
 * A big thank to Florian from Germany, Bertrand from Xenocs,
   Alex from Soleil and Jon from ESRF for their contributions.
 

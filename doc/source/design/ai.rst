@@ -1,15 +1,11 @@
-Design of the Python Fast Azimuthal Integrator
-==============================================
+Design of AzimuthalIntegrator
+=============================
 
-Author: Jérôme Kieffer
-
-Date: 20/03/2015
-
-Keywords: Design
-
-Target: Developers interested in using the library
-
-Reference: API documentation
+:Author: Jérôme Kieffer
+:Date: 20/03/2015
+:Keywords: Design
+:Target: Developers interested in using the library
+:Reference: API documentation
 
 
 Abstract

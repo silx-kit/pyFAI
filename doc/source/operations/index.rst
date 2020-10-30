@@ -4,8 +4,8 @@
 :Target: System administrators
 
 
-Installation of Python Fast Azimuthal Integration library
-=========================================================
+Installation of pyFAI
+=====================
 
 
 Abstract
@@ -71,8 +71,8 @@ There are few specific options to ``setup.py``:
 * ``--openmp``: Recompiles the Cython code with OpenMP support (Default under Windows and Linux).
 * ``--with-testimages``: build the source distribution including all test images. Download 200MB of test images to create a self consistent tar-ball.
 
-Detailed installation procedure on different operating systems
---------------------------------------------------------------
+Detailed installation procedure
+-------------------------------
 
 .. toctree::
    :maxdepth: 2
@@ -104,5 +104,6 @@ PyFAI can use a certain number of environment variable to modify its default beh
 * PYFAI_OPENCL: set to "0" to disable the use of OpenCL
 * PYFAI_DATA: path with gui, calibrant, ...
 * PYFAI_TESTIMAGES: path wit test images (if absent, they get downloaded from the internet)
+* PYFAI_NO_LOGGING: Disable the configuration of any python logger in interactive mode
 
 

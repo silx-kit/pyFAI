@@ -12,7 +12,7 @@ You will find some explanation about technical terms often used in pyFAI and its
 AzimuthalIntegrator
 ===================
 
-The azimuthal integrator (*ai* hereafter)  is an object, in the sense of Object
+The azimuthal integrator (*ai* hereafter) is an object, in the sense of Object
 Oriented Programming which can transform an image into a powder diffraction pattern
 using the integrate1d or integrate2d methods.
 It contains (inherits) a Geometry and caches the look-up table for optimized integration.
