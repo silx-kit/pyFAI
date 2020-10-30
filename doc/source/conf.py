@@ -22,6 +22,7 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 project = u'pyFAI'
 try:
     import pyFAI
+
     project_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
     build_dir = os.path.abspath(pyFAI.__file__)
     if on_rtd:
@@ -29,9 +30,14 @@ try:
         print("build_dir", build_dir)
         print("project_dir", project_dir)
     elif not build_dir.startswith(project_dir):
-        raise RuntimeError("%s looks to come from the system. Fix your PYTHONPATH and restart sphinx." % project)
+        raise RuntimeError(
+            "%s looks to come from the system. Fix your PYTHONPATH and restart sphinx."
+            % project
+        )
 except ImportError:
-    raise RuntimeError("%s is not on the path. Fix your PYTHONPATH and restart sphinx." % project)
+    raise RuntimeError(
+        "%s is not on the path. Fix your PYTHONPATH and restart sphinx." % project
+    )
 
 # -- General configuration -----------------------------------------------------
 
@@ -42,6 +48,7 @@ except ImportError:
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 
 import sphinx
+
 try:
     import sphinx.ext.mathjax
 except:
@@ -49,6 +56,7 @@ except:
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     import mathjax
     import sphinx.ext
+
     sphinx.ext.mathjax = mathjax
     sys.modules["sphinx.ext.mathjax"] = mathjax
 
@@ -58,11 +66,15 @@ extensions = [
     'sphinxcontrib.programoutput',
     'sphinx.ext.mathjax',
     'nbsphinx',
-    'sphinx_rtd_theme'
 ]
 
 if sphinx.__version__ < "1.4":
     extensions.append('sphinx.ext.pngmath')
+
+if not on_rtd:
+    import sphinx_rtd_theme
+
+    extensions.append('sphinx_rtd_theme')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -77,9 +89,13 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-from pyFAI._version import strictversion, version, __date__ as pyfai_date
+from pyFAI._version import strictversion, __date__ as pyfai_date
+
 year = pyfai_date.split("/")[-1]
-copyright = u'2012-%s, Data analysis unit, European Synchrotron Radiation Facility, Grenoble' % (year)
+copyright = (
+    u'2012-%s, Data analysis unit, European Synchrotron Radiation Facility, Grenoble'
+    % (year)
+)
 
 
 # The version info for the project you're documenting, acts as replacement for
@@ -130,7 +146,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "sphinx_rtd_theme"
+html_theme = 'default' if on_rtd else 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -209,15 +225,14 @@ htmlhelp_basename = 'pyFAIdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-                  'papersize': 'a4paper',
-                   'pointsize': '10pt',
+    'papersize': 'a4paper',
+    'pointsize': '10pt',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'pyFAI.tex', u'pyFAI Documentation',
-   u'Jérôme Kieffer', 'manual'),
+    ('index', 'pyFAI.tex', u'pyFAI Documentation', u'Jérôme Kieffer', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -245,10 +260,7 @@ latex_logo = "img/pyFAI.png"
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'pyfai', u'pyFAI Documentation',
-     [u'Jérôme Kieffer'], 1)
-]
+man_pages = [('index', 'pyfai', u'pyFAI Documentation', [u'Jérôme Kieffer'], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -260,9 +272,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-                     ('index', 'pyFAI', u'pyFAI Documentation',
-                      u'Jérôme Kieffer', 'pyFAI', 'Python Azimuthal Integration library.',
-                      'Miscellaneous'),
+    (
+        'index',
+        'pyFAI',
+        u'pyFAI Documentation',
+        u'Jérôme Kieffer',
+        'pyFAI',
+        'Python Azimuthal Integration library.',
+        'Miscellaneous',
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.
