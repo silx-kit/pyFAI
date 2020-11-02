@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "02/11/2020"
 
 import sys
 import os
@@ -380,6 +380,47 @@ class TestBugRegression(unittest.TestCase):
                     self.assertLess(abs(res / target - 0.5), 0.1, "ChiDiscAtZero we expect half the pixels to be missing %s %s %s=%s/2" % (method, angle, res, target))
                 else:
                     self.assertLess(abs(res / target - 1), 0.1, "ChiDiscAtZero we expect the pixel to be present method:%s angle:%s expected:%s=%s" % (method, angle, target, res))
+
+    def test_bug_1421(self):
+        """This bug is about geometry refinement not working with SAXS-constrains in certain conditions
+        Inspired by the Recalib tutorial
+        """
+        from .. import geometry
+        from ..calibrant import CALIBRANT_FACTORY
+        from ..goniometer import SingleGeometry
+        filename = UtilsTest.getimage("Pilatus1M.edf")
+        frame = fabio.open(filename).data
+
+        # Approximatively the position of the beam center ...
+        x = 200  # x-coordinate of the beam-center in pixels
+        y = 300  # y-coordinate of the beam-center in pixels
+        d = 1600  # This is the distance in mm (unit used by Fit2d)
+        wl = 1e-10  # The wavelength is 1 Å
+
+        # Definition of the detector and of the calibrant:
+        pilatus = detectors.detector_factory("Pilatus1M")
+        behenate = CALIBRANT_FACTORY("AgBh")
+        behenate.wavelength = wl
+
+        # Set the guessed geometry
+        initial = geometry.Geometry(detector=pilatus, wavelength=wl)
+        initial.setFit2D(d, x, y)
+
+        # The SingleGeometry object (from goniometer) allows to extract automatically ring and calibrate
+        sg = SingleGeometry("demo", frame, calibrant=behenate, detector=pilatus, geometry=initial)
+        sg.extract_cp(max_rings=5)
+
+        # Refine the geometry ... here in SAXS geometry, the rotation is fixed in orthogonal setup
+        sg.geometry_refinement.refine2(fix=["rot1", "rot2", "rot3", "wavelength"])
+        refined = sg.get_ai()
+
+        self.assertNotEqual(initial.dist, refined.dist, "Distance got refined")
+        self.assertNotEqual(initial.poni1, refined.poni1, "Poni1 got refined")
+        self.assertNotEqual(initial.poni2, refined.poni2, "Poni2 got refined")
+        self.assertEqual(initial.rot1, refined.rot1, "Rot1 is unchanged")
+        self.assertEqual(initial.rot2, refined.rot2, "Rot2 is unchanged")
+        self.assertEqual(initial.rot3, refined.rot3, "Rot3 is unchanged")
+        self.assertEqual(initial.wavelength, refined.wavelength, "Walvelength is unchanged")
 
 
 def suite():
