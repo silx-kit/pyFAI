@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "03/11/2020"
 __status__ = "status"
 
 import os
@@ -65,7 +65,8 @@ from ..units import R_M
 from silx.opencl import ocl
 if ocl is None:
     logger.error("Sparsfy requires a valid OpenCL stack to be installed")
-from ..opencl.peak_finder import OCL_PeakFinder
+else:
+    from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
 from ..io.sparse_frame import save_sparse
 # Define few constants:
@@ -175,6 +176,8 @@ def parse():
 
         if len(args.IMAGE) == 0:
             raise argparse.ArgumentError(None, "No input file specified.")
+        if ocl is None:
+            raise RuntimeError("sparsify-Brgg requires _really_ a valide OpenCL environment. Please install pyopencl !")
 
     except argparse.ArgumentError as e:
         logger.error(e.message)
