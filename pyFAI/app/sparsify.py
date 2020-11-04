@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/11/2020"
+__date__ = "04/11/2020"
 __status__ = "status"
 
 import os
@@ -62,7 +62,8 @@ except ImportError:
 import fabio
 from .. import version, load
 from ..units import R_M
-from silx.opencl import ocl
+from ..opencl import ocl
+
 if ocl is None:
     logger.error("Sparsfy requires a valid OpenCL stack to be installed")
 else:
