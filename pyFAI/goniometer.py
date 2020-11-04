@@ -30,16 +30,13 @@
 translation table
 """
 
-from __future__ import absolute_import, print_function, with_statement, division
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/08/2018"
+__date__ = "16/10/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-
 
 import os
 import logging
@@ -78,6 +75,7 @@ class BaseTransformation(object):
 
     This class relies on a user provided function which does the work.
     """
+
     def __init__(self, funct, param_names, pos_names=None):
         """Constructor of the class
 
@@ -136,6 +134,7 @@ class GeometryTransformation(object):
     (dist, poni1, poni2, rot1, rot2, rot3)
     This function uses numexpr for formula evaluation.
     """
+
     def __init__(self, dist_expr, poni1_expr, poni2_expr,
                  rot1_expr, rot2_expr, rot3_expr,
                  param_names, pos_names=None, constants=None,
@@ -248,6 +247,7 @@ class ExtendedTransformation(object):
 
     This function uses numexpr for formula evaluation.
     """
+
     def __init__(self, dist_expr=None, poni1_expr=None, poni2_expr=None,
                  rot1_expr=None, rot2_expr=None, rot3_expr=None, wavelength_expr=None,
                  param_names=None, pos_names=None, constants=None,
@@ -464,6 +464,7 @@ class Goniometer(object):
                 f.write(json.dumps(dico, indent=2))
         except IOError:
             logger.error("IOError while writing to file %s", filename)
+
     write = save
 
     @classmethod
@@ -524,6 +525,7 @@ class SingleGeometry(object):
     """This class represents a single geometry of a detector position on a
     goniometer arm
     """
+
     def __init__(self, label, image=None, metadata=None, pos_function=None,
                  control_points=None, calibrant=None, detector=None, geometry=None):
         """Constructor of the SingleGeometry class, used for calibrating a
@@ -660,13 +662,16 @@ class SingleGeometry(object):
         """
         geo = self.geometry_refinement.getPyFAI()
         geo["detector"] = self.detector
-        return AzimuthalIntegrator(**geo)
+        ai = AzimuthalIntegrator()
+        ai.setPyFAI(**geo)
+        return ai
 
 
 class GoniometerRefinement(Goniometer):
     """This class allow the translation of a goniometer geometry into a pyFAI
     geometry using a set of parameter to refine.
     """
+
     def __init__(self, param, pos_function, trans_function,
                  detector="Detector", wavelength=None, param_names=None, pos_names=None,
                  bounds=None):

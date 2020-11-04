@@ -28,13 +28,10 @@
 
 """Test suites for sparse builder module"""
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Valentin Valls"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2018"
-
+__date__ = "16/10/2020"
 
 import unittest
 import numpy

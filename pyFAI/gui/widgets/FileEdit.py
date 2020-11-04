@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/03/2019"
+__date__ = "16/10/2020"
 
 import logging
 
@@ -37,7 +35,6 @@ from ..model.DataModel import DataModel
 from ..model.ImageModel import ImageFromFilenameModel
 from ..model.ImageModel import ImageFilenameModel
 import pyFAI.io.image
-
 
 _logger = logging.getLogger(__name__)
 

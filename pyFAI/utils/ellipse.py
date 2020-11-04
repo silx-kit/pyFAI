@@ -30,13 +30,11 @@
 on a set of points ....
 """
 
-from __future__ import division, print_function
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2019"
+__date__ = "16/10/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -46,7 +44,6 @@ from math import sqrt, atan2, pi
 from collections import namedtuple
 
 _logger = logging.getLogger(__name__)
-
 
 Ellipse = namedtuple("Ellipse", ["center_1", "center_2", "angle", "half_long_axis", "half_short_axis"])
 

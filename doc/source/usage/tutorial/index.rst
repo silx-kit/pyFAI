@@ -22,6 +22,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Geometry/geometry
    Detector/detector
    Calibrant/index
+   Recalib/Recalib_notebook
    LogScale/Guinier
    multi-geometry
    MakeCalibrant/

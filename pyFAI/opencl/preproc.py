@@ -29,11 +29,9 @@
 OpenCL implementation of the preproc module
 """
 
-from __future__ import absolute_import, print_function, division
-
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "05/12/2019"
+__date__ = "16/10/2020"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 

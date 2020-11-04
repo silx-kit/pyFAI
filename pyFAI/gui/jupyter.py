@@ -26,8 +26,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import division, print_function, absolute_import
-
 """Jupyter helper functions
 """
 
@@ -35,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2018"
+__date__ = "16/10/2020"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 

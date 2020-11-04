@@ -28,13 +28,12 @@
 
 """Module containing a widget to configure pyFAI integration.
 """
-from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2020"
+__date__ = "16/10/2020"
 __status__ = "development"
 
 import logging

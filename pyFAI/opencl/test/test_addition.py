@@ -1,7 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+# coding: utf-8
 #
-#    Project: Sift implementation in Python + OpenCL
+#    Project: Basic OpenCL test
 #             https://github.com/silx-kit/silx
 #
 # Permission is hereby granted, free of charge, to any person
@@ -29,13 +29,11 @@
 Simple test of an addition
 """
 
-from __future__ import division, print_function
-
 __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2019"
+__date__ = "16/10/2020"
 
 import logging
 import numpy

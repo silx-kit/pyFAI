@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2020"
+__date__ = "16/10/2020"
 
 import numpy
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator

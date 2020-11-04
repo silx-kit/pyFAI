@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/05/2019"
+__date__ = "16/10/2020"
 
 import numpy
 import time
@@ -72,7 +70,7 @@ class CreateSceneThread(qt.QThread):
         self.__geometry = geometry
 
     def emitProgressValue(self, value, force=False):
-        now = time.time()
+        now = time.perf_counter()
         if not force and self.__last is not None and now - self.__last < 1.0:
             # Filter events every seconds
             return

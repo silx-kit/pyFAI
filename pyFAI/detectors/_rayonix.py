@@ -31,15 +31,12 @@ Description of the `Rayonix <https://www.rayonix.com/>`_ detectors and
 `MarResearch <http://www.marresearch.com/>`_ detectors.
 """
 
-from __future__ import print_function, division, absolute_import, with_statement
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2018"
+__date__ = "16/10/2020"
 __status__ = "production"
-
 
 import numpy
 import json
@@ -95,6 +92,7 @@ class _Rayonix(Detector):
             self._binning = bin_size
             self.shape = (self.max_shape[0] // bin_size[0],
                           self.max_shape[1] // bin_size[1])
+
     binning = property(get_binning, set_binning)
 
     def __repr__(self):
@@ -487,7 +485,6 @@ class RayonixMx325(_Rayonix):
 
     def __init__(self, pixel1=79.346e-6, pixel2=79.346e-6):
         _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
-
 
 ################################################################################
 # Because Rayonix and MAR-Research usedto be the same company

@@ -38,13 +38,11 @@ TODO:
 - Add monitor to HDF5
 """
 
-from __future__ import absolute_import, print_function, division
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2020"
+__date__ = "16/10/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -302,7 +300,7 @@ class HDF5Writer(Writer):
             self.nxs.h5.attrs["default"] = self.hpath
             self.entry_grp.attrs["default"] = "integrate/results"
             self.process_grp = self.nxs.new_class(self.entry_grp, "integrate", class_type="NXprocess")
-            self.process_grp["program"] = main.__file__
+            self.process_grp["program"] = getattr(main, '__file__', u'pyFAI')
             self.process_grp["version"] = version
             self.process_grp["date"] = get_isotime()
             self.process_grp["sequence_index"] = 1

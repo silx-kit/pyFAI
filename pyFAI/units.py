@@ -33,15 +33,11 @@ unique manner. This explains the number of top-level variables on the one
 hand and their CAPITALIZATION on the other.
 """
 
-
-from __future__ import division, print_function
-
-
 __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2020"
+__date__ = "16/10/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -75,6 +71,7 @@ class Unit(object):
 
     It has at least a name and a scale (in SI-unit)
     """
+
     def __init__(self, name, scale=1, label=None, equation=None,
                  center=None, corner=None, delta=None, short_name=None, unit_symbol=None):
         """Constructor of a unit.
@@ -272,7 +269,6 @@ register_radial_unit("arcsinh(q.A)_None",
                      short_name=r"arcsinh(q.\AA)",
                      unit_symbol="?")
 
-
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
                 "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)"),
                 "cm": Unit("cm", scale=1e2, label=r"length $l$ ($cm$)"),
@@ -280,7 +276,6 @@ LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
                 "nm": Unit("nm", scale=1e9, label=r"length $l$ ($nm$)"),
                 "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)"),
                 }
-
 
 ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o}$)"),
                "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)"),

@@ -26,16 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
 """Test suite for bilinear interpolator class"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
-
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -92,6 +89,7 @@ class TestBilinear(unittest.TestCase):
 
 class TestConversion(unittest.TestCase):
     """basic 2d -> 4d transformation and vice-versa"""
+
     def test4d(self):
         Nx = 1000
         Ny = 1024

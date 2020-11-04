@@ -30,9 +30,6 @@
 FIXME : make some tests that the functions do what is expected
 """
 
-from __future__ import absolute_import, division, print_function
-
-
 import unittest
 import numpy
 import logging

@@ -25,15 +25,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, print_function, division
-
 """Module with GUI for diffraction mapping experiments"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2020"
+__date__ = "16/10/2020"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -450,7 +448,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.dataset is None:
             self.makeHDF5()
 
-        t = time.time()
+        t = time.perf_counter()
         fimg = fabio.open(filename)
         if "dataset" in dir(fimg):
             if isinstance(fimg.dataset, list):
@@ -463,7 +461,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             for i in range(fimg.nframes - 1):
                 fimg = fimg.next()
                 self.process_one_frame(fimg.data)
-        t -= time.time()
+        t -= time.perf_counter()
         print("Processing %30s took %6.1fms (%i frames)" %
               (os.path.basename(filename), -1000.0 * t, fimg.nframes))
         self.timing.append(-t)
@@ -513,11 +511,11 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.dataset is None:
             self.makeHDF5()
         self.init_ai()
-        t0 = time.time()
+        t0 = time.perf_counter()
         # self._idx = -1
         for f in self.inputfiles:
             self.process_one_file(f)
-        tot = time.time() - t0
+        tot = time.perf_counter() - t0
         cnt = self._idx + 1
         print(("Execution time for %i frames: %.3fs;"
                " Average execution time: %.1fms") %

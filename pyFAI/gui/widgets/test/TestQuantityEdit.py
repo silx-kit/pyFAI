@@ -26,15 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
 """Test QuantityEdit widget"""
 
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "16/10/2020"
 
 import unittest
 import logging
@@ -45,11 +43,11 @@ from ..QuantityEdit import QuantityEdit
 from pyFAI.gui.utils import units
 from pyFAI.gui.model.DataModel import DataModel
 
-
 logger = logging.getLogger(__name__)
 
 
 class TestQuantityEdit(testutils.TestCaseQt):
+
     def test_same_distance(self):
         w = QuantityEdit()
         model = DataModel(w)

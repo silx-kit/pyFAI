@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/07/2020"
+__date__ = "16/10/2020"
 __status__ = "development"
 
 import logging
@@ -95,7 +95,7 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
 
     def __resultReceived(self, result):
         isFiltered = not self._displayResult.isChecked()
-        now = time.time()
+        now = time.perf_counter()
         if self.__lastDisplay is not None:
             # Display a new result every 500ms, no more
             if now - self.__lastDisplay < 0.5:

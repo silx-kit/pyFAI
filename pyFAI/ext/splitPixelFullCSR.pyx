@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/07/2020"
+__date__ = "07/08/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -234,6 +234,7 @@ class FullSplitCSR_1d(CsrIntegrator):
         self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta, 
                                           self.pos0_max - 0.5 * self.delta, 
                                           self.bins)
+        self.lut = (numpy.asarray(self.data), numpy.asarray(self.indices), numpy.asarray(self.indptr))
         self.lut_checksum = crc32(self.data)
         self.unit = unit
         self.lut_nbytes = sum([i.nbytes for i in lut])

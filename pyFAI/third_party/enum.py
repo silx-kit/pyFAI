@@ -37,11 +37,9 @@ It should be used like that:
 
 """
 
-from __future__ import absolute_import
-
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "16/10/2020"
 
 try:
     # try to import the local version

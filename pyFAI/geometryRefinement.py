@@ -29,13 +29,11 @@
 """Module used to perform the geometric refinement of the model
 """
 
-from __future__ import print_function, division, absolute_import
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2019"
+__date__ = "16/10/2020"
 __status__ = "development"
 
 import os
@@ -74,6 +72,7 @@ ROCA = "/opt/saxs/roca"
 
 
 class GeometryRefinement(AzimuthalIntegrator):
+
     def __init__(self, data=None, dist=1, poni1=None, poni2=None,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None,

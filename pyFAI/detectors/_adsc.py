@@ -33,13 +33,11 @@ The website is no longer available, but can be found throung the
 `web archive <https://web.archive.org/web/20150403133907/http://www.adsc-xray.com/>`_.
 """
 
-from __future__ import print_function, division, absolute_import, with_statement
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/08/2018"
+__date__ = "16/10/2020"
 __status__ = "production"
 
 from collections import OrderedDict
