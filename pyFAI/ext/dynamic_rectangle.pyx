@@ -2,7 +2,7 @@
 #cython: embedsignature=True, language_level=3
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping:
-#cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,7 +33,7 @@ Export the mask as a set of rectangles.
 This feature is needed for single crystal analysis programs (XDS, Crysalis, ...) 
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "04/11/2020"
+__date__ = "05/11/2020"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -163,22 +163,46 @@ cpdef Rectangle get_largest_rectangle(numpy.int8_t[:, ::1] ary):
     return best
 
 
+cpdef bint any_non_zero(numpy.int8_t[::1] linear):
+    cdef:
+        int index
+    for index in range(linear.size):
+        if linear[index]:
+            return True
+    return False
+
+
 def decompose_mask(mask):
     """Decompose a mask into a list of hiding rectangles
     
     :param mask: 2D array with 1 for invalid pixels (0 elsewhere)
     :return: list of Rectangles
-    """
-    
+    """    
     cdef:
+        long idx, rlower, rupper, clower, cupper, width
         list res = []
-        #numpy.int8_t[:, ::1] remaining # TODO:investigate why declaring remaining at the C-level break everything ? 
+        numpy.int8_t[:, ::1] remaining
+        numpy.int8_t[::1] linear 
         Rectangle r
-    remaining = numpy.ascontiguousarray(mask, dtype=numpy.int8).copy()
-    while numpy.sum(remaining):
+        
+    width = mask.shape[1]
+    remaining = numpy.array(mask, dtype=numpy.int8)
+    linear = numpy.asarray(remaining).ravel()
+    
+    while any_non_zero(linear):
         r = get_largest_rectangle(remaining)
         res.append(r)
-        remaining[r.row:r.row+r.height, r.col:r.col+r.width] = 0
+        rlower = r.row
+        rupper = rlower + r.height
+        clower = r.col 
+        cupper = clower + r.width
+        
+        #Memset with tweaking in the case of non contiguous access
+        if clower>0 or cupper<width:
+            for idx in range(rlower, rupper):
+                remaining[idx, clower:cupper] = 0
+        else: #We are luck and the memory is in one block
+            remaining[rlower:rupper, clower:cupper] = 0
     return res
 
         
