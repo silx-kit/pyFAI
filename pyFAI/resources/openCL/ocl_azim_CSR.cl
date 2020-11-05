@@ -204,7 +204,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
                               const   global  float    *coefs,
                               const   global  int      *indices,
                               const   global  int      *indptr,
-                                      local   float8   *super_sum)
+                              volatile local  float8   *super_sum)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -283,8 +283,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
  * @param aver        average over the region
  * @param std         standard deviation of the average
  * @param cutoff      cut values above so many sigma, set count to NAN 
- * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
- *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
+ * @return number of pixel discarded in workgroup
  *
  */
 
@@ -296,7 +295,7 @@ static inline int _sigma_clip4(         global  float4   *data,
                                                 float    aver,
                                                 float    std,
                                                 float    cutoff,
-                                        local   int      *counter){
+                               volatile local   int      *counter){
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int cnt, j, k, idx;
     counter[0] = 0;
@@ -304,7 +303,6 @@ static inline int _sigma_clip4(         global  float4   *data,
     int thread_id_loc = get_local_id(0);
     int active_threads = get_local_size(0);
     int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
-    
     barrier(CLK_LOCAL_MEM_FENCE);
     for (j=bin_bounds.s0; j<bin_bounds.s1; j+=WORKGROUP_SIZE){
         k = j + thread_id_loc;
@@ -317,13 +315,11 @@ static inline int _sigma_clip4(         global  float4   *data,
                 if (fabs(signal-aver) > cutoff*std){
                     data[idx].s3 = NAN;
                     atomic_inc(counter);
-                }
-                     
+                }       
             } // if finite
         }// in bounds
     }// loop
     barrier(CLK_LOCAL_MEM_FENCE);
-    barrier(CLK_GLOBAL_MEM_FENCE);
     return counter[0];
 }// functions
 
@@ -337,7 +333,7 @@ static inline float2 _azimuthal_deviation(        global  float4   *data,
                                           const   global  int      *indices,
                                           const   global  int      *indptr,
                                           const           float    aver,
-                                                 local   float4  *shared4)
+                                          volatile local  float4  *shared4)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
     int bin_num = get_group_id(0);
@@ -707,7 +703,8 @@ csr_sigma_clip4(          global  float4  *data4,
     int bin_num = get_group_id(0);
     float aver, std, sem;
     int cnt;
-    local float8 shared8[WORKGROUP_SIZE];
+    volatile local float8 shared8[WORKGROUP_SIZE];
+    volatile local int counter[1];
     
     // first calculation of azimuthal integration to initialize aver & std
     
@@ -715,7 +712,7 @@ csr_sigma_clip4(          global  float4  *data4,
     if (result.s4 > 0.0f){
         aver = result.s0 / result.s4;
         if (azimuthal){
-            float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (__local float4*) shared8);
+            float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
             std = res2.s0;
             sem = res2.s1;
         }             
@@ -735,7 +732,7 @@ csr_sigma_clip4(          global  float4  *data4,
         if ( ! (isfinite(aver) && isfinite(std)))
             break;
 
-        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, cutoff, (__local int*) shared8);
+        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, cutoff, counter);
 
         if (! cnt) 
             break;
@@ -745,7 +742,7 @@ csr_sigma_clip4(          global  float4  *data4,
         if (result.s4 > 0.0f) {
             aver = result.s0 / result.s4;
             if (azimuthal){
-            	float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (__local float4*) shared8);
+            	float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
             	std = res2.s0;
             	sem = res2.s1;
             }                

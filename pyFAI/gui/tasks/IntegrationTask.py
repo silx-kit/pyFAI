@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/07/2020"
+__date__ = "16/10/2020"
 
 import logging
 import numpy
@@ -58,7 +56,6 @@ from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
 from pyFAI.io import ponifile
-
 
 _logger = logging.getLogger(__name__)
 
@@ -776,7 +773,7 @@ class IntegrationPlot(qt.QFrame):
         self.__updateRings()
 
         result1d = integrationProcess.result1d()
-        self.__plot1d.addHistogram( legend="result1d",
+        self.__plot1d.addHistogram(legend="result1d",
                                     align="center",
                                     edges=result1d.radial,
                                     color="blue",
@@ -837,7 +834,7 @@ class IntegrationPlot(qt.QFrame):
             colormap=colormap,
             resetzoom=False)
         self.__plot2d.setGraphXLabel(result2d.unit.label)
-        
+
         self.__radialUnit = integrationProcess.radialUnit()
         self.__wavelength = integrationProcess.wavelength()
         self.__directDist = integrationProcess.directDist()
@@ -875,7 +872,7 @@ class IntegrationPlot(qt.QFrame):
         silx.io.save1D(filename,
                        x=self.__result1d.radial,
                        y=self.__result1d.intensity,
-                       xlabel= str(self.__result1d.unit),
+                       xlabel=str(self.__result1d.unit),
                        ylabels=["intensity"],
                        filetype="csv",
                        autoheader=True)

@@ -32,12 +32,12 @@ pyFAI-calib
 A tool for determining the geometry of a detector using a reference sample.
 
 """
-from __future__ import print_function, division
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "16/10/2020"
 __status__ = "production"
 
 import os
@@ -1148,16 +1148,16 @@ class AbstractCalibration(object):
         self.geoRef.del_ttha()
         self.geoRef.del_dssa()
         self.geoRef.del_chia()
-        t0 = time.time()
+        t0 = time.perf_counter()
         _tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
-        t1 = time.time()
+        t1 = time.perf_counter()
         _dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
-        t2 = time.time()
+        t2 = time.perf_counter()
         self.geoRef.chiArray(self.peakPicker.shape)
-        t2a = time.time()
+        t2a = time.perf_counter()
         self.geoRef.corner_array(self.peakPicker.shape, units.TTH_DEG,
                                  scale=False)
-        t2b = time.time()
+        t2b = time.perf_counter()
         if self.gui:
             if self.fig_integrate is None:
                 self.fig_integrate = pylab.plt.figure()
@@ -1168,14 +1168,14 @@ class AbstractCalibration(object):
                 self.ax_xrpd_2d.cla()
                 update_fig(self.fig_integrate)
 
-        t3 = time.time()
+        t3 = time.perf_counter()
         res1 = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
                                        filename=self.basename + ".xy",
                                        unit=self.unit,
                                        polarization_factor=self.polarization_factor,
                                        method=self.integrator_method,
                                        error_model=self.error_model)
-        t4 = time.time()
+        t4 = time.perf_counter()
         res2 = self.geoRef.integrate2d(self.peakPicker.data,
                                        self.nPt_2D_rad, self.nPt_2D_azim,
                                        filename=self.basename + ".azim",
@@ -1183,7 +1183,7 @@ class AbstractCalibration(object):
                                        polarization_factor=self.polarization_factor,
                                        method=self.integrator_method,
                                        error_model=self.error_model)
-        t5 = time.time()
+        t5 = time.perf_counter()
         logger.info(os.linesep.join(["Timings (%s):" % self.integrator_method,
                                      " * two theta array generation %.3fs" % (t1 - t0),
                                      " * diff Solid Angle           %.3fs" % (t2 - t1),
@@ -1397,6 +1397,7 @@ class Calibration(AbstractCalibration):
     """
     class doing the calibration of frames
     """
+
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, gaussianWidth=None,
                  wavelength=None, calibrant=None):
@@ -1597,15 +1598,16 @@ decrease the value if arcs are mixed together.""", default=None)
         # Now continue as before
         AbstractCalibration.refine(self)
 
-
 ################################################################################
 # Recalibration
 ################################################################################
+
 
 class Recalibration(AbstractCalibration):
     """
     class doing the re-calibration of frames
     """
+
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
         """
@@ -1710,6 +1712,7 @@ and a new option which lets you choose between the original `massif` algorithm a
 
 
 class MultiCalib(object):
+
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None):
         """
         """
@@ -2165,6 +2168,7 @@ class MultiCalib(object):
 
 
 class CheckCalib(object):
+
     def __init__(self, poni=None, img=None, unit="2th_deg"):
         self.ponifile = poni
         if poni:
@@ -2265,6 +2269,7 @@ refinement process.
     def get_1dsize(self):
         logger.debug("in get_1dsize")
         return int(numpy.sqrt(self.img.shape[0] ** 2 + self.img.shape[1] ** 2))
+
     size1d = property(get_1dsize)
 
     def integrate(self):

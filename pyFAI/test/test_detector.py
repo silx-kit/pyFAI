@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2020"
+__date__ = "16/10/2020"
 
 import os
 import tempfile
@@ -160,8 +160,8 @@ class TestDetector(unittest.TestCase):
     def test_detector_jungfrau(self):
         j = detector_factory("Jungfrau")
         last = j.get_pixel_corners()[-1, -1]
-        self.assertAlmostEqual(last[:,1].max(), 514*75e-6, places=7, msg="height match")
-        self.assertAlmostEqual(last[:,2].max(), 1030*75e-6, places=7, msg="width match")
+        self.assertAlmostEqual(last[:, 1].max(), 514 * 75e-6, places=7, msg="height match")
+        self.assertAlmostEqual(last[:, 2].max(), 1030 * 75e-6, places=7, msg="width match")
 
     def test_nexus_detector(self):
         tmpdir = tempfile.mkdtemp()
@@ -269,20 +269,20 @@ class TestDetector(unittest.TestCase):
         a = detector_factory("Aarhus")
         # to limit the memory footprint, devide size by 100
         a.binning = (10, 10)
-        t0 = time.time()
+        t0 = time.perf_counter()
         n = a.get_pixel_corners(use_cython=False)
-        t1 = time.time()
+        t1 = time.perf_counter()
         a._pixel_corners = None
         c = a.get_pixel_corners(use_cython=True)
-        t2 = time.time()
+        t2 = time.perf_counter()
         logger.info("Aarhus.get_pixel_corners timing Numpy: %.3fs Cython: %.3fs", t1 - t0, t2 - t1)
         self.assertTrue(abs(n - c).max() < 1e-6, "get_pixel_corners cython == numpy")
         # test pixel center coordinates
-        t0 = time.time()
+        t0 = time.perf_counter()
         n1, n2, n3 = a.calc_cartesian_positions(use_cython=False)
-        t1 = time.time()
+        t1 = time.perf_counter()
         c1, c2, c3 = a.calc_cartesian_positions(use_cython=True)
-        t2 = time.time()
+        t2 = time.perf_counter()
         logger.info("Aarhus.calc_cartesian_positions timing Numpy: %.3fs Cython: %.3fs", t1 - t0, t2 - t1)
         self.assertTrue(abs(n1 - c1).max() < 1e-6, "cartesian coord1 cython == numpy")
         self.assertTrue(abs(n2 - c2).max() < 1e-6, "cartesian coord2 cython == numpy")
@@ -296,14 +296,14 @@ class TestDetector(unittest.TestCase):
         import copy
         cloned = copy.copy(detector)
         numpy.testing.assert_array_almost_equal(detector.get_pixel_corners(), cloned.get_pixel_corners())
-    
+
     def test_bug_1378(self):
         from ..detectors import Detector
         from ..calibrant import CalibrantFactory
         from pyFAI.geometryRefinement import GeometryRefinement
         calibrant_factory = CalibrantFactory()
         ceo2 = calibrant_factory("CeO2")
-        img_shape=(280, 290)
+        img_shape = (280, 290)
         detector = Detector(100e-6, 110e-6)
         detector.max_shape = detector.shape = img_shape
 
@@ -312,41 +312,43 @@ class TestDetector(unittest.TestCase):
         detector.set_dx(dx)
         detector.set_dy(dy)
 
-        pattern_geometry = GeometryRefinement([[1, 1, 0],[2,1,1]],
+        pattern_geometry = GeometryRefinement([[1, 1, 0], [2, 1, 1]],
                                               dist=1,
                                               wavelength=0.3344e-10,
                                               detector=detector,
                                               calibrant=ceo2)
+
     def test_displacements(self):
         from ..detectors import Detector
         import copy
-        detector =  Detector(pixel1=90e-6, pixel2=110e-6, splineFile=None, max_shape=(110,90))
-        ref =  detector.get_pixel_corners()
-        
-        delta_y = 0.3 #pixel
-        delta_x = 0.1 #pixel
-        
+        detector = Detector(pixel1=90e-6, pixel2=110e-6, splineFile=None, max_shape=(110, 90))
+        ref = detector.get_pixel_corners()
+
+        delta_y = 0.3  # pixel
+        delta_x = 0.1  # pixel
+
         detector_a = copy.copy(detector)
-        dx = numpy.ones(detector_a.shape) * delta_x 
-        dy = numpy.ones(detector_a.shape) * delta_y 
+        dx = numpy.ones(detector_a.shape) * delta_x
+        dy = numpy.ones(detector_a.shape) * delta_y
         detector_a.set_dx(dx)
         detector_a.set_dy(dy)
         obt_a = detector_a.get_pixel_corners()
-        self.assertTrue(numpy.allclose(obt_a[..., 1] - detector.pixel1*delta_y, ref[...,1]), msg="dy on center")
-        self.assertTrue(numpy.allclose(obt_a[..., 2] - detector.pixel2*delta_x, ref[...,2]), msg="dx on center")    
+        self.assertTrue(numpy.allclose(obt_a[..., 1] - detector.pixel1 * delta_y, ref[..., 1]), msg="dy on center")
+        self.assertTrue(numpy.allclose(obt_a[..., 2] - detector.pixel2 * delta_x, ref[..., 2]), msg="dx on center")
 
         detector_b = copy.copy(detector)
-        big_shape = tuple(i+1 for i in detector.shape)
-        dx = numpy.ones(big_shape) * delta_x 
-        dy = numpy.ones(big_shape) * delta_y 
+        big_shape = tuple(i + 1 for i in detector.shape)
+        dx = numpy.ones(big_shape) * delta_x
+        dy = numpy.ones(big_shape) * delta_y
         detector_b.set_dx(dx)
         detector_b.set_dy(dy)
         obt_b = detector_b.get_pixel_corners()
-        self.assertTrue(numpy.allclose(obt_b[..., 1] - detector.pixel1*delta_y, ref[...,1]), msg="dy on edge")
-        self.assertTrue(numpy.allclose(obt_b[..., 2] - detector.pixel2*delta_x, ref[...,2]), msg="dx on edge")    
+        self.assertTrue(numpy.allclose(obt_b[..., 1] - detector.pixel1 * delta_y, ref[..., 1]), msg="dy on edge")
+        self.assertTrue(numpy.allclose(obt_b[..., 2] - detector.pixel2 * delta_x, ref[..., 2]), msg="dx on edge")
 
         self.assertTrue(numpy.allclose(obt_b, obt_a))
-        
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()

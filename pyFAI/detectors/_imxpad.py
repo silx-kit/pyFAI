@@ -30,13 +30,11 @@
 Description of the `imXPAD <http://www.imxpad.com/>`_ detectors.
 """
 
-from __future__ import print_function, division, absolute_import, with_statement
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2020"
+__date__ = "16/10/2020"
 __status__ = "production"
 
 import functools
@@ -47,7 +45,6 @@ from ..utils import mathutil
 
 import logging
 logger = logging.getLogger(__name__)
-
 
 try:
     from ..ext import bilinear
@@ -183,7 +180,6 @@ class ImXPadS10(Detector):
             return self._rebin_pixel_corners()
         else:
             return self._pixel_corners
-
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -424,13 +420,13 @@ class Xpad_flat(ImXPadS10):
             # points A and B are on the same dim2 (X), they differ in dim1
             # p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
             p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
-                + B1 * delta1 * (1.0 - delta2) \
-                + C1 * delta1 * delta2 \
-                + D1 * (1.0 - delta1) * delta2
+                +B1 * delta1 * (1.0 - delta2) \
+                +C1 * delta1 * delta2 \
+                +D1 * (1.0 - delta1) * delta2
             p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
-                + B2 * delta1 * (1.0 - delta2) \
-                + C2 * delta1 * delta2 \
-                + D2 * (1.0 - delta1) * delta2
+                +B2 * delta1 * (1.0 - delta2) \
+                +C2 * delta1 * delta2 \
+                +D2 * (1.0 - delta1) * delta2
             # To ensure numerical consitency with cython procedure.
             p1 = p1.astype(numpy.float32)
             p2 = p2.astype(numpy.float32)
@@ -491,7 +487,6 @@ class Xpad_flat(ImXPadS10):
             return self._rebin_pixel_corners()
         else:
             return self._pixel_corners
-
 
 
 class Cirpad(ImXPadS10):
@@ -562,12 +557,12 @@ class Cirpad(ImXPadS10):
         deltaX, deltaY = 0.0, 0.0
         nmd = self._rotation(corners, rot)
         # Size in mm of the chip in the Y direction (including 10px gap)
-        size_Y = ((560.0 + 3 * 6 + 20)*0.13/1000)
-        for i in range(1, int(round(numpy.abs(rot[2])/6.74))):
-            deltaX = deltaX + numpy.sin(numpy.deg2rad(-rot[2] -6.74*(i)))
-        for i in range(int(round(numpy.abs(rot[2])/6.74))):
-            deltaY = deltaY + numpy.cos(numpy.deg2rad(-rot[2] - 6.74*(i+1)))
-        return self._translation(nmd, [size_Y*deltaX,size_Y*deltaY, 0])
+        size_Y = ((560.0 + 3 * 6 + 20) * 0.13 / 1000)
+        for i in range(1, int(round(numpy.abs(rot[2]) / 6.74))):
+            deltaX = deltaX + numpy.sin(numpy.deg2rad(-rot[2] - 6.74 * (i)))
+        for i in range(int(round(numpy.abs(rot[2]) / 6.74))):
+            deltaY = deltaY + numpy.cos(numpy.deg2rad(-rot[2] - 6.74 * (i + 1)))
+        return self._translation(nmd, [size_Y * deltaX, size_Y * deltaY, 0])
 
     def _get_pixel_corners(self):
         pixel_size1 = self._calc_pixels_size(self.MEDIUM_MODULE_SIZE[0],
@@ -618,7 +613,6 @@ class Cirpad(ImXPadS10):
             return self._rebin_pixel_corners()
         else:
             return self._pixel_corners
-
 
     # TODO !!!
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
@@ -673,17 +667,17 @@ class Cirpad(ImXPadS10):
             # points A and B are on the same dim2 (X), they differ in dim1 (Y)
             # points C and D are on the same dim2 (X), they differ in dim1 (
             p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
-                + B1 * delta1 * (1.0 - delta2) \
-                + C1 * delta1 * delta2 \
-                + D1 * (1.0 - delta1) * delta2
+                +B1 * delta1 * (1.0 - delta2) \
+                +C1 * delta1 * delta2 \
+                +D1 * (1.0 - delta1) * delta2
             p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
-                + B2 * delta1 * (1.0 - delta2) \
-                + C2 * delta1 * delta2 \
-                + D2 * (1.0 - delta1) * delta2
+                +B2 * delta1 * (1.0 - delta2) \
+                +C2 * delta1 * delta2 \
+                +D2 * (1.0 - delta1) * delta2
             p3 = A0 * (1.0 - delta1) * (1.0 - delta2) \
-                + B0 * delta1 * (1.0 - delta2) \
-                + C0 * delta1 * delta2 \
-                + D0 * (1.0 - delta1) * delta2
+                +B0 * delta1 * (1.0 - delta2) \
+                +C0 * delta1 * delta2 \
+                +D0 * (1.0 - delta1) * delta2
             # To ensure numerical consitency with cython procedure.
             p1 = p1.astype(numpy.float32)
             p2 = p2.astype(numpy.float32)

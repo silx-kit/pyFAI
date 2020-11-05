@@ -26,16 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
 """Test suite for masked arrays"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
-
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -72,7 +69,7 @@ class TestBispev(unittest.TestCase):
     def test_bispev(self):
         x_1d_array = numpy.arange(self.spline.xmin, self.spline.xmax + 1)
         y_1d_array = numpy.arange(self.spline.ymin, self.spline.ymax + 1)
-        t0 = time.time()
+        t0 = time.perf_counter()
         dx_ref = fitpack.bisplev(x_1d_array, y_1d_array,
                                  [self.spline.xSplineKnotsX,
                                   self.spline.xSplineKnotsY,
@@ -80,7 +77,7 @@ class TestBispev(unittest.TestCase):
                                   self.spline.splineOrder,
                                   self.spline.splineOrder],
                                  dx=0, dy=0)
-        t1 = time.time()
+        t1 = time.perf_counter()
         logger.debug(self.spline.xSplineKnotsX.dtype)
         logger.debug(self.spline.xSplineKnotsY.dtype)
         logger.debug(self.spline.xSplineCoeff.dtype)
@@ -90,7 +87,7 @@ class TestBispev(unittest.TestCase):
                                   self.spline.xSplineCoeff,
                                   self.spline.splineOrder,
                                   self.spline.splineOrder])
-        t2 = time.time()
+        t2 = time.perf_counter()
         logger.debug("Scipy timings: %.3fs\t cython timings: %.3fs", t1 - t0, t2 - t1)
         logger.debug("%s, %s", dx_ref.shape, dx_loc.shape)
         logger.debug(dx_ref)

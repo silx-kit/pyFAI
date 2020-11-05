@@ -25,13 +25,9 @@
 """This module provides convenient functions about Qt events.
 """
 
-from __future__ import division
-
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/01/2019"
-
+__date__ = "16/10/2020"
 
 from silx.gui import qt
 from silx.gui.utils import concurrent
@@ -49,6 +45,7 @@ class SimulatedSignal:
     .. codeauthor:: Abstract Factory <hello@pipi.io>
     .. note:: Code from http://abstractfactory.io/blog/dynamic-signals-in-pyqt/
     """
+
     def __init__(self):
         self.__subscribers = []
 
@@ -147,8 +144,10 @@ class QtProxifier(qt.QObject):
 
     def __getattr__(self, name):
         """Convert a call request to a Qt signal"""
+
         def createSignal(*args, **kwargs):
             method = getattr(self.__target, name)
             result = concurrent.submitToQtMainThread(method, *args, **kwargs)
             return result
+
         return createSignal

@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "16/10/2020"
 
 import logging
 import numpy
@@ -37,7 +35,6 @@ from silx.gui import qt
 from silx.gui.colors import Colormap
 
 from ..utils import imageutils
-
 
 _logger = logging.getLogger(__name__)
 

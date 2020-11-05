@@ -26,15 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
 """Test suite for histogramming implementations"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2018"
+__date__ = "16/10/2020"
 
 import unittest
 import time
@@ -54,6 +52,7 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 class TestHistogram1d(unittest.TestCase):
     """basic test"""
+
     @classmethod
     def setUpClass(cls):
         super(TestHistogram1d, cls).setUpClass()
@@ -74,27 +73,27 @@ class TestHistogram1d(unittest.TestCase):
         # data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
         data = (numpy.ones(shape) * maxI * mod).astype("uint16")
         cls.data_sum = data.sum(dtype="float64")
-        t0 = time.time()
+        t0 = time.perf_counter()
         drange = (tth.min(), tth.max() * EPS32)  # works as tth>0
         cls.unweight_numpy, _bin_edges = numpy.histogram(tth, npt, range=drange)
-        t1 = time.time()
+        t1 = time.perf_counter()
         cls.weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float64"), range=drange)
-        t2 = time.time()
+        t2 = time.perf_counter()
         logger.info("Timing for Numpy   raw    histogram: %.3f", t1 - t0)
         logger.info("Timing for Numpy weighted histogram: %.3f", t2 - t1)
         cls.bins_numpy = 0.5 * (bin_edges[1:] + bin_edges[:-1])
         cls.I_numpy = cls.weight_numpy / numpy.maximum(1.0, cls.unweight_numpy)
-        t3 = time.time()
+        t3 = time.perf_counter()
         cls.bins_cython, cls.I_cython, cls.weight_cython, cls.unweight_cython = histogram(tth, data, npt, pixelSize_in_Pos=0)
-        t4 = time.time()
+        t4 = time.perf_counter()
         logger.info("Timing for Cython  both   histogram: %.3f", t4 - t3)
-        t3 = time.time()
+        t3 = time.perf_counter()
         integrator = HistoBBox1d(tth, delta_pos0=None, pos1=None, delta_pos1=None,
                                  bins=npt, allow_pos0_neg=False,
                                  unit="undefined",)
-        t2 = time.time()
+        t2 = time.perf_counter()
         cls.bins_csr, cls.I_csr, cls.weight_csr, cls.unweight_csr = integrator.integrate(data)
-        t4 = time.time()
+        t4 = time.perf_counter()
         logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
         # Under Linux, windows or MacOSX, up to 1 bin error has been reported...
         cls.err_max_cnt = 0
@@ -239,43 +238,43 @@ class TestHistogram2d(unittest.TestCase):
         npt = (400, 360)
         chi = numpy.arctan2(y, x).astype("float32")
         drange = [[tth.min(), tth.max() * EPS32], [chi.min(), chi.max() * EPS32]]
-        t0 = time.time()
+        t0 = time.perf_counter()
         cls.unweight_numpy, _tth_edges, _chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, range=drange)
-        t1 = time.time()
+        t1 = time.perf_counter()
         cls.weight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(),
                                                                    chi.flatten(),
                                                                    npt, weights=data.astype("float64").flatten(),
                                                                    range=drange)
-        t2 = time.time()
+        t2 = time.perf_counter()
         logger.info("Timing for Numpy  raw     histogram2d: %.3f", t1 - t0)
         logger.info("Timing for Numpy weighted histogram2d: %.3f", t2 - t1)
         cls.tth_numpy = 0.5 * (tth_edges[1:] + tth_edges[:-1])
         cls.chi_numpy = 0.5 * (chi_edges[1:] + chi_edges[:-1])
         cls.I_numpy = cls.weight_numpy / numpy.maximum(1.0, cls.unweight_numpy)
-        t3 = time.time()
+        t3 = time.perf_counter()
         cls.I_cython, cls.tth_cython, cls.chi_cython, cls.weight_cython, cls.unweight_cython = histogram2d(tth.flatten(),
                                                                                                            chi.flatten(),
                                                                                                            npt,
                                                                                                            data.flatten(),
                                                                                                            split=0)
-        t4 = time.time()
+        t4 = time.perf_counter()
         logger.info("Timing for Cython  both   histogram2d: %.3f", t4 - t3)
-        t3 = time.time()
+        t3 = time.perf_counter()
         integrator = HistoBBox2d(tth, None, chi, delta_pos1=None,
                                  bins=npt, allow_pos0_neg=False, unit="undefined")
-        t2 = time.time()
+        t2 = time.perf_counter()
         cls.I_csr, cls.tth_csr, cls.chi_csr, cls.weight_csr, cls.unweight_csr = integrator.integrate(data)
-        t4 = time.time()
+        t4 = time.perf_counter()
         logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
 
 #         print(tth.size, chi.size, data_prep.size, data_prep.shape)
-        t5 = time.time()
+        t5 = time.perf_counter()
         cls.histo_ng_res = histogram2d_preproc(tth.ravel(),
                                                chi.ravel(),
                                                npt,
                                                data_prep,
                                                split=False)
-        t6 = time.time()
+        t6 = time.perf_counter()
         logger.info("Timing for Cython  histogram2d_preproc: %.3f", t6 - t5)
     #     if platform.system() == "Linux":
     #         err_max_cnt = 0

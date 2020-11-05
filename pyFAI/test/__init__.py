@@ -28,13 +28,11 @@
 
 """Test module for pyFAI"""
 
-from __future__ import absolute_import, division, print_function
-
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "16/10/2020"
 
 import sys
 import os
@@ -43,16 +41,17 @@ import unittest
 from . import utilstest
 from pyFAI.test.utilstest import test_options
 
-
 # Issue https://github.com/silx-kit/fabio/pull/291
 # Relative to fabio 0.8
 import fabio
 if fabio.hdf5image.Hdf5Image.close.__module__ != "fabio.hdf5image":
+
     def close(self):
         if self.hdf5 is not None:
             self.hdf5.close()
             self.hdf5 = None
             self.dataset = None
+
     fabio.hdf5image.Hdf5Image.close = close
 
 

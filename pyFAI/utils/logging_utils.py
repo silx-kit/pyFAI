@@ -29,14 +29,11 @@
 """This modules contains helper function relative to logging system.
 """
 
-from __future__ import division, print_function
-
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2019"
-
+__date__ = "16/10/2020"
 
 import logging
 import contextlib

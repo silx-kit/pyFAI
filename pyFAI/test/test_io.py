@@ -28,14 +28,11 @@
 
 "test suite for input/output stuff"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2019"
-
+__date__ = "16/10/2020"
 
 import unittest
 import os
@@ -52,11 +49,12 @@ from pyFAI import io
 
 
 class TestIsoTime(unittest.TestCase):
+
     def test_get(self):
         self.assertTrue(len(io.get_isotime()), 25)
 
     def test_from(self):
-        t0 = time.time()
+        t0 = time.perf_counter()
         isotime = io.get_isotime(t0)
         self.assertTrue(abs(t0 - io.from_isotime(isotime)) < 1, "timing are precise to the second")
 
@@ -88,6 +86,7 @@ class TestNexus(unittest.TestCase):
 
 
 class testHDF5Writer(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.tmpdir = os.path.join(UtilsTest.tempdir, "io_HDF5Writer")
@@ -109,13 +108,13 @@ class testHDF5Writer(unittest.TestCase):
         m = 10  # number of frames in memory
         data = numpy.random.random((m, shape[0], shape[1])).astype(numpy.float32)
         nmbytes = data.nbytes / 1e6 * n / m
-        t0 = time.time()
+        t0 = time.perf_counter()
         writer = io.HDF5Writer(filename=h5file, hpath="data")
         writer.init({"nbpt_azim": shape[0], "nbpt_rad": shape[1]})
         for i in range(n):
             writer.write(data[i % m], i)
         writer.close()
-        t = time.time() - t0
+        t = time.perf_counter() - t0
         logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
         statinfo = os.stat(h5file)
         self.assertTrue(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
@@ -144,13 +143,13 @@ class testFabIOWriter(unittest.TestCase):
         m = 10  # number of frames in memory
         data = numpy.random.random((m, shape[0], shape[1])).astype(numpy.float32)
         nmbytes = data.nbytes / 1e6 * n / m
-        t0 = time.time()
+        t0 = time.perf_counter()
         writer = io.FabioWriter(filename=h5file)
         writer.init({"nbpt_azim": shape[0], "nbpt_rad": shape[1], "prefix": "test"})
         for i in range(n):
             writer.write(data[i % m], i)
         writer.close()
-        t = time.time() - t0
+        t = time.perf_counter() - t0
         logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
         statinfo = os.stat(h5file)
         self.assertTrue(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)

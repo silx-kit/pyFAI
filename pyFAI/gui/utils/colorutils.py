@@ -23,12 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/04/2019"
-
+__date__ = "16/10/2020"
 
 from silx.gui import qt
 from silx.gui.colors import Colormap

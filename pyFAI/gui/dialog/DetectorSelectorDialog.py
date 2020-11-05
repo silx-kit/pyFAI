@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/01/2019"
+__date__ = "16/10/2020"
 
 import os
 import logging
@@ -42,7 +40,6 @@ from ..model.DataModel import DataModel
 from ..utils import validators
 from ..ApplicationContext import ApplicationContext
 from ..utils import FilterBuilder
-
 
 _logger = logging.getLogger(__name__)
 

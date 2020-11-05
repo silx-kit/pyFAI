@@ -29,13 +29,11 @@
 """test suite for average library
 """
 
-from __future__ import division, print_function, absolute_import
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2019"
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -47,13 +45,13 @@ from .. import average
 
 logger = logging.getLogger(__name__)
 
-
 # TODO add tests from
 # - boundingBox
 # - removeSaturatedPixel
 
 
 class TestAverage(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.unbinned = numpy.random.random((64, 32))

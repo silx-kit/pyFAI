@@ -31,12 +31,9 @@ It provides the matplotlib :class:`FigureCanvasQTAgg` class corresponding
 to the used backend.
 """
 
-from __future__ import absolute_import
-
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "17/05/2019"
-
+__date__ = "16/10/2020"
 
 import sys
 import logging

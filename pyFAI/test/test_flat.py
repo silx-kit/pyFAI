@@ -28,14 +28,11 @@
 
 "test suite for dark_current / flat_field correction"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2018"
-
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -51,6 +48,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 
 
 class TestFlat1D(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.shape = 640, 480
@@ -92,6 +90,7 @@ class TestFlat1D(unittest.TestCase):
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assertTrue(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
+
 
 class TestFlat2D(unittest.TestCase):
 
