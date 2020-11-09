@@ -33,21 +33,23 @@ Export the mask as a set of rectangles.
 This feature is needed for single crystal analysis programs (XDS, Crysalis, ...) 
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "05/11/2020"
+__date__ = "09/11/2020"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
 import numpy
-cimport numpy
+from libc.stdint cimport int8_t, int32_t
 
+    
 cdef struct Pair:
-    long start, height
+    int32_t start, height
+
 
 cdef class Rectangle:
     cdef:
-        public long height, width, row, col
+        public int32_t height, width, row, col
         
-    def __cinit__(self, long height, long width, long row=0, long col=0):
+    def __cinit__(self, int32_t height, int32_t width, int32_t row=0, int32_t col=0):
         self.height = height
         self.width = width
         self.row = row
@@ -56,7 +58,7 @@ cdef class Rectangle:
     def __repr__(self):
         return f"Rectangle row:{self.row} col:{self.col} heigth:{self.height} width:{self.width} area:{self.area}"
 
-    cdef long _area(self):
+    cdef int32_t _area(self):
         return self.width*self.height
 
     @property
@@ -65,18 +67,18 @@ cdef class Rectangle:
     
 cdef class Stack:
     cdef:
-        long last, size
-        long[:, ::1] stack
+        int32_t last, size
+        int32_t[:, ::1] stack
         
-    def __cinit__(self, long size):
-        self.stack = numpy.zeros((size, 2), dtype=numpy.int64)
+    def __cinit__(self, int32_t size):
+        self.stack = numpy.zeros((size, 2), dtype=numpy.int32)
         self.last = 0
         self.size = size
         
     def __dealloc__(self):
         self.stack = None
     
-    cpdef push(self, long start, long height):
+    cpdef push(self, int32_t start, int32_t height):
         if self.last<self.size:
             self.stack[self.last, 0] = start
             self.stack[self.last, 1] = height
@@ -101,18 +103,19 @@ cdef class Stack:
         else:
             print("Emtpy stack")
     
-    cpdef long empty(self):
+    cpdef bint empty(self):
         return self.last == 0
     
     
-cpdef Rectangle get_max_area(long[::1] histo, long row=-1):
+cpdef Rectangle get_max_area(int32_t[::1] histo, int32_t row=-1):
     cdef:
-        long size, height, start, pos
+        int32_t size, height, start, pos
         Stack stack
         Pair top
         Rectangle best
+    pos = 0
     best = Rectangle(0, 0, 0, 0)
-    size = histo.size
+    size = histo.shape[0]
     stack = Stack(size)
 
     for pos in range(size):
@@ -137,19 +140,19 @@ cpdef Rectangle get_max_area(long[::1] histo, long row=-1):
     return best
 
 
-cpdef Rectangle get_largest_rectangle(numpy.int8_t[:, ::1] ary):
+cpdef Rectangle get_largest_rectangle(int8_t[:, ::1] ary):
     """Find the largest rectangular region
     
     :param mask: 2D array with 1 for invalid pixels (0 elsewhere)
     :return: Largest rectangle of masked data
     """
     cdef:
-        long ncols, nrows, i, j
+        int32_t ncols, nrows, i, j
         Rectangle rect, best
-        long[::1] histogram
+        int32_t[::1] histogram
     nrows = ary.shape[0]
     ncols = ary.shape[1]
-    histogram = numpy.zeros(ncols, dtype=numpy.int64)
+    histogram = numpy.zeros(ncols, dtype=numpy.int32)
     best = Rectangle(0, 0, -1, -1)
     for i in range(nrows):
         for j in range(ncols):
@@ -163,10 +166,10 @@ cpdef Rectangle get_largest_rectangle(numpy.int8_t[:, ::1] ary):
     return best
 
 
-cpdef bint any_non_zero(numpy.int8_t[::1] linear):
+cpdef bint any_non_zero(int8_t[::1] linear):
     cdef:
         int index
-    for index in range(linear.size):
+    for index in range(linear.shape[0]):
         if linear[index]:
             return True
     return False
@@ -179,10 +182,10 @@ def decompose_mask(mask):
     :return: list of Rectangles
     """    
     cdef:
-        long idx, rlower, rupper, clower, cupper, width
+        int32_t idx, rlower, rupper, clower, cupper, width
         list res = []
-        numpy.int8_t[:, ::1] remaining
-        numpy.int8_t[::1] linear 
+        int8_t[:, ::1] remaining
+        int8_t[::1] linear 
         Rectangle r
         
     width = mask.shape[1]
