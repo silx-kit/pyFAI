@@ -2,7 +2,7 @@
 #cython: embedsignature=True, language_level=3
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping:
-#cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,21 +33,24 @@ Export the mask as a set of rectangles.
 This feature is needed for single crystal analysis programs (XDS, Crysalis, ...) 
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "04/11/2020"
+__date__ = "10/11/2020"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
+import cython
 import numpy
-cimport numpy
+from libc.stdint cimport int8_t, int32_t
 
+    
 cdef struct Pair:
-    long start, height
+    int32_t start, height
+
 
 cdef class Rectangle:
     cdef:
-        public long height, width, row, col
+        public int32_t height, width, row, col
         
-    def __cinit__(self, long height, long width, long row=0, long col=0):
+    def __cinit__(self, int32_t height, int32_t width, int32_t row=0, int32_t col=0):
         self.height = height
         self.width = width
         self.row = row
@@ -56,7 +59,7 @@ cdef class Rectangle:
     def __repr__(self):
         return f"Rectangle row:{self.row} col:{self.col} heigth:{self.height} width:{self.width} area:{self.area}"
 
-    cdef long _area(self):
+    cdef int32_t _area(self):
         return self.width*self.height
 
     @property
@@ -65,18 +68,18 @@ cdef class Rectangle:
     
 cdef class Stack:
     cdef:
-        long last, size
-        long[:, ::1] stack
+        int32_t last, size
+        int32_t[:, ::1] stack
         
-    def __cinit__(self, long size):
-        self.stack = numpy.zeros((size, 2), dtype=numpy.int64)
+    def __cinit__(self, int32_t size):
+        self.stack = numpy.zeros((size, 2), dtype=numpy.int32)
         self.last = 0
         self.size = size
         
     def __dealloc__(self):
         self.stack = None
     
-    cpdef push(self, long start, long height):
+    cpdef push(self, int32_t start, int32_t height):
         if self.last<self.size:
             self.stack[self.last, 0] = start
             self.stack[self.last, 1] = height
@@ -101,18 +104,19 @@ cdef class Stack:
         else:
             print("Emtpy stack")
     
-    cpdef long empty(self):
+    cpdef bint empty(self):
         return self.last == 0
     
     
-cpdef Rectangle get_max_area(long[::1] histo, long row=-1):
+cpdef Rectangle get_max_area(int32_t[::1] histo, int32_t row=-1):
     cdef:
-        long size, height, start, pos
+        int32_t size, height, start, pos
         Stack stack
         Pair top
         Rectangle best
+    pos = 0
     best = Rectangle(0, 0, 0, 0)
-    size = histo.size
+    size = histo.shape[0]
     stack = Stack(size)
 
     for pos in range(size):
@@ -137,19 +141,19 @@ cpdef Rectangle get_max_area(long[::1] histo, long row=-1):
     return best
 
 
-cpdef Rectangle get_largest_rectangle(numpy.int8_t[:, ::1] ary):
+cpdef Rectangle get_largest_rectangle(int8_t[:, ::1] ary):
     """Find the largest rectangular region
     
     :param mask: 2D array with 1 for invalid pixels (0 elsewhere)
     :return: Largest rectangle of masked data
     """
     cdef:
-        long ncols, nrows, i, j
+        int32_t ncols, nrows, i, j
         Rectangle rect, best
-        long[::1] histogram
+        int32_t[::1] histogram
     nrows = ary.shape[0]
     ncols = ary.shape[1]
-    histogram = numpy.zeros(ncols, dtype=numpy.int64)
+    histogram = numpy.zeros(ncols, dtype=numpy.int32)
     best = Rectangle(0, 0, -1, -1)
     for i in range(nrows):
         for j in range(ncols):
@@ -163,22 +167,80 @@ cpdef Rectangle get_largest_rectangle(numpy.int8_t[:, ::1] ary):
     return best
 
 
-def decompose_mask(mask):
+cpdef bint any_non_zero(int8_t[::1] linear):
+    cdef:
+        int index
+    for index in range(linear.shape[0]):
+        if linear[index]:
+            return True
+    return False
+
+@cython.wraparound(True)
+def search_bands(mask):
+    "Find gaps in the mask"
+     
+    vmin = mask.min(axis = 0)
+    vdelta = vmin[1:] - vmin[:-1]
+    vstart = numpy.where(vdelta==1)[0] + 1
+    vend = numpy.where(vdelta==-1)[0] + 1
+    if vmin[0]:
+        vstart = numpy.concatenate(([0], vstart))
+    if vmin[-1]:
+        vend = numpy.concatenate((vend, [vmin.size]))
+    res = [ Rectangle(mask.shape[0], e-s, 0, s)  for s,e in zip(vstart, vend)]
+    hmin = mask.min(axis = 1)
+    hdelta = hmin[1:]-hmin[:-1]
+    hstart = numpy.where(hdelta==1)[0] + 1
+    hend = numpy.where(hdelta==-1)[0] + 1
+    if hmin[0]:
+        hstart = numpy.concatenate(([0], hstart))
+    if hmin[-1]:
+        hend = numpy.concatenate((hend, [hmin.size]))
+    res += [ Rectangle(e-s, mask.shape[1], s, 0)  for s,e in zip(hstart, hend)]
+    return res
+                      
+                      
+def decompose_mask(mask, overlap=True):
     """Decompose a mask into a list of hiding rectangles
     
     :param mask: 2D array with 1 for invalid pixels (0 elsewhere)
+    :param overlap: By default (True) search for large overlapping horizontal or vertical bands (gaps)
     :return: list of Rectangles
-    """
-    
+    """    
     cdef:
+        int32_t idx, rlower, rupper, clower, cupper, width
         list res = []
-        #numpy.int8_t[:, ::1] remaining # TODO:investigate why declaring remaining at the C-level break everything ? 
+        int8_t[:, ::1] remaining
+        int8_t[::1] linear 
         Rectangle r
-    remaining = numpy.ascontiguousarray(mask, dtype=numpy.int8).copy()
-    while numpy.sum(remaining):
+
+    if overlap:
+        clean_mask = (mask!=0).astype(numpy.int8)
+        res = search_bands(clean_mask)
+        for r in res:
+            clean_mask[r.row: r.row+r.height, r.col: r.col+r.width] = 0
+        remaining = clean_mask
+    else:
+        #Make an expicit copy
+        remaining = numpy.array(mask, dtype=numpy.int8)
+    width = remaining.shape[1]
+    
+    linear = numpy.asarray(remaining).ravel()
+    
+    while any_non_zero(linear):
         r = get_largest_rectangle(remaining)
         res.append(r)
-        remaining[r.row:r.row+r.height, r.col:r.col+r.width] = 0
+        rlower = r.row
+        rupper = rlower + r.height
+        clower = r.col 
+        cupper = clower + r.width
+        
+        #Memset with tweaking in the case of non contiguous access
+        if clower>0 or cupper<width:
+            for idx in range(rlower, rupper):
+                remaining[idx, clower:cupper] = 0
+        else: #We are luck and the memory is in one block
+            remaining[rlower:rupper, clower:cupper] = 0
     return res
 
         
