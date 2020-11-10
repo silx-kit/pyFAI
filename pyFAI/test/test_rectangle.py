@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2020"
+__date__ = "10/11/2020"
 
 import numpy
 from ..detectors import detector_factory
@@ -59,9 +59,13 @@ class TestRectangle(unittest.TestCase):
     def test_decomposition(self):
         mask = detector_factory("PilatusCdTe300k").mask
         ref = mask.sum()
-        lst = dynamic_rectangle.decompose_mask(mask)
+        lst = dynamic_rectangle.decompose_mask(mask, False)
         self.assertEqual(mask.sum(), ref, "Mask is unchanged")
         self.assertEqual(len(lst), 5, "Decomposes in 5 rectangles")
+
+        lst = dynamic_rectangle.decompose_mask(mask, True)
+        self.assertEqual(mask.sum(), ref, "Mask is unchanged")
+        self.assertEqual(len(lst), 3, "Decomposes in 3 overlapping bands")
 
 
 def suite():

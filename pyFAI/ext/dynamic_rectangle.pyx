@@ -33,10 +33,11 @@ Export the mask as a set of rectangles.
 This feature is needed for single crystal analysis programs (XDS, Crysalis, ...) 
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "09/11/2020"
+__date__ = "10/11/2020"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
+import cython
 import numpy
 from libc.stdint cimport int8_t, int32_t
 
@@ -174,11 +175,36 @@ cpdef bint any_non_zero(int8_t[::1] linear):
             return True
     return False
 
-
-def decompose_mask(mask):
+@cython.wraparound(True)
+def search_bands(mask):
+    "Find gaps in the mask"
+     
+    vmin = mask.min(axis = 0)
+    vdelta = vmin[1:] - vmin[:-1]
+    vstart = numpy.where(vdelta==1)[0] + 1
+    vend = numpy.where(vdelta==-1)[0] + 1
+    if vmin[0]:
+        vstart = numpy.concatenate(([0], vstart))
+    if vmin[-1]:
+        vend = numpy.concatenate((vend, [vmin.size]))
+    res = [ Rectangle(mask.shape[0], e-s, 0, s)  for s,e in zip(vstart, vend)]
+    hmin = mask.min(axis = 1)
+    hdelta = hmin[1:]-hmin[:-1]
+    hstart = numpy.where(hdelta==1)[0] + 1
+    hend = numpy.where(hdelta==-1)[0] + 1
+    if hmin[0]:
+        hstart = numpy.concatenate(([0], hstart))
+    if hmin[-1]:
+        hend = numpy.concatenate((hend, [hmin.size]))
+    res += [ Rectangle(e-s, mask.shape[1], s, 0)  for s,e in zip(hstart, hend)]
+    return res
+                      
+                      
+def decompose_mask(mask, overlap=True):
     """Decompose a mask into a list of hiding rectangles
     
     :param mask: 2D array with 1 for invalid pixels (0 elsewhere)
+    :param overlap: By default (True) search for large overlapping horizontal or vertical bands (gaps)
     :return: list of Rectangles
     """    
     cdef:
@@ -187,9 +213,18 @@ def decompose_mask(mask):
         int8_t[:, ::1] remaining
         int8_t[::1] linear 
         Rectangle r
-        
-    width = mask.shape[1]
-    remaining = numpy.array(mask, dtype=numpy.int8)
+
+    if overlap:
+        clean_mask = (mask!=0).astype(numpy.int8)
+        res = search_bands(clean_mask)
+        for r in res:
+            clean_mask[r.row: r.row+r.height, r.col: r.col+r.width] = 0
+        remaining = clean_mask
+    else:
+        #Make an expicit copy
+        remaining = numpy.array(mask, dtype=numpy.int8)
+    width = remaining.shape[1]
+    
     linear = numpy.asarray(remaining).ravel()
     
     while any_non_zero(linear):
