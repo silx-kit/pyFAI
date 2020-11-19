@@ -153,7 +153,7 @@ class Nexus(object):
             self.h5 = h5py.File(self.filename, mode=self.mode)
         self.to_close = []
 
-        if not pre_existing or mode == "w":
+        if not pre_existing or "w" in mode:
             self.h5.attrs["NX_class"] = "NXroot"
             self.h5.attrs["file_time"] = get_isotime()
             self.h5.attrs["file_name"] = self.filename
