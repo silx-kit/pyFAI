@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2020"
+__date__ = "19/11/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -129,7 +129,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
             config_grp["type"] = "text/json"
             config_grp["data"] = json.dumps(ai.get_config(), indent=2, separators=(",\r\n", ": "))
 
-            detector_grp = nexus.new_class(instrument, ai.detector.name, "NXdetector")
+            detector_grp = nexus.new_class(entry, ai.detector.name, "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)
             dist_ds.attrs["units"] = "m"
             xpix_ds = detector_grp.create_dataset("x_pixel_size", data=ai.pixel2)
@@ -141,4 +141,11 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
             xbc_ds.attrs["units"] = "pixel"
             ybc_ds = detector_grp.create_dataset("beam_center_y", data=f2d["centerY"])
             ybc_ds.attrs["units"] = "pixel"
-
+            if ai._wavelength is not None:
+                monochromator_grp = nxs.new_class(instrument_grp, "monchromator", "NXmonochromator")
+                wl_ds = monochromator_grp.create_dataset("wavelength", data=numpy.float32(ai.wavelength * 1e10))
+                wl_ds.attrs["units"] = "Å"
+                # wl_ds.attrs["resolution"] = 0.014
+#                 nrj_ds = monochromator_grp.create_dataset("energy", data=numpy.floaself.energy)
+#                 nrj_ds.attrs["units"] = "keV"
+#                 #nrj_ds.attrs["resolution"] = 0.014
