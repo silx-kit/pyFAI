@@ -79,8 +79,9 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
     assert len(frames)
     with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
         instrument = nexus.new_instrument(instrument_name=beamline)
-        sparse_grp = nexus.new_class(instrument, "sparse_frames", class_type="NXdata")
-        instrument.parent.attrs["default"] = sparse_grp.name
+        entry = instrument.parent
+        sparse_grp = nexus.new_class(entry, "sparse_frames", class_type="NXdata")
+        entry.attrs["default"] = sparse_grp.name
         sparse_grp["frame_ptr"] = numpy.concatenate(([0], numpy.cumsum([i.intensity.size for i in frames]))).astype(dtype=numpy.uint32)
         index = numpy.concatenate([i.index for i in frames]).astype(numpy.uint32)
         intensity = numpy.concatenate([i.intensity for i in frames])
@@ -118,7 +119,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
             logger.error("Please upgrade your installation of h5py !!!")
 
         if ai is not None:
-            sparsify_grp = nexus.new_class(instrument, "sparsify", class_type="NXprocess")
+            sparsify_grp = nexus.new_class(entry, "sparsify", class_type="NXprocess")
             sparsify_grp["program"] = "pyFAI"
             sparsify_grp["sequence_index"] = 1
             sparsify_grp["version"] = version
@@ -129,7 +130,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
             config_grp["type"] = "text/json"
             config_grp["data"] = json.dumps(ai.get_config(), indent=2, separators=(",\r\n", ": "))
 
-            detector_grp = nexus.new_class(entry, ai.detector.name, "NXdetector")
+            detector_grp = nexus.new_class(instrument, ai.detector.name, "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)
             dist_ds.attrs["units"] = "m"
             xpix_ds = detector_grp.create_dataset("x_pixel_size", data=ai.pixel2)
