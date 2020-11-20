@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2020"
+__date__ = "20/11/2020"
 __status__ = "status"
 
 import os
@@ -285,7 +285,8 @@ def process(options):
                 frames,
                 beamline=options.beamline,
                 ai=ai,
-                source=options.images if options.save_source else None)
+                source=options.images if options.save_source else None,
+                parameters)
     return EXIT_SUCCESS
 
 

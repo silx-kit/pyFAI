@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2020"
+__date__ = "20/11/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -74,8 +74,16 @@ for idx, bg in enumerate(background_avg):
     return res
 
 
-def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
-    "Write the list of frames in HDF5"
+def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, extra={}):
+    """Write the list of frames into a HDF5 file
+    
+    :param filename: name of the file
+    :param frames: list of sparse frames (as built by sparsify)
+    :param beamline: name of the beamline as text
+    :param ai: Instance of geometry or azimuthal integrator
+    :param source: list of input files
+    :param extra: dict with extra metadata 
+    """
     assert len(frames)
     with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
         instrument = nexus.new_instrument(instrument_name=beamline)
@@ -128,9 +136,12 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
                 sparsify_grp["source"] = source
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")
             config_grp["type"] = "text/json"
-            config_grp["data"] = json.dumps(ai.get_config(), indent=2, separators=(",\r\n", ": "))
+            parameters = OrderecDict([("geometry", ai.get_config()),
+                                      ("sparsify", parameters)])
+            config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "))
+            config_grp[""]
 
-            detector_grp = nexus.new_class(instrument, ai.detector.name, "NXdetector")
+            detector_grp = nexus.new_class(instrument, ai.detector.name.replace(" ", "_"), "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)
             dist_ds.attrs["units"] = "m"
             xpix_ds = detector_grp.create_dataset("x_pixel_size", data=ai.pixel2)
