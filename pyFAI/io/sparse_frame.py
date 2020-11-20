@@ -153,8 +153,8 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             xbc_ds.attrs["units"] = "pixel"
             ybc_ds = detector_grp.create_dataset("beam_center_y", data=f2d["centerY"])
             ybc_ds.attrs["units"] = "pixel"
-            if ai._wavelength is not None:
-                monochromator_grp = nexus.new_class(instrument_grp, "monchromator", "NXmonochromator")
+            if ai.wavelength is not None:
+                monochromator_grp = nexus.new_class(instrument, "monchromator", "NXmonochromator")
                 wl_ds = monochromator_grp.create_dataset("wavelength", data=numpy.float32(ai.wavelength * 1e10))
                 wl_ds.attrs["units"] = "Å"
                 # wl_ds.attrs["resolution"] = 0.014
