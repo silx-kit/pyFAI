@@ -26,8 +26,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
 """Test suites for pixel splitting scheme validation
 
 see sandbox/debug_split_pixel.py for visual validation
@@ -37,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/11/2018"
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -130,6 +128,7 @@ class TestSplitPixel(unittest.TestCase):
 class TestSplitBBoxNg(unittest.TestCase):
     """Test the equivalence of the historical SplitBBox with the one propagating 
     the variance"""
+
     @classmethod
     def setUpClass(cls):
         super(TestSplitBBoxNg, cls).setUpClass()

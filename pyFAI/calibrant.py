@@ -26,7 +26,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """Calibrant
 
 A module containing classical calibrant and also tools to generate d-spacing.
@@ -35,15 +34,12 @@ Interesting formula:
 http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
 """
 
-from __future__ import absolute_import, print_function, with_statement
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2019"
+__date__ = "16/10/2020"
 __status__ = "production"
-
 
 import os
 import logging
@@ -211,6 +207,7 @@ class Cell(object):
             self.selection_rules.append(lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3))
         if self._type == "R":
             self.selection_rules.append(lambda h, k, l: ((h - k + l) % 3 == 0))
+
     type = property(get_type, set_type)
 
     def d(self, hkl):
@@ -319,6 +316,7 @@ class Calibrant(object):
     A calibrant is a reference compound where the d-spacing (interplanar distances)
     are known. They are expressed in Angstrom (in the file)
     """
+
     def __init__(self, filename=None, dSpacing=None, wavelength=None):
         object.__init__(self)
         self._filename = filename
@@ -668,6 +666,7 @@ class CalibrantFactory(object):
 
     Each time one retrieves an object it is a new geniune new calibrant (unmodified)
     """
+
     def __init__(self, basedir=None):
         """
         Constructor
@@ -722,7 +721,6 @@ class CalibrantFactory(object):
 
 CALIBRANT_FACTORY = CalibrantFactory()
 """Default calibration factory provided by the library."""
-
 
 ALL_CALIBRANTS = CALIBRANT_FACTORY
 

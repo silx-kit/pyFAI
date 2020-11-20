@@ -26,22 +26,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
 """Test suite to scripts"""
 
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2019"
+__date__ = "16/10/2020"
 
 import unittest
 import logging
 
 from silx.gui import qt
 from .. import validators
-
 
 _logger = logging.getLogger(__name__)
 

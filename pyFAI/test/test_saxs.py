@@ -28,14 +28,11 @@
 
 "test suite for masked arrays"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/05/2019"
-
+__date__ = "16/10/2020"
 
 import unittest
 import logging

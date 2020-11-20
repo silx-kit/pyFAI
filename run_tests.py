@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "18/12/2018"
+__date__ = "16/10/2020"
 __license__ = "MIT"
 
 import distutils.util
@@ -87,7 +87,6 @@ logger.setLevel(logging.WARNING)
 
 logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
 
-
 try:
     import resource
 except ImportError:
@@ -98,6 +97,7 @@ try:
     import importlib
     importer = importlib.import_module
 except ImportError:
+
     def importer(name):
         module = __import__(name)
         # returns the leaf module, instead of the root module
@@ -197,7 +197,7 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
         if resource:
             self.__mem_start = \
                 resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        self.__time_start = time.time()
+        self.__time_start = time.perf_counter()
 
     def stopTest(self, test):
         unittest.TextTestRunner.resultclass.stopTest(self, test)
@@ -212,7 +212,7 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
         else:
             memusage = 0
         self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s",
-                         time.time() - self.__time_start,
+                         time.perf_counter() - self.__time_start,
                          memusage, test.id())
 
 
@@ -420,7 +420,6 @@ PROJECT_PATH = project_module.__path__[0]
 test_options = get_test_options(project_module)
 """Contains extra configuration for the tests."""
 
-
 epilog = """Environment variables:
 WITH_QT_TEST=False to disable graphical tests
 PYFAI_OPENCL=False to disable OpenCL tests.
@@ -457,7 +456,6 @@ parser.add_argument("test_name", nargs='*',
                     help="Test names to run (Default: %s)" % default_test_name)
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
-
 
 test_verbosity = 1
 use_buffer = True
@@ -532,7 +530,6 @@ if test_options is not None:
 else:
     logger.warning("No test options available.")
 
-
 if not options.test_name:
     # Do not use test loader to avoid cryptic exception
     # when an error occur during import
@@ -551,7 +548,6 @@ if result.wasSuccessful():
     exit_status = 0
 else:
     exit_status = 1
-
 
 if options.coverage:
     cov.stop()

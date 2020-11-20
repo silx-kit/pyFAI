@@ -26,15 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
 """Test suite for worker"""
 
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "16/10/2020"
 
 import unittest
 import logging
@@ -44,7 +42,6 @@ from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
 from silx.gui.utils import testutils
 from pyFAI.test.utilstest import UtilsTest
 from pyFAI.io import integration_config
-
 
 logger = logging.getLogger(__name__)
 

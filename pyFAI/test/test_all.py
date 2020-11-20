@@ -25,7 +25,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-from __future__ import absolute_import, division, print_function
 
 """Test suite for all pyFAI modules."""
 
@@ -33,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2019"
+__date__ = "10/11/2020"
 
 import sys
 import unittest
@@ -93,6 +92,7 @@ from ..opencl import test as test_opencl
 from ..gui import test as test_gui
 from . import test_invert_geometry
 from . import test_massif
+from . import test_rectangle
 
 
 def suite():
@@ -148,6 +148,7 @@ def suite():
     testsuite.addTest(test_pyfai_api.suite())
     testsuite.addTest(test_invert_geometry.suite())
     testsuite.addTest(test_massif.suite())
+    testsuite.addTest(test_rectangle.suite())
     return testsuite
 
 

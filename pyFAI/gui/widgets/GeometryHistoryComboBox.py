@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/04/2019"
+__date__ = "16/10/2020"
 
 import logging
 
@@ -35,7 +33,6 @@ from silx.gui import qt
 from pyFAI.utils import stringutil
 from .AdvancedComboBox import AdvancedComboBox
 from ..utils import units
-
 
 _logger = logging.getLogger(__name__)
 

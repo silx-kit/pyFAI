@@ -21,13 +21,11 @@
 # THE SOFTWARE.
 #
 
-from __future__ import division
-
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __authors__ = ["J. Kieffer"]
-__date__ = "08/09/2016"
+__date__ = "16/10/2020"
 
 from numpy.distutils.misc_util import Configuration
 

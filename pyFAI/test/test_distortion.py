@@ -27,15 +27,12 @@
 #  THE SOFTWARE.
 
 "test suite for Distortion correction class"
-from __future__ import absolute_import, division, print_function
-
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2020"
-
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -295,6 +292,7 @@ class TestImplementations(unittest.TestCase):
 
 
 class TestOther(unittest.TestCase):
+
     @unittest.skipIf(True, "TODO: fix broken test")
     def test_manual(self):
         data = numpy.empty((20, 20), dtype=numpy.float32)
@@ -382,16 +380,16 @@ class TestOther(unittest.TestCase):
         pylab.imshow(out)  # , interpolation="nearest")
         pylab.show()
 
-
     def test_mask(self):
         d = detectors.detector_factory("Pilatus200k")
         dc = distortion.Distortion(d, empty=-1, method="csr")
-        self.assertEqual(len(dc.lut[0]), numpy.prod(d.shape)-d.mask.sum(), "All empty bins have been removed")
+        self.assertEqual(len(dc.lut[0]), numpy.prod(d.shape) - d.mask.sum(), "All empty bins have been removed")
         a = numpy.random.randint(1, 100, size=d.shape)
         b = dc.correct_ng(a)
-        self.assertGreater(a.min(), 0) #1 is the lowset
-        self.assertLess(b.min(), 0) #-1 have appeared
+        self.assertGreater(a.min(), 0)  # 1 is the lowset
+        self.assertLess(b.min(), 0)  # -1 have appeared
         self.assertLess(b.mean(), a.mean())
+
 
 def suite():
     testsuite = unittest.TestSuite()

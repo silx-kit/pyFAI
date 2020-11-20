@@ -31,11 +31,9 @@ separation on GPU.
 
 """
 
-from __future__ import absolute_import, print_function, division
-
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "16/10/2020"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 

@@ -28,14 +28,11 @@
 
 "test suite for polarization corrections"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
-
+__date__ = "16/10/2020"
 
 import unittest
 import numpy
@@ -45,6 +42,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 
 
 class TestPolarization(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.shape = (13, 13)

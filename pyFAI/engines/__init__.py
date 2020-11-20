@@ -19,18 +19,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """This sub-module contains various rebinning and pre-processing engines
 defined at the Python level. 
 """
-
-from __future__ import absolute_import, print_function, with_statement
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/04/2019"
+__date__ = "16/10/2020"
 __status__ = "development"
 
 import logging
@@ -40,6 +37,7 @@ from threading import Semaphore
 
 class Engine(object):
     """This class defines a regrid-engine with its locking mechanism"""
+
     def __init__(self, engine=None):
         """Constructor of the class"""
         self.lock = Semaphore()

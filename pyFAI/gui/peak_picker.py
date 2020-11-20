@@ -29,13 +29,11 @@
 """Semi-graphical tool for peak-picking and extracting visually control points
 from an image with Debye-Scherer rings"""
 
-from __future__ import print_function, absolute_import
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/10/2018"
+__date__ = "16/10/2020"
 __status__ = "production"
 
 import os
@@ -371,6 +369,7 @@ class PeakPicker(object):
         """
         Called when a mouse is clicked
         """
+
         def annontate(x, x0=None, idx=None, gpt=None):
             """
             Call back method to annotate the figure while calculation are going on ...
