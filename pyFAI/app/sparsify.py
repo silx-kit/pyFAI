@@ -286,7 +286,7 @@ def process(options):
                 beamline=options.beamline,
                 ai=ai,
                 source=options.images if options.save_source else None,
-                parameters)
+                extra=parameters)
     return EXIT_SUCCESS
 
 
