@@ -141,7 +141,6 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             parameters = OrderedDict([("geometry", ai.get_config()),
                                       ("sparsify", extra)])
             config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "))
-            config_grp[""]
 
             detector_grp = nexus.new_class(instrument, ai.detector.name.replace(" ", "_"), "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)
