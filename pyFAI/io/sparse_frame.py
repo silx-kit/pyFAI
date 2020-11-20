@@ -36,9 +36,10 @@ __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import json
-import numpy
+from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
+import numpy
 from .. import version
 from .nexus import Nexus, get_isotime
 
@@ -83,6 +84,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
     :param ai: Instance of geometry or azimuthal integrator
     :param source: list of input files
     :param extra: dict with extra metadata 
+    :return: None
     """
     assert len(frames)
     with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
@@ -136,8 +138,8 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
                 sparsify_grp["source"] = source
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")
             config_grp["type"] = "text/json"
-            parameters = OrderecDict([("geometry", ai.get_config()),
-                                      ("sparsify", parameters)])
+            parameters = OrderedDict([("geometry", ai.get_config()),
+                                      ("sparsify", extra)])
             config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "))
             config_grp[""]
 
