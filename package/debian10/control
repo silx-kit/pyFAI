@@ -22,6 +22,7 @@ Build-Depends: cython3,
                python3-sphinxcontrib.programoutput,
                python3-nbconvert,
                python3-nbsphinx,
+               python3-sphinx-rtd-theme,
                python3-pkg-resources,
                help2man,
                devscripts
