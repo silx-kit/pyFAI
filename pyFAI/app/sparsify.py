@@ -42,13 +42,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2020"
+__date__ = "20/11/2020"
 __status__ = "status"
 
 import os
 import sys
 import time
 import argparse
+from collections import OrderedDict
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -256,15 +257,15 @@ def process(options):
 
     cnt = 0
 
-    parameters = {"dummy": options.dummy,
-                  "delta_dummy": options.delta_dummy,
-                  "safe": False,
-                  "error_model": options.error_model,
-                  "cutoff_clip": options.cutoff_clip,
-                  "cycle": options.cycle,
-                  "noise": options.noise,
-                  "cutoff_pick":options.cutoff_pick,
-                  "radial_range": rrange}
+    parameters = OrderedDict([("dummy", options.dummy),
+                              ("delta_dummy", options.delta_dummy),
+                              ("safe", False),
+                              ("error_model", options.error_model),
+                              ("cutoff_clip", options.cutoff_clip),
+                              ("cycle", options.cycle),
+                              ("noise", options.noise),
+                              ("cutoff_pick", options.cutoff_pick),
+                              ("radial_range", rrange)])
     for fabioimage in dense:
         for frame in fabioimage:
             current = pf.sparsify(frame.data, **parameters)
@@ -285,7 +286,8 @@ def process(options):
                 frames,
                 beamline=options.beamline,
                 ai=ai,
-                source=options.images if options.save_source else None)
+                source=options.images if options.save_source else None,
+                extra=parameters)
     return EXIT_SUCCESS
 
 
