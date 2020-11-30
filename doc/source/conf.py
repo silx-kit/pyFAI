@@ -71,6 +71,8 @@ extensions = [
 if sphinx.__version__ < "1.4":
     extensions.append('sphinx.ext.pngmath')
 
+# Set the theme to sphinx_rtd_theme when *not* building on Read The Docs.
+# The theme is set to default otherwise as Read The Docs uses its own theme anyway.
 if not on_rtd:
     import sphinx_rtd_theme
 
