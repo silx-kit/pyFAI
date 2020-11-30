@@ -71,7 +71,7 @@ extensions = [
 if sphinx.__version__ < "1.4":
     extensions.append('sphinx.ext.pngmath')
 
-if not on_rtd:
+if on_rtd:
     import sphinx_rtd_theme
 
     extensions.append('sphinx_rtd_theme')
