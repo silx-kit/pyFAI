@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/11/2020"
+__date__ = "03/12/2020"
 
 import sys
 import os
@@ -307,7 +307,7 @@ class TestBugRegression(unittest.TestCase):
             ai = AzimuthalIntegrator(0.1, *poni, detector=detector)
             chi_pi_center = ai.chiArray()
             logger.debug("disc @pi center: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_center.min(), chi_pi_center.max())
-            chi_pi_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1, :, 1]
+            chi_pi_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1,:, 1]
             logger.debug("disc @pi corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_corner.min(), chi_pi_corner.max())
 
             self.assertAlmostEquals(chi_pi_center.min(), chi_range[0][0], msg="chi_pi_center.min", delta=0.1)
@@ -321,7 +321,7 @@ class TestBugRegression(unittest.TestCase):
             logger.debug("Updated range %s %s %s %s", chi_range[0], chi_range[1], ai.chiDiscAtPi, list(ai._cached_array.keys()))
             chi_0_center = ai.chiArray()
             logger.debug("disc @0 center: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range[1], chi_0_center.min(), chi_0_center.max())
-            chi_0_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1, :, 1]  # Discard pixel from border...
+            chi_0_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1,:, 1]  # Discard pixel from border...
             logger.debug("disc @0 corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range[1], chi_0_corner.min(), chi_0_corner.max())
 
             dmin = lambda v: v - chi_range[1][0]
@@ -405,7 +405,7 @@ class TestBugRegression(unittest.TestCase):
         # Set the guessed geometry
         initial = geometry.Geometry(detector=pilatus, wavelength=wl)
         initial.setFit2D(d, x, y)
-
+#         print(initial)
         # The SingleGeometry object (from goniometer) allows to extract automatically ring and calibrate
         sg = SingleGeometry("demo", frame, calibrant=behenate, detector=pilatus, geometry=initial)
         sg.extract_cp(max_rings=5)
@@ -421,6 +421,20 @@ class TestBugRegression(unittest.TestCase):
         self.assertEqual(initial.rot2, refined.rot2, "Rot2 is unchanged")
         self.assertEqual(initial.rot3, refined.rot3, "Rot3 is unchanged")
         self.assertEqual(initial.wavelength, refined.wavelength, "Walvelength is unchanged")
+
+        sg.geometry_refinement.refine2(fix=[])
+#         print(refined)
+        refined2 = sg.get_ai()
+
+        self.assertNotEqual(refined2.dist, refined.dist, "Distance got refined")
+        self.assertNotEqual(refined2.poni1, refined.poni1, "Poni1 got refined")
+        self.assertNotEqual(refined2.poni2, refined.poni2, "Poni2 got refined")
+        self.assertNotEqual(refined2.rot1, refined.rot1, "Rot1 got refined")
+        self.assertNotEqual(refined2.rot2, refined.rot2, "Rot2 got refined")
+        self.assertNotEqual(refined2.rot3, refined.rot3, "Rot3 got refined")
+        self.assertNotEqual(refined2.wavelength, refined.wavelength, "Walvelength got refined")
+#         print(refined2)
+#         raise
 
 
 def suite():

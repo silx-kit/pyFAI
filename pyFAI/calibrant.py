@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "03/12/2020"
 __status__ = "production"
 
 import os
@@ -510,6 +510,8 @@ class Calibrant(object):
                         logger.warning("This is an unlikely wavelength (in meter): %s", self._wavelength)
                     updated = True
             elif abs(self._wavelength - value) / self._wavelength > epsilon:
+                import traceback
+                traceback.print_stack()
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
                 logger.warning("%s != %s, delta= %s", self._wavelength, value, self._wavelength - value)
         if updated:

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "03/12/2020"
 __status__ = "development"
 
 import os
@@ -72,6 +72,7 @@ ROCA = "/opt/saxs/roca"
 
 
 class GeometryRefinement(AzimuthalIntegrator):
+    PARAM_ORDER = ("dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength")
 
     def __init__(self, data=None, dist=1, poni1=None, poni2=None,
                  rot1=0, rot2=0, rot3=0,
@@ -289,6 +290,20 @@ class GeometryRefinement(AzimuthalIntegrator):
             raise IndexError("Ring indices %s are not all available at this wavelength (%s)" % (numpy.unique(rings), wavelength))
         return tth[rings]
 
+    def calc_param7(self, param, free, const):
+        """Calculate the "legacy" 6/7 parameters from a number of free and fixed parameters"""
+        param7 = [   ]
+        for name in self.PARAM_ORDER:
+            if name in free:
+                value = param[free.index(name)]
+                if name == "wavelength":
+                    param7.append(value * 1e-10)
+                else:
+                    param7.append(value)
+            else:
+                param7.append(const[name])
+        return param7
+
     def residu1(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)
 
@@ -316,6 +331,14 @@ class GeometryRefinement(AzimuthalIntegrator):
         t = weight * self.residu1_wavelength(param, d1, d2, rings)
         return numpy.dot(t, t)
 
+    def residu3(self, param, free, const, d1, d2, rings, weights=None):
+        "Preform the calculation of $sum_(2\theta_e-2\theta_i)²$"
+        param7 = self.calc_param7(param, free, const)
+        delta_theta = self.tth(d1, d2, param7[:6]) - self.calc_2th(rings, param7[6])
+        if weights:
+            delta_theta *= weights
+        return numpy.dot(delta_theta, delta_theta)
+
     def refine1(self):
         self.param = numpy.array([self._dist, self._poni1, self._poni2,
                                   self._rot1, self._rot2, self._rot3],
@@ -338,9 +361,75 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             return oldDeltaSq
 
+    def refine3(self, maxiter=1000000, fix=None):
+        """
+        Same as refine2 except it does not rely on upper_bound == lower_bound to fix parameters
+        
+        This is a work around the regression introduced with scipy 1.5
+        
+        :param maxiter: maximum number of iteration for finding the solution
+        :param fix: parameters to be fixed. Does not assume the wavelength to be fixed by default
+        :return: $sum_(2\theta_e-2\theta_i)²$
+        """
+        free = []
+        param = []
+        bounds = []
+        const = {}
+        for name in self.PARAM_ORDER:
+            value = getattr(self, name)
+            if name in fix:
+                const[name] = value
+            else:
+                minmax = (getattr(self, "_%s_min" % name), getattr(self, "_%s_max" % name))
+                if name == "wavelength":
+                    value = value * 1e10
+                    minmax = (1e10 * minmax[0], 1e10 * minmax[1])
+                free.append(name)
+                param.append(value)
+                bounds.append(minmax)
+
+        param = numpy.array(param)
+
+        npt, ncol = self.data.shape
+        if  ncol >= 3:
+            pos0 = self.data[:, 0]
+            pos1 = self.data[:, 1]
+            ring = self.data[:, 2].astype(numpy.int32)
+        if ncol == 4:
+            weight = self.data[:, 3]
+        else:
+            weight = None
+
+        old_delta_theta2 = self.residu3(param, free, const, pos0, pos1, ring, weight) / npt
+
+        new_param = fmin_slsqp(self.residu3, param, iter=maxiter,
+                               args=(free, const, pos0, pos1, ring, weight),
+                               bounds=bounds,
+                               acc=1.0e-12,
+                               iprint=(logger.getEffectiveLevel() <= logging.INFO))
+        new_param7 = self.calc_param7(new_param, free, const)
+
+        new_delta_theta2 = self.residu3(new_param, free, const, pos0, pos1, ring, weight) / npt
+
+        logger.info("Constrained Least square %s --> %s", old_delta_theta2, new_delta_theta2)
+
+        if new_delta_theta2 < old_delta_theta2:
+            i = abs(param - new_param).argmax()
+
+            logger.info("maxdelta on %s: %s --> %s ",
+                        free[i], param[i], new_param[i])
+
+            param7 = self.calc_param7(new_param, free, const)
+            self.set_param(param7)
+            return new_delta_theta2
+        else:
+            return old_delta_theta2
+
     def refine2(self, maxiter=1000000, fix=None):
         if fix is None:
             fix = ["wavelength"]
+        return self.refine3(maxiter=maxiter, fix=fix)
+        """
         d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
         param = []
         bounds = []
@@ -388,6 +477,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             return newDeltaSq
         else:
             return oldDeltaSq
+        """
 
     def refine2_wavelength(self, maxiter=1000000, fix=None):
         """Refine all parameters including the wavelength.
@@ -397,6 +487,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         if fix is None:
             fix = ["wavelength"]
+        return self.refine3(maxiter=maxiter, fix=fix)
+
+        """
         d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
 
         self.param = numpy.array([self.dist, self.poni1, self.poni2,
@@ -457,6 +550,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             return newDeltaSq
         else:
             return oldDeltaSq
+        """
 
     def simplex(self, maxiter=1000000):
         self.param = numpy.array([self.dist, self.poni1, self.poni2,
