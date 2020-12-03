@@ -371,6 +371,16 @@ class GeometryRefinement(AzimuthalIntegrator):
         :param fix: parameters to be fixed. Does not assume the wavelength to be fixed by default
         :return: $sum_(2\theta_e-2\theta_i)²$
         """
+        npt, ncol = self.data.shape
+        if  ncol >= 3:
+            pos0 = self.data[:, 0]
+            pos1 = self.data[:, 1]
+            ring = self.data[:, 2].astype(numpy.int32)
+        if ncol == 4:
+            weight = self.data[:, 3]
+        else:
+            weight = None
+
         free = []
         param = []
         bounds = []
@@ -390,18 +400,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                 free.append(name)
                 param.append(value)
                 bounds.append(minmax)
-
         param = numpy.array(param)
-
-        npt, ncol = self.data.shape
-        if  ncol >= 3:
-            pos0 = self.data[:, 0]
-            pos1 = self.data[:, 1]
-            ring = self.data[:, 2].astype(numpy.int32)
-        if ncol == 4:
-            weight = self.data[:, 3]
-        else:
-            weight = None
 
         old_delta_theta2 = self.residu3(param, free, const, pos0, pos1, ring, weight) / npt
 

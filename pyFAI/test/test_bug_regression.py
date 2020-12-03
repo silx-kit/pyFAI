@@ -420,7 +420,7 @@ class TestBugRegression(unittest.TestCase):
         self.assertEqual(initial.rot1, refined.rot1, "Rot1 is unchanged")
         self.assertEqual(initial.rot2, refined.rot2, "Rot2 is unchanged")
         self.assertEqual(initial.rot3, refined.rot3, "Rot3 is unchanged")
-        self.assertEqual(initial.wavelength, refined.wavelength, "Walvelength is unchanged")
+        self.assertEqual(initial.wavelength, refined.wavelength, "Wavelength is unchanged")
 
         sg.geometry_refinement.refine2(fix=[])
 #         print(refined)
@@ -432,9 +432,20 @@ class TestBugRegression(unittest.TestCase):
         self.assertNotEqual(refined2.rot1, refined.rot1, "Rot1 got refined")
         self.assertNotEqual(refined2.rot2, refined.rot2, "Rot2 got refined")
         self.assertNotEqual(refined2.rot3, refined.rot3, "Rot3 got refined")
-        self.assertNotEqual(refined2.wavelength, refined.wavelength, "Walvelength got refined")
+        self.assertEqual(refined2.wavelength, refined.wavelength, "Wavelength is unchanged (refine2)")
 #         print(refined2)
 #         raise
+        sg.geometry_refinement.refine3(fix=[])
+#         print(refined)
+        refined2 = sg.get_ai()
+
+        self.assertNotEqual(refined2.dist, refined.dist, "Distance got refined")
+        self.assertNotEqual(refined2.poni1, refined.poni1, "Poni1 got refined")
+        self.assertNotEqual(refined2.poni2, refined.poni2, "Poni2 got refined")
+        self.assertNotEqual(refined2.rot1, refined.rot1, "Rot1 got refined")
+        self.assertNotEqual(refined2.rot2, refined.rot2, "Rot2 got refined")
+        self.assertNotEqual(refined2.rot3, refined.rot3, "Rot3 got refined")
+        self.assertNotEqual(refined2.wavelength, refined.wavelength, "Wavelength got refined (refine3)")
 
 
 def suite():
