@@ -510,8 +510,6 @@ class Calibrant(object):
                         logger.warning("This is an unlikely wavelength (in meter): %s", self._wavelength)
                     updated = True
             elif abs(self._wavelength - value) / self._wavelength > epsilon:
-                import traceback
-                traceback.print_stack()
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
                 logger.warning("%s != %s, delta= %s", self._wavelength, value, self._wavelength - value)
         if updated:
