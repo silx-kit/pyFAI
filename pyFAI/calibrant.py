@@ -512,8 +512,6 @@ class Calibrant(object):
             elif abs(self._wavelength - value) / self._wavelength > epsilon:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
                 logger.warning("%s != %s, delta= %s", self._wavelength, value, self._wavelength - value)
-                import traceback
-                traceback.print_stack()
         if updated:
             self._calc_2th()
 
