@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "04/12/2020"
 __status__ = "development"
 
 import os
@@ -72,6 +72,7 @@ ROCA = "/opt/saxs/roca"
 
 
 class GeometryRefinement(AzimuthalIntegrator):
+    PARAM_ORDER = ("dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength")
 
     def __init__(self, data=None, dist=1, poni1=None, poni2=None,
                  rot1=0, rot2=0, rot3=0,
@@ -123,7 +124,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             else:
                 self.calibrant = Calibrant(calibrant)
 
-        self.calibrant.wavelength = self.wavelength
+        self.calibrant.setWavelength_change2th(self.wavelength)
 
         if (poni1 is None) or (poni2 is None):
             self.guess_poni()
@@ -289,6 +290,20 @@ class GeometryRefinement(AzimuthalIntegrator):
             raise IndexError("Ring indices %s are not all available at this wavelength (%s)" % (numpy.unique(rings), wavelength))
         return tth[rings]
 
+    def calc_param7(self, param, free, const):
+        """Calculate the "legacy" 6/7 parameters from a number of free and fixed parameters"""
+        param7 = [   ]
+        for name in self.PARAM_ORDER:
+            if name in free:
+                value = param[free.index(name)]
+                if name == "wavelength":
+                    param7.append(value * 1e-10)
+                else:
+                    param7.append(value)
+            else:
+                param7.append(const[name])
+        return param7
+
     def residu1(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)
 
@@ -316,6 +331,14 @@ class GeometryRefinement(AzimuthalIntegrator):
         t = weight * self.residu1_wavelength(param, d1, d2, rings)
         return numpy.dot(t, t)
 
+    def residu3(self, param, free, const, d1, d2, rings, weights=None):
+        "Preform the calculation of $sum_(2\theta_e-2\theta_i)²$"
+        param7 = self.calc_param7(param, free, const)
+        delta_theta = self.tth(d1, d2, param7[:6]) - self.calc_2th(rings, param7[6])
+        if weights:
+            delta_theta *= weights
+        return numpy.dot(delta_theta, delta_theta)
+
     def refine1(self):
         self.param = numpy.array([self._dist, self._poni1, self._poni2,
                                   self._rot1, self._rot2, self._rot3],
@@ -338,56 +361,76 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             return oldDeltaSq
 
-    def refine2(self, maxiter=1000000, fix=None):
-        if fix is None:
-            fix = ["wavelength"]
-        d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
+    def refine3(self, maxiter=1000000, fix=None):
+        """
+        Same as refine2 except it does not rely on upper_bound == lower_bound to fix parameters
+        
+        This is a work around the regression introduced with scipy 1.5
+        
+        :param maxiter: maximum number of iteration for finding the solution
+        :param fix: parameters to be fixed. Does not assume the wavelength to be fixed by default
+        :return: $sum_(2\theta_e-2\theta_i)²$
+        """
+        npt, ncol = self.data.shape
+        if  ncol >= 3:
+            pos0 = self.data[:, 0]
+            pos1 = self.data[:, 1]
+            ring = self.data[:, 2].astype(numpy.int32)
+        if ncol == 4:
+            weight = self.data[:, 3]
+        else:
+            weight = None
+
+        free = []
         param = []
         bounds = []
-        for i in d:
-            param.append(getattr(self, i))
-            if i in fix:
-                val = getattr(self, i)
-                bounds.append((val, val))
+        const = {}
+        for name in self.PARAM_ORDER:
+            value = getattr(self, name)
+            if name in fix:
+                const[name] = value
             else:
-                bounds.append((getattr(self, "_%s_min" % i), getattr(self, "_%s_max" % i)))
-        self.param = numpy.array(param)
+                minmax = (getattr(self, "_%s_min" % name), getattr(self, "_%s_max" % name))
+                if name == "wavelength":
+                    # enforces an upper limit to the wavelength depending on the number of rings.
+                    max_wavelength = self.calibrant.get_max_wavelength(ring.max())
+                    value = min(value, max_wavelength)
+                    value = value * 1e10
+                    minmax = (1e10 * minmax[0], 1e10 * min(minmax[1], max_wavelength))
+                free.append(name)
+                param.append(value)
+                bounds.append(minmax)
+        param = numpy.array(param)
 
-        if self.data.shape[-1] == 3:
-            pos0 = self.data[:, 0]
-            pos1 = self.data[:, 1]
-            ring = self.data[:, 2].astype(numpy.int32)
-            weight = None
-            new_param = fmin_slsqp(self.residu2, self.param, iter=maxiter,
-                                   args=(pos0, pos1, ring),
-                                   bounds=bounds,
-                                   acc=1.0e-12,
-                                   iprint=(logger.getEffectiveLevel() <= logging.INFO))
+        old_delta_theta2 = self.residu3(param, free, const, pos0, pos1, ring, weight) / npt
 
-        elif self.data.shape[-1] == 4:
-            pos0 = self.data[:, 0]
-            pos1 = self.data[:, 1]
-            ring = self.data[:, 2].astype(numpy.int32)
-            weight = self.data[:, 3]
-            new_param = fmin_slsqp(self.residu2_weighted, self.param, iter=maxiter,
-                                   args=(pos0, pos1, ring, weight),
-                                   bounds=bounds,
-                                   acc=1.0e-12,
-                                   iprint=(logger.getEffectiveLevel() <= logging.INFO))
-        oldDeltaSq = self.chi2() / self.data.shape[0]
-        newDeltaSq = self.chi2(new_param) / self.data.shape[0]
-        logger.info("Constrained Least square %s --> %s",
-                    oldDeltaSq, newDeltaSq)
+        new_param = fmin_slsqp(self.residu3, param, iter=maxiter,
+                               args=(free, const, pos0, pos1, ring, weight),
+                               bounds=bounds,
+                               acc=1.0e-12,
+                               iprint=(logger.getEffectiveLevel() <= logging.INFO))
+        new_param7 = self.calc_param7(new_param, free, const)
 
-        if newDeltaSq < oldDeltaSq:
-            i = abs(self.param - new_param).argmax()
+        new_delta_theta2 = self.residu3(new_param, free, const, pos0, pos1, ring, weight) / npt
+
+        logger.info("Constrained Least square %s --> %s", old_delta_theta2, new_delta_theta2)
+
+        if new_delta_theta2 < old_delta_theta2:
+            i = abs(param - new_param).argmax()
 
             logger.info("maxdelta on %s: %s --> %s ",
-                        d[i], self.param[i], new_param[i])
-            self.set_param(new_param)
-            return newDeltaSq
+                        free[i], param[i], new_param[i])
+
+            param7 = self.calc_param7(new_param, free, const)
+            self.set_param(param7)
+            return new_delta_theta2
         else:
-            return oldDeltaSq
+            return old_delta_theta2
+
+    def refine2(self, maxiter=1000000, fix=None):
+        if not fix:
+            fix = ["wavelength"]
+        return self.refine3(maxiter=maxiter, fix=fix)
 
     def refine2_wavelength(self, maxiter=1000000, fix=None):
         """Refine all parameters including the wavelength.
@@ -397,66 +440,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         if fix is None:
             fix = ["wavelength"]
-        d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
-
-        self.param = numpy.array([self.dist, self.poni1, self.poni2,
-                                  self.rot1, self.rot2, self.rot3, self.wavelength],
-                                 dtype=numpy.float64)
-        param = []
-        bounds = []
-        for i in d:
-            param.append(getattr(self, i))
-            if i in fix:
-                val = getattr(self, i)
-                bounds.append((val, val))
-            else:
-                bounds.append((getattr(self, "_%s_min" % i), getattr(self, "_%s_max" % i)))
-
-        pos0 = self.data[:, 0]
-        pos1 = self.data[:, 1]
-        ring = self.data[:, 2].astype(numpy.int32)
-
-        max_wavelength = self.calibrant.get_max_wavelength(ring.max())
-        bounds[-1] = (bounds[-1][0], min(max_wavelength, bounds[-1][1]))
-        if param[-1] >= max_wavelength:
-            param[-1] = max_wavelength
-
-        # wavelength is multiplied to 10^10 to have values in the range 0.1-10: better numerical differentiation
-        bounds[-1] = (bounds[-1][0] * 1e10, bounds[-1][1] * 1e10)
-        param[-1] = 1e10 * param[-1]
-        self.param = numpy.array(param)
-
-        if self.data.shape[-1] == 3:
-            weight = None
-            new_param = fmin_slsqp(self.residu2_wavelength,
-                                   self.param, iter=maxiter,
-                                   args=(pos0, pos1, ring),
-                                   bounds=bounds,
-                                   acc=1.0e-12,
-                                   iprint=(logger.getEffectiveLevel() <= logging.INFO))
-
-        elif self.data.shape[-1] == 4:
-            weight = self.data[:, 3]
-            new_param = fmin_slsqp(self.residu2_wavelength_weighted,
-                                   self.param, iter=maxiter,
-                                   args=(pos0, pos1, ring, weight),
-                                   bounds=bounds,
-                                   acc=1.0e-12,
-                                   iprint=(logger.getEffectiveLevel() <= logging.INFO))
-        oldDeltaSq = self.chi2_wavelength() / self.data.shape[0]
-        newDeltaSq = self.chi2_wavelength(new_param) / self.data.shape[0]
-        logger.info("Constrained Least square %s --> %s",
-                    oldDeltaSq, newDeltaSq)
-        if newDeltaSq < oldDeltaSq:
-            i = abs(self.param - new_param).argmax()
-            logger.info("maxdelta on %s: %s --> %s ",
-                        d[i], self.param[i], new_param[i])
-
-            self.set_param(new_param[:-1])
-            self.wavelength = 1e-10 * new_param[-1]
-            return newDeltaSq
-        else:
-            return oldDeltaSq
+        return self.refine3(maxiter=maxiter, fix=fix)
 
     def simplex(self, maxiter=1000000):
         self.param = numpy.array([self.dist, self.poni1, self.poni2,
