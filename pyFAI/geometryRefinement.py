@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/12/2020"
+__date__ = "04/12/2020"
 __status__ = "development"
 
 import os
@@ -124,7 +124,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             else:
                 self.calibrant = Calibrant(calibrant)
 
-        self.calibrant.wavelength = self.wavelength
+        self.calibrant.setWavelength_change2th(self.wavelength)
 
         if (poni1 is None) or (poni2 is None):
             self.guess_poni()
