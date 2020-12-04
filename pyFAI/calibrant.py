@@ -577,6 +577,10 @@ class Calibrant(object):
 
     def get_max_wavelength(self, index=None):
         """Calculate the maximum wavelength assuming the ring at index is visible
+        
+        Bragg's law says: $\lambda = 2d sin(\theta)$
+        So at 180° $\lambda = 2d$ 
+        
         :param index: Ring number, otherwise assumes all rings are visible
         :return: the maximum visible wavelength
         """
@@ -585,7 +589,7 @@ class Calibrant(object):
             index = len(dSpacing) - 1
         if index >= len(dSpacing):
             raise IndexError("There are not than many (%s) rings indices in this calibrant" % (index))
-        return dSpacing[index] * 1e-10
+        return dSpacing[index] * 2e-10
 
     def get_peaks(self, unit="2th_deg"):
         """Calculate the peak position as
