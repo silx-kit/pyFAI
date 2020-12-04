@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/12/2020"
+__date__ = "04/12/2020"
 __status__ = "production"
 
 import os
@@ -512,6 +512,8 @@ class Calibrant(object):
             elif abs(self._wavelength - value) / self._wavelength > epsilon:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
                 logger.warning("%s != %s, delta= %s", self._wavelength, value, self._wavelength - value)
+                import traceback
+                traceback.print_stack()
         if updated:
             self._calc_2th()
 
