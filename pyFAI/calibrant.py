@@ -575,10 +575,10 @@ class Calibrant(object):
 
     def get_max_wavelength(self, index=None):
         """Calculate the maximum wavelength assuming the ring at index is visible
-        
-        Bragg's law says: $\lambda = 2d sin(\theta)$
-        So at 180° $\lambda = 2d$ 
-        
+
+        Bragg's law says: $\lambda = 2d sin(\\theta)$
+        So at 180° $\\lambda = 2d$
+
         :param index: Ring number, otherwise assumes all rings are visible
         :return: the maximum visible wavelength
         """
