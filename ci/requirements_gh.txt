@@ -2,6 +2,7 @@
 #List of dependencies used by pyFAI.
 # PIP installs them from pre-compiled wheels, optimized for Github-Actions Python environment.
 --find-links http://www.edna-site.org/pub/wheelhouse
+--trusted-host www.edna-site.org
 
 setuptools
 wheel
