@@ -12,5 +12,5 @@ echo $(pwd)/intel_opencl_icd/icd/libintelocl.so > intel_opencl_icd/vendors/intel
 
 export OCL_ICD_VENDORS=$(pwd)/intel_opencl_icd/vendors
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(pwd)/intel_opencl_icd/lib
-export C_INCLUDE_PATH=${C_INCLUDE_PATH}/$(pwd)/intel_opencl_icd/include
+export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$(pwd)/intel_opencl_icd/include
 $(pwd)/intel_opencl_icd/bin/clinfo
