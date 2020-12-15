@@ -32,9 +32,10 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "16/10/2020"
+__date__ = "15/12/2020"
 __license__ = "MIT"
 
+import sys
 import distutils.util
 import logging
 import os
@@ -45,6 +46,8 @@ import unittest
 import collections
 from argparse import ArgumentParser
 
+if sys.version_info[0]<3:
+    raise RuntimeError("Python2 is not more supported")
 
 class StreamHandlerUnittestReady(logging.StreamHandler):
     """The unittest class TestResult redefine sys.stdout/err to capture
