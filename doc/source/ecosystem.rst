@@ -1,12 +1,12 @@
 :Author: Jérôme Kieffer
-:Date: 07/09/2016
+:Date: 30/10/2020
 :Keywords: Other software related to pyFAI
 
-PyFAI Ecosystem
-===============
+Ecosystem
+=========
 
-Software pyFAI is relying on
-----------------------------
+Software pyFAI is relying on:
+-----------------------------
 
 PyFAI is relying on the full Python scientific stack which includes [NumPy]_,
 [SciPy]_, [Matplotlib]_, [PyOpenCL]_ but also on some ESRF-developped code:

@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 09/05/2017
+:Date: 30/10/2020
 :Keywords: Project management description
 :Target: developers
 
@@ -10,7 +10,7 @@ PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
 PyFAI is an open source project licensed under the MIT license (previously
-under GPL) mainly written in Python (v2.7, 3.4 or newer).
+under GPL) mainly written in Python (3.5 or newer).
 It is managed by the Silx team and is heavily relying on the
 Python scientific ecosystem: numpy, scipy and matplotlib.
 It provides high performances image treatment thanks to Cython and
@@ -88,14 +88,14 @@ continue funding development.
 Run dependencies
 ----------------
 
-* Python version 2.7, 3.4, 3.5, 3.6
+* Python version 3.5, 3.6, 3.7 or 3.8
 * NumPy
 * SciPy
 * Matplotlib
 * FabIO
 * h5py
 * pyopencl (optional)
-* PyQt4 or PySide (for the graphical user interface)
+* PyQt5 or PySide2 (for the graphical user interface)
 * Silx
 
 Build dependencies

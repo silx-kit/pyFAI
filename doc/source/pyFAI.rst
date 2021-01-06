@@ -3,7 +3,7 @@
 :Keywords: generic description of the software
 :Target: General audiance
 
-General introduction to PyFAI
+General introduction to pyFAI
 =============================
 
 Python Fast Azimuthal Integration

@@ -1,10 +1,10 @@
 :Author: Jérôme Kieffer
-:Date: 01/12/2016
+:Date: 30/10/2020
 :Keywords: List of publications
 
 
-List of publication about pyFAI
-===============================
+Publication about pyFAI
+=======================
 
 * *PyFAI, a versatile library for azimuthal regrouping*,
   J Kieffer & D Karkoulis;
