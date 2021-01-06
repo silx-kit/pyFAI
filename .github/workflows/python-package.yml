@@ -28,7 +28,15 @@ jobs:
         python -m pip install --upgrade pip==20.2.4
         python -m pip install flake8 
         if [ -f ci/intel_opencl_icd.sh ]; then source ci/intel_opencl_icd.sh ; fi
-        if [ -f ci/requirements_gh.txt ]; then pip install -r ci/requirements_gh.txt; fi
+        if [ -f ci/requirements_gh.txt ]; then pip install --only-binary :all: -r ci/requirements_gh.txt; fi
+        # Compile & install pyopencl
+        git clone https://github.com/pyopencl/pyopencl
+        pushd pyopencl
+        python  configure.py
+        python setup.py build bdist_wheel
+        pip install --pre dist/*.whl
+        popd
+        
     - name: Build package
       run: |
         python setup.py build

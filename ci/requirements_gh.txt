@@ -19,6 +19,6 @@ scipy
 matplotlib
 mako
 pybind11
-pyopencl
+#pyopencl 
 numexpr
 silx
