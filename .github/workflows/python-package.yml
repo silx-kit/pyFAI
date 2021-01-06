@@ -28,7 +28,7 @@ jobs:
         python -m pip install --upgrade pip==20.2.4
         python -m pip install flake8 
         if [ -f ci/intel_opencl_icd.sh ]; then source ci/intel_opencl_icd.sh ; fi
-        if [ -f ci/requirements_gh.txt ]; then pip install --only-binary :all: -r ci/requirements_gh.txt; fi
+        if [ -f ci/requirements_gh.txt ]; then pip install -r ci/requirements_gh.txt; fi
     - name: Build package
       run: |
         python setup.py build
