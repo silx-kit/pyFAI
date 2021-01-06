@@ -33,7 +33,7 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "06/01/2021"
 __satus__ = "Production"
 
 import os
@@ -114,7 +114,7 @@ class MaskImageWidget(AbstractMaskImageWidget):
             }
             self.__plot2D.setDefaultColormap(colormap)
         except Exception:
-            _logger.error("Impossible to change the default colormap. Source code not compatible.", exc_info=True)
+            logger.error("Impossible to change the default colormap. Source code not compatible.", exc_info=True)
         self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
         self.__maskPanel.setMultipleMasks("single")
 
