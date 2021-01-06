@@ -32,7 +32,7 @@ install:
   - "pip install --upgrade cython mako pybind11"
   - "pip install --upgrade h5py "
   - "pip install --upgrade -r ci/requirements_travis.txt"
-  - "if [ -f ci/install_pyopencl.sh ]; then ci/install_pyopencl.sh ; fi"
+  - "if [ -f ci/install_pyopencl.sh ]; then bash ci/install_pyopencl.sh ; fi"
   - "python ci/info_platform.py"
   - "python setup.py build"
   - "python setup.py bdist_wheel"

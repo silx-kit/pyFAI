@@ -29,7 +29,7 @@ jobs:
         python -m pip install flake8 
         if [ -f ci/intel_opencl_icd.sh ]; then source ci/intel_opencl_icd.sh ; fi
         if [ -f ci/requirements_gh.txt ]; then pip install -r ci/requirements_gh.txt; fi
-        if [ -f ci/install_pyopencl.sh ]; then ci/install_pyopencl.sh ; fi
+        if [ -f ci/install_pyopencl.sh ]; then bash ci/install_pyopencl.sh ; fi
     - name: Build package
       run: |
         python setup.py build
