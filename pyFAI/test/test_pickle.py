@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "06/01/2021"
 
 import numpy
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
@@ -59,7 +59,7 @@ class TestPickle(unittest.TestCase):
         cls.data = cls.ai = cls.npt = None
 
     def test_Detector_pickle(self):
-        det = self.ai.detector  # type: Detector
+        det = self.ai.detector
         dets = dumps(det)
         self.assert_(dets, "pickle works")
         rest = loads(dets)
