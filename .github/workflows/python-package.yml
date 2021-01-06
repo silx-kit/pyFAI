@@ -25,9 +25,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip==20.2.4
-        python -m pip install flake8 
-        if [ -f ci/intel_opencl_icd.sh ]; then source ci/intel_opencl_icd.sh ; fi
+        python -m pip install --upgrade pip #==20.2.4
+        python -m pip install flake8
         if [ -f ci/requirements_gh.txt ]; then pip install -r ci/requirements_gh.txt; fi
         if [ -f ci/install_pyopencl.sh ]; then bash ci/install_pyopencl.sh ; fi
     - name: Build package
