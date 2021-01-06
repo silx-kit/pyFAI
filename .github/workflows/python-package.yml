@@ -15,8 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.6', '3.7', '3.8']
-        #, '3.9'] Disable 3.9 as long np1.20 is not yet out
+        python-version: ['3.6', '3.7', '3.8', '3.9']
 
     steps:
     - uses: actions/checkout@v2
@@ -37,9 +36,9 @@ jobs:
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=sandbox,third_party,plugins,doc,build
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=sandbox,third_party,plugins,doc,build
     - name: Run tests
       run: |
         python run_tests.py
