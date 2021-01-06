@@ -3,9 +3,9 @@ pyFAI: Fast Azimuthal Integration in Python
 
 Main development website: https://github.com/silx-kit/pyFAI
 
-|Build Status| |Appveyor Status| |myBinder Launcher| |docs|
+|Build Status| |Appveyor Status| |myBinder Launcher| |RTD docs| |Zenodo DOI|
 
-pyFAI is an azimuthal integration library that tries to be fast (as fast as C
+PyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
 It is based on histogramming of the 2theta/Q positions of each (center of)
 pixel weighted by the intensity of each pixel, but parallel version uses a
@@ -115,10 +115,7 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 3.5, ... 3.8 are well tested and officially supported.
-Python 2.7 and 3.4 has are no more supported since pyFAI 0.19
-Python 2.6, 3.2 and 3.3 are no more supported since pyFAI 0.12
-Python 3.4, 2.7 have been dropped with 0.19
+Python 3.6, ... 3.9 are well tested and officially supported.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -165,29 +162,21 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-You are advised to build pyFAI with the GCC compiler, as the compiler provided
-by Apple with XCode (a derivative of clang) lakes the support of OpenMP.
-If you use Xcode5 or newer, append the "--no-openmp" option to deactivate multithreading
-in binary modules.
-You will also need *cython* to re-generate the C-files and delete *src/histogram.c*
-before running::
+One needs to install `Python` (>=3.6) and `Xcode` prior to start installing pyFAI. 
+The compiled extension will use only one core due to the limitation of the compiler.
+OpenCL is hence greately adviced on Apple systems. 
+Then install the missing dependencies with `pip`::
 
-    pip install cython --upgrade
-    python3 setup.py build --force-cython --no-openmp
-
+   pip install -r requirements.txt
+	
 
 Windows
 -------
 
-Under 32 bits windows, pyFAI can be built using The MinGW compiler. Unfortunately,
-pyFAI will be limited to small images as the memory consumption, limited to 2GB
-under windows, is easily reached.
-With 64 bits windows, the Visual Studio C++ compiler is the only one known to
-work correctly.
+Under Windows, one needs to install `Python` (>=3.6) and the Visual Studio C++ compiler.
+Then install the missing dependencies with `pip`::
 
-Dependencies for windows have been regrouped in our wheelhouse, just use::
-
-   pip install --trusted-host www.edna-site.org -r requirements_appveyor.txt
+   pip install  -r requirements.txt
 
 Getting help
 ------------
@@ -236,3 +225,5 @@ Indirect contributors (ideas...)
     :alt: Documentation Status
     :scale: 100%
     :target: https://pyfai.readthedocs.io/en/master/?badge=master
+.. |Zenodo DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.832896.svg
+   :target: https://doi.org/10.5281/zenodo.832896
