@@ -2,7 +2,7 @@ Design of AzimuthalIntegrator
 =============================
 
 :Author: Jérôme Kieffer
-:Date: 20/03/2015
+:Date: 07/01/2021
 :Keywords: Design
 :Target: Developers interested in using the library
 :Reference: API documentation
@@ -45,9 +45,7 @@ module to load a poni-file:
 	>>> print(ai)
 
 	Detector Detector	 Spline= None	 PixelSize= 1.720e-04, 1.720e-04 m
-
 	SampleDetDist= 1.583231e+00m	PONI= 3.341702e-02, 4.122778e-02m	rot1=0.006487  rot2= 0.007558  rot3= 0.000000 rad
-
 	DirectBeamDist= 1583.310mm	Center: x=179.981, y=263.859 pix	Tilt=0.571 deg  tiltPlanRotation= 130.640 deg
 
 As one can see, the *ai* contains the detector geometry (type, pixel size,
@@ -121,16 +119,18 @@ Two types of rebinning engines exists:
 
 - Histograms
 
-    They take each single pixel from the image and transfer it to the destination bin, like histograms do.
+    Histograms loop over each individual pixel from the image, calculate the bin index and transfer the signal to the destination bin.
     This family of algorithms is rather easy to implement and provides good single threaded performances,
-    but it is hard to parallelize (efficiently) due to the need of atomic operations.
+    but they are hard to parallelize (efficiently) due to the need of atomic operations for writing in the destination bin.
+    Note that several histograms are always needed, at least one for the signal and one for the count, plus one for the normalization factor and possibly one for the variance propagation. 
 
 - Sparse matrix multiplication
 
-    By recording where every single ends one can transform the previous histogram into a
+    By recording where every single ends one can transform the previous histograms into a
     large sparse matrix multiplication which is either stored as a Look-Up Table (actually an array of struct, also called LIL)
     or more efficiently in the CSR_ format.
     Those rebinning engines are trivially parallel and provide the best performances.
+    Implementations exists in Cython+OpenMP, OpenCL and even in Python using scipy.sparse.
 
 Pixel splitting
 ---------------
@@ -140,17 +140,18 @@ Three levels of pixel splitting schemes are available within pyFAI:
 - No splitting
 
     The whole intensity is assigned to the center of the pixel and
-    rebinned using a simple histogram
+    rebinned using a simple histogram. 
+    Each pixel contributes to a single bin.
 
 - Bounding box pixel splitting
 
     The pixel is abstracted by a box surrounding it with, making calculation
-    easier but blurring a bit the image
+    easier but blurring a bit the image. Each pixel contributes to multiple bins. 
 
 - Tight pixel splitting
 
     The pixel is represented by its actual corner position, offering a very
-    precise positioning in space.
+    precise positioning in space. The splitting of the pixels is not trivial at all, especially in 2D.
 
 The main issue with pixel splitting arose from 2D integration and the handling
 of pixel laying on the chi-discontinuity.

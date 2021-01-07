@@ -17,36 +17,20 @@ Additional tools are provided to calibrate the experimental setup, i.e. define w
    :align: center
    :alt: PyFAI is about regridding image in polar space.
 
+The sub-title of the project, *the space-folder*, is related to the expertise acquired in re-distributing the signal acquired in one geometry (often cartesian) 
+into another one (often polar) while propagating properly the associated error. Unlike interpolation, the flux is conserved in those transformations, and can be 
+used for any type of space transformation, including image distortion and many more.     
 
-
-The documentation starts with a general descriptions of the pyFAI library.
+This documentation starts with a general descriptions of the pyFAI library.
 This first chapter contains an introduction to pyFAI, what it is, what it aims at
-and how it works (from the scientists point of view).
+and how it works (from the scientists' point of view).
 Especially, geometry, calibration, azimuthal integration algorithms are described
-and pixel splitting schemes are explained.
+and pixel splitting schemes are explained there. 
+The most important part is this scheme explaining the geometry used: 
 
-Follows trainings, cookbooks and tutorials on how to use pyFAI:
-Training session are conferences which were video-recorded 
-and made available online.
-Cookbooks explain how to use pyFAI in practical cases.
-Tutorials present the usage of pyFAI within the *Jupyter* notebook environment and 
-present advanced features but require a good knowledge both of python and pyFAI.
-After the tutorials, all manual pages of pyFAI programs, both graphical interfaces
-and scripts are described in the documentation.
-
-The design of the programming interface (API) is then exposed before a
-comprehensive description of most modules contained in pyFAI.
-Some minor submodules as well as the documentation of the Cython sub-modules are
-not included for concision purposes.
-
-Installation procedures for Windows, MacOSX and Linux operating systems are then
-described.
-
-Finally other programs/projects relying on pyFAI are presented and the project is
-summarized from a developer's point of view.
-
-In appendix there are some figures about the project and its management and a list
-of publication on pyFAI.
+.. figure:: img/PONI.png
+   :align: center
+   :alt: The geometry used by pyFAI is inspired by SPD
 
 .. toctree::
    :maxdepth: 1

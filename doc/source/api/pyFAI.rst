@@ -1,30 +1,10 @@
 pyFAI package
 =============
 
-.. toctree::
-
-    app/index
-    detectors/index
-    engines/index
-    ext/index
-    gui/index
-    io/index
-    opencl/index
-    resources/index
-    utils/index
-
 :mod:`pyFAI` Package
 --------------------
 
 .. automodule:: pyFAI.__init__
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`average` Module
----------------------
-
-.. automodule:: pyFAI.average
     :members:
     :undoc-members:
     :show-inheritance:
@@ -37,6 +17,23 @@ pyFAI package
     :undoc-members:
     :show-inheritance:
 
+:mod:`geometry` Module
+----------------------
+
+.. automodule:: pyFAI.geometry
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`average` Module
+---------------------
+
+.. automodule:: pyFAI.average
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 :mod:`multi_geometry` Module
 ----------------------------
 
@@ -45,13 +42,6 @@ pyFAI package
     :undoc-members:
     :show-inheritance:
 
-:mod:`geometry` Module
-----------------------
-
-.. automodule:: pyFAI.geometry
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 :mod:`geometryRefinement` Module
 --------------------------------
@@ -125,3 +115,21 @@ pyFAI package
     :members:
     :undoc-members:
     :show-inheritance:
+
+Other sub-packages:
+-------------------
+
+.. toctree::
+
+    app/index
+    detectors/index
+    engines/index
+    ext/index
+    gui/index
+    io/index
+    opencl/index
+    resources/index
+    utils/index
+    
+
+

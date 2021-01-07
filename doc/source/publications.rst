@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 30/10/2020
+:Date: 07/01/2021
 :Keywords: List of publications
 
 
@@ -34,5 +34,5 @@ Publication about pyFAI
   Describes the new integration scheme, the new user interface and the calibration of goniometers.
 
 The latest paper should be the cited in publications using pyFAI.
-There are already 300 publications referring to pyFAI, some of them in the most
+There are already 450 publications referring to pyFAI, some of them in the most
 prestigious scientific journals (Nature, PNAS, ...).
