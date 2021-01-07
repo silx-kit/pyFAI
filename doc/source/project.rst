@@ -274,6 +274,8 @@ As of 01/2021:
  * Carsten DETLEFS (ESRF)
  * Marie Ruat (ESRF)
  * Jan Garrevoet (Desy)
+ * Clemens Weninger (Max IV)
+ * Jesse Hopkins (APS)
  * Florian Plaswig (ESRF)
  * Amund Hov (ESRF)
 

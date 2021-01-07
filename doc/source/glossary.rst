@@ -54,6 +54,7 @@ The object is saved in a PONI-file, see :ref:`Geometry`
 
 Image
 =====
+2D array of pixels which intensity is proportionnal to the number of photons. 
 see :ref:`Image`
 
 PONI
@@ -63,12 +64,13 @@ It is the pixel coordinates of the orthogonal projection of the sample position
 on the detector (for plane detectors, or the plane z=0 for other).
 The *PONI* coincide with the beam center in the case of orthogonal setup but most
 of the time differs.
+see :ref:`Geometry`
 
 PONI-File
 =========
-Small text file generated from pyFAi-calib or when saving a geometry object which
+Small text file generated from the calibration or when saving a geometry which
 contains the detector description, its position in space and the wavelength.
-Used to initialize AzimuthalIntegrator or Geometry objects.
+Typically used to initialize an AzimuthalIntegrator or a Geometry object.
 
 Worker
 ======
