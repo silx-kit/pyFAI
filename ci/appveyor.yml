@@ -21,7 +21,7 @@ os:
 cache:
     - '%LOCALAPPDATA%\pip\Cache'
 
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 environment:
     global:
@@ -31,15 +31,8 @@ environment:
 
     matrix:
 
-        # Python 3.5
-        - PYTHON_DIR: "C:\\Python35-x64"
-          PYTHON_VERSION: "3.5.0"
-          PYTHON_ARCH: "64"
-          BUILD_ARGS: ""
-
         # Python 3.6
         - PYTHON_DIR: "C:\\Python36-x64"
-          #PYTHON_VERSION: "3.4.3"
           PYTHON_ARCH: "64"
 
         # Python 3.7
@@ -50,6 +43,9 @@ environment:
         - PYTHON_DIR: "C:\\Python38-x64"
           PYTHON_ARCH: "64"
 
+        # Python 3.8
+        - PYTHON_DIR: "C:\\Python39-x64"
+          PYTHON_ARCH: "64"
 
 init:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

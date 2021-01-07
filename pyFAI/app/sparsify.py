@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2020"
+__date__ = "06/01/2021"
 __status__ = "status"
 
 import os
@@ -50,6 +50,7 @@ import sys
 import time
 import argparse
 from collections import OrderedDict
+import numpy
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)

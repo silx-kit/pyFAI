@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "05/08/2020"
+__date__ = "06/01/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -496,7 +496,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 events.append(EventDescription("csr_integrate", integrate))
             if out_merged is None:
                 merged = numpy.empty(self.bins, dtype=numpy.float32)
-            elif out_merge is False:
+            elif out_merged is False:
                 merged = None
             else:
                 merged = out_merged.data
