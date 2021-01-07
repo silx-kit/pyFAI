@@ -12,6 +12,19 @@ Here is the *cookbook* which will explain you how to calibrate the setup of a
 diffraction experiment within five minutes.
 No advanced features are presented.
 
+Video
+-----
+
+.. raw:: html
+
+	<center>
+	<video width="640" height="360" controls>
+		<source src="http://www.silx.org/pub/pyFAI/video/Calibration_15mn.mp4" type="video/mp4">
+		This 15mn tutorial presents the usage of pyFAI-calib2
+	</video>
+	</center>
+
+
 The graphical tool for geometry calibration is called ``pyFAI-calib2``,
 just open a terminal and type its name plus return to start up the application
 which looks like this:
@@ -228,8 +241,8 @@ Conclusion
 This tutorial explained the 5 steps needed to perform the calibration of the
 detector position prior to any diffraction experiment on a synchrotron.
 
-Video recording
----------------
+Advanced video tutorial
+-----------------------
 
 This tutorial was given at the **Hercules** courses in 2020, the data files used are here:
 `Calibration_Al2O3.h5 <http://www.silx.org/pub/pyFAI/pyFAI_UM_2020/data_ID13/Calibration_Al2O3.h5>`_ and
@@ -242,6 +255,6 @@ This 65mn tutorial presents also *silx view*, *pyFAI-average* and *pyFAI-integra
 	<center>
 	<video width="640" height="360" controls>
 		<source src="http://www.silx.org/pub/pyFAI/video/pyFAI_example_ID13.mp4" type="video/mp4">
-		Your browser does not support the video tag.
+		65 mn tutorial with preprocessing, calibration and integration.
 	</video>
 	</center>
