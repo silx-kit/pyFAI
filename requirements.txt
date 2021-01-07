@@ -11,3 +11,4 @@ PyQt5
 hdf5plugin
 wheel
 transformations
+nbsphinx
