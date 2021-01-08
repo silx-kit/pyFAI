@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -56,7 +56,6 @@ import threading
 import time
 from collections import OrderedDict
 import __main__ as main
-from pyFAI.third_party import six
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
 from .. import version
@@ -355,7 +354,7 @@ class HDF5Writer(Writer):
                     chunk = 1, self.fai_cfg["nbpt_rad"]
                     self.ndim = 2
 
-            utf8vlen_dtype = h5py.special_dtype(vlen=six.text_type)
+            utf8vlen_dtype = h5py.special_dtype(vlen=str)
             self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
 
             if self.DATASET_NAME in self.nxdata_grp:
@@ -870,7 +869,7 @@ class FabioWriter(Writer):
     def __repr__(self):
         return "Image writer on file %s" % (self.filename)
 
-    def init(self, fai_cfg=None, lima_cfg=None):
+    def init(self, fai_cfg=None, lima_cfg=None, directory="pyFAI"):
         """
         Creates the directory that will host the output file(s)
 

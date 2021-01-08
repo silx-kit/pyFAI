@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 
 PACKAGE = "pyFAI"
 
@@ -43,8 +43,6 @@ import tempfile
 import getpass
 import functools
 
-from argparse import ArgumentParser
-from ..third_party import six
 from silx.resources import ExternalResources
 from ..directories import testimages
 
@@ -297,7 +295,7 @@ def diff_img(ref, obt, comment=""):
         y = imax // ref.shape[-1]
         ax3.plot([x], [y], "o", scalex=False, scaley=False)
         fig.show()
-        six.moves.input()
+        input()
 
 
 def diff_crv(ref, obt, comment=""):
@@ -315,7 +313,7 @@ def diff_crv(ref, obt, comment=""):
         _im_obt = ax1.plot(obt, label="%s obt" % comment)
         _im_delta = ax2.plot(delta, label="delta")
         fig.show()
-        six.moves.input()
+        input()
 
 
 if sys.hexversion >= 0x030400F0:  # Python >= 3.4

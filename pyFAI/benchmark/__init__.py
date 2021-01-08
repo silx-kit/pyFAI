@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -46,7 +46,6 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..utils import mathutil
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
-from ..third_party import six
 try:
     from ..gui.matplotlib import pylab
     from ..gui.utils import update_fig
@@ -255,9 +254,7 @@ class Bench(object):
             elif os.path.exists("/usr/sbin/sysctl"):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
-                self._cpu = proc.stdout.read().strip()
-                if six.PY3:
-                    self._cpu = self._cpu.decode("ASCII")
+                self._cpu = proc.stdout.read().strip().decode("ASCII")
             old = self._cpu
             self._cpu = old.replace("  ", " ")
             while old != self._cpu:

@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2020"
+__date__ = "08/01/2021"
 __status__ = "development"
 
 import logging
@@ -44,7 +44,6 @@ if ocl:
     from .opencl import azim_csr as ocl_azim_csr
 else:
     ocl_azim_lut = ocl_azim_csr = None
-from .third_party import six
 
 try:
     from .ext import _distortion
@@ -71,8 +70,9 @@ def resize_image_2D_numpy(image, shape_in):
     "numpy implementation of resize_image_2D"
     new_img = numpy.zeros(shape_in, dtype=image.dtype)
     common_shape = [min(i, j) for i, j in zip(image.shape, shape_in)]
-    new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
+    new_img[:common_shape[0],:common_shape[1]] = image[:common_shape[0],:common_shape[1]]
     return new_img
+
 
 if _distortion is None:
     resize_image_2D = resize_image_2D_numpy
@@ -86,6 +86,7 @@ class Distortion(object):
 
     New version compatible both with CSR and LUT...
     """
+
     def __init__(self, detector="detector", shape=None, resize=False, empty=0,
                  mask=None, method="CSR", device=None, workgroup=32):
         """
@@ -98,7 +99,7 @@ class Distortion(object):
         :param workgroup: workgroup size for CSR on OpenCL
         """
         self._shape_out = None
-        if isinstance(detector, six.string_types):
+        if isinstance(detector, (str,)):
             self.detector = detectors.detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector
@@ -140,7 +141,7 @@ class Distortion(object):
             else:
                 self.lut = csr.data, csr.indices, csr.indptr
         else:
-            #initialize the LUT later
+            # initialize the LUT later
             self.lut = None
         self.delta1 = self.delta2 = None  # max size of an pixel on a regular grid ...
         self.offset1 = self.offset2 = 0  # position of the first bin
@@ -250,10 +251,10 @@ class Distortion(object):
                         self.bin_size = _distortion.calc_size(self.pos, self._shape_out, self.mask, (self.offset1, self.offset2))
                     else:
                         mask = self.mask
-                        pos0min = (numpy.floor(pos[:, :, :, 0].min(axis=-1) - self.offset1).astype(numpy.int32)).clip(0, self._shape_out[0])
-                        pos1min = (numpy.floor(pos[:, :, :, 1].min(axis=-1) - self.offset2).astype(numpy.int32)).clip(0, self._shape_out[1])
-                        pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1) - self.offset1 + 1).astype(numpy.int32)).clip(0, self._shape_out[0])
-                        pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1) - self.offset2 + 1).astype(numpy.int32)).clip(0, self._shape_out[1])
+                        pos0min = (numpy.floor(pos[:,:,:, 0].min(axis=-1) - self.offset1).astype(numpy.int32)).clip(0, self._shape_out[0])
+                        pos1min = (numpy.floor(pos[:,:,:, 1].min(axis=-1) - self.offset2).astype(numpy.int32)).clip(0, self._shape_out[1])
+                        pos0max = (numpy.ceil(pos[:,:,:, 0].max(axis=-1) - self.offset1 + 1).astype(numpy.int32)).clip(0, self._shape_out[0])
+                        pos1max = (numpy.ceil(pos[:,:,:, 1].max(axis=-1) - self.offset2 + 1).astype(numpy.int32)).clip(0, self._shape_out[1])
                         self.bin_size = numpy.zeros(self._shape_out, dtype=numpy.int32)
                         for i in range(self.shape_in[0]):
                             for j in range(self.shape_in[1]):
@@ -304,7 +305,7 @@ class Distortion(object):
         if self.lut is None:
             if self.pos is None:
                 self.calc_pos()
-    
+
             if self.max_size is None and not use_common:
                 self.calc_size()
             with self._sem:
@@ -320,8 +321,8 @@ class Distortion(object):
                                 self.lut = _distortion.calc_CSR(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
                     else:
                         lut = numpy.recarray(shape=(self._shape_out[0], self._shape_out[1], self.max_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
-                        lut[:, :, :].idx = 0
-                        lut[:, :, :].coef = 0.0
+                        lut[:,:,:].idx = 0
+                        lut[:,:,:].coef = 0.0
                         outMax = numpy.zeros(self._shape_out, dtype=numpy.uint32)
                         idx = 0
                         buffer_ = numpy.empty((self.delta1, self.delta2))
@@ -331,14 +332,14 @@ class Distortion(object):
                                 if (mask is not None) and mask[i, j]:
                                     continue
                                 # i,j, idx are indexes of the raw image uncorrected
-                                quad.reinit(*list(self.pos[i, j, :, :].ravel()))
+                                quad.reinit(*list(self.pos[i, j,:,:].ravel()))
                                 # print(self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
                                 try:
                                     quad.populate_box()
                                 except Exception as error:
                                     print("error in quad.populate_box of pixel %i, %i: %s" % (i, j, error))
                                     print("calc_area_vectorial", quad.calc_area_vectorial())
-                                    print(self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :])
+                                    print(self.pos[i, j, 0,:], self.pos[i, j, 1,:], self.pos[i, j, 2,:], self.pos[i, j, 3,:])
                                     print(quad)
                                     raise
                 #                box = quad.get_box()
@@ -385,14 +386,14 @@ class Distortion(object):
                     new_image = numpy.zeros((shape_in0, shape_in1, nchan), dtype=numpy.float32)
                     if shape_img0 < shape_in0:
                         if shape_img1 < shape_in1:
-                            new_image[:shape_img0, :shape_img1, :] = image
+                            new_image[:shape_img0,:shape_img1,:] = image
                         else:
-                            new_image[:shape_img0, :, :] = image[:, :shape_in1, :]
+                            new_image[:shape_img0,:,:] = image[:,:shape_in1,:]
                     else:
                         if shape_img1 < shape_in1:
-                            new_image[:, :shape_img1, :] = image[:shape_in0, :, :]
+                            new_image[:,:shape_img1,:] = image[:shape_in0,:,:]
                         else:
-                            new_image[:, :, :] = image[:shape_in0, :shape_in1, :]
+                            new_image[:,:,:] = image[:shape_in0,:shape_in1,:]
                     logger.warning("Patching image of shape %ix%i on expected size of %ix%i",
                                    shape_img1, shape_img0, shape_in1, shape_in0)
                 image = new_image
@@ -525,7 +526,6 @@ class Distortion(object):
                 raise
         return out
 
-
     def uncorrect(self, image, use_cython=False):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
@@ -577,6 +577,7 @@ class Quad(object):
     .. image:: ../img/quad_model.svg
         :alt: Modelization of the quad
     """
+
     def __init__(self, buffer):
         self.box = buffer
         self.A0 = self.A1 = None
@@ -608,7 +609,7 @@ class Quad(object):
         return self.box_size1
 
     def reinit(self, A0, A1, B0, B1, C0, C1, D0, D1):
-        self.box[:, :] = 0.0
+        self.box[:,:] = 0.0
         self.A0 = A0
         self.A1 = A1
         self.B0 = B0
@@ -634,7 +635,7 @@ class Quad(object):
         self.area = None
 
     def __repr__(self):
-        return os.linesep.join(["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box: %s" % self.box[:self.box_size0, :self.box_size1]])
+        return os.linesep.join(["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box: %s" % self.box[:self.box_size0,:self.box_size1]])
 
     def init_slope(self):
         if self.pAB is None:
@@ -698,6 +699,7 @@ class Quad(object):
         if self.area is None:
             self.area = numpy.cross([self.C0 - self.A0, self.C1 - self.A1], [self.D0 - self.B0, self.D1 - self.B1]) / 2.0
         return self.area
+
     calc_area = calc_area_vectorial
 
     def populate_box(self):
@@ -709,19 +711,19 @@ class Quad(object):
         self.integrateAB(self.C0, self.B0, self.calc_area_BC)
         if (self.box / self.calc_area()).min() < 0:
             print(self.box)
-            self.box[:, :] = 0
+            self.box[:,:] = 0
             print("AB")
             self.integrateAB(self.B0, self.A0, self.calc_area_AB)
             print(self.box)
-            self.box[:, :] = 0
+            self.box[:,:] = 0
             print("DA")
             self.integrateAB(self.A0, self.D0, self.calc_area_DA)
             print(self.box)
-            self.box[:, :] = 0
+            self.box[:,:] = 0
             print("CD")
             self.integrateAB(self.D0, self.C0, self.calc_area_CD)
             print(self.box)
-            self.box[:, :] = 0
+            self.box[:,:] = 0
             print("BC")
             self.integrateAB(self.C0, self.B0, self.calc_area_BC)
             print(self.box)
