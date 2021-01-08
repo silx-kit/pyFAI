@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "08/01/2021"
 __status__ = "production"
 
 import logging
@@ -53,7 +53,6 @@ else:
 
 logger = logging.getLogger(__name__)
 from .. import resources
-from ..third_party import six
 try:
     from ..directories import data_dir
 except ImportError:
@@ -65,7 +64,7 @@ if sys.platform != "win32":
 
 win32 = (os.name == "nt") and (tuple.__itemsize__ == 4)
 
-StringTypes = (six.binary_type, six.text_type)
+StringTypes = (bytes, str)
 
 try:
     from ..ext.fastcrc import crc32
@@ -253,7 +252,7 @@ def readFloatFromKeyboard(text, dictVar):
     :param text: string to be displayed
     :param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
     """
-    fromkb = six.moves.input(text).strip()
+    fromkb = input(text).strip()
     try:
         vals = [float(i) for i in fromkb.split()]
     except ValueError:

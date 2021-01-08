@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 
 import unittest
 import logging
@@ -43,7 +43,6 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
-from ..third_party import six
 from ..utils import mathutil
 
 
@@ -149,5 +148,5 @@ if __name__ == '__main__':
     if logger.getEffectiveLevel() == logging.DEBUG:
         pylab.legend()
         pylab.show()
-        six.moves.input()
+        input()
         pylab.clf()

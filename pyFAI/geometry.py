@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2021"
+__date__ = "08/01/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -52,7 +52,6 @@ import os
 import threading
 import json
 from collections import namedtuple, OrderedDict
-from six import PY2
 from . import detectors
 from . import units
 from .utils.decorators import deprecated
@@ -210,11 +209,11 @@ class Geometry(object):
         lower, upper = azimuth_range
         error_msg = "Azimuthal range issue: Range [%s, %s] not in valid region %s in radians: Expect %s results !"
         if self.chiDiscAtPi:
-            txt_range = "[-pi; pi[" if PY2 else "[-π; π["
+            txt_range = "[-π; π["
             lower_bound = -pi
             upper_bound = pi
         else:
-            txt_range = "[0; 2pi[" if PY2 else "[-0; 2π["
+            txt_range = "[-0; 2π["
             lower_bound = 0
             upper_bound = 2 * pi
 

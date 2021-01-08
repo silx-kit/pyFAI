@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -46,8 +46,6 @@ logger = logging.getLogger(__name__)
 import numpy
 from numpy import pi
 import scipy.constants
-
-from .third_party import six
 
 ################################################################################
 # A few physical constants
@@ -289,7 +287,7 @@ def to_unit(obj, type_=None):
     if type_ is None:
         type_ = RADIAL_UNITS
     rad_unit = None
-    if isinstance(obj, six.string_types):
+    if isinstance(obj, (str,)):
         rad_unit = type_.get(obj)
     elif isinstance(obj, Unit):
         rad_unit = obj

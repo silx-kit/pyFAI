@@ -31,13 +31,10 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/07/2020"
+__date__ = "08/01/2021"
 __docformat__ = 'restructuredtext'
 
-
 import logging
-import six
-
 from . import ponifile
 from .. import detectors
 from .. import method_registry
@@ -59,7 +56,7 @@ def _normalize_v1_darkflat_files(config, key):
         # Already a list, it's fine
         return
 
-    if isinstance(filenames, six.string_types):
+    if isinstance(filenames, (str,)):
         if "," in filenames:
             # Create a list from a coma separated string list
             filenames = filenames.split(",")
@@ -196,8 +193,8 @@ class ConfigurationReader(object):
     def pop_ponifile(self):
         """Returns the geometry subpart of the configuration"""
         dico = {"poni_version":2}
-        mapping = { i:i for i in ('wavelength',  'poni1', 'poni2', 
-                                  'rot1', 'rot2', 'rot3','detector','detector_config')}
+        mapping = { i:i for i in ('wavelength', 'poni1', 'poni2',
+                                  'rot1', 'rot2', 'rot3', 'detector', 'detector_config')}
         mapping['dist'] = "distance"
         for key1, key2 in mapping.items():
             if key1 in self._config:
@@ -205,7 +202,7 @@ class ConfigurationReader(object):
                 if value is not None:
                     dico[key2] = value
         return ponifile.PoniFile(dico)
-    
+
     def pop_detector(self):
         """
         Returns the detector stored in the json configuration.
@@ -237,7 +234,7 @@ class ConfigurationReader(object):
 
         if method is None:
             method = method_registry.Method(dim, "*", "*", "*", target=None)
-        elif isinstance(method, six.string_types):
+        elif isinstance(method, (str,)):
             method = method_registry.Method.parsed(method)
             method = method.fixed(dim=dim, target=target)
         elif isinstance(method, (list, tuple)):

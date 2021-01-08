@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 __satus__ = "production"
 
 import sys
@@ -42,7 +42,6 @@ import numpy
 import os.path
 import collections
 import contextlib
-import six
 from argparse import ArgumentParser
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -347,7 +346,7 @@ class DataSource(object):
             return False
 
         item = self._items[0]
-        if isinstance(item, six.string_types):
+        if isinstance(item, (str,)):
             with fabio.open(item) as fabio_image:
                 multiframe = fabio_image.nframes > 1
         elif isinstance(item, fabio.fabioimage.FabioImage):
@@ -368,7 +367,7 @@ class DataSource(object):
         return count > 0
 
     def _iter_item_frames(self, iitem, start_id, item):
-        if isinstance(item, six.string_types):
+        if isinstance(item, (str,)):
             with self._statistics.time_reading():
                 fabio_image = fabio.open(item)
             filename = fabio_image.filename
@@ -625,7 +624,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     # Skip invalide data
     source = DataSource(statistics=statistics)
     for item in input_data:
-        if isinstance(item, six.string_types):
+        if isinstance(item, (str,)):
             if os.path.isfile(item):
                 source.append(item)
             else:
