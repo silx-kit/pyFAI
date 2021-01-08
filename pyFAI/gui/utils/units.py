@@ -24,12 +24,10 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
-
+__date__ = "08/01/2021"
 
 import numpy
-
-from pyFAI.third_party import enum
+import enum
 from pyFAI import units
 
 
