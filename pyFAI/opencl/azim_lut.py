@@ -25,11 +25,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
-
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "16/07/2020"
+__date__ = "06/01/2021"
 __copyright__ = "2012-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -113,7 +111,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
-        self.empty = empty or 0 # numpy.NaN
+        self.empty = empty or 0  # numpy.NaN
         self.unit = unit
         self.bin_centers = bin_centers
         # a few place-folders
@@ -430,7 +428,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             events.append(EventDescription("integrate", integrate))
             if out_merged is None:
                 merged = numpy.empty(self.bins, dtype=numpy.float32)
-            elif out_merge is False:
+            elif out_merged is False:
                 merged = None
             else:
                 merged = out_merged.data
