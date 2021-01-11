@@ -26,12 +26,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2019"
+__date__ = "08/01/2021"
 __status__ = "production"
 
 import sys
@@ -47,7 +46,6 @@ from scipy.ndimage.filters import median_filter
 from .utils.decorators import deprecated
 from .ext.bilinear import Bilinear
 from .utils import gaussian_filter, binning, unbinning, is_far_from_group
-from .third_party import six
 
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -65,7 +63,7 @@ class Massif(object):
         :param data: 2D array or filename (discouraged)
         :param mask: array with non zero for invalid data
         """
-        if isinstance(data, six.string_types) and os.path.isfile(data):
+        if isinstance(data, (str,)) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
         elif isinstance(data, fabio.fabioimage.fabioimage):
             self.data = data.data.astype("float32")

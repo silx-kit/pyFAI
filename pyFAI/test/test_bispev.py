@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 
 import unittest
 import numpy
@@ -45,7 +45,6 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 from .. import spline
 from ..ext import _bispev
-from pyFAI.third_party import six
 
 try:
     from scipy.interpolate import fitpack
@@ -100,7 +99,7 @@ class TestBispev(unittest.TestCase):
             ax1.imshow(dx_ref)
             ax2.imshow(dx_loc)
             fig.show()
-            six.moves.input()
+            input()
         self.assertTrue(abs(dx_loc - dx_ref).max() < 2e-5, "Result are similar")
 
 

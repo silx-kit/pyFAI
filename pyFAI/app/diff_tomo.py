@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "08/01/2021"
 __satus__ = "Production"
 
 import os
@@ -51,9 +51,7 @@ from pyFAI import version as PyFAI_VERSION
 from pyFAI import date as PyFAI_DATE
 from pyFAI.diffmap import DiffMap
 from argparse import ArgumentParser
-
-from pyFAI.third_party import six
-urlparse = six.moves.urllib.parse.urlparse
+from urllib.parse import urlparse
 
 
 class DiffTomo(DiffMap):

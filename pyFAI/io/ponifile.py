@@ -31,19 +31,16 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/07/2020"
+__date__ = "08/01/2021"
 __docformat__ = 'restructuredtext'
-
 
 import collections
 import time
 import json
 import logging
-
 _logger = logging.getLogger(__name__)
 import numpy
 from .. import detectors
-from ..third_party import six
 
 
 class PoniFile(object):
@@ -61,7 +58,7 @@ class PoniFile(object):
             pass
         elif isinstance(data, dict):
             self.read_from_dict(data)
-        elif isinstance(data, six.string_types):
+        elif isinstance(data, (str,)):
             self.read_from_file(data)
         else:
             self.read_from_duck(data)

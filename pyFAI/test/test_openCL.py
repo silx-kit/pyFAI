@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "11/01/2021"
 
 import unittest
 import os
@@ -125,8 +125,8 @@ class TestMask(unittest.TestCase):
             for ds in self.datasets:
                 ai = load(ds["poni"])
                 data = fabio.open(ds["img"]).data
-                res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
-                ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
+                res = ai.integrate1d(data, self.N, method=("no", "hist", "opencl"), unit="2th_deg")
+                ref = ai.integrate1d(data, self.N, method=("no", "hist", "cython"), unit="2th_deg")
                 r = mathutil.rwp(ref, res)
                 logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                 self.assertTrue(r < 6, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))

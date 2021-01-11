@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 
 import logging
 import numpy
@@ -38,8 +38,6 @@ from silx.gui import colors
 import silx.gui.plot
 from silx.gui.plot.tools import PositionInfo
 from silx.gui.plot.items.shape import Shape
-
-from pyFAI.third_party import six
 import pyFAI.utils
 import pyFAI.massif
 import pyFAI.control_points
@@ -1208,7 +1206,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         def createIcon(identifiyers):
             for i in identifiyers:
-                if isinstance(i, six.string_types):
+                if isinstance(i, (str,)):
                     if qt.QIcon.hasThemeIcon(i):
                         return qt.QIcon.fromTheme(i)
                 elif isinstance(i, qt.QIcon):

@@ -29,7 +29,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2020"
+__date__ = "08/01/2021"
 __status__ = "production"
 
 import logging
@@ -41,7 +41,6 @@ from scipy.interpolate import interp1d
 from scipy.optimize.optimize import fmin
 from scipy.optimize.optimize import fminbound
 
-from .third_party import six
 from .utils import stringutil
 from .utils import header_utils
 from .io.image import read_data
@@ -173,6 +172,7 @@ class ImageStackFilter(ImageReductionFilter):
     Filter creating a stack from all images and computing everything at the
     end.
     """
+
     def init(self, max_images=None):
         self._stack = None
         self._max_stack_size = max_images
@@ -213,6 +213,7 @@ class AverageDarkFilter(ImageStackFilter):
 
     TODO: Must be split according to each filter_name, and removed
     """
+
     def __init__(self, filter_name, cut_off, quantiles):
         super(AverageDarkFilter, self).__init__()
         self._filter_name = filter_name
@@ -472,7 +473,7 @@ def _normalize_image_stack(image_stack):
         # list of numpy images (multi 2D images)
         result = []
         for image in image_stack:
-            if isinstance(image, six.string_types):
+            if isinstance(image, (str,)):
                 data = read_data(image)
             elif isinstance(image, numpy.ndarray) and image.ndim == 2:
                 data = image
@@ -713,7 +714,7 @@ class Average(object):
         else:
             copy_data = False
         for image_index, image in enumerate(image_list):
-            if isinstance(image, six.string_types):
+            if isinstance(image, (str,)):
                 logger.info("Reading %s", image)
                 try:
                     fabio_image = fabio.open(image)
