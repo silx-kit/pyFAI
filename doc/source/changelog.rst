@@ -20,6 +20,7 @@ Change-log of versions
 * Support all Eiger2 detectors (thanks Clemens Weninger and Marie Ruat)
 * CI: move to Gihub workflow and gitlab-runners (bob) for building (thanks Thomas Vincent).
 * Build for debian 10 and 11 (also ubuntu 20.04)
+* Remove Python2 related code
 * Drop tests for Python 3.5, checked on 3.9 as well.
 
 0.19.0 31/01/2020
