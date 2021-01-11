@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 07/01/2021
+:Date: 11/01/2021
 :Keywords: changelog
 
 Change-log of versions
@@ -16,6 +16,7 @@ Change-log of versions
 * Drop most of the compatibility code with Python2
 * Improve the calibration of Pilatus and Eiger detectors based on a grid of holes.
 * New cylindrical detector from Rigaku
+* Drop deprecated OpenCL integrator
 * Support all Eiger2 detectors (thanks Clemens Weninger and Marie Ruat)
 * CI: move to Gihub workflow and gitlab-runners (bob) for building (thanks Thomas Vincent).
 * Build for debian 10 and 11 (also ubuntu 20.04)
