@@ -32,14 +32,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 __satus__ = "production"
 
 import warnings
 import sys
-
-from pyFAI.third_party import six
-
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -62,7 +59,7 @@ def main():
         cc.integrate()
         cc.rebuild()
         cc.show()
-        six.moves.input("enter to quit")
+        input("enter to quit")
     else:
         sys.exit(1)
 

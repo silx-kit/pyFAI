@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 
 import unittest
 import time
@@ -42,7 +42,6 @@ from numpy import cos
 logger = logging.getLogger(__name__)
 from ..ext.histogram import histogram, histogram2d, histogram2d_preproc
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
-from ..third_party import six
 from ..utils import mathutil
 
 if logger.getEffectiveLevel() == logging.DEBUG:
@@ -67,7 +66,7 @@ class TestHistogram1d(unittest.TestCase):
         maxI = 1000
         cls.epsilon = 1.0e-4
         cls.epsilon_csr = 0.33
-        y, x = numpy.ogrid[:shape[0], :shape[1]]
+        y, x = numpy.ogrid[:shape[0],:shape[1]]
         tth = numpy.sqrt(x * x + y * y)  # .astype("float32")
         mod = 0.5 + 0.5 * numpy.cos(tth / 12) + 0.25 * numpy.cos(tth / 6) + 0.1 * numpy.cos(tth / 4)
         # data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
@@ -188,7 +187,7 @@ class TestHistogram1d(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            six.moves.input("Press enter to quit")
+            input("Press enter to quit")
 
         delta_max = abs(self.unweight_numpy - self.unweight_cython).max()
         logger.info("1d pixel count difference numpy/cython : max delta=%s", delta_max)
@@ -225,7 +224,7 @@ class TestHistogram2d(unittest.TestCase):
         cls.maxI = 1000
         cls.epsilon = 1.3e-4
         cls.epsilon_csr = 8.84
-        y, x = numpy.ogrid[:shape[0], :shape[1]]
+        y, x = numpy.ogrid[:shape[0],:shape[1]]
         tth = numpy.sqrt(x * x + y * y).astype("float32")
         mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
         # _data = (numpy.random.poisson(cls.maxI, shape) * mod).astype("uint16")

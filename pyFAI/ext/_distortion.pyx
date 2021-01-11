@@ -35,7 +35,7 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "26/06/2020"
+__date__ = "11/01/2021"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -58,7 +58,6 @@ import time
 logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
 from ..utils import expand2d
-from ..third_party import six
 import fabio
 
 from .sparse_builder cimport SparseBuilder
@@ -1667,7 +1666,7 @@ class Distortion(object):
         """
         :param detector: detector instance or detector name
         """
-        if isinstance(detector, six.string_types):
+        if isinstance(detector, str):
             self.detector = detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector
