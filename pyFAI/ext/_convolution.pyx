@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:   Pierre Paleo <pierre.paleo@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -36,7 +36,7 @@ It is used in real space are used to blurs images, used in blob-detection
 algorithm.
 """
 
-__authors__ = ["Pierre Paleo", "Jerome Kieffer"]
+__authors__ = ["Pierre Paleo", "Jérôme Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
 __date__ = "11/01/2021"
 __status__ = "stable"
@@ -84,7 +84,7 @@ def horizontal_convolution(float[:, ::1] img,
                     newpos = - newpos - 1
                 elif newpos >= IMAGE_W:
                     newpos = 2 * IMAGE_W - newpos - 1
-                acc += img[y,newpos] * filter[fIndex]
+                acc += img[y, newpos] * filter[fIndex]
             output[y, x] += <float> acc
     return numpy.asarray(output)
 
@@ -125,7 +125,7 @@ def vertical_convolution(float[:, ::1] img, float[::1] filter):
                     newpos = - newpos - 1
                 elif newpos >= IMAGE_H:
                     newpos = 2 * IMAGE_H - newpos - 1
-                acc += img[y,newpos] * filter[fIndex]
+                acc += img[newpos, x] * filter[fIndex]
             output[y, x] += <float> acc
     return numpy.asarray(output)
 
