@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 09/05/2017
+:Date: 08/01/2021
 :Keywords: Project management description
 :Target: developers
 
@@ -10,7 +10,7 @@ PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
 PyFAI is an open source project licensed under the MIT license (previously
-under GPL) mainly written in Python (v2.7, 3.4 or newer).
+under GPL) mainly written in Python (3.6 or newer).
 It is managed by the Silx team and is heavily relying on the
 Python scientific ecosystem: numpy, scipy and matplotlib.
 It provides high performances image treatment thanks to Cython and
@@ -21,9 +21,9 @@ Programming language
 
 PyFAI is a Python project but uses many programming languages:
 
-* 23000 lines of Python (plus 5000 for the test)
-* 8000 lines of Cython which are converted into ... C (about half a million lines)
-* 5000 lines of OpenCL kernels
+* 50000 lines of Python (of thich 8000 for the test)
+* 16000 lines of Cython which are converted into ... C or C++
+* 8000 lines of OpenCL kernels
 
 The OpenCL code has been tested using:
 
@@ -53,8 +53,8 @@ into the main branch via pull-requests.
 Getting help
 ------------
 
-A mailing list, pyfai@esrf.fr, is publicly available.
-I t is the best place to ask your questions: the author and many advanced users
+A mailing list, *pyfai@esrf.fr*, is publicly available.
+It is the best place to ask your questions: the author and many advanced users
 are there and willing to help you.
 To subscribe to this mailing list, send an email to
 `pyfai-subscribe@esrf.fr <mailto:pyfai-subscribe@esrf.fr>`_.
@@ -88,14 +88,14 @@ continue funding development.
 Run dependencies
 ----------------
 
-* Python version 2.7, 3.4, 3.5, 3.6
+* Python version 3.6, 3.7, 3.8 or 3.9
 * NumPy
 * SciPy
 * Matplotlib
 * FabIO
 * h5py
 * pyopencl (optional)
-* PyQt4 or PySide (for the graphical user interface)
+* PyQt5 or PySide2 (for the graphical user interface)
 * Silx
 
 Build dependencies
@@ -232,14 +232,14 @@ Linux
 
 
 `Travis provides continuous integration on Linux <https://travis-ci.org/silx-kit/pyFAI>`_,
-64 bits computer with Python 2.7, 3.4 and 3.5.
+64 bits computer with Python 3.6 to 3.9. Github workflows are ment to replace Travis once the service is discontinued.
 
-The builds cannot yet be retrieved with Travis-CI, but manylinux-wheels are on the radar.
+`Gitlab runners <https://gitlab.esrf.fr/silx/bob/pyfai/-/pipelines>`_ are periodically triggered to build the project and provide *wheels* for all kind of systems.
 
 AppVeyor
 ........
 
-`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 2.7 and 3.4.
+`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 3.6 to 3.9.
 Successful builds provide installers for pyFAI as *wheels* and *msi*, they are anonymously available as *artifacts*.
 Due to the limitation of AppVeyor's build system, those installers have openMP disabled.
 
@@ -250,24 +250,33 @@ List of contributors in code
 
     git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
 
-As of 01/2018:
+As of 01/2021:
  * Jérôme Kieffer (ESRF)
  * Valentin Valls (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
  * Aurore Deschildre (ESRF)
  * Giannis Ashiotis (ESRF)
  * Dimitrios Karkoulis (ESRF)
+ * Thomas Vincent (ESRF)
+ * Alexandre Marie (Soleil)
  * Jon Wright (ESRF)
+ * Ronald Pandolfi (LBNL)
+ * Loic Huder (ESRF)
  * Zubair Nawaz (Sesame)
  * Dodogerstlin @github
  * Vadim Dyadkin (ESRF/SNBL)
  * Gunthard Benecke (Desy)
  * Gero Flucke (Desy)
+ * Bertrand Faure (Xenocs)
  * Christopher J. Wright (Columbia University)
  * Sigmund Neher (GWDG)
  * Wout De Nolf (ESRF)
- * Bertrand Faure (Xenocs)
- * Thomas Vincent (ESRF)
+ * Carsten DETLEFS (ESRF)
+ * Marie Ruat (ESRF)
+ * Jan Garrevoet (Desy)
+ * Clemens Weninger (Max IV)
+ * Jesse Hopkins (APS)
+ * Florian Plaswig (ESRF)
  * Amund Hov (ESRF)
 
 List of other contributors (ideas or code)

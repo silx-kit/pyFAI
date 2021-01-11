@@ -8,3 +8,4 @@ cython
 sphinxcontrib-programoutput
 silx
 nbsphinx
+sphinx-rtd-theme
