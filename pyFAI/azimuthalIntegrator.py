@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2020"
+__date__ = "11/01/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -457,7 +457,7 @@ class AzimuthalIntegrator(Geometry):
                 numpy.logical_not(mask, mask)
         if (mask.shape != shape):
             try:
-                mask = mask[:shape[0], :shape[1]]
+                mask = mask[:shape[0],:shape[1]]
             except Exception as error:  # IGNORE:W0703
                 logger.error("Mask provided has wrong shape:"
                              " expected: %s, got %s, error: %s",
@@ -527,214 +527,6 @@ class AzimuthalIntegrator(Geometry):
         method = IntegrationMethod.select_one_available(requested_method, dim=dim, default=default, degradable=True)
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
-
-    @deprecated(reason="Not maintained", since_version="0.10")
-    def xrpd_OpenCL(self, data, npt, filename=None, correctSolidAngle=True,
-                    dark=None, flat=None,
-                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
-                    devicetype="gpu", useFp64=True,
-                    platformid=None, deviceid=None, safe=True):
-        """
-        Calculate the powder diffraction pattern from a set of data,
-        an image.
-
-        This is (now) a pure pyopencl implementation so it just needs
-        pyopencl which requires a clean OpenCL installation. This
-        implementation is not slower than the previous Cython and is
-        less problematic for compilation/installation.
-
-        :param data: 2D array from the CCD camera
-        :type data: ndarray
-        :param npt: number of points in the output pattern
-        :type npt: integer
-        :param filename: file to save data in ascii format 2 column
-        :type filename: str
-        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        :type correctSolidAngle: bool or int
-        :param tthRange: The lower and upper range of the 2theta
-        :type tthRange: (float, float), optional
-        :param mask: array with 1 for masked pixels, and 0 for valid pixels
-        :type mask: ndarray
-        :param dummy: value for dead/masked pixels (dynamic mask)
-        :type dummy: float
-        :param delta_dummy: precision for dummy value
-        :type delta_dummy: float
-
-        OpenCL specific parameters:
-
-        :param devicetype: possible values "cpu", "gpu", "all" or "def"
-        :type devicetype: str
-        :param useFp64: shall histogram be done in double precision (strongly adviced)
-        :type useFp64: bool
-        :param platformid: platform number
-        :type platformid: int
-        :param deviceid: device number
-        :type deviceid: int
-        :param safe: set to False if your GPU is already set-up correctly
-        :type safe: bool
-
-        :return: (2theta, I) angle being in degrees
-        :rtype: 2-tuple of 1D arrays
-
-        This method compute the powder diffraction pattern, from a
-        given *data* image. The number of point of the pattern is
-        given by the *npt* parameter. If you give a *filename*, the
-        powder diffraction is also saved as a two column text file.
-        The powder diffraction is computed internally using an
-        histogram which by default use should be done in 64bits. One
-        can switch to 32 bits with the *useFp64* parameter set to
-        False. In 32bit mode; do not expect better than 1% error and
-        one can even observe overflows ! 32 bits is only left for
-        testing hardware capabilities and should NEVER be used in any
-        real experiment analysis.
-
-        It is possible to correct or not the powder diffraction
-        pattern using the *correctSolidAngle* parameter. The weight of
-        a pixel is ponderate by its solid angle.
-
-        The 2theta range of the powder diffraction pattern can be set
-        using the *tthRange* parameter. If not given the maximum
-        available range is used. Indeed pixel outside this range are
-        ignored.
-
-        Each pixel of the *data* image has also a chi coordinate. So
-        it is possible to restrain the chi range of the pixels to
-        consider in the powder diffraction pattern. You just need to
-        set the range with the *chiRange* parameter; like the
-        *tthRange* parameter, value outside this range are ignored.
-
-        Sometimes one needs to mask a few pixels (beamstop, hot
-        pixels, ...), to ignore a few of them you just need to provide
-        a *mask* array with a value of 1 for those pixels. To take a
-        pixel into account you just need to set a value of 0 in the
-        mask array. Indeed the shape of the mask array should be
-        idential to the data shape (size of the array _must_ be the
-        same).
-
-        Bad pixels can also be masked by setting them to an impossible
-        value (-1) and calling this value the "dummy value".  Some
-        Pilatus detectors are setting non existing pixel to -1 and
-        dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that
-        any value between -3.5 and -0.5 are considered as bad.
-
-        *devicetype*, *platformid* and *deviceid*, parameters are
-        specific to the OpenCL implementation. If you set *devicetype*
-        to 'all', 'cpu', 'gpu', 'def' you can force the device used to
-        perform the computation; the program will select the device
-        accordinly. By setting *platformid* and *deviceid*, you can
-        directly address a specific device (which is computer
-        specific).
-
-        The *safe* parameter is specific to the integrator object,
-        located on the OpenCL device. You can set it to False if you
-        think the integrator is already setup correcty (device,
-        geometric arrays, mask, 2theta/chi range). Unless many tests
-        will be done at each integration.
-
-        Nota: this deprecated code is maintained until a new histograming on GPU
-        is available
-
-        """
-        if not ocl_azim:
-            logger.warning("OpenCL implementation not available"
-                           " falling back on old method !")
-            return self.xrpd_splitBBox(data=data,
-                                       npt=npt,
-                                       filename=filename,
-                                       correctSolidAngle=correctSolidAngle,
-                                       tthRange=tthRange,
-                                       mask=mask,
-                                       dummy=dummy,
-                                       delta_dummy=delta_dummy,
-                                       dark=dark,
-                                       flat=flat
-                                       )
-        shape = data.shape
-        if flat is None:
-            flat = self.flatfield
-        if flat is None:
-            flat = 1
-
-        if dark is None:
-            dark = self.darkcurrent
-        if dark is not None:
-            data = data.astype(numpy.float32) - dark
-
-        if OCL_HIST_ENGINE in self.engines:
-            engine = self.engines[OCL_HIST_ENGINE]
-        else:
-            with self._lock:
-                if OCL_HIST_ENGINE in self.engines:
-                    engine = self.engines[OCL_HIST_ENGINE]
-                else:
-                    engine = self.engines[OCL_HIST_ENGINE] = Engine()
-        integr = engine.engine
-        if integr is None:
-            with engine.lock:
-                if integr is None:
-                    size = data.size
-                    fd, tmpfile = tempfile.mkstemp(".log", "pyfai-opencl-")
-                    os.close(fd)
-                    integr = ocl_azim.Integrator1d(tmpfile)
-                    if (platformid is not None) and (deviceid is not None):
-                        rc = integr.init(devicetype=devicetype,
-                                         platformid=platformid,
-                                         deviceid=deviceid,
-                                         useFp64=useFp64)
-                    else:
-                        rc = integr.init(devicetype=devicetype,
-                                         useFp64=useFp64)
-                    if rc:
-                        raise RuntimeError("Failed to initialize OpenCL"
-                                           " deviceType %s (%s,%s) 64bits: %s"
-                                           % (devicetype, platformid,
-                                              deviceid, useFp64))
-
-                    if integr.getConfiguration(size, npt):
-                        raise RuntimeError("Failed to configure 1D integrator"
-                                           " with Ndata=%s and Nbins=%s"
-                                           % (size, npt))
-
-                    if integr.configure():
-                        raise RuntimeError('Failed to compile kernel')
-                    pos0 = self.twoThetaArray(shape)
-                    delta_pos0 = self.delta2Theta(shape)
-                    if tthRange is not None and len(tthRange) > 1:
-                        pos0_min = numpy.deg2rad(tthRange[0])
-                        pos0_maxin = numpy.deg2rad(tthRange[-1])
-                    else:
-                        pos0_min = pos0.min()
-                        pos0_maxin = pos0.max()
-                    if pos0_min < 0.0:
-                        pos0_min = 0.0
-                    pos0_max = pos0_maxin * EPS32
-                    if integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
-                        raise RuntimeError("Failed to upload 2th arrays")
-                    engine.set_engine(integr)
-        with engine.lock:
-            integr = engine.engine
-            if safe:
-                param = integr.get_status()
-                if (dummy is None) and param["dummy"]:
-                    integr.unsetDummyValue()
-                elif (dummy is not None) and not param["dummy"]:
-                    if delta_dummy is None:
-                        delta_dummy = 1e-6
-                    integr.setDummyValue(dummy, delta_dummy)
-                if (correctSolidAngle and not param["solid_angle"]):
-                    integr.setSolidAngle(flat * self.solidAngleArray(shape, correctSolidAngle))
-                elif (not correctSolidAngle) and param["solid_angle"] and (flat == 1):
-                    integr.unsetSolidAngle()
-                elif not correctSolidAngle and not param["solid_angle"] and (flat != 1):
-                    integr.setSolidAngle(flat)
-                if (mask is not None) and not param["mask"]:
-                    integr.setMask(mask)
-                elif (mask is None) and param["mask"]:
-                    integr.unsetMask()
-            tthAxis, I, _, = integr.execute(data)
-        tthAxis = rad2deg(tthAxis)
-        self.__save1D(filename, tthAxis, I, None, "2th_deg")
-        return tthAxis, I
 
     def setup_LUT(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
@@ -2894,8 +2686,8 @@ class AzimuthalIntegrator(Geometry):
                     var2d = prop2d["variance"]
             else:
                 logger.debug("integrate2d uses Numpy implementation")
-                signal = prep[:, :, 0].ravel()
-                norm = prep[:, :, -1].ravel()
+                signal = prep[:,:, 0].ravel()
+                norm = prep[:,:, -1].ravel()
                 norm2d, b, c = numpy.histogram2d(pos1,
                                                  pos0,
                                                  (npt_azim, npt_rad),
@@ -2914,7 +2706,7 @@ class AzimuthalIntegrator(Geometry):
 
                 if prep.shape[-1] == 3:
                     var2d, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
-                                                    weights=prep[:, :, 1].ravel(),
+                                                    weights=prep[:,:, 1].ravel(),
                                                     range=[azimuth_range, radial_range])
                     sigma = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float32)
                     sigma += dummy if (dummy is not None) else self._empty
@@ -3199,7 +2991,7 @@ class AzimuthalIntegrator(Geometry):
             dummies = (integ2d == dummy).sum(axis=0)
             # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
             sorted_ = numpy.zeros((npt_azim + 1, npt_rad))
-            sorted_[:npt_azim, :] = numpy.sort(integ2d, axis=0)
+            sorted_[:npt_azim,:] = numpy.sort(integ2d, axis=0)
 
             if "__len__" in dir(percentile):
                 # mean over the valid value

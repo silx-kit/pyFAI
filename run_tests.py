@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "15/12/2020"
+__date__ = "11/01/2021"
 __license__ = "MIT"
 
 import sys
@@ -40,14 +40,14 @@ import distutils.util
 import logging
 import os
 import subprocess
-import sys
 import time
 import unittest
 import collections
 from argparse import ArgumentParser
 
-if sys.version_info[0]<3:
+if sys.version_info[0] < 3:
     raise RuntimeError("Python2 is not more supported")
+
 
 class StreamHandlerUnittestReady(logging.StreamHandler):
     """The unittest class TestResult redefine sys.stdout/err to capture
@@ -489,13 +489,6 @@ if options.qt_binding:
     binding = options.qt_binding.lower()
     if binding == "pyqt4":
         logger.info("Force using PyQt4")
-        if sys.version < "3.0.0":
-            try:
-                import sip
-                sip.setapi("QString", 2)
-                sip.setapi("QVariant", 2)
-            except Exception:
-                logger.warning("Cannot set sip API")
         import PyQt4.QtCore  # noqa
     elif binding == "pyqt5":
         logger.info("Force using PyQt5")
