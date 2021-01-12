@@ -90,9 +90,11 @@ except ImportError as error:
 else:
     # Register splitPixel integrators
     IntegrationMethod(1, "full", "histogram", "cython", old_method="splitpixel",
-                      class_funct_legacy=(None, splitPixel.fullSplit1D))
+                      class_funct_legacy=(None, splitPixel.fullSplit1D),
+                      class_funct_ng=(None, splitPixel.fullSplit1D_engine))
     IntegrationMethod(2, "pseudo", "histogram", "cython", old_method="splitpixel",
-                      class_funct_legacy=(None, splitPixel.fullSplit2D))
+                      class_funct_legacy=(None, splitPixel.fullSplit2D),
+                      class_funct_ng=(None, splitPixel.pseudoSplit2D_engine))
 
 try:
     from .ext import splitBBoxCSR  # IGNORE:F0401

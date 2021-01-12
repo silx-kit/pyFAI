@@ -519,7 +519,6 @@ def histogram2d_engine(cnumpy.ndarray pos0 not None,
         int bins0, bins1, i, j, bin0, bin1, c
         int size = pos0.size
         int nchan = weights.shape[weights.ndim - 1]
-    print(size, nchan, weights.size, weights.size//nchan, weights.ndim)
     assert weights.ndim > 1, "Weights have been preprocessed"
     assert pos0.size == (weights.size // nchan), "Weights have the right size"
     assert nchan <= 4, "Maximum of 4 chanels"
@@ -592,8 +591,8 @@ def histogram2d_engine(cnumpy.ndarray pos0 not None,
                     out_signal[i, j] = out_data[i, j, 0]
                     
     return Integrate2dtpl(bin_centers0, bin_centers1,
-                          numpy.asarray(out_signal).T,
-                          numpy.asarray(out_error).T if nchan >= 3 else None,
-                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
+                          numpy.asarray(out_signal),
+                          numpy.asarray(out_error) if nchan >= 3 else None,
+                          numpy.asarray(out_data[...,0]), numpy.asarray(out_data[...,1]), numpy.asarray(out_data[...,2]), numpy.asarray(out_data[...,3]))
 
 histogram2d_preproc = histogram2d_engine 

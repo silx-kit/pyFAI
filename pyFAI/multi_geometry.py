@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2020"
+__date__ = "12/01/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -94,7 +94,7 @@ class MultiGeometry(object):
                     correctSolidAngle=True,
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
-                    normalization_factor=None, all=False,
+                    normalization_factor=None,
                     lst_mask=None, lst_flat=None,
                     method="splitpixel"):
         """Perform 1D azimuthal integration
@@ -133,59 +133,54 @@ class MultiGeometry(object):
             lst_flat = [None] * len(self.ais)
         elif isinstance(lst_flat, numpy.ndarray):
             lst_flat = [lst_flat] * len(self.ais)
-        sum_ = numpy.zeros(npt, dtype=numpy.float64)
-        count = numpy.zeros(npt, dtype=numpy.float64)
-        sigma2 = None
-        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat):
-            res = ai.integrate1d(data, npt=npt,
-                                 correctSolidAngle=correctSolidAngle,
-                                 variance=variance, error_model=error_model,
-                                 polarization_factor=polarization_factor,
-                                 radial_range=self.radial_range,
-                                 azimuth_range=self.azimuth_range,
-                                 method=method, unit=self.unit, safe=True,
-                                 mask=mask, flat=flat)
+        signal = numpy.zeros(npt, dtype=numpy.float64)
+        normalization = numpy.zeros_like(signal)
+        count = numpy.zeros_like(signal)
+        variance = None
+        for ai, data, monitor, var, mask, flat in zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat):
+            res = ai.integrate1d_ng(data, npt=npt,
+                                    correctSolidAngle=correctSolidAngle,
+                                    variance=var, error_model=error_model,
+                                    polarization_factor=polarization_factor,
+                                    radial_range=self.radial_range,
+                                    azimuth_range=self.azimuth_range,
+                                    method=method, unit=self.unit, safe=True,
+                                    mask=mask, flat=flat, normalization_factor=monitor)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
-            count += res.count * sac
-            sum_ += res.sum / monitor
+            count += res.count
+            normalization += res.sum_normalization * sac
+            signal += res.sum_signal
             if res.sigma is not None:
-                if sigma2 is None:
-                    sigma2 = numpy.zeros(npt, dtype=numpy.float64)
-                sigma2 += (res.count*res.sigma) ** 2 / monitor
+                if variance is None:
+                    variance = res.sum_variance.astype(dtype=numpy.float64)  # explicit copy
+                else:
+                    variance += res.sum_variance
 
         tiny = numpy.finfo("float32").tiny
-        norm = numpy.maximum(count, tiny)
+        norm = numpy.maximum(normalization, tiny)
         invalid = count <= 0.0
-        I = sum_ / norm
+        I = signal / norm
         I[invalid] = self.empty
 
-        if sigma2 is not None:
-            sigma = numpy.sqrt(sigma2) / norm
+        if variance is not None:
+            sigma = numpy.sqrt(variance) / norm
             sigma[invalid] = self.empty
             result = Integrate1dResult(res.radial, I, sigma)
         else:
-
             result = Integrate1dResult(res.radial, I)
+        result._set_compute_engine(res.compute_engine)
         result._set_unit(self.unit)
-        result._set_sum(sum_)
+        result._set_sum_signal(signal)
+        result._set_sum_normalization(normalization)
+        result._set_sum_variance(variance)
         result._set_count(count)
-
-        if all:
-            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
-            out = {"I": I,
-                   "radial": res.radial,
-                   "unit": self.unit,
-                   "count": count,
-                   "sum": sum_}
-            return out
-
         return result
 
     def integrate2d(self, lst_data, npt_rad=1800, npt_azim=3600,
                     correctSolidAngle=True,
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
-                    normalization_factor=None, all=False, lst_mask=None,
+                    normalization_factor=None, lst_mask=None,
                     lst_flat=None, method="splitpixel"):
         """Performs 2D azimuthal integration of multiples frames, one for each geometry
 
@@ -224,52 +219,50 @@ class MultiGeometry(object):
 
         method = IntegrationMethod.select_one_available(method, dim=2)
 
-        sum_ = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
-        count = numpy.zeros_like(sum_)
-        sigma2 = None
-        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat):
-            res = ai.integrate2d(data, npt_rad=npt_rad, npt_azim=npt_azim,
-                                 correctSolidAngle=correctSolidAngle,
-                                 variance=variance, error_model=error_model,
-                                 polarization_factor=polarization_factor,
-                                 radial_range=self.radial_range,
-                                 azimuth_range=self.azimuth_range,
-                                 method=method, unit=self.unit, safe=True,
-                                 mask=mask, flat=flat)
+        signal = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
+        count = numpy.zeros_like(signal)
+        normalization = numpy.zeros_like(signal)
+        variance = None
+
+        for ai, data, monitor, var, mask, flat in zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat):
+            res = ai.integrate2d_ng(data, npt_rad=npt_rad, npt_azim=npt_azim,
+                                    correctSolidAngle=correctSolidAngle,
+                                    variance=var, error_model=error_model,
+                                    polarization_factor=polarization_factor,
+                                    radial_range=self.radial_range,
+                                    azimuth_range=self.azimuth_range,
+                                    method=method, unit=self.unit, safe=True,
+                                    mask=mask, flat=flat, normalization_factor=monitor)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
-            count += res.count * sac
-            sum_ += res.sum / monitor
-            if res.sigma is not None:
-                if sigma2 is None:
-                    sigma2 = count = numpy.zeros_like(sum_)
-                sigma2 += (res.sigma*res.count) ** 2 / monitor
+            print(res.compute_engine, count.shape, res.count.shape, res.radial.size, res.azimuthal.size)
+            count += res.count
+            signal += res.sum_signal
+            normalization += res.sum_normalization * sac
+            if var is not None:
+                if variance is None:
+                    variance = res.sum_variance.astype(numpy.float64)  # explicit copy !
+                else:
+                    variance += res.sum_variance
 
         tiny = numpy.finfo("float32").tiny
-        norm = numpy.maximum(count, tiny)
+        norm = numpy.maximum(normalization, tiny)
         invalid = count <= 0
-        I = sum_ / norm
+        I = signal / norm
         I[invalid] = self.empty
 
-        if sigma2 is not None:
-            sigma = numpy.sqrt(sigma2) / norm
+        if variance is not None:
+            sigma = numpy.sqrt(variance) / norm
             sigma[invalid] = self.empty
             result = Integrate2dResult(I, res.radial, res.azimuthal, sigma)
         else:
             result = Integrate2dResult(I, res.radial, res.azimuthal)
-        result._set_sum(sum_)
-        result._set_count(count)
+        result._set_sum(signal)
+        result._set_compute_engine(res.compute_engine)
         result._set_unit(self.unit)
-
-        if all:
-            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
-            out = {"I": I,
-                   "radial": res.radial,
-                   "azimuthal": res.azimuthal,
-                   "count": count,
-                   "sum": sum_,
-                   "unit": self.unit}
-            return out
-
+        result._set_sum_signal(signal)
+        result._set_sum_normalization(normalization)
+        result._set_sum_variance(variance)
+        result._set_count(count)
         return result
 
     def set_wavelength(self, value):

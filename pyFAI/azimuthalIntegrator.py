@@ -62,7 +62,7 @@ else:
     preproc = preproc_cy
 
 from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
-                                splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR
+                                splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, histogram_engine
 from .engines import Engine
 
 # Few constants for engine names:
@@ -550,7 +550,7 @@ class AzimuthalIntegrator(Geometry):
                             polarization_factor=None, dark=None, flat=None,
                             method="csr", unit=units.Q, safe=True,
                             normalization_factor=1.0,
-                            block_size=32, profile=False, all=False, metadata=None):
+                            block_size=32, profile=False, metadata=None):
         """Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
@@ -601,12 +601,9 @@ class AzimuthalIntegrator(Geometry):
         :param all: if true return a dictionary with many more parameters (deprecated, please refer to the documentation of Integrate1dResult).
         :type all: bool
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
-        :return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
+        :return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided)
         :rtype: Integrate1dResult, dict
         """
-        if all:
-            logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
-
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         assert method.dimension == 1
         unit = units.to_unit(unit)
@@ -1063,20 +1060,6 @@ class AzimuthalIntegrator(Geometry):
             writer = DefaultAiWriter(filename, self)
             writer.write(result)
 
-        if all:
-            logger.warning("integrate1d(all=True) is deprecated. "
-                           "Please refer to the documentation of Integrate1dResult")
-
-            res = {"radial": result.radial,
-                   "unit": result.unit,
-                   "I": result.intensity,
-                   "sum": result.sum,
-                   "count": result.count
-                   }
-            if result.sigma is not None:
-                res["sigma"] = result.sigma
-            return res
-
         return result
 
     _integrate1d_legacy = integrate1d_legacy
@@ -1503,10 +1486,10 @@ class AzimuthalIntegrator(Geometry):
             else:
                 raise RuntimeError("Should not arrive here")
             if variance is None:
-                result = Integrate1dResult(intpl.bins * unit.scale,
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity)
             else:
-                result = Integrate1dResult(intpl.bins * unit.scale,
+                result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.error)
                 result._set_sum_variance(intpl.variance)
@@ -1641,13 +1624,13 @@ class AzimuthalIntegrator(Geometry):
         return result
 
     @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
-    def _integrate2d_legacy(self, data, npt_rad, npt_azim=360,
+    def integrate2d_legacy(self, data, npt_rad, npt_azim=360,
                             filename=None, correctSolidAngle=True, variance=None,
                             error_model=None, radial_range=None, azimuth_range=None,
                             mask=None, dummy=None, delta_dummy=None,
                             polarization_factor=None, dark=None, flat=None,
                             method=None, unit=units.Q, safe=True,
-                            normalization_factor=1.0, all=False, metadata=None):
+                            normalization_factor=1.0, metadata=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/chi(deg) by default
 
@@ -1699,9 +1682,6 @@ class AzimuthalIntegrator(Geometry):
         :return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         :rtype: Integrate2dResult, dict
         """
-        if all:
-            logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
-
         method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
         assert method.dimension == 2
         npt = (npt_rad, npt_azim)
@@ -2061,30 +2041,17 @@ class AzimuthalIntegrator(Geometry):
             writer = DefaultAiWriter(filename, self)
             writer.write(result)
 
-        if all:
-            logger.warning("integrate2d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
-
-            res = {"I": result.intensity,
-                   "radial": result.radial,
-                   "azimuthal": result.azimuthal,
-                   "count": result.count,
-                   "sum": result.sum
-                   }
-            if result.sigma is not None:
-                res["sigma"] = result.sigma
-            return res
-
         return result
 
-    integrate2d = _integrate2d_legacy
+    integrate2d = _integrate2d_legacy = integrate2d_legacy
 
-    def _integrate2d_ng(self, data, npt_rad, npt_azim=360,
+    def integrate2d_ng(self, data, npt_rad, npt_azim=360,
                         filename=None, correctSolidAngle=True, variance=None,
                         error_model=None, radial_range=None, azimuth_range=None,
                         mask=None, dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None,
                         method="bbox", unit=units.Q, safe=True,
-                        normalization_factor=1.0, all=False, metadata=None):
+                        normalization_factor=1.0, metadata=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/chi(deg) by default
 
@@ -2130,15 +2097,12 @@ class AzimuthalIntegrator(Geometry):
         :type safe: bool
         :param normalization_factor: Value of a normalization monitor
         :type normalization_factor: float
-        :param all: if true, return many more intermediate results as a dict (deprecated, please refer to the documentation of Integrate2dResult).
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
-        :type all: bool
         :return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         :rtype: Integrate2dResult, dict
         """
-        if all:
-            logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
-        method = method.lower()
+        method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
+        assert method.dimension == 2
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
@@ -2208,7 +2172,7 @@ class AzimuthalIntegrator(Geometry):
         norm2d = None
         var2d = None
 
-        if (I is None) and ("lut" in method):
+        if (I is None) and (method.algo_lower == "lut"):
             if EXT_LUT_ENGINE not in self.engines:
                 engine = self.engines[EXT_LUT_ENGINE] = Engine()
             else:
@@ -2296,7 +2260,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                normalization_factor=normalization_factor
                                                                                )
 
-        if (I is None) and ("csr" in method):
+        if (I is None) and (method.algo_lower == "csr"):
             if EXT_CSR_ENGINE not in self.engines:
                 engine = self.engines[EXT_CSR_ENGINE] = Engine()
             else:
@@ -2330,12 +2294,7 @@ class AzimuthalIntegrator(Geometry):
                 error = False
                 if reset:
                     logger.info("AI.integrate2d: Resetting integrator because %s", reset)
-                    if "no" in method:
-                        split = "no"
-                    elif "full" in method:
-                        split = "full"
-                    else:
-                        split = "bbox"
+                    split = method.split_lower
                     try:
                         integr = self.setup_CSR(shape, npt, mask,
                                                 radial_range, azimuth_range,
@@ -2346,13 +2305,13 @@ class AzimuthalIntegrator(Geometry):
                         logger.warning("MemoryError: falling back on default forward implementation")
                         integr = None
                         self.reset_engines()
-                        method = self.DEFAULT_METHOD
+                        method = self.DEFAULT_METHOD_2D
                         error = True
                     else:
                         error = False
                         engine.set_engine(integr)
                 if not error:
-                    if ("ocl" in method) and ocl_azim_csr:
+                    if (method.impl_lower == "opencl") and ocl_azim_csr:
                         if OCL_CSR_ENGINE in self.engines:
                             ocl_engine = self.engines[OCL_CSR_ENGINE]
                         else:
@@ -2390,11 +2349,11 @@ class AzimuthalIntegrator(Geometry):
                                                                                polarization=polarization,
                                                                                normalization_factor=normalization_factor)
 
-        if (I is None) and ("splitpix" in method):
+        if (I is None) and method.method[1:4] in  [ ("pseudo", "histogram", "cython"), ("full", "histogram", "cython")]:
             if splitPixel is None:
                 logger.warning("splitPixel is not available;"
                                " falling back on default method")
-                method = self.DEFAULT_METHOD
+                method = self.DEFAULT_METHOD_2D
             else:
                 logger.debug("integrate2d uses SplitPixel implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
@@ -2415,8 +2374,8 @@ class AzimuthalIntegrator(Geometry):
                                                   empty=dummy if dummy is not None else self._empty,
                                                   variance=variance)
                 I = res.intensity
-                bins_rad = res.bins0
-                bins_azim = res.bins1
+                bins_rad = res.radial
+                bins_azim = res.azimuthal
                 signal2d = res.signal
                 norm2d = res.normalization
                 count = res.count
@@ -2424,7 +2383,7 @@ class AzimuthalIntegrator(Geometry):
                     sigma = res.error
                     var2d = res.variance
 
-        if (I is None) and ("bbox" in method):
+        if (I is None) and method.method[1:4] == ("bbox", "histogram", "cython"):
             if splitBBox is None:
                 logger.warning("splitBBox is not available;"
                                " falling back on cython histogram method")
@@ -2480,31 +2439,31 @@ class AzimuthalIntegrator(Geometry):
             if azimuth_range is None:
                 azimuth_range = [pos1.min(), pos1.max()]
 
-            prep = preproc(data,
-                           dark=dark,
-                           flat=flat,
-                           solidangle=solidangle,
-                           polarization=polarization,
-                           absorption=None,
-                           mask=mask,
-                           dummy=dummy,
-                           delta_dummy=delta_dummy,
-                           normalization_factor=normalization_factor,
-                           empty=self._empty,
-                           split_result=True,
-                           variance=variance,
-                           # dark_variance=None,
-                           # poissonian=False,
-                           dtype=numpy.float32)
             if method.method[1:4] == ("no", "histogram", "cython"):
                 logger.debug("integrate2d uses Cython histogram implementation")
-                res = histogram.histogram2d_preproc(pos0=pos0,
-                                                    pos1=pos1,
-                                                    weights=prep,
-                                                    bins=(npt_rad, npt_azim),
-                                                    split=False,
-                                                    empty=dummy if dummy is not None else self._empty,
-                                                    )
+                prep = preproc(data,
+                               dark=dark,
+                               flat=flat,
+                               solidangle=solidangle,
+                               polarization=polarization,
+                               absorption=None,
+                               mask=mask,
+                               dummy=dummy,
+                               delta_dummy=delta_dummy,
+                               normalization_factor=normalization_factor,
+                               empty=self._empty,
+                               split_result=True,
+                               variance=variance,
+                               # dark_variance=None,
+                               # poissonian=False,
+                               dtype=numpy.float32)
+                res = histogram.histogram2d_engine(pos0=pos0,
+                                                   pos1=pos1,
+                                                   weights=prep,
+                                                   bins=(npt_rad, npt_azim),
+                                                   split=False,
+                                                   empty=dummy if dummy is not None else self._empty,
+                                                   )
                 I = res.intensity
                 bins_azim = res.azimuthal
                 bins_rad = res.radial
@@ -2516,33 +2475,37 @@ class AzimuthalIntegrator(Geometry):
                     var2d = res.variance
             else:
                 logger.debug("integrate2d uses Numpy implementation")
-                signal = prep[:,:, 0].ravel()
-                norm = prep[:,:, -1].ravel()
-                norm2d, b, c = numpy.histogram2d(pos1,
-                                                 pos0,
-                                                 (npt_azim, npt_rad),
-                                                 weights=norm,
-                                                 range=[azimuth_range, radial_range])
-                bins_azim = (b[1:] + b[:-1]) / 2.0
-                bins_rad = (c[1:] + c[:-1]) / 2.0
-                valid = norm2d > 0
+                res = histogram_engine.histogram2d_engine(radial=pos0,
+                                                          azimuthal=pos1,
+                                                          npt=(npt_rad, npt_azim),
+                                                          raw=data,
+                                                          dark=dark,
+                                                          flat=flat,
+                                                          solidangle=solidangle,
+                                                          polarization=polarization,
+                                                          absorption=None,
+                                                          mask=mask,
+                                                          dummy=dummy,
+                                                          delta_dummy=delta_dummy,
+                                                          normalization_factor=normalization_factor,
+                                                          empty=self._empty,
+                                                          split_result=False,
+                                                          variance=variance,
+                                                          dark_variance=None,
+                                                          poissonian=False,
+                                                          radial_range=radial_range,
+                                                          azimuth_range=azimuth_range)
+                I = res.intensity
+                bins_azim = res.azimuthal
+                bins_rad = res.radial
+                signal2d = res.signal
+                norm2d = res.normalization
+                count = res.count
+                if variance is not None:
+                    sigma = res.error
+                    var2d = res.variance
 
-                signal2d, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
-                                                   weights=signal,
-                                                   range=[azimuth_range, radial_range])
-                I = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float32)
-                I += dummy if (dummy is not None) else self._empty
-                I[valid] = signal2d[valid] / norm2d[valid]
-
-                if prep.shape[-1] == 3:
-                    var2d, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
-                                                    weights=prep[:,:, 1].ravel(),
-                                                    range=[azimuth_range, radial_range])
-                    sigma = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float32)
-                    sigma += dummy if (dummy is not None) else self._empty
-                    sigma[valid] = numpy.sqrt(var2d[valid]) / norm2d[valid]
-
-        # I know I make copies ....
+        # Duplicate arrays on purpose ....
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
 
@@ -2567,20 +2530,9 @@ class AzimuthalIntegrator(Geometry):
             writer = DefaultAiWriter(filename, self)
             writer.write(result)
 
-        if all:
-            logger.warning("integrate2d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
-
-            res = {"I": result.intensity,
-                   "radial": result.radial,
-                   "azimuthal": result.azimuthal,
-                   "count": result.count,
-                   "sum": result.sum
-                   }
-            if result.sigma is not None:
-                res["sigma"] = result.sigma
-            return res
-
         return result
+
+    _integrate2d_ng = integrate2d_ng
 
     @deprecated(since_version="0.14", reason="Use the class DefaultAiWriter")
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
