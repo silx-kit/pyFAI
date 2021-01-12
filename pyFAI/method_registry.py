@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2020"
+__date__ = "11/01/2021"
 __status__ = "development"
 
 from logging import getLogger
@@ -338,7 +338,8 @@ class IntegrationMethod:
 
     def __init__(self, dim, split, algo, impl,
                  target=None, target_name=None, target_type=None,
-                 class_funct=None, old_method=None, extra=None):
+                 class_funct_legacy=None, class_funct_ng=None,
+                 old_method=None, extra=None):
         """Constructor of the class, registering the methods.
 
         DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI
@@ -350,7 +351,8 @@ class IntegrationMethod:
         :param impl: "python", "cython" or "opencl" to describe the implementation
         :param target: the OpenCL device as 2-tuple of indices
         :param target_name: Full name of the OpenCL device
-        :param class_funct: class used and function to be used
+        :param class_funct_legacy: class used and function to be used for legacy integrator
+        :param class_funct_ng: class used and function to be used for new generation integrator
         :param old_method: former method name (legacy)
         :param extra: extra informations
         """
@@ -364,8 +366,14 @@ class IntegrationMethod:
         self.target = target
         self.target_name = target_name or str(target)
         self.target_type = target_type
-        if class_funct:
-            self.class_funct = ClassFunction(*class_funct)
+        if class_funct_legacy:
+            self.class_funct_legacy = ClassFunction(*class_funct_legacy)
+        else:
+            self.class_funct_legacy = None
+        if class_funct_ng:
+            self.class_funct_ng = ClassFunction(*class_funct_ng)
+        else:
+            self.class_funct_ng = None
         self.old_method_name = old_method
         self.extra = extra
         self.method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)

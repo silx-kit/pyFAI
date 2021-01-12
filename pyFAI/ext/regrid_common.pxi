@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/06/2020"
+__date__ = "11/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -236,14 +236,33 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
 
 
 @cython.boundscheck(False)
-cdef void update_2d_accumulator(acc_t[:, :, ::1] out_data,
-                                int bin0,
-                                int bin1,
-                                preproc_t value,
-                                double weight=1.0) nogil:
+cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
+                                       int bin,
+                                       preproc_t value,
+                                       double weight=1.0) nogil:
+    """Update a 1D array at given position with the proper values 
+    
+    :param out_data: output 1D+(,4) accumulator
+    :param bin: in which bin assign this data
+    :param value: 4-uplet with (signal, variance, nomalisation, count)
+    :param weight: weight associated with this value 
+    :return: Nothing
+    """
+    out_data[bin, 0] += value.signal * weight
+    out_data[bin, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin, 2] += value.norm * weight
+    out_data[bin, 3] += value.count * weight
+
+
+@cython.boundscheck(False)
+cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
+                                       int bin0,
+                                       int bin1,
+                                       preproc_t value,
+                                       double weight=1.0) nogil:
     """Update a 2D array at given position with the proper values 
     
-    :param out_data: 2D+1 accululator
+    :param out_data: 2D+1 accumulator
     :param bin0, bin1: where to assign data 
     :return: Nothing
     """

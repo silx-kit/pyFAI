@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+#cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/04/2020"
+__date__ = "12/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -95,7 +95,7 @@ def histoBBox1d(weights,
     assert delta_pos0.size == size, "delta_pos0.size == size"
     assert bins > 1, "at lease one bin"
     cdef:
-        ssize_t  idx, bin0_max, bin0_min
+        Py_ssize_t  idx, bin0_max, bin0_min
         data_t data, cdummy = 0.0, ddummy = 0.0
         acc_t epsilon = 1e-10,
         position_t pos0_min = 0.0, pos1_min = 0.0, pos0_max = 0.0, pos1_max = 0.0
@@ -179,7 +179,7 @@ def histoBBox1d(weights,
     if pos1Range is not None:
         assert pos1.size == size, "pos1.size == size"
         assert delta_pos1.size == size, "delta_pos1.size == size"
-        check_pos1 = 1
+        check_pos1 = True
         cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
         pos1_min, pos1_maxin = pos1Range
@@ -209,11 +209,11 @@ def histoBBox1d(weights,
             if fbin0_max >= bins:
                 bin0_max = bins - 1
             else:
-                bin0_max = < ssize_t > fbin0_max
+                bin0_max = < Py_ssize_t > fbin0_max
             if fbin0_min < 0:
                 bin0_min = 0
             else:
-                bin0_min = < ssize_t > fbin0_min
+                bin0_min = < Py_ssize_t > fbin0_min
 
             if do_dark:
                 data -= cdark[idx]
@@ -256,6 +256,252 @@ def histoBBox1d(weights,
     bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
 
     return bin_centers, numpy.asarray(out_merge), numpy.asarray(sum_data), numpy.asarray(sum_count)
+
+
+def histoBBox1d_engine(weights,
+                       pos0,
+                       delta_pos0,
+                       pos1=None,
+                       delta_pos1=None,
+                       size_t bins=100,
+                       pos0Range=None,
+                       pos1Range=None,
+                       dummy=None,
+                       delta_dummy=None,
+                       mask=None,
+                       variance=None,
+                       dark=None,
+                       flat=None,
+                       solidangle=None,
+                       polarization=None,
+                       bint allow_pos0_neg=False,
+                       data_t empty=0.0,
+                       double normalization_factor=1.0):
+
+    """
+    Calculates histogram of pos0 (tth) weighted by weights
+
+    Splitting is done on the pixel's bounding box like fit2D
+    New implementation with variance propagation
+
+    :param weights: array with intensities
+    :param pos0: 1D array with pos0: tth or q_vect
+    :param delta_pos0: 1D array with delta pos0: max center-corner distance
+    :param pos1: 1D array with pos1: chi
+    :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+    :param bins: number of output bins
+    :param pos0Range: minimum and maximum  of the 2th range
+    :param pos1Range: minimum and maximum  of the chi range
+    :param dummy: value for bins without pixels & value of "no good" pixels
+    :param delta_dummy: precision of dummy value
+    :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    :param dark: array (of float32) with dark noise to be subtracted (or None)
+    :param flat: array (of float32) with flat-field image
+    :param solidangle: array (of float32) with solid angle corrections
+    :param polarization: array (of float32) with polarization corrections
+    :param empty: value of output bins without any contribution when dummy is None
+    :param normalization_factor: divide the result by this value
+    :return: named tuple with "signal", ["error"], "bins0", "bins1", "propagated"
+
+    """
+    cdef Py_ssize_t size = weights.size
+    assert pos0.size == size, "pos0.size == size"
+    assert delta_pos0.size == size, "delta_pos0.size == size"
+    assert bins > 1, "at lease one bin"
+
+    cdef:
+        Py_ssize_t i, j, idx
+        # Related to data: single precision
+        data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
+        data_t cdummy, ddummy=0.0
+
+        # Related to positions: double precision
+        position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
+        position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)        
+        position_t[::1] cpos0_upper = numpy.empty(size, dtype=position_d)
+        position_t[::1] cpos0_lower = numpy.empty(size, dtype=position_d)
+        position_t[::1] cpos1, dpos1, cpos1_upper, cpos1_lower
+        acc_t[:, ::1] out_data = numpy.zeros((bins, 4), dtype=acc_d)
+        data_t[::1] out_intensity = numpy.zeros(bins, dtype=data_d)
+        data_t[::1] out_error
+        mask_t[::1] cmask
+
+        position_t c0, c1, d0, d1
+        position_t min0, max0, min1, max1, delta
+        position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
+        position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max,
+        acc_t norm
+        acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
+        Py_ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
+        bint is_valid, check_mask = False, check_dummy = False, do_variance = False, check_pos1=False
+        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
+        preproc_t value
+
+    if variance is not None:
+        assert variance.size == size, "variance size"
+        do_variance = True
+        cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
+        out_error = numpy.zeros(bins, dtype=data_d)
+
+    if mask is not None:
+        assert mask.size == size, "mask size"
+        check_mask = True
+        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
+
+    if (dummy is not None) and (delta_dummy is not None):
+        check_dummy = True
+        cdummy = float(dummy)
+        ddummy = float(delta_dummy)
+    elif (dummy is not None):
+        cdummy = float(dummy)
+        ddummy = 0.0
+        check_dummy = True
+    else:
+        cdummy = float(empty)
+        ddummy = 0.0
+        check_dummy = False
+
+    if dark is not None:
+        assert dark.size == size, "dark current array size"
+        do_dark = True
+        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
+    if flat is not None:
+        assert flat.size == size, "flat-field array size"
+        do_flat = True
+        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
+    if polarization is not None:
+        do_polarization = True
+        assert polarization.size == size, "polarization array size"
+        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+    if solidangle is not None:
+        do_solidangle = True
+        assert solidangle.size == size, "Solid angle array size"
+        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
+
+    #Single pass Min-Max
+    pos0_min = cpos0[0]
+    pos0_max = cpos0[0]
+    with nogil:
+        for idx in range(size):
+            if (check_mask and cmask[idx]):
+                continue
+            min0 = cpos0[idx] - dpos0[idx]
+            max0 = cpos0[idx] + dpos0[idx]
+            cpos0_upper[idx] = max0
+            cpos0_lower[idx] = min0
+            if max0 > pos0_max:
+                pos0_max = max0
+            if min0 < pos0_min:
+                pos0_min = min0
+            
+    if pos0Range is not None:
+        pos0_min, pos0_maxin = pos0Range
+    else:
+        pos0_maxin = pos0_max
+
+    if (not allow_pos0_neg) and pos0_min < 0:
+        pos0_min = 0
+    pos0_max = calc_upper_bound(pos0_maxin)
+
+    if pos1Range is not None:
+        assert pos1.size == size, "pos1.size == size"
+        assert delta_pos1.size == size, "delta_pos1.size == size"
+        check_pos1 = True
+        cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
+        dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
+        pos1_min, pos1_maxin = pos1Range
+        pos1_max = calc_upper_bound(pos1_maxin)
+
+    delta = (pos0_max - pos0_min) / (<position_t> bins)
+
+    #Actual histogramming
+    with nogil:
+        for idx in range(size):
+            if (check_mask) and cmask[idx]:
+                continue
+
+            is_valid = preproc_value_inplace(&value,
+                                 cdata[idx],
+                                 variance=cvariance[idx] if do_variance else 0.0,
+                                 dark=cdark[idx] if do_dark else 0.0,
+                                 flat=cflat[idx] if do_flat else 1.0,
+                                 solidangle=csolidangle[idx] if do_solidangle else 1.0,
+                                 polarization=cpolarization[idx] if do_polarization else 1.0,
+                                 absorption=1.0,
+                                 mask=0, #previously checked
+                                 dummy=cdummy,
+                                 delta_dummy=ddummy,
+                                 check_dummy=check_dummy,
+                                 normalization_factor=normalization_factor,
+                                 dark_variance=0.0)
+            if not is_valid:
+                continue
+
+            min0 = cpos0[idx] - dpos0[idx]
+            max0 = cpos0[idx] + dpos0[idx]  
+
+            if (max0 < pos0_min) or (min0 > pos0_maxin):
+                continue
+                      
+            if check_pos1 and (((cpos1[idx] + dpos1[idx]) < pos1_min) or ((cpos1[idx] - dpos1[idx]) > pos1_max)):
+                continue
+        
+            fbin0_min = get_bin_number(min0, pos0_min, delta)
+            fbin0_max = get_bin_number(max0, pos0_min, delta)
+
+            if fbin0_max >= bins:
+                bin0_max = bins - 1
+            else:
+                bin0_max = < Py_ssize_t > fbin0_max
+            if fbin0_min < 0:
+                bin0_min = 0
+            else:
+                bin0_min = < Py_ssize_t > fbin0_min
+            
+            # Here starts the pixel distribution
+            if bin0_min == bin0_max:
+                # All pixel is within a single bin
+                update_1d_accumulator(out_data, bin0_max, value, 1.0)
+
+            else:
+                # we have pixel splitting.
+                inv_area = 1.0 / (fbin0_max - fbin0_min)
+
+                delta_left = < float > (bin0_min + 1) - fbin0_min
+                delta_right = fbin0_max - (<float> bin0_max)
+
+                update_1d_accumulator(out_data, bin0_min, value, inv_area * delta_left)
+                update_1d_accumulator(out_data, bin0_max, value, inv_area * delta_right)
+                for idx in range(bin0_min + 1, bin0_max):
+                    update_1d_accumulator(out_data, idx, value, inv_area)
+
+        for i in range(bins):
+            norm = out_data[i, 2]
+            if norm > 0.0:
+                out_intensity[i] = out_data[i, 0] / norm
+                if do_variance:
+                    out_error[i] = sqrt(out_data[i, 1]) / norm
+            else:
+                out_intensity[i] = empty
+                if do_variance:
+                    out_error[i] = empty
+
+    bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
+
+    # TODO ... remove Integrate1dWithErrorResult namedtuple
+    if do_variance:
+        result = Integrate1dWithErrorResult(bin_centers,numpy.asarray(out_intensity),
+                                            numpy.asarray(out_error),
+                                            numpy.asarray(out_data).view(dtype=prop_d))
+    else:
+        result = Integrate1dResult(bin_centers,
+                                   numpy.asarray(out_intensity),
+                                   numpy.asarray(out_data).view(dtype=prop_d))
+
+    return result
+
+histoBBox1d_ng = histoBBox1d_engine
 
 
 def histoBBox2d(weights,
@@ -310,7 +556,7 @@ def histoBBox2d(weights,
     :return: I, bin_centers0, bin_centers1, weighted histogram(2D), unweighted histogram (2D)
     """
 
-    cdef ssize_t bins0, bins1, i, j, idx
+    cdef Py_ssize_t bins0, bins1, i, j, idx
     cdef size_t size = weights.size
     assert pos0.size == size, "pos0.size == size"
     assert pos1.size == size, "pos1.size == size"
@@ -350,7 +596,7 @@ def histoBBox2d(weights,
         position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max,
         acc_t data, epsilon = 1e-10
         acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
-        ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
+        Py_ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
         bint check_mask = False, check_dummy = False
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
 
@@ -484,10 +730,10 @@ def histoBBox2d(weights,
             fbin1_min = get_bin_number(min1, pos1_min, delta1)
             fbin1_max = get_bin_number(max1, pos1_min, delta1)
 
-            bin0_min = <ssize_t> fbin0_min
-            bin0_max = <ssize_t> fbin0_max
-            bin1_min = <ssize_t> fbin1_min
-            bin1_max = <ssize_t> fbin1_max
+            bin0_min = <Py_ssize_t> fbin0_min
+            bin0_max = <Py_ssize_t> fbin0_max
+            bin1_min = <Py_ssize_t> fbin1_min
+            bin1_max = <Py_ssize_t> fbin1_max
 
             if bin0_min == bin0_max:
                 # No spread along dim0
@@ -576,28 +822,28 @@ def histoBBox2d(weights,
             numpy.asarray(sum_count).T)
 
 
-def histoBBox2d_ng(weights,
-                   pos0,
-                   delta_pos0,
-                   pos1,
-                   delta_pos1,
-                   bins=(100, 36),
-                   pos0Range=None,
-                   pos1Range=None,
-                   dummy=None,
-                   delta_dummy=None,
-                   mask=None,
-                   variance=None,
-                   dark=None,
-                   flat=None,
-                   solidangle=None,
-                   polarization=None,
-                   bint allow_pos0_neg=0,
-                   bint chiDiscAtPi=1,
-                   float empty=0.0,
-                   double normalization_factor=1.0,
-                   bint clip_pos1=1
-                   ):
+def histoBBox2d_engine(weights,
+                       pos0,
+                       delta_pos0,
+                       pos1,
+                       delta_pos1,
+                       bins=(100, 36),
+                       pos0Range=None,
+                       pos1Range=None,
+                       dummy=None,
+                       delta_dummy=None,
+                       mask=None,
+                       variance=None,
+                       dark=None,
+                       flat=None,
+                       solidangle=None,
+                       polarization=None,
+                       bint allow_pos0_neg=False,
+                       bint chiDiscAtPi=1,
+                       data_t empty=0.0,
+                       double normalization_factor=1.0,
+                       bint clip_pos1=1
+                       ):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
@@ -628,7 +874,7 @@ def histoBBox2d_ng(weights,
     :return: named tuple with "signal", ["error"], "bins0", "bins1", "propagated"
     """
 
-    cdef ssize_t bins0, bins1, i, j, idx
+    cdef Py_ssize_t bins0, bins1, i, j, idx
     cdef size_t size = weights.size
     assert pos0.size == size, "pos0.size == size"
     assert pos1.size == size, "pos1.size == size"
@@ -668,7 +914,7 @@ def histoBBox2d_ng(weights,
         position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max,
         acc_t norm
         acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
-        ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
+        Py_ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
         bint check_mask = False, check_dummy = False, do_variance = False, is_valid
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
         preproc_t value
@@ -817,10 +1063,10 @@ def histoBBox2d_ng(weights,
             fbin1_min = get_bin_number(min1, pos1_min, delta1)
             fbin1_max = get_bin_number(max1, pos1_min, delta1)
 
-            bin0_min = <ssize_t> fbin0_min
-            bin0_max = <ssize_t> fbin0_max
-            bin1_min = <ssize_t> fbin1_min
-            bin1_max = <ssize_t> fbin1_max
+            bin0_min = <Py_ssize_t> fbin0_min
+            bin0_max = <Py_ssize_t> fbin0_max
+            bin1_min = <Py_ssize_t> fbin1_min
+            bin1_max = <Py_ssize_t> fbin1_max
 
             if bin0_min == bin0_max:
                 # No spread along dim0
@@ -901,3 +1147,5 @@ def histoBBox2d_ng(weights,
                                    numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
 
     return result
+
+histoBBox2d_ng = histoBBox2d_engine
