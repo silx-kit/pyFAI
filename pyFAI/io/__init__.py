@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "12/01/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -646,7 +646,7 @@ class DefaultAiWriter(Writer):
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit="2th_deg",
                has_mask=None, has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None,
-               metadata=None):
+               metadata=None, format_="edf"):
         """This method save the result of a 2D integration.
 
         :param filename: the filename used to save the 2D histogram
@@ -671,7 +671,7 @@ class DefaultAiWriter(Writer):
         :param metadata: JSON serializable dictionary containing the metadata
         """
         if fabio is None:
-            raise RuntimeError("FabIO module is needed to save EDF images")
+            raise RuntimeError("FabIO module is needed to save images")
         dim1_unit = units.to_unit(dim1_unit)
 
         # Remove \n and \t)
@@ -703,11 +703,14 @@ class DefaultAiWriter(Writer):
                 else:
                     header[key] = value
         try:
-            img = fabio.edfimage.edfimage(data=I.astype("float32"),
-                                          header=header)
+            des_format = fabio.fabioformats.factory(format_ + "image")
+            img = des_format.__class__(data=I, header=header)
 
             if error is not None:
-                img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
+                try:
+                    img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
+                except Exception:
+                    logger.warning("Multi-frame format needed to save errors, saving as %s", img)
             img.write(filename)
         except IOError:
             logger.error("IOError while writing %s", filename)
