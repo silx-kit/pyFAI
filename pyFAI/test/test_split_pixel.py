@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "12/01/2021"
 
 import unittest
 import numpy
@@ -180,59 +180,59 @@ class TestSplitBBoxNg(unittest.TestCase):
     def test_split_bbox_2d(self):
         # radial position:
         tth_legacy = self.results["histoBBox2d_legacy"][1]
-        tth_ng = self.results["histoBBox2d_ng"][2]
+        tth_ng = self.results["histoBBox2d_ng"].radial
         self.assertEqual(abs(tth_legacy - tth_ng).max(), 0, "radial position is the same")
 
         # azimuthal position:
         chi_legacy = self.results["histoBBox2d_legacy"][2]
-        chi_ng = self.results["histoBBox2d_ng"][3]
+        chi_ng = self.results["histoBBox2d_ng"].azimuthal
         self.assertEqual(abs(chi_legacy - chi_ng).max(), 0, "azimuthal position is the same")
 
         # pixel count:
         count_legacy = self.results["histoBBox2d_legacy"][4]
-        count_ng = self.results["histoBBox2d_ng"][4]["count"]
+        count_ng = self.results["histoBBox2d_ng"].count
 
         if abs(count_ng).max() == 0:
             print(splitBBox)
             print(count_legacy)
             print(count_ng)
-            print("prop", self.results["histoBBox2d_ng"][4])
-            print("pos1", self.results["histoBBox2d_ng"][3])
-            print("pos0", self.results["histoBBox2d_ng"][2])
-            print("err", self.results["histoBBox2d_ng"][1])
-            print("int", self.results["histoBBox2d_ng"][0])
+#             print("prop", self.results["histoBBox2d_ng"][4])
+#             print("pos1", self.results["histoBBox2d_ng"][3])
+#             print("pos0", self.results["histoBBox2d_ng"][2])
+#             print("err", self.results["histoBBox2d_ng"][1])
+#             print("int", self.results["histoBBox2d_ng"][0])
         self.assertEqual(abs(count_legacy - count_ng).max(), 0, "count is the same")
         # same for normalisation ... in this case
-        count_ng = self.results["histoBBox2d_ng"][4]["norm"]
+        count_ng = self.results["histoBBox2d_ng"].normalization
         self.assertEqual(abs(count_legacy - count_ng).max(), 0, "norm is old-count")
 
         # Weighted signal:
         weighted_legacy = self.results["histoBBox2d_legacy"][3]
-        signal = self.results["histoBBox2d_ng"][4]["signal"]
+        signal = self.results["histoBBox2d_ng"].signal
         self.assertEqual(abs(signal - weighted_legacy).max(), 0, "Weighted is the same")
 
         # resulting intensity validation
         int_legacy = self.results["histoBBox2d_legacy"][0]
-        int_ng = self.results["histoBBox2d_ng"][0]
+        int_ng = self.results["histoBBox2d_ng"].intensity
         self.assertEqual(abs(int_legacy - int_ng).max(), 0, "intensity is the same")
 
     def test_split_pixel_2d(self):
         # radial position:
         tth_legacy = self.results["fullSplit2D_legacy"][1]
-        tth_ng = self.results["fullSplit2D_ng"][2]
+        tth_ng = self.results["fullSplit2D_ng"].radial
         self.assertEqual(abs(tth_legacy - tth_ng).max(), 0, "radial position is the same")
 
         # azimuthal position:
         chi_legacy = self.results["fullSplit2D_legacy"][2]
-        chi_ng = self.results["fullSplit2D_ng"][3]
+        chi_ng = self.results["fullSplit2D_ng"].azimuthal
         self.assertEqual(abs(chi_legacy - chi_ng).max(), 0, "azimuthal position is the same")
 
         # pixel count:
         count_legacy = self.results["fullSplit2D_legacy"][4]
-        count_ng = self.results["fullSplit2D_ng"][4]["count"]
+        count_ng = self.results["fullSplit2D_ng"].count
         self.assertLess(abs(count_legacy - count_ng).mean(), 1, "count is almost the same")
         # same for normalisation ... in this case
-        count_ng = self.results["fullSplit2D_ng"][4]["norm"]
+        count_ng = self.results["fullSplit2D_ng"].normalization
         self.assertLess(abs(count_legacy - count_ng).mean(), 1, "norm is almost old-count")
 
 #         # Weighted signal:
