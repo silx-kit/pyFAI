@@ -669,6 +669,7 @@ class DefaultAiWriter(Writer):
         :param normalization_factor: the monitor value
         :type normalization_factor: float, None
         :param metadata: JSON serializable dictionary containing the metadata
+        :param format_: file-format to be used (FabIO format)
         """
         if fabio is None:
             raise RuntimeError("FabIO module is needed to save images")
