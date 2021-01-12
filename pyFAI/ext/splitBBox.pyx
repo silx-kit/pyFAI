@@ -301,8 +301,7 @@ def histoBBox1d_engine(weights,
     :param polarization: array (of float32) with polarization corrections
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
-    :return: named tuple with "signal", ["error"], "bins0", "bins1", "propagated"
-
+    :return: namedtuple with "position intensity error signal variance normalization count"
     """
     cdef Py_ssize_t size = weights.size
     assert pos0.size == size, "pos0.size == size"
@@ -489,17 +488,9 @@ def histoBBox1d_engine(weights,
 
     bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
 
-    # TODO ... remove Integrate1dWithErrorResult namedtuple
-    if do_variance:
-        result = Integrate1dWithErrorResult(bin_centers,numpy.asarray(out_intensity),
-                                            numpy.asarray(out_error),
-                                            numpy.asarray(out_data).view(dtype=prop_d))
-    else:
-        result = Integrate1dResult(bin_centers,
-                                   numpy.asarray(out_intensity),
-                                   numpy.asarray(out_data).view(dtype=prop_d))
+    return Integrate1dtpl(bin_centers, numpy.asarray(out_intensity), numpy.asarray(out_error) if do_variance else None, 
+                          numpy.asarray(out_data[:, 0]), numpy.asarray(out_data[:, 1]), numpy.asarray(out_data[:, 2]), numpy.asarray(out_data[:, 3]))
 
-    return result
 
 histoBBox1d_ng = histoBBox1d_engine
 
@@ -870,8 +861,7 @@ def histoBBox2d_engine(weights,
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
     :param clip_pos1: clip the azimuthal range to -pi/pi (or 0-2pi), set to False to deactivate behavior
-
-    :return: named tuple with "signal", ["error"], "bins0", "bins1", "propagated"
+    :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
 
     cdef Py_ssize_t bins0, bins1, i, j, idx
@@ -1133,19 +1123,10 @@ def histoBBox2d_engine(weights,
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-    # TODO ... remove Integrate2dWithErrorResult namedtuple
-    if do_variance:
-        result = Integrate2dWithErrorResult(numpy.asarray(out_intensity).T,
-                                            numpy.asarray(out_error).T,
-                                            bin_centers0,
-                                            bin_centers1,
-                                            numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
-    else:
-        result = Integrate2dResult(numpy.asarray(out_intensity).T,
-                                   bin_centers0,
-                                   bin_centers1,
-                                   numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
+    return Integrate2dtpl(bin_centers0, bin_centers1,
+                          numpy.asarray(out_intensity).T,
+                          numpy.asarray(out_error).T if do_variance else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
 
-    return result
 
 histoBBox2d_ng = histoBBox2d_engine

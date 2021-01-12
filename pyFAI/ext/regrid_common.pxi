@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "11/01/2021"
+__date__ = "12/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -125,11 +125,7 @@ cdef:
 
 
 from collections import namedtuple
-# TODO ... remove those namedtuple once splitpixel and splitbbox are upgraded ! 
-Integrate1dResult = namedtuple("Integrate1dResult", ["bins", "signal", "propagated"])
-Integrate2dResult = namedtuple("Integrate2dResult", ["signal", "bins0", "bins1", "propagated"])
-Integrate1dWithErrorResult = namedtuple("Integrate1dWithErrorResult", ["bins", "signal", "error", "propagated"])
-Integrate2dWithErrorResult = namedtuple("Integrate2dWithErrorResult", ["signal", "error", "bins0", "bins1", "propagated"])
+from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
 @cython.cdivision(True)

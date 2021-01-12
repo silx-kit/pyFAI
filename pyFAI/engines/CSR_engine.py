@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "12/01/2021"
 __status__ = "development"
 
 import logging
@@ -323,7 +323,7 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
                     dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
             cnt = abs(prep[..., 0] / prep[..., 2] - avg2d) / std2d
             msk2d = numpy.logical_and(numpy.logical_not(numpy.isfinite(cnt)), cnt > cutoff)
-            prep[msk2d, :] = 0
+            prep[msk2d,:] = 0
             res = self._csr.dot(prep_flat)
         msk = res[:, 2] == 0
         avg = res[:, 0] / res[:, 2]
@@ -391,7 +391,7 @@ class CsrIntegrator2d(CSRIntegrator):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
-        :return: Integrate2dResult or Integrate2dWithErrorResult object depending is variance is provided 
+        :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
         
         """
         if variance is None:

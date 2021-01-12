@@ -38,7 +38,6 @@ import logging
 logger = logging.getLogger(__name__)
 import warnings
 import threading
-from collections import OrderedDict
 import gc
 from math import pi, log
 import numpy
@@ -62,7 +61,8 @@ except ImportError as err:
 else:
     preproc = preproc_cy
 
-from .load_integrators import ocl_azim_csr, ocl_azim_lut
+from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
+                                splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR
 from .engines import Engine
 
 # Few constants for engine names:
@@ -542,7 +542,7 @@ class AzimuthalIntegrator(Geometry):
                                                 )
 
     @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
-    def _integrate1d_legacy(self, data, npt, filename=None,
+    def integrate1d_legacy(self, data, npt, filename=None,
                             correctSolidAngle=True,
                             variance=None, error_model=None,
                             radial_range=None, azimuth_range=None,
@@ -1079,6 +1079,8 @@ class AzimuthalIntegrator(Geometry):
 
         return result
 
+    _integrate1d_legacy = integrate1d_legacy
+
     def integrate1d_ng(self, data, npt, filename=None,
                         correctSolidAngle=True,
                         variance=None, error_model=None,
@@ -1203,7 +1205,7 @@ class AzimuthalIntegrator(Geometry):
                     if cython_integr.size != data.size:
                         cython_reset = "input image size changed"
                     if cython_integr.empty != empty:
-                        cython_reset = "empty value changed "
+                        cython_reset = "empty value changed"
                     if (mask is not None) and (not cython_integr.check_mask):
                         cython_reset = "mask but %s was without mask" % method.algo_lower.upper()
                     elif (mask is None) and (cython_integr.check_mask):
@@ -1277,7 +1279,7 @@ class AzimuthalIntegrator(Geometry):
                         if integr.size != data.size:
                             reset = "input image size changed"
                         if integr.empty != empty:
-                            reset = "empty value changed "
+                            reset = "empty value changed"
                         if (mask is not None) and (not integr.check_mask):
                             reset = "mask but %s was without mask" % method.algo_lower.upper()
                         elif (mask is None) and (integr.check_mask):
@@ -1418,21 +1420,21 @@ class AzimuthalIntegrator(Geometry):
                     if integr.size != data.size:
                         reset = "input image size changed"
                     if integr.empty != empty:
-                        reset = "empty value changed "
+                        reset = "empty value changed"
                 if reset:
                     logger.info("ai.integrate1d: Resetting integrator because %s", reset)
                     pos0 = self.array_from_unit(shape, "center", unit, scale=False)
                     azimuthal = self.chiArray(shape)
                     try:
-                        integr = method.class_funct.klass(pos0,
-                                                          npt,
-                                                          empty=empty,
-                                                          azimuthal=azimuthal,
-                                                          unit=unit,
-                                                          mask=mask,
-                                                          mask_checksum=mask_crc,
-                                                          platformid=method.target[0],
-                                                          deviceid=method.target[1])
+                        integr = method.class_funct_ng.klass(pos0,
+                                                             npt,
+                                                             empty=empty,
+                                                             azimuthal=azimuthal,
+                                                             unit=unit,
+                                                             mask=mask,
+                                                             mask_checksum=mask_crc,
+                                                             platformid=method.target[0],
+                                                             deviceid=method.target[1])
                     except MemoryError:
                         logger.warning("MemoryError: falling back on default forward implementation")
                         self.reset_engines()
@@ -1502,18 +1504,17 @@ class AzimuthalIntegrator(Geometry):
                 raise RuntimeError("Should not arrive here")
             if variance is None:
                 result = Integrate1dResult(intpl.bins * unit.scale,
-                                           intpl.signal)
+                                           intpl.intensity)
             else:
                 result = Integrate1dResult(intpl.bins * unit.scale,
-                                           intpl.signal,
+                                           intpl.intensity,
                                            intpl.error)
+                result._set_sum_variance(intpl.variance)
             result._set_compute_engine(integr.__module__ + "." + integr.__name__)
             result._set_unit(unit)
-            result._set_sum_signal(intpl.propagated["signal"])
-            result._set_sum_normalization(intpl.propagated["norm"])
-            if variance is not None:
-                result._set_sum_variance(intpl.propagated["variance"])
-            result._set_count(intpl.propagated["count"])
+            result._set_sum_signal(intpl.signal)
+            result._set_sum_normalization(intpl.normalization)
+            result._set_count(intpl.count)
 
         else:
             raise RuntimeError("Fallback method ... should no more be used: %s" % method)
@@ -1575,7 +1576,7 @@ class AzimuthalIntegrator(Geometry):
         return result
 
     _integrate1d_ng = integrate1d_ng
-    integrate1d = integrate1d_ng
+    integrate1d = integrate1d_legacy
 
     def integrate_radial(self, data, npt, npt_rad=100,
                          correctSolidAngle=True,
@@ -2413,16 +2414,15 @@ class AzimuthalIntegrator(Geometry):
                                                   chiDiscAtPi=self.chiDiscAtPi,
                                                   empty=dummy if dummy is not None else self._empty,
                                                   variance=variance)
-                I = res.signal
-                bins_azim = res.bins1
+                I = res.intensity
                 bins_rad = res.bins0
-                prop2d = res.propagated
-                signal2d = prop2d["signal"]
-                norm2d = prop2d["norm"]
-                count = prop2d["count"]
+                bins_azim = res.bins1
+                signal2d = res.signal
+                norm2d = res.normalization
+                count = res.count
                 if variance is not None:
                     sigma = res.error
-                    var2d = prop2d["variance"]
+                    var2d = res.variance
 
         if (I is None) and ("bbox" in method):
             if splitBBox is None:
@@ -2454,16 +2454,15 @@ class AzimuthalIntegrator(Geometry):
                                                chiDiscAtPi=self.chiDiscAtPi,
                                                empty=dummy if dummy is not None else self._empty,
                                                variance=variance)
-                I = res.signal
-                bins_azim = res.bins1
+                I = res.intensity
                 bins_rad = res.bins0
-                prop2d = res.propagated
-                signal2d = prop2d["signal"]
-                norm2d = prop2d["norm"]
-                count = prop2d["count"]
+                bins_azim = res.bins1
+                signal2d = res.signal
+                norm2d = res.normalization
+                count = res.count
                 if variance is not None:
                     sigma = res.error
-                    var2d = prop2d["variance"]
+                    var2d = res.variance
 
         if (I is None):
             logger.debug("integrate2d uses cython implementation")
@@ -2499,23 +2498,22 @@ class AzimuthalIntegrator(Geometry):
                            dtype=numpy.float32)
             if method.method[1:4] == ("no", "histogram", "cython"):
                 logger.debug("integrate2d uses Cython histogram implementation")
-                res = histogram.histogram2d_preproc(pos0=pos1,
-                                                    pos1=pos0,
+                res = histogram.histogram2d_preproc(pos0=pos0,
+                                                    pos1=pos1,
                                                     weights=prep,
-                                                    bins=(npt_azim, npt_rad),
+                                                    bins=(npt_rad, npt_azim),
                                                     split=False,
                                                     empty=dummy if dummy is not None else self._empty,
                                                     )
-                I = res.signal
-                bins_azim = res.bins0
-                bins_rad = res.bins1
-                prop2d = res.propagated
-                signal2d = prop2d["signal"]
-                norm2d = prop2d["norm"]
-                count = prop2d["count"]
+                I = res.intensity
+                bins_azim = res.azimuthal
+                bins_rad = res.radial
+                signal2d = res.signal
+                norm2d = res.normalization
+                count = res.count
                 if variance is not None:
                     sigma = res.error
-                    var2d = prop2d["variance"]
+                    var2d = res.variance
             else:
                 logger.debug("integrate2d uses Numpy implementation")
                 signal = prep[:,:, 0].ravel()
@@ -3091,7 +3089,6 @@ class AzimuthalIntegrator(Geometry):
         else:
             polarization, polarization_checksum = self.polarization(data.shape, polarization_factor, with_checksum=True)
 
-        print(method, method.algo_lower)
         if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."
             # Prepare LUT if needed!

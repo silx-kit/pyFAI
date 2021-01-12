@@ -112,7 +112,7 @@ else:
                       class_funct_legacy=(splitBBoxCSR.HistoBBox2d, splitBBoxCSR.HistoBBox2d.integrate))
     from .engines import CSR_engine as py_CSR_engine
     IntegrationMethod(1, "no", "CSR", "python",
-                      class_funct_legacy=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+                      class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
     IntegrationMethod(2, "no", "CSR", "python",
                       class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
     # error propagation does not work properly with pixel splitting for now
@@ -197,11 +197,10 @@ if ocl:
     else:
         for ids, name in devices.items():
             IntegrationMethod(1, "no", "histogram", "OpenCL",
-                              class_funct_legacy=(ocl_azim.OCL_Histogram1d, ocl_azim.OCL_Histogram1d.integrate),
-                              # class_funct_ng=(ocl_azim.OCL_Histogram1d, ocl_azim.OCL_Histogram1d.integrate_ng),
+                              class_funct_ng=(ocl_azim.OCL_Histogram1d, ocl_azim.OCL_Histogram1d.integrate),
                               target=ids, target_name=name[0], target_type=name[1])
             IntegrationMethod(2, "no", "histogram", "OpenCL",
-                              class_funct_legacy=(ocl_azim.OCL_Histogram2d, ocl_azim.OCL_Histogram2d.integrate),
+                              class_funct_ng=(ocl_azim.OCL_Histogram2d, ocl_azim.OCL_Histogram2d.integrate),
                               target=ids, target_name=name[0], target_type=name[1])
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
@@ -213,22 +212,27 @@ if ocl:
             for ids, name in devices.items():
                 IntegrationMethod(1, "bbox", "CSR", "OpenCL",
                                   class_funct_legacy=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "bbox", "CSR", "OpenCL",
                                   class_funct_legacy=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(1, "no", "CSR", "OpenCL",
                                   class_funct_legacy=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "no", "CSR", "OpenCL",
                                   class_funct_legacy=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
         if splitPixelFullCSR:
             for ids, name in devices.items():
                 IntegrationMethod(1, "full", "CSR", "OpenCL",
                                   class_funct_legacy=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
-                # IntegrationMethod(2, "full", "CSR", "OpenCL",
+                # IntegrationMethod(2, "full", "CSR", "OpenCL", TODO: implement full-csr-cython !
                 #                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
                 #                   target=ids, target_name=name[0], target_type=name[1])
 
@@ -242,23 +246,29 @@ if ocl:
             for ids, name in devices.items():
                 IntegrationMethod(1, "bbox", "LUT", "OpenCL",
                                   class_funct_legacy=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "bbox", "LUT", "OpenCL",
                                   class_funct_legacy=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(1, "no", "LUT", "OpenCL",
                                   class_funct_legacy=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "no", "LUT", "OpenCL",
                                   class_funct_legacy=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
         if splitPixelFullLUT:
             for ids, name in devices.items():
                 IntegrationMethod(1, "full", "LUT", "OpenCL",
                                   class_funct_legacy=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
                 IntegrationMethod(2, "full", "LUT", "OpenCL",
                                   class_funct_legacy=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_lut.OCL_LUT_Integrator, ocl_azim_lut.OCL_LUT_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
 
     try:

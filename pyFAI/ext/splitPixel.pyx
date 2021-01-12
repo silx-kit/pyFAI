@@ -383,8 +383,8 @@ def fullSplit1D_engine(pos not None,
     :param solidangle: array (of float64) with flat image
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
-
-    :return: 2theta, I, weighted histogram, unweighted histogram
+    
+    :return: namedtuple with "position intensity error signal variance normalization count"
     """
     cdef Py_ssize_t  size = weights.size
     if pos.ndim > 3:  # create a view
@@ -597,17 +597,8 @@ def fullSplit1D_engine(pos not None,
                                  pos0_max - 0.5 * dpos,
                                  bins)
 
-    # TODO ... remove Integrate1dWithErrorResult namedtuple
-    if do_variance:
-        result = Integrate1dWithErrorResult(bin_centers,numpy.asarray(out_intensity),
-                                            numpy.asarray(out_error),
-                                            numpy.asarray(out_data).view(dtype=prop_d))
-    else:
-        result = Integrate1dResult(bin_centers,
-                                   numpy.asarray(out_intensity),
-                                   numpy.asarray(out_data).view(dtype=prop_d))
-
-    return result
+    return Integrate1dtpl(bin_centers, numpy.asarray(out_intensity), numpy.asarray(out_error) if do_variance else None, 
+                          numpy.asarray(out_data[:, 0]), numpy.asarray(out_data[:, 1]), numpy.asarray(out_data[:, 2]), numpy.asarray(out_data[:, 3]))
 
 fullSplit1D_ng = fullSplit1D_engine
 
@@ -962,9 +953,7 @@ def pseudoSplit2D_engine(pos not None,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
-    :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-
-    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+    :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
 
     cdef Py_ssize_t bins0 = 0, bins1 = 0, size = weights.size
@@ -1256,19 +1245,10 @@ def pseudoSplit2D_engine(pos not None,
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-    # TODO ... remove Integrate2dWithErrorResult namedtuple
-    if do_variance:
-        result = Integrate2dWithErrorResult(numpy.asarray(out_intensity).T,
-                                            numpy.asarray(out_error).T,
-                                            bin_centers0, 
-                                            bin_centers1,
-                                            numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
-    else:
-        result = Integrate2dResult(numpy.asarray(out_intensity).T,
-                                   bin_centers0, 
-                                   bin_centers1,
-                                   numpy.asarray(out_data).view(dtype=prop_d).reshape((bins0, bins1)).T)
 
-    return result 
+    return Integrate2dtpl(bin_centers0, bin_centers1,
+                          numpy.asarray(out_intensity).T,
+                          numpy.asarray(out_error).T if do_variance else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
 
 pseudoSplit2D_ng = pseudoSplit2D_engine
