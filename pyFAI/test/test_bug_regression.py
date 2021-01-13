@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2021"
+__date__ = "13/01/2021"
 
 import sys
 import os
@@ -114,7 +114,7 @@ Wavelength: 7e-11
         logger.debug(ai.mask.shape)
         logger.debug(ai.detector.pixel1)
         logger.debug(ai.detector.pixel2)
-        ai.integrate1d(self.data, 2000)
+        ai.integrate1d_ng(self.data, 2000)
 
 
 class TestBug211(unittest.TestCase):
@@ -191,7 +191,7 @@ class TestBugRegression(unittest.TestCase):
         det = detectors.ImXPadS10()
         ai = AzimuthalIntegrator(dist=1, detector=det)
         data = numpy.random.random(det.shape)
-        _result = ai.integrate1d(data, 100, unit="r_mm")
+        _result = ai.integrate1d_ng(data, 100, unit="r_mm")
         import copy
         ai2 = copy.copy(ai)
         self.assertNotEqual(id(ai), id(ai2), "copy instances are different")
@@ -211,10 +211,10 @@ class TestBugRegression(unittest.TestCase):
         wl1 = 1e-10
         wl2 = 2e-10
         ai.wavelength = wl1
-        q1, i1 = ai.integrate1d(data, 1000)
+        q1, i1 = ai.integrate1d_ng(data, 1000)
         # ai.reset()
         ai.wavelength = wl2
-        q2, i2 = ai.integrate1d(data, 1000)
+        q2, i2 = ai.integrate1d_ng(data, 1000)
         dq = (abs(q1 - q2).max())
         _di = (abs(i1 - i2).max())
         # print(dq)
@@ -352,7 +352,7 @@ class TestBugRegression(unittest.TestCase):
         ai = AzimuthalIntegrator(detector=detector, wavelength=1e-10)
         ai.setFit2D(1000, shape[1] / 2, shape[0] / 2)
         data = numpy.ones(shape)
-        nb_pix = ai.integrate1d(data, 100).count.sum()
+        nb_pix = ai.integrate1d_ng(data, 100).count.sum()
         self.assertAlmostEqual(nb_pix, numpy.prod(shape), msg="All pixels are counted", delta=0.01)
 
         delta = 45
@@ -360,9 +360,15 @@ class TestBugRegression(unittest.TestCase):
         ai.setChiDiscAtPi()
         angles = numpy.arange(-180, 400, 90)
 
-        for method in ["python", "cython", "csr", "lut"]:
+        for method in [("no", "histogram", "python"),
+                       ("no", "histogram", "cython"),
+                       ("no", "csr", "cython"),
+                       ("no", "lut", "cython")]:
+#             print(method)
             for angle in angles:
-                res = ai.integrate1d(data, 100, azimuth_range=(angle - delta, angle + delta), method=method).count.sum()
+                res = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method)
+                # print(res.compute_engine, res.count)
+                res = res.count.sum()
                 if angle in (-180, 180):
                     # We expect only half of the pixel
                     self.assertLess(abs(res / target - 0.5), 0.1, "ChiDiscAtPi we expect half the pixels to be missing %s %s %s=%s/2" % (method, angle, res, target))
@@ -371,10 +377,13 @@ class TestBugRegression(unittest.TestCase):
 
         # Now with the azimuthal integrator set with the chi discontinuity at 0
         ai.setChiDiscAtZero()
-        for method in ["python", "cython", "csr", "lut"]:
-            print(method)
+        for method in [("no", "histogram", "python"),
+                       ("no", "histogram", "cython"),
+                       ("no", "csr", "cython"),
+                       ("no", "lut", "cython")]:
+#             print(method)
             for angle in angles:
-                res = ai.integrate1d(data, 100, azimuth_range=(angle - delta, angle + delta), method=method).count.sum()
+                res = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method).count.sum()
                 if angle in (0, 360):
                     # We expect only half of the pixel
                     self.assertLess(abs(res / target - 0.5), 0.1, "ChiDiscAtZero we expect half the pixels to be missing %s %s %s=%s/2" % (method, angle, res, target))

@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/07/2020"
+__date__ = "13/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -124,10 +124,14 @@ class HistoBBox1d(CsrIntegrator):
 
         if pos1Range is not None:
             assert pos1.size == self.size, "pos1 size"
-            assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
-            self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
-            self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
+            if delta_pos0 is None:
+                "No pixel splitting"
+                self.cpos1_max = self.cpos1_min = numpy.ascontiguousarray((pos1).ravel(), dtype=position_d)
+            else:
+                assert delta_pos1.size == self.size, "delta_pos1.size == self.size"    
+                self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
+                self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
             self.pos1_min, pos1_maxin = pos1Range
             self.pos1_max = calc_upper_bound(<position_t> pos1_maxin)
         else:
