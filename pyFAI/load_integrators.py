@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2021"
+__date__ = "13/01/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -279,4 +279,4 @@ if ocl:
         logger.error("Unable to import pyFAI.opencl.sort: %s", error)
         ocl_sort = None
 else:
-    ocl_azim = ocl_azim_csr = ocl_azim_lut = None
+    ocl_sort = ocl_azim = ocl_azim_csr = ocl_azim_lut = None
