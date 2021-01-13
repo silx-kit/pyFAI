@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2021"
+__date__ = "13/01/2021"
 
 import unittest
 import logging
@@ -65,6 +65,7 @@ class TestMultiGeometry(unittest.TestCase):
                    ]
         cls.mg = MultiGeometry(cls.ais, radial_range=cls.range, unit="2th_deg")
         cls.N = 390
+        cls.method = ("full", "histogram", "cython")
 
     @classmethod
     def tearDownClass(cls):
@@ -85,12 +86,13 @@ class TestMultiGeometry(unittest.TestCase):
 
     def test_integrate1d(self):
         res = self.ai.integrate1d_ng(self.data, radial_range=self.range,
-                                                           npt=self.N, unit="2th_deg", method="splitpixel",
+                                                           npt=self.N, unit="2th_deg",
+                                                           method=self.method,
                                                            variance=numpy.ones_like(self.data))
-        print(res.compute_engine)
         tth_ref, I_ref, sigma_ref = res
         lst_var = [numpy.ones_like(i) for i in self.lst_data]
-        obt = self.mg.integrate1d(self.lst_data, self.N, lst_variance=lst_var)
+        obt = self.mg.integrate1d(self.lst_data, self.N, lst_variance=lst_var,
+                                  method=self.method)
         tth_obt, I_obt, sigma_obt = obt
 
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
@@ -105,7 +107,7 @@ class TestMultiGeometry(unittest.TestCase):
         tth_ref, I_ref = self.ai.integrate1d_ng(self.data, radial_range=self.range,
                                                 npt=self.N, unit="2th_deg", method="splitpixel",
                                                 polarization_factor=0.9)
-        obt = self.mg.integrate1d(self.lst_data, self.N, polarization_factor=0.9)
+        obt = self.mg.integrate1d(self.lst_data, self.N, polarization_factor=0.9, method=self.method)
         tth_obt, I_obt = obt
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
@@ -113,8 +115,9 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertTrue(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate2d(self):
-        ref = self.ai.integrate2d_ng(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180, 180), unit="2th_deg", method="splitpixel")
-        obt = self.mg.integrate2d(self.lst_data, self.N, 360)
+        ref = self.ai.integrate2d_ng(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180, 180), unit="2th_deg",
+                                     method=self.method)
+        obt = self.mg.integrate2d(self.lst_data, self.N, 360, method=self.method)
         self.assertEqual(abs(ref.radial - obt.radial).max(), 0, "Bin position is the same")
         self.assertEqual(abs(ref.azimuthal - obt.azimuthal).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6

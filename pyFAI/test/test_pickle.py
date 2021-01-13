@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2021"
+__date__ = "13/01/2021"
 
 import numpy
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
@@ -75,7 +75,7 @@ class TestPickle(unittest.TestCase):
         self.assertEqual(mar.binning, marr.binning, "restored binning OK")
 
     def test_AzimuthalIntegrator_pickle(self):
-        spectra = self.ai.integrate1d(self.data, self.npt)  # force lut generation
+        spectra = self.ai.integrate1d_ng(self.data, self.npt)  # force lut generation
         ais = dumps(self.ai)
         newai = loads(ais)  # type: AzimuthalIntegrator
         self.assertEqual(newai._cached_array.keys(), self.ai._cached_array.keys())
@@ -87,7 +87,7 @@ class TestPickle(unittest.TestCase):
                 self.assertEqual(newai._cached_array[key], self.ai._cached_array[key],
                                  "key %s is the same: %s %s" %
                                  (key, newai._cached_array[key], self.ai._cached_array[key]))
-        for first, second in zip(newai.integrate1d(self.data, self.npt), spectra):
+        for first, second in zip(newai.integrate1d_ng(self.data, self.npt), spectra):
             self.assertEqual(abs(first - second).max(), 0, "Spectra are the same")
 
     def test_Calibrant(self):
