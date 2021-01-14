@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3
-##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/01/2021"
+__date__ = "14/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -105,8 +105,8 @@ cdef inline void integrate(acc_t[::1] buffer, Py_ssize_t buffer_size, position_t
                 buffer[istop0] += calc_area(floor(stop0 + 1), stop0, slope, intercept)
 
 
-def fullSplit1D(cnumpy.ndarray pos not None,
-                cnumpy.ndarray weights not None,
+def fullSplit1D(pos,
+                weights,
                 Py_ssize_t bins=100,
                 pos0Range=None,
                 pos1Range=None,
@@ -583,7 +583,8 @@ def fullSplit1D_engine(pos not None,
                 buffer[bin0_min:bin0_max] = 0
         for i in range(bins):
             norm = out_data[i, 2]
-            if norm > 0.0:
+            if out_data[i, 3] > 0.0:
+                "test on count as norm can be negative "
                 out_intensity[i] = out_data[i, 0] / norm
                 if do_variance:
                     out_error[i] = sqrt(out_data[i, 1]) / norm
@@ -603,8 +604,8 @@ def fullSplit1D_engine(pos not None,
 fullSplit1D_ng = fullSplit1D_engine
 
 
-def fullSplit2D(cnumpy.ndarray pos not None,
-                cnumpy.ndarray weights not None,
+def fullSplit2D(pos,
+                weights,
                 bins not None,
                 pos0Range=None,
                 pos1Range=None,
@@ -1234,7 +1235,8 @@ def pseudoSplit2D_engine(pos not None,
         for i in range(bins0):
             for j in range(bins1):
                 norm = out_data[i, j, 2]
-                if norm > 0.0:
+                if out_data[i, j, 3] > 0.0: 
+                    "Test on count rather than than norm which can be negative" 
                     out_intensity[i, j] = out_data[i, j, 0] / norm
                     if do_variance:
                         out_error[i, j] = sqrt(out_data[i, j, 1]) / norm

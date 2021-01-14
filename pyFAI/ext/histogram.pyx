@@ -38,7 +38,7 @@ Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jerome Kieffer"
-__date__ = "12/01/2021"
+__date__ = "14/01/2021"
 __license__ = "MIT"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -61,8 +61,8 @@ from ..containers import Integrate1dtpl, Integrate2dtpl
 _COMPILED_WITH_OPENMP = _openmp.COMPILED_WITH_OPENMP
 
 
-def _histogram_omp(cnumpy.ndarray pos not None,
-                   cnumpy.ndarray weights not None,
+def _histogram_omp(pos,
+                   weights,
                    int bins=100,
                    bin_range=None,
                    pixelSize_in_Pos=None,
@@ -155,8 +155,8 @@ def _histogram_omp(cnumpy.ndarray pos not None,
             numpy.asarray(out_count))
 
 
-def _histogram_nomp(cnumpy.ndarray pos,
-                    cnumpy.ndarray weights,
+def _histogram_nomp(pos,
+                    weights,
                     int bins=100,
                     bin_range=None,
                     pixelSize_in_Pos=None,
@@ -237,10 +237,10 @@ else:
     histogram = _histogram_nomp
 
 
-def histogram2d(cnumpy.ndarray pos0 not None,
-                cnumpy.ndarray pos1 not None,
-                bins not None,
-                cnumpy.ndarray weights not None,
+def histogram2d(pos0,
+                pos1,
+                bins,
+                weights,
                 split=False,
                 nthread=None,
                 data_t empty=0.0,
@@ -436,7 +436,7 @@ def histogram1d_engine(radial, int npt,
     """
     cdef:
         acc_t[:, ::1] res
-        cnumpy.float32_t[:, ::1] prep
+        float32_t[:, ::1] prep
         position_t[::1] position
         data_t[::1] histo_normalization, histo_signal, histo_variance, histo_count, intensity, error
         data_t norm, sig, var, cnt
@@ -493,10 +493,10 @@ def histogram1d_engine(radial, int npt,
                           numpy.asarray(histo_count))
 
 
-def histogram2d_engine(cnumpy.ndarray pos0 not None,
-                       cnumpy.ndarray pos1 not None,
+def histogram2d_engine(pos0,
+                       pos1,
                        bins,
-                       cnumpy.ndarray weights not None,
+                       weights,
                        bint split=False,
                        double empty=0.0,
                        ):

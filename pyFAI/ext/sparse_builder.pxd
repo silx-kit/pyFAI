@@ -26,15 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
-cimport numpy as cnumpy
 from libcpp cimport bool
 from libcpp.list cimport list as clist
-
+from .shared_types cimport int32_t, float32_t
 
 cdef packed struct pixel_t:
-    cnumpy.int32_t index
-    cnumpy.float32_t coef
+    int32_t index
+    float32_t coef
 
 
 cdef struct sparse_builder_private_t:
@@ -57,9 +55,9 @@ cdef class SparseBuilder(object):
     cdef object _mode
 
     cdef void *_create_bin(self) nogil
-    cdef void _copy_bin_indexes_to(self, int bin_id, cnumpy.int32_t *dest) nogil
-    cdef void _copy_bin_coefs_to(self, int bin_id, cnumpy.float32_t *dest) nogil
+    cdef void _copy_bin_indexes_to(self, int bin_id, int32_t *dest) nogil
+    cdef void _copy_bin_coefs_to(self, int bin_id, float32_t *dest) nogil
     cdef void _copy_bin_data_to(self, int bin_id, pixel_t *dest) nogil
 
     cdef int cget_bin_size(self, int bin_id) nogil
-    cdef void cinsert(self, int bin_id, int index, cnumpy.float32_t coef) nogil
+    cdef void cinsert(self, int bin_id, int index, float32_t coef) nogil

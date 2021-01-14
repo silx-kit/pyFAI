@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/01/2021"
+__date__ = "14/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -53,26 +53,29 @@ _numpy_1_12_py2_bug = ((sys.version_info.major == 2) and
 from .isnan cimport isnan
 from cython cimport floating
 from libc.math cimport fabs, M_PI, sqrt
-cimport numpy as cnumpy
+
+from .shared_types cimport int8_t, uint8_t, int16_t, uint16_t, \
+                           int32_t, uint32_t, int64_t, uint64_t,\
+                           float32_t, float64_t
 
 # How position are stored
-ctypedef cnumpy.float64_t position_t
+ctypedef float64_t position_t
 position_d = numpy.float64
 
 # How weights or data are stored 
-ctypedef cnumpy.float32_t data_t
+ctypedef float32_t data_t
 data_d = numpy.float32
 
 # how data are accumulated 
-ctypedef cnumpy.float64_t acc_t
+ctypedef float64_t acc_t
 acc_d = numpy.float64
 
 # type of the mask:
-ctypedef cnumpy.int8_t mask_t
+ctypedef int8_t mask_t
 mask_d = numpy.int8
 
 # type of the indexes:
-ctypedef cnumpy.int32_t index_t
+ctypedef int32_t index_t
 index_d = numpy.int32
 
 cdef struct lut_t:
@@ -100,14 +103,14 @@ else:
                          ('count', acc_d)])
 
 ctypedef fused any_int_t:
-    cnumpy.uint8_t
-    cnumpy.uint16_t
-    cnumpy.uint32_t
-    cnumpy.uint64_t
-    cnumpy.int8_t
-    cnumpy.int16_t
-    cnumpy.int32_t
-    cnumpy.int64_t
+    uint8_t
+    uint16_t
+    uint32_t
+    uint64_t
+    int8_t
+    int16_t
+    int32_t
+    int64_t
 
 
 cdef:
@@ -160,7 +163,7 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
                                        floating solidangle=1.0,
                                        floating polarization=1.0,
                                        floating absorption=1.0,
-                                       any_int_t mask=0,
+                                       mask_t mask=0,
                                        floating dummy=0.0,
                                        floating delta_dummy=0.0,
                                        bint check_dummy=False,

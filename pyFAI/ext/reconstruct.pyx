@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility,  France
+#    Copyright (C) 2014-2021 European Synchrotron Radiation Facility,  France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -37,16 +37,17 @@ image (masked) to be able to use more common algorithms.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/04/2020"
+__date__ = "14/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
 
 import cython
 import numpy
-cimport numpy as cnumpy
 from libc.math cimport sqrt, fabs
 from cython.parallel import prange
+from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
+                         int32_t, uint32_t, int64_t, uint64_t
 
 
 cdef float invert_distance(size_t i0, size_t i1, size_t p0, size_t p1) nogil:
@@ -54,7 +55,7 @@ cdef float invert_distance(size_t i0, size_t i1, size_t p0, size_t p1) nogil:
 
 
 cdef inline float processPoint(float[:, ::1] data,
-                               cnumpy.int8_t[:, ::1] mask,
+                               int8_t[:, ::1] mask,
                                size_t p0,
                                size_t p1,
                                size_t d0,
@@ -105,8 +106,8 @@ cdef inline float processPoint(float[:, ::1] data,
     return sum / count
 
 
-def reconstruct(cnumpy.ndarray data not None, 
-                cnumpy.ndarray mask=None, 
+def reconstruct(data, 
+                mask=None, 
                 dummy=None, 
                 delta_dummy=None):
     """
@@ -125,7 +126,7 @@ def reconstruct(cnumpy.ndarray data not None,
         ssize_t d1 = data.shape[1]
         ssize_t p0, p1
         float[:, ::1] cdata
-        cnumpy.int8_t[:, ::1] cmask 
+        int8_t[:, ::1] cmask 
         bint is_masked, do_dummy
         float cdummy, cddummy, value
         float[:, ::1] out = numpy.zeros_like(data)

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3
-##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-#cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/01/2021"
+__date__ = "14/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -477,7 +477,8 @@ def histoBBox1d_engine(weights,
 
         for i in range(bins):
             norm = out_data[i, 2]
-            if norm > 0.0:
+            if out_data[i, 3] > 0.0:
+                "test on count as norm can be  negative"
                 out_intensity[i] = out_data[i, 0] / norm
                 if do_variance:
                     out_error[i] = sqrt(out_data[i, 1]) / norm
@@ -1112,7 +1113,8 @@ def histoBBox2d_engine(weights,
         for i in range(bins0):
             for j in range(bins1):
                 norm = out_data[i, j, 2]
-                if norm > 0.0:
+                if out_data[i, j, 3] > 0.0:
+                    "test on count as norm can be negatve"
                     out_intensity[i, j] = out_data[i, j, 0] / norm
                     if do_variance:
                         out_error[i, j] = sqrt(out_data[i, j, 1]) / norm

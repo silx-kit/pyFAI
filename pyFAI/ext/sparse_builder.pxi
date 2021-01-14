@@ -28,12 +28,12 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "30/04/2020"
+__date__ = "14/01/2021"
 __copyright__ = "2018, ESRF"
 
-import numpy
-cimport numpy as cnumpy
 
+import numpy
+from .shared_types cimport int32_t, float32_t
 from libcpp.vector cimport vector
 from libcpp.list cimport list as clist
 from libcpp cimport bool
@@ -49,8 +49,8 @@ from .sparse_utils import lut_d
 
 
 cdef packed struct pixel_t:
-    cnumpy.int32_t index
-    cnumpy.float32_t coef
+    int32_t index
+    float32_t coef
 
 
 cdef struct chained_pixel_t:
@@ -70,13 +70,13 @@ cdef packed struct packed_data_t:
 
 
 cdef cppclass Heap:
-    clist[cnumpy.int32_t *] _indexes
-    clist[cnumpy.float32_t *] _coefs
+    clist[int32_t *] _indexes
+    clist[float32_t *] _coefs
     clist[chained_pixel_t *] _pixels
     clist[packed_data_t *] _packed_data
 
-    cnumpy.int32_t *_current_index_block
-    cnumpy.float32_t *_current_coef_block
+    int32_t *_current_index_block
+    float32_t *_current_coef_block
     chained_pixel_t *_current_pixel_block
     packed_data_t *_current_packed_block
 
@@ -98,12 +98,12 @@ cdef cppclass Heap:
 
     __dealloc__() nogil:
         cdef:
-            clist[cnumpy.int32_t *].iterator it_indexes
-            clist[cnumpy.float32_t *].iterator it_coefs
+            clist[int32_t *].iterator it_indexes
+            clist[float32_t *].iterator it_coefs
             clist[chained_pixel_t *].iterator it_pixels
             clist[packed_data_t *].iterator it_packed
-            cnumpy.int32_t *indexes
-            cnumpy.float32_t *coefs
+            int32_t *indexes
+            float32_t *coefs
             chained_pixel_t *pixels
             packed_data_t *packed
 
@@ -131,11 +131,11 @@ cdef cppclass Heap:
             libc.stdlib.free(packed)
             preincrement(it_packed)
 
-    cnumpy.int32_t * alloc_indexes(int size) nogil:
+    int32_t * alloc_indexes(int size) nogil:
         cdef:
-            cnumpy.int32_t *data
+            int32_t *data
         if this._current_index_block == NULL or this._index_pos + size > this._block_size:
-            data = <cnumpy.int32_t *>libc.stdlib.malloc(this._block_size * sizeof(cnumpy.int32_t))
+            data = <int32_t *>libc.stdlib.malloc(this._block_size * sizeof(int32_t))
             this._current_index_block = data
             this._indexes.push_back(data)
             this._index_pos = 0
@@ -143,11 +143,11 @@ cdef cppclass Heap:
         this._index_pos += size
         return data
 
-    cnumpy.float32_t * alloc_coefs(int size) nogil:
+    float32_t * alloc_coefs(int size) nogil:
         cdef:
-            cnumpy.float32_t *data
+            float32_t *data
         if this._current_coef_block == NULL or this._coef_pos + size > this._block_size:
-            data = <cnumpy.float32_t *>libc.stdlib.malloc(this._block_size * sizeof(cnumpy.float32_t))
+            data = <float32_t *>libc.stdlib.malloc(this._block_size * sizeof(float32_t))
             this._current_coef_block = data
             this._coefs.push_back(data)
             this._coef_pos = 0
@@ -183,16 +183,16 @@ cdef cppclass Heap:
 
 
 cdef cppclass PixelElementaryBlock:
-    cnumpy.int32_t *_indexes
-    cnumpy.float32_t *_coefs
+    int32_t *_indexes
+    float32_t *_coefs
     int _size
     int _max_size
     bool _allocated
 
     PixelElementaryBlock(int size, Heap *heap) nogil:
         if heap == NULL:
-            this._indexes = <cnumpy.int32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.int32_t))
-            this._coefs = <cnumpy.float32_t *>libc.stdlib.malloc(size * sizeof(cnumpy.float32_t))
+            this._indexes = <int32_t *>libc.stdlib.malloc(size * sizeof(int32_t))
+            this._coefs = <float32_t *>libc.stdlib.malloc(size * sizeof(float32_t))
             this._allocated = True
         else:
             this._indexes = heap.alloc_indexes(size)
@@ -264,7 +264,7 @@ cdef cppclass PixelBlock:
             preincrement(it)
         return size
 
-    void copy_indexes_to(cnumpy.int32_t *dest) nogil:
+    void copy_indexes_to(int32_t *dest) nogil:
         cdef:
             clist[PixelElementaryBlock*].iterator it
             PixelElementaryBlock* block
@@ -272,11 +272,11 @@ cdef cppclass PixelBlock:
         while it != this._blocks.end():
             block = dereference(it)
             if block.size() != 0:
-                libc.string.memcpy(dest, block._indexes, block.size() * sizeof(cnumpy.int32_t))
+                libc.string.memcpy(dest, block._indexes, block.size() * sizeof(int32_t))
                 dest += block.size()
             preincrement(it)
 
-    void copy_coefs_to(cnumpy.float32_t *dest) nogil:
+    void copy_coefs_to(float32_t *dest) nogil:
         cdef:
             clist[PixelElementaryBlock*].iterator it
             PixelElementaryBlock* block
@@ -284,7 +284,7 @@ cdef cppclass PixelBlock:
         while it != this._blocks.end():
             block = dereference(it)
             if block.size() != 0:
-                libc.string.memcpy(dest, block._coefs, block.size() * sizeof(cnumpy.float32_t))
+                libc.string.memcpy(dest, block._coefs, block.size() * sizeof(float32_t))
                 dest += block.size()
             preincrement(it)
 
@@ -332,7 +332,7 @@ cdef cppclass PixelBin:
         else:
             return this._pixels.size()
 
-    void copy_indexes_to(cnumpy.int32_t *dest) nogil:
+    void copy_indexes_to(int32_t *dest) nogil:
         cdef:
             clist[pixel_t].iterator it_points
 
@@ -345,7 +345,7 @@ cdef cppclass PixelBin:
             preincrement(it_points)
             dest += 1
 
-    void copy_coefs_to(cnumpy.float32_t *dest) nogil:
+    void copy_coefs_to(float32_t *dest) nogil:
         cdef:
             clist[pixel_t].iterator it_points
 
@@ -505,7 +505,7 @@ cdef class SparseBuilder(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    cdef void cinsert(self, int bin_id, int index, cnumpy.float32_t coef) nogil:
+    cdef void cinsert(self, int bin_id, int index, float32_t coef) nogil:
         """Insert an indice and a value in a specific bin.
 
         This function to not have any overhead like `insert`. There is no check
@@ -568,8 +568,8 @@ cdef class SparseBuilder(object):
         """
         cdef:
             int size
-            cnumpy.float32_t[:] coefs
-            cnumpy.float32_t *coefs_ptr
+            float32_t[:] coefs
+            float32_t *coefs_ptr
 
         if bin_id < 0 or bin_id >= self._nbin:
             raise ValueError("bin_id out of range")
@@ -594,8 +594,8 @@ cdef class SparseBuilder(object):
         """
         cdef:
             int size
-            cnumpy.int32_t[:] indexes
-            cnumpy.int32_t *indexes_ptr
+            int32_t[:] indexes
+            int32_t *indexes_ptr
 
         if bin_id < 0 or bin_id >= self._nbin:
             raise ValueError("bin_id out of range")
@@ -653,7 +653,7 @@ cdef class SparseBuilder(object):
         cdef:
             PixelBin *pixel_bin
             int bin_id
-            cnumpy.int32_t[:] sizes
+            int32_t[:] sizes
 
         sizes = numpy.empty(self._nbin, dtype=numpy.int32)
 
@@ -701,7 +701,7 @@ cdef class SparseBuilder(object):
                     size += pixel_bin.size()
         return size
 
-    cdef void _copy_bin_indexes_to(self, int bin_id, cnumpy.int32_t *dest) nogil:
+    cdef void _copy_bin_indexes_to(self, int bin_id, int32_t *dest) nogil:
         cdef:
             PixelBin *pixel_bin
             compact_bin_t *compact_bin
@@ -724,7 +724,7 @@ cdef class SparseBuilder(object):
             if pixel_bin != NULL:
                 pixel_bin.copy_indexes_to(dest)
 
-    cdef void _copy_bin_coefs_to(self, int bin_id, cnumpy.float32_t *dest) nogil:
+    cdef void _copy_bin_coefs_to(self, int bin_id, float32_t *dest) nogil:
         cdef:
             PixelBin *pixel_bin
             compact_bin_t *compact_bin
@@ -775,12 +775,12 @@ cdef class SparseBuilder(object):
     @cython.cdivision(True)
     def _to_csr_from_packed(self):
         cdef:
-            cnumpy.int32_t[:] nbins
-            cnumpy.int32_t[:] current_bin_pos
-            cnumpy.int32_t[:] indexes
-            cnumpy.int32_t *indexes_ptr
-            cnumpy.float32_t[:] coefs
-            cnumpy.float32_t *coefs_ptr
+            int32_t[:] nbins
+            int32_t[:] current_bin_pos
+            int32_t[:] indexes
+            int32_t *indexes_ptr
+            float32_t[:] coefs
+            float32_t *coefs_ptr
             int size
 #             int begin, end
             int bin_id
@@ -844,11 +844,11 @@ cdef class SparseBuilder(object):
         :returns: A tuple containing values, indices and bin indexes
         """
         cdef:
-            cnumpy.int32_t[:] indexes
-            cnumpy.float32_t[:] coefs
-            cnumpy.float32_t *coefs_ptr
-            cnumpy.int32_t[:] nbins
-            cnumpy.int32_t *indexes_ptr
+            int32_t[:] indexes
+            float32_t[:] coefs
+            float32_t *coefs_ptr
+            int32_t[:] nbins
+            int32_t *indexes_ptr
             int size
             int begin, end
             int bin_id
@@ -889,11 +889,11 @@ cdef class SparseBuilder(object):
     @cython.cdivision(True)
     def _to_lut_from_packed(self):
         cdef:
-#             cnumpy.int32_t[:] current_bin_pos
-#             cnumpy.int32_t[:] indexes
-#             cnumpy.int32_t *indexes_ptr
-#             cnumpy.float32_t[:] coefs
-#             cnumpy.float32_t *coefs_ptr
+#             int32_t[:] current_bin_pos
+#             int32_t[:] indexes
+#             int32_t *indexes_ptr
+#             float32_t[:] coefs
+#             float32_t *coefs_ptr
             pixel_t[:, :] lut
             int size
             int max_size
@@ -959,10 +959,10 @@ cdef class SparseBuilder(object):
 #             int i
             int max_size
             int size
-#             cnumpy.int32_t[:] indexes
-#             cnumpy.float32_t[:] coefs
-#             cnumpy.float32_t *coefs_ptr
-#             cnumpy.int32_t *indexes_ptr
+#             int32_t[:] indexes
+#             float32_t[:] coefs
+#             float32_t *coefs_ptr
+#             int32_t *indexes_ptr
 
         if self._use_packed_list:
             return self._to_lut_from_packed()
