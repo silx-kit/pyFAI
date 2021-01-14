@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2018-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,11 +29,11 @@
 __author__ = "Valentin Valls"
 __license__ = "MIT"
 __date__ = "14/01/2021"
-__copyright__ = "2018, ESRF"
+__copyright__ = "2018-2021, ESRF"
 
 
-include "numpy_common.pxi"
-cimport numpy as cnumpy
+# include "numpy_common.pxi"
+# cimport numpy as cnumpy
 import numpy
 from .shared_types cimport int32_t, float32_t
 from libcpp.vector cimport vector
