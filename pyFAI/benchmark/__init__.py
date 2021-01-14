@@ -307,7 +307,7 @@ class Bench(object):
         if param not in self.reference_1d:
             file_name = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
-            bench_test = BenchTest1D(poni, file_name, self.unit, "splitBBox")
+            bench_test = BenchTest1D(poni, file_name, self.unit, ("bbox", "histogram", "cython"), function="integrate1d_ng")
             bench_test.setup()
             res = bench_test.stmt()
             bench_test.compute_engine = res.compute_engine
@@ -344,13 +344,13 @@ class Bench(object):
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
-            label = ("1D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
+            label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            print("method=%s" % method)
+            print(f"function: {function} \t method: {method}")
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = function + self.LABELS[method]
+            label = function + " " + self.LABELS[method]
             memory_error = (MemoryError, RuntimeError)
         results = OrderedDict()
         first = True
@@ -745,15 +745,16 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                         ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "ACC"]
         print("Devices:", ocl_devices)
     if do_1d:
-        bench.bench_1d("splitBBox", function="integrate1d_legacy")
-        bench.bench_1d("splitBBox", function="integrate1d_ng")
+        bench.bench_1d("splitBBox", True, function="integrate1d_legacy")
+        bench.bench_1d("splitBBox", True, function="integrate1d_ng")
 #         bench.bench_1d("lut", True)
         bench.bench_1d("csr", True, function="integrate1d_legacy")
         bench.bench_1d("csr", True, function="integrate1d_ng")
         for device in ocl_devices:
             print("Working on device: " + str(device))
 #             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
-            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_legacy")
+            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_ng")
 
     if do_2d:
         bench.bench_2d("splitBBox")
