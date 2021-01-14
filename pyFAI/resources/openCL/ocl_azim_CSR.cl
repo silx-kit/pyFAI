@@ -436,7 +436,6 @@ csr_integrate(  const   global  float   *weights,
     // we use _K suffix to highlight it is float2 used for Kahan summation
     float2 sum_data_K = (float2)(0.0f, 0.0f);
     float2 sum_count_K = (float2)(0.0f, 0.0f);
-    const float epsilon = 1e-10f;
     float coef, coefp, data;
     int idx, k, j;
 
@@ -500,7 +499,7 @@ csr_integrate(  const   global  float   *weights,
         //Only thread 0 works 
         sum_data[bin_num] = super_sum_data[0].s0;
         sum_count[bin_num] = super_sum_count[0].s0;
-        if (sum_count[bin_num] > epsilon)
+        if (sum_count[bin_num] > 0.0f)
             merged[bin_num] =  sum_data[bin_num] / sum_count[bin_num];
         else
             merged[bin_num] = dummy;
