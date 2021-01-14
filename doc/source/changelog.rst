@@ -13,7 +13,6 @@ Change-log of versions
 * Fix issue introduced with the scipy 1.15 (constrained calibration broken)  
 * Improved distortion correction (also on GPU, ...)
 * Major re-work of the documentation (thanks Thomas Kluyver and Loic Huder)
-* Drop most of the compatibility code with Python2
 * Improve the calibration of Pilatus and Eiger detectors based on a grid of holes.
 * New cylindrical detector from Rigaku
 * Drop deprecated OpenCL integrator
