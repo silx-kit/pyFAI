@@ -32,6 +32,8 @@ __date__ = "14/01/2021"
 __copyright__ = "2018, ESRF"
 
 
+include "numpy_common.pxi"
+cimport numpy as cnumpy
 import numpy
 from .shared_types cimport int32_t, float32_t
 from libcpp.vector cimport vector

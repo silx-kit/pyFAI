@@ -37,8 +37,6 @@ __status__ = "stable"
 __license__ = "MIT"
 
 
-include "numpy_common.pxi"
-
 # Imports at the Python level 
 import cython
 import numpy

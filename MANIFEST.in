@@ -9,7 +9,6 @@ global-exclude *.npz
 recursive-include package/debian* *
 recursive-include pyFAI/ext  *.cpp *.c *.h *.pyx *.pxd *.pxi
 recursive-include pyFAI *.py
-#recursive-include pyFAI/third_party/_local *.py
 recursive-exclude pyFAI *.pyc
 recursive-include pyFAI/resources/openCL *.cl *.h
 recursive-include pyFAI/resources/gui *.ui *.png *.svg

@@ -42,7 +42,6 @@ __contact__ = "jerome.kieffer@esrf.fr"
 include "regrid_common.pxi"
 import cython
 import numpy
-cimport numpy as cnumpy
 from cython cimport view, floating
 from cython.parallel import prange
 from cpython.ref cimport PyObject, Py_XDECREF

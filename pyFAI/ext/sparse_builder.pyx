@@ -35,9 +35,6 @@ __date__ = "14/01/2021"
 __copyright__ = "2018-2021, ESRF"
 
 
-import numpy
-cimport numpy as cnumpy
-
 from libcpp.vector cimport vector
 from libcpp.list cimport list as clist
 from libcpp cimport bool
