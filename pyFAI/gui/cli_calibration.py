@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "12/01/2021"
 __status__ = "production"
 
 import os
@@ -1167,20 +1167,20 @@ class AbstractCalibration(object):
                 update_fig(self.fig_integrate)
 
         t3 = time.perf_counter()
-        res1 = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
-                                       filename=self.basename + ".xy",
-                                       unit=self.unit,
-                                       polarization_factor=self.polarization_factor,
-                                       method=self.integrator_method,
-                                       error_model=self.error_model)
+        res1 = self.geoRef.integrate1d_ng(self.peakPicker.data, self.nPt_1D,
+                                          filename=self.basename + ".xy",
+                                          unit=self.unit,
+                                          polarization_factor=self.polarization_factor,
+                                          method=self.integrator_method,
+                                          error_model=self.error_model)
         t4 = time.perf_counter()
-        res2 = self.geoRef.integrate2d(self.peakPicker.data,
-                                       self.nPt_2D_rad, self.nPt_2D_azim,
-                                       filename=self.basename + ".azim",
-                                       unit=self.unit,
-                                       polarization_factor=self.polarization_factor,
-                                       method=self.integrator_method,
-                                       error_model=self.error_model)
+        res2 = self.geoRef.integrate2d_ng(self.peakPicker.data,
+                                          self.nPt_2D_rad, self.nPt_2D_azim,
+                                          filename=self.basename + ".azim",
+                                          unit=self.unit,
+                                          polarization_factor=self.polarization_factor,
+                                          method=self.integrator_method,
+                                          error_model=self.error_model)
         t5 = time.perf_counter()
         logger.info(os.linesep.join(["Timings (%s):" % self.integrator_method,
                                      " * two theta array generation %.3fs" % (t1 - t0),
@@ -2272,8 +2272,8 @@ refinement process.
 
     def integrate(self):
         logger.debug("in integrate")
-        self.r, self.I = self.ai.integrate1d(self.img, self.size1d, mask=self.mask,
-                                             unit=self.unit, method="splitpixel")
+        self.r, self.I = self.ai.integrate1d_ng(self.img, self.size1d, mask=self.mask,
+                                                unit=self.unit, method=("full", "histo", "cython"))
 
     def rebuild(self):
         """
@@ -2297,7 +2297,6 @@ refinement process.
         self.masked_resynth = self.resynth * smooth_mask
         self.masked_image = self.img * smooth_mask
         self.offset = measure_offset(self.masked_resynth, self.masked_image, withLog=0)
-#        print os.linesep.join(log)
         print("Measured offset: %s" % str(self.offset))
         return self.offset
 

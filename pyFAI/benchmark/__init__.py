@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "08/01/2021"
+__date__ = "14/01/2021"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -136,6 +136,7 @@ class BenchTest1D(BenchTest):
         self.file_name = file_name
         self.unit = unit
         self.method = method
+        self.compute_engine = None
         self.function_name = function or "integrate1d"
         self.error_model = error_model
         self.function = None
@@ -306,14 +307,15 @@ class Bench(object):
         if param not in self.reference_1d:
             file_name = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
-            bench_test = BenchTest1D(poni, file_name, self.unit, "splitBBox")
+            bench_test = BenchTest1D(poni, file_name, self.unit, ("bbox", "histogram", "cython"), function="integrate1d_ng")
             bench_test.setup()
             res = bench_test.stmt()
+            bench_test.compute_engine = res.compute_engine
             self.reference_1d[param] = res
             bench_test.clean()
         return self.reference_1d[param]
 
-    def bench_1d(self, method="splitBBox", check=False, opencl=None):
+    def bench_1d(self, method="splitBBox", check=False, opencl=None, function="integrate1d"):
         """
         :param method: method to be bechmarked
         :param check: check results vs ref if method is LUT based
@@ -342,13 +344,13 @@ class Bench(object):
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
-            label = ("1D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
+            label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            print("method=%s" % method)
+            print(f"function: {function} \t method: {method}")
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = "1D_" + self.LABELS[method]
+            label = function + " " + self.LABELS[method]
             memory_error = (MemoryError, RuntimeError)
         results = OrderedDict()
         first = True
@@ -356,7 +358,7 @@ class Bench(object):
             self.update_mp()
             file_name = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
-            bench_test = BenchTest1D(poni, file_name, self.unit, method)
+            bench_test = BenchTest1D(poni, file_name, self.unit, method, function=function)
             bench_test.setup()
             size = bench_test.data.size / 1.0e6
             if size > self.max_size:
@@ -382,7 +384,8 @@ class Bench(object):
             self.update_mp()
             if check:
                 module = sys.modules.get(AzimuthalIntegrator.__module__)
-                if module:
+                key = bench_test.compute_engine
+                if (key is None or key not in bench_test.ai.engines) and module:
                     if "lut" in method:
                         key = module.EXT_LUT_ENGINE
                     elif "csr" in method:
@@ -391,14 +394,18 @@ class Bench(object):
                         key = None
                 if key and module:
                     try:
-                        integrator = bench_test.ai.engines.get(key).engine
+                        engine = bench_test.ai.engines.get(key)
                     except MemoryError as error:
                         print("MemoryError %s" % error)
                     else:
-                        if "lut" in method:
-                            print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
+                        if not engine:
+                            print("Engine not found ", engine, key)
                         else:
-                            print("csr: size= %s \t nbytes %.3f MB " % (integrator.data.size, integrator.lut_nbytes / 2 ** 20))
+                            integrator = engine.engine
+                            if "lut" in method:
+                                print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
+                            else:
+                                print("csr: size= %s \t nbytes %.3f MB " % (integrator.data.size, integrator.lut_nbytes / 2 ** 20))
             bench_test.clean()
             self.update_mp()
             try:
@@ -738,13 +745,16 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                         ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "ACC"]
         print("Devices:", ocl_devices)
     if do_1d:
-        bench.bench_1d("splitBBox")
+        bench.bench_1d("splitBBox", True, function="integrate1d_legacy")
+        bench.bench_1d("splitBBox", True, function="integrate1d_ng")
 #         bench.bench_1d("lut", True)
-        bench.bench_1d("csr", True)
+        bench.bench_1d("csr", True, function="integrate1d_legacy")
+        bench.bench_1d("csr", True, function="integrate1d_ng")
         for device in ocl_devices:
             print("Working on device: " + str(device))
 #             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
-            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_legacy")
+            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_ng")
 
     if do_2d:
         bench.bench_2d("splitBBox")

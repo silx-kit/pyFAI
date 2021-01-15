@@ -13,7 +13,6 @@ Change-log of versions
 * Fix issue introduced with the scipy 1.15 (constrained calibration broken)  
 * Improved distortion correction (also on GPU, ...)
 * Major re-work of the documentation (thanks Thomas Kluyver and Loic Huder)
-* Drop most of the compatibility code with Python2
 * Improve the calibration of Pilatus and Eiger detectors based on a grid of holes.
 * New cylindrical detector from Rigaku
 * Drop deprecated OpenCL integrator
@@ -21,6 +20,7 @@ Change-log of versions
 * CI: move to Gihub workflow and gitlab-runners (bob) for building (thanks Thomas Vincent).
 * Build for debian 10 and 11 (also ubuntu 20.04)
 * Remove Python2 related code
+* Lower Numpy ABI dependency as much as possible (remains _distortion's C++ code)
 * Drop tests for Python 3.5, checked on 3.9 as well.
 
 0.19.0 31/01/2020

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2021"
+__date__ = "15/01/2021"
 
 import unittest
 import os
@@ -57,6 +57,8 @@ if ocl is not None:
     import pyopencl.array
 from .. import load
 from . import utilstest
+from .. import load_integrators as _
+from ..method_registry import IntegrationMethod
 from .utilstest import test_options
 from ..utils import mathutil
 from ..utils.decorators import depreclog
@@ -74,13 +76,13 @@ class TestMask(unittest.TestCase):
         if not os.path.isdir(self.tmp_dir):
             os.makedirs(self.tmp_dir)
 
-        self.N = 1000
+        self.N = 500
         self.datasets = [{"img": test_options.getimage("Pilatus1M.edf"),
                           "poni": test_options.getimage("Pilatus1M.poni"),
                           "spline": None},
-                         {"img": test_options.getimage("halfccd.edf"),
-                          "poni": test_options.getimage("halfccd.poni"),
-                          "spline": test_options.getimage("halfccd.spline")},
+#                          {"img": test_options.getimage("halfccd.edf"),
+#                           "poni": test_options.getimage("halfccd.poni"),
+#                           "spline": test_options.getimage("halfccd.spline")},
 #                          {"img": test_options.getimage("Frelon2k.edf"),
 #                           "poni": test_options.getimage("Frelon2k.poni"),
 #                           "spline": test_options.getimage("frelon.spline")},
@@ -109,114 +111,61 @@ class TestMask(unittest.TestCase):
         self.tmp_dir = self.N = self.datasets = None
 
     @unittest.skipIf(test_options.low_mem, "test using >200M")
-    def test_OpenCL(self):
+    def test_histogram(self):
         logger.info("Testing histogram-based algorithm (forward-integration)")
-        for devtype in ("GPU", "CPU"):
-            ids = ocl.select_device(devtype, extensions=["cl_khr_int64_base_atomics"])
-            if ids is None:
-                logger.error("No suitable %s OpenCL device found", devtype)
-                continue
-            else:
-                logger.info("I found a suitable device %s %s: %s %s ", devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]])
-                if ocl.platforms[ids[0]].name == "Portable Computing Language":
-                    logger.warning("POCL is known error-prone on this test")
-                    continue
+        ids = ocl.select_device("ALL", extensions=["cl_khr_int64_base_atomics"], memory=1e8)
+        to_test = [v for k, v in IntegrationMethod._registry.items() if k.target == ids and k.split == "no" and k.algo == "histogram" and k.dim == 1]
 
-            for ds in self.datasets:
-                ai = load(ds["poni"])
-                data = fabio.open(ds["img"]).data
-                res = ai.integrate1d(data, self.N, method=("no", "hist", "opencl"), unit="2th_deg")
-                ref = ai.integrate1d(data, self.N, method=("no", "hist", "cython"), unit="2th_deg")
+        for ds in self.datasets:
+            ai = load(ds["poni"])
+            data = fabio.open(ds["img"]).data
+            ref = ai.integrate1d_ng(data, self.N, method=("no", "histogram", "cython"), unit="2th_deg")
+            for method in to_test:
+                res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
                 r = mathutil.rwp(ref, res)
-                logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
-                self.assertTrue(r < 6, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
-                ai.reset()
-                del ai, data
-                gc.collect()
+                logger.info(f"OpenCL {method} has R={r}  (vs cython) for dataset {ds}")
+                self.assertTrue(r < 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
 
     @unittest.skipIf(test_options.low_mem, "test using >500M")
-    def test_OpenCL_LUT(self):
+    def test_OpenCL_sparse(self):
         logger.info("Testing LUT-based algorithm (backward-integration)")
-        for devtype in ("GPU", "CPU"):
-            ids = ocl.select_device(devtype, best=True)
-            if ids is None:
-                logger.error("No suitable %s OpenCL device found", devtype)
-                continue
-            else:
-                logger.info("I found a suitable device %s %s: %s %s ", devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]])
-
-            for ds in self.datasets:
-                ai = load(ds["poni"])
-                data = fabio.open(ds["img"]).data
-                ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
-                try:
-                    res = ai.integrate1d(data, self.N, method="ocl_lut_%i,%i" % (ids[0], ids[1]), unit="2th_deg")
-                except (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError) as error:
-                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
-                    break
-                else:
-                    r = mathutil.rwp(ref, res)
-                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
-                    self.assertTrue(r < 3, "Rwp=%.3f for OpenCL LUT processing of %s" % (r, ds))
-                ai.reset()
-                del ai, data
-                gc.collect()
-
-    @unittest.skipIf(test_options.low_mem, "test using >200M")
-    def test_OpenCL_CSR(self):
-        logger.info("Testing CSR-based algorithm (backward-integration)")
-        for devtype in ("GPU", "CPU"):
-            ids = ocl.select_device(devtype, best=True)
-            if ids is None:
-                logger.error("No suitable %s OpenCL device found", devtype)
-                continue
-            else:
-                logger.info("I found a suitable device %s %s: %s %s", devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]])
-
-            for ds in self.datasets:
-                ai = load(ds["poni"])
-                data = fabio.open(ds["img"]).data
-                ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
-                try:
-                    res = ai.integrate1d(data, self.N, method="ocl_csr_%i,%i" % (ids[0], ids[1]), unit="2th_deg")
-                except (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError) as error:
-                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
-                    break
-                else:
-                    r = mathutil.rwp(ref, res)
-                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
-                    self.assertTrue(r < 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
-                ai.reset()
-                del ai, data
-                gc.collect()
+        ids = ocl.select_device("ALL", best=True, memory=1e8)
+        to_test = [v for k, v in IntegrationMethod._registry.items() if k.target == ids and k.split == "bbox" and k.algo in ("lut", "csr") and k.dim == 1]
+        for ds in self.datasets:
+            ai = load(ds["poni"])
+            data = fabio.open(ds["img"]).data
+            ref = ai.integrate1d_ng(data, self.N, method=("bbox", "histogram", "cython"), unit="2th_deg")
+            for method in to_test:
+                res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
+                r = mathutil.rwp(ref, res)
+                logger.info(f"OpenCL {method} has R={r}  (vs cython) for dataset {ds}")
+                self.assertTrue(r < 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
 
     @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_OpenCL_sigma_clip(self):
         logger.info("Testing OpenCL sigma-clipping")
-        for devtype in ("GPU", "CPU"):
-            ids = ocl.select_device(devtype, best=True)
-            if ids is None:
-                logger.error("No suitable %s OpenCL device found", devtype)
-                continue
-            else:
-                logger.info("I found a suitable device %s %s: %s %s", devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]])
-
-            for ds in self.datasets:
-                ai = load(ds["poni"])
-                data = fabio.open(ds["img"]).data
-                ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
+        ids = ocl.select_device("ALL", best=True, memory=1e8)
+        print(ids)
+        to_test = [v for k, v in IntegrationMethod._registry.items() if k.target == ids and k.split == "no" and k.algo == "csr" and k.dim == 1]
+        N = 100
+        print(to_test)
+        for ds in self.datasets:
+            ai = load(ds["poni"])
+            data = fabio.open(ds["img"]).data
+            ref = ai.integrate1d_ng(data, N, method=("no", "histogram", "cython"), unit="2th_deg")
+            for method  in  to_test:
+                print(method)
                 try:
-                    res = ai.integrate1d(data, self.N, method="ocl_csr_%i,%i" % (ids[0], ids[1]), unit="2th_deg")
+                    res = ai.sigma_clip_ng(data, N, method=method, unit="2th_deg")
                 except (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError) as error:
-                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
+                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory.", method, os.path.basename(ds["img"]), os.linesep, error)
                     break
                 else:
+                    # This is not really a precise test.
                     r = mathutil.rwp(ref, res)
-                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
-                    self.assertTrue(r < 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
-                ai.reset()
-                del ai, data
-                gc.collect()
+                    logger.info("OpenCL sigma clipping has R= %.3f for dataset %s", r, ds)
+                    print(r)
+                    self.assertTrue(r < 10, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
 
 
 class TestSort(unittest.TestCase):

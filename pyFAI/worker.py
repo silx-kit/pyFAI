@@ -82,7 +82,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "14/01/2021"
 __status__ = "development"
 
 import threading
@@ -347,7 +347,7 @@ class Worker(object):
                 if variance is not None:
                     error = integrated_result.sigma
             else:
-                integrated_result = self.ai.integrate1d(**kwarg)
+                integrated_result = self.ai.integrate1d_ng(**kwarg)
                 self.radial = integrated_result.radial
                 self.azimuthal = None
                 result = numpy.vstack(integrated_result).T

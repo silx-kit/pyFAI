@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "14/01/2021"
 
 import unittest
 import logging
@@ -69,12 +69,16 @@ class AzimuthalIntegratorMocked():
             raise self._result
         return self._result
 
+    integrate1d_ng = integrate1d_legacy = integrate1d
+
     def integrate2d(self, **kargs):
         self._integrate2d_called += 1
         self._integrate2d_kargs = kargs
         if isinstance(self._result, Exception):
             raise self._result
         return self._result
+
+    integrate2d_ng = integrate2d_legacy = integrate2d
 
 
 class MockedAiWriter():

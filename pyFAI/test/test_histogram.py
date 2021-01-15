@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "12/01/2021"
 
 import unittest
 import time
@@ -378,9 +378,9 @@ class TestHistogram2d(unittest.TestCase):
         Test that the pixel count and the total intensity is conserved
         in cython preprocessed implementation
         """
-        prop = self.histo_ng_res[-1]
-        unweighted = prop["count"]
-        weighted = prop["signal"]
+        prop = self.histo_ng_res
+        unweighted = prop.count
+        weighted = prop.signal
         sump = int(unweighted.sum(dtype="float64"))
         intensity_obt = weighted.sum(dtype="float64")
         delta = abs(sump - self.size)
@@ -389,8 +389,8 @@ class TestHistogram2d(unittest.TestCase):
         logger.info("Cython: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
         self.assertEqual(delta, 0, msg="check all pixels were counted")
         self.assertLess(v, self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
-        self.assertEqual(abs(prop["signal"] - prop["variance"]).max(), 0, "variance == signal")
-        self.assertEqual(abs(prop["count"] - prop["norm"]).max(), 0, "count == norm")
+        self.assertEqual(abs(prop.signal - prop.variance).max(), 0, "variance == signal")
+        self.assertEqual(abs(prop.count - prop.normalization).max(), 0, "count == norm")
 
 
 def suite():

@@ -31,11 +31,9 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "11/01/2021"
+__date__ = "14/01/2021"
 __copyright__ = "2018-2021, ESRF"
 
-import numpy
-cimport numpy as cnumpy
 
 from libcpp.vector cimport vector
 from libcpp.list cimport list as clist
@@ -55,8 +53,8 @@ include "regrid_common.pxi"
 
 
 def feed_histogram(SparseBuilder builder not None,
-                   cnumpy.ndarray pos not None,
-                   cnumpy.ndarray weights not None,
+                   pos,
+                   weights,
                    int bins=100,
                    double empty=0.0,
                    double normalization_factor=1.0):

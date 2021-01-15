@@ -194,7 +194,7 @@ class TestIntegrateApp(unittest.TestCase):
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
             result = h5["entry_0000/integrate/results/data"]
-            self.assertEquals(result.shape[0], 4)
+            self.assertEqual(result.shape[0], 4)
             for iframe in range(result.shape[0]):
                 numpy.testing.assert_almost_equal(result[iframe], expected, decimal=1)
 
@@ -209,7 +209,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["entry_0000/integrate/results/data"].shape[0], 2)
+            self.assertEqual(h5["entry_0000/integrate/results/data"].shape[0], 2)
 
     def test_multiframes_to_h5(self):
         options = self.Options()
@@ -221,7 +221,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["entry_0000/integrate/results/data"].shape[0], 2)
+            self.assertEqual(h5["entry_0000/integrate/results/data"].shape[0], 2)
 
     def test_multiframes_fileseries_to_h5(self):
         options = self.Options()
@@ -234,7 +234,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["entry_0000/integrate/results/data"].shape[0], 4)
+            self.assertEqual(h5["entry_0000/integrate/results/data"].shape[0], 4)
 
     def test_h5_to_h5(self):
         options = self.Options()
@@ -246,7 +246,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["entry_0000/integrate/results/data"].shape[0], 4)
+            self.assertEqual(h5["entry_0000/integrate/results/data"].shape[0], 4)
 
     def test_fileseries_to_h5_entry(self):
         options = self.Options()
@@ -260,7 +260,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(output_file))
         with h5py.File(output_file, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["my/entry/integrate/results/data"].shape[0], 2)
+            self.assertEqual(h5["my/entry/integrate/results/data"].shape[0], 2)
 
     def test_write_h5_delete_mode(self):
         options = self.Options()
@@ -276,7 +276,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["/entry_0000/integrate/results/data"].shape[0], 1)
+            self.assertEqual(h5["/entry_0000/integrate/results/data"].shape[0], 1)
 
     def test_write_h5_overwrite_mode(self):
         options = self.Options()
@@ -293,8 +293,8 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["/entry_0000/integrate/results/data"].shape[0], 1)
-            self.assertEquals(h5["/my_entry"][()], 10)
+            self.assertEqual(h5["/entry_0000/integrate/results/data"].shape[0], 1)
+            self.assertEqual(h5["/my_entry"][()], 10)
 
     def test_write_h5_append_mode(self):
         options = self.Options()
@@ -310,8 +310,8 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["/entry_0000"][()], 10)
-            self.assertEquals(h5["/entry_0001/integrate/results/data"].shape[0], 1)
+            self.assertEqual(h5["/entry_0000"][()], 10)
+            self.assertEqual(h5["/entry_0001/integrate/results/data"].shape[0], 1)
 
     def test_write_h5_error_mode(self):
         options = self.Options()
@@ -328,7 +328,7 @@ class TestIntegrateApp(unittest.TestCase):
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
             self.assertIsNotNone(h5)
-            self.assertEquals(h5["/entry_0000"][()], 10)
+            self.assertEqual(h5["/entry_0000"][()], 10)
             self.assertNotIn("/entry_0001", h5)
 
 

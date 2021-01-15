@@ -24,10 +24,10 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "09/12/2020"
+__date__ = "14/01/2021"
 
 try:
     from transformations import *
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     from ._local.transformations import *
 

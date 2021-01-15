@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "12/01/2021"
 
 import logging
 import numpy
@@ -200,7 +200,7 @@ class IntegrationProcess(object):
             method2d = methods[0].method
 
         try:
-            self.__result1d = ai.integrate1d(
+            self.__result1d = ai.integrate1d_ng(
                 method=method1d,
                 data=self.__image,
                 npt=self.__nPointsRadial,
@@ -208,7 +208,7 @@ class IntegrationProcess(object):
                 mask=self.__mask,
                 polarization_factor=self.__polarizationFactor)
 
-            self.__result2d = ai.integrate2d(
+            self.__result2d = ai.integrate2d_ng(
                 method=method2d,
                 data=self.__image,
                 npt_rad=self.__nPointsRadial,
