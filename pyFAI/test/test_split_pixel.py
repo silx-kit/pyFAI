@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2021"
+__date__ = "15/01/2021"
 
 import unittest
 import numpy
@@ -46,6 +46,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
 from ..utils import mathutil
 from ..ext import splitBBox, splitPixel
+from ..method_registry import IntegrationMethod
 
 
 class TestSplitPixel(unittest.TestCase):
@@ -60,14 +61,39 @@ class TestSplitPixel(unittest.TestCase):
         det.shape = (512, 512)
         ai = AzimuthalIntegrator(1, detector=det)
         cls.results = {}
+        cls.results_ng = {}
         for i, meth in enumerate(["numpy", "cython", "splitbbox", "splitpixel", "csr_no", "csr_bbox", "csr_full"]):
-            cls.results[meth] = ai.integrate1d(img, 10000, method=meth, unit="2th_deg")
+            cls.results[meth] = ai.integrate1d_legacy(img, 10000, method=meth, unit="2th_deg")
             ai.reset()
+        for k, v in IntegrationMethod._registry.items():
+            if v.dimension == 1 and  v.target is None:  # exclude OpenCL engines
+                cls.results_ng[k] = ai.integrate1d_ng(img, 10000, method=v, unit="r_mm")
 
     @classmethod
     def tearDownClass(cls):
         super(TestSplitPixel, cls).tearDownClass()
         cls.results = None
+
+    def test_new_gen_algoritms(self):
+        "This checks that the pixel splitting scheme gives consistent results"
+        self.assertGreater(len(self.results_ng), 0, msg="we have some results")
+        thres = 7
+        for k1, res1 in self.results_ng.items():
+            if k1.split == "pseudo":
+                # Those are half implemented algorithms ... avoid testing them!
+                continue
+            for k2, res2 in self.results_ng.items():
+                if k1 == k2:
+                    continue
+                if k2.split == "pseudo":
+                    continue
+                R = mathutil.rwp(res1, res2)
+                print (f"({k1.split},{k1.algo})/({k2.split},{k2.algo})\t {R}")
+
+                if k1.split == k2.split:
+                    self.assertTrue(R < thres, f"{k1}/{k2}")
+                else:
+                    self.assertTrue(R > thres, f"{k1}/{k2}")
 
     def test_no_split(self):
         """

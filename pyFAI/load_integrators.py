@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2021"
+__date__ = "15/01/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -150,7 +150,7 @@ except ImportError as error:
     splitPixelFullLUT = None
 else:
     # Register splitPixelFullLUT integrators
-    IntegrationMethod(1, "full", "LUT", "cython", old_method="full_lut",
+    IntegrationMethod(1, "pseudo", "LUT", "cython", old_method="full_lut",
                       class_funct_legacy=(splitPixelFullLUT.HistoLUT1dFullSplit, splitPixelFullLUT.HistoLUT1dFullSplit.integrate))
     IntegrationMethod(2, "full", "LUT", "cython", old_method="full_lut",
                       class_funct_legacy=(splitPixelFullLUT.HistoLUT2dFullSplit, splitPixelFullLUT.HistoLUT2dFullSplit.integrate))
