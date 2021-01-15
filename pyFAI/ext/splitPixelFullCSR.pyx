@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/08/2020"
+__date__ = "15/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -239,9 +239,6 @@ class FullSplitCSR_1d(CsrIntegrator):
         self.unit = unit
         self.lut_nbytes = sum([i.nbytes for i in lut])
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_lut(self):
         cdef:
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
@@ -255,7 +252,7 @@ class FullSplitCSR_1d(CsrIntegrator):
             float A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
             float partialArea = 0, oneOverPixelArea
             Function AB, BC, CD, DA
-            int bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0
+            Py_ssize_t bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0
             bint check_pos1 = False, check_mask = False
 
         bins = self.bins
@@ -309,8 +306,7 @@ class FullSplitCSR_1d(CsrIntegrator):
 
                 bin0_min = < int > floor(min0)
                 bin0_max = < int > floor(max0)
-
-                for bin in range(bin0_min, bin0_max + 1):
+                for bin in range(max(bin0_min,0), min(bins, bin0_max + 1)):
                     outmax[bin] += 1
 
         indptr = numpy.concatenate(([numpy.int32(0)], 
@@ -364,13 +360,14 @@ class FullSplitCSR_1d(CsrIntegrator):
                     C0 -= bin0_min
                     D0 -= bin0_min
 
-                    AB.slope = (B1 - A1) / (B0 - A0)
+                    # Avoid Zero-division error
+                    AB.slope = 0.0 if A0 == B0 else (B1 - A1) / (B0 - A0)  
                     AB.intersect = A1 - AB.slope * A0
-                    BC.slope = (C1 - B1) / (C0 - B0)
+                    BC.slope = 0.0 if B0 == C0 else (C1 - B1) / (C0 - B0)
                     BC.intersect = B1 - BC.slope * B0
-                    CD.slope = (D1 - C1) / (D0 - C0)
+                    CD.slope = 0.0 if D0 == C0 else (D1 - C1) / (D0 - C0)
                     CD.intersect = C1 - CD.slope * C0
-                    DA.slope = (A1 - D1) / (A0 - D0)
+                    DA.slope = 0.0 if A0 == D0 else (A1 - D1) / (A0 - D0)
                     DA.intersect = D1 - DA.slope * D0
 
                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
@@ -382,7 +379,8 @@ class FullSplitCSR_1d(CsrIntegrator):
 
                     oneOverPixelArea = 1.0 / areaPixel
 
-                    for bin in range(bin0_min, bin0_max + 1):
+                    for bin in range(max(bin0_min,0), min(bins, bin0_max + 1)):
+
 
                         bin0 = bin - bin0_min
                         A_lim = (A0 <= bin0) * (A0 <= (bin0 + 1)) * bin0 + (A0 > bin0) * (A0 <= (bin0 + 1)) * A0 + (A0 > bin0) * (A0 > (bin0 + 1)) * (bin0 + 1)
@@ -396,9 +394,10 @@ class FullSplitCSR_1d(CsrIntegrator):
                         partialArea += integrate(D_lim, A_lim, DA)
 
                         k = outmax[bin]
-                        indices[indptr[bin] + k] = idx
-                        data[indptr[bin] + k] = fabs(partialArea) * oneOverPixelArea
-                        outmax[bin] += 1  # k+1
+                        pos = indptr[bin] + k
+                        indices[pos] = idx
+                        data[pos] = fabs(partialArea) * oneOverPixelArea
+                        outmax[bin] = k + 1
         self.outmax = numpy.asarray(outmax)
         return (data, indices, indptr)
 
@@ -424,7 +423,6 @@ class FullSplitCSR_2d(object):
 
     Nota: nnz = indptr[-1]
     """
-    @cython.boundscheck(False)
     def __init__(self,
                  numpy.ndarray pos not None,
                  bins=(100, 36),
@@ -487,9 +485,6 @@ class FullSplitCSR_2d(object):
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def calc_lut(self):
         cdef:
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
@@ -598,7 +593,7 @@ class FullSplitCSR_2d(object):
                             tmp_i += point_and_line(B0, B1, C0, C1, i, j)
                             tmp_i += point_and_line(C0, C1, D0, D1, i, j)
                             tmp_i += point_and_line(D0, D1, A0, A1, i, j)
-                            is_inside[i, j] = abs(tmp_i / 4)
+                            is_inside[i, j] = abs(tmp_i // 4)
 
                     for i in range(bins0):
                         for j in range(bins1):
@@ -675,13 +670,13 @@ class FullSplitCSR_2d(object):
                         # D0 -= bin0_min
                         D1 -= bin1_min
 
-                        AB.slope = (B0 - A0) / (B1 - A1)
+                        AB.slope = 0.0 if A1 == B1 else  (B0 - A0) / (B1 - A1)
                         AB.intersect = A0 - AB.slope * A1
-                        BC.slope = (C0 - B0) / (C1 - B1)
+                        BC.slope = 0.0 if C1 == B1 else  (C0 - B0) / (C1 - B1)
                         BC.intersect = B0 - BC.slope * B1
-                        CD.slope = (D0 - C0) / (D1 - C1)
+                        CD.slope = 0.0 if D1 == C1 else  (D0 - C0) / (D1 - C1)
                         CD.intersect = C0 - CD.slope * C1
-                        DA.slope = (A0 - D0) / (A1 - D1)
+                        DA.slope = 0.0 if A1 == D1 else  (A0 - D0) / (A1 - D1)
                         DA.intersect = D0 - DA.slope * D1
 
                         areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
@@ -782,7 +777,7 @@ class FullSplitCSR_2d(object):
                             tmp_i += point_and_line(B0, B1, C0, C1, i, j)
                             tmp_i += point_and_line(C0, C1, D0, D1, i, j)
                             tmp_i += point_and_line(D0, D1, A0, A1, i, j)
-                            is_inside[i, j] = abs(tmp_i / 4)
+                            is_inside[i, j] = abs(tmp_i // 4)
 
                     for i in range(bins0):
                         for j in range(bins1):
@@ -904,9 +899,6 @@ class FullSplitCSR_2d(object):
         self.indices = numpy.asarray(indices)
         self.outmax = numpy.asarray(outmax)
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def integrate(self, weights,
                   dummy=None,
                   delta_dummy=None,
