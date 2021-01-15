@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2021"
+__date__ = "15/01/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1464,7 +1464,7 @@ class AzimuthalIntegrator(Geometry):
                                pos0=radial, delta_pos0=delta_radial,
                                pos1=chi, delta_pos1=delta_chi,
                                bins=npt,
-                               dummy=dummy, delta_dummy=delta_dummy,
+                               dummy=dummy, delta_dummy=delta_dummy, empty=empty,
                                dark=dark, flat=flat, solidangle=solidangle,
                                polarization=polarization,
                                normalization_factor=normalization_factor,
@@ -1476,7 +1476,7 @@ class AzimuthalIntegrator(Geometry):
                 intpl = integr(weights=data, variance=variance,
                                pos=pos,
                                bins=npt,
-                               dummy=dummy, delta_dummy=delta_dummy,
+                               dummy=dummy, delta_dummy=delta_dummy, empty=empty,
                                dark=dark, flat=flat, solidangle=solidangle,
                                polarization=polarization,
                                normalization_factor=normalization_factor,

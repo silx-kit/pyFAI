@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "15/01/2021"
 
 import unittest
 import numpy
@@ -68,10 +68,10 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth = "cython"
-        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        meth = ("no", "histogram", "cython")
+        x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -93,10 +93,10 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth = "splitbbox"
-        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        meth = ("bbox", "histogram", "cython")
+        x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -118,10 +118,10 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth = "splitpixel"
-        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        meth = ("full", "histogram", "cython")
+        x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -143,10 +143,10 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth = "lut"
-        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-        x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        meth = ("bbox", "lut", "cython")
+        x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d_ng(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -167,10 +167,10 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth = "csr"
-        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-        x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        meth = meth = ("bbox", "csr", "cython")
+        x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d_ng(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -192,10 +192,10 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth = "lut_ocl"
-        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        meth = ("bbox", "lut", "opencl")
+        x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -217,10 +217,10 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth = "CSR_ocl"
-        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        meth = ("bbox", "csr", "opencl")
+        x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -252,7 +252,7 @@ class TestMaskBeamstop(unittest.TestCase):
         detector = detectors.Detector(pixel1=0.0001, pixel2=0.0001)
         self.ai = AzimuthalIntegrator(dist=0.1, poni1=0.03, poni2=0.03, detector=detector)
         self.data = fabio.open(self.dataFile).data
-        self.tth, self.I = self.ai.integrate1d(self.data, 1000, unit="2th_deg")
+        self.tth, self.I = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg")
         self.mask = self.ai.ttha < numpy.deg2rad(3.7)
 
     def test_nomask(self):
@@ -271,18 +271,18 @@ class TestMaskBeamstop(unittest.TestCase):
         """
         With a mask with and without limits
         """
-        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox")
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox")
         self.assertAlmostEqual(tth[0], 3.7, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
     def test_mask_LUT(self):
         """
         With a mask with and without limits
         """
-        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT")
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT")
         self.assertAlmostEqual(tth[0], 3.7, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
@@ -290,18 +290,18 @@ class TestMaskBeamstop(unittest.TestCase):
         """
         With a mask with and without limits
         """
-        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl")
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl")
         self.assertTrue(tth[0] > 3.5, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
     def test_nomask_LUT(self):
         """
         without mask, tth value should start at 0
         """
-        tth, _ = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut")
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method="lut")
         self.assertAlmostEqual(tth[0], 0.0, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, _ = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method="lut", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
@@ -309,9 +309,9 @@ class TestMaskBeamstop(unittest.TestCase):
         """
         without mask, tth value should start at 0
         """
-        tth, _ = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut_ocl")
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method="lut_ocl")
         self.assertAlmostEqual(tth[0], 0.0, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, _ = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
 
