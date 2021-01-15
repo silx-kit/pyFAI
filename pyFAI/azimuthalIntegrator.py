@@ -1559,7 +1559,7 @@ class AzimuthalIntegrator(Geometry):
         return result
 
     _integrate1d_ng = integrate1d_ng
-    integrate1d = integrate1d_legacy
+    integrate1d = integrate1d_ng
 
     def integrate_radial(self, data, npt, npt_rad=100,
                          correctSolidAngle=True,
