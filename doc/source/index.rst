@@ -9,7 +9,7 @@
 Fast Azimuthal Integration using Python
 =======================================
 
-PyFAI is a python libary for azimuthal integration of X-Ray/neutron scattering data acquired with area-detectors. 
+PyFAI is a python libary for azimuthal integration of X-ray/neutron/electron scattering data acquired with area-detectors. 
 For this, images needs to be re-binned in polar coordinate systems. 
 Additional tools are provided to calibrate the experimental setup, i.e. define where the detector is positionned in space considering the sample and the incident beam. 
 
@@ -17,20 +17,34 @@ Additional tools are provided to calibrate the experimental setup, i.e. define w
    :align: center
    :alt: PyFAI is about regridding image in polar space.
 
-The sub-title of the project, *the space-folder*, is related to the expertise acquired in re-distributing the signal acquired in one geometry (often cartesian) 
-into another one (often polar) while propagating properly the associated error. Unlike interpolation, the flux is conserved in those transformations, and can be 
-used for any type of space transformation, including image distortion and many more.     
+The core idea is to re-distribute the signal acquired with the experimental geometry 
+into a geometry suitable for further analysis like Rietveld refinement for power data 
+or Inverse Fourier Transform for SAXS data.    
+Unlike interpolation, this re-distribution conserves the signal, its variance and 
+can used for other type of transformation like distortion correction.  
+
+Since, the alignement of the beam, of the sample and of the detector can never be perfect,
+pyFAI tries to cope with it by calibrating their relative position using a 
+reference sample material (called calibrant). 
+After calibration, the geometry can be saved in a *poni-file* and used to perform azimuthal averaging
+of several samples. 
+The geometry used by pyFAi is described in this scheme:
+     
+.. figure:: img/PONI.png
+   :align: center
+   :alt: The geometry used by pyFAI is inspired by SPD
+
+ 
+
 
 This documentation starts with a general descriptions of the pyFAI library.
 This first chapter contains an introduction to pyFAI, what it is, what it aims at
 and how it works (from the scientists' point of view).
 Especially, geometry, calibration, azimuthal integration algorithms are described
 and pixel splitting schemes are explained there. 
-The most important part is this scheme explaining the geometry used: 
 
-.. figure:: img/PONI.png
-   :align: center
-   :alt: The geometry used by pyFAI is inspired by SPD
+Follows tutorials, manual pages of applications, the description of the programming interface 
+(use the search bar as it is pretty long) and the instruction on how to install the software on various platforms. 
 
 .. toctree::
    :maxdepth: 1
