@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "18/01/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2414,8 +2414,8 @@ class AzimuthalIntegrator(Geometry):
                                                empty=dummy if dummy is not None else self._empty,
                                                variance=variance)
                 I = res.intensity
-                bins_rad = res.bins0
-                bins_azim = res.bins1
+                bins_rad = res.radial
+                bins_azim = res.azimuthal
                 signal2d = res.signal
                 norm2d = res.normalization
                 count = res.count
