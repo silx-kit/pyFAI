@@ -3,8 +3,8 @@
 :Keywords: List of publications
 
 
-Publication about pyFAI
-=======================
+Publications about pyFAI
+========================
 
 * *PyFAI, a versatile library for azimuthal regrouping*,
   J Kieffer & D Karkoulis;

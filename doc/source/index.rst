@@ -28,11 +28,11 @@ pyFAI tries to cope with it by calibrating their relative position using a
 reference sample material (called calibrant). 
 After calibration, the geometry can be saved in a *poni-file* and used to perform azimuthal averaging
 of several samples. 
-The geometry used by pyFAI is described in this scheme:
+The geometry used is described in this scheme:
      
 .. figure:: img/PONI.png
    :align: center
-   :alt: The geometry used by pyFAI defined by 3 distances (in meter): 
+   :alt: The geometry used in pyFAI defined by 3 distances (in meter): 
          the sample detector distance (normal, not along the beam), 
          the coordinates of the orthogonal projection of the sample on the detector (called PONI)
          and 3 rotations (in radians) around the vertical, horzontal and incident beam (also horzontal)  
@@ -40,15 +40,17 @@ The geometry used by pyFAI is described in this scheme:
  
 
 This documentation starts with a general descriptions of the pyFAI library.
-This first chapter contains an introduction to pyFAI, what it is, what it aims at
+This first chapter contains an introduction, what it is, what it aims at
 and how it works (from the scientists' point of view).
-Especially, geometry, calibration, azimuthal integration algorithms are described
-and pixel splitting schemes are explained there. 
+Especially, geometry, calibration, azimuthal integration algorithms are described.
+Pixel splitting schemes are also explained there. 
 
-The typical usage of the command line application is described in cookbooks section and advanced tutorials explain
-the internal mechanics within pyFAI. 
+The second part is about how to use pyFAI, it starts with the typical usage on the command line
+in the *cookbooks* section and advanced usage from the Python interface is explained in the *tutorials* section 
+wich describes some parts of the internal mechanics. 
 Finally, the manual pages of applications and the description of the programming interface (API) are appended.
-The instruction for the installation on various platforms is also provided.
+Despite the installation section could be as simple a: 
+``pip install pyFAI``, full instructions for the installation are also provided, addressing platorm specific issues.
 
 .. toctree::
    :maxdepth: 1
