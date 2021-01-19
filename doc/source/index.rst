@@ -17,7 +17,7 @@ Additional tools are provided to calibrate the experimental setup, i.e. define w
    :align: center
    :alt: PyFAI is about regridding image in polar space.
 
-The core idea is to re-distribute the signal acquired with the experimental geometry 
+The core idea is to redistribute the signal acquired with the experimental geometry 
 into a geometry suitable for further analysis like Rietveld refinement for power data 
 or Inverse Fourier Transform for SAXS data.    
 Unlike interpolation, this re-distribution conserves the signal, its variance and 
