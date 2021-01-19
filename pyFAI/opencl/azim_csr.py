@@ -488,7 +488,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wg_min, wg_max = self.workgroup_size["csr_integrate"]
             if wg_max == 1:
-                wg_min, wg_max = min(self.workgroup_size["csr_integrate_single"])
+                wg_min, wg_max = self.workgroup_size["csr_integrate_single"]
                 wdim_bins = (self.bins + wg_max - 1) & ~(wg_max - 1),
                 integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg_max,), *kw_int.values())
                 events.append(EventDescription("csr_integrate_single", integrate))
