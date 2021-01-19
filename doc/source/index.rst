@@ -28,7 +28,7 @@ pyFAI tries to cope with it by calibrating their relative position using a
 reference sample material (called calibrant). 
 After calibration, the geometry can be saved in a *poni-file* and used to perform azimuthal averaging
 of several samples. 
-The geometry used by pyFAi is described in this scheme:
+The geometry used by pyFAI is described in this scheme:
      
 .. figure:: img/PONI.png
    :align: center
