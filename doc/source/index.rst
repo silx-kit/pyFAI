@@ -11,7 +11,7 @@ Fast Azimuthal Integration using Python
 
 PyFAI is a python libary for azimuthal integration of X-ray/neutron/electron scattering data acquired with area detectors. 
 For this, images needs to be re-binned in polar coordinate systems. 
-Additional tools are provided to calibrate the experimental setup, i.e. define where the detector is positionned in space considering the sample and the incident beam. 
+Additional tools are provided to calibrate the experimental setup, i.e. define where the detector is positioned in space considering the sample and the incident beam. 
 
 .. figure:: img/overview.png
    :align: center
