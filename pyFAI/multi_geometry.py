@@ -234,7 +234,6 @@ class MultiGeometry(object):
                                     method=method, unit=self.unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
-
             count += res.count
             signal += res.sum_signal
             normalization += res.sum_normalization * sac
