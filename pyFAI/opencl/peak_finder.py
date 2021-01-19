@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "02/10/2020"
+__date__ = "19/01/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -188,9 +188,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         """
         events = []
         self.send_buffer(data, "image")
-        wg = self.workgroup_size["memset_ng"]
-        wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
-        memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
+        wg = max(self.workgroup_size["memset_ng"])
+        wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
+        memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
         events.append(EventDescription("memset_ng", memset))
 
         # Prepare preprocessing
@@ -278,13 +278,13 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_corr["poissonian"] = numpy.int8(1)
         else:
             kw_corr["poissonian"] = numpy.int8(0)
-        wg = self.workgroup_size["corrections4"]
-        ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
+        wg = max(self.workgroup_size["corrections4"])
+        wdim_data = (self.size + wg - 1) & ~(wg - 1),
+        ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
         events.append(EventDescription("corrections", ev))
 
         # Prepare sigma-clipping
         kw_int = self.cl_kernel_args["csr_sigma_clip4"]
-        wg = self.workgroup_size["csr_sigma_clip4"][0]
         kw_int["cutoff"] = numpy.float32(cutoff_clip)
         kw_int["cycle"] = numpy.int32(cycle)
 
@@ -293,13 +293,14 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         else:
             kw_int["azimuthal"] = numpy.int32(0)
 
-        wdim_bins = (self.bins * wg),
-        if wg == 1:
+        wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
+        if wg_max == 1:
             raise RuntimeError("csr_sigma_clip4 is not yet available in single threaded OpenCL !")
-            integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
-            events.append(EventDescription("integrate4_single", integrate))
+#             integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
+#             events.append(EventDescription("integrate4_single", integrate))
         else:
-            integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg,), *kw_int.values())
+            wdim_bins = (self.bins * wg_min),
+            integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
             events.append(EventDescription("csr_sigma_clip4", integrate))
 
         # now perform the calc_from_1d on the device and count the number of pixels
@@ -317,7 +318,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_min"] = numpy.float32(0.0)
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
-        peak_search = self.program.find_peaks(self.queue, self.wdim_data, self.workgroup_size["corrections4"], *list(kw_proj.values()))
+        wg = max(self.workgroup_size["find_peaks"])
+        wdim_data = (self.size + wg - 1) & ~(wg - 1),
+        peak_search = self.program.find_peaks(self.queue, wdim_data, (wg,), *list(kw_proj.values()))
         events.append(EventDescription("peak_search", peak_search))
 
         # Return the number of peaks
