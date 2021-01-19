@@ -58,7 +58,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
     It also performs the preprocessing using the preproc kernel
     """
-    BLOCK_SIZE = 128
+    BLOCK_SIZE = 32
     # Intel CPU driver calims preferred workgroup is 128 !
     buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("output4", 4, numpy.float32, mf.WRITE_ONLY),
@@ -138,7 +138,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "dark_variance": None}
 
         if block_size is None:
-            block_size = self.BLOCK_SIZE
+            platform = self.ctx.devices[0].platform.name.lower()
+            if "nvidia" in  platform:
+                block_size = 32
+            elif "amd" in  platform:
+                block_size = 64
+            elif "intel" in  platform:
+                block_size = 128
+            else:
+                block_size = self.BLOCK_SIZE
 
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}

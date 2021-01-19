@@ -550,7 +550,7 @@ class AzimuthalIntegrator(Geometry):
                             polarization_factor=None, dark=None, flat=None,
                             method="csr", unit=units.Q, safe=True,
                             normalization_factor=1.0,
-                            block_size=32, profile=False, metadata=None):
+                            block_size=None, profile=False, metadata=None):
         """Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
