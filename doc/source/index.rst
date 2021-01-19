@@ -2,7 +2,7 @@
    sphinx-quickstart on Mon Nov 19 13:19:53 2012.
 
 :Author: Jérôme Kieffer
-:Date: 30/10/2020
+:Date: 19/01/2021
 :Keywords: generic description of the geometry
 :Target: General audience
 
@@ -32,10 +32,12 @@ The geometry used by pyFAI is described in this scheme:
      
 .. figure:: img/PONI.png
    :align: center
-   :alt: The geometry used by pyFAI is inspired by SPD
+   :alt: The geometry used by pyFAI defined by 3 distances (in meter): 
+         the sample detector distance (normal, not along the beam), 
+         the coordinates of the orthogonal projection of the sample on the detector (called PONI)
+         and 3 rotations (in radians) around the vertical, horzontal and incident beam (also horzontal)  
 
  
-
 
 This documentation starts with a general descriptions of the pyFAI library.
 This first chapter contains an introduction to pyFAI, what it is, what it aims at
@@ -43,8 +45,10 @@ and how it works (from the scientists' point of view).
 Especially, geometry, calibration, azimuthal integration algorithms are described
 and pixel splitting schemes are explained there. 
 
-Follows tutorials, manual pages of applications, the description of the programming interface 
-(use the search bar as it is pretty long) and the instruction on how to install the software on various platforms. 
+The typical usage of the command line application is described in cookbooks section and advanced tutorials explain
+the internal mechanics within pyFAI. 
+Finally, the manual pages of applications and the description of the programming interface (API) are appended.
+The instruction for the installation on various platforms is also provided.
 
 .. toctree::
    :maxdepth: 1
