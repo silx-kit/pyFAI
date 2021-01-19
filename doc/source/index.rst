@@ -21,7 +21,7 @@ The core idea is to redistribute the signal acquired with the experimental geome
 into a geometry suitable for further analysis, like Rietveld refinement for power data 
 or Inverse Fourier Transform for SAXS data.    
 Unlike interpolation, this re-distribution conserves the signal, its variance and 
-can used for other type of transformation like distortion correction.  
+can be used for other types of transformation like distortion correction.  
 
 Since, the alignement of the beam, of the sample and of the detector can never be perfect,
 pyFAI tries to cope with it by calibrating their relative position using a 
