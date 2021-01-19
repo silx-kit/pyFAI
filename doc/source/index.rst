@@ -20,7 +20,7 @@ Additional tools are provided to calibrate the experimental setup, i.e. define w
 The core idea is to redistribute the signal acquired with the experimental geometry 
 into a geometry suitable for further analysis, like Rietveld refinement for power data 
 or Inverse Fourier Transform for SAXS data.    
-Unlike interpolation, this re-distribution conserves the signal, its variance and 
+Unlike interpolation, this redistribution conserves the signal, its variance and 
 can be used for other types of transformation like distortion correction.  
 
 Since the alignment of the beam, the sample and the detector can never be perfect,
