@@ -23,7 +23,7 @@ or Inverse Fourier Transform for SAXS data.
 Unlike interpolation, this re-distribution conserves the signal, its variance and 
 can be used for other types of transformation like distortion correction.  
 
-Since, the alignement of the beam, of the sample and of the detector can never be perfect,
+Since the alignment of the beam, the sample and the detector can never be perfect,
 pyFAI tries to cope with it by calibrating their relative position using a 
 reference sample material (called calibrant). 
 After calibration, the geometry can be saved in a *poni-file* and used to perform azimuthal averaging
