@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:   Pierre Paleo <pierre.paleo@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -36,22 +36,24 @@ It is used in real space are used to blurs images, used in blob-detection
 algorithm.
 """
 
-__authors__ = ["Pierre Paleo", "Jerome Kieffer"]
+__authors__ = ["Pierre Paleo", "Jérôme Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/04/2020"
+__date__ = "11/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
 import cython
 import numpy
-cimport numpy
 from cython.parallel import prange
 
 
-def horizontal_convolution(float[:, ::1] img, float[::1] filter):
+def horizontal_convolution(float[:, ::1] img, 
+                           float[::1] filter):
     """
     Implements a 1D horizontal convolution with a filter.
     The only implemented mode is "reflect" (default in scipy.ndimage.filter)
+
+    Use Mixed precision accumulator
 
     :param img: input image
     :param filter: 1D array with the coefficients of the array
@@ -61,7 +63,7 @@ def horizontal_convolution(float[:, ::1] img, float[::1] filter):
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
         int x, y, fIndex, newpos
-        float sum, err, val, tmp
+        double acc
         float[:, ::1] output
 
     FILTER_SIZE = filter.shape[0]
@@ -75,21 +77,15 @@ def horizontal_convolution(float[:, ::1] img, float[::1] filter):
     output = numpy.zeros((IMAGE_H, IMAGE_W), dtype=numpy.float32)
     for y in prange(IMAGE_H, nogil=True):
         for x in range(IMAGE_W):
-            sum = 0.0
-            err = 0.0
+            acc = 0.0
             for fIndex in range(FILTER_SIZE):
                 newpos = x + fIndex - HALF_FILTER_SIZE
                 if newpos < 0:
                     newpos = - newpos - 1
                 elif newpos >= IMAGE_W:
                     newpos = 2 * IMAGE_W - newpos - 1
-                # sum += img[y,newpos] * filter[fIndex]
-                # implement Kahan summation
-                val = img[y, newpos] * filter[fIndex] - err
-                tmp = sum + val
-                err = (tmp - sum) - val
-                sum = tmp
-            output[y, x] += sum
+                acc += img[y, newpos] * filter[fIndex]
+            output[y, x] += <float> acc
     return numpy.asarray(output)
 
 
@@ -98,6 +94,8 @@ def vertical_convolution(float[:, ::1] img, float[::1] filter):
     Implements a 1D vertical convolution with a filter.
     The only implemented mode is "reflect" (default in scipy.ndimage.filter)
 
+    Use Mixed precision accumulator
+
     :param img: input image
     :param filter: 1D array with the coefficients of the array
     :return: array of the same shape as image with
@@ -106,7 +104,7 @@ def vertical_convolution(float[:, ::1] img, float[::1] filter):
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
         int x, y, fIndex, newpos
-        float sum, err, val, tmp
+        double acc
         float[:, ::1] output
 
     FILTER_SIZE = filter.shape[0]
@@ -120,21 +118,15 @@ def vertical_convolution(float[:, ::1] img, float[::1] filter):
     output = numpy.zeros((IMAGE_H, IMAGE_W), dtype=numpy.float32)
     for y in prange(IMAGE_H, nogil=True):
         for x in range(IMAGE_W):
-            sum = 0.0
-            err = 0.0
+            acc = 0.0
             for fIndex in range(FILTER_SIZE):
                 newpos = y + fIndex - HALF_FILTER_SIZE
                 if newpos < 0:
                     newpos = - newpos - 1
                 elif newpos >= IMAGE_H:
                     newpos = 2 * IMAGE_H - newpos - 1
-                # sum += img[y,newpos] * filter[fIndex]
-                # implement Kahan summation
-                val = img[newpos, x] * filter[fIndex] - err
-                tmp = sum + val
-                err = (tmp - sum) - val
-                sum = tmp
-            output[y, x] += sum
+                acc += img[newpos, x] * filter[fIndex]
+            output[y, x] += <float> acc
     return numpy.asarray(output)
 
 

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "08/01/2021"
 __satus__ = "development"
 
 import logging
@@ -45,7 +45,6 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 from pyFAI.gui.cli_calibration import Recalibration
-from pyFAI.third_party import six
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
@@ -61,7 +60,7 @@ def main():
     c.refine()
     c.postProcess()
     if c.interactive:
-        six.moves.input("Press enter to quit")
+        input("Press enter to quit")
 
 
 if __name__ == "__main__":

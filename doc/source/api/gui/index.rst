@@ -1,62 +1,14 @@
 pyFAI.gui package
 =================
 
-Subpackages
------------
-
-.. toctree::
-
-    dialog
-    helper
-    model
-    tasks
-    utils
-    widgets
-
-pyFAI.gui.ApplicationContext module
------------------------------------
-
-.. automodule:: pyFAI.gui.ApplicationContext
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyFAI.gui.CalibrationContext module
------------------------------------
-
-.. automodule:: pyFAI.gui.CalibrationContext
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyFAI.gui.CalibrationWindow module
-----------------------------------
-
-.. automodule:: pyFAI.gui.CalibrationWindow
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyFAI.gui.IntegrationDialog module
-----------------------------------
-
-.. automodule:: pyFAI.gui.IntegrationDialog
-    :members:
-    :undoc-members:
-    :show-inheritance:
+The package pyFAI.gui contains mainly the code of the graphical user interface widgets.
+This code is not intended to be used by users of pyFAI as a library hence it makes little sense
+to document it all here. Only documentation on the *Jupyter* tools are exposed. 
 
 pyFAI.gui.cli_calibration module
 --------------------------------
 
 .. automodule:: pyFAI.gui.cli_calibration
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyFAI.gui.diffmap_widget module
--------------------------------
-
-.. automodule:: pyFAI.gui.diffmap_widget
     :members:
     :undoc-members:
     :show-inheritance:
@@ -85,19 +37,3 @@ pyFAI.gui.peak_picker module
     :undoc-members:
     :show-inheritance:
 
-pyFAI.gui.setup module
-----------------------
-
-.. automodule:: pyFAI.gui.setup
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: pyFAI.gui
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -32,12 +32,10 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/06/2020"
+__date__ = "14/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
-
-include "numpy_common.pxi"
 
 # Imports at the Python level 
 import cython
@@ -53,26 +51,29 @@ _numpy_1_12_py2_bug = ((sys.version_info.major == 2) and
 from .isnan cimport isnan
 from cython cimport floating
 from libc.math cimport fabs, M_PI, sqrt
-cimport numpy as cnumpy
+
+from .shared_types cimport int8_t, uint8_t, int16_t, uint16_t, \
+                           int32_t, uint32_t, int64_t, uint64_t,\
+                           float32_t, float64_t
 
 # How position are stored
-ctypedef cnumpy.float64_t position_t
+ctypedef float64_t position_t
 position_d = numpy.float64
 
 # How weights or data are stored 
-ctypedef cnumpy.float32_t data_t
+ctypedef float32_t data_t
 data_d = numpy.float32
 
 # how data are accumulated 
-ctypedef cnumpy.float64_t acc_t
+ctypedef float64_t acc_t
 acc_d = numpy.float64
 
 # type of the mask:
-ctypedef cnumpy.int8_t mask_t
+ctypedef int8_t mask_t
 mask_d = numpy.int8
 
 # type of the indexes:
-ctypedef cnumpy.int32_t index_t
+ctypedef int32_t index_t
 index_d = numpy.int32
 
 cdef struct lut_t:
@@ -100,14 +101,14 @@ else:
                          ('count', acc_d)])
 
 ctypedef fused any_int_t:
-    cnumpy.uint8_t
-    cnumpy.uint16_t
-    cnumpy.uint32_t
-    cnumpy.uint64_t
-    cnumpy.int8_t
-    cnumpy.int16_t
-    cnumpy.int32_t
-    cnumpy.int64_t
+    uint8_t
+    uint16_t
+    uint32_t
+    uint64_t
+    int8_t
+    int16_t
+    int32_t
+    int64_t
 
 
 cdef:
@@ -125,11 +126,7 @@ cdef:
 
 
 from collections import namedtuple
-# TODO ... remove those namedtuple once splitpixel and splitbbox are upgraded ! 
-Integrate1dResult = namedtuple("Integrate1dResult", ["bins", "signal", "propagated"])
-Integrate2dResult = namedtuple("Integrate2dResult", ["signal", "bins0", "bins1", "propagated"])
-Integrate1dWithErrorResult = namedtuple("Integrate1dWithErrorResult", ["bins", "signal", "error", "propagated"])
-Integrate2dWithErrorResult = namedtuple("Integrate2dWithErrorResult", ["signal", "error", "bins0", "bins1", "propagated"])
+from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
 @cython.cdivision(True)
@@ -164,7 +161,7 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
                                        floating solidangle=1.0,
                                        floating polarization=1.0,
                                        floating absorption=1.0,
-                                       any_int_t mask=0,
+                                       mask_t mask=0,
                                        floating dummy=0.0,
                                        floating delta_dummy=0.0,
                                        bint check_dummy=False,
@@ -236,14 +233,33 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
 
 
 @cython.boundscheck(False)
-cdef void update_2d_accumulator(acc_t[:, :, ::1] out_data,
-                                int bin0,
-                                int bin1,
-                                preproc_t value,
-                                double weight=1.0) nogil:
+cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
+                                       int bin,
+                                       preproc_t value,
+                                       double weight=1.0) nogil:
+    """Update a 1D array at given position with the proper values 
+    
+    :param out_data: output 1D+(,4) accumulator
+    :param bin: in which bin assign this data
+    :param value: 4-uplet with (signal, variance, nomalisation, count)
+    :param weight: weight associated with this value 
+    :return: Nothing
+    """
+    out_data[bin, 0] += value.signal * weight
+    out_data[bin, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin, 2] += value.norm * weight
+    out_data[bin, 3] += value.count * weight
+
+
+@cython.boundscheck(False)
+cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
+                                       int bin0,
+                                       int bin1,
+                                       preproc_t value,
+                                       double weight=1.0) nogil:
     """Update a 2D array at given position with the proper values 
     
-    :param out_data: 2D+1 accululator
+    :param out_data: 2D+1 accumulator
     :param bin0, bin1: where to assign data 
     :return: Nothing
     """

@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
+#coding: utf-8
 #cython: embedsignature=True, language_level=3
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping:
-#cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2018-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2018-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Valentin Valls (Valentin.Valls@ESRF.eu)
 #
@@ -31,11 +31,9 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "30/04/2020"
-__copyright__ = "2018, ESRF"
+__date__ = "14/01/2021"
+__copyright__ = "2018-2021, ESRF"
 
-import numpy
-cimport numpy as cnumpy
 
 from libcpp.vector cimport vector
 from libcpp.list cimport list as clist
@@ -53,9 +51,10 @@ from cython cimport floating
 include "sparse_builder.pxi"
 include "regrid_common.pxi"
 
+
 def feed_histogram(SparseBuilder builder not None,
-                   cnumpy.ndarray pos not None,
-                   cnumpy.ndarray weights not None,
+                   pos,
+                   weights,
                    int bins=100,
                    double empty=0.0,
                    double normalization_factor=1.0):

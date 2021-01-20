@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -49,12 +49,11 @@ import json
 import __main__ as main
 from .opencl import ocl
 from .units import to_unit
-from .third_party import six
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime, h5py
 from .worker import Worker, _reduce_images
 from argparse import ArgumentParser
-urlparse = six.moves.urllib.parse.urlparse
+from urllib.parse import urlparse
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index, rot, trans')
@@ -302,7 +301,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         """
         if h5py is None:
             raise RuntimeError("h5py is needed to create HDF5 files")
-        dtype = h5py.special_dtype(vlen=six.text_type)
+        dtype = h5py.special_dtype(vlen=str)
 
         if self.hdf5 is None:
             raise RuntimeError("No output HDF5 file provided")
@@ -420,7 +419,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         ax.set_title("Execution time")
         ax.grid(True)
         fig.show()
-        six.moves.input("Enter to quit")
+        input("Enter to quit")
 
     def get_pos(self, filename=None, idx=None):
         """
@@ -431,7 +430,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         :param idx: index of current frame
         :return: namedtuple: index, rot, trans
         """
-        #         n = int(filename.split(".")[0].split("_")[-1]) - (self.offset or 0)
         if idx is None:
             n = self.inputfiles.index(filename) - self.offset
         else:
@@ -505,14 +503,13 @@ If the number of files is too large, use double quotes like "*.edf" """
         res = self.worker.process(frame)
 #        _tth, I = self.ai.integrate1d(frame, self.npt_rad, safe=False,
 #                                      method=self.method, unit=self.unit)
-        self.dataset[pos.rot, pos.trans, :] = res.intensity
+        self.dataset[pos.rot, pos.trans,:] = res.intensity
 
     def process(self):
         if self.dataset is None:
             self.makeHDF5()
         self.init_ai()
         t0 = time.perf_counter()
-        # self._idx = -1
         for f in self.inputfiles:
             self.process_one_file(f)
         tot = time.perf_counter() - t0

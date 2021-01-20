@@ -34,7 +34,7 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 
 __copyright__ = "2019-2020 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "12/01/2021"
 
 import logging
 import numpy
@@ -70,6 +70,10 @@ class TestOclHistogram(unittest.TestCase):
                 cls.precise = True
             else:
                 cls.precise = False
+            if "AMD" in cls.ctx.devices[0].platform.name:
+                logger.warning("Decreasing precision on amdgpu")
+                cls.precise = False
+
         cls.ai = AzimuthalIntegrator(detector="Pilatus100k")
 
     @classmethod
@@ -89,8 +93,8 @@ class TestOclHistogram(unittest.TestCase):
         data = numpy.ones(self.ai.detector.shape)
         tth = self.ai.array_from_unit(unit="2th_deg")
         npt = 500
-        ref = self.ai._integrate1d_legacy(data, npt, unit="2th_deg", method="numpy")
-        integrator = OCL_Histogram1d(tth, npt, devicetype="cpu")
+        ref = self.ai.integrate1d_legacy(data, npt, unit="2th_deg", method="numpy")
+        integrator = OCL_Histogram1d(tth, npt, ctx=self.ctx)
         solidangle = self.ai.solidAngleArray()
         res = integrator(data, solidangle=solidangle)
 
@@ -110,8 +114,9 @@ class TestOclHistogram(unittest.TestCase):
         ref = numpy.histogram(tth, npt, weights=solidangle)[0]
         sig = res.normalization.sum(axis=-1, dtype="float64")
         err = abs((sig - ref).sum())
+
         epsilon = 1e-5 if self.precise else 3e-3
-        self.assertLess(err, epsilon, "normalization content is the same: %s<%s" % (err, epsilon))
+        self.assertLess(err, epsilon, "normalization content is the same: %s<%s on device %s" % (err, epsilon, integrator.ctx.devices[0]))
         self.assertLess(abs(gaussian_filter1d(sig - ref, 9)).max(), 1.5, "normalization, after smoothing is flat")
 
         # histogram of signal

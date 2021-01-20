@@ -22,7 +22,7 @@ behenate :math:`AgBh`, …) and saves the results into a *.poni* file.
 Alternatively, geometries calibrated using Fit2D can be
 imported into pyFAI, including geometric distortions (i.e. optical-fiber
 tapers distortion) described as *spline-files*.
-For Fit2D compatibility, please refer to the :ref:`tutorials` on basic usage of pyFAI.
+For Fit2D compatibility, please refer to the :ref:`tutorial` on basic usage of pyFAI.
 
 By storing all parameters together in a single small file, the risk of mixing two
 parameters is highly reduced and we believe this helps performing better

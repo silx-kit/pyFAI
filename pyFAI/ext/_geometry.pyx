@@ -37,13 +37,11 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "29/04/2020"
+__date__ = "11/01/2021"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-
 cimport cython
-cimport numpy
 import numpy
 from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
@@ -96,7 +94,6 @@ cdef inline double f_t3(double p1, double p2, double p3, double sinRot1, double 
     return p1 * sinRot2 - p2 * cosRot2 * sinRot1 + p3 * cosRot1 * cosRot2
 
 
-@cython.cdivision(True)
 cdef inline double f_tth(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """Calculate 2 theta for 1 pixel
 
@@ -114,7 +111,6 @@ cdef inline double f_tth(double p1, double p2, double L, double sinRot1, double 
     return atan2(sqrt(t1 * t1 + t2 * t2), t3)
 
 
-@cython.cdivision(True)
 cdef inline double f_q(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3, double wavelength) nogil:
     """
     Calculate the scattering vector q for 1 pixel
@@ -128,7 +124,6 @@ cdef inline double f_q(double p1, double p2, double L, double sinRot1, double co
     return 4.0e-9 * M_PI / wavelength * sin(f_tth(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3) / 2.0)
 
 
-@cython.cdivision(True)
 cdef inline double f_chi(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """
     calculate chi for 1 pixel
@@ -144,7 +139,6 @@ cdef inline double f_chi(double p1, double p2, double L, double sinRot1, double 
     return atan2(t1, t2)
 
 
-@cython.cdivision(True)
 cdef inline double f_r(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """
     calculate r for 1 pixel, radius from beam center to current
@@ -163,7 +157,6 @@ cdef inline double f_r(double p1, double p2, double L, double sinRot1, double co
     # return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
 
 
-@cython.cdivision(True)
 cdef inline double f_cosa(double p1, double p2, double L) nogil:
     """
     calculate cosine of the incidence angle for 1 pixel
@@ -180,15 +173,11 @@ cdef inline double f_cosa(double p1, double p2, double L) nogil:
 ################################################################################
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
-@cython.cdivision(True)
 def calc_pos_zyx(double L, double poni1, double poni2,
                  double rot1, double rot2, double rot3,
-                 numpy.ndarray pos1 not None,
-                 numpy.ndarray pos2 not None,
-                 numpy.ndarray pos3=None):
+                 pos1 not None,
+                 pos2 not None,
+                 pos3=None):
     """Calculate the 3D coordinates in the sample's referential
 
     :param L: distance sample - PONI
@@ -256,14 +245,10 @@ def calc_pos_zyx(double L, double poni1, double poni2,
         return r3, r1, r2
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
-@cython.cdivision(True)
 def calc_tth(double L, double rot1, double rot2, double rot3,
-             numpy.ndarray pos1 not None,
-             numpy.ndarray pos2 not None,
-             numpy.ndarray pos3=None):
+             pos1 not None,
+             pos2 not None,
+             pos3=None):
     """
     Calculate the 2theta array (radial angle) in parallel
 
@@ -306,14 +291,10 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
         return numpy.asarray(out)
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
-@cython.cdivision(True)
 def calc_chi(double L, double rot1, double rot2, double rot3,
-             numpy.ndarray pos1 not None,
-             numpy.ndarray pos2 not None,
-             numpy.ndarray pos3=None,
+             pos1 not None,
+             pos2 not None,
+             pos3=None,
              bint chi_discontinuity_at_pi=True):
     """Calculate the chi array (azimuthal angles) using OpenMP
 
@@ -367,13 +348,9 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
         return numpy.asarray(out)
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
-@cython.cdivision(True)
 def calc_q(double L, double rot1, double rot2, double rot3,
-           numpy.ndarray pos1 not None,
-           numpy.ndarray pos2 not None,
+           pos1 not None,
+           pos2 not None,
            double wavelength, pos3=None):
     """
     Calculate the q (scattering vector) array using OpenMP
@@ -424,13 +401,9 @@ def calc_q(double L, double rot1, double rot2, double rot3,
         return numpy.asarray(out)
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
-@cython.cdivision(True)
 def calc_r(double L, double rot1, double rot2, double rot3,
-           numpy.ndarray pos1 not None, numpy.ndarray pos2 not None,
-           numpy.ndarray pos3=None):
+           pos1 not None, pos2 not None,
+           pos3=None):
     """
     Calculate the radius array (radial direction) in parallel
 
@@ -473,14 +446,10 @@ def calc_r(double L, double rot1, double rot2, double rot3,
         return numpy.asarray(out)
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
-@cython.cdivision(True)
 def calc_cosa(double L,
-              numpy.ndarray pos1 not None,
-              numpy.ndarray pos2 not None,
-              numpy.ndarray pos3=None):
+              pos1 not None,
+              pos2 not None,
+              pos3=None):
     """Calculate the cosine of the incidence angle using OpenMP.
     Used for sensors thickness effect corrections
 
@@ -513,19 +482,15 @@ def calc_cosa(double L,
         return numpy.asarray(out)
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
-@cython.cdivision(True)
 def calc_rad_azim(double L,
                   double poni1,
                   double poni2,
                   double rot1,
                   double rot2,
                   double rot3,
-                  numpy.ndarray pos1 not None,
-                  numpy.ndarray pos2 not None,
-                  numpy.ndarray pos3=None,
+                  pos1 not None,
+                  pos2 not None,
+                  pos3=None,
                   space="2th",
                   wavelength=None, 
                   bint chi_discontinuity_at_pi=True
@@ -621,10 +586,6 @@ def calc_rad_azim(double L,
         return nout
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
-@cython.cdivision(True)
 def calc_delta_chi(cython.floating[:, ::1] centers,
                    float_or_double[:, :, :, ::1] corners):
     """Calculate the delta chi array (azimuthal angles) using OpenMP

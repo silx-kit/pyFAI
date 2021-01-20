@@ -24,7 +24,7 @@
 
 __authors__ = ["J. Kieffer"]
 __license__ = "MIT"
-__date__ = "02/10/2020"
+__date__ = "20/01/2021"
 
 import unittest
 from ...test.utilstest import UtilsTest
@@ -39,9 +39,13 @@ def suite():
         from . import test_ocl_azim_csr
         from . import test_ocl_azim_lut
         from . import test_peak_finder
+        from . import test_ocl_sort
+        from . import test_openCL
         testSuite.addTests(test_addition.suite())
+        testSuite.addTests(test_openCL.suite())
         testSuite.addTests(test_ocl_histo.suite())
         testSuite.addTests(test_ocl_azim_csr.suite())
         testSuite.addTests(test_ocl_azim_lut.suite())
         testSuite.addTests(test_peak_finder.suite())
+        testSuite.addTests(test_ocl_sort.suite())
     return testSuite

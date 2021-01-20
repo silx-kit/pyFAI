@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/10/2020"
+__date__ = "19/11/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -138,7 +138,7 @@ class Nexus(object):
             logger.error("h5py module missing: NeXus not supported")
             raise RuntimeError("H5py module is missing")
 
-        pre_existing = os.path.exists(self.filename) or "w" in mode
+        pre_existing = os.path.exists(self.filename)
         if self.mode is None:
             if pre_existing:
                 self.mode = "r"
@@ -153,7 +153,7 @@ class Nexus(object):
             self.h5 = h5py.File(self.filename, mode=self.mode)
         self.to_close = []
 
-        if not pre_existing:
+        if not pre_existing or "w" in mode:
             self.h5.attrs["NX_class"] = "NXroot"
             self.h5.attrs["file_time"] = get_isotime()
             self.h5.attrs["file_name"] = self.filename

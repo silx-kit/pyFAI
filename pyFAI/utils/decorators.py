@@ -30,7 +30,7 @@ __authors__ = ["Jerome Kieffer", "H. Payno", "P. Knobel", "V. Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -39,7 +39,6 @@ import time
 import functools
 import logging
 import traceback
-import six
 from .. import _version
 
 timelog = logging.getLogger("pyFAI.timeit")
@@ -139,7 +138,7 @@ def deprecated_warning(type_, name, reason=None, replacement=None,
             deprecache.add(data)
 
     if deprecated_since is not None:
-        if isinstance(deprecated_since, six.string_types):
+        if isinstance(deprecated_since, (str,)):
             if deprecated_since not in _CACHE_VERSIONS:
                 hexversion = _version.calc_hexversion(string=deprecated_since)
                 _CACHE_VERSIONS[deprecated_since] = hexversion

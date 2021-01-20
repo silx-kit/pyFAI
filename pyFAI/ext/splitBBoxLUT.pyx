@@ -2,7 +2,7 @@
 #cython: embedsignature=True, language_level=3
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/07/2020"
+__date__ = "14/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -170,7 +170,6 @@ class HistoBBox1d(LutIntegrator):
 
         self.unit = unit
         self.lut_nbytes = lut.nbytes
-	#self.lut_checksum = crc32(self.lut)
 
     def calc_boundaries(self, pos0Range):
         """
@@ -262,50 +261,6 @@ class HistoBBox1d(LutIntegrator):
             self.pos0_min = 0
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
-    def calc_boundaries_nosplit(self, pos0Range):
-        """
-        Calculate self.pos0_min and self.pos0_max when no splitting is requested
-
-        :param pos0Range: 2-tuple containing the requested range
-        """
-        cdef:
-            int size = self.cpos0.size
-            bint check_mask = self.check_mask
-            mask_t[::1] cmask
-            position_t[::1] cpos0
-            position_t pos0_max, pos0_min, c
-            bint allow_pos0_neg = self.allow_pos0_neg
-            int idx
-
-        if pos0Range is not None:
-            self.pos0_min, self.pos0_maxin = pos0Range
-        else:
-            cpos0 = self.cpos0
-            pos0_min = pos0_max = cpos0[0]
-
-            if not allow_pos0_neg and pos0_min < 0:
-                pos0_min = pos0_max = 0
-
-            if check_mask:
-                cmask = self.cmask
-
-            with nogil:
-                for idx in range(size):
-                    c = cpos0[idx]
-                    if not allow_pos0_neg and c < 0:
-                        c = 0
-                    if not (check_mask and cmask[idx]):
-                        if c > pos0_max:
-                            pos0_max = c
-                        if c < pos0_min:
-                            pos0_min = c
-            self.pos0_min = pos0_min
-            self.pos0_maxin = pos0_max
-
-        if (not allow_pos0_neg) and self.pos0_min < 0:
-            self.pos0_min = 0
-        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
-
     def calc_lut(self):
         """
         calculate the max number of elements in the LUT and populate it
@@ -316,7 +271,7 @@ class HistoBBox1d(LutIntegrator):
             acc_t delta_left, delta_right, inv_area
             int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
             bint check_mask, check_pos1
-            cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
             position_t[::1] cpos1_min, cpos1_max
@@ -463,10 +418,10 @@ class HistoBBox1d(LutIntegrator):
         '''
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
-            cnumpy.int32_t k, idx, bin0, bins = self.bins, size, nnz
+            int32_t k, idx, bin0, bins = self.bins, size, nnz
             bint check_mask, check_pos1
             Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
-            cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             lut_t[:, ::1] lut
             position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
             mask_t[::1] cmask
@@ -556,109 +511,6 @@ class HistoBBox1d(LutIntegrator):
         self.lut_max_idx = outmax
         return lut
 
-
-    @property
-    def lut(self):
-        """Getter for the LUT as actual numpy array"""
-
-    def calc_lut_nosplit(self):
-        '''
-        calculate the max number of elements in the LUT and populate it
-        '''
-        cdef:
-            position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
-            cnumpy.int32_t k, idx, bin0, bins = self.bins, size, nnz
-            bint check_mask, check_pos1
-            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
-            cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
-            lut_t[:, ::1] lut
-            position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
-            mask_t[::1] cmask
-
-        size = self.size
-        if self.check_mask:
-            cmask = self.cmask
-            check_mask = True
-        else:
-            check_mask = False
-
-        if self.check_pos1:
-            check_pos1 = True
-            cpos1_min = self.cpos1_min
-            cpos1_max = self.cpos1_max
-            pos1_max = self.pos1_max
-            pos1_min = self.pos1_min
-        else:
-            check_pos1 = False
-
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-
-                pos0 = cpos0[idx]
-
-                if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
-                    continue
-
-                fbin0 = get_bin_number(pos0, pos0_min, delta)
-                bin0 = < int > fbin0
-
-                if (bin0 >= 0) and (bin0 < bins):
-                    outmax[bin0] += 1
-
-        lut_size = numpy.max(outmax)
-        # just recycle the outmax array
-        outmax[:] = 0
-
-        lut_nbytes = bins * lut_size * sizeof(lut_t)
-        #Check we have enough memory
-        if (os.name == "posix"):
-            key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
-            key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
-            if key_page_size*key_page_cnt:
-                try:
-                    memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
-                except OSError:
-                    pass
-                else:
-                    if memsize < lut_nbytes:
-                        raise MemoryError("Lookup-table (%i, %i) is %sGB whereas the memory of the system is only %sGB" %
-                                          (bins, lut_size, lut_nbytes>>30, memsize>>30))
-        # else hope we have enough memory
-
-        if (bins == 0) or (lut_size == 0):
-            # fix issue #271
-            msg = "The look-up table has dimension (%s,%s) which is a non-sense." +\
-                  "Did you mask out all pixel or is your image out of the geometry range?"
-            raise RuntimeError(msg % (bins, lut_size))
-        lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_t), format="if")
-        memset(&lut[0,0], 0, lut_nbytes)
-
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-
-                pos0 = cpos0[idx]
-
-                if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
-                    continue
-
-                fbin0 = get_bin_number(pos0, pos0_min, delta)
-                bin0 = < int > fbin0
-
-                if (bin0 < 0) or (bin0 >= bins):
-                    continue
-                k = outmax[bin0]
-                lut[bin0, k].idx = idx
-                lut[bin0, k].coef = onef
-                outmax[bin0] += 1  # k+1
-
-        self.lut_max_idx = outmax
-        return lut
-
-
     @property
     def lut(self):
         """Getter for the LUT as actual numpy array"""
@@ -727,7 +579,7 @@ class HistoBBox2d(object):
         :param unit: can be 2th_deg or r_nm^-1 ...
         """
         cdef:
-            cnumpy.int32_t size, bin0, bin1
+            int32_t size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
         assert pos1.size == self.size, "pos1 size"
@@ -789,7 +641,7 @@ class HistoBBox2d(object):
         Called by constructor to calculate the boundaries and the bin position
         """
         cdef:
-            cnumpy.int32_t idx, size = self.cpos0.size
+            int32_t idx, size = self.cpos0.size
             bint check_mask = self.check_mask
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
@@ -878,7 +730,7 @@ class HistoBBox2d(object):
             position_t[::1] cpos0_inf = self.cpos0_inf
             position_t[::1] cpos1_inf = self.cpos1_inf
             position_t[::1] cpos1_sup = self.cpos1_sup
-            cnumpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
             lut_t[:, :, ::1] lut
             mask_t[:] cmask
             acc_t inv_area, delta_down, delta_up, delta_right, delta_left
@@ -1098,7 +950,6 @@ class HistoBBox2d(object):
         """
         cdef:
             tuple shape
-            int rc_before, rc_after
             lut_t[:, :, ::1] lut=self._lut
             numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary
         shape = (self._lut.shape[0] * self._lut.shape[1], self._lut.shape[2])
@@ -1149,7 +1000,7 @@ class HistoBBox2d(object):
 
         """
         cdef:
-            cnumpy.int32_t i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, lut_size = self.lut_size, size = self.size, i0 = 0, i1 = 0
+            int32_t i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, lut_size = self.lut_size, size = self.size, i0 = 0, i1 = 0
             acc_t acc_data = 0, acc_count = 0, epsilon = 1e-10
             data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False

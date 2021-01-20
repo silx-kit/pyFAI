@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/01/2019
+:Date: 07/01/2021
 :Keywords: Installation procedure on MacOSX
 :Target: System administrators
 
@@ -11,14 +11,16 @@ Install Python3:
 
 To install pyFAI on an *Apple* computer you will need a scientific Python3 stack.
 MacOSX provides by default Python2.7, you will need to install a recent version
-of Python3 (3.5 at least, 3.7 recommanded but newer version should be OK).
+of Python3 (3.6 at least).
 Those distribution are available as *dmg* images from:
-https://www.python.org/downloads/mac-osx/
+`Python.org <https://www.python.org/downloads/mac-osx/>`_
 
-After downloading, move the app into the *Applications* folder. 
+After downloading, move the **app** into the *Applications* folder. 
 
 Using a virtual environment:
 ----------------------------
+
+It is not adviced to use *pip* together with *sudo*. Always use a virtual environment !
 
 .. code-block:: shell
 
@@ -41,6 +43,9 @@ Get the sources from Github:
 
 .. code-block:: shell
 
+   python3 -m venv pyfai
+   source pyfai/bin/activate
+   pip install setuptools wheel pip
    wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
@@ -52,7 +57,7 @@ Get the sources from Github:
 About OpenMP
 ............
 
-OpenMP is a way to write multi-threaded code, running on multiple processors
+OpenMP is a way to write multi-threaded code, running on multiple cores
 simultaneously.
 PyFAI makes heavy use of OpenMP, but there is an issue with recent versions of
 MacOSX (>v10.6) where the default compiler of Apple, *Xcode*, dropped the
@@ -84,7 +89,8 @@ or `clang <http://clang.llvm.org/>`_ on your *Apple* computer.
 
 .. code-block:: shell
 
-    CC=gcc python setup.py build --openmp
+    pip install cython
+    CC=gcc python setup.py build --force-cython --openmp
     python setup.py bdist_wheel
     pip install --find-links=dist/ --pre --no-index --upgrade pyFAI
 

@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "08/01/2021"
 
 import numpy
 import logging
@@ -247,7 +247,7 @@ class ExperimentTask(AbstractCalibrationTask):
                 text = ["%0.1f" % (s * 10 ** 6) for s in [detector.pixel1, detector.pixel2]]
                 text = u" × ".join(text)
             except Exception as e:
-                # Is heterogeneous detectors have pixel sixe?
+                # Is heterogeneous detectors have pixel size?
                 _logger.debug(e, exc_info=True)
                 text = "N.A."
             self._detectorPixelSize.setText(text)

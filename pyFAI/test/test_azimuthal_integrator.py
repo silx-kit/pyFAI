@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "13/01/2021"
 
 import unittest
 import os
@@ -53,7 +53,6 @@ if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
 from pyFAI import units, detector_factory
 from ..utils import mathutil
-from ..third_party import six
 from pyFAI.utils.decorators import depreclog
 
 
@@ -157,11 +156,12 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare numpy histogram with results of fit2d
         """
-        tth, I = self.ai.integrate1d(self.data,
-                                     len(self.fit2d),
-                                     filename=self.tmpfiles["numpy"],
-                                     correctSolidAngle=False,
-                                     unit="2th_deg")
+        tth, I = self.ai.integrate1d_ng(self.data,
+                                        len(self.fit2d),
+                                        filename=self.tmpfiles["numpy"],
+                                        correctSolidAngle=False,
+                                        method=("no", "histogram", "cython"),
+                                        unit="2th_deg")
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -174,7 +174,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            six.moves.input("Press enter to quit")
+            input("Press enter to quit")
         self.assertLess(rwp, 11, "Rwp numpy/fit2d: %.3f" % rwp)
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
@@ -182,14 +182,12 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with results of fit2d
         """
-        tth, I = self.ai.integrate1d(self.data,
+        tth, I = self.ai.integrate1d_ng(self.data,
                                      len(self.fit2d),
                                      filename=self.tmpfiles["cython"],
                                      correctSolidAngle=False,
                                      unit='2th_deg',
-                                     method="cython")
-        # logger.info(tth)
-        # logger.info(I)
+                                     method=("no", "histogram", "cython"))
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cython/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -202,7 +200,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            six.moves.input("Press enter to quit")
+            input("Press enter to quit")
         self.assertLess(rwp, 11, "Rwp cython/fit2d: %.3f" % rwp)
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
@@ -216,12 +214,12 @@ class TestAzimHalfFrelon(unittest.TestCase):
         t0 = time.perf_counter()
         logger.info("in test_cythonSP_vs_fit2d Before SP")
 
-        tth, I = self.ai.integrate1d(self.data,
-                                     len(self.fit2d),
-                                     filename=self.tmpfiles["cythonSP"],
-                                     method="splitpixel",
-                                     correctSolidAngle=False,
-                                     unit="2th_deg")
+        tth, I = self.ai.integrate1d_ng(self.data,
+                                        len(self.fit2d),
+                                        filename=self.tmpfiles["cythonSP"],
+                                        method=("full", "histogram", "cython"),
+                                        correctSolidAngle=False,
+                                        unit="2th_deg")
         logger.info("in test_cythonSP_vs_fit2d Before")
         t1 = time.perf_counter() - t0
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
@@ -236,7 +234,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            six.moves.input("Press enter to quit")
+            input("Press enter to quit")
         self.assertLess(rwp, 11, "Rwp cythonSP/fit2d: %.3f" % rwp)
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
@@ -244,25 +242,24 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with numpy histogram
         """
-        tth_np, I_np = self.ai.integrate1d(self.__class__.data,
-                                           len(self.fit2d),
-                                           correctSolidAngle=False,
-                                           unit="2th_deg",
-                                           method="numpy")
-        tth_cy, I_cy = self.ai.integrate1d(self.__class__.data,
-                                           len(self.fit2d),
-                                           correctSolidAngle=False,
-                                           unit="2th_deg",
-                                           method="cython")
-        logger.info("before xrpd_splitPixel")
-        tth_sp, I_sp = self.ai.integrate1d(self.__class__.data,
-                                           len(self.fit2d),
-                                           correctSolidAngle=False,
-                                           unit="2th_deg",
-                                           method="splitpixel")
-        logger.info("After xrpd_splitPixel")
+        tth_np, I_np = self.ai.integrate1d_ng(self.__class__.data,
+                                              len(self.fit2d),
+                                              correctSolidAngle=False,
+                                              unit="2th_deg",
+                                              method=("no", "histogram", "numpy"))
+        tth_cy, I_cy = self.ai.integrate1d_ng(self.__class__.data,
+                                              len(self.fit2d),
+                                              correctSolidAngle=False,
+                                              unit="2th_deg",
+                                              method=("no", "histogram", "cython"))
+        tth_sp, I_sp = self.ai.integrate1d_ng(self.__class__.data,
+                                              len(self.fit2d),
+                                              correctSolidAngle=False,
+                                              unit="2th_deg",
+                                              method=("full", "histogram", "cython"))
+
         rwp = mathutil.rwp((tth_cy, I_cy), (tth_np, I_np))
-        logger.info("Rwp = %.3f", rwp)
+        logger.info("Histogram Cython/Numpy Rwp = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
             fig = pylab.figure()
@@ -275,7 +272,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            six.moves.input("Press enter to quit")
+            input("Press enter to quit")
 
         self.assertLess(rwp, 3, "Rwp cython/numpy: %.3f" % rwp)
 
@@ -343,7 +340,7 @@ class TestFlatimage(unittest.TestCase):
             sp = fig.add_subplot(111)
             sp.imshow(I, interpolation="nearest")
             fig.show()
-            six.moves.input("Press enter to quit")
+            input("Press enter to quit")
         I[I == -1.0] = 1.0
         assert abs(I.min() - 1.0) < self.epsilon
         assert abs(I.max() - 1.0) < self.epsilon
@@ -363,7 +360,7 @@ class TestFlatimage(unittest.TestCase):
             sp = fig.add_subplot(111)
             sp.imshow(I, interpolation="nearest")
             fig.show()
-            six.moves.input("Press enter to quit")
+            input("Press enter to quit")
         I[I == -1.0] = 1.0
         assert abs(I.min() - 1.0) < self.epsilon
         assert abs(I.max() - 1.0) < self.epsilon
@@ -450,11 +447,11 @@ class TestSaxs(unittest.TestCase):
         ref1d = {}
         ref2d = {}
 
-        data = fabio.open(self.edfPilatus).data[:ai.detector.shape[0], :ai.detector.shape[1]]
+        data = fabio.open(self.edfPilatus).data[:ai.detector.shape[0],:ai.detector.shape[1]]
         for method in methods:
             logger.debug("TestSaxs.test_normalization_factor method= " + method)
-            ref1d[method + "_1"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, error_model="poisson")
-            ref1d[method + "_10"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
+            ref1d[method + "_1"] = ai.integrate1d_ng(copy.deepcopy(data), 100, method=method, error_model="poisson")
+            ref1d[method + "_10"] = ai.integrate1d_ng(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref1d[method + "_1"].intensity.mean() / ref1d[method + "_10"].intensity.mean()
             ratio_s = ref1d[method + "_1"].sigma.mean() / ref1d[method + "_10"].sigma.mean()
 
@@ -488,9 +485,10 @@ class TestSaxs(unittest.TestCase):
         ai.setFit2D(2000, 870, 102.123456789)  # rational numbers are hell !
         ai.wavelength = 1e-10
         mask = img < 0
-        res_poisson = ai.integrate1d(img, 1000, mask=mask, error_model="poisson")
+        res_poisson = ai.integrate1d_ng(img, 1000, mask=mask, error_model="poisson")
         self.assertGreater(res_poisson.sigma.min(), 0, "Poisson error are positive")
-        res_azimuthal = ai.integrate1d(img, 1000, mask=mask, error_model="azimuthal")
+# TODO bug 1446 error-model "azimuthal" is not implemented in `integrate1d_ng`
+        res_azimuthal = ai.integrate1d_legacy(img, 1000, mask=mask, error_model="azimuthal")
         self.assertGreater(res_azimuthal.sigma.min(), 0, "Azimuthal error are positive")
 
 

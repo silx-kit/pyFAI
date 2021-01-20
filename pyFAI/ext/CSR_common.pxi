@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/07/2020"
+__date__ = "14/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -37,7 +37,6 @@ __license__ = "MIT"
 import cython
 from cython.parallel import prange
 import numpy
-cimport numpy as cnumpy
 
 from .preproc import preproc
 from ..containers import Integrate1dtpl
@@ -285,8 +284,8 @@ cdef class CsrIntegrator(object):
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
         cdef:
-            cnumpy.int32_t i, j, idx = 0, bins = self.bins, size = self.size
-            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
+            int32_t i, j, idx = 0, bins = self.bins, size = self.size
+            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0
             data_t empty
             acc_t[::1] sum_sig = numpy.empty(bins, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(bins, dtype=acc_d)
@@ -333,7 +332,7 @@ cdef class CsrIntegrator(object):
             sum_var[i] = acc_var
             sum_norm[i] = acc_norm
             sum_count[i] = acc_count
-            if acc_count > epsilon:
+            if acc_count > 0.0:
                 merged[i] = acc_sig / acc_norm
                 error[i] = sqrt(acc_var) / acc_norm
             else:

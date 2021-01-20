@@ -31,14 +31,15 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2020"
+__date__ = "20/11/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import json
-import numpy
+from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
+import numpy
 from .. import version
 from .nexus import Nexus, get_isotime
 
@@ -74,13 +75,23 @@ for idx, bg in enumerate(background_avg):
     return res
 
 
-def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
-    "Write the list of frames in HDF5"
+def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, extra={}):
+    """Write the list of frames into a HDF5 file
+    
+    :param filename: name of the file
+    :param frames: list of sparse frames (as built by sparsify)
+    :param beamline: name of the beamline as text
+    :param ai: Instance of geometry or azimuthal integrator
+    :param source: list of input files
+    :param extra: dict with extra metadata 
+    :return: None
+    """
     assert len(frames)
     with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
         instrument = nexus.new_instrument(instrument_name=beamline)
-        sparse_grp = nexus.new_class(instrument, "sparse_frames", class_type="NXdata")
-        instrument.parent.attrs["default"] = sparse_grp.name
+        entry = instrument.parent
+        sparse_grp = nexus.new_class(entry, "sparse_frames", class_type="NXdata")
+        entry.attrs["default"] = sparse_grp.name
         sparse_grp["frame_ptr"] = numpy.concatenate(([0], numpy.cumsum([i.intensity.size for i in frames]))).astype(dtype=numpy.uint32)
         index = numpy.concatenate([i.index for i in frames]).astype(numpy.uint32)
         intensity = numpy.concatenate([i.intensity for i in frames])
@@ -118,7 +129,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
             logger.error("Please upgrade your installation of h5py !!!")
 
         if ai is not None:
-            sparsify_grp = nexus.new_class(instrument, "sparsify", class_type="NXprocess")
+            sparsify_grp = nexus.new_class(entry, "sparsify", class_type="NXprocess")
             sparsify_grp["program"] = "pyFAI"
             sparsify_grp["sequence_index"] = 1
             sparsify_grp["version"] = version
@@ -127,9 +138,11 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
                 sparsify_grp["source"] = source
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")
             config_grp["type"] = "text/json"
-            config_grp["data"] = json.dumps(ai.get_config(), indent=2, separators=(",\r\n", ": "))
+            parameters = OrderedDict([("geometry", ai.get_config()),
+                                      ("sparsify", extra)])
+            config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "))
 
-            detector_grp = nexus.new_class(instrument, ai.detector.name, "NXdetector")
+            detector_grp = nexus.new_class(instrument, ai.detector.name.replace(" ", "_"), "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)
             dist_ds.attrs["units"] = "m"
             xpix_ds = detector_grp.create_dataset("x_pixel_size", data=ai.pixel2)
@@ -141,4 +154,11 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None):
             xbc_ds.attrs["units"] = "pixel"
             ybc_ds = detector_grp.create_dataset("beam_center_y", data=f2d["centerY"])
             ybc_ds.attrs["units"] = "pixel"
-
+            if ai.wavelength is not None:
+                monochromator_grp = nexus.new_class(instrument, "monchromator", "NXmonochromator")
+                wl_ds = monochromator_grp.create_dataset("wavelength", data=numpy.float32(ai.wavelength * 1e10))
+                wl_ds.attrs["units"] = "Å"
+                # wl_ds.attrs["resolution"] = 0.014
+#                 nrj_ds = monochromator_grp.create_dataset("energy", data=numpy.floaself.energy)
+#                 nrj_ds.attrs["units"] = "keV"
+#                 #nrj_ds.attrs["resolution"] = 0.014

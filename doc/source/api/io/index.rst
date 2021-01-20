@@ -17,6 +17,14 @@ pyFAI.io.integration_config module
     :undoc-members:
     :show-inheritance:
 
+pyFAI.io.nexus module
+---------------------
+
+.. automodule:: pyFAI.io.nexus
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pyFAI.io.ponifile module
 ------------------------
 
@@ -25,6 +33,13 @@ pyFAI.io.ponifile module
     :undoc-members:
     :show-inheritance:
 
+pyFAI.io.sparse_frame module
+----------------------------
+
+.. automodule:: pyFAI.io.sparse_frame
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Module contents
 ---------------

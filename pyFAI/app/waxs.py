@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "12/01/2021"
 __status__ = "production"
 
 import os
@@ -175,31 +175,31 @@ def main():
             else:
                 data = fabimg.data
             t1 = time.perf_counter()
-            integrator.integrate1d(data,
-                                   options.npt or min(fabimg.data.shape),
-                                   filename=outfile,
-                                   dummy=options.dummy,
-                                   delta_dummy=options.delta_dummy,
-                                   method=method1d,
-                                   unit=options.unit,
-                                   error_model=options.error_model,
-                                   polarization_factor=options.polarization_factor,
-                                   metadata=fabimg.header
-                                   )
+            integrator.integrate1d_ng(data,
+                                      options.npt or min(fabimg.data.shape),
+                                      filename=outfile,
+                                      dummy=options.dummy,
+                                      delta_dummy=options.delta_dummy,
+                                      method=method1d,
+                                      unit=options.unit,
+                                      error_model=options.error_model,
+                                      polarization_factor=options.polarization_factor,
+                                      metadata=fabimg.header
+                                      )
             t2 = time.perf_counter()
             if options.do_2d:
-                integrator.integrate2d(data,
-                                       options.npt or min(fabimg.data.shape),
-                                       360,
-                                       filename=azimFile,
-                                       dummy=options.dummy,
-                                       delta_dummy=options.delta_dummy,
-                                       method=method2d,
-                                       unit=options.unit,
-                                       error_model=options.error_model,
-                                       polarization_factor=options.polarization_factor,
-                                       metadata=fabimg.header
-                                       )
+                integrator.integrate2d_ng(data,
+                                          options.npt or min(fabimg.data.shape),
+                                          360,
+                                          filename=azimFile,
+                                          dummy=options.dummy,
+                                          delta_dummy=options.delta_dummy,
+                                          method=method2d,
+                                          unit=options.unit,
+                                          error_model=options.error_model,
+                                          polarization_factor=options.polarization_factor,
+                                          metadata=fabimg.header
+                                          )
                 msg = "%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs."
                 print(msg % (outfile, t1 - t0, t2 - t1, time.perf_counter() - t2))
             else:

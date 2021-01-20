@@ -13,8 +13,8 @@ h5py
 fabio
 scipy
 matplotlib
-mako
-pybind11
-pyopencl
+#mako
+#pybind11
+#pyopencl
 numexpr
 silx

@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2020"
+__date__ = "14/01/2021"
 __status__ = "stable"
 
 import io
@@ -76,6 +76,9 @@ except ImportError:
     sphinx = None
 
 PROJECT = "pyFAI"
+
+if sys.version_info[0] < 3:
+    raise RuntimeError("Python2 is no more supported")
 
 if "LANG" not in os.environ and sys.platform == "darwin" and sys.version_info[0] > 2:
     print("""WARNING: the LANG environment variable is not defined,
@@ -896,7 +899,7 @@ class sdist_debian(sdist):
                     self.filelist.exclude_pattern(pattern=base_file + ".html")
 
         # do not include third_party/_local files
-        self.filelist.exclude_pattern(pattern="*", prefix="pyFAI/third_party/_local")
+        # self.filelist.exclude_pattern(pattern="*", prefix="pyFAI/third_party/_local")
 
     def make_distribution(self):
         self.prune_file_list()

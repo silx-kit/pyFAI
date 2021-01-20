@@ -27,10 +27,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""
+Deprecated ... restore or delete !
+"""
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "18/02/2020"
+__date__ = "20/01/2021"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -49,6 +52,7 @@ logger = logging.getLogger(__name__)
 
 
 class OCL_Hist_Pixelsplit(object):
+
     def __init__(self, pos, bins, image_size, pos0Range=None, pos1Range=None, devicetype="all",
                  padded=False, block_size=32,
                  platformid=None, deviceid=None,
@@ -135,10 +139,10 @@ class OCL_Hist_Pixelsplit(object):
         result = numpy.ndarray(4, dtype=numpy.float32)
         pyopencl.enqueue_copy(self._queue, result, self._cl_mem["minmax"])
         print(result)
-        min0 = pos[:, :, 0].min()
-        max0 = pos[:, :, 0].max()
-        min1 = pos[:, :, 1].min()
-        max1 = pos[:, :, 1].max()
+        min0 = pos[:,:, 0].min()
+        max0 = pos[:,:, 0].max()
+        min1 = pos[:,:, 1].min()
+        max1 = pos[:,:, 1].max()
         minmax = (min0, max0, min1, max1)
 
         print(minmax)

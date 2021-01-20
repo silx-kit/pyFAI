@@ -36,28 +36,28 @@ detector and transform it. It is rather a description of the experimental setup.
 
 """
 
-__author__ = "Jerome Kieffer" 
+__author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France" 
-__date__ = "21/07/2020"    
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "08/01/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
-from math import pi 
+from math import pi
 from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
 import threading
+import json
 from collections import namedtuple, OrderedDict
-from six import PY2
 from . import detectors
 from . import units
 from .utils.decorators import deprecated
 from .utils import crc32, deg2rad
 from . import utils
-from .io import ponifile
+from .io import ponifile, integration_config
 
 logger = logging.getLogger(__name__)
 
@@ -209,25 +209,25 @@ class Geometry(object):
         lower, upper = azimuth_range
         error_msg = "Azimuthal range issue: Range [%s, %s] not in valid region %s in radians: Expect %s results !"
         if self.chiDiscAtPi:
-            txt_range = "[-pi; pi[" if PY2 else "[-π; π[" 
+            txt_range = "[-π; π["
             lower_bound = -pi
-            upper_bound = pi 
+            upper_bound = pi
         else:
-            txt_range = "[0; 2pi[" if PY2 else "[-0; 2π["
+            txt_range = "[-0; 2π["
             lower_bound = 0
-            upper_bound = 2*pi 
+            upper_bound = 2 * pi
 
-        if lower<lower_bound:
-            if upper<lower_bound:
+        if lower < lower_bound:
+            if upper < lower_bound:
                 logger.warning(error_msg, lower, upper, txt_range, "empty")
             else:
-                logger.warning(error_msg, lower, upper, txt_range,"partial")
+                logger.warning(error_msg, lower, upper, txt_range, "partial")
             return True
-        elif lower>upper_bound:
+        elif lower > upper_bound:
             logger.warning(error_msg, lower, upper, txt_range, "empty")
             return True
-        else: 
-            if upper>upper_bound:
+        else:
+            if upper > upper_bound:
                 logger.warning(error_msg, lower, upper, txt_range, "partial")
                 return True
         return False
@@ -247,8 +247,6 @@ class Geometry(object):
             azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
         return azimuth_range
-
-        
 
     def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None):
         """
@@ -723,10 +721,10 @@ class Geometry(object):
                                 else:
                                     corners = numpy.zeros((shape[0], shape[1], 4, 2),
                                                           dtype=numpy.float32)
-                                    corners[:, :, 0, :] = res[:-1, :-1, :]
-                                    corners[:, :, 1, :] = res[1:, :-1, :]
-                                    corners[:, :, 2, :] = res[1:, 1:, :]
-                                    corners[:, :, 3, :] = res[:-1, 1:, :]
+                                    corners[:,:, 0,:] = res[:-1,:-1,:]
+                                    corners[:,:, 1,:] = res[1:,:-1,:]
+                                    corners[:,:, 2,:] = res[1:, 1:,:]
+                                    corners[:,:, 3,:] = res[:-1, 1:,:]
                             else:
                                 corners = res
 
@@ -745,13 +743,13 @@ class Geometry(object):
                         if chi.shape[:2] == shape:
                             corners[..., 1] = chi
                         else:
-                            corners[:shape[0], :shape[1], :, 1] = chi[:shape[0], :shape[1], :]
+                            corners[:shape[0],:shape[1],:, 1] = chi[:shape[0],:shape[1],:]
                         if space is not None:
                             rad = unit.equation(x, y, z, self._wavelength)
                             if rad.shape[:2] == shape:
                                 corners[..., 0] = rad
                             else:
-                                corners[:shape[0], :shape[1], :, 0] = rad[:shape[0], :shape[1], :]
+                                corners[:shape[0],:shape[1],:, 0] = rad[:shape[0],:shape[1],:]
                     self._cached_array[key] = corners
 
         res = self._cached_array[key]
@@ -929,8 +927,8 @@ class Geometry(object):
                     else:
                         twoPi = 2.0 * numpy.pi
                         center = numpy.atleast_3d(center)
-                        delta = numpy.minimum(((corner[:, :, :, 1] - center) % twoPi),
-                                              ((center - corner[:, :, :, 1]) % twoPi))
+                        delta = numpy.minimum(((corner[:,:,:, 1] - center) % twoPi),
+                                              ((center - corner[:,:,:, 1]) % twoPi))
                         self._cached_array[key] = delta.max(axis=-1)
         return self._cached_array[key]
 
@@ -1058,10 +1056,10 @@ class Geometry(object):
             corners = numpy.zeros(z.shape + (3,))
             for i, v in enumerate((z, y, x)):
                 corners[..., i] = v
-            A = corners[..., 0, :]
-            B = corners[..., 1, :]
-            C = corners[..., 2, :]
-            D = corners[..., 3, :]
+            A = corners[..., 0,:]
+            B = corners[..., 1,:]
+            C = corners[..., 2,:]
+            D = corners[..., 3,:]
             A.shape = -1, 3
             B.shape = -1, 3
             C.shape = -1, 3
@@ -1111,8 +1109,8 @@ class Geometry(object):
                                          numpy.arange(max1) + 0.5)
             sY = self.spline.splineFuncY(numpy.arange(max2) + 0.5,
                                          numpy.arange(max1 + 1))
-            dX = sX[:, 1:] - sX[:, :-1]
-            dY = sY[1:, :] - sY[:-1, :]
+            dX = sX[:, 1:] - sX[:,:-1]
+            dY = sY[1:,:] - sY[:-1,:]
             ds = (dX + 1.0) * (dY + 1.0)
 
         cosa = self._cached_array.get("cos_incidence")
@@ -1240,7 +1238,7 @@ class Geometry(object):
         """
         try:
             with open(filename) as f:
-                dico = json.load(f) 
+                dico = json.load(f)
         except Exception:
             logger.info("Unable to parse %s as JSON file, defaulting to PoniParser", filename)
             poni = ponifile.PoniFile(data=filename)
@@ -1248,7 +1246,7 @@ class Geometry(object):
             config = integration_config.ConfigurationReader(dico)
             poni = config.pop_ponifile()
         self._init_from_poni(poni)
-            
+
         return self
 
     read = load
@@ -2041,7 +2039,6 @@ class Geometry(object):
                                     rot1)  # 3x3 matrix
 
         return rotation_matrix
-
 
 # ############################################
 # Accessors and public properties of the class

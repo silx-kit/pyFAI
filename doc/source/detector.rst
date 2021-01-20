@@ -105,7 +105,7 @@ Conclusion
 Detector definition in pyFAI is very versatile.
 Fortunately, most detectors are already described, making the usage transparent
 for most users.
-There are a couple of :ref:`tutorials` on detector definition which will help
+There are a couple of :ref:`tutorial` on detector definition which will help
 you understanding the underlying mechanism:
 
 * **Distortion** which explains how to correct images for geometric distortion

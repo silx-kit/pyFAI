@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "13/01/2021"
 
 import unittest
 import random
@@ -91,7 +91,8 @@ class TestSolidAngle(unittest.TestCase):
         data = fabio.open(pilatusFile).data
         data[data < 0] = 0  # discard negative pixels
 
-        tth, I_nogood = ai.integrate1d(data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=False)
+        method = ("bbox", "histogram", "cython")
+        tth, I_nogood = ai.integrate1d_ng(data, 1770, unit="2th_deg", radial_range=[0, 56], method=method, correctSolidAngle=False)
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_nogood - I_fit2d).max()
         mean_I = abs(I_nogood - I_fit2d).mean()
@@ -99,7 +100,7 @@ class TestSolidAngle(unittest.TestCase):
         self.assertTrue(delta_I > 100, 'Error on (wrong) I are large: %s >100' % delta_I)
         self.assertTrue(mean_I > 2, 'Error on (wrong) I are large: %s >2' % mean_I)
 
-        tth, I_good = ai.integrate1d(data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=3)
+        tth, I_good = ai.integrate1d_ng(data, 1770, unit="2th_deg", radial_range=[0, 56], method=method, correctSolidAngle=3)
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_good - I_fit2d).max()
         mean_I = abs(I_good - I_fit2d).mean()
@@ -167,10 +168,11 @@ class TestBug88SolidAngle(unittest.TestCase):
     """
 
     def testSolidAngle(self):
+        method = ("no", "histogram", "numpy")
         img = numpy.ones((1000, 1000), dtype=numpy.float32)
         ai = AzimuthalIntegrator(dist=0.01, detector="Titan", wavelength=1e-10)
-        t = ai.integrate1d(img, 1000, method="numpy")[1].max()
-        f = ai.integrate1d(img, 1000, method="numpy", correctSolidAngle=False)[1].max()
+        t = ai.integrate1d_ng(img, 1000, method=method)[1].max()
+        f = ai.integrate1d_ng(img, 1000, method=method, correctSolidAngle=False)[1].max()
         self.assertAlmostEqual(f, 1, 5, "uncorrected flat data are unchanged")
         self.assertNotAlmostEqual(f, t, 1, "corrected and uncorrected flat data are different")
 
@@ -200,15 +202,15 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "center rd2 = (q/2pi)**2")
 
     def test_corner(self):
-        rd2 = self.geo.corner_array(self.shape, unit=units.RecD2_NM, scale=False)[:, :, :, 0]
-        q = self.geo.corner_array(self.shape, unit=units.Q, use_cython=False, scale=False)[:, :, :, 0]
+        rd2 = self.geo.corner_array(self.shape, unit=units.RecD2_NM, scale=False)[:,:,:, 0]
+        q = self.geo.corner_array(self.shape, unit=units.Q, use_cython=False, scale=False)[:,:,:, 0]
         delta = rd2 - (q / (2 * numpy.pi)) ** 2
         self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2, delat=%s" % delta)
 
     def test_delta(self):
         drd2a = self.geo.deltaRd2(self.shape)
         rd2 = self.geo.rd2Array(self.shape)
-        rc = self.geo.corner_array(self.shape, unit=units.RecD2_NM, scale=False)[:, :, :, 0]
+        rc = self.geo.corner_array(self.shape, unit=units.RecD2_NM, scale=False)[:,:,:, 0]
         drd2 = self.geo.deltaRd2(self.shape)
         self.assertTrue(numpy.allclose(drd2, drd2a, atol=1e-5), "delta rd2 = (q/2pi)**2, one formula with another")
         delta2 = abs(rc - numpy.atleast_3d(rd2)).max(axis=-1)
@@ -297,7 +299,7 @@ class TestFastPath(utilstest.ParametricTestCase):
                 geometries.append(dico)
                 q = transformations.quaternion_from_euler(-dico["rot1"], -dico["rot2"], dico["rot3"], axes="sxyz")
                 quaternions.append(q)
-                matrices.append(transformations.quaternion_matrix(q)[:3, :3])
+                matrices.append(transformations.quaternion_matrix(q)[:3,:3])
         cls.geometries = geometries
         cls.quaternions = quaternions
         cls.matrices = matrices
@@ -477,10 +479,10 @@ class TestCalcFrom(unittest.TestCase):
     def test_calcfrom12d(self):
         det = detector_factory("pilatus300k")
         ai = AzimuthalIntegrator(0.1, 0.05, 0.04, detector=det)
-        prof_1d = ai.integrate1d(numpy.random.random(det.shape), 200, unit="2th_deg")
+        prof_1d = ai.integrate1d_ng(numpy.random.random(det.shape), 200, unit="2th_deg")
         sig = numpy.sinc(prof_1d.radial * 10) ** 2
         img1 = ai.calcfrom1d(prof_1d.radial, sig, dim1_unit="2th_deg", mask=det.mask, dummy=-1)
-        new_prof_1d = ai.integrate1d(img1, 200, unit="2th_deg")
+        new_prof_1d = ai.integrate1d_ng(img1, 200, unit="2th_deg")
         delta = abs((new_prof_1d.intensity - sig)).max()
         self.assertLess(delta, 2e-3, "calcfrom1d works delta=%s" % delta)
         prof_2d = ai.integrate2d(img1, 400, 360, unit="2th_deg")

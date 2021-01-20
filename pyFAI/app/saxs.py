@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "12/01/2021"
 __status__ = "production"
 
 import os
@@ -154,29 +154,29 @@ def main():
             fimg = fabio.open(afile)
             t1 = time.perf_counter()
             if fimg.nframes > 1:
-                integrator.integrate1d(data=fimg.data,
-                                       npt=options.npt or min(fimg.data.shape),
-                                       dummy=options.dummy,
-                                       delta_dummy=options.delta_dummy,
-                                       filename=outfile,
-                                       variance=fimg.next().data,
-                                       method=method,
-                                       unit=options.unit,
-                                       error_model=options.error_model,
-                                       polarization_factor=options.polarization_factor,
-                                       metadata=fimg.header
-                                       )
+                integrator.integrate1d_ng(data=fimg.data,
+                                          npt=options.npt or min(fimg.data.shape),
+                                          dummy=options.dummy,
+                                          delta_dummy=options.delta_dummy,
+                                          filename=outfile,
+                                          variance=fimg.next().data,
+                                          method=method,
+                                          unit=options.unit,
+                                          error_model=options.error_model,
+                                          polarization_factor=options.polarization_factor,
+                                          metadata=fimg.header
+                                          )
             else:
-                integrator.integrate1d(data=fimg.data,
-                                       npt=options.npt or min(fimg.data.shape),
-                                       dummy=options.dummy,
-                                       delta_dummy=options.delta_dummy,
-                                       filename=outfile,
-                                       method=method,
-                                       unit=options.unit,
-                                       error_model=options.error_model,
-                                       polarization_factor=options.polarization_factor,
-                                       metadata=fimg.header)
+                integrator.integrate1d_ng(data=fimg.data,
+                                          npt=options.npt or min(fimg.data.shape),
+                                          dummy=options.dummy,
+                                          delta_dummy=options.delta_dummy,
+                                          filename=outfile,
+                                          method=method,
+                                          unit=options.unit,
+                                          error_model=options.error_model,
+                                          polarization_factor=options.polarization_factor,
+                                          metadata=fimg.header)
             t2 = time.perf_counter()
 
             msg = "%s,\t reading: %.3fs\t 1D integration: %.3fs."

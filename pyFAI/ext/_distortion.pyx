@@ -35,14 +35,12 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "26/06/2020"
-__copyright__ = "2011-2018, ESRF"
+__date__ = "14/01/2021"
+__copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 include "regrid_common.pxi"
-
 import cython
-cimport numpy as cnumpy
 import numpy
 from cython cimport view, floating
 from cython.parallel import prange
@@ -58,7 +56,6 @@ import time
 logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
 from ..utils import expand2d
-from ..third_party import six
 import fabio
 
 from .sparse_builder cimport SparseBuilder
@@ -109,7 +106,7 @@ cdef inline float _ceil_max4(float a, float b, float c, float d) nogil:
     return ceil(res)
 
 
-cdef inline void integrate(cnumpy.float32_t[:, ::1] box, float start, float stop, float slope, float intercept) nogil:
+cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float slope, float intercept) nogil:
     """Integrate in a box a line between start and stop, line defined by its slope & intercept
 
     :param box: buffer
@@ -255,7 +252,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
     :return: pos, delta1, delta2, shape_out, offset
     """
     cdef:
-        cnumpy.float32_t[:, :, :, ::1] pos
+        float32_t[:, :, :, ::1] pos
         int i, j, k, dim0, dim1, nb_corners
         bint do_shape = (shape_out is None)
         float BIG = numpy.finfo(numpy.float32).max
@@ -308,7 +305,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
 
 def calc_size(floating[:, :, :, ::1] pos not None,
               shape,
-              cnumpy.int8_t[:, ::1] mask=None,
+              int8_t[:, ::1] mask=None,
               offset=None):
     """Calculate the number of items per output pixel
 
@@ -320,10 +317,10 @@ def calc_size(floating[:, :, :, ::1] pos not None,
     """
     cdef:
         int i, j, k, l, shape_out0, shape_out1, shape_in0, shape_in1, min0, min1, max0, max1
-        cnumpy.int32_t[:, ::1] lut_size = numpy.zeros(shape, dtype=numpy.int32)
+        int32_t[:, ::1] lut_size = numpy.zeros(shape, dtype=numpy.int32)
         float A0, A1, B0, B1, C0, C1, D0, D1, offset0, offset1
         bint do_mask = mask is not None
-        cnumpy.int8_t[:, ::1] cmask
+        int8_t[:, ::1] cmask
     shape_in0, shape_in1 = pos.shape[0], pos.shape[1]
     shape_out0, shape_out1 = shape
 
@@ -362,8 +359,8 @@ def calc_size(floating[:, :, :, ::1] pos not None,
     return numpy.asarray(lut_size)
 
 
-def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
-             cnumpy.int8_t[:, :] mask=None):
+def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
+             int8_t[:, :] mask=None):
     """
     :param pos: 4D position array
     :param shape: output shape
@@ -375,21 +372,20 @@ def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_p
     cdef:
         int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1
         int offset0, offset1, box_size0, box_size1, size, k
-        cnumpy.int32_t idx = 0
+        int32_t idx = 0
         int err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
         lut_t[:, :, :] lut
         bint do_mask = mask is not None
-        cnumpy.float32_t[:, ::1] buffer
+        float32_t[:, ::1] buffer
     size = bin_size.max()
     shape0, shape1 = shape
     if do_mask:
         assert shape0 == mask.shape[0], "mask shape dim0"
         assert shape1 == mask.shape[1], "mask shape dim1"
     delta0, delta1 = max_pixel_size
-    cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
-    outMax[:, :] = 0
+    cdef int32_t[:, :] outMax = numpy.zeros((shape0, shape1), dtype=numpy.int32)
     buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
     #buffer_nbytes = buffer.nbytes
     if (size == 0):  # fix 271
@@ -494,15 +490,15 @@ def calc_LUT(cnumpy.float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_p
                 idx += 1
 
     # Hack to prevent memory leak !!!
-    cdef cnumpy.ndarray[cnumpy.float64_t, ndim = 2] tmp_ary = numpy.empty(shape=(shape0 * shape1, size), dtype=numpy.float64)
+    cdef float64_t[:, ::1] tmp_ary = numpy.empty(shape=(shape0 * shape1, size), dtype=numpy.float64)
     memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], tmp_ary.nbytes)
-    return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
+    return numpy.core.records.array(numpy.asarray(tmp_ary).view(dtype=lut_d),
                                     shape=(shape0 * shape1, size), dtype=lut_d,
                                     copy=True)
 
 
-def calc_CSR(cnumpy.float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
-             cnumpy.int8_t[:, ::1] mask=None):
+def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
+             int8_t[:, ::1] mask=None):
     """Calculate the Look-up table as CSR format
 
     :param pos: 4D position array
@@ -520,16 +516,15 @@ def calc_CSR(cnumpy.float32_t[:, :, :, :] pos not None, shape, bin_size, max_pix
         int lut_size, offset0, offset1, box_size0, box_size1
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        cnumpy.int32_t[::1] indptr, indices
-        cnumpy.float32_t[::1] data
-        int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
-        cnumpy.float32_t[:, ::1] buffer
+        int32_t[::1] indptr, indices
+        float32_t[::1] data
+        int32_t[:, ::1] outMax = numpy.zeros((shape0, shape1), dtype=numpy.int32)
+        float32_t[:, ::1] buffer
         bint do_mask = mask is not None
     if do_mask:
         assert shape0 == mask.shape[0], "mask shape dim0"
         assert shape1 == mask.shape[1], "mask shape dim1"
 
-    outMax[:, :] = 0
     indptr = numpy.concatenate(([numpy.int32(0)], bin_size.cumsum(dtype=numpy.int32)))
     lut_size = indptr[bins]
 
@@ -632,10 +627,10 @@ def calc_CSR(cnumpy.float32_t[:, :, :, :] pos not None, shape, bin_size, max_pix
     return (numpy.asarray(data), numpy.asarray(indices), numpy.asarray(indptr))
 
 
-def calc_sparse(cnumpy.float32_t[:, :, :, ::1] pos not None,
+def calc_sparse(float32_t[:, :, :, ::1] pos not None,
                 shape,
                 max_pixel_size=(8, 8),
-                cnumpy.int8_t[:, ::1] mask=None,
+                int8_t[:, ::1] mask=None,
                 format="csr",
                 int bins_per_pixel=8):
     """Calculate the look-up table (or CSR) using OpenMP
@@ -664,9 +659,9 @@ def calc_sparse(cnumpy.float32_t[:, :, :, ::1] pos not None,
         int idx, err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        cnumpy.int32_t[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
-        cnumpy.float32_t[::1] data, large_data
-        cnumpy.float32_t[:, ::1] buffer
+        int32_t[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
+        float32_t[::1] data, large_data
+        float32_t[:, ::1] buffer
         bint do_mask = mask is not None
         lut_t[:, :] lut
     if do_mask:
@@ -825,10 +820,10 @@ def calc_sparse(cnumpy.float32_t[:, :, :, ::1] pos not None,
     return res
 
 
-def calc_sparse_v2(cnumpy.float32_t[:, :, :, ::1] pos not None,
+def calc_sparse_v2(float32_t[:, :, :, ::1] pos not None,
                    shape,
                    max_pixel_size=(8, 8),
-                   cnumpy.int8_t[:, ::1] mask=None,
+                   int8_t[:, ::1] mask=None,
                    format="csr",
                    int bins_per_pixel=8,
                    builder_config=None):
@@ -857,7 +852,7 @@ def calc_sparse_v2(cnumpy.float32_t[:, :, :, ::1] pos not None,
         int idx, err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        cnumpy.float32_t[:, ::1] buffer
+        float32_t[:, ::1] buffer
         bint do_mask = mask is not None
 
     if do_mask:
@@ -1129,7 +1124,7 @@ def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
     cdef:
         int i, j, idx, size
         float coef, sum, error, t, y, value, cdummy, cdelta_dummy
-        cnumpy.float32_t[::1] lout, lin
+        float32_t[::1] lout, lin
         bint do_dummy = dummy is not None
     if do_dummy:
         cdummy = dummy
@@ -1185,7 +1180,7 @@ def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
         int i, j, idx, size
         float value, cdummy, cdelta_dummy
         double sum, coef
-        cnumpy.float32_t[::1] lout, lin
+        float32_t[::1] lout, lin
         bint do_dummy = dummy is not None
     if do_dummy:
         cdummy = dummy
@@ -1264,7 +1259,7 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
     cdef:
         int i, j, idx, size, bins
         float coef, error, sum, y, t, value, cdummy, cdelta_dummy
-        cnumpy.float32_t[::1] lout, lin, data
+        float32_t[::1] lout, lin, data
         int[::1] indices, indptr
         bint do_dummy = dummy is not None
 
@@ -1326,7 +1321,7 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
         int i, j, idx, size, bins
         float value, cdummy, cdelta_dummy
         double coef, sum
-        cnumpy.float32_t[::1] lout, lin, data
+        float32_t[::1] lout, lin, data
         int[::1] indices, indptr
         bint do_dummy = dummy is not None
 
@@ -1391,8 +1386,8 @@ def correct_LUT_preproc_double(image, shape_out,
         int i, j, idx, size, nchan
         float value, cdummy, cdelta_dummy
         double sum_sig, sum_var, sum_norm, coef
-        cnumpy.float32_t[::1]  lout, lerr
-        cnumpy.float32_t[:, ::1] lin, lprop
+        float32_t[::1]  lout, lerr
+        float32_t[:, ::1] lin, lprop
         bint do_dummy = dummy is not None
 
     if do_dummy:
@@ -1492,8 +1487,8 @@ def correct_CSR_preproc_double(image, shape_out,
         int i, j, idx, size, bins, nchan
         float value, cdummy, cdelta_dummy
         double sum_sig, sum_var, sum_norm, coef
-        cnumpy.float32_t[::1]  lout, lerr, data
-        cnumpy.float32_t[:, ::1] lin, lprop
+        float32_t[::1]  lout, lerr, data
+        float32_t[:, ::1] lin, lprop
         int[::1] indices, indptr
         bint do_dummy = dummy is not None
 
@@ -1587,8 +1582,8 @@ def uncorrect_LUT(image, shape, lut_t[:, :]LUT):
     cdef:
         int idx, j
         float total, coef
-        cnumpy.int8_t[::1] lmask
-        cnumpy.float32_t[::1] lout, lin
+        int8_t[::1] lmask
+        float32_t[::1] lout, lin
 
     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
     out = numpy.zeros(shape, dtype=numpy.float32)
@@ -1623,10 +1618,10 @@ def uncorrect_CSR(image, shape, LUT):
     cdef:
         int idx, j, nbins
         float total, coef
-        cnumpy.int8_t[:] lmask
-        cnumpy.float32_t[::1] lout, lin, data
-        cnumpy.int32_t[::1] indices = LUT[1]
-        cnumpy.int32_t[::1] indptr = LUT[2]
+        int8_t[:] lmask
+        float32_t[::1] lout, lin, data
+        int32_t[::1] indices = LUT[1]
+        int32_t[::1] indptr = LUT[2]
     out = numpy.zeros(shape, dtype=numpy.float32)
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
@@ -1667,7 +1662,7 @@ class Distortion(object):
         """
         :param detector: detector instance or detector name
         """
-        if isinstance(detector, six.string_types):
+        if isinstance(detector, str):
             self.detector = detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector
@@ -1710,8 +1705,6 @@ class Distortion(object):
                     self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
         return self.pos
 
-    @cython.wraparound(False)
-    @cython.boundscheck(False)
     def calc_LUT_size(self):
         """
         Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
@@ -1723,9 +1716,8 @@ class Distortion(object):
 
         """
         cdef int i, j, k, l, shape0, shape1
-        cdef cnumpy.ndarray[cnumpy.float32_t, ndim=4] pos
         cdef int[:, ::1] pos0min, pos1min, pos0max, pos1max
-        cdef cnumpy.ndarray[cnumpy.int32_t, ndim=2] lut_size
+        cdef int32_t[:, ::1] lut_size
         if self.pos is None:
             pos = self.calc_pos()
         else:
@@ -1745,22 +1737,20 @@ class Distortion(object):
                                 for k in range(pos0min[i, j], pos0max[i, j]):
                                     for l in range(pos1min[i, j], pos1max[i, j]):
                                         lut_size[k, l] += 1
-                    self.lut_size = lut_size.max()
-                    return lut_size
+                    np_lut_size = numpy.asarray(lut_size)
+                    self.lut_size = np_lut_size.max()
+                    return np_lut_size
 
-    @cython.wraparound(False)
-    @cython.boundscheck(False)
-    @cython.cdivision(True)
     def calc_LUT(self):
         cdef:
             int i, j, ms, ml, ns, nl, shape0, shape1, size
             int offset0, offset1, box_size0, box_size1
-            cnumpy.int32_t k, idx = 0
+            int32_t k, idx = 0
             float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
-            cnumpy.float32_t[:, :, :, ::1] pos
-            cnumpy.ndarray[lut_t, ndim=3] lut
-            cnumpy.ndarray[cnumpy.int32_t, ndim=2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
-            cnumpy.float32_t[:, ::1] buffer
+            float32_t[:, :, :, ::1] pos
+            lut_t[:, :, ::1] lut
+            int32_t[:, ::1] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
+            float32_t[:, ::1] buffer
         shape0, shape1 = self.shape
 
         if self.lut_size is None:
@@ -1845,7 +1835,7 @@ class Distortion(object):
                                         lut[ml, nl, k].coef = value
                                         outMax[ml, nl] = k + 1
                                 idx += 1
-                    self.LUT = lut.reshape(self.shape[0] * self.shape[1], self.lut_size)
+                    self.LUT = numpy.asarray(lut).reshape(self.shape[0] * self.shape[1], self.lut_size)
         return self.LUT
 
 ################################################################################
@@ -1874,7 +1864,7 @@ class Distortion(object):
             int i, j, idx, size
             float coef
             lut_t[:, ::1] LUT
-            cnumpy.float32_t[::1] lout, lin
+            float32_t[::1] lout, lin
         if self.LUT is None:
             self.calc_LUT()
         LUT = self.LUT
