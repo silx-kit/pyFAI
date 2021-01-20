@@ -36,7 +36,10 @@ __date__ = "20/01/2021"
 __status__ = "development"
 
 import logging
-logging.basicConfig(level=logging.WARNING, force=True)
+try:
+    logging.basicConfig(level=logging.WARNING, force=True)
+except ValueError:
+    logging.basicConfig(level=logging.WARNING)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
 try:
