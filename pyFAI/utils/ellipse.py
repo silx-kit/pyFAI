@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "20/01/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -66,44 +66,49 @@ def fit_ellipse(pty, ptx, _allow_delta=True):
         inv = numpy.linalg.inv(S)
     except numpy.linalg.LinAlgError:
         if not _allow_delta:
-            raise ValueError("Ellipse can't be fitted")
+            raise ValueError("Ellipse can't be fitted, LinAlgError")
         # Try to do the same with a delta
-        delta = 100
+        delta = 10
         ellipse = fit_ellipse(pty + delta, ptx + delta, _allow_delta=False)
         y0, x0, angle, wlong, wshort = ellipse
         return Ellipse(y0 - delta, x0 - delta, angle, wlong, wshort)
 
     C = numpy.zeros([6, 6])
-    C[0, 2] = C[2, 0] = 2
-    C[1, 1] = -1
+    C[0, 2] = C[2, 0] = 2.0
+    C[1, 1] = -1.0
     E, V = numpy.linalg.eig(numpy.dot(inv, C))
     m = numpy.logical_and(numpy.isfinite(E), numpy.isreal(E))
     E, V = E[m], V[:, m]
-    n = numpy.argmax(E) if E.max() > 0 else numpy.argmin(E)
+    n = numpy.argmax(E)  if E.max() > 0 else numpy.argmin(E)
     res = V[:, n]
-    b, c, d, f, g, a = res[1] / 2, res[2], res[3] / 2, res[4] / 2, res[5], res[0]
+    a = res[0]
+    b = res[1] / 2.0
+    c = res[2]
+    d = res[3] / 2.0
+    f = res[4] / 2.0
+    g = res[5]
     num = b * b - a * c
     x0 = (c * d - b * f) / num
     y0 = (a * f - b * d) / num
     if b == 0:
         if a > c:
-            angle = 0
+            angle = 0.0
         else:
-            angle = pi / 2
+            angle = pi / 2.0
     else:
         if a > c:
-            angle = atan2(2 * b, (a - c)) / 2
+            angle = atan2(2 * b, (a - c)) / 2.0
         else:
-            angle = numpy.pi / 2 + atan2(2 * b, (a - c)) / 2
-    up = 2 * (a * f * f + c * d * d + g * b * b - 2 * b * d * f - a * c * g)
-    down1 = (b * b - a * c) * ((c - a) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
-    down2 = (b * b - a * c) * ((a - c) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
+            angle = numpy.pi / 2 + atan2(2 * b, (a - c)) / 2.0
+    up = 2 * (a * f * f + c * d * d + g * b * b - 2.0 * b * d * f - a * c * g)
+    down1 = (b * b - a * c) * ((c - a) * sqrt(1.0 + 4.0 * b * b / ((a - c) * (a - c))) - (c + a))
+    down2 = (b * b - a * c) * ((a - c) * sqrt(1.0 + 4.0 * b * b / ((a - c) * (a - c))) - (c + a))
 
     a2 = up / down1
     b2 = up / down2
     if a2 < 0 or b2 < 0:
-        raise ValueError("Ellipse can't be fitted")
+        raise ValueError("Ellipse can't be fitted, Negative a² or b²")
 
-    res1 = numpy.sqrt(a2)
-    res2 = numpy.sqrt(b2)
+    res1 = sqrt(a2)
+    res2 = sqrt(b2)
     return Ellipse(y0, x0, angle, max(res1, res2), min(res1, res2))
