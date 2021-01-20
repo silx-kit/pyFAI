@@ -49,8 +49,7 @@ from .. import ocl
 if ocl is not None:
     from .. import pyopencl, read_cl_file
     import pyopencl.array
-else:
-    pyopencl = None
+
 from ... import load
 from ...test  import utilstest
 from ... import load_integrators
@@ -60,14 +59,12 @@ from ...utils import mathutil
 from ...utils.decorators import depreclog
 
 
+@unittest.skipIf(test_options.opencl is False, "User request to skip OpenCL tests")
+@unittest.skipIf(ocl is None, "OpenCL is not available")
 class TestMask(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if not test_options.opencl:
-            cls.skipTest("User request to skip OpenCL tests")
-        if pyopencl is None or ocl is None:
-            cls.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
         cls.tmp_dir = os.path.join(test_options.tempdir, "opencl")
         if not os.path.isdir(cls.tmp_dir):
@@ -311,6 +308,8 @@ class TestSort(unittest.TestCase):
         self.assertEqual(err, 0.0)
 
 
+@unittest.skipIf(test_options.opencl is False, "User request to skip OpenCL tests")
+@unittest.skipIf(ocl is None, "OpenCL is not available")
 class TestKahan(unittest.TestCase):
     """
     Test the kernels for compensated math in OpenCL
@@ -319,12 +318,8 @@ class TestKahan(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(TestKahan, cls).setUpClass()
-        if not test_options.opencl:
-            cls.skipTest("User request to skip OpenCL tests")
-        if pyopencl is None or ocl is None:
-            cls.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
-        cls.ctx = ocl.create_context(devicetype="GPU")
+        cls.ctx = ocl.create_context()
         cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
 
         # this is running 32 bits OpenCL with POCL
