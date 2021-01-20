@@ -117,7 +117,8 @@ class TestOclSort(unittest.TestCase):
 
     def test_sort_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): return
+        if self.extra_skip(s.ctx):
+            self.skipTest("Known buggy configuration")
         res = s.sort_vertical(self.ary).get()
         self.assertTrue(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
         if self.PROFILE:
@@ -126,7 +127,8 @@ class TestOclSort(unittest.TestCase):
 
     def test_filter_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): return
+        if self.extra_skip(s.ctx):
+            self.skipTest("Known buggy configuration")
         res = s.filter_vertical(self.ary).get()
         self.assertTrue(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
         if self.PROFILE:
@@ -135,7 +137,7 @@ class TestOclSort(unittest.TestCase):
 
     def test_sort_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): return
+        if self.extra_skip(s.ctx): self.skipTest("Known buggy configuration")
         res = s.sort_horizontal(self.ary).get()
         self.assertTrue(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
         if self.PROFILE:
@@ -144,7 +146,8 @@ class TestOclSort(unittest.TestCase):
 
     def test_filter_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): return
+        if self.extra_skip(s.ctx):
+            self.skipTest("Known buggy configuration")
         res = s.filter_horizontal(self.ary).get()
         self.assertTrue(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
         if self.PROFILE:
@@ -153,7 +156,8 @@ class TestOclSort(unittest.TestCase):
 
     def test_mean_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): return
+        if self.extra_skip(s.ctx):
+            self.skipTest("Known buggy configuration")
         res = s.mean_std_vertical(self.ary)
         m = res[0].get()
         d = res[1].get()
@@ -165,7 +169,8 @@ class TestOclSort(unittest.TestCase):
 
     def test_mean_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): return
+        if self.extra_skip(s.ctx):
+            self.skipTest("Known buggy configuration")
         res = s.mean_std_horizontal(self.ary)
         m = res[0].get()
         d = res[1].get()
@@ -177,7 +182,8 @@ class TestOclSort(unittest.TestCase):
 
     def test_sigma_clip_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): return
+        if self.extra_skip(s.ctx):
+            self.skipTest("Known buggy configuration")
         res = s.sigma_clip_vertical(self.ary, sigma_lo=3, sigma_hi=3, max_iter=5)
         m = res[0].get()
         d = res[1].get()
@@ -194,7 +200,8 @@ class TestOclSort(unittest.TestCase):
 
     def test_sigma_clip_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): return
+        if self.extra_skip(s.ctx):
+            self.skipTest("Known buggy configuration")
         res = s.sigma_clip_horizontal(self.ary, sigma_lo=3, sigma_hi=3, max_iter=5)
         m = res[0].get()
         d = res[1].get()

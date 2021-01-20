@@ -49,6 +49,8 @@ from .. import ocl
 if ocl is not None:
     from .. import pyopencl, read_cl_file
     import pyopencl.array
+else:
+    pyopencl = None
 from ... import load
 from ...test  import utilstest
 from ... import load_integrators
@@ -60,18 +62,19 @@ from ...utils.decorators import depreclog
 
 class TestMask(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         if not test_options.opencl:
-            self.skipTest("User request to skip OpenCL tests")
+            cls.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
-            self.skipTest("OpenCL module (pyopencl) is not present or no device available")
+            cls.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
-        self.tmp_dir = os.path.join(test_options.tempdir, "opencl")
-        if not os.path.isdir(self.tmp_dir):
-            os.makedirs(self.tmp_dir)
+        cls.tmp_dir = os.path.join(test_options.tempdir, "opencl")
+        if not os.path.isdir(cls.tmp_dir):
+            os.makedirs(cls.tmp_dir)
 
-        self.N = 500
-        self.datasets = [{"img": test_options.getimage("Pilatus1M.edf"),
+        cls.N = 500
+        cls.datasets = [{"img": test_options.getimage("Pilatus1M.edf"),
                           "poni": test_options.getimage("Pilatus1M.poni"),
                           "spline": None},
 #                          {"img": test_options.getimage("halfccd.edf"),
@@ -84,7 +87,7 @@ class TestMask(unittest.TestCase):
 #                           "poni": test_options.getimage("Pilatus6M.poni"),
 #                           "spline": None},
                          ]
-        for ds in self.datasets:
+        for ds in cls.datasets:
             if ds["spline"] is not None:
                 with open(ds["poni"], "r") as ponifile:
                     data = ponifile.read()
@@ -96,13 +99,15 @@ class TestMask(unittest.TestCase):
                             data.append("SplineFile: " + ds["spline"])
                         else:
                             data.append(line.strip())
-                ds["poni"] = os.path.join(self.tmp_dir, os.path.basename(ds["poni"]))
+                ds["poni"] = os.path.join(cls.tmp_dir, os.path.basename(ds["poni"]))
                 with open(ds["poni"], "w") as f:
                     f.write(os.linesep.join(data))
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp_dir)
-        self.tmp_dir = self.N = self.datasets = None
+    @classmethod
+    def tearDownClass(cls):
+        super(TestMask, cls).tearDownClass()
+        shutil.rmtree(cls.tmp_dir)
+        cls.tmp_dir = cls.N = cls.datasets = None
 
     @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_histogram(self):
@@ -220,7 +225,8 @@ class TestSort(unittest.TestCase):
         return False
 
     def test_reference_book(self):
-        if self.extra_skip(self.ctx): return
+        if self.extra_skip(self.ctx):
+            self.skipTest("known buggy configuration")
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
         t0 = time.perf_counter()
         hs_data = numpy.sort(self.h_data)
@@ -240,7 +246,8 @@ class TestSort(unittest.TestCase):
             logger.warning("Measured error on %s is %s", platform.system(), err)
 
     def test_reference_file(self):
-        if self.extra_skip(self.ctx): return
+        if self.extra_skip(self.ctx):
+            self.skipTest("known buggy configuration")
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
         t0 = time.perf_counter()
         hs_data = numpy.sort(self.h_data)
@@ -257,7 +264,8 @@ class TestSort(unittest.TestCase):
         self.assertEqual(err, 0.0)
 
     def test_sort_all(self):
-        if self.extra_skip(self.ctx): return
+        if self.extra_skip(self.ctx):
+            self.skipTest("known buggy configuration")
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
         t0 = time.perf_counter()
         hs_data = numpy.sort(self.h_data)
@@ -273,7 +281,8 @@ class TestSort(unittest.TestCase):
         self.assertEqual(err, 0.0)
 
     def test_sort_horizontal(self):
-        if self.extra_skip(self.ctx): return
+        if self.extra_skip(self.ctx):
+            self.skipTest("known buggy configuration")
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
         t0 = time.perf_counter()
         h2s_data = numpy.sort(self.h2_data, axis=-1)
@@ -287,7 +296,8 @@ class TestSort(unittest.TestCase):
         self.assertEqual(err, 0.0)
 
     def test_sort_vertical(self):
-        if self.extra_skip(self.ctx): return
+        if self.extra_skip(self.ctx):
+            self.skipTest("known buggy configuration")
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
         t0 = time.perf_counter()
         h2s_data = numpy.sort(self.h2_data, axis=0)
@@ -306,25 +316,28 @@ class TestKahan(unittest.TestCase):
     Test the kernels for compensated math in OpenCL
     """
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        super(TestKahan, cls).setUpClass()
         if not test_options.opencl:
-            self.skipTest("User request to skip OpenCL tests")
+            cls.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
-            self.skipTest("OpenCL module (pyopencl) is not present or no device available")
+            cls.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
-        self.ctx = ocl.create_context(devicetype="GPU")
-        self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+        cls.ctx = ocl.create_context(devicetype="GPU")
+        cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
 
         # this is running 32 bits OpenCL with POCL
         if (platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4) and
-                self.ctx.devices[0].platform.name == 'Portable Computing Language'):
-            self.args = "-DX87_VOLATILE=volatile"
+                cls.ctx.devices[0].platform.name == 'Portable Computing Language'):
+            cls.args = "-DX87_VOLATILE=volatile"
         else:
-            self.args = ""
+            cls.args = ""
 
-    def tearDown(self):
-        self.queue = None
-        self.ctx = None
+    @classmethod
+    def tearDownClass(cls):
+        cls.queue = None
+        cls.ctx = None
 
     @staticmethod
     def dummy_sum(ary, dtype=None):
