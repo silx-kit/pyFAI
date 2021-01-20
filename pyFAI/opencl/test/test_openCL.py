@@ -162,24 +162,24 @@ class TestMask(unittest.TestCase):
                     self.assertLess(r, 10, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
 
 
+@unittest.skipIf(test_options.opencl is False, "User request to skip OpenCL tests")
+@unittest.skipIf(ocl is None, "OpenCL is not available")
 class TestSort(unittest.TestCase):
     """
     Test the kernels for vector and image sorting
     """
-    N = 1024
-    ws = N // 8
 
-    def setUp(self):
-        if not test_options.opencl:
-            self.skipTest("User request to skip OpenCL tests")
-        if pyopencl is None or ocl is None:
-            self.skipTest("OpenCL module (pyopencl) is not present or no device available")
+    @classmethod
+    def setUpClass(cls):
+        super(TestSort, cls).setUpClass()
+        cls.N = 1024
+        cls.ws = cls.N // 8
 
-        self.h_data = numpy.random.random(self.N).astype("float32")
-        self.h2_data = numpy.random.random((self.N, self.N)).astype("float32").reshape((self.N, self.N))
+        cls.h_data = numpy.random.random(cls.N).astype("float32")
+        cls.h2_data = numpy.random.random((cls.N, cls.N)).astype("float32").reshape((cls.N, cls.N))
 
-        self.ctx = ocl.create_context(devicetype="GPU")
-        device = self.ctx.devices[0]
+        cls.ctx = ocl.create_context(devicetype="GPU")
+        device = cls.ctx.devices[0]
         try:
             devtype = pyopencl.device_type.to_string(device.type).upper()
         except ValueError:
@@ -190,20 +190,37 @@ class TestSort(unittest.TestCase):
             logger.info("For Apple's OpenCL on CPU: enforce max_work_goup_size=1")
             workgroup = 1
 
-        self.ws = min(workgroup, self.ws)
-        self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
-        self.local_mem = pyopencl.LocalMemory(self.ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
+        cls.ws = min(workgroup, cls.ws)
+        cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+        cls.local_mem = pyopencl.LocalMemory(cls.ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
         src = read_cl_file("pyfai:openCL/bitonic.cl")
-        self.prg = pyopencl.Program(self.ctx, src).build()
+        cls.prg = pyopencl.Program(cls.ctx, src).build()
 
-    def tearDown(self):
-        self.h_data = None
-        self.queue = None
-        self.ctx = None
-        self.local_mem = None
-        self.h2_data = None
+    @classmethod
+    def tearDownClass(cls):
+        super(TestSort, cls).tearDownClass()
+        cls.h_data = None
+        cls.queue = None
+        cls.ctx = None
+        cls.local_mem = None
+        cls.h2_data = None
+
+    @staticmethod
+    def extra_skip(ctx):
+        "This is a known buggy configuration"
+        device = ctx.devices[0]
+        if ("apple" in device.platform.name.lower() and
+            "cpu" in pyopencl.device_type.to_string(device.type).lower()):
+            logger.info("Apple CPU driver spotted, skipping")
+            return True
+        if ("portable" in device.platform.name.lower() and
+            "cpu" in pyopencl.device_type.to_string(device.type).lower()):
+            logger.info("PoCL CPU driver spotted, skipping")
+            return True
+        return False
 
     def test_reference_book(self):
+        if self.extra_skip(self.ctx): return
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
         t0 = time.perf_counter()
         hs_data = numpy.sort(self.h_data)
@@ -223,6 +240,7 @@ class TestSort(unittest.TestCase):
             logger.warning("Measured error on %s is %s", platform.system(), err)
 
     def test_reference_file(self):
+        if self.extra_skip(self.ctx): return
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
         t0 = time.perf_counter()
         hs_data = numpy.sort(self.h_data)
@@ -239,6 +257,7 @@ class TestSort(unittest.TestCase):
         self.assertEqual(err, 0.0)
 
     def test_sort_all(self):
+        if self.extra_skip(self.ctx): return
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
         t0 = time.perf_counter()
         hs_data = numpy.sort(self.h_data)
@@ -254,6 +273,7 @@ class TestSort(unittest.TestCase):
         self.assertEqual(err, 0.0)
 
     def test_sort_horizontal(self):
+        if self.extra_skip(self.ctx): return
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
         t0 = time.perf_counter()
         h2s_data = numpy.sort(self.h2_data, axis=-1)
@@ -267,6 +287,7 @@ class TestSort(unittest.TestCase):
         self.assertEqual(err, 0.0)
 
     def test_sort_vertical(self):
+        if self.extra_skip(self.ctx): return
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
         t0 = time.perf_counter()
         h2s_data = numpy.sort(self.h2_data, axis=0)
