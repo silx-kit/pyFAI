@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,7 +29,7 @@
 
 __license__ = "MIT"
 __date__ = "20/01/2021"
-__copyright__ = "2015-2020, ESRF, Grenoble"
+__copyright__ = "2015-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import unittest
@@ -106,11 +106,11 @@ class TestOclSort(unittest.TestCase):
         import pyopencl
         device = ctx.devices[0]
         if ("apple" in device.platform.name.lower() and
-            pyopencl.device_type.to_string(device.type).lower() == "cpu"):
+            "cpu" in pyopencl.device_type.to_string(device.type).lower()):
             logger.info("Apple CPU driver spotted, skipping")
             return True
         if ("portable" in device.platform.name.lower() and
-            pyopencl.device_type.to_string(device.type).lower() == "cpu"):
+            "cpu" in pyopencl.device_type.to_string(device.type).lower()):
             logger.info("PoCL CPU driver spotted, skipping")
             return True
         return False
