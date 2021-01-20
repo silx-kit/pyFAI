@@ -235,7 +235,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         for kernel_name in self.kernels.__dict__:
             if kernel_name.startswith("_"):
                 continue
-            wg_max = self.kernels.max_workgroup_size(kernel_name)
+            wg_max = min(self.BLOCK_SIZE, self.kernels.max_workgroup_size(kernel_name))
             wg_min = min(self.BLOCK_SIZE, self.kernels.min_workgroup_size(kernel_name))
             self.workgroup_size[kernel_name] = (wg_min, wg_max)
 
