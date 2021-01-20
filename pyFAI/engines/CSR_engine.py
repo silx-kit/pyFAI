@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2021"
+__date__ = "19/01/2021"
 __status__ = "development"
 
 import logging
@@ -130,9 +130,9 @@ class CSRIntegrator(object):
                        variance=variance,
                        dtype=numpy.float32)
         prep.shape = numpy.prod(shape), -1
-        logger.warning("prep.shape %s lut_size %s, image_size %s, bins %s", prep.shape, self.lut_size, self.size, self.bins)
+        # logger.warning("prep.shape %s lut_size %s, image_size %s, bins %s", prep.shape, self.lut_size, self.size, self.bins)
         res = numpy.empty((numpy.prod(self.bins), 4), dtype=numpy.float32)
-        logger.warning(self._csr.shape)
+        # logger.warning(self._csr.shape)
         res[:, 0] = self._csr.dot(prep[:, 0])
         if variance is not None:
             res[:, 1] = self._csr2.dot(prep[:, 1])

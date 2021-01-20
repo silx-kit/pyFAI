@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2021"
+__date__ = "19/01/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -234,7 +234,6 @@ class MultiGeometry(object):
                                     method=method, unit=self.unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
-            print(res.compute_engine, count.shape, res.count.shape, res.radial.size, res.azimuthal.size)
             count += res.count
             signal += res.sum_signal
             normalization += res.sum_normalization * sac

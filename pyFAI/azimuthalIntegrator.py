@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "19/01/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2172,7 +2172,8 @@ class AzimuthalIntegrator(Geometry):
         norm2d = None
         var2d = None
 
-        if (I is None) and (method.algo_lower == "lut"):
+        if method.algo_lower == "lut":
+            res = None
             if EXT_LUT_ENGINE not in self.engines:
                 engine = self.engines[EXT_LUT_ENGINE] = Engine()
             else:
@@ -2219,7 +2220,7 @@ class AzimuthalIntegrator(Geometry):
                         error = False
                         engine.set_engine(integr)
                 if not error:
-                    if ("ocl" in method) and ocl_azim_lut:
+                    if method.impl_lower == "opencl":
                         if OCL_LUT_ENGINE in self.engines:
                             ocl_engine = self.engines[OCL_LUT_ENGINE]
                         else:
@@ -2238,29 +2239,26 @@ class AzimuthalIntegrator(Geometry):
                                 ocl_engine.set_engine(ocl_integr)
 
                             if (not error) and (ocl_integr is not None):
-                                I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
-                                                                      solidangle=solidangle,
-                                                                      solidangle_checksum=self._dssa_crc,
-                                                                      dummy=dummy,
-                                                                      delta_dummy=delta_dummy,
-                                                                      polarization=polarization,
-                                                                      polarization_checksum=polarization_checksum,
-                                                                      normalization_factor=normalization_factor,
-                                                                      safe=safe)
-                                I.shape = npt
-                                I = I.T
-                                bins_rad = integr.bin_centers0  # this will be copied later
-                                bins_azim = integr.bin_centers1
-                    else:
-                        I, bins_rad, bins_azim, sum_, count = integr.integrate(data, dark=dark, flat=flat,
-                                                                               solidAngle=solidangle,
-                                                                               dummy=dummy,
-                                                                               delta_dummy=delta_dummy,
-                                                                               polarization=polarization,
-                                                                               normalization_factor=normalization_factor
-                                                                               )
+                                res = ocl_integr.integrate_ng(data, dark=dark, flat=flat,
+                                                              solidangle=solidangle,
+                                                              solidangle_checksum=self._dssa_crc,
+                                                              dummy=dummy,
+                                                              delta_dummy=delta_dummy,
+                                                              polarization=polarization,
+                                                              polarization_checksum=polarization_checksum,
+                                                              normalization_factor=normalization_factor,
+                                                              safe=safe)
+                if res is None:
+                    # Fall back on cython integrator: TODO: missing implementation
+                    res = integr.integrate_ng(data, dark=dark, flat=flat,
+                                              solidAngle=solidangle,
+                                              dummy=dummy,
+                                              delta_dummy=delta_dummy,
+                                              polarization=polarization,
+                                              normalization_factor=normalization_factor
+                                              )
 
-        if (I is None) and (method.algo_lower == "csr"):
+        elif method.algo_lower == "csr":
             if EXT_CSR_ENGINE not in self.engines:
                 engine = self.engines[EXT_CSR_ENGINE] = Engine()
             else:
@@ -2311,7 +2309,7 @@ class AzimuthalIntegrator(Geometry):
                         error = False
                         engine.set_engine(integr)
                 if not error:
-                    if (method.impl_lower == "opencl") and ocl_azim_csr:
+                    if (method.impl_lower == "opencl"):
                         if OCL_CSR_ENGINE in self.engines:
                             ocl_engine = self.engines[OCL_CSR_ENGINE]
                         else:
@@ -2328,34 +2326,36 @@ class AzimuthalIntegrator(Geometry):
                                                                              checksum=integr.lut_checksum)
                                 ocl_engine.set_engine(ocl_integr)
                         if (not error) and (ocl_integr is not None):
-                                I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
-                                                                      solidangle=solidangle,
-                                                                      solidangle_checksum=self._dssa_crc,
-                                                                      dummy=dummy,
-                                                                      delta_dummy=delta_dummy,
-                                                                      polarization=polarization,
-                                                                      polarization_checksum=polarization_checksum,
-                                                                      safe=safe,
-                                                                      normalization_factor=normalization_factor)
-                                I.shape = npt
-                                I = I.T
-                                bins_rad = integr.bin_centers0  # this will be copied later
-                                bins_azim = integr.bin_centers1
+                                res = ocl_integr.integrate_ng(data, dark=dark, flat=flat,
+                                                                         solidangle=solidangle,
+                                                                         solidangle_checksum=self._dssa_crc,
+                                                                         dummy=dummy,
+                                                                         delta_dummy=delta_dummy,
+                                                                         polarization=polarization,
+                                                                         polarization_checksum=polarization_checksum,
+                                                                         safe=safe,
+                                                                         normalization_factor=normalization_factor)
                     else:
-                        I, bins_rad, bins_azim, sum_, count = integr.integrate(data, dark=dark, flat=flat,
-                                                                               solidAngle=solidangle,
-                                                                               dummy=dummy,
-                                                                               delta_dummy=delta_dummy,
-                                                                               polarization=polarization,
-                                                                               normalization_factor=normalization_factor)
+                        # TODO: integrator not implemented at the cython level !
+                        res = integr.integrate_ng(data, dark=dark, flat=flat,
+                                                  solidAngle=solidangle,
+                                                  dummy=dummy,
+                                                  delta_dummy=delta_dummy,
+                                                  polarization=polarization,
+                                                  normalization_factor=normalization_factor)
+                    I = res.intensity
+                    bins_rad = res.radial
+                    bins_azim = res.azimuthal
+                    signal2d = res.signal
+                    norm2d = res.normalization
+                    count = res.count
+                    if variance is not None:
+                        sigma = res.error
+                        var2d = res.variance
 
-        if (I is None) and method.method[1:4] in  [ ("pseudo", "histogram", "cython"), ("full", "histogram", "cython")]:
-            if splitPixel is None:
-                logger.warning("splitPixel is not available;"
-                               " falling back on default method")
-                method = self.DEFAULT_METHOD_2D
-            else:
-                logger.debug("integrate2d uses SplitPixel implementation")
+        elif method.algo_lower == "histogram":
+            if method.split_lower in ("pseudo", "full"):
+                logger.debug("integrate2d uses (full, histogram, cython) implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 res = splitPixel.pseudoSplit2D_ng(pos=pos,
                                                   weights=data,
@@ -2383,12 +2383,7 @@ class AzimuthalIntegrator(Geometry):
                     sigma = res.error
                     var2d = res.variance
 
-        if (I is None) and method.method[1:4] == ("bbox", "histogram", "cython"):
-            if splitBBox is None:
-                logger.warning("splitBBox is not available;"
-                               " falling back on cython histogram method")
-                method = "cython"
-            else:
+            elif method.split_lower == "bbox":
                 logger.debug("integrate2d uses BBox implementation")
                 chi = self.chiArray(shape)
                 dchi = self.deltaChi(shape)
@@ -2414,96 +2409,99 @@ class AzimuthalIntegrator(Geometry):
                                                empty=dummy if dummy is not None else self._empty,
                                                variance=variance)
                 I = res.intensity
-                bins_rad = res.bins0
-                bins_azim = res.bins1
-                signal2d = res.signal
-                norm2d = res.normalization
-                count = res.count
-                if variance is not None:
-                    sigma = res.error
-                    var2d = res.variance
-
-        if (I is None):
-            logger.debug("integrate2d uses cython implementation")
-            data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
-            mask = self.create_mask(data, mask, dummy, delta_dummy,
-                                    unit=unit,
-                                    radial_range=radial_range,
-                                    azimuth_range=azimuth_range,
-                                    mode="normal").ravel()
-            pos0 = self.array_from_unit(shape, "center", unit, scale=False).ravel()
-            pos1 = self.chiArray(shape).ravel()
-
-            if radial_range is None:
-                radial_range = [pos0.min(), pos0.max()]
-            if azimuth_range is None:
-                azimuth_range = [pos1.min(), pos1.max()]
-
-            if method.method[1:4] == ("no", "histogram", "cython"):
-                logger.debug("integrate2d uses Cython histogram implementation")
-                prep = preproc(data,
-                               dark=dark,
-                               flat=flat,
-                               solidangle=solidangle,
-                               polarization=polarization,
-                               absorption=None,
-                               mask=mask,
-                               dummy=dummy,
-                               delta_dummy=delta_dummy,
-                               normalization_factor=normalization_factor,
-                               empty=self._empty,
-                               split_result=True,
-                               variance=variance,
-                               # dark_variance=None,
-                               # poissonian=False,
-                               dtype=numpy.float32)
-                res = histogram.histogram2d_engine(pos0=pos0,
-                                                   pos1=pos1,
-                                                   weights=prep,
-                                                   bins=(npt_rad, npt_azim),
-                                                   split=False,
-                                                   empty=dummy if dummy is not None else self._empty,
-                                                   )
-                I = res.intensity
-                bins_azim = res.azimuthal
                 bins_rad = res.radial
-                signal2d = res.signal
-                norm2d = res.normalization
-                count = res.count
-                if variance is not None:
-                    sigma = res.error
-                    var2d = res.variance
-            else:
-                logger.debug("integrate2d uses Numpy implementation")
-                res = histogram_engine.histogram2d_engine(radial=pos0,
-                                                          azimuthal=pos1,
-                                                          npt=(npt_rad, npt_azim),
-                                                          raw=data,
-                                                          dark=dark,
-                                                          flat=flat,
-                                                          solidangle=solidangle,
-                                                          polarization=polarization,
-                                                          absorption=None,
-                                                          mask=mask,
-                                                          dummy=dummy,
-                                                          delta_dummy=delta_dummy,
-                                                          normalization_factor=normalization_factor,
-                                                          empty=self._empty,
-                                                          split_result=False,
-                                                          variance=variance,
-                                                          dark_variance=None,
-                                                          poissonian=False,
-                                                          radial_range=radial_range,
-                                                          azimuth_range=azimuth_range)
-                I = res.intensity
                 bins_azim = res.azimuthal
-                bins_rad = res.radial
                 signal2d = res.signal
                 norm2d = res.normalization
                 count = res.count
                 if variance is not None:
                     sigma = res.error
                     var2d = res.variance
+
+            elif method.split_lower == "no":
+                if method.impl_lower == "opencl":
+                    raise NotImplementedError(("2D histogram OpenCL"))
+                elif method.impl_lower == "cython":
+                    logger.debug("integrate2d uses Cython histogram implementation")
+                    prep = preproc(data,
+                                   dark=dark,
+                                   flat=flat,
+                                   solidangle=solidangle,
+                                   polarization=polarization,
+                                   absorption=None,
+                                   mask=mask,
+                                   dummy=dummy,
+                                   delta_dummy=delta_dummy,
+                                   normalization_factor=normalization_factor,
+                                   empty=self._empty,
+                                   split_result=True,
+                                   variance=variance,
+                                   # dark_variance=None,
+                                   # poissonian=False,
+                                   dtype=numpy.float32)
+                    res = histogram.histogram2d_engine(pos0=pos0,
+                                                       pos1=chi,
+                                                       weights=prep,
+                                                       bins=(npt_rad, npt_azim),
+                                                       split=False,
+                                                       empty=dummy if dummy is not None else self._empty,
+                                                       )
+                    I = res.intensity
+                    bins_azim = res.azimuthal
+                    bins_rad = res.radial
+                    signal2d = res.signal
+                    norm2d = res.normalization
+                    count = res.count
+                    if variance is not None:
+                        sigma = res.error
+                        var2d = res.variance
+                else:  # Python implementation:
+                    logger.debug("integrate2d uses python implementation")
+                    data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
+                    mask = self.create_mask(data, mask, dummy, delta_dummy,
+                                            unit=unit,
+                                            radial_range=radial_range,
+                                            azimuth_range=azimuth_range,
+                                            mode="normal").ravel()
+                    pos0 = self.array_from_unit(shape, "center", unit, scale=False).ravel()
+                    pos1 = self.chiArray(shape).ravel()
+
+                    if radial_range is None:
+                        radial_range = [pos0.min(), pos0.max()]
+                    if azimuth_range is None:
+                        azimuth_range = [pos1.min(), pos1.max()]
+
+                    if method.method[1:4] == ("no", "histogram", "cython"):
+                        logger.debug("integrate2d uses Numpy implementation")
+                        res = histogram_engine.histogram2d_engine(radial=pos0,
+                                                                  azimuthal=pos1,
+                                                                  npt=(npt_rad, npt_azim),
+                                                                  raw=data,
+                                                                  dark=dark,
+                                                                  flat=flat,
+                                                                  solidangle=solidangle,
+                                                                  polarization=polarization,
+                                                                  absorption=None,
+                                                                  mask=mask,
+                                                                  dummy=dummy,
+                                                                  delta_dummy=delta_dummy,
+                                                                  normalization_factor=normalization_factor,
+                                                                  empty=self._empty,
+                                                                  split_result=False,
+                                                                  variance=variance,
+                                                                  dark_variance=None,
+                                                                  poissonian=False,
+                                                                  radial_range=radial_range,
+                                                                  azimuth_range=azimuth_range)
+                        I = res.intensity
+                        bins_azim = res.azimuthal
+                        bins_rad = res.radial
+                        signal2d = res.signal
+                        norm2d = res.normalization
+                        count = res.count
+                        if variance is not None:
+                            sigma = res.error
+                            var2d = res.variance
 
         # Duplicate arrays on purpose ....
         bins_rad = bins_rad * pos0_scale

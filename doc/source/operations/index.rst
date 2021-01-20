@@ -4,12 +4,8 @@
 :Target: System administrators
 
 
-Installation of pyFAI
-=====================
-
-
-Abstract
---------
+Installation
+============
 
 Installation procedure for all main operating systems
 
@@ -32,7 +28,7 @@ PyFAI is a Python library which relies on the scientific stack (numpy, scipy, ma
 * Matplotlib: verson 2.0 or newer 
 * FabIO: version 0.5 or newer
 * h5py: version 2.10 or newer
-* silx: version 0.10 or newer
+* silx: version 0.14 or newer
 
 There are plenty of optional dependencies which will not prevent pyFAI from working
 by may impair performances or prevent tools from properly working:
@@ -51,7 +47,7 @@ C files are generated from cython_ source and distributed.
 The distributed version correspond to OpenMP version.
 Non-OpenMP version needs to be built from cython source code (especially on MacOSX).
 If you want to generate your own C files, make sure your local Cython version
-is sufficiently recent (>0.20).
+is sufficiently recent (>0.21).
 
 .. _cython: http://cython.org
 

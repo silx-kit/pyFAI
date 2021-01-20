@@ -1,10 +1,10 @@
 :Author: Jérôme Kieffer
-:Date: 20/07/2016
+:Date: 19/01/2021
 :Keywords: generic description of the software
 :Target: General audiance
 
-General introduction to pyFAI
-=============================
+General introduction
+====================
 
 Python Fast Azimuthal Integration
 ---------------------------------

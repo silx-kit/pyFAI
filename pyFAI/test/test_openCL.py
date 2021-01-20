@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "18/01/2021"
 
 import unittest
 import os
@@ -124,7 +124,7 @@ class TestMask(unittest.TestCase):
                 res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
                 r = mathutil.rwp(ref, res)
                 logger.info(f"OpenCL {method} has R={r}  (vs cython) for dataset {ds}")
-                self.assertTrue(r < 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
+                self.assertLess(r, 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
 
     @unittest.skipIf(test_options.low_mem, "test using >500M")
     def test_OpenCL_sparse(self):
@@ -139,22 +139,22 @@ class TestMask(unittest.TestCase):
                 res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
                 r = mathutil.rwp(ref, res)
                 logger.info(f"OpenCL {method} has R={r}  (vs cython) for dataset {ds}")
-                self.assertTrue(r < 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
+                self.assertLess(r, 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
 
     @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_OpenCL_sigma_clip(self):
         logger.info("Testing OpenCL sigma-clipping")
         ids = ocl.select_device("ALL", best=True, memory=1e8)
-        print(ids)
+#         print(ids)
         to_test = [v for k, v in IntegrationMethod._registry.items() if k.target == ids and k.split == "no" and k.algo == "csr" and k.dim == 1]
         N = 100
-        print(to_test)
+#         print(to_test)
         for ds in self.datasets:
             ai = load(ds["poni"])
             data = fabio.open(ds["img"]).data
             ref = ai.integrate1d_ng(data, N, method=("no", "histogram", "cython"), unit="2th_deg")
             for method  in  to_test:
-                print(method)
+#                 print(method)
                 try:
                     res = ai.sigma_clip_ng(data, N, method=method, unit="2th_deg")
                 except (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError) as error:
@@ -164,8 +164,8 @@ class TestMask(unittest.TestCase):
                     # This is not really a precise test.
                     r = mathutil.rwp(ref, res)
                     logger.info("OpenCL sigma clipping has R= %.3f for dataset %s", r, ds)
-                    print(r)
-                    self.assertTrue(r < 10, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
+#                     print(r)
+                    self.assertLess(r, 10, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
 
 
 class TestSort(unittest.TestCase):
@@ -242,7 +242,7 @@ class TestSort(unittest.TestCase):
         logger.info("Numpy sort on %s element took %s ms", self.N, time_sort)
         logger.info("Reference sort time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
         # this test works anywhere !
-        self.assertTrue(err == 0.0)
+        self.assertEqual(err, 0.0)
 
     def test_sort_all(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
@@ -257,7 +257,7 @@ class TestSort(unittest.TestCase):
         logger.info("test_sort_all")
         logger.info("Numpy sort on %s element took %s ms", self.N, time_sort)
         logger.info("modified function execution time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
-        self.assertTrue(err == 0.0)
+        self.assertEqual(err, 0.0)
 
     def test_sort_horizontal(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -270,7 +270,7 @@ class TestSort(unittest.TestCase):
         err = abs(h2s_data - d2_data.get()).max()
         logger.info("Numpy horizontal sort on %sx%s elements took %s ms", self.N, self.N, time_sort)
         logger.info("Horizontal execution time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
-        self.assertTrue(err == 0.0)
+        self.assertEqual(err, 0.0)
 
     def test_sort_vertical(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -283,7 +283,7 @@ class TestSort(unittest.TestCase):
         err = abs(h2s_data - d2_data.get()).max()
         logger.info("Numpy vertical sort on %sx%s elements took %s ms", self.N, self.N, time_sort)
         logger.info("Vertical execution time: %s ms, err=%s ", 1e-6 * (evt.profile.end - evt.profile.start), err)
-        self.assertTrue(err == 0.0)
+        self.assertEqual(err, 0.0)
 
 
 class TestKahan(unittest.TestCase):
