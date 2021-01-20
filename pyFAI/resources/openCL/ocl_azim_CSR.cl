@@ -71,7 +71,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
     float coef, signal;
     int idx, k, j;
 
-    for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE) {
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
                coef = data[k];
@@ -87,7 +87,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
     // parallel reduction
 
     int index;
-    if (bin_size < WORKGROUP_SIZE) {
+    if (bin_size < active_threads) {
         if (thread_id_loc < bin_size) 
             super_sum[thread_id_loc] = sum_K;
         else 
@@ -141,7 +141,7 @@ static inline float4 CSRxVec2(const   global  float2   *data,
     float2 sum_norm_K = (float2)(0.0f, 0.0f);
     int idx, k, j;
 
-    for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE) {
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
                float coef = coefs[k];
@@ -157,7 +157,7 @@ static inline float4 CSRxVec2(const   global  float2   *data,
     } //for j
     
     // parallel reduction
-    if (bin_size < WORKGROUP_SIZE) {
+    if (bin_size < active_threads) {
         if (thread_id_loc < bin_size) {
             super_sum[thread_id_loc] = (float4)(sum_signal_K, sum_norm_K);
         }
@@ -219,7 +219,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     float2 sum_count_K = (float2)(0.0f, 0.0f);
     int idx, k, j;
 
-    for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE) {
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
                float coef = coefs[k];
@@ -242,7 +242,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
 /*
  * parallel reduction
  */
-    if (bin_size < WORKGROUP_SIZE) {
+    if (bin_size < active_threads) {
         if (thread_id_loc < bin_size) {
             super_sum[thread_id_loc] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
         }
@@ -304,7 +304,7 @@ static inline int _sigma_clip4(         global  float4   *data,
     int active_threads = get_local_size(0);
     int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
     barrier(CLK_LOCAL_MEM_FENCE);
-    for (j=bin_bounds.s0; j<bin_bounds.s1; j+=WORKGROUP_SIZE){
+    for (j=bin_bounds.s0; j<bin_bounds.s1; j+=active_threads){
         k = j + thread_id_loc;
         if (k < bin_bounds.s1){
             idx = indices[k];
@@ -349,7 +349,7 @@ static inline float2 _azimuthal_deviation(        global  float4   *data,
     float2 sum_count_K = (float2)(0.0f, 0.0f);
 
     // each thread processes a few points according to the LUT. 
-    for (j=bin_bounds.x; j<bin_bounds.y; j+=WORKGROUP_SIZE){
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads){
         k = j+thread_id_loc;
         if (k < bin_bounds.y){
                coef = coefs[k];
@@ -366,7 +366,7 @@ static inline float2 _azimuthal_deviation(        global  float4   *data,
 
     // parallel reduction between threads in a workgoup
     int index;
-    if (bin_size < WORKGROUP_SIZE) {
+    if (bin_size < active_threads) {
         if (thread_id_loc < bin_size)
             shared4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
         else
@@ -438,8 +438,13 @@ csr_integrate(  const   global  float   *weights,
     float2 sum_count_K = (float2)(0.0f, 0.0f);
     float coef, coefp, data;
     int idx, k, j;
+//    if (WORKGROUP_SIZE<active_threads){
+//    	if ((bin_num == 0) &&  (thread_id_loc == 0))
+//    		printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
+//    				WORKGROUP_SIZE, active_threads);
+//    }
 
-    for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE) {
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
                coef = coefs[k];
@@ -463,13 +468,13 @@ csr_integrate(  const   global  float   *weights,
 
     // parallel reduction
 
-    // REMEMBER TO PASS WORKGROUP_SIZE AS A CPP DEF
+    // REMEMBER TO PASS WORKGROUP_SIZE AS A COMPILE TIME CONSTANT (-DWORKGROUP_SIZE=32)
     local float2 super_sum_data[WORKGROUP_SIZE];
     local float2 super_sum_count[WORKGROUP_SIZE];
 
     int index;
 
-    if (bin_size < WORKGROUP_SIZE) {
+    if (bin_size < active_threads) {
         if (thread_id_loc < bin_size) {
             super_sum_data[thread_id_loc] = sum_data_K;
             super_sum_count[thread_id_loc] = sum_count_K;
@@ -591,6 +596,14 @@ csr_integrate4(  const   global  float4  *weights,
                          global  float   *stderr)
 {
     int bin_num = get_group_id(0);
+ 
+//    if (WORKGROUP_SIZE<get_local_size(0)){
+//    	if ((bin_num == 0) &&  (get_local_id(0) == 0))
+//    		printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
+//    				WORKGROUP_SIZE, get_local_size(0));
+//    }
+
+    
     local float8 shared[WORKGROUP_SIZE];
     float8 result = CSRxVec4(weights, coefs, indices, indptr, shared);
     if (get_local_id(0)==0) {
@@ -704,6 +717,13 @@ csr_sigma_clip4(          global  float4  *data4,
     int cnt;
     volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
+
+//    if (WORKGROUP_SIZE<get_local_size(0)){
+//    	if ((bin_num == 0) &&  (get_local_id(0) == 0))
+//    		printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
+//    				WORKGROUP_SIZE, get_local_size(0));
+//    }
+
     
     // first calculation of azimuthal integration to initialize aver & std
     

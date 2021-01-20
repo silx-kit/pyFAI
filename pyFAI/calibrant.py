@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2020"
+__date__ = "19/01/2021"
 __status__ = "production"
 
 import os
@@ -576,7 +576,7 @@ class Calibrant(object):
     def get_max_wavelength(self, index=None):
         """Calculate the maximum wavelength assuming the ring at index is visible
 
-        Bragg's law says: $\lambda = 2d sin(\\theta)$
+        Bragg's law says: $\\lambda = 2d sin(\\theta)$
         So at 180° $\\lambda = 2d$
 
         :param index: Ring number, otherwise assumes all rings are visible

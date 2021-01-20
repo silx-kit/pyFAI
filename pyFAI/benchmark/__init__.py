@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "14/01/2021"
+__date__ = "20/01/2021"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -38,11 +38,13 @@ import platform
 import subprocess
 import fabio
 import os.path as op
+from math import ceil
 
 # To use use the locally build version of PyFAI, use ../bootstrap.py
 
 from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..method_registry import IntegrationMethod, Method
 from ..utils import mathutil
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
@@ -199,7 +201,7 @@ class BenchTestGpu(BenchTest):
         self.ai.xrpd_OpenCL(self.data, self.N, devicetype=self.devicetype, useFp64=self.useFp64, platformid=self.platformid, deviceid=self.deviceid)
 
     def stmt(self):
-        self.ai.xrpd_OpenCL(self.data, self.N, safe=False)
+        return self.ai.xrpd_OpenCL(self.data, self.N, safe=False)
 
     def clean(self):
         self.ai = None
@@ -213,11 +215,11 @@ class Bench(object):
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
-    LABELS = {"splitBBox": "CPU_serial",
-              "lut": "CPU_LUT_OpenMP",
-              "lut_ocl": "LUT",
-              "csr": "CPU_CSR_OpenMP",
-              "csr_ocl": "CSR",
+    LABELS = {("bbox", "histogram", "cython"): "CPU_serial",
+              ("bbox", "lut", "cython"): "CPU_LUT_OpenMP",
+              ("bbox", "lut", "opencl"): "LUT",
+              ("bbox", "csr", "cython"): "CPU_CSR_OpenMP",
+              ("bbox", "csr", "opencl"): "CSR",
               }
 
     def __init__(self, nbr=10, repeat=1, memprofile=False, unit="2th_deg", max_size=None):
@@ -321,6 +323,7 @@ class Bench(object):
         :param check: check results vs ref if method is LUT based
         :param opencl: dict containing platformid, deviceid and devicetype
         """
+        method = IntegrationMethod.select_one_available(method, dim=1, default=None, degradable=True)
         self.update_mp()
         if opencl:
             if (ocl is None):
@@ -344,13 +347,17 @@ class Bench(object):
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
-            label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
-            method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
+            label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
+#             print(method)
+            method = IntegrationMethod.select_method(dim=1, split=method.split_lower,
+                                                      algo=method.algo_lower, impl=method.impl_lower,
+                                                      target=(opencl["platformid"], opencl["deviceid"]))[0]
+#             print(method)
             print(f"function: {function} \t method: {method}")
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = function + " " + self.LABELS[method]
+            label = function + " " + self.LABELS[method.method[1:4]]
             memory_error = (MemoryError, RuntimeError)
         results = OrderedDict()
         first = True
@@ -370,7 +377,7 @@ class Bench(object):
                 t1 = time.perf_counter()
                 res2 = bench_test.stmt()
                 t2 = time.perf_counter()
-                loops = int(1.0 + self.nbr / (t2 - t1))
+                loops = int(ceil(self.nbr / (t2 - t1)))
                 self.print_init2(t1 - t0, t2 - t1, loops)
 
             except memory_error as error:
@@ -382,30 +389,16 @@ class Bench(object):
                     print("Actual device used: %s" % actual_device)
 
             self.update_mp()
-            if check:
-                module = sys.modules.get(AzimuthalIntegrator.__module__)
-                key = bench_test.compute_engine
-                if (key is None or key not in bench_test.ai.engines) and module:
-                    if "lut" in method:
-                        key = module.EXT_LUT_ENGINE
-                    elif "csr" in method:
-                        key = module.EXT_CSR_ENGINE
-                    else:
-                        key = None
-                if key and module:
-                    try:
-                        engine = bench_test.ai.engines.get(key)
-                    except MemoryError as error:
-                        print("MemoryError %s" % error)
-                    else:
-                        if not engine:
-                            print("Engine not found ", engine, key)
+            if method.algo_lower in ("lut", "csr"):
+                key = Method(1, bench_test.method.split_lower, method.algo_lower, "cython", None)
+                if key and key in bench_test.ai.engines:
+                    engine = bench_test.ai.engines.get(key)
+                    if engine:
+                        integrator = engine.engine
+                        if method.algo_lower == "lut":
+                            print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
                         else:
-                            integrator = engine.engine
-                            if "lut" in method:
-                                print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
-                            else:
-                                print("csr: size= %s \t nbytes %.3f MB " % (integrator.data.size, integrator.lut_nbytes / 2 ** 20))
+                            print("csr: size= %s \t nbytes %.3f MB " % (integrator.data.size, integrator.lut_nbytes / 2 ** 20))
             bench_test.clean()
             self.update_mp()
             try:
@@ -467,12 +460,12 @@ class Bench(object):
 
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
+            label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method[1:4]], platform, device)).replace(" ", "_")
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
 
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = "2D_" + self.LABELS[method]
+            label = "2D_" + self.LABELS[method[1:4]]
             memory_error = (MemoryError, RuntimeError)
 
         results = OrderedDict()
@@ -613,7 +606,10 @@ class Bench(object):
             self.ax.set_autoscale_on(False)
             self.ax.set_xlabel("Image size in mega-pixels")
             self.ax.set_ylabel("Frame per second (log scale)")
-            self.ax.set_yscale("log", basey=2)
+            try:
+                self.ax.set_yscale("log", base=2)
+            except:
+                self.ax.set_yscale("log", basey=2)
             t = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])

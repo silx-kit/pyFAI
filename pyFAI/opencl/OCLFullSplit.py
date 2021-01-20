@@ -27,10 +27,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""
+Deprecated ... restore or delete !
+"""
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "18/02/2020"
+__date__ = "20/01/2021"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -50,6 +53,7 @@ logger = logging.getLogger(__name__)
 
 
 class OCLFullSplit1d(object):
+
     def __init__(self,
                  pos,
                  bins=100,

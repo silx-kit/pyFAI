@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2021"
+__date__ = "20/01/2021"
 __status__ = "development"
 
 from logging import getLogger
@@ -63,8 +63,8 @@ class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
             result = Method(self.dim, self.split, "histogram", self.impl, self.target)
         elif self.split == "full":
             result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
-        elif self.split == "full":
-            result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
+#         elif self.split == "full":
+#             result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
         elif self.split == "pseudo":
             result = Method(self.dim, "bbox", self.algo, self.impl, self.target)
         elif self.split == "bbox":
