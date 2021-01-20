@@ -32,36 +32,30 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/01/2021"
+__date__ = "20/01/2021"
 
 import unittest
 import os
 import time
 import fabio
-import gc
 import numpy
 import logging
 import shutil
 import platform
 
 logger = logging.getLogger(__name__)
-try:
-    import pyopencl
-except ImportError as error:
-    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
-    pyopencl = None
 
-from ..opencl import ocl
+from .. import ocl
 if ocl is not None:
-    from ..opencl import pyopencl, read_cl_file
+    from .. import pyopencl, read_cl_file
     import pyopencl.array
-from .. import load
-from . import utilstest
-from .. import load_integrators as _
-from ..method_registry import IntegrationMethod
-from .utilstest import test_options
-from ..utils import mathutil
-from ..utils.decorators import depreclog
+from ... import load
+from ...test  import utilstest
+from ... import load_integrators
+from ...method_registry import IntegrationMethod
+from ...test.utilstest import test_options
+from ...utils import mathutil
+from ...utils.decorators import depreclog
 
 
 class TestMask(unittest.TestCase):

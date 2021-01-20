@@ -28,7 +28,7 @@
 """Test for OpenCL sorting on GPU"""
 
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "20/01/2021"
 __copyright__ = "2015-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,13 +37,12 @@ import numpy
 import logging
 import warnings
 
-from .utilstest import UtilsTest
-
+from ...test.utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 
-from ..opencl import ocl
+from .. import ocl
 if ocl:
-    from ..opencl import sort as ocl_sort
+    from .. import sort as ocl_sort
 
 as_strided = numpy.lib.stride_tricks.as_strided
 
@@ -84,24 +83,41 @@ class TestOclSort(unittest.TestCase):
     # This platform is known to process properly but giving wrong results.
     # See https://github.com/pocl/pocl/issues/617
 
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.shape = (128, 256)
-        self.ary = numpy.random.random(self.shape).astype(numpy.float32)
-        self.sorted_vert = numpy.sort(self.ary.copy(), axis=0)
-        self.sorted_hor = numpy.sort(self.ary.copy(), axis=1)
-        self.vector_vert = self.sorted_vert[self.shape[0] // 2]
-        self.vector_hor = self.sorted_hor[:, self.shape[1] // 2]
+    @classmethod
+    def setUpClass(cls):
+        cls.shape = (128, 256)
+        cls.ary = numpy.random.random(cls.shape).astype(numpy.float32)
+        cls.sorted_vert = numpy.sort(cls.ary.copy(), axis=0)
+        cls.sorted_hor = numpy.sort(cls.ary.copy(), axis=1)
+        cls.vector_vert = cls.sorted_vert[cls.shape[0] // 2]
+        cls.vector_hor = cls.sorted_hor[:, cls.shape[1] // 2]
 
         # Change to True to profile the code
-        self.PROFILE = False
+        cls.PROFILE = False
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.shape = self.ary = self.sorted_vert = self.sorted_hor = self.vector_vert = self.sorted_hor = None
+    @classmethod
+    def tearDownClass(cls):
+        super(TestOclSort, cls).tearDownClass()
+        cls.shape = cls.ary = cls.sorted_vert = cls.sorted_hor = cls.vector_vert = cls.sorted_hor = None
+
+    @staticmethod
+    def extra_skip(ctx):
+        "This is a known buggy configuration"
+        import pyopencl
+        device = ctx.devices[0]
+        if ("apple" in device.platform.name.lower() and
+            pyopencl.device_type.to_string(device.type).lower() == "cpu"):
+            logger.info("Apple CPU driver spotted, skipping")
+            return True
+        if ("portable" in device.platform.name.lower() and
+            pyopencl.device_type.to_string(device.type).lower() == "cpu"):
+            logger.info("PoCL CPU driver spotted, skipping")
+            return True
+        return False
 
     def test_sort_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        if self.extra_skip(s.ctx): return
         res = s.sort_vertical(self.ary).get()
         self.assertTrue(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
         if self.PROFILE:
@@ -110,6 +126,7 @@ class TestOclSort(unittest.TestCase):
 
     def test_filter_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        if self.extra_skip(s.ctx): return
         res = s.filter_vertical(self.ary).get()
         self.assertTrue(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
         if self.PROFILE:
@@ -118,6 +135,7 @@ class TestOclSort(unittest.TestCase):
 
     def test_sort_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        if self.extra_skip(s.ctx): return
         res = s.sort_horizontal(self.ary).get()
         self.assertTrue(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
         if self.PROFILE:
@@ -126,6 +144,7 @@ class TestOclSort(unittest.TestCase):
 
     def test_filter_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        if self.extra_skip(s.ctx): return
         res = s.filter_horizontal(self.ary).get()
         self.assertTrue(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
         if self.PROFILE:
@@ -134,6 +153,7 @@ class TestOclSort(unittest.TestCase):
 
     def test_mean_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        if self.extra_skip(s.ctx): return
         res = s.mean_std_vertical(self.ary)
         m = res[0].get()
         d = res[1].get()
@@ -145,6 +165,7 @@ class TestOclSort(unittest.TestCase):
 
     def test_mean_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        if self.extra_skip(s.ctx): return
         res = s.mean_std_horizontal(self.ary)
         m = res[0].get()
         d = res[1].get()
@@ -156,6 +177,7 @@ class TestOclSort(unittest.TestCase):
 
     def test_sigma_clip_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        if self.extra_skip(s.ctx): return
         res = s.sigma_clip_vertical(self.ary, sigma_lo=3, sigma_hi=3, max_iter=5)
         m = res[0].get()
         d = res[1].get()
@@ -172,6 +194,7 @@ class TestOclSort(unittest.TestCase):
 
     def test_sigma_clip_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        if self.extra_skip(s.ctx): return
         res = s.sigma_clip_horizontal(self.ary, sigma_lo=3, sigma_hi=3, max_iter=5)
         m = res[0].get()
         d = res[1].get()

@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "19/01/2021"
+__date__ = "20/01/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -293,15 +293,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         else:
             kw_int["azimuthal"] = numpy.int32(0)
 
-        wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
-        if wg_max == 1:
-            raise RuntimeError("csr_sigma_clip4 is not yet available in single threaded OpenCL !")
-#             integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
-#             events.append(EventDescription("integrate4_single", integrate))
-        else:
-            wdim_bins = (self.bins * wg_min),
-            integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-            events.append(EventDescription("csr_sigma_clip4", integrate))
+        wg_min = min(self.workgroup_size["csr_sigma_clip4"])
+        wdim_bins = (self.bins * wg_min),
+        integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
+        events.append(EventDescription("csr_sigma_clip4", integrate))
 
         # now perform the calc_from_1d on the device and count the number of pixels
         memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
@@ -585,6 +580,8 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
         self.wg = self.size_to_doublet(self.BLOCK_SIZE)
+        if sum(i < j for i, j in zip(self.ctx.devices[0].max_work_item_sizes, self.wg)):
+            self.wg = self.ctx.devices[0].max_work_item_sizes[:2]
         self.wdim = tuple((shape + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1) for shape, BLOCK_SIZE in zip(self.shape[-1::-1], self.wg))
 
         self.buffers = [BufferDescription(i.name, i.size * numpy.prod(self.shape), i.dtype, i.flags)
