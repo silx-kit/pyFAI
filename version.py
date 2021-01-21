@@ -64,7 +64,7 @@ MAJOR = 0
 MINOR = 20
 MICRO = 0
 RELEV = "beta"  # <16
-SERIAL = 1  # <16
+SERIAL = 2  # <16
 
 date = __date__
 
