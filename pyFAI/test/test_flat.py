@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2021"
+__date__ = "21/01/2021"
 
 import unittest
 import numpy
@@ -79,18 +79,17 @@ class TestFlat1D(unittest.TestCase):
     def test_correct(self):
         for meth in IntegrationMethod._registry.values():
             if meth.dimension != 1: continue
-            print(meth)
             res = self.ai.integrate1d_ng(self.raw, self.bins, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
 
-            if meth.target_name and "AMD" in meth.target_name and meth.algo_lower == "histogram":
-                "OpenCL atomic are not good on AMD-GPU !"
+            if meth.target_name and meth.algo_lower == "histogram":
+                "OpenCL atomic are not that good !"
                 eps = 3 * self.eps
             else:
                 eps = self.eps
             _, I = res
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", str(meth), I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assertTrue(I.max() - I.min() < eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
+            self.assertLess(I.max() - I.min(), eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
 
 
 class TestFlat2D(unittest.TestCase):
