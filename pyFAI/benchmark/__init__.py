@@ -589,7 +589,7 @@ class Bench(object):
         self.update_mp()
         json.dump(self.results, open(filename, "w"), indent=4)
         if self.fig is not None:
-            self.fig.savefig(filename[:-4] + ".svg")
+            self.fig.savefig(filename[:-4] + "svg")
 
     def print_res(self):
         self.update_mp()
