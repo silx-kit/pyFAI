@@ -5,10 +5,10 @@
 Change-log of versions
 ======================
 
-0.20.0 ??/01/2021
+0.20.0 22/01/2021
 -----------------
-* One year of development, about 300 commits & 300 files modified.
-* Generalization of the new generation of integrators (better error propagation)
+* One year of development, about 500 commits & 300 files modified.
+* Generalization of the new generation 1D integrators (better error propagation)
 * Sigma clipping and sparsification of single crystal data (OpenCL only)  
 * Fix issue introduced with the scipy 1.15 (constrained calibration broken)  
 * Improved distortion correction (also on GPU, ...)
@@ -18,7 +18,7 @@ Change-log of versions
 * Drop deprecated OpenCL integrator
 * Support all Eiger2 detectors (thanks Clemens Weninger and Marie Ruat)
 * CI: move to Gihub workflow and gitlab-runners (bob) for building (thanks Thomas Vincent).
-* Build for debian 10 and 11 (also ubuntu 20.04)
+* Build for debian 10 and 11 (also ubuntu 20.04), drop debian 9
 * Remove Python2 related code
 * Lower Numpy ABI dependency as much as possible (remains _distortion's C++ code)
 * Drop tests for Python 3.5, checked on 3.9 as well.
