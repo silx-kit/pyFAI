@@ -76,9 +76,9 @@ def fit_ellipse(pty, ptx, _allow_delta=True):
         y0, x0, angle, wlong, wshort = ellipse
         return Ellipse(y0 - delta, x0 - delta, angle, wlong, wshort)
 
-    C = numpy.zeros([6, 6])
-    C[0, 2] = C[2, 0] = 2
-    C[1, 1] = -1
+    C = numpy.zeros([6, 6], dtype=numpy.float64)
+    C[0, 2] = C[2, 0] = 2.0
+    C[1, 1] = -1.0
     E, V = numpy.linalg.eig(numpy.dot(inv, C))
 
     # First of all, sieve out all infinite and complex eigenvalues and come back to the Real world
@@ -116,7 +116,6 @@ def fit_ellipse(pty, ptx, _allow_delta=True):
     d = D[n]
     f = F[n]
     g = G[n]
-#     print(f"a {a}, b {b}, c {c}, ac-b² {a*c - b*b}")
 
     # Calculation of the center:
     denom = b * b - a * c
@@ -126,7 +125,6 @@ def fit_ellipse(pty, ptx, _allow_delta=True):
     up = 2 * (a * f * f + c * d * d + g * b * b - 2 * b * d * f - a * c * g)
     down1 = (b * b - a * c) * ((c - a) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
     down2 = (b * b - a * c) * ((a - c) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
-#     print(f"up {up}, down1 {down1}, down2 {down2}")
     a2 = up / down1
     b2 = up / down2
     if a2 <= 0 or b2 <= 0:
