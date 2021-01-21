@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "20/01/2021"
+__date__ = "21/01/2021"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -583,9 +583,13 @@ class Bench(object):
         self.results[label] = results
         self.update_mp()
 
-    def save(self, filename="benchmark.json"):
+    def save(self, filename=None):
+        if filename is None:
+            filename = f"benchmark{time.strftime('%Y%m%d-%H%M%S')}.json"
         self.update_mp()
         json.dump(self.results, open(filename, "w"), indent=4)
+        if self.fig_mp is not None:
+            self.fig_mp.savefig(filename[:-4] + ".svg")
 
     def print_res(self):
         self.update_mp()
