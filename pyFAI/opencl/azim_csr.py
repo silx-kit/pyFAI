@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "20/01/2021"
+__date__ = "21/01/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -491,7 +491,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 events.append(EventDescription("copy D->H image", ev))
                 if self.profile:
                     self.events += events
-                ev.wait()
+                # ev.wait()
                 return image
 
             wg_min, wg_max = self.workgroup_size["csr_integrate"]
@@ -532,7 +532,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if sum_count is not None:
                 ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
                 events.append(EventDescription("copy D->H sum_count", ev))
-            ev.wait()
+            # ev.wait()
         if self.profile:
             self.events += events
         return merged, sum_data, sum_count

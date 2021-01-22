@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2021"
+__date__ = "21/01/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -641,9 +641,9 @@ class AzimuthalIntegrator(Geometry):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = polarization_checksum = None
+            polarization = polarization_crc = None
         else:
-            polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
+            polarization, polarization_crc = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
             dark = self.detector.darkcurrent
@@ -754,7 +754,7 @@ class AzimuthalIntegrator(Geometry):
                                                                              dummy=dummy,
                                                                              delta_dummy=delta_dummy,
                                                                              polarization=polarization,
-                                                                             polarization_checksum=polarization_checksum,
+                                                                             polarization_checksum=polarization_crc,
                                                                              normalization_factor=normalization_factor)
                                 qAxis = integr.bin_centers  # this will be copied later
                                 if error_model == "azimuthal":
@@ -865,7 +865,7 @@ class AzimuthalIntegrator(Geometry):
                                                                          dummy=dummy,
                                                                          delta_dummy=delta_dummy,
                                                                          polarization=polarization,
-                                                                         polarization_checksum=polarization_checksum,
+                                                                         polarization_checksum=polarization_crc,
                                                                          normalization_factor=normalization_factor)
                             qAxis = integr.bin_centers  # this will be copied later
                             if error_model == "azimuthal":
@@ -1130,13 +1130,14 @@ class AzimuthalIntegrator(Geometry):
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
+            solidangle_crc = self._cached_array[f"solid_angle#{self._dssa_order}_crc"]
         else:
-            solidangle = None
+            solidangle_crc = solidangle = None
 
         if polarization_factor is None:
-            polarization = polarization_checksum = None
+            polarization = polarization_crc = None
         else:
-            polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
+            polarization, polarization_crc = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
             dark = self.detector.darkcurrent
@@ -1320,7 +1321,9 @@ class AzimuthalIntegrator(Geometry):
                     else:
                         integr = self.engines[method].engine
                 if method.impl_lower == "opencl":
-                    ocl_kwargs = {"polarization_checksum":polarization_checksum}
+                    ocl_kwargs = {"polarization_checksum": polarization_crc,
+                                  "solidangle_checksum": solidangle_crc
+                                  }
                 else:
                     ocl_kwargs = {}
                 intpl = integr.integrate_ng(data, dark=dark,
@@ -1430,7 +1433,7 @@ class AzimuthalIntegrator(Geometry):
                                variance=variance,
                                flat=flat, solidangle=solidangle,
                                polarization=polarization,
-                               polarization_checksum=polarization_checksum,
+                               polarization_checksum=polarization_crc,
                                normalization_factor=normalization_factor,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range)
@@ -1723,9 +1726,9 @@ class AzimuthalIntegrator(Geometry):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = polarization_checksum = None
+            polarization = polarization_crc = None
         else:
-            polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
+            polarization, polarization_crc = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
             dark = self.detector.darkcurrent
@@ -1818,7 +1821,7 @@ class AzimuthalIntegrator(Geometry):
                                                                       dummy=dummy,
                                                                       delta_dummy=delta_dummy,
                                                                       polarization=polarization,
-                                                                      polarization_checksum=polarization_checksum,
+                                                                      polarization_checksum=polarization_crc,
                                                                       normalization_factor=normalization_factor,
                                                                       safe=safe)
                                 I.shape = npt
@@ -1909,7 +1912,7 @@ class AzimuthalIntegrator(Geometry):
                                                                       dummy=dummy,
                                                                       delta_dummy=delta_dummy,
                                                                       polarization=polarization,
-                                                                      polarization_checksum=polarization_checksum,
+                                                                      polarization_checksum=polarization_crc,
                                                                       safe=safe,
                                                                       normalization_factor=normalization_factor)
                                 I.shape = npt
@@ -2142,9 +2145,9 @@ class AzimuthalIntegrator(Geometry):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = polarization_checksum = None
+            polarization = polarization_crc = None
         else:
-            polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
+            polarization, polarization_crc = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
             dark = self.detector.darkcurrent
@@ -2245,7 +2248,7 @@ class AzimuthalIntegrator(Geometry):
                                                               dummy=dummy,
                                                               delta_dummy=delta_dummy,
                                                               polarization=polarization,
-                                                              polarization_checksum=polarization_checksum,
+                                                              polarization_checksum=polarization_crc,
                                                               normalization_factor=normalization_factor,
                                                               safe=safe)
                 if res is None:
@@ -2332,7 +2335,7 @@ class AzimuthalIntegrator(Geometry):
                                                                          dummy=dummy,
                                                                          delta_dummy=delta_dummy,
                                                                          polarization=polarization,
-                                                                         polarization_checksum=polarization_checksum,
+                                                                         polarization_checksum=polarization_crc,
                                                                          safe=safe,
                                                                          normalization_factor=normalization_factor)
                     else:
@@ -3035,9 +3038,9 @@ class AzimuthalIntegrator(Geometry):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = polarization_checksum = None
+            polarization = polarization_crc = None
         else:
-            polarization, polarization_checksum = self.polarization(data.shape, polarization_factor, with_checksum=True)
+            polarization, polarization_crc = self.polarization(data.shape, polarization_factor, with_checksum=True)
 
         if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."

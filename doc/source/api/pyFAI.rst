@@ -108,6 +108,15 @@ pyFAI package
     :undoc-members:
     :show-inheritance:
 
+:mod:`units` Module
+--------------------
+
+.. automodule:: pyFAI.units
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 :mod:`worker` Module
 --------------------
 

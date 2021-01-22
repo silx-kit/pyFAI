@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2021"
+__date__ = "22/01/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -55,7 +55,7 @@ except (ImportError, ModuleNotFoundError):
 # A few physical constants
 ################################################################################
 
-hc = CONST_hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
+CONST_hc = hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
 """Product of h the Planck constant, and c the speed of light in vacuum
 in Angstrom.KeV. It is approximativly equal to:
  
@@ -84,7 +84,9 @@ class Unit(object):
                                 can use latex representation
         :param func equation: equation to calculate the value from coordinates
                                  (x,y,z) in detector space.
-                                 Parameters of the function are x, y, z, lambda
+                                 Parameters of the function are `x`, `y`, `z`, `lambda`
+        :param fomula: string with the mathematical formula. 
+                       Valid variable names are `x`, `y`, `z`, `λ` and the constant `π`
         :param str center: name of the fast-path function
         :param str unit_symbol: Symbol used to display values of this unit
         """
