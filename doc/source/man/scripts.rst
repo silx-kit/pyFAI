@@ -57,3 +57,4 @@ and remain available only for compatibility reasons.
    diff_tomo
    pyFAI-saxs
    pyFAI-waxs
+   pyFAI-benchmark

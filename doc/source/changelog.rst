@@ -7,7 +7,7 @@ Change-log of versions
 
 0.20.0 22/01/2021
 -----------------
-* One year of development, about 500 commits & 300 files modified.
+* One year of development, about 500 commits & 370 files modified.
 * Generalization of the new generation 1D integrators (better error propagation)
 * Sigma clipping and sparsification of single crystal data (OpenCL only)  
 * Fix issue introduced with the scipy 1.15 (constrained calibration broken)  

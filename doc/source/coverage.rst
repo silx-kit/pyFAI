@@ -1,16 +1,16 @@
 Test coverage report for pyFAI
 ==============================
 
-Measured on *pyFAI* version 0.20.0-beta2, 21/01/2021
+Measured on *pyFAI* version 0.20.0, 22/01/2021
 
 .. csv-table:: Test suite coverage
    :header: "Name", "Stmts", "Exec", "Cover"
    :widths: 35, 8, 8, 8
 
    "__init__.py", "44", "27", "61.4 %"
-   "_version.py", "54", "51", "94.4 %"
+   "_version.py", "54", "46", "85.2 %"
    "average.py", "495", "356", "71.9 %"
-   "azimuthalIntegrator.py", "1690", "1091", "64.6 %"
+   "azimuthalIntegrator.py", "1691", "1038", "61.4 %"
    "blob_detection.py", "506", "191", "37.7 %"
    "calibrant.py", "431", "340", "78.9 %"
    "containers.py", "351", "317", "90.3 %"
@@ -23,8 +23,8 @@ Measured on *pyFAI* version 0.20.0-beta2, 21/01/2021
    "goniometer.py", "445", "244", "54.8 %"
    "grid.py", "36", "15", "41.7 %"
    "load_integrators.py", "132", "93", "70.5 %"
-   "massif.py", "230", "188", "81.7 %"
-   "method_registry.py", "235", "207", "88.1 %"
+   "massif.py", "230", "191", "83.0 %"
+   "method_registry.py", "235", "206", "87.7 %"
    "multi_geometry.py", "144", "117", "81.2 %"
    "spline.py", "427", "252", "59.0 %"
    "units.py", "109", "102", "93.6 %"
@@ -46,7 +46,7 @@ Measured on *pyFAI* version 0.20.0-beta2, 21/01/2021
    "app/saxs.py", "89", "26", "29.2 %"
    "app/sparsify.py", "139", "36", "25.9 %"
    "app/waxs.py", "101", "27", "26.7 %"
-   "benchmark/__init__.py", "568", "81", "14.3 %"
+   "benchmark/__init__.py", "566", "81", "14.3 %"
    "detectors/__init__.py", "22", "22", "100.0 %"
    "detectors/_adsc.py", "77", "77", "100.0 %"
    "detectors/_common.py", "710", "485", "68.3 %"
@@ -113,7 +113,7 @@ Measured on *pyFAI* version 0.20.0-beta2, 21/01/2021
    "gui/tasks/AbstractCalibrationTask.py", "66", "57", "86.4 %"
    "gui/tasks/ExperimentTask.py", "316", "229", "72.5 %"
    "gui/tasks/GeometryTask.py", "794", "370", "46.6 %"
-   "gui/tasks/IntegrationTask.py", "769", "297", "38.6 %"
+   "gui/tasks/IntegrationTask.py", "769", "325", "42.3 %"
    "gui/tasks/MaskTask.py", "214", "138", "64.5 %"
    "gui/tasks/PeakPickingTask.py", "1349", "578", "42.8 %"
    "gui/tasks/__init__.py", "4", "4", "100.0 %"
@@ -126,8 +126,8 @@ Measured on *pyFAI* version 0.20.0-beta2, 21/01/2021
    "gui/utils/projecturl.py", "20", "19", "95.0 %"
    "gui/utils/timeutils.py", "12", "10", "83.3 %"
    "gui/utils/tree.py", "118", "25", "21.2 %"
-   "gui/utils/units.py", "76", "66", "86.8 %"
-   "gui/utils/unitutils.py", "56", "8", "14.3 %"
+   "gui/utils/units.py", "76", "67", "88.2 %"
+   "gui/utils/unitutils.py", "56", "17", "30.4 %"
    "gui/utils/validators.py", "89", "83", "93.3 %"
    "gui/widgets/AdvancedComboBox.py", "66", "56", "84.8 %"
    "gui/widgets/AdvancedSpinBox.py", "20", "11", "55.0 %"
@@ -148,7 +148,7 @@ Measured on *pyFAI* version 0.20.0-beta2, 21/01/2021
    "gui/widgets/MonitorNameEdit.py", "20", "10", "50.0 %"
    "gui/widgets/OpenClDeviceLabel.py", "52", "22", "42.3 %"
    "gui/widgets/QuantityEdit.py", "142", "89", "62.7 %"
-   "gui/widgets/QuantityLabel.py", "132", "80", "60.6 %"
+   "gui/widgets/QuantityLabel.py", "132", "92", "69.7 %"
    "gui/widgets/UnitLabel.py", "69", "35", "50.7 %"
    "gui/widgets/UnitSelector.py", "84", "81", "96.4 %"
    "gui/widgets/WorkerConfigurator.py", "436", "300", "68.8 %"
@@ -161,13 +161,13 @@ Measured on *pyFAI* version 0.20.0-beta2, 21/01/2021
    "io/sparse_frame.py", "96", "20", "20.8 %"
    "opencl/OCLFullSplit.py", "199", "24", "12.1 %"
    "opencl/__init__.py", "30", "24", "80.0 %"
-   "opencl/azim_csr.py", "481", "354", "73.6 %"
-   "opencl/azim_hist.py", "453", "317", "70.0 %"
-   "opencl/azim_lut.py", "314", "239", "76.1 %"
+   "opencl/azim_csr.py", "479", "327", "68.3 %"
+   "opencl/azim_hist.py", "453", "296", "65.3 %"
+   "opencl/azim_lut.py", "314", "217", "69.1 %"
    "opencl/ocl_hist_pixelsplit.py", "223", "27", "12.1 %"
    "opencl/peak_finder.py", "384", "285", "74.2 %"
    "opencl/preproc.py", "204", "146", "71.6 %"
-   "opencl/sort.py", "291", "224", "77.0 %"
+   "opencl/sort.py", "291", "210", "72.2 %"
    "resources/__init__.py", "31", "20", "64.5 %"
    "utils/__init__.py", "129", "77", "59.7 %"
    "utils/bayes.py", "100", "67", "67.0 %"
@@ -180,4 +180,4 @@ Measured on *pyFAI* version 0.20.0-beta2, 21/01/2021
    "utils/shell.py", "55", "46", "83.6 %"
    "utils/stringutil.py", "70", "45", "64.3 %"
 
-   "pyFAI total", "31794", "16966", "53.4 %"
+   "pyFAI total", "31791", "16876", "53.1 %"
