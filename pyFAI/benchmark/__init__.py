@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "21/01/2021"
+__date__ = "28/01/2021"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -420,16 +420,16 @@ class Bench(object):
                     self.update_mp()
                     if first:
                         if opencl:
-                            self.new_curve(results, label, style="--")
+                            self.new_curve(results, label, style="--", marker="s" if "legacy" in function else "o")
                         else:
-                            self.new_curve(results, label, style="-")
+                            self.new_curve(results, label, style="-", marker="s" if "legacy" in function else "o")
                         first = False
                     else:
                         self.new_point(size, tmin)
             else:
                 results[size] = tmin
                 if first:
-                    self.new_curve(results, label)
+                    self.new_curve(results, label, marker="s" if "legacy" in function else "o")
                     first = False
                 else:
                     self.new_point(size, tmin)
@@ -521,7 +521,7 @@ class Bench(object):
             tmin *= 1000.0
             results[size] = tmin
             if first:
-                self.new_curve(results, label)
+                self.new_curve(results, label, marker="o")
                 first = False
             else:
                 self.new_point(size, tmin)
@@ -573,7 +573,7 @@ class Bench(object):
                 tmin *= 1000.0
                 results[size] = tmin
                 if first:
-                    self.new_curve(results, label)
+                    self.new_curve(results, label, marker="o")
                     first = False
                 else:
                     self.new_point(size, tmin)
@@ -621,7 +621,7 @@ class Bench(object):
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
             update_fig(self.fig)
 
-    def new_curve(self, results, label, style="-"):
+    def new_curve(self, results, label, style="-", marker="x"):
         """
         Create a new curve within the current graph
 
@@ -635,7 +635,7 @@ class Bench(object):
         self.plot_x = list(results.keys())
         self.plot_x.sort()
         self.plot_y = [1000.0 / results[i] for i in self.plot_x]
-        self.plot = self.ax.plot(self.plot_x, self.plot_y, "o" + style, label=label)[0]
+        self.plot = self.ax.plot(self.plot_x, self.plot_y, marker + style, label=label)[0]
         self.ax.legend()
         update_fig(self.fig)
 
