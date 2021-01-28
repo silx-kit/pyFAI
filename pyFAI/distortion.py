@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "28/01/2021"
 __status__ = "development"
 
 import logging
@@ -281,7 +281,7 @@ class Distortion(object):
                                                                       self._shape_out[0] * self._shape_out[1],
                                                                       devicetype=self.device,
                                                                       block_size=self.workgroup)
-                    self.integrator.workgroup_size["csr_integrate4"] = 1,
+                    self.integrator.workgroup_size["csr_integrate4"] = 1, 1
             else:
                 if self.method == "lut":
                     self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut,
@@ -293,7 +293,7 @@ class Distortion(object):
                                                                       self._shape_out[0] * self._shape_out[1],
                                                                       platformid=self.device[0], deviceid=self.device[1],
                                                                       block_size=self.workgroup)
-                    self.integrator.workgroup_size["csr_integrate4"] = 1,
+                    self.integrator.workgroup_size["csr_integrate4"] = 1, 1
 
     def calc_LUT(self, use_common=True):
         """Calculate the Look-up table
