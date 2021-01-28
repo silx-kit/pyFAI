@@ -335,9 +335,7 @@ class TestOther(unittest.TestCase):
             dc.reset("csr", target, prepare=True)
             w = numpy.where(dc.lut[2][1:] == dc.lut[2][:-1])
             self.assertEqual(len(w[0]), d.mask.sum(), "masked pixels are all missing, opencl")
-
             b = dc.correct_ng(a)
-            print(f"Empty after {dc.empty} {dc.integrator.empty}")
             self.assertGreater(a.min(), 0)  # 1 is the lowset
             self.assertLess(b.min(), 0)  # -1 have appeared
             self.assertLess(b.mean(), a.mean())

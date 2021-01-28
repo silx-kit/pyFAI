@@ -678,7 +678,6 @@ csr_integrate4_single(  const   global  float4  *weights,
         stderr[bin_num] = sqrt(sum_variance_K.s0) / sum_norm_K.s0;
     }
     else {
-    	//printf("Bin is empty\n");
         averint[bin_num] = empty;
         stderr[bin_num] = empty;
     }
