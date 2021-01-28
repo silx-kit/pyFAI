@@ -42,12 +42,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2021"
+__date__ = "28/01/2021"
 __status__ = "status"
 
 import os
 import sys
-import time
 import argparse
 from collections import OrderedDict
 import numpy
