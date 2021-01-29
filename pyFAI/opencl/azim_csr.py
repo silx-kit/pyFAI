@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "21/01/2021"
+__date__ = "28/01/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -136,9 +136,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "solidangle": None,
                           "absorption": None,
                           "dark_variance": None}
-
+        platform = self.ctx.devices[0].platform.name.lower()
         if block_size is None:
-            platform = self.ctx.devices[0].platform.name.lower()
+
             if "nvidia" in  platform:
                 block_size = 32
             elif "amd" in  platform:
@@ -178,6 +178,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.send_buffer(self._data, "data")
         self.send_buffer(self._indices, "indices")
         self.send_buffer(self._indptr, "indptr")
+        if "amd" in  platform:
+            self.workgroup_size["csr_integrate4_single"] = (1, 1)  # Very bad performances on AMD GPU for diverging threads!
 
     def __copy__(self):
         """Shallow copy of the object
@@ -678,7 +680,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             kw_int["empty"] = dummy
             wg_min, wg_max = self.workgroup_size["csr_integrate4"]
-            if wg_max == 1:
+            if  wg_max == 1:
                 wg = max(self.workgroup_size["csr_integrate4_single"])
                 wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
                 integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
