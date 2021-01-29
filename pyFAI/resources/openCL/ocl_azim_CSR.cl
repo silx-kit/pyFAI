@@ -661,7 +661,7 @@ csr_integrate4_single(  const   global  float4  *weights,
         float norm = tmp.s2;
         float count = tmp.s3;
 
-        if( isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0)) {
+        if( isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0.0f)) {
             //Kahan summation allows single precision arithmetics with error compensation
             //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
             // defined in kahan.cl
@@ -673,7 +673,7 @@ csr_integrate4_single(  const   global  float4  *weights,
     }//for j
 
     summed[bin_num] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
-    if (sum_norm_K.s0 > 0.0f) {
+    if (sum_count_K.s0 > 0.0f) {
         averint[bin_num] = sum_signal_K.s0 / sum_norm_K.s0;
         stderr[bin_num] = sqrt(sum_variance_K.s0) / sum_norm_K.s0;
     }
