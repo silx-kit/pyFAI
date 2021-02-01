@@ -162,7 +162,8 @@ class TestSplitBBoxNg(unittest.TestCase):
         det = Detector.factory("Pilatus 100k")
         shape = det.shape
         # The randomness of the image is not correlated to bug #1021
-        img = numpy.random.randint(0, 65000, numpy.prod(shape))
+        cls.maxi = 65000
+        img = numpy.random.randint(0, cls.maxi, numpy.prod(shape))
 
         if platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4):
             cls.epsilon = 1e-13
@@ -242,7 +243,7 @@ class TestSplitBBoxNg(unittest.TestCase):
         # Weighted signal:
         weighted_legacy = self.results["histoBBox2d_legacy"][3]
         signal = self.results["histoBBox2d_ng"].signal
-        self.assertLess(abs(signal - weighted_legacy).max(), self.epsilon, "Weighted is the same")
+        self.assertLess(abs(signal - weighted_legacy).max(), self.maxi * self.epsilon, "Weighted is the same")
 
         # resulting intensity validation
         int_legacy = self.results["histoBBox2d_legacy"][0]
