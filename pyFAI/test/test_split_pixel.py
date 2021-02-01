@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "01/02/2021"
 
 import unittest
 import numpy
@@ -227,7 +227,7 @@ class TestSplitBBoxNg(unittest.TestCase):
 #             print("pos0", self.results["histoBBox2d_ng"][2])
 #             print("err", self.results["histoBBox2d_ng"][1])
 #             print("int", self.results["histoBBox2d_ng"][0])
-        self.assertEqual(abs(count_legacy - count_ng).max(), 0, "count is the same")
+        self.assertLess(abs(count_legacy - count_ng).max(), 1e-13, "count is the same")
         # same for normalisation ... in this case
         count_ng = self.results["histoBBox2d_ng"].normalization
         self.assertEqual(abs(count_legacy - count_ng).max(), 0, "norm is old-count")
@@ -235,12 +235,12 @@ class TestSplitBBoxNg(unittest.TestCase):
         # Weighted signal:
         weighted_legacy = self.results["histoBBox2d_legacy"][3]
         signal = self.results["histoBBox2d_ng"].signal
-        self.assertEqual(abs(signal - weighted_legacy).max(), 0, "Weighted is the same")
+        self.assertLess(abs(signal - weighted_legacy).max(), 1e-13, "Weighted is the same")
 
         # resulting intensity validation
         int_legacy = self.results["histoBBox2d_legacy"][0]
         int_ng = self.results["histoBBox2d_ng"].intensity
-        self.assertEqual(abs(int_legacy - int_ng).max(), 0, "intensity is the same")
+        self.assertLess(abs(int_legacy - int_ng).max(), 1e-13, "intensity is the same")
 
     def test_split_pixel_2d(self):
         # radial position:
