@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "28/01/2021"
+__date__ = "01/02/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -60,8 +60,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
     """
     BLOCK_SIZE = 32
     # Intel CPU driver calims preferred workgroup is 128 !
-    buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
-               BufferDescription("output4", 4, numpy.float32, mf.WRITE_ONLY),
+    buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
