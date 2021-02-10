@@ -16,3 +16,4 @@ Advanced tutorials on calibrant in pyFAI.
    Calibrant
    new_calibrant
    make_calibrant
+   hydrocerussite
