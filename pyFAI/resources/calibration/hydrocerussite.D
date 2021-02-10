@@ -1,5 +1,5 @@
 # Calibrant: basic lead carbonate (R-3m) (hydrocerussite)
-# Primitive hexagonal cell a=5.2466 b=5.2466 c=23.7023 alpha=90.000 beta=90.000 gamma=120.000
+# Hexagonal cell a=5.2466 b=5.2466 c=23.7023 alpha=90.000 beta=90.000 gamma=120.000
 # Ref: https://doi.org/10.1107/S0108270102006844
 7.90076667 # (0, 0, 3) 2
 4.46240256 # (1, 0, -1) 6
