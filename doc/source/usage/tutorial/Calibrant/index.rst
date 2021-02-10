@@ -5,8 +5,8 @@
 
 .. _calibrant_tutorials:
 
-Goniometer and translation table calibration
-============================================
+Calibrant selection and generation
+==================================
 
 Advanced tutorials on calibrant in pyFAI.
 

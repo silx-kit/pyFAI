@@ -32,7 +32,7 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "30/04/2020"
+__date__ = "10/02/2021"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
