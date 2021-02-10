@@ -26,7 +26,6 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Ellipse/ellipse
    LogScale/Guinier
    multi-geometry
-   MakeCalibrant/
    Goniometer/index
    Inpainting/Inpainting
    ThickDetector/index
