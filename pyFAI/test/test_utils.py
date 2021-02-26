@@ -99,7 +99,6 @@ class TestUtils(unittest.TestCase):
         P = numpy.array([[1, 1], [2, 0], [3, 1], [2, 2]])
         Q = numpy.array([[2, 0], [3, 1], [2, 2], [1, 1]])
         Kabsch.test(P, Q, verbose=False)
-        # raise RuntimeError("It works")
 
 
 def suite():
