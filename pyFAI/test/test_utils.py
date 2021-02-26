@@ -32,19 +32,21 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "26/02/2021"
 
 import os
 import unittest
 import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
+import numpy
 from .. import utils
 from .. import _version
 from ..method_registry import IntegrationMethod
 from .. import azimuthalIntegrator
 # to increase test coverage of missing files:
 from .. import directories
+from ..utils.grid import Kabsch
 
 
 class TestUtils(unittest.TestCase):
@@ -79,6 +81,25 @@ class TestUtils(unittest.TestCase):
 
     def test_directories(self):
         logger.info("data directories exists: %s %s", directories.PYFAI_DATA, os.path.exists(directories.PYFAI_DATA))
+
+    def test_grid(self):
+        "Test Kabsch righid rotation algorithm"
+        # Test translation
+        Kabsch.test([[1, 2], [2, 3], [1, 4]], [[2, 3], [3, 4], [2, 5]], verbose=False)
+        # Test rotation
+        P = numpy.array([[2, 3], [3, 4], [2, 5]])
+        Q = -P
+        Kabsch.test(P, Q, verbose=False)
+        # test advanced 1
+        P = numpy.array([[1, 1], [2, 0], [3, 1], [2, 2]])
+        Q = numpy.array([[-1, 1], [0, 2], [-1, 3], [-2, 2]])
+        Kabsch.test(P, Q, verbose=False)
+
+        # test advanced 2
+        P = numpy.array([[1, 1], [2, 0], [3, 1], [2, 2]])
+        Q = numpy.array([[2, 0], [3, 1], [2, 2], [1, 1]])
+        Kabsch.test(P, Q, verbose=False)
+        # raise RuntimeError("It works")
 
 
 def suite():

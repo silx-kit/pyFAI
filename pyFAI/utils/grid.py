@@ -139,6 +139,7 @@ class Kabsch:
         else:
             assert numpy.isclose(sqrt(((k.correct(points) - reference) ** 2).sum() / len(reference)), k.rmsd)
             assert numpy.isclose(sqrt(((points - k.uncorrect(reference)) ** 2).sum() / len(reference)), k.rmsd)
+        return k
 
 
 if __name__ == "__main__":
