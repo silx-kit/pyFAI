@@ -289,7 +289,7 @@
       <item row="4" column="1" colspan="3">
        <widget class="QDoubleSpinBox" name="polarization_factor">
         <property name="toolTip">
-         <string>Between 1 (Vertical) and -1 (Horizontal polarization). </string>
+         <string>Between 1 (Horizontal) and -1 (Vertical polarization), 0.9 is a good guess.</string>
         </property>
         <property name="minimum">
          <double>-1.000000000000000</double>
