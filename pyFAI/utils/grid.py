@@ -59,7 +59,7 @@ class Kabsch:
         R = numpy.ascontiguousarray(reference, dtype=numpy.float64)
         P = numpy.ascontiguousarray(points, dtype=numpy.float64)
         assert R.shape == P.shape
-        ndim, size = R.shape
+        size, ndim = R.shape
         centroid_P = P.mean(axis=0)
         centroid_R = R.mean(axis=0)
 
