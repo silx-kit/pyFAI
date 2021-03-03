@@ -57,15 +57,15 @@ except (ImportError, ModuleNotFoundError):
 
 CONST_hc = hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
 """Product of h the Planck constant, and c the speed of light in vacuum
-in Angstrom.KeV. It is approximativly equal to:
- 
-pyFAI reference 12.398419292004204
-scipy v1.3.1:   12.398419739640717
-scipy-1.4.0rc1: 12.398419843320026
+in Angstrom.KeV. It is approximatively equal to:
+
+- pyFAI reference: 12.398419292004204
+- scipy v1.3.1:   12.398419739640717
+- scipy-1.4.0rc1: 12.398419843320026
 """
 
 CONST_q = scipy.constants.e
-"""One electron-volt is equal to 1.602176565⋅10-19 joules"""
+"""One electron-volt is equal to 1.602176634⋅10-19 joules"""
 
 
 class Unit(object):
@@ -79,16 +79,16 @@ class Unit(object):
         """Constructor of a unit.
 
         :param str name: name of the unit
-        :param float scale: scale of th unit to go to SI
-        :param string label: label for nice representation in matplotlib,
+        :param float scale: scale of the unit to go to SI
+        :param str label: label for nice representation in matplotlib,
                                 can use latex representation
         :param func equation: equation to calculate the value from coordinates
                                  (x,y,z) in detector space.
-                                 Parameters of the function are `x`, `y`, `z`, `lambda`
-        :param fomula: string with the mathematical formula. 
+                                 Parameters of the function are `x`, `y`, `z`, `wavelength`
+        :param str formula: string with the mathematical formula.
                        Valid variable names are `x`, `y`, `z`, `λ` and the constant `π`
         :param str center: name of the fast-path function
-        :param str unit_symbol: Symbol used to display values of this unit
+        :param str unit_symbol: symbol used to display values of this unit
         """
         self.name = name
         self.scale = scale
@@ -123,9 +123,9 @@ class Unit(object):
         self.unit_symbol = unit_symbol
 
     def get(self, key):
-        """Mimic the dictionary interface
+        """Mimics the dictionary interface
 
-        :param (str) key: key wanted
+        :param str key: key wanted
         :return: self.key
         """
         res = None
@@ -154,7 +154,7 @@ def eq_r(x, y, z=None, wavelength=None):
     """Calculates the radius
 
     :param x: horizontal position, towards the center of the ring, from sample position
-    :param y: Vertical position, to the roof, from sample position
+    :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
     :param wavelength: in meter
     """
@@ -165,7 +165,7 @@ def eq_2th(x, y, z, wavelength=None):
     """Calculates the 2theta aperture of the cone
 
     :param x: horizontal position, towards the center of the ring, from sample position
-    :param y: Vertical position, to the roof, from sample position
+    :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
     :param wavelength: in meter
     """
@@ -176,7 +176,7 @@ def eq_q(x, y, z, wavelength):
     """Calculates the modulus of the scattering vector
 
     :param x: horizontal position, towards the center of the ring, from sample position
-    :param y: Vertical position, to the roof, from sample position
+    :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
     :param wavelength: in meter
     """
