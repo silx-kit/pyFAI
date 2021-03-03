@@ -107,6 +107,8 @@ def parse():
                         help="show information for each frame")
     parser.add_argument("--debug", action='store_true', dest="debug", default=False,
                         help="show debug information")
+    parser.add_argument("--profile", action='store_true', dest="profile", default=False,
+                        help="show profiling information")
     group = parser.add_argument_group("main arguments")
 #     group.add_argument("-l", "--list", action="store_true", dest="list", default=None,
 #                        help="show the list of available formats and exit")
@@ -288,6 +290,13 @@ def process(options):
                 ai=ai,
                 source=options.images if options.save_source else None,
                 extra=parameters)
+    
+    if options.profile:
+        try:
+            res = pf.log_profile(True)
+        except Exception:
+            res = pf.log_profile()
+        print(os.linesep.join(res))
     return EXIT_SUCCESS
 
 
