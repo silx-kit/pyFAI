@@ -60,14 +60,15 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
     int gid = get_global_id(0);
     int wg = get_local_size(0);
     // all thread in this WG share this local counter, upgraded at the end
-    volatile local int local_counter[2];
-    volatile local int local_highidx[WORKGROUP_SIZE];
+    volatile local int local_counter[2]; //first element MUST be set to zero
+    volatile local int local_highidx[WORKGROUP_SIZE]; //This array does not deserve to be initialized
     // Ensure wg <= WORKGROUP_SIZE
-    local_highidx[tid] = 0;
-    for (int i=0; i<2; i+=wg){
-        if (i+tid < 2){
-            local_counter[i+tid] = 0;
-        }
+    
+    // local_highidx[tid] = 0; 
+    
+    // Only the first elements must be initialized
+    if (tid<2){
+    	local_counter[tid] = 0;
     }
     barrier(CLK_LOCAL_MEM_FENCE);    
     
@@ -83,11 +84,18 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
                 value.s0 = 0.0f;
                 value.s1 = 0.0f;
             } // empty pixel
-            float pos = (radius - radius1d[0]) /  (radius1d[1] - radius1d[0]);
+            float step = radius1d[1] - radius1d[0];
+            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)NBINS);
             int index = convert_int_rtz(pos);
             float delta = pos - index;
-            value.s2 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // bilinear interpolation: averge
-            value.s3 = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // bilinear interpolation: std
+            if (index + 1 < NBINS) {
+                value.s2 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // linear interpolation: averge
+                value.s3 = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // linear interpolation: std            	
+            }
+            else { //Normal bin, using linear interpolation
+            	value.s2 = average1d[index];
+				value.s3 = std1d[index];
+            }//Upper most bin: no interpolation
             if ((value.s1 - value.s2) > max(noise, cutoff*value.s3)){
                 local_highidx[atomic_inc(local_counter)] = gid;
             }//pixel is considered of high intensity: registering it. 

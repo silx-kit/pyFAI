@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "20/01/2021"
+__date__ = "03/03/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -100,7 +100,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         nbin = lut[2].size - 1
         extra_buffers = [
                          BufferDescription("radius1d", nbin, numpy.float32, mf.READ_ONLY),
-                         BufferDescription("counter", 1, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("counter", 1, numpy.float32, mf.READ_WRITE),
                          ]
 
         OCL_CSR_Integrator.__init__(self, lut, image_size, checksum,
