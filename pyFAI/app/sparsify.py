@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2021"
+__date__ = "03/03/2021"
 __status__ = "status"
 
 import os
@@ -107,6 +107,8 @@ def parse():
                         help="show information for each frame")
     parser.add_argument("--debug", action='store_true', dest="debug", default=False,
                         help="show debug information")
+    parser.add_argument("--profile", action='store_true', dest="profile", default=False,
+                        help="show profiling information")
     group = parser.add_argument_group("main arguments")
 #     group.add_argument("-l", "--list", action="store_true", dest="list", default=None,
 #                        help="show the list of available formats and exit")
@@ -250,7 +252,8 @@ def process(options):
                         bin_centers=integrator.bin_centers,
                         radius=ai._cached_array["r_center"],
                         mask=mask,
-                        ctx=ctx)
+                        ctx=ctx,
+                        profile=options.profile)
 
     logger.debug("Start sparsification")
     frames = []
@@ -288,6 +291,12 @@ def process(options):
                 ai=ai,
                 source=options.images if options.save_source else None,
                 extra=parameters)
+
+    if options.profile:
+        try:
+            pf.log_profile(True)
+        except Exception:
+            pf.log_profile()
     return EXIT_SUCCESS
 
 

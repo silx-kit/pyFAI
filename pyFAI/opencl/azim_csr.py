@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "01/02/2021"
+__date__ = "03/03/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -162,9 +162,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                          BufferDescription("indptr", (self.bins + 1), numpy.int32, mf.READ_ONLY),
                          BufferDescription("sum_data", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("averint", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("stderr", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("stderrmean", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("averint", self.bins, numpy.float32, mf.READ_WRITE),
+                         BufferDescription("stderr", self.bins, numpy.float32, mf.READ_WRITE),
+                         BufferDescription("stderrmean", self.bins, numpy.float32, mf.READ_WRITE),
                          BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
                          ]
