@@ -4,7 +4,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -100,7 +100,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         nbin = lut[2].size - 1
         extra_buffers = [
                          BufferDescription("radius1d", nbin, numpy.float32, mf.READ_ONLY),
-                         BufferDescription("counter", 1, numpy.float32, mf.READ_WRITE),
+                         BufferDescription("counter", 1, numpy.int32, mf.READ_WRITE),
                          ]
 
         OCL_CSR_Integrator.__init__(self, lut, image_size, checksum,
