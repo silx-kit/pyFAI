@@ -718,12 +718,6 @@ csr_sigma_clip4(          global  float4  *data4,
     volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
 
-//    if (WORKGROUP_SIZE<get_local_size(0)){
-//    	if ((bin_num == 0) &&  (get_local_id(0) == 0))
-//    		printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
-//    				WORKGROUP_SIZE, get_local_size(0));
-//    }
-
     
     // first calculation of azimuthal integration to initialize aver & std
     
