@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "05/03/2021"
+__date__ = "08/03/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -357,7 +357,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common 
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 
+                   Values of 4-5 are quite common. 
+                   The minimum value is obtained from Chauvenet criterion: sqrt(2ln(n/sqrt(2pi))) 
+                   where n is the number of pixel in the bin, usally around 2 to 3.
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param noise: minimum meaningful signal. Fixed threshold for picking 
         :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
