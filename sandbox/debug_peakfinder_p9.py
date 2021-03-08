@@ -22,8 +22,9 @@ csr = ai.setup_CSR(None, 640, unit="r_m", split="no").lut
 
 r2 = ai.array_from_unit(unit="r_m")
 res = ai.integrate1d(img, 160, unit="r_m")
-pf = pyFAI.opencl.peak_finder.OCL_PeakFinder(csr, img.size, bin_centers=res[0], radius=r2)
+pf = pyFAI.opencl.peak_finder.OCL_PeakFinder(csr, img.size, bin_centers=res[0], radius=r2, profile=True)
 
 print(pf.count(img, error_model="azimuthal", cutoff_clip=6), npeaks)
-res = pf(img, variance=variance)
+# res = pf(img, variance=variance)
 # for a in zip(res[0] // shape[1], res[0] % shape[1], res[1]): print(a)
+pf.log_profile(stats=True)
