@@ -34,9 +34,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2020"
+__date__ = "10/03/2021"
 __status__ = "production"
- 
 
 import numpy
 import logging
@@ -134,14 +133,14 @@ class Jungfrau(Detector):
                     p2 = mathutil.expand2d(edges2, self.shape[0] + 1, True)
                     # p3 = None
                     self._pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
-                    self._pixel_corners[:, :, 0, 1] = p1[:-1, :-1]
-                    self._pixel_corners[:, :, 0, 2] = p2[:-1, :-1]
-                    self._pixel_corners[:, :, 1, 1] = p1[1:, :-1]
-                    self._pixel_corners[:, :, 1, 2] = p2[1:, :-1]
-                    self._pixel_corners[:, :, 2, 1] = p1[1:, 1:]
-                    self._pixel_corners[:, :, 2, 2] = p2[1:, 1:]
-                    self._pixel_corners[:, :, 3, 1] = p1[:-1, 1:]
-                    self._pixel_corners[:, :, 3, 2] = p2[:-1, 1:]
+                    self._pixel_corners[:,:, 0, 1] = p1[:-1,:-1]
+                    self._pixel_corners[:,:, 0, 2] = p2[:-1,:-1]
+                    self._pixel_corners[:,:, 1, 1] = p1[1:,:-1]
+                    self._pixel_corners[:,:, 1, 2] = p2[1:,:-1]
+                    self._pixel_corners[:,:, 2, 1] = p1[1:, 1:]
+                    self._pixel_corners[:,:, 2, 2] = p2[1:, 1:]
+                    self._pixel_corners[:,:, 3, 1] = p1[:-1, 1:]
+                    self._pixel_corners[:,:, 3, 2] = p2[:-1, 1:]
                     # if p3 is not None:
                     #     # non flat detector
                     #    self._pixel_corners[:, :, 0, 0] = p3[:-1, :-1]
@@ -152,8 +151,6 @@ class Jungfrau(Detector):
             return self._rebin_pixel_corners()
         else:
             return self._pixel_corners
-
-
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -194,3 +191,93 @@ class Jungfrau(Detector):
             p1 = numpy.interp(d1, numpy.arange(self.max_shape[0] + 1), edges1, edges1[0], edges1[-1])
             p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
+
+
+class Jungfrau_16M_cor(Jungfrau):
+    """Jungfrau 16 corrected for double-sized pixels
+    """
+    MODULE_SIZE = ((512 + 2), 1024 + 6)  # number of pixels per module (y, x)
+    MAX_SHAPE = ((512 + 2) * 32, 1024 + 6)  # max size of the detector
+    force_pixel = True
+    aliases = ["Jungfrau 16M cor"]
+
+    @staticmethod
+    def load_geom(geom_fname):
+        """"Load module geometry from ASCII file
+        
+        Stollen from Alejandro Homs' code
+        """
+        import re
+        geom_re = re.compile('m(?P<mod>[0-9]+)/(?P<par>[^ \t=]+)[ \t]*='
+                         '[ \t]*(?P<val>.+)')
+        module_geom = {}
+        with open(geom_fname) as ifile:
+            for l in ifile:
+                m = geom_re.match(l)
+                if not m:
+                    continue
+                mod = int(m.group('mod'))
+                mod_data = module_geom.setdefault(mod, {})
+                val = m.group('val')
+                if ' ' in val:
+                    val = val.split()
+                    if val[0].endswith('x') and val[1].endswith('y'):
+                        val = [v[:-1] for v in val]
+                else:
+                    val = [val]
+                key = m.group('par')
+                if key.startswith("min_") or key.startswith("max_"):
+                    mod_data[key] = int(val[0])
+                elif key.startswith("corner"):
+                    mod_data[key] = float(val[0])
+                else:
+                    mod_data[key] = [float(v) for v in val]
+        return module_geom
+
+    def init_from_geometry(self, filename):
+        """initialize the detector from "geom" file produced at  PSI"""
+        config = self.load_geom(filename)
+        shape0 = 0
+        shape1 = 0
+        for m in config.values():
+            shape0 = max(shape0, m.get("max_ss", 0))
+            shape1 = max(shape1, m.get("max_fs", 0))
+        self.MAX_SHAPE = (shape0 + 1, shape1 + 1)
+
+        position_array = numpy.zeros(self.MAX_SHAPE + (4, 3), dtype=numpy.float32)
+
+        for mid, module in config.items():
+            slab = position_array[module["min_ss"]: 1 + module["max_ss"], module["min_fs"]: 1 + module["max_fs"]]
+            ss_edges = numpy.arange(2 + module["max_ss"] - module["min_ss"], dtype=numpy.int32)
+            fs_edges = numpy.arange(2 + module["max_fs"] - module["min_fs"], dtype=numpy.int32)
+            p1 = mathutil.expand2d(ss_edges, fs_edges.size, False)
+            p2 = mathutil.expand2d(fs_edges, ss_edges.size, True)
+            indexes = numpy.vstack([p2.ravel(), p1.ravel()])  # XY
+            mat = numpy.array([module["fs"], module["ss"]], dtype=numpy.float64)
+            position_xy = mat.dot(indexes) + numpy.array([[module["corner_x"]], [module["corner_y"]]])
+            p2, p1 = position_xy.reshape((2,) + p1.shape)
+            slab[:,:, 0, 1] = p1[:-1,:-1]
+            slab[:,:, 0, 2] = p2[:-1,:-1]
+            slab[:,:, 1, 1] = p1[1:,:-1]
+            slab[:,:, 1, 2] = p2[1:,:-1]
+            slab[:,:, 2, 1] = p1[1:, 1:]
+            slab[:,:, 2, 2] = p2[1:, 1:]
+            slab[:,:, 3, 1] = p1[:-1, 1:]
+            slab[:,:, 3, 2] = p2[:-1, 1:]
+        self._pixel_corners = (position_array * self.pixel1).astype(numpy.float32)
+
+    def calc_mask(self):
+        "Mask out sub-module junctions"
+        mask = numpy.zeros(self.MAX_SHAPE, dtype=numpy.int8)
+        mask[255:self.MAX_SHAPE[0] - 2:self.MODULE_SIZE[0]] = 1
+        mask[256:self.MAX_SHAPE[0] - 2:self.MODULE_SIZE[0]] = 1
+        mask[257:self.MAX_SHAPE[0] - 2:self.MODULE_SIZE[0]] = 1
+        mask[258:self.MAX_SHAPE[0] - 2:self.MODULE_SIZE[0]] = 1
+
+        for i in range(0, self.MODULE_SIZE[1], 258):
+            mask[:, i + 255:self.MAX_SHAPE[1] - 2:self.MODULE_SIZE[1]] = 1
+            mask[:, i + 256:self.MAX_SHAPE[1] - 2:self.MODULE_SIZE[1]] = 1
+            mask[:, i + 257:self.MAX_SHAPE[1] - 2:self.MODULE_SIZE[1]] = 1
+            mask[:, i + 258:self.MAX_SHAPE[1] - 2:self.MODULE_SIZE[1]] = 1
+        return mask
+
