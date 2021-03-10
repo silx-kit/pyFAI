@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping:
-##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+#cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,7 +35,7 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "14/01/2021"
+__date__ = "10/03/2021"
 __copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -360,13 +360,14 @@ def calc_size(floating[:, :, :, ::1] pos not None,
 
 
 def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
-             int8_t[:, :] mask=None):
+             int8_t[:, :] mask=None, offset=(0,0)):
     """
     :param pos: 4D position array
     :param shape: output shape
     :param bin_size: number of input element per output element (numpy array)
     :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
     :param mask: arry with bad pixels marked as True
+    :param offset: global offset for pixel position
     :return: look-up table
     """
     cdef:
@@ -375,7 +376,7 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
         int32_t idx = 0
         int err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
-        float area, value, foffset0, foffset1
+        float area, value, foffset0, foffset1, goffset0, goffset1
         lut_t[:, :, :] lut
         bint do_mask = mask is not None
         float32_t[:, ::1] buffer
@@ -396,6 +397,9 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
     memset(&lut[0, 0, 0], 0, lut_total_size)
     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], lut_total_size / 1.0e6))
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (delta1, delta0, size))
+    #Manage global pixel offset:
+    goffset0 = float(offset[0])
+    goffset1 = float(offset[1])    
     with nogil:
         # i,j, idx are indexes of the raw image uncorrected
         for i in range(shape0):
@@ -405,14 +409,14 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
                 # reset buffer
                 buffer[:, :] = 0.0
 
-                A0 = pos[i, j, 0, 0]
-                A1 = pos[i, j, 0, 1]
-                B0 = pos[i, j, 1, 0]
-                B1 = pos[i, j, 1, 1]
-                C0 = pos[i, j, 2, 0]
-                C1 = pos[i, j, 2, 1]
-                D0 = pos[i, j, 3, 0]
-                D1 = pos[i, j, 3, 1]
+                A0 = pos[i, j, 0, 0] - goffset0
+                A1 = pos[i, j, 0, 1] - goffset1
+                B0 = pos[i, j, 1, 0] - goffset0
+                B1 = pos[i, j, 1, 1] - goffset1
+                C0 = pos[i, j, 2, 0] - goffset0
+                C1 = pos[i, j, 2, 1] - goffset1
+                D0 = pos[i, j, 3, 0] - goffset0
+                D1 = pos[i, j, 3, 1] - goffset1
                 foffset0 = _floor_min4(A0, B0, C0, D0)
                 foffset1 = _floor_min4(A1, B1, C1, D1)
                 offset0 = (<int> foffset0)
@@ -498,13 +502,15 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
 
 
 def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
-             int8_t[:, ::1] mask=None):
+             int8_t[:, ::1] mask=None, offset=(0,0)):
     """Calculate the Look-up table as CSR format
 
     :param pos: 4D position array
     :param shape: output shape
     :param bin_size: number of input element per output element (as numpy array)
     :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    :param mask: array with invalid pixels marked
+    :param offset: global offset for pixel coordinates
     :return: look-up table in CSR format: 3-tuple of array"""
     cdef:
         int shape0, shape1, delta0, delta1, bins
@@ -515,7 +521,7 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
         int i, j, k, ms, ml, ns, nl, idx = 0, tmp_index, err_cnt = 0
         int lut_size, offset0, offset1, box_size0, box_size1
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
-        float area, value, foffset0, foffset1
+        float area, value, foffset0, foffset1, goffset0, goffset1
         int32_t[::1] indptr, indices
         float32_t[::1] data
         int32_t[:, ::1] outMax = numpy.zeros((shape0, shape1), dtype=numpy.int32)
@@ -534,6 +540,10 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
     logger.info("CSR matrix: %.3f MByte" % ((indices.nbytes + data.nbytes + indptr.nbytes) / 1.0e6))
     buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], lut_size))
+    #global offset (in case the detector is centerred arround the origin)
+    goffset0 = float(offset[0])
+    goffset1 = float(offset[1])
+
     with nogil:
         # i,j, idx are indices of the raw image uncorrected
         for i in range(shape0):
@@ -542,14 +552,14 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
                     continue
                 # reinit of buffer
                 buffer[:, :] = 0
-                A0 = pos[i, j, 0, 0]
-                A1 = pos[i, j, 0, 1]
-                B0 = pos[i, j, 1, 0]
-                B1 = pos[i, j, 1, 1]
-                C0 = pos[i, j, 2, 0]
-                C1 = pos[i, j, 2, 1]
-                D0 = pos[i, j, 3, 0]
-                D1 = pos[i, j, 3, 1]
+                A0 = pos[i, j, 0, 0] - goffset0
+                A1 = pos[i, j, 0, 1] - goffset1
+                B0 = pos[i, j, 1, 0] - goffset0
+                B1 = pos[i, j, 1, 1] - goffset1
+                C0 = pos[i, j, 2, 0] - goffset0
+                C1 = pos[i, j, 2, 1] - goffset1
+                D0 = pos[i, j, 3, 0] - goffset0
+                D1 = pos[i, j, 3, 1] - goffset1
                 foffset0 = _floor_min4(A0, B0, C0, D0)
                 foffset1 = _floor_min4(A1, B1, C1, D1)
                 offset0 = (<int> foffset0)
@@ -632,14 +642,17 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
                 max_pixel_size=(8, 8),
                 int8_t[:, ::1] mask=None,
                 format="csr",
-                int bins_per_pixel=8):
+                int bins_per_pixel=8,
+                offset=(0,0)):
     """Calculate the look-up table (or CSR) using OpenMP
 
     :param pos: 4D position array
     :param shape: output shape
     :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    :param mask: array with invalid pixels marked (True)
     :param format: can be "CSR" or "LUT"
     :param bins_per_pixel: average splitting factor (number of pixels per bin)
+    :param offset: global pixel offset
     :return: look-up table in CSR/LUT format
     """
     cdef:
@@ -658,7 +671,7 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
         int counter, bin_number
         int idx, err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
-        float area, value, foffset0, foffset1
+        float area, value, foffset0, foffset1, goffset0, goffset1
         int32_t[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
         float32_t[::1] data, large_data
         float32_t[:, ::1] buffer
@@ -678,6 +691,9 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
 
     buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
     counter = -1  # bin index
+    #global offset (in case the detector is centerred arround the origin)
+    goffset0 = float(offset[0])
+    goffset1 = float(offset[1])
     with nogil:
         # i, j, idx are indices of the raw image uncorrected
         for idx in range(size_in):
@@ -687,14 +703,14 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
                 continue
             idx = i * shape_in1 + j  # pixel index
             buffer[:, :] = 0.0
-            A0 = pos[i, j, 0, 0]
-            A1 = pos[i, j, 0, 1]
-            B0 = pos[i, j, 1, 0]
-            B1 = pos[i, j, 1, 1]
-            C0 = pos[i, j, 2, 0]
-            C1 = pos[i, j, 2, 1]
-            D0 = pos[i, j, 3, 0]
-            D1 = pos[i, j, 3, 1]
+            A0 = pos[i, j, 0, 0] - goffset0
+            A1 = pos[i, j, 0, 1] - goffset1
+            B0 = pos[i, j, 1, 0] - goffset0
+            B1 = pos[i, j, 1, 1] - goffset1
+            C0 = pos[i, j, 2, 0] - goffset0
+            C1 = pos[i, j, 2, 1] - goffset1
+            D0 = pos[i, j, 3, 0] - goffset0
+            D1 = pos[i, j, 3, 1] - goffset1
             foffset0 = _floor_min4(A0, B0, C0, D0)
             foffset1 = _floor_min4(A1, B1, C1, D1)
             offset0 = <int> foffset0
