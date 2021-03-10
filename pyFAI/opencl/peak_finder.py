@@ -30,12 +30,12 @@
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
 __date__ = "10/03/2021"
-__copyright__ = "2014-2020, ESRF, Grenoble"
+__copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
-import math, copy
+import math
 import numpy
 from ..containers import SparseFrame
 from ..utils import EPS32
