@@ -29,10 +29,10 @@
 
 """Sparsify 2D single crystall diffraction images by separating Bragg peaks from background signal.
 
-Positive outlier pixels (i.e. Bragg peaks) are all recorded as they are without destruction. 
+Positive outlier pixels (i.e. Bragg peaks) are all recorded as they are without destruction.
 Peaks are not integrated.
 
-Background is calculated by an iterative sigma-clipping in the polar space. 
+Background is calculated by an iterative sigma-clipping in the polar space.
 The number of iteration, the clipping value and the number of radial bins could be adjusted.
 
 This program requires OpenCL. The device needs be properly selected.
@@ -195,8 +195,8 @@ def parse():
 
 
 def process(options):
-    """Perform actually the processing 
-    
+    """Perform actually the processing
+
     :param options: The argument parsed by agrparse.
     :return: EXIT_SUCCESS or EXIT_FAILURE
     """
@@ -253,7 +253,8 @@ def process(options):
                         radius=ai._cached_array["r_center"],
                         mask=mask,
                         ctx=ctx,
-                        profile=options.profile)
+                        profile=options.profile,
+                        block_size=64)
 
     logger.debug("Start sparsification")
     frames = []
