@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "08/03/2021"
+__date__ = "10/03/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 
 class OCL_PeakFinder(OCL_CSR_Integrator):
-     BLOCK_SIZE = 64  # unlike in OCL_CSR_Integrator, here we need larger blocks
+    BLOCK_SIZE = 64  # unlike in OCL_CSR_Integrator, here we need larger blocks
     buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
