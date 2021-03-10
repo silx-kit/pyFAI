@@ -33,13 +33,12 @@ Detectors manufactured by PSI, those may be different from the one from Dectris
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/03/2021"
 __status__ = "production"
 
 import numpy
 import logging
-import json
 from ._common import Detector
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
@@ -246,7 +245,7 @@ class Jungfrau_16M_cor(Jungfrau):
 
         position_array = numpy.zeros(self.MAX_SHAPE + (4, 3), dtype=numpy.float32)
 
-        for mid, module in config.items():
+        for module in config.values():
             slab = position_array[module["min_ss"]: 1 + module["max_ss"], module["min_fs"]: 1 + module["max_fs"]]
             ss_edges = numpy.arange(2 + module["max_ss"] - module["min_ss"], dtype=numpy.int32)
             fs_edges = numpy.arange(2 + module["max_fs"] - module["min_fs"], dtype=numpy.int32)
