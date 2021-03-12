@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2020"
+__date__ = "12/03/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -45,10 +45,11 @@ from .nexus import Nexus, get_isotime
 
 try:
     import hdf5plugin
-except:
-    cmp = {}
+except ImportError:
+    cmp = {"chunks":True}
 else:
     cmp = hdf5plugin.Bitshuffle()
+    # Auto-chunking is automatically applied with compression
 
 
 def _generate_densify_script(integer):
