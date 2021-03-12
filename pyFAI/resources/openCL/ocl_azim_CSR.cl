@@ -721,7 +721,6 @@ csr_sigma_clip4(          global  float4  *data4,
     // Number of pixel in this bin. Used to calulate the minimum reasonnable cut-off according to Chauvenet criterion  
     nbpix = max(1, indptr[bin_num + 1] - indptr[bin_num]);
     
-    
     // first calculation of azimuthal integration to initialize aver & std
     
     float8 result = CSRxVec4(data4, coefs, indices, indptr, shared8);
