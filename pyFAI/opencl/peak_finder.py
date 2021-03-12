@@ -416,7 +416,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             ev2 = pyopencl.enqueue_copy(self.queue, signal, self.cl_mem["peak_intensity"])
 
             if self.profile:
-                self.events += [EventDescription("copy D->D + cast %s intenity" % dtype.name, ev0),
+                self.events += [EventDescription(f"copy D->D + cast {numpy.dtype(dtype).name} intenity", ev0),
                                 EventDescription("copy D->H peak_position", ev1),
                                 EventDescription("copy D->H peak_intensty", ev2)]
         return indexes, signal

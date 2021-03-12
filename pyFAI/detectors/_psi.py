@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2021"
+__date__ = "11/03/2021"
 __status__ = "production"
 
 import numpy
@@ -264,6 +264,7 @@ class Jungfrau_16M_cor(Jungfrau):
             slab[:,:, 3, 1] = p1[:-1, 1:]
             slab[:,:, 3, 2] = p2[:-1, 1:]
         self._pixel_corners = (position_array * self.pixel1).astype(numpy.float32)
+        self.IS_CONTIGUOUS = False
 
     def calc_mask(self):
         "Mask out sub-module junctions"
