@@ -1,10 +1,10 @@
-# !/usr/bin/env python
+# !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,11 +30,11 @@
 on a set of points ....
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "26/02/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -51,6 +51,9 @@ Ellipse = namedtuple("Ellipse", ["center_1", "center_2", "angle", "half_long_axi
 def fit_ellipse(pty, ptx, _allow_delta=True):
     """Fit an ellipse
 
+    Math from 
+    https://mathworld.wolfram.com/Ellipse.html #15
+
     inspired from
     http://nicky.vanforeest.com/misc/fitEllipse/fitEllipse.html
 
@@ -66,44 +69,75 @@ def fit_ellipse(pty, ptx, _allow_delta=True):
         inv = numpy.linalg.inv(S)
     except numpy.linalg.LinAlgError:
         if not _allow_delta:
-            raise ValueError("Ellipse can't be fitted")
+            raise ValueError("Ellipse can't be fitted: singular matrix")
         # Try to do the same with a delta
         delta = 100
         ellipse = fit_ellipse(pty + delta, ptx + delta, _allow_delta=False)
         y0, x0, angle, wlong, wshort = ellipse
         return Ellipse(y0 - delta, x0 - delta, angle, wlong, wshort)
 
-    C = numpy.zeros([6, 6])
-    C[0, 2] = C[2, 0] = 2
-    C[1, 1] = -1
+    C = numpy.zeros([6, 6], dtype=numpy.float64)
+    C[0, 2] = C[2, 0] = 2.0
+    C[1, 1] = -1.0
     E, V = numpy.linalg.eig(numpy.dot(inv, C))
+
+    # First of all, sieve out all infinite and complex eigenvalues and come back to the Real world
     m = numpy.logical_and(numpy.isfinite(E), numpy.isreal(E))
-    E, V = E[m], V[:, m]
-    n = numpy.argmax(E) if E.max() > 0 else numpy.argmin(E)
-    res = V[:, n]
-    b, c, d, f, g, a = res[1] / 2, res[2], res[3] / 2, res[4] / 2, res[5], res[0]
-    num = b * b - a * c
-    x0 = (c * d - b * f) / num
-    y0 = (a * f - b * d) / num
-    if b == 0:
-        if a > c:
-            angle = 0
-        else:
-            angle = pi / 2
+    E, V = E[m].real, V[:, m].real
+
+    # Ensures a>0, invert eigenvectors concerned
+    V[:, V[0] < 0] = -V[:, V[0] < 0]
+    # See https://mathworld.wolfram.com/Ellipse.html #15
+    # Eigenvector must meet constraint (ac - b^2)>0 to be valid.
+    A = V[0]
+    B = V[1] / 2.0
+    C = V[2]
+    D = V[3] / 2.0
+    F = V[4] / 2.0
+    G = V[5]
+
+    # Condition 1: Delta = det((a b d)(b c f)(d f g)) !=0
+    Delta = A * (C * G - F * F) - G * B * B + D * (2 * B * F - C * D)
+    # Condition 2: J>0
+    J = (A * C - B * B)
+
+    # Condition 3: Delta/(A+C)<0, replaces by Delta*(A+C)<0, less warnings
+    m = numpy.logical_and(J > 0, Delta != 0)
+    m = numpy.logical_and(m, Delta * (A + C) < 0)
+
+    n = numpy.where(m)[0]
+    if len(n) == 0:
+        raise ValueError("Ellipse can't be fitted: No Eigenvalue match all 3 criteria")
     else:
-        if a > c:
-            angle = atan2(2 * b, (a - c)) / 2
-        else:
-            angle = numpy.pi / 2 + atan2(2 * b, (a - c)) / 2
+        n = n[0]
+    a = A[n]
+    b = B[n]
+    c = C[n]
+    d = D[n]
+    f = F[n]
+    g = G[n]
+
+    # Calculation of the center:
+    denom = b * b - a * c
+    x0 = (c * d - b * f) / denom
+    y0 = (a * f - b * d) / denom
+
     up = 2 * (a * f * f + c * d * d + g * b * b - 2 * b * d * f - a * c * g)
     down1 = (b * b - a * c) * ((c - a) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
     down2 = (b * b - a * c) * ((a - c) * sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
-
     a2 = up / down1
     b2 = up / down2
-    if a2 < 0 or b2 < 0:
-        raise ValueError("Ellipse can't be fitted")
+    if a2 <= 0 or b2 <= 0:
+        raise ValueError("Ellipse can't be fitted, negative sqrt")
 
-    res1 = numpy.sqrt(a2)
-    res2 = numpy.sqrt(b2)
-    return Ellipse(y0, x0, angle, max(res1, res2), min(res1, res2))
+    res1 = sqrt(a2)
+    res2 = sqrt(b2)
+
+    if a == c:
+        angle = 0  # we have a circle
+    elif res2 > res1:
+        res1, res2 = res2, res1
+        angle = 0.5 * (pi + atan2(2 * b, (a - c)))
+    else:
+        angle = 0.5 * (pi + atan2(2 * b, (a - c)))
+    return Ellipse(y0, x0, angle, res1, res2)

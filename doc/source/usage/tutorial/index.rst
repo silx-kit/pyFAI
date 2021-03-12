@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 07/01/2021
+:Date: 21/01/2021
 :Keywords: Tutorials
 :Target: Advanced users tutorials using jupyter notebooks
 
@@ -23,9 +23,9 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Detector/detector
    Calibrant/index
    Recalib/Recalib_notebook
+   Ellipse/ellipse
    LogScale/Guinier
    multi-geometry
-   MakeCalibrant/
    Goniometer/index
    Inpainting/Inpainting
    ThickDetector/index

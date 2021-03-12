@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/01/2021"
+__date__ = "29/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -277,7 +277,6 @@ class HistoBBox1d(LutIntegrator):
             position_t[::1] cpos1_min, cpos1_max
             lut_t[:, ::1] lut
             mask_t[::1] cmask
-            Py_ssize_t memsize, key_page_size, key_page_cnt, lut_nbytes
 
         size = self.size
         if self.check_mask:
@@ -420,7 +419,6 @@ class HistoBBox1d(LutIntegrator):
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
             int32_t k, idx, bin0, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
             int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             lut_t[:, ::1] lut
             position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
@@ -734,7 +732,6 @@ class HistoBBox2d(object):
             lut_t[:, :, ::1] lut
             mask_t[:] cmask
             acc_t inv_area, delta_down, delta_up, delta_right, delta_left
-            Py_ssize_t lut_nbytes, key_page_cnt, key_page_size, memsize
         if self.check_mask:
             cmask = self.cmask
             check_mask = True

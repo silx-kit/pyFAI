@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "20/01/2021"
+__date__ = "28/01/2021"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -49,7 +49,7 @@ from ..utils import mathutil
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
 try:
-    from ..gui.matplotlib import pylab
+    from ..gui.matplotlib import pyplot, pylab
     from ..gui.utils import update_fig
 except ImportError:
     pylab = None
@@ -420,16 +420,16 @@ class Bench(object):
                     self.update_mp()
                     if first:
                         if opencl:
-                            self.new_curve(results, label, style="--")
+                            self.new_curve(results, label, style="--", marker="s" if "legacy" in function else "o")
                         else:
-                            self.new_curve(results, label, style="-")
+                            self.new_curve(results, label, style="-", marker="s" if "legacy" in function else "o")
                         first = False
                     else:
                         self.new_point(size, tmin)
             else:
                 results[size] = tmin
                 if first:
-                    self.new_curve(results, label)
+                    self.new_curve(results, label, marker="s" if "legacy" in function else "o")
                     first = False
                 else:
                     self.new_point(size, tmin)
@@ -521,7 +521,7 @@ class Bench(object):
             tmin *= 1000.0
             results[size] = tmin
             if first:
-                self.new_curve(results, label)
+                self.new_curve(results, label, marker="o")
                 first = False
             else:
                 self.new_point(size, tmin)
@@ -573,7 +573,7 @@ class Bench(object):
                 tmin *= 1000.0
                 results[size] = tmin
                 if first:
-                    self.new_curve(results, label)
+                    self.new_curve(results, label, marker="o")
                     first = False
                 else:
                     self.new_point(size, tmin)
@@ -583,9 +583,13 @@ class Bench(object):
         self.results[label] = results
         self.update_mp()
 
-    def save(self, filename="benchmark.json"):
+    def save(self, filename=None):
+        if filename is None:
+            filename = f"benchmark{time.strftime('%Y%m%d-%H%M%S')}.json"
         self.update_mp()
         json.dump(self.results, open(filename, "w"), indent=4)
+        if self.fig is not None:
+            self.fig.savefig(filename[:-4] + "svg")
 
     def print_res(self):
         self.update_mp()
@@ -600,15 +604,14 @@ class Bench(object):
             print("Already initialized")
             return
         if pylab and (sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ):
-            self.fig = pylab.figure()
+            self.fig, self.ax = pyplot.subplots()
             self.fig.show()
-            self.ax = self.fig.add_subplot(1, 1, 1)
             self.ax.set_autoscale_on(False)
             self.ax.set_xlabel("Image size in mega-pixels")
             self.ax.set_ylabel("Frame per second (log scale)")
             try:
                 self.ax.set_yscale("log", base=2)
-            except:
+            except Exception:
                 self.ax.set_yscale("log", basey=2)
             t = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]
             self.ax.set_yticks([float(i) for i in t])
@@ -618,7 +621,7 @@ class Bench(object):
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
             update_fig(self.fig)
 
-    def new_curve(self, results, label, style="-"):
+    def new_curve(self, results, label, style="-", marker="x"):
         """
         Create a new curve within the current graph
 
@@ -632,7 +635,7 @@ class Bench(object):
         self.plot_x = list(results.keys())
         self.plot_x.sort()
         self.plot_y = [1000.0 / results[i] for i in self.plot_x]
-        self.plot = self.ax.plot(self.plot_x, self.plot_y, "o" + style, label=label)[0]
+        self.plot = self.ax.plot(self.plot_x, self.plot_y, marker + style, label=label)[0]
         self.ax.legend()
         update_fig(self.fig)
 
@@ -671,10 +674,8 @@ class Bench(object):
         self.memory_profile[0].append(time.perf_counter() - self.starttime)
         self.memory_profile[1].append(self.get_mem())
         if pylab:
-            if not self.fig_mp:
-                self.fig_mp = pylab.figure()
-                self.fig_mp.show()
-                self.ax_mp = self.fig_mp.add_subplot(1, 1, 1)
+            if self.fig_mp is None:
+                self.fig_mp, self.ax_mp = pyplot.subplots()
                 self.ax_mp.set_autoscale_on(False)
                 self.ax_mp.set_xlabel("Run time (s)")
                 self.ax_mp.set_xlim(0, 100)
@@ -682,6 +683,7 @@ class Bench(object):
                 self.ax_mp.set_ylabel("Memory occupancy (MB)")
                 self.ax_mp.set_title("Memory leak hunter")
                 self.plot_mp = self.ax_mp.plot(*self.memory_profile)[0]
+                self.fig_mp.show()
             else:
                 self.plot_mp.set_data(*self.memory_profile)
                 tmax = self.memory_profile[0][-1]

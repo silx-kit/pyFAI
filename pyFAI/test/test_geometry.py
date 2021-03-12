@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2021"
+__date__ = "21/01/2021"
 
 import unittest
 import random
@@ -96,17 +96,17 @@ class TestSolidAngle(unittest.TestCase):
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_nogood - I_fit2d).max()
         mean_I = abs(I_nogood - I_fit2d).mean()
-        self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assertTrue(delta_I > 100, 'Error on (wrong) I are large: %s >100' % delta_I)
-        self.assertTrue(mean_I > 2, 'Error on (wrong) I are large: %s >2' % mean_I)
+        self.assertLess(delta_tth, 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
+        self.assertGreater(delta_I, 100, 'Error on (wrong) I are large: %s >100' % delta_I)
+        self.assertGreater(mean_I, 2, 'Error on (wrong) I are large: %s >2' % mean_I)
 
         tth, I_good = ai.integrate1d_ng(data, 1770, unit="2th_deg", radial_range=[0, 56], method=method, correctSolidAngle=3)
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_good - I_fit2d).max()
         mean_I = abs(I_good - I_fit2d).mean()
-        self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assertTrue(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
-        self.assertTrue(mean_I < 0.05, 'Error on (good) I are small: %s <0.05' % mean_I)
+        self.assertLess(delta_tth, 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
+        self.assertLess(delta_I, 5, 'Error on (good) I are small: %s <5' % delta_I)
+        self.assertLess(mean_I, 0.05, 'Error on (good) I are small: %s <0.05' % mean_I)
         ai.reset()
 
     def test_nonflat_center(self):
@@ -122,7 +122,7 @@ class TestSolidAngle(unittest.TestCase):
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
-        self.assertTrue(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assertLessEqual(maxi , 1.0, 'Cos incidence is %s <=1.0' % maxi)
         self.assertTrue(mini > 0.99, 'Cos solid angle is %s >0.99' % mini)
 
     def test_nonflat_outside(self):
@@ -138,9 +138,9 @@ class TestSolidAngle(unittest.TestCase):
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
-        self.assertTrue(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assertTrue(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
-        self.assertTrue(mini < 0.92, 'Cos solid angle min is %s <0.92' % mini)
+        self.assertLessEqual(maxi, 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assertGreater(maxi, 0.99, 'Cos incidence max is %s >0.99' % maxi)
+        self.assertLess(mini, 0.92, 'Cos solid angle min is %s <0.92' % mini)
 
     def test_nonflat_inside(self):
         """
@@ -155,9 +155,9 @@ class TestSolidAngle(unittest.TestCase):
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
-        self.assertTrue(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assertTrue(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
-        self.assertTrue(mini < 0.87, 'Cos solid angle min is %s <0.86' % mini)
+        self.assertLessEqual(maxi, 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assertGreater(maxi, 0.99, 'Cos incidence max is %s >0.99' % maxi)
+        self.assertLess(mini, 0.87, 'Cos solid angle min is %s <0.86' % mini)
 
 
 class TestBug88SolidAngle(unittest.TestCase):
@@ -337,8 +337,8 @@ class TestFastPath(utilstest.ParametricTestCase):
                 cnt_delta_a = (delta[..., 1] > self.EPSILON_A).sum()
                 logger.debug("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta_r:%s",
                              space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta)
-                self.assertTrue(delta_r < self.EPSILON_R, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
-                self.assertTrue(cnt_delta_a < count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
+                self.assertLess(delta_r, self.EPSILON_R, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
+                self.assertLess(cnt_delta_a, count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
 
     def test_XYZ(self):
         """Test the calc_pos_zyx with full detectors"""

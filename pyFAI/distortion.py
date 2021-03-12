@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "10/03/2021"
 __status__ = "development"
 
 import logging
@@ -88,7 +88,7 @@ class Distortion(object):
     """
 
     def __init__(self, detector="detector", shape=None, resize=False, empty=0,
-                 mask=None, method="CSR", device=None, workgroup=32):
+                 mask=None, method="csr", device=None, workgroup=None):
         """
         :param detector: detector instance or detector name
         :param shape: shape of the output image
@@ -127,31 +127,18 @@ class Distortion(object):
             self.method = "lut"
         else:
             self.method = method.lower()
-        if (self.detector.uniform_pixel and self.detector.IS_FLAT):
-            sparse = identity(numpy.prod(self.detector.shape),
-                              dtype=numpy.float32,
-                              format="coo")
-            if self.detector.mask is not None:
-                masked = numpy.where(self.detector.mask.ravel())
-                sparse.data[masked] = 0.0
-                sparse.eliminate_zeros()
-            csr = sparse.tocsr()
-            if self.method == "lut":
-                self.lut = sparse_utils.CSR_to_LUT(csr.data, csr.indices, csr.indptr)
-            else:
-                self.lut = csr.data, csr.indices, csr.indptr
-        else:
-            # initialize the LUT later
-            self.lut = None
+        # initialize the LUT later
+        self.lut = None
         self.delta1 = self.delta2 = None  # max size of an pixel on a regular grid ...
         self.offset1 = self.offset2 = 0  # position of the first bin
         self.integrator = None
         self.empty = empty  # "dummy" value for empty bins
         self.device = device
-        if not workgroup:
-            self.workgroup = 1
-        else:
+        if workgroup is not None:
+            logger.warning("The workgroup keyword is deprecated since pyFAI 0.20 and may be removed with 0.22")
             self.workgroup = int(workgroup)
+        else:
+            self.workgroup = None
 
     def __repr__(self):
         return os.linesep.join(["Distortion correction %s on device %s for detector shape %s:" % (self.method, self.device, self._shape_out),
@@ -177,8 +164,11 @@ class Distortion(object):
                 self.method = method.lower()
             if device is not None:
                 self.device = device
-            if workgroup is not None:
+            if workgroup is None:
+                self.workgroup = None
+            else:
                 self.workgroup = int(workgroup)
+
         if prepare:
             self.calc_init()
 
@@ -281,7 +271,8 @@ class Distortion(object):
                                                                       self._shape_out[0] * self._shape_out[1],
                                                                       devicetype=self.device,
                                                                       block_size=self.workgroup)
-                    self.integrator.workgroup_size["csr_integrate4"] = 1,
+                    # Enforce the serial execution for the intergration as it is much faster
+                    self.integrator.workgroup_size["csr_integrate4"] = 1, 1
             else:
                 if self.method == "lut":
                     self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut,
@@ -293,16 +284,37 @@ class Distortion(object):
                                                                       self._shape_out[0] * self._shape_out[1],
                                                                       platformid=self.device[0], deviceid=self.device[1],
                                                                       block_size=self.workgroup)
-                    self.integrator.workgroup_size["csr_integrate4"] = 1,
+                    # Enforce the serial execution for the intergration as it is much faster
+                    self.integrator.workgroup_size["csr_integrate4"] = 1, 1
+
+    def calc_LUT_regular(self):
+        """Calculate the  Look-up table for a regular detector ....
+        """
+        sparse = identity(numpy.prod(self.detector.shape),
+                          dtype=numpy.float32,
+                          format="coo")
+        if self.detector.mask is not None:
+            masked = numpy.where(self.detector.mask.ravel())
+            sparse.data[masked] = 0.0
+            sparse.eliminate_zeros()
+        csr = sparse.tocsr()
+        if self.method == "lut":
+            self.lut = sparse_utils.CSR_to_LUT(csr.data, csr.indices, csr.indptr)
+        else:
+            self.lut = csr.data, csr.indices, csr.indptr
+        return self.lut
 
     def calc_LUT(self, use_common=True):
         """Calculate the Look-up table
 
-        :return: look up table either in CSR or LUT format depending on serl.method
+        :return: look up table either in CSR or LUT format depending on self.method
         """
         logger.debug("in Distortion.calc_LUT")
 
         if self.lut is None:
+            if (self.detector.uniform_pixel and self.detector.IS_FLAT):
+                return self.calc_LUT_regular()
+
             if self.pos is None:
                 self.calc_pos()
 
@@ -311,14 +323,18 @@ class Distortion(object):
             with self._sem:
                 if self.lut is None:
                     mask = self.mask
+                    if self.resize:
+                        offset = (self.offset1, self.offset2)
+                    else:
+                        offset = (0.0, 0.0)
                     if _distortion:
                         if use_common:
-                            self.lut = _distortion.calc_sparse(self.pos, self._shape_out, max_pixel_size=(self.delta1, self.delta2), format=self.method)
+                            self.lut = _distortion.calc_sparse(self.pos, self._shape_out, max_pixel_size=(self.delta1, self.delta2), format=self.method, offset=offset)
                         else:
                             if self.method == "lut":
-                                self.lut = _distortion.calc_LUT(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
+                                self.lut = _distortion.calc_LUT(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2), offset=offset)
                             else:
-                                self.lut = _distortion.calc_CSR(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
+                                self.lut = _distortion.calc_CSR(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2), offset=offset)
                     else:
                         lut = numpy.recarray(shape=(self._shape_out[0], self._shape_out[1], self.max_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
                         lut[:,:,:].idx = 0
@@ -480,7 +496,7 @@ class Distortion(object):
                                                dark=dark,
                                                solidangle=solidangle,
                                                polarization=polarization,
-                                               dummy=dummy,
+                                               dummy=dummy if dummy is not None else self.empty,
                                                delta_dummy=delta_dummy,
                                                normalization_factor=normalization_factor,
                                                out_merged=False
@@ -500,7 +516,7 @@ class Distortion(object):
                 self.calc_LUT()
             if _distortion is not None:
                 out = _distortion.correct(image, self.shape_in, self._shape_out, self.lut,
-                                          dummy=dummy or self.empty, delta_dummy=delta_dummy)
+                                          dummy=dummy if dummy is not None else self.empty, delta_dummy=delta_dummy)
             else:
                 if self.method == "lut":
                     big = image.ravel().take(self.lut.idx) * self.lut.coef

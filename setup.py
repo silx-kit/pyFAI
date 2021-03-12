@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/01/2021"
+__date__ = "28/01/2021"
 __status__ = "stable"
 
 import io
@@ -303,6 +303,7 @@ class BuildMan(Command):
             synopsis = p.stdout.read().decode("utf-8").strip()
             if synopsis == 'None':
                 synopsis = None
+            p.stdout.close()
         finally:
             # clean up the script
             if script_name is not None:

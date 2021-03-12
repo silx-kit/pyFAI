@@ -661,7 +661,7 @@ csr_integrate4_single(  const   global  float4  *weights,
         float norm = tmp.s2;
         float count = tmp.s3;
 
-        if( isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0)) {
+        if( isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0.0f)) {
             //Kahan summation allows single precision arithmetics with error compensation
             //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
             // defined in kahan.cl
@@ -673,7 +673,7 @@ csr_integrate4_single(  const   global  float4  *weights,
     }//for j
 
     summed[bin_num] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
-    if (sum_norm_K.s0 > 0.0f) {
+    if (sum_count_K.s0 > 0.0f) {
         averint[bin_num] = sum_signal_K.s0 / sum_norm_K.s0;
         stderr[bin_num] = sqrt(sum_variance_K.s0) / sum_norm_K.s0;
     }
@@ -714,16 +714,13 @@ csr_sigma_clip4(          global  float4  *data4,
                           global  float   *stderrmean) {
     int bin_num = get_group_id(0);
     float aver, std, sem;
-    int cnt;
+    int cnt, nbpix;
     volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
 
-//    if (WORKGROUP_SIZE<get_local_size(0)){
-//    	if ((bin_num == 0) &&  (get_local_id(0) == 0))
-//    		printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
-//    				WORKGROUP_SIZE, get_local_size(0));
-//    }
-
+    // Number of pixel in this bin. Used to calulate the minimum reasonnable cut-off according to Chauvenet criterion  
+    nbpix = max(1, indptr[bin_num + 1] - indptr[bin_num]);
+    
     
     // first calculation of azimuthal integration to initialize aver & std
     
@@ -751,10 +748,9 @@ csr_sigma_clip4(          global  float4  *data4,
         if ( ! (isfinite(aver) && isfinite(std)))
             break;
 
-        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, cutoff, counter);
-
-        if (! cnt) 
-            break;
+        float chauvenet_cutoff = max(cutoff, sqrt(2.0f*log(nbpix/sqrt(2.0f*M_PI_F))));    
+        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, chauvenet_cutoff, counter);
+		nbpix = max(1, nbpix - cnt);
         
         result = CSRxVec4(data4, coefs, indices, indptr, shared8);
 

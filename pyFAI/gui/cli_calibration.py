@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2021"
+__date__ = "21/01/2021"
 __status__ = "production"
 
 import os
@@ -1174,7 +1174,7 @@ class AbstractCalibration(object):
                                           method=self.integrator_method,
                                           error_model=self.error_model)
         t4 = time.perf_counter()
-        res2 = self.geoRef.integrate2d_ng(self.peakPicker.data,
+        res2 = self.geoRef.integrate2d(self.peakPicker.data,
                                           self.nPt_2D_rad, self.nPt_2D_azim,
                                           filename=self.basename + ".azim",
                                           unit=self.unit,
