@@ -714,10 +714,12 @@ csr_sigma_clip4(          global  float4  *data4,
                           global  float   *stderrmean) {
     int bin_num = get_group_id(0);
     float aver, std, sem;
-    int cnt;
+    int cnt, nbpix;
     volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
 
+    // Number of pixel in this bin. Used to calulate the minimum reasonnable cut-off according to Chauvenet criterion  
+    nbpix = max(1, indptr[bin_num + 1] - indptr[bin_num]);
     
     // first calculation of azimuthal integration to initialize aver & std
     
@@ -745,10 +747,9 @@ csr_sigma_clip4(          global  float4  *data4,
         if ( ! (isfinite(aver) && isfinite(std)))
             break;
 
-        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, cutoff, counter);
-
-        if (! cnt) 
-            break;
+        float chauvenet_cutoff = max(cutoff, sqrt(2.0f*log(nbpix/sqrt(2.0f*M_PI_F))));    
+        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, chauvenet_cutoff, counter);
+		nbpix = max(1, nbpix - cnt);
         
         result = CSRxVec4(data4, coefs, indices, indptr, shared8);
 

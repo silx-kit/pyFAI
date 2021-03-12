@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2020"
+__date__ = "08/03/2021"
 
 import logging
 import numpy
@@ -99,7 +99,7 @@ class TestOclPeakFinder(unittest.TestCase):
         bin_centers = engine.bin_centers
         lut = engine.lut
         distance = self.ai._cached_array["r_center"]
-        pf = OCL_PeakFinder(lut, numpy.prod(self.img.shape), unit=unit, radius=distance, bin_centers=bin_centers, mask=msk)
+        pf = OCL_PeakFinder(lut, self.img.size, unit=unit, radius=distance, bin_centers=bin_centers, mask=msk)
         res = pf(self.img, error_model="poisson", dummy=-1)
         s1 = set((i["x"], i["y"]) for i in self.ref)
         s2 = set(zip(res.x, res.y))
@@ -110,7 +110,30 @@ class TestOclPeakFinder(unittest.TestCase):
         self.assertLess(abs(dense - self.img).max(), 20, "max difference is contained")
         self.assertLess(abs((dense - self.img).mean()), 1, "mean of difference is close to zero")
         self.assertLess((dense - self.img).std(), 3, "standard deviation of difference is contained")
-        # self.assertTrue(numpy.allclose(self.img, dense), "Reconstructed image matches")
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_azimuthal_peak_finder_chauvenet(self):
+        """
+        test for peak picker with background calculate from an azimuthal sigma-clipping
+        test using cut-off value obtained from Chauvenet criterion
+        """
+        unit = "r_m"
+        msk = self.img < 0
+        engine = self.ai.setup_CSR(self.img.shape, 128, mask=msk, split="no", unit=unit)
+        bin_centers = engine.bin_centers
+        lut = engine.lut
+        distance = self.ai._cached_array["r_center"]
+        pf = OCL_PeakFinder(lut, self.img.size, unit=unit, radius=distance, bin_centers=bin_centers, mask=msk)
+        res = pf(self.img, error_model="poisson", dummy=-1, cutoff_clip=0)
+        s1 = set((i["x"], i["y"]) for i in self.ref)
+        s2 = set(zip(res.x, res.y))
+        self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")
+        self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
+        # Test densification function
+        dense = densify(res)
+        self.assertLess(abs(dense - self.img).max(), 20, "max difference is contained")
+        self.assertLess(abs((dense - self.img).mean()), 1, "mean of difference is close to zero")
+        self.assertLess((dense - self.img).std(), 3, "standard deviation of difference is contained")
 
 
 def suite():
