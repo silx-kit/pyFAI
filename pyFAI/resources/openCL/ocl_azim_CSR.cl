@@ -323,12 +323,21 @@ static inline int _sigma_clip4(         global  float4   *data,
     return counter[0];
 }// functions
 
-/* Calculate the standard deviation of the signal within a bin assuming an azimuthal symmetry
+/* _azimuthal_deviation: Calculate the standard deviation of the signal within a bin assuming an azimuthal symmetry
  * 
+ * This is a workgroup function, all threads in a workgroup collaborate to calculate the 
  * 
- * @return: 2tuple containing std=sqrt(sum_error_squared/count) & sem=sqrt(sum_error_squared)/count
+ * @param data: array of pixel with for each of them, their signal, variance, normalization and count [0-1]
+ * @param coef: the fraction of the pixel contributing to the bin
+ * @param indices: the index of the pixel to be gathered for the bin of of interest
+ * @param indptr: the start and stop position for a given bin in the indices and coef arrays
+ * @param aver: the numerical value for the average of intensity
+ * @param shared4: some storage of size WG*4*4
+ * @return: 4tuple containing (variance-hi, variance-lo, count-hi, count-lo)  
+ * 
+ *  Previsouly was returning std=sqrt(sum_error_squared/count) & sem=sqrt(sum_error_squared)/count
  */
-static inline float2 _azimuthal_deviation(        global  float4   *data, 
+static inline float4 _azimuthal_deviation(        global  float4   *data, 
                                           const   global  float    *coefs,
                                           const   global  int      *indices,
                                           const   global  int      *indptr,
@@ -388,8 +397,7 @@ static inline float2 _azimuthal_deviation(        global  float4   *data,
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    return (float2)(sqrt(shared4[0].s0/shared4[0].s2),
-                    sqrt(shared4[0].s0)/shared4[0].s2);
+    return shared4[0];
 }
 
 /**
@@ -730,9 +738,11 @@ csr_sigma_clip4(          global  float4  *data4,
     if (result.s4 > 0.0f){
         aver = result.s0 / result.s4;
         if (azimuthal){
-            float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
-            std = res2.s0;
-            sem = res2.s1;
+            float4 res4 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
+            std=sqrt(res4.s0/res4.s2); 
+            sem=sqrt(res4.s0)/res4.s2;
+            result.s2 = res4.s0;
+            result.s3 = res4.s1;
         }             
         else {
             std = sqrt(result.s2 / result.s4);
@@ -759,9 +769,12 @@ csr_sigma_clip4(          global  float4  *data4,
         if (result.s4 > 0.0f) {
             aver = result.s0 / result.s4;
             if (azimuthal){
-            	float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
-            	std = res2.s0;
-            	sem = res2.s1;
+                float4 res4 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
+                std=sqrt(res4.s0/res4.s2); 
+                sem=sqrt(res4.s0)/res4.s2;
+                result.s2 = res4.s0;
+                result.s3 = res4.s1;
+
             }                
             else {
             	std = sqrt(result.s2 / result.s4);
