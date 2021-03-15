@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/03/2021"
+__date__ = "15/03/2021"
 __status__ = "production"
 
 import numpy
@@ -169,6 +169,10 @@ class Jungfrau(Detector):
         the same shape.
 
         """
+        # if the detctor has been tweaked with an ASCII geometry ... fall-back on the classical method:
+        if self._pixel_corners is not None:
+            return Detector.calc_cartesian_positions(self, d1=d1, d2=d2, center=center, use_cython=use_cython)
+
         edges1, edges2 = self.calc_pixels_edges()
 
         if (d1 is None) or (d2 is None):
