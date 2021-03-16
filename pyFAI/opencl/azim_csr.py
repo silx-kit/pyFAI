@@ -686,7 +686,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             kw_int["empty"] = dummy
             wg_min, wg_max = self.workgroup_size["csr_integrate4"]
-            print(kw_int)
             if  wg_max == 1:
                 wg = max(self.workgroup_size["csr_integrate4_single"])
                 wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
