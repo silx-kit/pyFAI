@@ -37,7 +37,7 @@
  */
 
 #include "for_eclipse.h"
-
+#define NULL 0
 /**
  * \brief OpenCL workgroup function for sparse matrix-dense vector multiplication
  *
@@ -74,7 +74,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               coef = data[k];
+        	   coef = (data == NULL)?1.0f:data[k];
                idx = indices[k];
                signal = vector[idx];
                if (isfinite(signal)) {
@@ -144,10 +144,11 @@ static inline float4 CSRxVec2(const   global  float2   *data,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               float coef = coefs[k];
+        	   float coef, signal, norm;
+        	   coef = (coefs == NULL)?1.0f:coefs[k];
                idx = indices[k];
-               float signal = data[idx].s0;
-               float norm = data[idx].s1;
+               signal = data[idx].s0;
+               norm = data[idx].s1;
                if (isfinite(signal) && isfinite(norm)) {
                    // defined in kahan.cl
                    sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
@@ -222,13 +223,14 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               float coef = coefs[k];
+        	   float coef, signal, variance, norm, count;
+               coef = (coefs == NULL)?1.0f: coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
-               float signal = quatret.s0;
-               float variance = quatret.s1;
-               float norm = quatret.s2;
-               float count = quatret.s3;
+               signal = quatret.s0;
+               variance = quatret.s1;
+               norm = quatret.s2;
+               count = quatret.s3;
                if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0))
                {
                    // defined in kahan.cl
@@ -361,7 +363,7 @@ static inline float4 _azimuthal_deviation(        global  float4   *data,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads){
         k = j+thread_id_loc;
         if (k < bin_bounds.y){
-               coef = coefs[k];
+               coef = (coefs == NULL)?1.0f:coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
                if (isfinite(quatret.s0) && isfinite(quatret.s1) && (quatret.s2>0) && (quatret.s3>0)){
@@ -455,7 +457,7 @@ csr_integrate(  const   global  float   *weights,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               coef = coefs[k];
+        	   coef = (coefs == NULL)?1.0f:coefs[k];;
                idx = indices[k];
                data = weights[idx];
                if  (! isfinite(data))
@@ -557,7 +559,7 @@ csr_integrate_single(  const   global  float   *weights,
     int idx, j;
 
     for (j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-        coef = coefs[j];
+    	coef = (coefs == NULL)?1.0f:coefs[j];
         idx = indices[j];
         data = weights[idx];
 
@@ -661,13 +663,14 @@ csr_integrate4_single(  const   global  float4  *weights,
     float2 sum_count_K = (float2)(0.0f, 0.0f);
 
     for (int j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-        float coef = coefs[j];
+    	float coef, signal, variance, norm, count;
+    	coef = (coefs == NULL)?1.0f:coefs[j];
         int idx = indices[j];
         float4 tmp = weights[idx];
-        float signal = tmp.s0;
-        float variance = tmp.s1;
-        float norm = tmp.s2;
-        float count = tmp.s3;
+        signal = tmp.s0;
+        variance = tmp.s1;
+        norm = tmp.s2;
+        count = tmp.s3;
 
         if( isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0.0f)) {
             //Kahan summation allows single precision arithmetics with error compensation
