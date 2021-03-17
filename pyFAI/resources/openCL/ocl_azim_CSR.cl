@@ -37,7 +37,7 @@
  */
 
 #include "for_eclipse.h"
-
+#define NULL 0
 /**
  * \brief OpenCL workgroup function for sparse matrix-dense vector multiplication
  *
@@ -74,7 +74,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               coef = data[k];
+        	   coef = (data == NULL)?1.0f:data[k];
                idx = indices[k];
                signal = vector[idx];
                if (isfinite(signal)) {
@@ -144,10 +144,11 @@ static inline float4 CSRxVec2(const   global  float2   *data,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               float coef = coefs[k];
+        	   float coef, signal, norm;
+        	   coef = (coefs == NULL)?1.0f:coefs[k];
                idx = indices[k];
-               float signal = data[idx].s0;
-               float norm = data[idx].s1;
+               signal = data[idx].s0;
+               norm = data[idx].s1;
                if (isfinite(signal) && isfinite(norm)) {
                    // defined in kahan.cl
                    sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
@@ -222,13 +223,14 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               float coef = coefs[k];
+        	   float coef, signal, variance, norm, count;
+               coef = (coefs == NULL)?1.0f: coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
-               float signal = quatret.s0;
-               float variance = quatret.s1;
-               float norm = quatret.s2;
-               float count = quatret.s3;
+               signal = quatret.s0;
+               variance = quatret.s1;
+               norm = quatret.s2;
+               count = quatret.s3;
                if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0))
                {
                    // defined in kahan.cl
@@ -323,12 +325,21 @@ static inline int _sigma_clip4(         global  float4   *data,
     return counter[0];
 }// functions
 
-/* Calculate the standard deviation of the signal within a bin assuming an azimuthal symmetry
+/* _azimuthal_deviation: Calculate the standard deviation of the signal within a bin assuming an azimuthal symmetry
  * 
+ * This is a workgroup function, all threads in a workgroup collaborate to calculate the 
  * 
- * @return: 2tuple containing std=sqrt(sum_error_squared/count) & sem=sqrt(sum_error_squared)/count
+ * @param data: array of pixel with for each of them, their signal, variance, normalization and count [0-1]
+ * @param coef: the fraction of the pixel contributing to the bin
+ * @param indices: the index of the pixel to be gathered for the bin of of interest
+ * @param indptr: the start and stop position for a given bin in the indices and coef arrays
+ * @param aver: the numerical value for the average of intensity
+ * @param shared4: some storage of size WG*4*4
+ * @return: 4tuple containing (variance-hi, variance-lo, count-hi, count-lo)  
+ * 
+ *  Previsouly was returning std=sqrt(sum_error_squared/count) & sem=sqrt(sum_error_squared)/count
  */
-static inline float2 _azimuthal_deviation(        global  float4   *data, 
+static inline float4 _azimuthal_deviation(        global  float4   *data, 
                                           const   global  float    *coefs,
                                           const   global  int      *indices,
                                           const   global  int      *indptr,
@@ -352,7 +363,7 @@ static inline float2 _azimuthal_deviation(        global  float4   *data,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads){
         k = j+thread_id_loc;
         if (k < bin_bounds.y){
-               coef = coefs[k];
+               coef = (coefs == NULL)?1.0f:coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
                if (isfinite(quatret.s0) && isfinite(quatret.s1) && (quatret.s2>0) && (quatret.s3>0)){
@@ -388,8 +399,7 @@ static inline float2 _azimuthal_deviation(        global  float4   *data,
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    return (float2)(sqrt(shared4[0].s0/shared4[0].s2),
-                    sqrt(shared4[0].s0)/shared4[0].s2);
+    return shared4[0];
 }
 
 /**
@@ -447,7 +457,7 @@ csr_integrate(  const   global  float   *weights,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               coef = coefs[k];
+        	   coef = (coefs == NULL)?1.0f:coefs[k];;
                idx = indices[k];
                data = weights[idx];
                if  (! isfinite(data))
@@ -549,7 +559,7 @@ csr_integrate_single(  const   global  float   *weights,
     int idx, j;
 
     for (j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-        coef = coefs[j];
+    	coef = (coefs == NULL)?1.0f:coefs[j];
         idx = indices[j];
         data = weights[idx];
 
@@ -653,13 +663,14 @@ csr_integrate4_single(  const   global  float4  *weights,
     float2 sum_count_K = (float2)(0.0f, 0.0f);
 
     for (int j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-        float coef = coefs[j];
+    	float coef, signal, variance, norm, count;
+    	coef = (coefs == NULL)?1.0f:coefs[j];
         int idx = indices[j];
         float4 tmp = weights[idx];
-        float signal = tmp.s0;
-        float variance = tmp.s1;
-        float norm = tmp.s2;
-        float count = tmp.s3;
+        signal = tmp.s0;
+        variance = tmp.s1;
+        norm = tmp.s2;
+        count = tmp.s3;
 
         if( isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0.0f)) {
             //Kahan summation allows single precision arithmetics with error compensation
@@ -729,9 +740,11 @@ csr_sigma_clip4(          global  float4  *data4,
     if (result.s4 > 0.0f){
         aver = result.s0 / result.s4;
         if (azimuthal){
-            float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
-            std = res2.s0;
-            sem = res2.s1;
+            float4 res4 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
+            std=sqrt(res4.s0/res4.s2); 
+            sem=sqrt(res4.s0)/res4.s2;
+            result.s2 = res4.s0;
+            result.s3 = res4.s1;
         }             
         else {
             std = sqrt(result.s2 / result.s4);
@@ -758,9 +771,12 @@ csr_sigma_clip4(          global  float4  *data4,
         if (result.s4 > 0.0f) {
             aver = result.s0 / result.s4;
             if (azimuthal){
-            	float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
-            	std = res2.s0;
-            	sem = res2.s1;
+                float4 res4 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
+                std=sqrt(res4.s0/res4.s2); 
+                sem=sqrt(res4.s0)/res4.s2;
+                result.s2 = res4.s0;
+                result.s3 = res4.s1;
+
             }                
             else {
             	std = sqrt(result.s2 / result.s4);

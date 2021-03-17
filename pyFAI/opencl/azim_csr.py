@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "03/03/2021"
+__date__ = "16/03/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -175,7 +175,13 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.set_kernel_arguments()
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
-        self.send_buffer(self._data, "data")
+        if numpy.allclose(self._data, numpy.ones(self._data.shape)):
+            self.cl_mem["data"] = None
+            self.cl_kernel_args["csr_sigma_clip4"]["data"] = None
+            self.cl_kernel_args["csr_integrate"]["data"] = None
+            self.cl_kernel_args["csr_integrate4"]["data"] = None
+        else:
+            self.send_buffer(self._data, "data")
         self.send_buffer(self._indices, "indices")
         self.send_buffer(self._indptr, "indptr")
         if "amd" in  platform:
