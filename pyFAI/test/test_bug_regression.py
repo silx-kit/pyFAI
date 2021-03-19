@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2021"
+__date__ = "19/03/2021"
 
 import sys
 import os
@@ -49,6 +49,7 @@ logger = logging.getLogger(__name__)
 import fabio
 from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..calibrant import get_calibrant
 from .. import detectors
 from .. import units
 from math import pi
@@ -455,6 +456,34 @@ class TestBugRegression(unittest.TestCase):
         self.assertNotEqual(refined2.rot2, refined.rot2, "Rot2 got refined")
 #         self.assertNotEqual(refined2.rot3, refined.rot3, "Rot3 got refined")
         self.assertNotEqual(refined2.wavelength, refined.wavelength, "Wavelength got refined (refine3)")
+
+    def test_bug_1487(self):
+        """
+        Reported by Marco @ID15:
+        Apparently the azimuthal range limitation is honored with CSR implementation and full-pixel splitting in pyFAI 0.20.
+        at lease for integrate1d legacy.
+        """
+        wl = 1e-10
+        ai = AzimuthalIntegrator(0.1, 0.03, 0.00, detector="Pilatus_200k", wavelength=wl)
+
+        tth = ai.twoThetaArray()
+        iso = -tth * (tth - 0.8)
+        chi = ai.chiArray()
+        ani = numpy.sin(4 * chi) + 1
+        img = iso * ani
+
+        npt = 10
+        sector_size = 20
+        out = numpy.empty((180 // sector_size, npt))
+        method = ("full", "csr", "cython")
+        idx = 0
+        for start in range(-90, 90, sector_size):
+            end = start + sector_size
+            res = ai.integrate1d(img, npt, method=method, azimuth_range=[start, end])
+            out[idx] = res.intensity
+            idx += 1
+        std = out.std(axis=0)
+        self.assertGreater(std.min(), 0, "output are not all the same")
 
 
 def suite():
