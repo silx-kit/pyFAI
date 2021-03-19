@@ -475,15 +475,16 @@ class TestBugRegression(unittest.TestCase):
         npt = 10
         sector_size = 20
         out = numpy.empty((180 // sector_size, npt))
-        method = ("full", "csr", "cython")
-        idx = 0
-        for start in range(-90, 90, sector_size):
-            end = start + sector_size
-            res = ai.integrate1d(img, npt, method=method, azimuth_range=[start, end])
-            out[idx] = res.intensity
-            idx += 1
-        std = out.std(axis=0)
-        self.assertGreater(std.min(), 0, "output are not all the same")
+        for method in [("full", "csr", "cython"),
+                       ("full", "lut", "cython")]:
+            idx = 0
+            for start in range(-90, 90, sector_size):
+                end = start + sector_size
+                res = ai.integrate1d(img, npt, method=method, azimuth_range=[start, end])
+                out[idx] = res.intensity
+                idx += 1
+            std = out.std(axis=0)
+            self.assertGreater(std.min(), 0, "output are not all the same with " + str(method))
 
 
 def suite():

@@ -31,7 +31,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/07/2020"
+__date__ = "19/03/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -202,7 +202,9 @@ class HistoLUT1dFullSplit(LutIntegrator):
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
         delta = self.delta
-
+        check_pos1 = self.check_pos1
+        pos1_maxin = self.pos1_maxin
+        
         size = self.size
         check_mask = self.check_mask
         if check_mask:
