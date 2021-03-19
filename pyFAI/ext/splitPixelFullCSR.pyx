@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/01/2021"
+__date__ = "19/03/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -274,6 +274,9 @@ class FullSplitCSR_1d(CsrIntegrator):
 
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
+        pos1_maxin = self.pos1_maxin
+        check_pos1 = self.check_pos1
+        
         delta = self.delta
 
         size = self.size
