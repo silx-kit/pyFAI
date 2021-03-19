@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/01/2021"
+__date__ = "19/03/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -253,7 +253,7 @@ class FullSplitCSR_1d(CsrIntegrator):
             float partialArea = 0, oneOverPixelArea
             Function AB, BC, CD, DA
             Py_ssize_t bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0
-            bint check_pos1 = False, check_mask = False
+            bint check_pos1, check_mask = False
 
         bins = self.bins
         if self.pos0Range is not None:
@@ -264,16 +264,19 @@ class FullSplitCSR_1d(CsrIntegrator):
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
         if self.pos1Range is not None:
             self.pos1_min, self.pos1_maxin = self.pos1Range
-            self.check_pos1 = True
+            check_pos1 = True
         else:
             self.pos1_min = self.pos[:, :, 1].min()
             self.pos1_maxin = self.pos[:, :, 1].max()
+            check_pos1 = False
         self.pos1_max = calc_upper_bound(<position_t> self.pos1_maxin)
 
         self.delta = (self.pos0_max - self.pos0_min) / (<double> (bins))
 
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
+        pos1_maxin = self.pos1_maxin
+        
         delta = self.delta
 
         size = self.size
@@ -601,7 +604,7 @@ class FullSplitCSR_2d(object):
                             tmp_i += is_inside[i, j + 1]
                             tmp_i += is_inside[i + 1, j]
                             tmp_i += is_inside[i + 1, j + 1]
-                            if tmp_i is not 0:
+                            if tmp_i: #!=0
                                 outmax[i + bin0_min, j + bin1_min] += 1
 
         indptr = numpy.concatenate([numpy.int32(0)],
@@ -785,7 +788,7 @@ class FullSplitCSR_2d(object):
                             tmp_i += is_inside[i, j + 1]
                             tmp_i += is_inside[i + 1, j]
                             tmp_i += is_inside[i + 1, j + 1]
-                            if tmp_i is 4:
+                            if tmp_i == 4:
                                 k = outmax[bin0_min + i, bin1_min + j]
                                 index = (i + bin0_min) * all_bins1 + j + bin1_min
                                 if index > all_bins:
@@ -798,7 +801,7 @@ class FullSplitCSR_2d(object):
                                 data[indptr[index] + k] = oneOverPixelArea
                                 outmax[bin0_min + i, bin1_min + j] += 1  # k+1
 
-                            elif tmp_i is 1 or tmp_i is 2 or tmp_i is 3:
+                            elif 1<=tmp_i<=3:
                                 ###################################################
                                 #  Sutherland-Hodgman polygon clipping algorithm  #
                                 ###################################################

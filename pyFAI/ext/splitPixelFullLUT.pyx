@@ -31,7 +31,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/07/2020"
+__date__ = "19/03/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -178,7 +178,7 @@ class HistoLUT1dFullSplit(LutIntegrator):
             float partialArea = 0, oneOverPixelArea
             Function AB, BC, CD, DA
             int bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0
-            bint check_pos1 = False, check_mask = False
+            bint check_pos1, check_mask = False
 
         bins = self.bins
         if self.pos0Range is not None and len(self.pos0Range) > 1:
@@ -191,10 +191,11 @@ class HistoLUT1dFullSplit(LutIntegrator):
         if self.pos1Range is not None and len(self.pos1Range) > 1:
             self.pos1_min = min(self.pos1Range)
             self.pos1_maxin = max(self.pos1Range)
-            self.check_pos1 = True
+            check_pos1 = True
         else:
             self.pos1_min = self.pos[:, :, 1].min()
             self.pos1_maxin = self.pos[:, :, 1].max()
+            check_pos1 = False
         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
 
         self.delta = (self.pos0_max - self.pos0_min) / (<float> (bins))
@@ -202,7 +203,8 @@ class HistoLUT1dFullSplit(LutIntegrator):
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
         delta = self.delta
-
+        pos1_maxin = self.pos1_maxin
+        
         size = self.size
         check_mask = self.check_mask
         if check_mask:
@@ -590,7 +592,7 @@ class HistoLUT2dFullSplit(object):
                             tmp_i += point_and_line(B0, B1, C0, C1, i, j)
                             tmp_i += point_and_line(C0, C1, D0, D1, i, j)
                             tmp_i += point_and_line(D0, D1, A0, A1, i, j)
-                            is_inside[i, j] = (<int> fabs(tmp_i)) / <int> 4
+                            is_inside[i, j] = abs(tmp_i// 4)
 
                     for i in range(bins0):
                         for j in range(bins1):
@@ -598,7 +600,7 @@ class HistoLUT2dFullSplit(object):
                             tmp_i += is_inside[i, j + 1]
                             tmp_i += is_inside[i + 1, j]
                             tmp_i += is_inside[i + 1, j + 1]
-                            if tmp_i is not 0:
+                            if tmp_i: #!=0
                                 outmax[i + bin0_min, j + bin1_min] += 1
 
         indptr[1:] = outmax.ravel().cumsum()
@@ -778,7 +780,7 @@ class HistoLUT2dFullSplit(object):
                             tmp_i += point_and_line(B0, B1, C0, C1, i, j)
                             tmp_i += point_and_line(C0, C1, D0, D1, i, j)
                             tmp_i += point_and_line(D0, D1, A0, A1, i, j)
-                            is_inside[i, j] = abs(tmp_i / 4)
+                            is_inside[i, j] = abs(tmp_i // 4)
 
                     for i in range(bins0):
                         for j in range(bins1):
@@ -786,7 +788,7 @@ class HistoLUT2dFullSplit(object):
                             tmp_i += is_inside[i, j + 1]
                             tmp_i += is_inside[i + 1, j]
                             tmp_i += is_inside[i + 1, j + 1]
-                            if tmp_i is 4:
+                            if tmp_i == 4:
                                 k = outmax[bin0_min + i, bin1_min + j]
                                 index = (i + bin0_min) * all_bins1 + j + bin1_min
                                 if index > all_bins:
@@ -799,7 +801,7 @@ class HistoLUT2dFullSplit(object):
                                 data[indptr[index] + k] = oneOverPixelArea
                                 outmax[bin0_min + i, bin1_min + j] += 1  # k+1
 
-                            elif tmp_i is 1 or tmp_i is 2 or tmp_i is 3:
+                            elif 1<=tmp_i<=3:
                                 ###################################################
                                 #  Sutherland-Hodgman polygon clipping algorithm  #
                                 ###################################################
