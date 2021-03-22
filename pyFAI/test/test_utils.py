@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2021"
+__date__ = "22/03/2021"
 
 import os
 import unittest
@@ -47,6 +47,7 @@ from .. import azimuthalIntegrator
 # to increase test coverage of missing files:
 from .. import directories
 from ..utils.grid import Kabsch
+from ..utils.stringutil import to_scientific_unicode
 
 
 class TestUtils(unittest.TestCase):
@@ -83,7 +84,7 @@ class TestUtils(unittest.TestCase):
         logger.info("data directories exists: %s %s", directories.PYFAI_DATA, os.path.exists(directories.PYFAI_DATA))
 
     def test_grid(self):
-        "Test Kabsch righid rotation algorithm"
+        "Test Kabsch rigid rotation algorithm"
         # Test translation
         Kabsch.test([[1, 2], [2, 3], [1, 4]], [[2, 3], [3, 4], [2, 5]], verbose=False)
         # Test rotation
@@ -99,6 +100,11 @@ class TestUtils(unittest.TestCase):
         P = numpy.array([[1, 1], [2, 0], [3, 1], [2, 2]])
         Q = numpy.array([[2, 0], [3, 1], [2, 2], [1, 1]])
         Kabsch.test(P, Q, verbose=False)
+
+    def test_to_scientific(self):
+        self.assertEqual(to_scientific_unicode(numpy.pi), '3.142·10⁺⁰⁰', "pi is properly represented")
+        self.assertEqual(to_scientific_unicode(numpy.NaN), 'nan', "NaN are properly represented")
+        self.assertEqual(to_scientific_unicode(numpy.inf), 'inf', "infinite values are properly represented")
 
 
 def suite():
