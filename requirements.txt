@@ -1,4 +1,5 @@
 numpy
+wheel
 cython
 fabio
 scipy
