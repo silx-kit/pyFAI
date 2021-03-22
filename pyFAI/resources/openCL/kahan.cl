@@ -87,7 +87,7 @@ static inline float2 compensated_inv(float2 a)
 {
     float main = a.s0;
     float err  = a.s1;
-    return (float2)(1.0f/main, -err/(main*main));
+    return (float2)(1.0f/main, -err/fma(main, main, main*err));
 }
 
 // calculate a/b  with error compensation (Needs validation)

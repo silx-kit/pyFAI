@@ -273,6 +273,145 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     return super_sum[0];
 }
 
+/* _accumulate_poisson: accumulate one value assuming a known error model like the poissonian model
+ * 
+ * All processings are compensated for error accumulation 
+ * 
+ * :param accumulator8: float8 containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
+ * :param value4: one quadret read from the preproc4 array containing Signal, Variance, normalization and 1 if the pixel is valid.
+ * :param coef: how much of that pixel contributes due to pixel splitting [0-1] 
+ * :retuen: the updated accumulator8
+ * */
+
+static inline float8 _accumulate_poisson(float8 accum8,
+										 float4 value4
+										 float coef){
+     
+	float signal, variance, norm, count;
+	signal = quatret.s0;
+    variance = quatret.s1;
+    norm = quatret.s2;
+    count = quatret.s3;
+    
+    if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0))
+    {
+    	float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K;
+    	sum_signal_K = (float2)(accum8.s0, accum8.s1);  
+		sum_variance_K = (float2)(accum8.s2, accum8.s3); 
+		sum_norm_K = (float2)(accum8.s4, accum8.s5);
+		sum_count_K = (float2)(accum8.s6, accum8.s7);
+        // defined in kahan.cl
+        sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
+        sum_variance_K = kahan_sum(sum_variance_K, coef * coef * variance);
+        sum_norm_K = kahan_sum(sum_norm_K, coef * norm);
+        sum_count_K = kahan_sum(sum_count_K, coef * count);
+        accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K)
+    }
+    return accum8;
+}
+
+/* _accumulate_azimuthal: accumulate one value considering the azimuthal regions
+ * 
+ * All processings are compensated for error accumulation
+ * See Schubert & Gretz 2018, especially Eq22. 
+ * 
+ * :param accumulator8: float8 containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
+ * :param value4: one quadret read from the preproc4 array containing Signal, (unused variance), normalization and 1 if the pixel is valid.
+ * :param coef: how much of that pixel contributes due to pixel splitting [0-1] 
+ * :retuen: the updated accumulator8
+ * 
+ * Nota: here the variance of the pixel is not used, the variance is calculated from the distance from the pixel to the mean.
+ * This algorithm is not numerically as stable as the `poisson` variant  
+ *   
+ * */
+
+static inline float8 _accumulate_poisson(float8 accum8,
+										 float4 value4
+										 float coef){
+     
+	float signal, norm, count;
+	signal = quatret.s0;
+//    variance = quatret.s1;
+    norm = quatret.s2;
+    count = quatret.s3;
+    
+    if (isfinite(signal) && isfinite(norm) && (count > 0))
+    {
+    	float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K, x, delta, delta2, omega3;
+    	sum_signal_K = (float2)(accum8.s0, accum8.s1);  
+		sum_variance_K = (float2)(accum8.s2, accum8.s3); 
+		sum_norm_K = (float2)(accum8.s4, accum8.s5);
+		sum_count_K = (float2)(accum8.s6, accum8.s7);
+        // defined in kahan.cl
+        sum_signal_K = compensated_sum(sum_signal_K, comp_prod(coef, signal));
+        sum_norm_K = compensated_sum(sum_norm_K, comp_prod(coef, norm));
+        sum_count_K = compensated_sum(sum_count_K, comp_prod(coef, count));
+        
+        // XX = XX + delta²/(w*W*(w+W))
+        //delta = sum_signal_K - sum_norm_K*signal/norm
+        x = comp_prod(signal, 1/norm);
+        delta = compensated_sum(sum_signal_K, - compensated_mul(sum_norm_K, x));       		
+		delta2 = compensated_mul(delta, delta);
+		omega3 = norm * compensated_mul(sum_norm_K, kahan_sum(sum_norm_K, norm));
+		sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));
+        accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K)
+    }
+    return accum8;
+}
+
+/* _merge_poisson: Merge two partial dataset assuming a known error model like the poissonian model
+ * 
+ * All processings are compensated for error accumulation 
+ * 
+ * :param here, there: two float8-accumulators containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
+ * :return: the updated accumulator8
+ * */
+
+static inline float8 _merge_poisson(float8 here,
+									float8 there){
+	float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K;
+    sum_signal_K = compensated_sum((float2)(here,s0, here.s1), (float2)(there.s0, there.s1));
+    sum_variance_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
+    sum_norm_K = compensated_sum((float2)(here.s4, here.s5), (float2)(there.s4, there.s5));
+    sum_count_K = compensated_sum((float2)(here.s6, here.s7), (float2)(there.s6, there.s7));
+    return (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+}
+
+/* _merge_azimuthal: Merge two partial dataset considering the azimuthal regions
+ * 
+ * All processings are compensated for error accumulation
+ * See Schubert & Gretz 2018, especially Eq22. 
+ * 
+ * :param here, there: two float8-accumulators containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
+ * :return: the updated accumulator8
+ * 
+ * Nota: here the variance of the pixel is not used, the variance is calculated from the distance from the pixel to the mean.
+ * This algorithm is not numerically as stable as the `poisson` variant  
+ *   
+ * */
+
+static inline float8 _merge_azimuthal(float8 here,
+									  float8 there){
+	float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K, delta, delta2, omega3, omega_A, omega_B, V_A, V_B;
+    V_A = (float2)(here,s0, here.s1);
+    V_B = (float2)(there.s0, there.s1);
+	sum_signal_K = compensated_sum(V_A, V_B);
+    sum_variance_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
+    omega_A = (float2)(here.s4, here.s5);
+    omega_B = (float2)(there.s4, there.s5);
+    sum_norm_K = compensated_sum(omega_A, omega_B);
+    sum_count_K = compensated_sum((float2)(here.s6, here.s7), (float2)(there.s6, there.s7));
+    // Add the cross-ensemble part
+    delta = compensated_sum(compensated_mul(omega_B, V_A), - compensated_mul(omega_A, V_B));
+    delta2 = compensated_mul(delta, delta);
+    omega3 = compensated_mul(sum_norm_K, compensated_mul( omega_A,  omega_B));
+    sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));
+    
+    
+	return (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+}
+
+
 /**
  * \brief OpenCL function for sigma clipping CSR look up table. Sets count to NAN
  *
