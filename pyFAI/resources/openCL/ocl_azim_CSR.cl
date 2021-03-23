@@ -335,26 +335,62 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
     norm = value4.s2;
     count = value4.s3;
     
-    if (isfinite(signal) && isfinite(norm) && (count > 0))
+    if (isfinite(signal) && isfinite(norm) && (count > 0) && (coef > 0))
     {
-        float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K, x, delta, delta2, omega3;
-        sum_signal_K = (float2)(accum8.s0, accum8.s1);  
-        sum_variance_K = (float2)(accum8.s2, accum8.s3); 
-        sum_norm_K = (float2)(accum8.s4, accum8.s5);
-        sum_count_K = (float2)(accum8.s6, accum8.s7);
-        // defined in kahan.cl
-        sum_signal_K = compensated_sum(sum_signal_K, comp_prod(coef, signal));
-        sum_norm_K = compensated_sum(sum_norm_K, comp_prod(coef, norm));
-        sum_count_K = compensated_sum(sum_count_K, comp_prod(coef, count));
+        if (accum8.s4 == 0.0f){
+            // Initialize the accumulator with data from the pixel
+            accum8 = (float8)(comp_prod(coef, signal),
+                              (float2)(0.0f, 0.0f),
+                              comp_prod(coef, norm), 
+                              comp_prod(coef, count));
+        }
+        else{
+            //The accumulator is already initialized
+            float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K, x, delta, delta2, omega_A, omega_B, omega3;
+            sum_signal_K = (float2)(accum8.s0, accum8.s1);
+            sum_variance_K = (float2)(accum8.s2, accum8.s3); 
+            omega_A = (float2)(accum8.s4, accum8.s5);
+            sum_count_K = (float2)(accum8.s6, accum8.s7);
+            // defined in kahan.cl
+            omega_B = comp_prod(coef, norm);
+            sum_norm_K = compensated_sum(omega_A, omega_B);
+            sum_count_K = compensated_sum(sum_count_K, comp_prod(coef, count));
+
+            // XX = XX + delta²/(w*W*(w+W))
+            //delta = sum_signal_K - sum_norm_K*signal/norm
+            x = comp_prod(signal, 1.0f/norm);
+            delta = compensated_sum(sum_signal_K, - compensated_mul(omega_A, x));               
+            delta2 = compensated_mul(delta, delta);
+            omega3 = compensated_mul(sum_norm_K, compensated_mul(omega_A, omega_B));
+            sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));
+            
+            // at the end as X_A is used in the variance XX_A
+            sum_signal_K = compensated_sum(sum_signal_K, comp_prod(coef, signal));
+            accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+        }
+        
         
         // XX = XX + delta²/(w*W*(w+W))
         //delta = sum_signal_K - sum_norm_K*signal/norm
-        x = comp_prod(signal, 1/norm);
-        delta = compensated_sum(sum_signal_K, - compensated_mul(sum_norm_K, x));               
-        delta2 = compensated_mul(delta, delta);
-        omega3 = norm * compensated_mul(sum_norm_K, kahan_sum(sum_norm_K, norm));
-        sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));
-        accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+//        x = comp_prod(signal, 1/norm);
+//        delta = compensated_sum(sum_signal_K, - compensated_mul(sum_norm_K, x));               
+//        delta2 = compensated_mul(delta, delta);
+//        omega3 = norm * compensated_mul(sum_norm_K, kahan_sum(sum_norm_K, norm));
+//        sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));
+        
+        // None compensated version of the calculation ...
+        //XA-OmegaAxb
+//        float omega = accum8.s4; 
+//        if (omega == 0.0f){
+//            
+//        }
+//        else{
+//            
+//            float w = coef*norm ;
+//            sum_variance_K = kahan_sum(sum_variance_K, pown(accum8.s0 - omega * signal/norm, 2)/(omega*(omega+w)));
+//            accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+//        }        
+        
     }
     return accum8;
 }
