@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "22/03/2021"
 __status__ = "stable"
 
 import logging
@@ -1113,6 +1113,14 @@ class NexusDetector(Detector):
             if "pixel_corners" in det_grp:
                 self._pixel_corners = det_grp["pixel_corners"][()]
                 self.uniform_pixel = False
+                if not numpy.isfinite(self._pixel_corners.sum()):
+                    # Mask out non-finite coordinates
+                    logger.warning("Non finite coordinates found in detector. Masking them out.")
+                    previous_mask = self.mask
+                    if previous_mask is None:
+                        previous_mask = numpy.zeros(self.shape)
+                    new_mask = numpy.logical_not(numpy.isfinite(self._pixel_corners.sum(axis=(2, 3))))
+                    self.mask = numpy.logical_or(previous_mask, new_mask).astype(numpy.int8)
             else:
                 self.uniform_pixel = True
         # Populate shape and max_shape if needed
