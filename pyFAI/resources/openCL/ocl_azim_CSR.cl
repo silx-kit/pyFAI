@@ -392,6 +392,12 @@ static inline float8 _merge_poisson(float8 here,
 
 static inline float8 _merge_azimuthal(float8 here,
                                       float8 there){
+    if (here.s6 == 0.0f){ // Check the counter is not null 
+        return there;
+    }
+    else if (there.s6 == 0.0f){
+        return here;
+    }
     float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K, delta, delta2, omega3, omega_A, omega_B, V_A, V_B;
     V_A = (float2)(here.s0, here.s1);
     V_B = (float2)(there.s0, there.s1);
@@ -402,12 +408,12 @@ static inline float8 _merge_azimuthal(float8 here,
     sum_norm_K = compensated_sum(omega_A, omega_B);
     sum_count_K = compensated_sum((float2)(here.s6, here.s7), (float2)(there.s6, there.s7));
     // Add the cross-ensemble part
+    // If one of the sub-ensemble is empty, the cross-region term is empty as well 
     delta = compensated_sum(compensated_mul(omega_B, V_A), - compensated_mul(omega_A, V_B));
     delta2 = compensated_mul(delta, delta);
     omega3 = compensated_mul(sum_norm_K, compensated_mul( omega_A,  omega_B));
-    sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));
-    
-    
+    sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));          
+   
     return (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
 }
 
@@ -420,7 +426,7 @@ static inline float8 _merge_azimuthal(float8 here,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
- * @param azimuthal   set to 1 to estimate the variance from the azimuthal sector, or 0 to use a Poisson-like model		
+ * @param azimuthal   set to 1 to estimate the variance from the azimuthal sector, or 0 to use a Poisson-like model        
  * @param super_sum   Local array of float8 of size WORKGROUP_SIZE: mandatory as a static function !
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
@@ -469,7 +475,7 @@ static inline float8 CSRxVec4a(const   global  float4   *data,
         if (thread_id_loc < active_threads) {
             if (azimuthal){
                 super_sum[thread_id_loc] = _merge_azimuthal(super_sum[thread_id_loc], 
-                		                                    super_sum[thread_id_loc + active_threads]);
+                                                            super_sum[thread_id_loc + active_threads]);
             }//if azimuthal
             else{
                 super_sum[thread_id_loc] = _merge_poisson(super_sum[thread_id_loc], 
@@ -824,6 +830,56 @@ csr_integrate4(  const   global  float4  *weights,
     
     local float8 shared[WORKGROUP_SIZE];
     float8 result = CSRxVec4(weights, coefs, indices, indptr, shared);
+    if (get_local_id(0)==0) {
+        summed[bin_num] = result;
+        if (result.s4 > 0.0f) {
+            averint[bin_num] =  result.s0 / result.s4;
+            stderr[bin_num] = sqrt(result.s2) / result.s4;
+        }
+        else {
+            averint[bin_num] = empty;
+            stderr[bin_num] = empty;
+        } //end else
+    } // end if thread0 
+};//end kernel
+
+/**
+ *  \brief csr_integrate4a: Performs 1d azimuthal integration based on CSR sparse matrix multiplication on preprocessed data
+ *  
+ *
+ * @param weights     Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
+ * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
+ * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
+ * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
+ * @param empty       Float: value for bad pixels, NaN is a good guess
+ * @param azimuthal_variance int: set to True to calculate the variance on the aximuthal bin instead of propagated from poisson law 
+ * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
+ * @param averint     Float pointer to the output 1D array with the averaged signal
+ * @param stderr      Float pointer to the output 1D array with the propagated error
+ *
+ */
+kernel void
+csr_integrate4a(  const   global  float4  *weights,
+                  const   global  float   *coefs,
+                  const   global  int     *indices,
+                  const   global  int     *indptr,
+                  const           float    empty,
+                  const           int      azimuthal_variance,      
+                         global  float8   *summed,
+                         global  float    *averint,
+                         global  float    *stderr)
+{
+    int bin_num = get_group_id(0);
+ 
+//    if (WORKGROUP_SIZE<get_local_size(0)){
+//        if ((bin_num == 0) &&  (get_local_id(0) == 0))
+//            printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
+//                    WORKGROUP_SIZE, get_local_size(0));
+//    }
+
+    
+    local float8 shared[WORKGROUP_SIZE];
+    float8 result = CSRxVec4a(weights, coefs, indices, indptr, azimuthal_variance, shared);
     if (get_local_id(0)==0) {
         summed[bin_num] = result;
         if (result.s4 > 0.0f) {

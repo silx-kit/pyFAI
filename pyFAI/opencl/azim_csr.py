@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "16/03/2021"
+__date__ = "23/03/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -313,6 +313,17 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("stderr", self.cl_mem["stderr"]),
                                                              ))
 
+        self.cl_kernel_args["csr_integrate4a"] = OrderedDict((("output4", self.cl_mem["output4"]),
+                                                            ("data", self.cl_mem["data"]),
+                                                            ("indices", self.cl_mem["indices"]),
+                                                            ("indptr", self.cl_mem["indptr"]),
+                                                            ("empty", numpy.float32(self.empty)),
+                                                            ("azimuthal", numpy.int32(1)),
+                                                            ("merged8", self.cl_mem["merged8"]),
+                                                            ("averint", self.cl_mem["averint"]),
+                                                            ("stderr", self.cl_mem["stderr"]),
+                                                             ))
+
         self.cl_kernel_args["csr_sigma_clip4"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                               ("data", self.cl_mem["data"]),
                                                               ("indices", self.cl_mem["indices"]),
@@ -571,7 +582,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
-        :param poissonian: set to use signal as variance (minimum 1)
+        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -617,6 +628,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
             kw_corr["poissonian"] = numpy.int8(1 if poissonian else 0)
+            # kw_int["azimuthal"] = numpy.int8(1 if poissonian is False else 0)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:
@@ -693,8 +705,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 events.append(EventDescription("csr_integrate4_single", integrate))
             else:
                 wdim_bins = (self.bins * wg_min),
-                integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-                events.append(EventDescription("csr_integrate4", integrate))
+                if poissonian is False:
+                    # Try new azimuthal propagation:
+                    kw_int_4a = self.cl_kernel_args["csr_integrate4a"]
+                    kw_int_4a.update(kw_int)
+                    integrate = self.kernels.csr_integrate4a(self.queue, wdim_bins, (wg_min,), *kw_int_4a.values())
+                    events.append(EventDescription("csr_integrate4a", integrate))
+                else:
+                    integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
+                    events.append(EventDescription("csr_integrate4", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
