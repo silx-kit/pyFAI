@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "10/03/2021"
+__date__ = "23/03/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -287,11 +287,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         kw_int = self.cl_kernel_args["csr_sigma_clip4"]
         kw_int["cutoff"] = numpy.float32(cutoff_clip)
         kw_int["cycle"] = numpy.int32(cycle)
-
-        if error_model.startswith("azim"):
-            kw_int["azimuthal"] = numpy.int32(1)
-        else:
-            kw_int["azimuthal"] = numpy.int32(0)
+        kw_int["azimuthal"] = numpy.int8(error_model.startswith("azim"))
 
         wg_min = min(self.workgroup_size["csr_sigma_clip4"])
         wdim_bins = (self.bins * wg_min),
