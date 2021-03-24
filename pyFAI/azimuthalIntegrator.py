@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2021"
+__date__ = "24/03/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1161,7 +1161,7 @@ class AzimuthalIntegrator(Geometry):
             assert variance.size == data.size
         elif error_model:
             error_model = error_model.lower()
-            if error_model == "poisson":
+            if error_model.startswith("poisson"):
                 if dark is None:
                     variance = numpy.ascontiguousarray(abs(data), numpy.float32)
                 else:
@@ -1322,13 +1322,25 @@ class AzimuthalIntegrator(Geometry):
                         integr = self.engines[method].engine
                 if method.impl_lower == "opencl":
                     ocl_kwargs = {"polarization_checksum": polarization_crc,
-                                  "solidangle_checksum": solidangle_crc
+                                  "solidangle_checksum": solidangle_crc,
+                                  "poissonian": None,
+                                  "variance": variance,
                                   }
+                    if error_model:
+                        if error_model.startswith("poisson"):
+                            ocl_kwargs["poissonian"] = True
+                            ocl_kwargs["variance"] = None
+                        elif error_model.startswith("azim"):
+                            ocl_kwargs["poissonian"] = False
+                            ocl_kwargs["variance"] = None
+
                 else:
-                    ocl_kwargs = {}
+                    # TODO: manage cython's CSR integrator #1486
+                    ocl_kwargs = {  # "poissonian": None,
+                                  "variance": variance,
+                                  }
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
-                                            variance=variance,
                                             flat=flat, solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
