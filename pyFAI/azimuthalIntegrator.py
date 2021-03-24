@@ -1330,9 +1330,11 @@ class AzimuthalIntegrator(Geometry):
                         if error_model.startswith("poisson"):
                             ocl_kwargs["poissonian"] = True
                             ocl_kwargs["variance"] = None
+                            variance = True
                         elif error_model.startswith("azim"):
                             ocl_kwargs["poissonian"] = False
                             ocl_kwargs["variance"] = None
+                            variance = True
 
                 else:
                     # TODO: manage cython's CSR integrator #1486
@@ -1352,7 +1354,7 @@ class AzimuthalIntegrator(Geometry):
             else:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
-                                           intpl.error)
+                                           intpl.sigma)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
             result._set_unit(integr.unit)
             result._set_sum_signal(intpl.signal)
@@ -1390,7 +1392,7 @@ class AzimuthalIntegrator(Geometry):
             else:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
-                                           intpl.error)
+                                           intpl.sigma)
             result._set_compute_engine(integr.__module__ + "." + integr.__name__)
             result._set_unit(unit)
             result._set_sum_signal(intpl.signal)
@@ -1456,7 +1458,7 @@ class AzimuthalIntegrator(Geometry):
             else:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
-                                           intpl.error)
+                                           intpl.sigma)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
             result._set_unit(integr.unit)
             result._set_sum_signal(intpl.signal)
@@ -1506,7 +1508,7 @@ class AzimuthalIntegrator(Geometry):
             else:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
-                                           intpl.error)
+                                           intpl.sigma)
                 result._set_sum_variance(intpl.variance)
             result._set_compute_engine(integr.__module__ + "." + integr.__name__)
             result._set_unit(unit)
@@ -2365,7 +2367,7 @@ class AzimuthalIntegrator(Geometry):
                     norm2d = res.normalization
                     count = res.count
                     if variance is not None:
-                        sigma = res.error
+                        sigma = res.sigma
                         var2d = res.variance
 
         elif method.algo_lower == "histogram":
@@ -2395,7 +2397,7 @@ class AzimuthalIntegrator(Geometry):
                 norm2d = res.normalization
                 count = res.count
                 if variance is not None:
-                    sigma = res.error
+                    sigma = res.sigma
                     var2d = res.variance
 
             elif method.split_lower == "bbox":
@@ -2430,7 +2432,7 @@ class AzimuthalIntegrator(Geometry):
                 norm2d = res.normalization
                 count = res.count
                 if variance is not None:
-                    sigma = res.error
+                    sigma = res.sigma
                     var2d = res.variance
 
             elif method.split_lower == "no":
@@ -2468,7 +2470,7 @@ class AzimuthalIntegrator(Geometry):
                     norm2d = res.normalization
                     count = res.count
                     if variance is not None:
-                        sigma = res.error
+                        sigma = res.sigma
                         var2d = res.variance
                 else:  # Python implementation:
                     logger.debug("integrate2d uses python implementation")
@@ -2515,7 +2517,7 @@ class AzimuthalIntegrator(Geometry):
                         norm2d = res.normalization
                         count = res.count
                         if variance is not None:
-                            sigma = res.error
+                            sigma = res.sigma
                             var2d = res.variance
 
         # Duplicate arrays on purpose ....
@@ -3211,7 +3213,7 @@ class AzimuthalIntegrator(Geometry):
                     intpl = integr.sigma_clip(data, **kwargs)
         else:
             raise RuntimeError("Not yet implemented. Sorry")
-        result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity, intpl.error)
+        result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity, intpl.sigma)
         result._set_method_called("sigma_clip_ng")
         result._set_compute_engine(str(method))
         result._set_percentile(thres)
