@@ -174,11 +174,11 @@ kernel void histogram_1d_preproc(global float* radial,
         	if (valid)
         	{
                 unsigned int target = (unsigned int) (nbins * (pvalue - radial_mini) / (radial_maxi - radial_mini));
-                float4 value = weights[idx];
-                atomic_add_global_kahan(&histo_sig[target], value.s0);
-                atomic_add_global_kahan(&histo_var[target], value.s1);
-                atomic_add_global_kahan(&histo_nrm[target], value.s2);
-                atomic_add(&histo_cnt[target], (unsigned int)(value.s3 + 0.5f));        		
+                float4 quartet = weights[idx];
+                atomic_add_global_kahan(&histo_sig[target], quartet.s0);
+                atomic_add_global_kahan(&histo_var[target], quartet.s1);
+                atomic_add_global_kahan(&histo_nrm[target], quartet.s2);
+                atomic_add(&histo_cnt[target], (unsigned int)(quartet.s3 + 0.5f));        		
         	} //Treat valid data
         } // else discard value
     } // if idx in array
