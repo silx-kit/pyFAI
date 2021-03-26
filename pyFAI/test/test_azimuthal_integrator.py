@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2021"
+__date__ = "26/03/2021"
 
 import unittest
 import os
@@ -540,11 +540,12 @@ class TestIntergrationNextGeneration(unittest.TestCase):
 
         method = ("no", "histogram", "cython")
         cython = ai._integrate1d_ng(data, 100, method=method, error_model="poisson")
+
         self.assertEqual(cython.compute_engine, "pyFAI.ext.histogram.histogram1d_engine")
         self.assertEqual(str(cython.unit), "q_nm^-1")
         self.assertTrue(numpy.allclose(cython.radial, python.radial), "cython position are the same")
         self.assertTrue(numpy.allclose(cython.intensity, python.intensity), "cython intensities are the same")
-        self.assertTrue(numpy.allclose(cython.sigma, python.sigma), "cython errors are the same")
+        self.assertTrue(numpy.allclose(cython.sigma, python.sigma), f"cython errors are the same, aerr={(abs(python.sigma - cython.sigma)).max()}")
         self.assertTrue(numpy.allclose(cython.sum_signal, python.sum_signal), "cython sum_signal are the same")
         self.assertTrue(numpy.allclose(cython.sum_variance, python.sum_variance), "cython sum_variance are the same")
         self.assertTrue(numpy.allclose(cython.sum_normalization, python.sum_normalization), "cython sum_normalization are the same")
@@ -558,12 +559,12 @@ class TestIntergrationNextGeneration(unittest.TestCase):
         opencl = ai._integrate1d_ng(data, 100, method=method, error_model="poisson")
         self.assertEqual(opencl.compute_engine, "pyFAI.opencl.azim_hist.OCL_Histogram1d")
         self.assertEqual(str(opencl.unit), "q_nm^-1")
-
         self.assertTrue(numpy.allclose(opencl.radial, python.radial), "opencl position are the same")
         self.assertTrue(numpy.allclose(opencl.intensity, python.intensity), "opencl intensities are the same")
         self.assertTrue(numpy.allclose(opencl.sigma, python.sigma), "opencl errors are the same")
         self.assertTrue(numpy.allclose(opencl.sum_signal.sum(axis=-1), python.sum_signal), "opencl sum_signal are the same")
-        self.assertTrue(numpy.allclose(opencl.sum_variance.sum(axis=-1), python.sum_variance), "opencl sum_variance are the same")
+        self.assertTrue(numpy.allclose(opencl.sum_variance.sum(axis=-1), python.sum_variance),
+                        f"opencl sum_variance are the same {abs(opencl.sum_variance.sum(axis=-1) - python.sum_variance).max()}")
         self.assertTrue(numpy.allclose(opencl.sum_normalization.sum(axis=-1), python.sum_normalization), "opencl sum_normalization are the same")
         self.assertTrue(numpy.allclose(opencl.count, python.count), "opencl count are the same")
 

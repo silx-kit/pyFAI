@@ -3,11 +3,11 @@
  *            Preprocessing program
  *
  *
- *   Copyright (C) 2012-2018 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2021 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 05/12/2019
+ *   Last revision: 26/03/2021
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
