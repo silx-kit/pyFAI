@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#cython: embedsignature=True, language_level=3
+#cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping:
 ##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
@@ -35,7 +35,7 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/03/2021"
+__date__ = "26/03/2021"
 __copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -63,12 +63,14 @@ from .sparse_builder cimport SparseBuilder
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
 
-cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:
-    "Calculate the area between I1 and I2 of a line with a given slope & intercept"
+cdef inline float _calc_area(float I1, float I2, float slope, float intercept) nogil:
     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
+def calc_area(float I1, float I2, float slope, float intercept):
+    "Calculate the area between I1 and I2 of a line with a given slope & intercept"
+    return _calc_area(I1, I2, slope, intercept)
 
 
-cpdef inline int clip(int value, int min_val, int max_val) nogil:
+cdef inline int _clip(int value, int min_val, int max_val) nogil:
     "Limits the value to bounds"
     if value < min_val:
         return min_val
@@ -76,6 +78,9 @@ cpdef inline int clip(int value, int min_val, int max_val) nogil:
         return max_val
     else:
         return value
+def clip(int value, int min_val, int max_val):
+    "Limits the value to bounds"
+    return _clip(value, min_val, max_val)
 
 
 cdef inline float _floor_min4(float a, float b, float c, float d) nogil:
@@ -119,7 +124,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
         P = ceil(start)
         dP = P - start
         if P > stop:  # start and stop are in the same unit
-            segment_area = calc_area(start, stop, slope, intercept)
+            segment_area = _calc_area(start, stop, slope, intercept)
             if segment_area != 0.0:
                 abs_area = fabs(segment_area)
                 dA = (stop - start)  # always positive
@@ -133,7 +138,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
                     h += 1
         else:
             if dP > 0:
-                segment_area = calc_area(start, P, slope, intercept)
+                segment_area = _calc_area(start, P, slope, intercept)
                 if segment_area != 0.0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -147,7 +152,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
                         h += 1
             # subsection P1->Pn
             for i in range((<int> floor(P)), (<int> floor(stop))):
-                segment_area = calc_area(i, i + 1, slope, intercept)
+                segment_area = _calc_area(i, i + 1, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -163,7 +168,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
             P = floor(stop)
             dP = stop - P
             if dP > 0:
-                segment_area = calc_area(P, stop, slope, intercept)
+                segment_area = _calc_area(P, stop, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -178,7 +183,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
     elif start > stop:  # negative contribution. Nota if start==stop: no contribution
         P = floor(start)
         if stop > P:  # start and stop are in the same unit
-            segment_area = calc_area(start, stop, slope, intercept)
+            segment_area = _calc_area(start, stop, slope, intercept)
             if segment_area != 0:
                 abs_area = fabs(segment_area)
                 # sign = segment_area / abs_area
@@ -194,7 +199,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
         else:
             dP = P - start
             if dP < 0:
-                segment_area = calc_area(start, P, slope, intercept)
+                segment_area = _calc_area(start, P, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -208,7 +213,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
                         h += 1
             # subsection P1->Pn
             for i in range((<int> start), (<int> ceil(stop)), -1):
-                segment_area = calc_area(i, i - 1, slope, intercept)
+                segment_area = _calc_area(i, i - 1, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -224,7 +229,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
             P = ceil(stop)
             dP = stop - P
             if dP < 0:
-                segment_area = calc_area(P, stop, slope, intercept)
+                segment_area = _calc_area(P, stop, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -349,10 +354,10 @@ def calc_size(floating[:, :, :, ::1] pos not None,
                 C1 = pos[i, j, 2, 1] - offset1
                 D0 = pos[i, j, 3, 0] - offset0
                 D1 = pos[i, j, 3, 1] - offset1
-                min0 = clip(<int> _floor_min4(A0, B0, C0, D0), 0, shape_out0)
-                min1 = clip(<int> _floor_min4(A1, B1, C1, D1), 0, shape_out1)
-                max0 = clip(<int> _ceil_max4(A0, B0, C0, D0) + 1, 0, shape_out0)
-                max1 = clip(<int> _ceil_max4(A1, B1, C1, D1) + 1, 0, shape_out1)
+                min0 = _clip(<int> _floor_min4(A0, B0, C0, D0), 0, shape_out0)
+                min1 = _clip(<int> _floor_min4(A1, B1, C1, D1), 0, shape_out1)
+                max0 = _clip(<int> _ceil_max4(A0, B0, C0, D0) + 1, 0, shape_out0)
+                max1 = _clip(<int> _ceil_max4(A1, B1, C1, D1) + 1, 0, shape_out1)
                 for k in range(min0, max0):
                     for l in range(min1, max1):
                         lut_size[k, l] += 1
