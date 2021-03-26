@@ -522,15 +522,6 @@ class OCL_Histogram1d(OpenclProcessing):
                 ev.wait()
                 return image
 
-            # DEBUG
-            image = numpy.empty(data.shape + (4,), dtype=numpy.float32)
-            ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output4"])
-            events.append(EventDescription("copy D->H image", ev))
-            if self.profile:
-                self.events += events
-            ev.wait()
-            print(image)
-
             if radial_range is not None:
                 radial_mini = numpy.float32(radial_range[0])
                 radial_maxi = numpy.float32(radial_range[1] * (1.0 + numpy.finfo(numpy.float32).eps))
