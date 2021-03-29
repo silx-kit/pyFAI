@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2021"
+__date__ = "29/03/2021"
 __status__ = "status"
 
 import os
@@ -171,8 +171,10 @@ def parse():
                        help="Noise level: n-sigma cannot be smaller than this value")
 
     group = parser.add_argument_group("Opencl setup options")
+    group.add_argument("--workgroup", type=int, default=None,
+                       help="Enforce the workgroup size for OpenCL kernel. Impacts only on the execution speed, not on the result.")
     group.add_argument("--device", nargs=2, type=int, default=None,
-                       help="definition of thee platform and device identifyer: 2 integers. Use `clinfo` to get a description of your system")
+                       help="definition of the platform and device identifier: 2 integers. Use `clinfo` to get a description of your system")
     group.add_argument("--device-type", type=str, default="all",
                        help="device type like `cpu` or `gpu` or `acc`. Can help to select the proper device.")
     try:
@@ -258,7 +260,7 @@ def process(options):
                         mask=mask,
                         ctx=ctx,
                         profile=options.profile,
-                        block_size=64)
+                        block_size=options.workgroup)
 
     logger.debug("Start sparsification")
     frames = []

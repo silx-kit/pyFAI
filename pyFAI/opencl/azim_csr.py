@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "23/03/2021"
+__date__ = "29/03/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -138,7 +138,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "dark_variance": None}
         platform = self.ctx.devices[0].platform.name.lower()
         if block_size is None:
-
             if "nvidia" in  platform:
                 block_size = 32
             elif "amd" in  platform:
@@ -147,6 +146,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 block_size = 128
             else:
                 block_size = self.BLOCK_SIZE
+            self.force_workgroup_size = False
+        else:
+            block_size = int(block_size)
+            self.force_workgroup_size = True
 
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
@@ -243,9 +246,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
         for kernel_name in self.kernels.__dict__:
             if kernel_name.startswith("_"):
                 continue
-            wg_max = min(self.BLOCK_SIZE, self.kernels.max_workgroup_size(kernel_name))
-            wg_min = min(self.BLOCK_SIZE, self.kernels.min_workgroup_size(kernel_name))
-            self.workgroup_size[kernel_name] = (wg_min, wg_max)
+            if self.force_workgroup_size:
+                self.workgroup_size[kernel_name] = (self.BLOCK_SIZE, self.BLOCK_SIZE)
+            else:
+                wg_max = min(self.BLOCK_SIZE, self.kernels.max_workgroup_size(kernel_name))
+                wg_min = min(self.BLOCK_SIZE, self.kernels.min_workgroup_size(kernel_name))
+                self.workgroup_size[kernel_name] = (wg_min, wg_max)
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
