@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2021"
+__date__ = "31/03/2021"
 __status__ = "development"
 
 import logging
@@ -88,6 +88,7 @@ class CSRIntegrator(object):
     def integrate(self,
                   signal,
                   variance=None,
+                  poissonian=None,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -101,6 +102,7 @@ class CSRIntegrator(object):
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
+        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model. 
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -128,16 +130,23 @@ class CSRIntegrator(object):
                        empty=self.empty,
                        split_result=4,
                        variance=variance,
-                       dtype=numpy.float32)
+                       dtype=numpy.float32,
+                       poissonian=bool(poissonian))
         prep.shape = numpy.prod(shape), -1
         # logger.warning("prep.shape %s lut_size %s, image_size %s, bins %s", prep.shape, self.lut_size, self.size, self.bins)
         res = numpy.empty((numpy.prod(self.bins), 4), dtype=numpy.float32)
         # logger.warning(self._csr.shape)
         res[:, 0] = self._csr.dot(prep[:, 0])
-        if variance is not None:
-            res[:, 1] = self._csr2.dot(prep[:, 1])
         res[:, 2] = self._csr.dot(prep[:, 2])
         res[:, 3] = self._csr.dot(prep[:, 3])
+        if variance is not None or poissonian:
+            res[:, 1] = self._csr2.dot(prep[:, 1])
+        elif poissonian is False:
+            # ask for azimuthal error model
+            avg = res[:, 0] / res[:, 2]
+            avg_ext = self._csr.T.dot(avg)
+            delta = (prep[:, 0] / prep[:, 2] - avg_ext) ** 2
+            res[:, 1] = self._csr.dot(delta)
         return res
 
 
@@ -196,6 +205,7 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
     def integrate(self,
                   signal,
                   variance=None,
+                  poissonian=None,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -209,6 +219,7 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
+        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model.
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -220,11 +231,12 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance 
         
         """
-        if variance is None:
+        if variance is None and poissonian is None:
             do_variance = False
         else:
             do_variance = True
-        trans = CSRIntegrator.integrate(self, signal, variance, dummy, delta_dummy,
+        trans = CSRIntegrator.integrate(self, signal, variance, poissonian,
+                                        dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         signal = trans[:, 0]
@@ -370,6 +382,7 @@ class CsrIntegrator2d(CSRIntegrator):
     def integrate(self,
                   signal,
                   variance=None,
+                  poissonian=False,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -382,6 +395,7 @@ class CsrIntegrator2d(CSRIntegrator):
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
+        :param poissonian: set to True to variance=max(signal,1), False will implement azimuthal variance
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -393,11 +407,11 @@ class CsrIntegrator2d(CSRIntegrator):
         :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
         
         """
-        if variance is None:
+        if variance is None and poissonian is None:
             do_variance = False
         else:
             do_variance = True
-        trans = CSRIntegrator.integrate(self, signal, variance, dummy, delta_dummy,
+        trans = CSRIntegrator.integrate(self, signal, variance, poissonian, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         trans.shape = self.bins + (-1,)
