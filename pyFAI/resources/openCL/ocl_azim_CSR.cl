@@ -271,14 +271,15 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
 
             // XX = XX + delta²/(w*W*(w+W))
             //delta = sum_signal_K - sum_norm_K*signal/norm
-            x = comp_prod(signal, 1.0f/norm);
-            delta = compensated_sum(sum_signal_K, - compensated_mul(omega_A, x));               
+//            x = comp_prod(signal, 1.0f/norm);
+            x = comp_prod(coef, signal);
+            delta = compensated_sum(compensated_mul(omega_B, sum_signal_K), - compensated_mul(omega_A, x));               
             delta2 = compensated_mul(delta, delta);
             omega3 = compensated_mul(sum_norm_K, compensated_mul(omega_A, omega_B));
             sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));
             
             // at the end as X_A is used in the variance XX_A
-            sum_signal_K = compensated_sum(sum_signal_K, comp_prod(coef, signal));
+            sum_signal_K = compensated_sum(sum_signal_K, x);
             accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
         }        
     }
