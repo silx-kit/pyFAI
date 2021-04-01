@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2021"
+__date__ = "31/03/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1157,7 +1157,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             has_flat = "provided"
 
-        poissonian = False
+        poissonian = None
         if variance is not None:
             assert variance.size == data.size
             do_variance = True
@@ -1172,6 +1172,8 @@ class AzimuthalIntegrator(Geometry):
                         variance = numpy.maximum(data, 1.0).astype(numpy.float32)
                     else:
                         variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
+            elif error_model.startswith("azim") and method.manage_variance:
+                poissonian = False
         else:
             do_variance = False
         # Prepare LUT if needed!
@@ -1243,6 +1245,7 @@ class AzimuthalIntegrator(Geometry):
                 integr = self.engines[method].engine
                 intpl = integr.integrate_ng(data,
                                             variance=variance,
+                                            poissonian=poissonian,
                                             dummy=dummy,
                                             delta_dummy=delta_dummy,
                                             dark=dark,
@@ -1327,31 +1330,24 @@ class AzimuthalIntegrator(Geometry):
 
                     else:
                         integr = self.engines[method].engine
+                kwargs = {"poissonian": None,
+                          "variance": variance}
                 if method.impl_lower == "opencl":
-                    ocl_kwargs = {"polarization_checksum": polarization_crc,
-                                  "solidangle_checksum": solidangle_crc,
-                                  "poissonian": None,
-                                  "variance": variance,
-                                  }
-                    if error_model:
-                        if error_model.startswith("poisson"):
-                            ocl_kwargs["poissonian"] = True
-                            ocl_kwargs["variance"] = None
-                        elif error_model.startswith("azim"):
-                            ocl_kwargs["poissonian"] = False
-                            ocl_kwargs["variance"] = None
-
-                else:
-                    # TODO: manage cython's CSR integrator #1486
-                    ocl_kwargs = {  # "poissonian": None,
-                                  "variance": variance,
-                                  }
+                    kwargs["polarization_checksum"] = polarization_crc
+                    kwargs["solidangle_checksum"] = solidangle_crc
+                if error_model:
+                    if error_model.startswith("poisson"):
+                        kwargs["poissonian"] = True
+                        kwargs["variance"] = None
+                    elif error_model.startswith("azim"):
+                        kwargs["poissonian"] = False
+                        kwargs["variance"] = None
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
                                             flat=flat, solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
-                                            **ocl_kwargs)
+                                            **kwargs)
             # This section is common to all 3 CSR implementations...
             if do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
