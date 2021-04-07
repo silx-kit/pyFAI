@@ -7,7 +7,7 @@
 
 Tutorials
 =========
- 
+
 Tutorials explain the Python interface of *pyFAI* and use the jupyter notebook
 interface, formerly known as ipython notebooks.
 The two first tutorials are an introduction to the usage of pyFAI from Python for
@@ -30,5 +30,6 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Inpainting/Inpainting
    ThickDetector/index
    Variance/Variance
+   Separation/index
    Ellipse/ellipse
    Soleil/index
