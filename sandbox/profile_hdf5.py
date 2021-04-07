@@ -37,11 +37,11 @@ import os
 import time
 import tempfile
 import numpy
-from pyFAI.third_party.argparse import ArgumentParser
+from argparse import ArgumentParser
 from pyFAI import io
 import logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Bench_hdf5")
-logger.setLevel(logging.INFO)
 
 def parse():
     """
