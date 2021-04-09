@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/05/2019"
+__date__ = "21/01/2021"
 
 import logging
 import numpy
@@ -58,7 +56,6 @@ from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
 from pyFAI.io import ponifile
-
 
 _logger = logging.getLogger(__name__)
 
@@ -203,7 +200,7 @@ class IntegrationProcess(object):
             method2d = methods[0].method
 
         try:
-            self.__result1d = ai.integrate1d(
+            self.__result1d = ai.integrate1d_ng(
                 method=method1d,
                 data=self.__image,
                 npt=self.__nPointsRadial,
@@ -676,13 +673,13 @@ class IntegrationPlot(qt.QFrame):
     def __createPlots(self, parent):
         margin = 0.02
         plot1d = silx.gui.plot.PlotWidget(parent)
-        plot1d.setGraphXLabel("Radial")
+        plot1d.setGraphXLabel("Radial unit")
         plot1d.setGraphYLabel("Intensity")
         plot1d.setGraphGrid(False)
         plot1d.setDataMargins(margin, margin, margin, margin)
         plot2d = silx.gui.plot.PlotWidget(parent)
-        plot2d.setGraphXLabel("Radial")
-        plot2d.setGraphYLabel("Azimuthal")
+        plot2d.setGraphXLabel("Radial unit")
+        plot2d.setGraphYLabel(r"Azimuthal angle $\chi$ (°)")
         plot2d.sigInteractiveModeChanged.connect(self.__syncModeToPlot1d)
         plot2d.setDataMargins(margin, margin, margin, margin)
 
@@ -775,16 +772,14 @@ class IntegrationPlot(qt.QFrame):
         self.__availableRings = integrationProcess.rings()
         self.__updateRings()
 
-        # FIXME set axes units
         result1d = integrationProcess.result1d()
-        self.__plot1d.addHistogram(
-            legend="result1d",
-            align="center",
-            edges=result1d.radial,
-            color="blue",
-            histogram=result1d.intensity,
-            resetzoom=False)
-
+        self.__plot1d.addHistogram(legend="result1d",
+                                    align="center",
+                                    edges=result1d.radial,
+                                    color="blue",
+                                    histogram=result1d.intensity,
+                                    resetzoom=False)
+        self.__plot1d.setGraphXLabel(result1d.unit.label)
         self.__setResult(result1d)
 
         def compute_location(result):
@@ -838,6 +833,7 @@ class IntegrationPlot(qt.QFrame):
             scale=(scaleX, scaleY),
             colormap=colormap,
             resetzoom=False)
+        self.__plot2d.setGraphXLabel(result2d.unit.label)
 
         self.__radialUnit = integrationProcess.radialUnit()
         self.__wavelength = integrationProcess.wavelength()
@@ -873,11 +869,10 @@ class IntegrationPlot(qt.QFrame):
         if not result:
             return
         filename = dialog.selectedFiles()[0]
-        # TODO: it would be good to store the units
         silx.io.save1D(filename,
                        x=self.__result1d.radial,
                        y=self.__result1d.intensity,
-                       xlabel="radial",
+                       xlabel=str(self.__result1d.unit),
                        ylabels=["intensity"],
                        filetype="csv",
                        autoheader=True)

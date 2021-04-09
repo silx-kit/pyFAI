@@ -26,13 +26,11 @@
 # THE SOFTWARE.
 """Bunch of useful decorators"""
 
-from __future__ import absolute_import, print_function, division
-
 __authors__ = ["Jerome Kieffer", "H. Payno", "P. Knobel", "V. Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2018"
+__date__ = "08/01/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -41,7 +39,6 @@ import time
 import functools
 import logging
 import traceback
-import six
 from .. import _version
 
 timelog = logging.getLogger("pyFAI.timeit")
@@ -70,7 +67,9 @@ def deprecated(func=None, reason=None, replacement=None, since_version=None,
     :param Union[int,str] deprecated_since: If provided, log it as warning
         since a version of the library, else log it as debug
     """
+
     def decorator(func):
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             name = func.func_name if sys.version_info[0] < 3 else func.__name__
@@ -84,7 +83,9 @@ def deprecated(func=None, reason=None, replacement=None, since_version=None,
                                skip_backtrace_count=skip_backtrace_count,
                                deprecated_since=deprecated_since)
             return func(*args, **kwargs)
+
         return wrapper
+
     if func is not None:
         return decorator(func)
     return decorator
@@ -137,7 +138,7 @@ def deprecated_warning(type_, name, reason=None, replacement=None,
             deprecache.add(data)
 
     if deprecated_since is not None:
-        if isinstance(deprecated_since, six.string_types):
+        if isinstance(deprecated_since, (str,)):
             if deprecated_since not in _CACHE_VERSIONS:
                 hexversion = _version.calc_hexversion(string=deprecated_since)
                 _CACHE_VERSIONS[deprecated_since] = hexversion
@@ -155,15 +156,17 @@ def deprecated_warning(type_, name, reason=None, replacement=None,
 
 
 def timeit(func):
+
     def wrapper(*arg, **kw):
         '''This is the docstring of timeit:
         a decorator that logs the execution time'''
-        t1 = time.time()
+        t1 = time.perf_counter()
         res = func(*arg, **kw)
-        t2 = time.time()
+        t2 = time.perf_counter()
         name = func.func_name if sys.version_info[0] < 3 else func.__name__
         timelog.warning("%s took %.3fs", name, t2 - t1)
         return res
+
     wrapper.__name__ = func.__name__
     wrapper.__doc__ = func.__doc__
     return wrapper

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#cython: embedsignature=True, language_level=3
+#cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping:
 ##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
@@ -32,7 +32,7 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "30/04/2020"
+__date__ = "10/02/2021"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 

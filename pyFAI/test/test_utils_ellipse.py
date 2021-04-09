@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,16 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
-from __future__ import division, print_function, absolute_import
-
 """Test suite for math utilities library"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "21/01/2021"
 
 import unittest
 import numpy
@@ -61,7 +58,7 @@ class TestEllipse(unittest.TestCase):
         self.assertAlmostEqual(ellipse.center_2, 100)
         self.assertAlmostEqual(ellipse.half_long_axis, 20)
         self.assertAlmostEqual(ellipse.half_short_axis, 10)
-        self.assertAlmostEqual(modulo(ellipse.angle), 0)
+        self.assertAlmostEqual(ellipse.angle % numpy.pi, numpy.pi / 2.0)
 
     def test_ellipse2(self):
         angles = numpy.arange(0, numpy.pi * 2, 0.2)

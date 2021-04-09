@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/05/2019"
+__date__ = "16/10/2020"
 
 import logging
 from silx.gui import qt
@@ -53,6 +51,7 @@ class DoubleValidator(qt.QDoubleValidator):
     replace the previous one. In this way, it became convenient to fix the
     location of the dot, without complex manual manipulation of the text.
     """
+
     def __init__(self, parent=None):
         qt.QDoubleValidator.__init__(self, parent)
         locale = qt.QLocale(qt.QLocale.C)
@@ -122,6 +121,7 @@ class AdvancedDoubleValidator(DoubleValidator):
     Validate double values and provides features to allow or disable other
     things.
     """
+
     def __init__(self, parent=None):
         super(AdvancedDoubleValidator, self).__init__(parent=parent)
         self.__allowEmpty = False

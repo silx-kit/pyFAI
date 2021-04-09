@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2020"
+__date__ = "08/01/2021"
 __satus__ = "production"
 
 import sys
@@ -42,7 +42,6 @@ import numpy
 import os.path
 import collections
 import contextlib
-import six
 from argparse import ArgumentParser
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -347,7 +346,7 @@ class DataSource(object):
             return False
 
         item = self._items[0]
-        if isinstance(item, six.string_types):
+        if isinstance(item, (str,)):
             with fabio.open(item) as fabio_image:
                 multiframe = fabio_image.nframes > 1
         elif isinstance(item, fabio.fabioimage.FabioImage):
@@ -368,7 +367,7 @@ class DataSource(object):
         return count > 0
 
     def _iter_item_frames(self, iitem, start_id, item):
-        if isinstance(item, six.string_types):
+        if isinstance(item, (str,)):
             with self._statistics.time_reading():
                 fabio_image = fabio.open(item)
             filename = fabio_image.filename
@@ -530,17 +529,17 @@ class Statistics(object):
         self._execution = 0
 
     def execution_started(self):
-        self._start_time = time.time()
+        self._start_time = time.perf_counter()
 
     def execution_finished(self):
-        t = time.time()
+        t = time.perf_counter()
         self._execution = t - self._start_time
 
     @contextlib.contextmanager
     def time_processing(self):
-        t1 = time.time()
+        t1 = time.perf_counter()
         yield
-        t2 = time.time()
+        t2 = time.perf_counter()
         processing = t2 - t1
         if self._processing == 0:
             self._first_processing = processing
@@ -549,9 +548,9 @@ class Statistics(object):
 
     @contextlib.contextmanager
     def time_reading(self):
-        t1 = time.time()
+        t1 = time.perf_counter()
         yield
-        t2 = time.time()
+        t2 = time.perf_counter()
         reading = t2 - t1
         self._reading += reading
 
@@ -625,7 +624,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     # Skip invalide data
     source = DataSource(statistics=statistics)
     for item in input_data:
-        if isinstance(item, six.string_types):
+        if isinstance(item, (str,)):
             if os.path.isfile(item):
                 source.append(item)
             else:

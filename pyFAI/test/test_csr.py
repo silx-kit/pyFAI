@@ -30,9 +30,6 @@
 FIXME : make some tests that the functions do what is expected
 """
 
-from __future__ import absolute_import, division, print_function
-
-
 import unittest
 import numpy
 import logging
@@ -102,9 +99,10 @@ class TestCSR(utilstest.ParametricTestCase):
 
     def test_1d_splitbbox(self):
         self.ai.reset()
-        tth, img = self.ai.integrate1d(self.data, self.N, unit="2th_deg", method="splitbbox")
-        tth_csr, img_csr = self.ai.integrate1d(self.data, self.N, unit="2th_deg", method="csr")
-        self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
+        tth, img = self.ai.integrate1d_ng(self.data, self.N, unit="2th_deg", method=("bbox", "histogram", "cython"))
+        res = self.ai.integrate1d_ng(self.data, self.N, unit="2th_deg", method=("bbox", "csr", "cython"))
+        tth_csr, img_csr = res
+        self.assertTrue(numpy.allclose(tth, tth_csr), "2Th are the same")
         error = (img - img_csr)
         logger.debug("ref: %s; obt: %s", img.shape, img_csr.shape)
         logger.debug("error mean: %s, std: %s", error.mean(), error.std())
@@ -112,7 +110,7 @@ class TestCSR(utilstest.ParametricTestCase):
         self.assertLess(error.std(), 3, "img are almost the same")
 
         # Validate the scipy integrator ....
-        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        engine = self.ai.engines[res.method].engine
         scipy_engine = CsrIntegrator1d(self.data.size,
                                        lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,
@@ -128,9 +126,9 @@ class TestCSR(utilstest.ParametricTestCase):
 
     def test_1d_nosplit(self):
         self.ai.reset()
-        result_histo = self.ai.integrate1d(self.data, self.N, unit="2th_deg", method="histogram")
-        result_nosplit = self.ai.integrate1d(self.data, self.N, unit="2th_deg", method="nosplit_csr")
-        self.assertTrue(numpy.allclose(result_histo.radial, result_nosplit.radial), " 2Th are the same")
+        result_histo = self.ai.integrate1d_ng(self.data, self.N, unit="2th_deg", method=("no", "histogram", "cython"))
+        result_nosplit = self.ai.integrate1d_ng(self.data, self.N, unit="2th_deg", method=("no", "csr", "cython"))
+        self.assertTrue(numpy.allclose(result_histo.radial, result_nosplit.radial), "2Th are the same")
         error = (result_histo.intensity - result_nosplit.intensity)
         logger.debug("ref: %s; obt: %s", result_histo.intensity.shape, result_nosplit.intensity.shape)
         logger.debug("error mean: %s, std: %s", error.mean(), error.std())
@@ -138,7 +136,7 @@ class TestCSR(utilstest.ParametricTestCase):
         self.assertLess(error.std(), 3, "img are almost the same")
 
         # Validate the scipy integrator ....
-        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        engine = self.ai.engines[result_nosplit.method].engine
         scipy_engine = CsrIntegrator1d(self.data.size,
                                        lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,

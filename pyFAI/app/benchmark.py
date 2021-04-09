@@ -5,7 +5,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2012-2016-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #
@@ -32,11 +32,14 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "20/01/2021"
 __status__ = "development"
 
 import logging
-logging.basicConfig(level=logging.INFO)
+try:
+    logging.basicConfig(level=logging.WARNING, force=True)
+except ValueError:
+    logging.basicConfig(level=logging.WARNING)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
 try:
@@ -49,8 +52,6 @@ try:
     rconsole.spawn_server()
 except ImportError:
     logger.debug("No socket opened for debugging. Please install rfoo")
-
-from pyFAI.third_party import six
 import pyFAI.benchmark
 
 
@@ -116,7 +117,7 @@ def main():
 
     if pyFAI.benchmark.pylab is not None:
         pyFAI.benchmark.pylab.ion()
-    six.moves.input("Enter to quit")
+    input("Enter to quit")
 
 
 if __name__ == "__main__":

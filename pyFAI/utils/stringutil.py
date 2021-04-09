@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
-from __future__ import absolute_import, print_function, division
-
 """Module containing enhanced string formatters."""
 
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "22/03/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import string
+import math
 
 
 class SafeFormatter(string.Formatter):
@@ -102,24 +100,27 @@ def to_scientific_unicode(value, digits=3):
     :param float value: Value to convert to displayable string
     :param int digits: Number of digits expected (`3` means `1.000`).
     """
-    value = ("%%0.%de" % digits) % value
-    value, power10 = value.split("e")
-    power = ""
-    for p in power10:
-        if p == "-":
-            power += u"\u207B"
-        elif p == "+":
-            power += u"\u207A"
-        elif p == "1":
-            power += u"\u00B9"
-        elif p == "2":
-            power += u"\u00B2"
-        elif p == "3":
-            power += u"\u00B3"
-        else:
-            v = ord(p) - ord("0")
-            power += chr(0x2070 + v)
-    value = value + u"\u00B710" + power
+    if math.isfinite(value):
+        value = ("%%0.%de" % digits) % value
+        value, power10 = value.split("e")
+        power = ""
+        for p in power10:
+            if p == "-":
+                power += u"\u207B"
+            elif p == "+":
+                power += u"\u207A"
+            elif p == "1":
+                power += u"\u00B9"
+            elif p == "2":
+                power += u"\u00B2"
+            elif p == "3":
+                power += u"\u00B3"
+            else:
+                v = ord(p) - ord("0")
+                power += chr(0x2070 + v)
+        value = value + u"\u00B710" + power
+    else:
+        value = str(value)
     return value
 
 

@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/07/2020"
+__date__ = "31/03/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -37,7 +37,6 @@ __license__ = "MIT"
 import cython
 from cython.parallel import prange
 import numpy
-cimport numpy as cnumpy
 
 from .preproc import preproc
 from ..containers import Integrate1dtpl
@@ -247,6 +246,7 @@ cdef class CsrIntegrator(object):
     def integrate_ng(self,
                      weights,
                      variance=None,
+                     poissonian=None,
                      dummy=None,
                      delta_dummy=None,
                      dark=None,
@@ -264,7 +264,8 @@ cdef class CsrIntegrator(object):
         :param weights: input image
         :type weights: ndarray
         :param variance: the variance associate to the image
-        :type variance: ndarray 
+        :type variance: ndarray
+        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model. 
         :param dummy: value for dead pixels (optional)
         :type dummy: float
         :param delta_dummy: precision for dead-pixel value in dynamic masking
@@ -285,8 +286,9 @@ cdef class CsrIntegrator(object):
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
         cdef:
-            cnumpy.int32_t i, j, idx = 0, bins = self.bins, size = self.size
-            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
+            int32_t i, j, idx = 0, bins = self.bins, size = self.size
+            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0
+            acc_t delta, x, omega_A, omega_B, omega3
             data_t empty
             acc_t[::1] sum_sig = numpy.empty(bins, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(bins, dtype=acc_d)
@@ -295,7 +297,7 @@ cdef class CsrIntegrator(object):
             data_t[::1] merged = numpy.empty(bins, dtype=data_d)
             data_t[::1] error = numpy.empty(bins, dtype=data_d)
             data_t[:, ::1] preproc4
-            
+            bint do_azimuthal_variance = poissonian is False
         assert weights.size == size, "weights size"
         empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
@@ -312,7 +314,8 @@ cdef class CsrIntegrator(object):
                            empty=self.empty,
                            split_result=4,
                            variance=variance,
-                           dtype=data_d)
+                           dtype=data_d,
+                           poissonian= poissonian is True)
 
         for i in prange(bins, nogil=True, schedule="guided"):
             acc_sig = 0.0
@@ -320,20 +323,39 @@ cdef class CsrIntegrator(object):
             acc_norm = 0.0
             acc_count = 0.0
             for j in range(self._indptr[i], self._indptr[i + 1]):
-                idx = self._indices[j]
                 coef = self._data[j]
                 if coef == 0.0:
                     continue
-                acc_sig = acc_sig + coef * preproc4[idx, 0]
-                acc_var = acc_var + coef * coef * preproc4[idx, 1]
-                acc_norm = acc_norm + coef * preproc4[idx, 2] 
-                acc_count = acc_count + coef * preproc4[idx, 3]
+                idx = self._indices[j]
+                
+                if do_azimuthal_variance:
+                    if acc_count == 0.0:
+                        acc_sig = coef * preproc4[idx, 0]
+                        #Variance remains at 0
+                        acc_norm = coef * preproc4[idx, 2] 
+                        acc_count = coef * preproc4[idx, 3]
+                    else:
+                        # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
+                        omega_A = acc_norm
+                        omega_B = coef * preproc4[idx, 2]
+                        acc_norm = omega_A + omega_B
+                        omega3 = acc_norm * omega_A * omega_B
+                        x = coef * preproc4[idx, 0]
+                        delta = omega_B*acc_sig - omega_A*x
+                        acc_var = acc_var +  delta*delta/omega3
+                        acc_sig = acc_sig + x
+                        acc_count = acc_count + coef * preproc4[idx, 3]
+                else:
+                    acc_sig = acc_sig + coef * preproc4[idx, 0]
+                    acc_var = acc_var + coef * coef * preproc4[idx, 1]
+                    acc_norm = acc_norm + coef * preproc4[idx, 2] 
+                    acc_count = acc_count + coef * preproc4[idx, 3]
 
             sum_sig[i] = acc_sig
             sum_var[i] = acc_var
             sum_norm[i] = acc_norm
             sum_count[i] = acc_count
-            if acc_count > epsilon:
+            if acc_count > 0.0:
                 merged[i] = acc_sig / acc_norm
                 error[i] = sqrt(acc_var) / acc_norm
             else:

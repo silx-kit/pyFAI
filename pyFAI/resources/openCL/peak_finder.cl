@@ -3,11 +3,11 @@
  *            OpenCL Kernels  
  *
  *
- *   Copyright (C) 2012-2019 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2021 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 04/12/2019
+ *   Last revision: 15/03/2021
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,37 +40,42 @@
  * 
  * For every pixel in the preproc array, the value for the background level 
  * and the std are interpolated.
- * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are maked as peak-pixel, 
+ * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are marked as peak-pixel, 
  * counted and their index registered in highidx
  * 
  * The kernel uses local memory for keeping track of peak count and positions 
  */
-kernel void find_peaks(       global  float4 *preproc4, //both input and output
-                        const global  float  *radius2d,
-                        const global  float  *radius1d,
-                        const global  float  *average1d,
-                        const global  float  *std1d,
-                        const         float   radius_min,
-                        const         float   radius_max,
-                        const         float   cutoff,
-                        const         float   noise,
-                              global  int    *counter,
-                              global  int    *highidx){
+kernel void find_peaks(       global  float4 *preproc4, // both input and output, pixel wise array of (signal, variance, norm, cnt) 
+                        const global  float  *radius2d, // contains the distance to the center for each pixel
+                        const global  float  *radius1d, // Radial bin postion 
+                        const global  float  *average1d,// average intensity in the bin
+                        const global  float  *std1d,    // associated deviation
+                        const         float   radius_min,// minimum radius
+                        const         float   radius_max,// maximum radius 
+                        const         float   cutoff,    // pick pixel with I>avg+min(cutoff*std, noise)
+                        const         float   noise,     // Noise level of the measurement
+                              global  int    *counter,   // Counter of the number of peaks found
+                              global  int    *highidx){  // indexes of the pixels of high intensity
     int tid = get_local_id(0);
-    // all thread in this WG share this local counter, upgraded at the end
-    local int local_counter[1];
-    local int to_upgrade[1];
-    local int local_highidx[WORKGROUP_SIZE];
-    local_highidx[tid] = 0;
-    if (tid == 0)
-        local_counter[0] = 0;
-    barrier(CLK_LOCAL_MEM_FENCE);
-    
     int gid = get_global_id(0);
+    int wg = get_local_size(0);
+    // all thread in this WG share this local counter, upgraded at the end
+    volatile local int local_counter[2]; //first element MUST be set to zero
+    volatile local int local_highidx[WORKGROUP_SIZE]; //This array does not deserve to be initialized
+    // Ensure wg <= WORKGROUP_SIZE
+    
+    // local_highidx[tid] = 0; 
+    
+    // Only the first elements must be initialized
+    if (tid<2){
+    	local_counter[tid] = 0;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);    
+    
     if (gid<NIMAGE) {
         float radius = radius2d[gid];
         float4 value = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-        if ((radius>=radius_min) && (radius<radius_max)) {
+        if (isfinite(radius) && (radius>=radius_min) && (radius<radius_max)) {
             value = preproc4[gid];
             if (value.s2>0.0) {
                 value.s1 = value.s0 / value.s2; 
@@ -79,26 +84,33 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
                 value.s0 = 0.0f;
                 value.s1 = 0.0f;
             } // empty pixel
-            float pos = (radius - radius1d[0]) /  (radius1d[1] - radius1d[0]);
+            float step = radius1d[1] - radius1d[0];
+            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)NBINS);
             int index = convert_int_rtz(pos);
             float delta = pos - index;
-            value.s2 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // bilinear interpolation: averge
-            value.s3 = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // bilinear interpolation: std
+            if (index + 1 < NBINS) {
+                value.s2 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // linear interpolation: averge
+                value.s3 = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // linear interpolation: std            	
+            }
+            else { //Normal bin, using linear interpolation
+            	value.s2 = average1d[index];
+				value.s3 = std1d[index];
+            }//Upper most bin: no interpolation
             if ((value.s1 - value.s2) > max(noise, cutoff*value.s3)){
                 local_highidx[atomic_inc(local_counter)] = gid;
             }//pixel is considered of high intensity: registering it. 
         } //check radius range
         preproc4[gid] = value;
     } //pixel in image
-     
+    
     //Update global memory counter
     barrier(CLK_LOCAL_MEM_FENCE);
     if (local_counter[0]){
         if (tid == 0) 
-            to_upgrade[0] = atomic_add(counter, local_counter[0]);
+            local_counter[1] = atomic_add(counter, local_counter[0]);
         barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid<to_upgrade[0])
-            highidx[tid + to_upgrade[0]] = local_highidx[tid];
+        if (tid<local_counter[0])
+            highidx[tid +local_counter[1]] = local_highidx[tid];
     } // end update global memory
 
 } //end kernel find_peaks
@@ -107,6 +119,93 @@ kernel void find_peaks(       global  float4 *preproc4, //both input and output
 static float _calc_intensity(float4 value){
 	return value.s1 - value.s2;
 }
+
+// A simple kernel to copy the intensities of the peak
+
+kernel void copy_peak(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global float *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = preprocessed[peak_position[tid]].s0;
+    }
+}
+
+kernel void copy_peak_uint8(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global unsigned char *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (unsigned char)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_int8(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global char *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (char)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_uint16(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global unsigned short *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (unsigned short)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_int16(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global short *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (short)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_uint32(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global unsigned int *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (unsigned int)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
+kernel void copy_peak_int32(global int *peak_position,
+                      global int *counter,
+                      global float4 *preprocessed,
+                      global int *peak_intensity){
+    int cnt, tid;
+    tid = get_global_id(0);    
+    cnt = counter[0];
+    if (tid<cnt){
+        peak_intensity[tid] = (int)(preprocessed[peak_position[tid]].s0+0.5f);
+    }
+}
+
 
 /* this kernel takes the list of high-pixels, searches for the local maximum.
  * 
@@ -133,8 +232,8 @@ kernel void seach_maximum(       global  float4 *preproc4, //both input and outp
 			int x, y, where, there;
 			float4 value4 = preproc4[here];
 			float value = _calc_intensity(value4);
-			int where = 0; // where is left at zero if we are on a local maximum
-			
+			where = 0; // where is left at zero if we are on a local maximum
+			//TODO: finish
 		}
 	}
 	
@@ -142,5 +241,6 @@ kernel void seach_maximum(       global  float4 *preproc4, //both input and outp
 
 /* this kernel takes an images 
 kernel void peak_dilation(){
-	
+	TODO
 }
+*/

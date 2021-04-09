@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 10/03/2020
+:Date: 21/01/2021
 :Keywords: Tutorials
 :Target: Advanced users tutorials using jupyter notebooks
 
@@ -7,7 +7,7 @@
 
 Tutorials
 =========
- 
+
 Tutorials explain the Python interface of *pyFAI* and use the jupyter notebook
 interface, formerly known as ipython notebooks.
 The two first tutorials are an introduction to the usage of pyFAI from Python for
@@ -22,12 +22,14 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Geometry/geometry
    Detector/detector
    Calibrant/index
+   Recalib/Recalib_notebook
+   Ellipse/ellipse
    LogScale/Guinier
    multi-geometry
-   MakeCalibrant/
    Goniometer/index
    Inpainting/Inpainting
    ThickDetector/index
    Variance/Variance
+   Separation/index
    Ellipse/ellipse
    Soleil/index

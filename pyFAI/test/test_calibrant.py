@@ -28,13 +28,11 @@
 
 """Test suites for calibrants"""
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2019"
+__date__ = "16/10/2020"
 
 import unittest
 import logging
@@ -52,6 +50,7 @@ class TestCalibrant(unittest.TestCase):
     """
     Test calibrant installation and loading
     """
+
     def test_factory(self):
         # by default we provide 11 calibrants
         count = len(CALIBRANT_FACTORY)
@@ -181,6 +180,7 @@ class TestCell(unittest.TestCase):
     """
     Test generation of a calibrant from a cell
     """
+
     def test_class(self):
         c = Cell()
         self.assertAlmostEqual(c.volume, 1.0, msg="Volume of triclinic 1,1,1,90,90,90 == 1.0, got %s" % c.volume)

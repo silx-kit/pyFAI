@@ -28,14 +28,11 @@
 
 "Test suite for worker"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/10/2019"
-
+__date__ = "16/10/2020"
 
 import unittest
 import logging
@@ -48,7 +45,6 @@ from silx.io.url import DataUrl
 
 from ..io import image as image_mdl
 from . import utilstest
-
 
 logger = logging.getLogger(__name__)
 

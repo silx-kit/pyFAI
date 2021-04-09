@@ -82,7 +82,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/07/2020"
+__date__ = "14/01/2021"
 __status__ = "development"
 
 import threading
@@ -94,7 +94,6 @@ from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
-from .third_party import six
 from . import average
 from . import method_registry
 from .azimuthalIntegrator import AzimuthalIntegrator
@@ -110,7 +109,7 @@ except ImportError as err:
     USE_NUMEXPR = False
 else:
     USE_NUMEXPR = True
-    
+
 try:
     from .ext.preproc import preproc
 except ImportError as err:
@@ -148,22 +147,10 @@ def _init_ai(ai, config, consume_keys=False, read_maps=True):
     if not consume_keys:
         config = dict(config)
 
-    # Geometry
-    for key in ("dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
-        value = config.pop(key, None)
-        if value is not None:
-            ai.__setattr__(key, value)
-    wavelength = config.pop("wavelength", None)
-    if wavelength:
-        if wavelength <= 0 or wavelength > 1e-6:
-            logger.warning("Wavelength is in meter... unlikely value %s", wavelength)
-        ai.wavelength = wavelength
-
-    # Detector
-    reader = integration_config.ConfigurationReader(config)
-    detector = reader.pop_detector()
-    if detector is not None:
-        ai.detector = detector
+#   #This sets only what is part of the poni-file
+    config_reader = integration_config.ConfigurationReader(config)
+    poni = config_reader.pop_ponifile()
+    ai._init_from_poni(poni)
 
     value = config.pop("chi_discontinuity_at_0", False)
     if value:
@@ -203,7 +190,7 @@ def _normalize_filenames(filenames):
         return []
     if isinstance(filenames, list):
         return filenames
-    if isinstance(filenames, six.string_types):
+    if isinstance(filenames, (str,)):
         # It's a single filename
         return [filenames]
     raise TypeError("Unsupported type %s for a list of filenames" % type(filenames))
@@ -340,18 +327,8 @@ class Worker(object):
         if self.do_2D():
             kwarg["npt_rad"] = self.nbpt_rad
             kwarg["npt_azim"] = self.nbpt_azim
-            # if "filename" in kwarg:
-            #    if self.extension:
-            #        kwarg["filename"] += self.extension
-            #    else:
-            #        kwarg["filename"] += ".azim"
         else:
             kwarg["npt"] = self.nbpt_rad
-            # if "filename" in kwarg:
-            #    if self.extension:
-            #        kwarg["filename"] += self.extension
-            #    else:
-            #        kwarg["filename"] += ".xy"
         kwarg["error_model"] = self.error_model
 
         if self.radial_range is not None:
@@ -370,7 +347,7 @@ class Worker(object):
                 if variance is not None:
                     error = integrated_result.sigma
             else:
-                integrated_result = self.ai.integrate1d(**kwarg)
+                integrated_result = self.ai.integrate1d_ng(**kwarg)
                 self.radial = integrated_result.radial
                 self.azimuthal = None
                 result = numpy.vstack(integrated_result).T
@@ -567,20 +544,20 @@ class Worker(object):
         for key in ["dist", "poni1", "poni2", "rot1", "rot3", "rot2", "pixel1", "pixel2", "splineFile", "wavelength"]:
             try:
                 config[key] = self.ai.__getattribute__(key)
-            except:
+            except Exception:
                 pass
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "dummy", "delta_dummy",
                     "correct_solid_angle", "dark_current_image", "flat_field_image",
                     "mask_image", "do_poisson", "shape", "method"]:
             try:
                 config[key] = self.__getattribute__(key)
-            except:
+            except Exception:
                 pass
 
         for key in ["azimuth_range", "radial_range"]:
             try:
                 value = self.__getattribute__(key)
-            except:
+            except Exception:
                 pass
             else:
                 if value is not None:
@@ -644,7 +621,7 @@ class Worker(object):
             method = method_registry.Method(dim, "*", "*", "*", target=None)
         elif isinstance(method, method_registry.Method):
             method = method.fixed(dim=dim)
-        elif isinstance(method, six.string_types):
+        elif isinstance(method, (str,)):
             method = method_registry.Method.parsed(method)
             method = method.fixed(dim=dim)
         elif isinstance(method, (list, tuple)):
@@ -787,18 +764,19 @@ class DistortionWorker(object):
 
         if mask is None:
             self.mask = False
+            mask = numpy.zeros(detector.shape, dtype=bool)
         elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
-            self.mask = (mask < 0)
+            mask = self.mask = (mask < 0)
         else:
-            self.mask = mask.astype(bool)
+            mask = self.mask = mask.astype(bool)
 
         self.dummy = dummy
         self.delta_dummy = delta_dummy
 
         if detector is not None:
             self.distortion = Distortion(detector, method=method, device=device,
-                                     mask=self.mask, empty=self.dummy or 0)
-            self.distortion.reset(prepare=True) # enfoce initization
+                                     mask=mask, empty=self.dummy or 0)
+            self.distortion.reset(prepare=True)  # enfoce initization
         else:
             self.distortion = None
 
@@ -837,9 +815,9 @@ class DistortionWorker(object):
                                 normalization_factor=normalization_factor,
                                 empty=None)
             if variance is not None:
-                pp_signal = proc_data[...,0]
-                pp_variance = proc_data[...,1]
-                pp_normalisation = proc_data[...,2]
+                pp_signal = proc_data[..., 0]
+                pp_variance = proc_data[..., 1]
+                pp_normalisation = proc_data[..., 2]
                 if numexpr is None:
                     # Cheap, muthithreaded way:
                     res_signal = numexpr.evaluate("where(pp_normalisation==0.0, 0.0, pp_signal / pp_normalisation)")
@@ -848,7 +826,7 @@ class DistortionWorker(object):
                     # Take the numpy road:
                     res_signal = numpy.zeros_like(pp_signal)
                     res_error = numpy.zeros_like(pp_signal)
-                    msk = numpy.where(pp_normalisation!=0)
+                    msk = numpy.where(pp_normalisation != 0)
                     res_signal[msk] = pp_signal[msk] / pp_normalisation[msk]
                     res_error[msk] = numpy.sqrt(pp_variance[msk]) / abs(pp_normalisation[msk])
                 return res_signal, res_error

@@ -32,14 +32,11 @@ Please refer to their respective bug number
 https://github.com/silx-kit/pyFAI/issues
 """
 
-
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2019"
+__date__ = "19/03/2021"
 
 import sys
 import os
@@ -52,6 +49,7 @@ logger = logging.getLogger(__name__)
 import fabio
 from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..calibrant import get_calibrant
 from .. import detectors
 from .. import units
 from math import pi
@@ -117,13 +115,14 @@ Wavelength: 7e-11
         logger.debug(ai.mask.shape)
         logger.debug(ai.detector.pixel1)
         logger.debug(ai.detector.pixel2)
-        ai.integrate1d(self.data, 2000)
+        ai.integrate1d_ng(self.data, 2000)
 
 
 class TestBug211(unittest.TestCase):
     """
     Check the quantile filter in pyFAI-average
     """
+
     def setUp(self):
         shape = (100, 100)
         dtype = numpy.float32
@@ -185,6 +184,7 @@ class TestBug211(unittest.TestCase):
 
 class TestBugRegression(unittest.TestCase):
     "just a bunch of simple tests"
+
     def test_bug_232(self):
         """
         Check the copy and deepcopy methods of Azimuthal integrator
@@ -192,7 +192,7 @@ class TestBugRegression(unittest.TestCase):
         det = detectors.ImXPadS10()
         ai = AzimuthalIntegrator(dist=1, detector=det)
         data = numpy.random.random(det.shape)
-        _result = ai.integrate1d(data, 100, unit="r_mm")
+        _result = ai.integrate1d_ng(data, 100, unit="r_mm")
         import copy
         ai2 = copy.copy(ai)
         self.assertNotEqual(id(ai), id(ai2), "copy instances are different")
@@ -212,10 +212,10 @@ class TestBugRegression(unittest.TestCase):
         wl1 = 1e-10
         wl2 = 2e-10
         ai.wavelength = wl1
-        q1, i1 = ai.integrate1d(data, 1000)
+        q1, i1 = ai.integrate1d_ng(data, 1000)
         # ai.reset()
         ai.wavelength = wl2
-        q2, i2 = ai.integrate1d(data, 1000)
+        q2, i2 = ai.integrate1d_ng(data, 1000)
         dq = (abs(q1 - q2).max())
         _di = (abs(i1 - i2).max())
         # print(dq)
@@ -308,7 +308,7 @@ class TestBugRegression(unittest.TestCase):
             ai = AzimuthalIntegrator(0.1, *poni, detector=detector)
             chi_pi_center = ai.chiArray()
             logger.debug("disc @pi center: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_center.min(), chi_pi_center.max())
-            chi_pi_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1, :, 1]
+            chi_pi_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1,:, 1]
             logger.debug("disc @pi corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_corner.min(), chi_pi_corner.max())
 
             self.assertAlmostEquals(chi_pi_center.min(), chi_range[0][0], msg="chi_pi_center.min", delta=0.1)
@@ -322,7 +322,7 @@ class TestBugRegression(unittest.TestCase):
             logger.debug("Updated range %s %s %s %s", chi_range[0], chi_range[1], ai.chiDiscAtPi, list(ai._cached_array.keys()))
             chi_0_center = ai.chiArray()
             logger.debug("disc @0 center: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range[1], chi_0_center.min(), chi_0_center.max())
-            chi_0_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1, :, 1]  # Discard pixel from border...
+            chi_0_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1,:, 1]  # Discard pixel from border...
             logger.debug("disc @0 corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range[1], chi_0_corner.min(), chi_0_corner.max())
 
             dmin = lambda v: v - chi_range[1][0]
@@ -348,39 +348,144 @@ class TestBugRegression(unittest.TestCase):
 
     def test_bug_1275(self):
         "This bug about major sectors not taken into account when performing intgrate1d on small azimuthal sectors"
-        shape = (128,128)
+        shape = (128, 128)
         detector = detectors.Detector(100e-4, 100e-4, max_shape=shape)
         ai = AzimuthalIntegrator(detector=detector, wavelength=1e-10)
-        ai.setFit2D(1000, shape[1]/2, shape[0]/2)
+        ai.setFit2D(1000, shape[1] / 2, shape[0] / 2)
         data = numpy.ones(shape)
-        nb_pix = ai.integrate1d(data, 100).count.sum()
+        nb_pix = ai.integrate1d_ng(data, 100).count.sum()
         self.assertAlmostEqual(nb_pix, numpy.prod(shape), msg="All pixels are counted", delta=0.01)
-        
+
         delta = 45
-        target = numpy.prod(shape)/360*2*delta
+        target = numpy.prod(shape) / 360 * 2 * delta
         ai.setChiDiscAtPi()
-        angles = numpy.arange(-180, 400, 90)   
-        
-        for method in ["python", "cython", "csr", "lut"]:
+        angles = numpy.arange(-180, 400, 90)
+
+        for method in [("no", "histogram", "python"),
+                       ("no", "histogram", "cython"),
+                       ("no", "csr", "cython"),
+                       ("no", "lut", "cython")]:
+#             print(method)
             for angle in angles:
-                res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
+                res = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method)
+                # print(res.compute_engine, res.count)
+                res = res.count.sum()
                 if angle in (-180, 180):
-                    #We expect only half of the pixel
-                    self.assertLess(abs(res/target - 0.5), 0.1, "ChiDiscAtPi we expect half the pixels to be missing %s %s %s=%s/2"%(method, angle, res, target))   
+                    # We expect only half of the pixel
+                    self.assertLess(abs(res / target - 0.5), 0.1, "ChiDiscAtPi we expect half the pixels to be missing %s %s %s=%s/2" % (method, angle, res, target))
                 else:
-                    self.assertLess(abs(res/target - 1), 0.1, "ChiDiscAtPi we expect the pixel to be present %s %s %s=%s"%(method, angle, res, target))
+                    self.assertLess(abs(res / target - 1), 0.1, "ChiDiscAtPi we expect the pixel to be present %s %s %s=%s" % (method, angle, res, target))
 
         # Now with the azimuthal integrator set with the chi discontinuity at 0
         ai.setChiDiscAtZero()
-        for method in ["python", "cython", "csr", "lut"]:
-            print(method)
+        for method in [("no", "histogram", "python"),
+                       ("no", "histogram", "cython"),
+                       ("no", "csr", "cython"),
+                       ("no", "lut", "cython")]:
+#             print(method)
             for angle in angles:
-                res = ai.integrate1d(data, 100, azimuth_range=(angle-delta, angle+delta), method=method).count.sum()
+                res = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method).count.sum()
                 if angle in (0, 360):
-                    #We expect only half of the pixel
-                    self.assertLess(abs(res/target - 0.5), 0.1, "ChiDiscAtZero we expect half the pixels to be missing %s %s %s=%s/2"%(method, angle, res, target))   
+                    # We expect only half of the pixel
+                    self.assertLess(abs(res / target - 0.5), 0.1, "ChiDiscAtZero we expect half the pixels to be missing %s %s %s=%s/2" % (method, angle, res, target))
                 else:
-                    self.assertLess(abs(res/target - 1), 0.1, "ChiDiscAtZero we expect the pixel to be present method:%s angle:%s expected:%s=%s"%(method, angle, target, res))   
+                    self.assertLess(abs(res / target - 1), 0.1, "ChiDiscAtZero we expect the pixel to be present method:%s angle:%s expected:%s=%s" % (method, angle, target, res))
+
+    def test_bug_1421(self):
+        """This bug is about geometry refinement not working with SAXS-constrains in certain conditions
+        Inspired by the Recalib tutorial
+        """
+        from .. import geometry
+        from ..calibrant import CALIBRANT_FACTORY
+        from ..goniometer import SingleGeometry
+        filename = UtilsTest.getimage("Pilatus1M.edf")
+        frame = fabio.open(filename).data
+
+        # Approximatively the position of the beam center ...
+        x = 200  # x-coordinate of the beam-center in pixels
+        y = 300  # y-coordinate of the beam-center in pixels
+        d = 1600  # This is the distance in mm (unit used by Fit2d)
+        wl = 1e-10  # The wavelength is 1 Å
+
+        # Definition of the detector and of the calibrant:
+        pilatus = detectors.detector_factory("Pilatus1M")
+        behenate = CALIBRANT_FACTORY("AgBh")
+        behenate.wavelength = wl
+
+        # Set the guessed geometry
+        initial = geometry.Geometry(detector=pilatus, wavelength=wl)
+        initial.setFit2D(d, x, y)
+#         print(initial)
+        # The SingleGeometry object (from goniometer) allows to extract automatically ring and calibrate
+        sg = SingleGeometry("demo", frame, calibrant=behenate, detector=pilatus, geometry=initial)
+        sg.extract_cp(max_rings=5)
+
+        # Refine the geometry ... here in SAXS geometry, the rotation is fixed in orthogonal setup
+        sg.geometry_refinement.refine2(fix=["rot1", "rot2", "rot3", "wavelength"])
+        refined = sg.get_ai()
+
+        self.assertNotEqual(initial.dist, refined.dist, "Distance got refined")
+        self.assertNotEqual(initial.poni1, refined.poni1, "Poni1 got refined")
+        self.assertNotEqual(initial.poni2, refined.poni2, "Poni2 got refined")
+        self.assertEqual(initial.rot1, refined.rot1, "Rot1 is unchanged")
+        self.assertEqual(initial.rot2, refined.rot2, "Rot2 is unchanged")
+        self.assertEqual(initial.rot3, refined.rot3, "Rot3 is unchanged")
+        self.assertEqual(initial.wavelength, refined.wavelength, "Wavelength is unchanged")
+
+        sg.geometry_refinement.refine2(fix=[])
+#         print(refined)
+        refined2 = sg.get_ai()
+
+        self.assertNotEqual(refined2.dist, refined.dist, "Distance got refined")
+        self.assertNotEqual(refined2.poni1, refined.poni1, "Poni1 got refined")
+        self.assertNotEqual(refined2.poni2, refined.poni2, "Poni2 got refined")
+        self.assertNotEqual(refined2.rot1, refined.rot1, "Rot1 got refined")
+        self.assertNotEqual(refined2.rot2, refined.rot2, "Rot2 got refined")
+        # self.assertNotEqual(refined2.rot3, refined.rot3, "Rot3 got refined") #Rot can change or not ...
+        self.assertEqual(refined2.wavelength, refined.wavelength, "Wavelength is unchanged (refine2)")
+#         print(refined2)
+#         raise
+        sg.geometry_refinement.refine3(fix=[])
+#         print(refined)
+        refined2 = sg.get_ai()
+
+        self.assertNotEqual(refined2.dist, refined.dist, "Distance got refined")
+        self.assertNotEqual(refined2.poni1, refined.poni1, "Poni1 got refined")
+        self.assertNotEqual(refined2.poni2, refined.poni2, "Poni2 got refined")
+        self.assertNotEqual(refined2.rot1, refined.rot1, "Rot1 got refined")
+        self.assertNotEqual(refined2.rot2, refined.rot2, "Rot2 got refined")
+#         self.assertNotEqual(refined2.rot3, refined.rot3, "Rot3 got refined")
+        self.assertNotEqual(refined2.wavelength, refined.wavelength, "Wavelength got refined (refine3)")
+
+    def test_bug_1487(self):
+        """
+        Reported by Marco @ID15:
+        Apparently the azimuthal range limitation is honored with CSR implementation and full-pixel splitting in pyFAI 0.20.
+        at lease for integrate1d legacy.
+        """
+        wl = 1e-10
+        ai = AzimuthalIntegrator(0.1, 0.03, 0.00, detector="Pilatus_200k", wavelength=wl)
+
+        tth = ai.twoThetaArray()
+        iso = -tth * (tth - 0.8)
+        chi = ai.chiArray()
+        ani = numpy.sin(4 * chi) + 1
+        img = iso * ani
+
+        npt = 10
+        sector_size = 20
+        out = numpy.empty((180 // sector_size, npt))
+        for method in [("full", "csr", "cython"),
+                       ("full", "lut", "cython")]:
+            idx = 0
+            for start in range(-90, 90, sector_size):
+                end = start + sector_size
+                res = ai.integrate1d(img, npt, method=method, azimuth_range=[start, end])
+                out[idx] = res.intensity
+                idx += 1
+            std = out.std(axis=0)
+            self.assertGreater(std.min(), 0, "output are not all the same with " + str(method))
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

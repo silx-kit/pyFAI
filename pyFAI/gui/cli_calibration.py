@@ -32,12 +32,12 @@ pyFAI-calib
 A tool for determining the geometry of a detector using a reference sample.
 
 """
-from __future__ import print_function, division
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "21/01/2021"
 __status__ = "production"
 
 import os
@@ -53,9 +53,7 @@ from scipy.stats import linregress
 import fabio
 
 from argparse import ArgumentParser
-from pyFAI.third_party import six
-
-urlparse = six.moves.urllib.parse.urlparse
+from urllib.parse import urlparse
 
 from .matplotlib import pylab, matplotlib
 from .utils import update_fig
@@ -98,7 +96,7 @@ def get_detector(detector, datafiles=None):
     :raise RuntimeError: If no detector found
     """
     res = None
-    if isinstance(detector, six.string_types):
+    if isinstance(detector, (str,)):
         try:
             res = detector_factory(detector)
         except RuntimeError:
@@ -522,7 +520,7 @@ class AbstractCalibration(object):
         """Read the pixel size from prompt if not available"""
         if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
-            ans = six.moves.input("Please enter the pixel size (in micron, comma separated X,Y "
+            ans = input("Please enter the pixel size (in micron, comma separated X,Y "
                         " i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.detector.splineFile = ans
@@ -544,7 +542,7 @@ class AbstractCalibration(object):
                 print(os.linesep.join(comments))
             valid = False
             while valid:
-                ans = six.moves.input("Please enter the calibrant name or the file"
+                ans = input("Please enter the calibrant name or the file"
                             " containing the d-spacing:\t").strip()
                 if ans in CALIBRANT_FACTORY:
                     self.calibrant = CALIBRANT_FACTORY(ans)
@@ -556,7 +554,7 @@ class AbstractCalibration(object):
     def read_wavelength(self):
         """Read the wavelength"""
         while not self.wavelength:
-            ans = six.moves.input("Please enter wavelength in Angstrom:\t").strip()
+            ans = input("Please enter wavelength in Angstrom:\t").strip()
             try:
                 self.wavelength = self.ai.wavelength = 1e-10 * float(ans)
             except Exception:
@@ -716,7 +714,7 @@ class AbstractCalibration(object):
             self.peakPicker.closeGUI()
         print("Before refinement, the geometry is:")
         print(self.geoRef)
-        previous = six.MAXSIZE
+        previous = sys.maxsize
         finished = False
         fig2 = None
         while not finished:
@@ -724,7 +722,7 @@ class AbstractCalibration(object):
             if "wavelength" in self.fixed:
                 while (previous > self.geoRef.chi2()) and (count < self.max_iter):
                     if (count == 0):
-                        previous = six.MAXSIZE
+                        previous = sys.maxsize
                     else:
                         previous = self.geoRef.chi2()
                     self.geoRef.refine2(1000000, fix=self.fixed)
@@ -733,7 +731,7 @@ class AbstractCalibration(object):
             else:
                 while previous > self.geoRef.chi2_wavelength() and (count < self.max_iter):
                     if (count == 0):
-                        previous = six.MAXSIZE
+                        previous = sys.maxsize
                     else:
                         previous = self.geoRef.chi2_wavelength()
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
@@ -772,7 +770,7 @@ class AbstractCalibration(object):
             else:
                 finished = True
             if not finished:
-                previous = six.MAXSIZE
+                previous = sys.maxsize
 
     def prompt(self):
         """
@@ -784,7 +782,7 @@ class AbstractCalibration(object):
         while True:
             req_help = False
             print("Fixed: " + ", ".join(self.fixed))
-            ans = six.moves.input("Modify parameters (or ? for help)?\t ").strip()
+            ans = input("Modify parameters (or ? for help)?\t ").strip()
             if "?" in ans:
                 req_help = True
             if not ans:
@@ -1070,14 +1068,14 @@ class AbstractCalibration(object):
 
         def jacob(param, xdata, ydata):
             j = numpy.ones((param.size, xdata.size))
-            j[1, :] = numpy.sin(xdata + param[2])
-            j[2, :] = param[1] * numpy.cos(xdata + param[2])
+            j[1,:] = numpy.sin(xdata + param[2])
+            j[2,:] = param[1] * numpy.cos(xdata + param[2])
             return j
 
         sqrt2 = math.sqrt(2.)
         ttha = self.geoRef.twoThetaArray(self.detector.shape)
         resolution = numpy.rad2deg(max(abs(ttha[1:] - ttha[:-1]).max(),
-                                       abs(ttha[:, 1:] - ttha[:, :-1]).max()))
+                                       abs(ttha[:, 1:] - ttha[:,:-1]).max()))
         if self.gui:
             if self.fig_chiplot:
                 self.fig_chiplot.clf()
@@ -1148,16 +1146,16 @@ class AbstractCalibration(object):
         self.geoRef.del_ttha()
         self.geoRef.del_dssa()
         self.geoRef.del_chia()
-        t0 = time.time()
+        t0 = time.perf_counter()
         _tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
-        t1 = time.time()
+        t1 = time.perf_counter()
         _dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
-        t2 = time.time()
+        t2 = time.perf_counter()
         self.geoRef.chiArray(self.peakPicker.shape)
-        t2a = time.time()
+        t2a = time.perf_counter()
         self.geoRef.corner_array(self.peakPicker.shape, units.TTH_DEG,
                                  scale=False)
-        t2b = time.time()
+        t2b = time.perf_counter()
         if self.gui:
             if self.fig_integrate is None:
                 self.fig_integrate = pylab.plt.figure()
@@ -1168,22 +1166,22 @@ class AbstractCalibration(object):
                 self.ax_xrpd_2d.cla()
                 update_fig(self.fig_integrate)
 
-        t3 = time.time()
-        res1 = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
-                                       filename=self.basename + ".xy",
-                                       unit=self.unit,
-                                       polarization_factor=self.polarization_factor,
-                                       method=self.integrator_method,
-                                       error_model=self.error_model)
-        t4 = time.time()
+        t3 = time.perf_counter()
+        res1 = self.geoRef.integrate1d_ng(self.peakPicker.data, self.nPt_1D,
+                                          filename=self.basename + ".xy",
+                                          unit=self.unit,
+                                          polarization_factor=self.polarization_factor,
+                                          method=self.integrator_method,
+                                          error_model=self.error_model)
+        t4 = time.perf_counter()
         res2 = self.geoRef.integrate2d(self.peakPicker.data,
-                                       self.nPt_2D_rad, self.nPt_2D_azim,
-                                       filename=self.basename + ".azim",
-                                       unit=self.unit,
-                                       polarization_factor=self.polarization_factor,
-                                       method=self.integrator_method,
-                                       error_model=self.error_model)
-        t5 = time.time()
+                                          self.nPt_2D_rad, self.nPt_2D_azim,
+                                          filename=self.basename + ".azim",
+                                          unit=self.unit,
+                                          polarization_factor=self.polarization_factor,
+                                          method=self.integrator_method,
+                                          error_model=self.error_model)
+        t5 = time.perf_counter()
         logger.info(os.linesep.join(["Timings (%s):" % self.integrator_method,
                                      " * two theta array generation %.3fs" % (t1 - t0),
                                      " * diff Solid Angle           %.3fs" % (t2 - t1),
@@ -1273,10 +1271,10 @@ class AbstractCalibration(object):
         logger.info("Performing autocorrelation on %sx%s, Fourier analysis may take some time", slices, npt)
         img, tth, chi = self.ai.integrate2d(self.peakPicker.data, npt, slices, azimuth_range=(-180, 180), unit="r_mm", method="splitpixel")
         ft = numpy.fft.fft(img, npt * 2, axis=-1)
-        crosscor = numpy.fft.ifft(ft[:half_slices, :] * (ft[half_slices:, :].conj()), axis=-1).real
+        crosscor = numpy.fft.ifft(ft[:half_slices,:] * (ft[half_slices:,:].conj()), axis=-1).real
         centered = numpy.empty_like(crosscor)
-        centered[:, :npt] = crosscor[:, npt:]
-        centered[:, npt:] = crosscor[:, :npt]
+        centered[:,:npt] = crosscor[:, npt:]
+        centered[:, npt:] = crosscor[:,:npt]
 
         center = numpy.zeros(slices)  # in micron
         dr = (tth[1] - tth[0]) * 1000.0  # ouput in r(mm) -> micron
@@ -1317,7 +1315,7 @@ class AbstractCalibration(object):
         """
         self.data = data
         if not self.weighted:
-            self.data = numpy.array(self.data)[:, :-1]
+            self.data = numpy.array(self.data)[:,:-1]
         self.refine()
 
     def reset_geometry(self, how="center", refine=False):
@@ -1397,6 +1395,7 @@ class Calibration(AbstractCalibration):
     """
     class doing the calibration of frames
     """
+
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, gaussianWidth=None,
                  wavelength=None, calibrant=None):
@@ -1499,7 +1498,7 @@ decrease the value if arcs are mixed together.""", default=None)
             update_fig(self.peakPicker.fig)
 #        self.peakPicker.finish(self.pointfile, callback=self.set_data)
         self.set_data(self.peakPicker.finish(self.pointfile))
-#        six.moves.input("Please press enter when you are happy with your selection" + os.linesep)
+#        input("Please press enter when you are happy with your selection" + os.linesep)
 #        while self.data is None:
 #            update_fig(self.peakPicker.fig)
 #            time.sleep(0.1)
@@ -1597,15 +1596,16 @@ decrease the value if arcs are mixed together.""", default=None)
         # Now continue as before
         AbstractCalibration.refine(self)
 
-
 ################################################################################
 # Recalibration
 ################################################################################
+
 
 class Recalibration(AbstractCalibration):
     """
     class doing the re-calibration of frames
     """
+
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
         """
@@ -1710,6 +1710,7 @@ and a new option which lets you choose between the original `massif` algorithm a
 
 
 class MultiCalib(object):
+
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None):
         """
         """
@@ -2014,7 +2015,7 @@ class MultiCalib(object):
         """Read the pixel size from prompt if not available"""
         if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
-            ans = six.moves.input("Please enter the pixel size (in micron, comma separated X, Y "
+            ans = input("Please enter the pixel size (in micron, comma separated X, Y "
                         "i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.detector.splineFile = ans
@@ -2039,7 +2040,7 @@ class MultiCalib(object):
             print(os.linesep.join(comments))
             ans = ""
             while not self.calibrant:
-                ans = six.moves.input("Please enter the name of the calibrant"
+                ans = input("Please enter the name of the calibrant"
                             " or the file containing the d-spacing:\t").strip()
                 if ans in CALIBRANT_FACTORY:
                     self.calibrant = CALIBRANT_FACTORY(ans)
@@ -2049,7 +2050,7 @@ class MultiCalib(object):
     def read_wavelength(self):
         """Read the wavelength"""
         while not self.wavelength:
-            ans = six.moves.input("Please enter wavelength in Angstrom:\t").strip()
+            ans = input("Please enter wavelength in Angstrom:\t").strip()
             try:
                 self.wavelength = 1e-10 * float(ans)
             except:
@@ -2165,6 +2166,7 @@ class MultiCalib(object):
 
 
 class CheckCalib(object):
+
     def __init__(self, poni=None, img=None, unit="2th_deg"):
         self.ponifile = poni
         if poni:
@@ -2265,12 +2267,13 @@ refinement process.
     def get_1dsize(self):
         logger.debug("in get_1dsize")
         return int(numpy.sqrt(self.img.shape[0] ** 2 + self.img.shape[1] ** 2))
+
     size1d = property(get_1dsize)
 
     def integrate(self):
         logger.debug("in integrate")
-        self.r, self.I = self.ai.integrate1d(self.img, self.size1d, mask=self.mask,
-                                             unit=self.unit, method="splitpixel")
+        self.r, self.I = self.ai.integrate1d_ng(self.img, self.size1d, mask=self.mask,
+                                                unit=self.unit, method=("full", "histo", "cython"))
 
     def rebuild(self):
         """
@@ -2294,7 +2297,6 @@ refinement process.
         self.masked_resynth = self.resynth * smooth_mask
         self.masked_image = self.img * smooth_mask
         self.offset = measure_offset(self.masked_resynth, self.masked_image, withLog=0)
-#        print os.linesep.join(log)
         print("Measured offset: %s" % str(self.offset))
         return self.offset
 

@@ -38,13 +38,11 @@ TODO:
 - Add monitor to HDF5
 """
 
-from __future__ import absolute_import, print_function, division
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2020"
+__date__ = "12/01/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -58,7 +56,6 @@ import threading
 import time
 from collections import OrderedDict
 import __main__ as main
-from pyFAI.third_party import six
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
 from .. import version
@@ -302,7 +299,7 @@ class HDF5Writer(Writer):
             self.nxs.h5.attrs["default"] = self.hpath
             self.entry_grp.attrs["default"] = "integrate/results"
             self.process_grp = self.nxs.new_class(self.entry_grp, "integrate", class_type="NXprocess")
-            self.process_grp["program"] = main.__file__
+            self.process_grp["program"] = getattr(main, '__file__', u'pyFAI')
             self.process_grp["version"] = version
             self.process_grp["date"] = get_isotime()
             self.process_grp["sequence_index"] = 1
@@ -357,7 +354,7 @@ class HDF5Writer(Writer):
                     chunk = 1, self.fai_cfg["nbpt_rad"]
                     self.ndim = 2
 
-            utf8vlen_dtype = h5py.special_dtype(vlen=six.text_type)
+            utf8vlen_dtype = h5py.special_dtype(vlen=str)
             self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
 
             if self.DATASET_NAME in self.nxdata_grp:
@@ -649,7 +646,7 @@ class DefaultAiWriter(Writer):
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit="2th_deg",
                has_mask=None, has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None,
-               metadata=None):
+               metadata=None, format_="edf"):
         """This method save the result of a 2D integration.
 
         :param filename: the filename used to save the 2D histogram
@@ -672,9 +669,10 @@ class DefaultAiWriter(Writer):
         :param normalization_factor: the monitor value
         :type normalization_factor: float, None
         :param metadata: JSON serializable dictionary containing the metadata
+        :param format_: file-format to be used (FabIO format)
         """
         if fabio is None:
-            raise RuntimeError("FabIO module is needed to save EDF images")
+            raise RuntimeError("FabIO module is needed to save images")
         dim1_unit = units.to_unit(dim1_unit)
 
         # Remove \n and \t)
@@ -706,11 +704,14 @@ class DefaultAiWriter(Writer):
                 else:
                     header[key] = value
         try:
-            img = fabio.edfimage.edfimage(data=I.astype("float32"),
-                                          header=header)
+            des_format = fabio.fabioformats.factory(format_ + "image")
+            img = des_format.__class__(data=I, header=header)
 
             if error is not None:
-                img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
+                try:
+                    img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
+                except Exception:
+                    logger.warning("Multi-frame format needed to save errors, saving as %s", img)
             img.write(filename)
         except IOError:
             logger.error("IOError while writing %s", filename)
@@ -872,7 +873,7 @@ class FabioWriter(Writer):
     def __repr__(self):
         return "Image writer on file %s" % (self.filename)
 
-    def init(self, fai_cfg=None, lima_cfg=None):
+    def init(self, fai_cfg=None, lima_cfg=None, directory="pyFAI"):
         """
         Creates the directory that will host the output file(s)
 

@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/01/2019
+:Date: 07/01/2021
 :Keywords: Installation procedure on Linux
 :Target: System administrators
 
@@ -13,7 +13,7 @@ Installation procedure on Debian/Ubuntu
 ---------------------------------------
 
 PyFAI has been designed and originally developed on Ubuntu 10.04 and debian6.
-Now, the pyFAI library is included into debian7, 8, 9 and any recent Ubuntu and
+Now, the pyFAI library is included into debian7, or newer or any recent Ubuntu and
 Mint distribution.
 To install the package provided by the distribution, use:
 
@@ -23,24 +23,6 @@ To install the package provided by the distribution, use:
 
 The issue with distribution based installation is the obsolescence of the version
 available.
-
-Debian 7 and Ubuntu 12.04
-.........................
-
-To build a more recent version, pyFAI provides you a small scripts which builds a *debian* package and installs it.
-It relies on *stdeb* and provides a single package with everything inside.
-You will be prompted for your password to gain root access in order to be able to install the freshly built package.
-
-.. code-block:: shell
-
-   sudo apt-get install python-stdeb cython python-fabio
-   wget https://github.com/silx-kit/pyFAI/archive/master.zip
-   unzip master.zip
-   cd pyFAI-master
-   ./build-deb7.sh
-
-Debian 8, 9 and newer
-.....................
 
 Thanks to the work of Frédéric-Emmanuel Picca, the debian package of pyFAI
 provides a pretty good template which allows continuous builds.
@@ -65,7 +47,7 @@ to install non-signed packages.
 Build from sources
 ++++++++++++++++++
 
-One can also built from sources:
+One can also built the current development version from sources:
 
 .. code-block:: shell
 
@@ -73,10 +55,10 @@ One can also built from sources:
    wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
-   ./build-deb.sh
+   ./build-deb.sh --install
 
 
-The first line is really long and defines all the dependence tree for building
+The first line installes all the dependences for building
 *debian* package, including debug and documentation.
 The build procedure last for a few minutes and you will be prompted for your
 password in order to install the freshly built packages.
@@ -87,22 +69,32 @@ Installation procedure on other linux distibution
 -------------------------------------------------
 
 If your distribution does not provide you pyFAI packages, using the **PIP** way
-is advised, via wheels packages. First install *pip* and *wheel*:
+is advised, via wheels packages. First install *pip* and *wheel* and activate a 
+virtual environment:
 
 .. code-block:: shell
 
-    sudo pip install pyFAI
+   python3 -m venv pyfai
+   source pyfai/bin/activate
+   pip install setuptools wheel pip
+   pip install pyFAI
 
 Or you can install pyFAI from the sources:
 
 .. code-block:: shell
 
+   python3 -m venv pyfai
+   source pyfai/bin/activate
+   pip install setuptools wheel pip
    wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
-   python setup.py build test
-   sudo pip install . --upgrade
+   pip install -r requirements.txt
+   python setup.py build
+   python run_tests.py
+   pip install . --upgrade
 
 **Nota:** The usage of "python setup.py install" is now deprecated.
 It causes much more trouble as there is no installed file tracking,
-hence no way to de-install properly the package.
+hence no way to de-install properly the package. 
+One should never use *sudo pip* as it is likely to interfer with the software installed with the system. 

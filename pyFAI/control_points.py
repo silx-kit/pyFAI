@@ -32,13 +32,11 @@ ControlPoints: a set of control points associated with a calibration image
 PointGroup: a group of points
 """
 
-from __future__ import absolute_import, print_function, with_statement, division
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2018"
+__date__ = "08/01/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -51,7 +49,6 @@ import logging
 import numpy
 import array
 
-from pyFAI.third_party import six
 from .calibrant import Calibrant, get_calibrant, names as calibrant_names
 
 logger = logging.getLogger(__name__)
@@ -62,6 +59,7 @@ class ControlPoints(object):
     This class contains a set of control points with (optionally) their
     ring number hence d-spacing and diffraction  2Theta angle...
     """
+
     def __init__(self, filename=None, calibrant=None, wavelength=None):
         self._sem = threading.Semaphore()
         self._groups = OrderedDict()
@@ -74,7 +72,7 @@ class ControlPoints(object):
         if (not have_spacing) and (calibrant is not None):
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
-            elif type(calibrant) in six.string_types:
+            elif type(calibrant) in (str,):
                 if calibrant in calibrant_names():
                     self.calibrant = get_calibrant(calibrant)
                 elif os.path.isfile(calibrant):
@@ -359,33 +357,33 @@ class ControlPoints(object):
         """
         Ask the ring number values for the given points
         """
-        lastRing = None
+        last_ring = None
         lst = list(self._groups.keys())
         lst.sort(key=lambda item: self._groups[item].code)
         for lbl in lst:
-            bOk = False
+            is_ok = False
             gpt = self._groups[lbl]
-            while not bOk:
-                defaultRing = 0
+            while not is_ok:
+                default_ring = 0
                 ring = gpt.ring
                 if ring is not None:
-                    defaultRing = ring
-                elif lastRing is not None:
-                    defaultRing = lastRing + 1
+                    default_ring = ring
+                elif last_ring is not None:
+                    default_ring = last_ring + 1
                 msg = "Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# "
-                res = six.moves.input(msg % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing))
+                res = input(msg % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], default_ring))
                 res = res.strip()
                 if res == "":
-                    res = defaultRing
+                    res = default_ring
                 try:
                     input_ring = int(res)
                 except (ValueError, TypeError):
                     logging.error("I did not understand the ring number you entered")
                 else:
                     if input_ring >= 0 and input_ring < len(self.calibrant.dSpacing):
-                        lastRing = ring
+                        last_ring = ring
                         gpt.ring = input_ring
-                        bOk = True
+                        is_ok = True
                     else:
                         logging.error("Invalid ring number %i (range 0 -> %2i)",
                                       input_ring, len(self.calibrant.dSpacing) - 1)

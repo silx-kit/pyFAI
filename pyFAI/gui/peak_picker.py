@@ -29,13 +29,11 @@
 """Semi-graphical tool for peak-picking and extracting visually control points
 from an image with Debye-Scherer rings"""
 
-from __future__ import print_function, absolute_import
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/10/2018"
+__date__ = "08/01/2021"
 __status__ = "production"
 
 import os
@@ -66,7 +64,6 @@ from ..blob_detection import BlobDetection
 from ..massif import Massif
 from ..ext.reconstruct import reconstruct
 from ..ext.watershed import InverseWatershed
-from ..third_party import six
 
 
 class PeakPicker(object):
@@ -94,7 +91,7 @@ class PeakPicker(object):
         :param mask: area in which keypoints will not be considered as valid
         :param pointfile:
         """
-        if isinstance(data, six.string_types):
+        if isinstance(data, (str,)):
             self.data = fabio.open(data).data.astype("float32")
         else:
             self.data = numpy.ascontiguousarray(data, numpy.float32)
@@ -371,6 +368,7 @@ class PeakPicker(object):
         """
         Called when a mouse is clicked
         """
+
         def annontate(x, x0=None, idx=None, gpt=None):
             """
             Call back method to annotate the figure while calculation are going on ...
@@ -574,7 +572,7 @@ class PeakPicker(object):
                 logger.error("Calibrant has no line ! check input parameters please, especially the '-c' option")
                 print(CALIBRANT_FACTORY)
                 raise RuntimeError("Invalid calibrant")
-            six.moves.input("Please press enter when you are happy with your selection" + os.linesep)
+            input("Please press enter when you are happy with your selection" + os.linesep)
             # need to disconnect 'button_press_event':
             self.fig.canvas.mpl_disconnect(self.mpl_connectId)
             self.mpl_connectId = None
@@ -643,10 +641,10 @@ class PeakPicker(object):
             tmp = 100 * numpy.logical_not(data)
             mask = numpy.zeros((data.shape[0], data.shape[1], 4), dtype="uint8")
 
-            mask[:, :, 0] = tmp
-            mask[:, :, 1] = tmp
-            mask[:, :, 2] = tmp
-            mask[:, :, 3] = tmp
+            mask[:,:, 0] = tmp
+            mask[:,:, 1] = tmp
+            mask[:,:, 2] = tmp
+            mask[:,:, 3] = tmp
             while len(self.msp.images) > 1:
                 self.msp.images.pop()
             try:

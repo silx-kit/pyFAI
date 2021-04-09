@@ -23,15 +23,10 @@
 
 "Benchmark for Azimuthal integration of PyFAI"
 
-
-from __future__ import print_function, division
-
-
 __author__ = "Jérôme Kieffer"
-__date__ = "09/05/2019"
+__date__ = "28/01/2021"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-
 
 from collections import OrderedDict
 import json
@@ -43,17 +38,18 @@ import platform
 import subprocess
 import fabio
 import os.path as op
+from math import ceil
 
 # To use use the locally build version of PyFAI, use ../bootstrap.py
 
 from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..method_registry import IntegrationMethod, Method
 from ..utils import mathutil
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
-from ..third_party import six
 try:
-    from ..gui.matplotlib import pylab
+    from ..gui.matplotlib import pyplot, pylab
     from ..gui.utils import update_fig
 except ImportError:
     pylab = None
@@ -61,14 +57,12 @@ except ImportError:
     def update_fig(*args, **kwargs):
         pass
 
-
 ds_list = ["Pilatus1M.poni",
            "halfccd.poni",
            "Frelon2k.poni",
            "Pilatus6M.poni",
            "Mar3450.poni",
            "Fairchild.poni"]
-
 
 datasets = {"Fairchild.poni": "Fairchild.edf",
             "halfccd.poni": "halfccd.edf",
@@ -144,6 +138,7 @@ class BenchTest1D(BenchTest):
         self.file_name = file_name
         self.unit = unit
         self.method = method
+        self.compute_engine = None
         self.function_name = function or "integrate1d"
         self.error_model = error_model
         self.function = None
@@ -206,7 +201,7 @@ class BenchTestGpu(BenchTest):
         self.ai.xrpd_OpenCL(self.data, self.N, devicetype=self.devicetype, useFp64=self.useFp64, platformid=self.platformid, deviceid=self.deviceid)
 
     def stmt(self):
-        self.ai.xrpd_OpenCL(self.data, self.N, safe=False)
+        return self.ai.xrpd_OpenCL(self.data, self.N, safe=False)
 
     def clean(self):
         self.ai = None
@@ -220,11 +215,11 @@ class Bench(object):
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
-    LABELS = {"splitBBox": "CPU_serial",
-              "lut": "CPU_LUT_OpenMP",
-              "lut_ocl": "LUT",
-              "csr": "CPU_CSR_OpenMP",
-              "csr_ocl": "CSR",
+    LABELS = {("bbox", "histogram", "cython"): "CPU_serial",
+              ("bbox", "lut", "cython"): "CPU_LUT_OpenMP",
+              ("bbox", "lut", "opencl"): "LUT",
+              ("bbox", "csr", "cython"): "CPU_CSR_OpenMP",
+              ("bbox", "csr", "opencl"): "CSR",
               }
 
     def __init__(self, nbr=10, repeat=1, memprofile=False, unit="2th_deg", max_size=None):
@@ -237,7 +232,7 @@ class Bench(object):
         self._cpu = None
         self.fig = None
         self.ax = None
-        self.starttime = time.time()
+        self.starttime = time.perf_counter()
         self.plot = None
         self.plot_x = []
         self.plot_y = []
@@ -262,9 +257,7 @@ class Bench(object):
             elif os.path.exists("/usr/sbin/sysctl"):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
-                self._cpu = proc.stdout.read().strip()
-                if six.PY3:
-                    self._cpu = self._cpu.decode("ASCII")
+                self._cpu = proc.stdout.read().strip().decode("ASCII")
             old = self._cpu
             self._cpu = old.replace("  ", " ")
             while old != self._cpu:
@@ -316,19 +309,21 @@ class Bench(object):
         if param not in self.reference_1d:
             file_name = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
-            bench_test = BenchTest1D(poni, file_name, self.unit, "splitBBox")
+            bench_test = BenchTest1D(poni, file_name, self.unit, ("bbox", "histogram", "cython"), function="integrate1d_ng")
             bench_test.setup()
             res = bench_test.stmt()
+            bench_test.compute_engine = res.compute_engine
             self.reference_1d[param] = res
             bench_test.clean()
         return self.reference_1d[param]
 
-    def bench_1d(self, method="splitBBox", check=False, opencl=None):
+    def bench_1d(self, method="splitBBox", check=False, opencl=None, function="integrate1d"):
         """
         :param method: method to be bechmarked
         :param check: check results vs ref if method is LUT based
         :param opencl: dict containing platformid, deviceid and devicetype
         """
+        method = IntegrationMethod.select_one_available(method, dim=1, default=None, degradable=True)
         self.update_mp()
         if opencl:
             if (ocl is None):
@@ -352,13 +347,17 @@ class Bench(object):
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
-            label = ("1D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
-            method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            print("method=%s" % method)
+            label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
+#             print(method)
+            method = IntegrationMethod.select_method(dim=1, split=method.split_lower,
+                                                      algo=method.algo_lower, impl=method.impl_lower,
+                                                      target=(opencl["platformid"], opencl["deviceid"]))[0]
+#             print(method)
+            print(f"function: {function} \t method: {method}")
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = "1D_" + self.LABELS[method]
+            label = function + " " + self.LABELS[method.method[1:4]]
             memory_error = (MemoryError, RuntimeError)
         results = OrderedDict()
         first = True
@@ -366,19 +365,19 @@ class Bench(object):
             self.update_mp()
             file_name = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
-            bench_test = BenchTest1D(poni, file_name, self.unit, method)
+            bench_test = BenchTest1D(poni, file_name, self.unit, method, function=function)
             bench_test.setup()
             size = bench_test.data.size / 1.0e6
             if size > self.max_size:
                 continue
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(file_name), size, bench_test.N))
             try:
-                t0 = time.time()
+                t0 = time.perf_counter()
                 res = bench_test.stmt()
-                t1 = time.time()
+                t1 = time.perf_counter()
                 res2 = bench_test.stmt()
-                t2 = time.time()
-                loops = int(1.0 + self.nbr / (t2 - t1))
+                t2 = time.perf_counter()
+                loops = int(ceil(self.nbr / (t2 - t1)))
                 self.print_init2(t1 - t0, t2 - t1, loops)
 
             except memory_error as error:
@@ -390,22 +389,13 @@ class Bench(object):
                     print("Actual device used: %s" % actual_device)
 
             self.update_mp()
-            if check:
-                module = sys.modules.get(AzimuthalIntegrator.__module__)
-                if module:
-                    if "lut" in method:
-                        key = module.EXT_LUT_ENGINE
-                    elif "csr" in method:
-                        key = module.EXT_CSR_ENGINE
-                    else:
-                        key = None
-                if key and module:
-                    try:
-                        integrator = bench_test.ai.engines.get(key).engine
-                    except MemoryError as error:
-                        print("MemoryError %s" % error)
-                    else:
-                        if "lut" in method:
+            if method.algo_lower in ("lut", "csr"):
+                key = Method(1, bench_test.method.split_lower, method.algo_lower, "cython", None)
+                if key and key in bench_test.ai.engines:
+                    engine = bench_test.ai.engines.get(key)
+                    if engine:
+                        integrator = engine.engine
+                        if method.algo_lower == "lut":
                             print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
                         else:
                             print("csr: size= %s \t nbytes %.3f MB " % (integrator.data.size, integrator.lut_nbytes / 2 ** 20))
@@ -430,16 +420,16 @@ class Bench(object):
                     self.update_mp()
                     if first:
                         if opencl:
-                            self.new_curve(results, label, style="--")
+                            self.new_curve(results, label, style="--", marker="s" if "legacy" in function else "o")
                         else:
-                            self.new_curve(results, label, style="-")
+                            self.new_curve(results, label, style="-", marker="s" if "legacy" in function else "o")
                         first = False
                     else:
                         self.new_point(size, tmin)
             else:
                 results[size] = tmin
                 if first:
-                    self.new_curve(results, label)
+                    self.new_curve(results, label, marker="s" if "legacy" in function else "o")
                     first = False
                 else:
                     self.new_point(size, tmin)
@@ -470,12 +460,12 @@ class Bench(object):
 
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
+            label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method[1:4]], platform, device)).replace(" ", "_")
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
 
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = "2D_" + self.LABELS[method]
+            label = "2D_" + self.LABELS[method[1:4]]
             memory_error = (MemoryError, RuntimeError)
 
         results = OrderedDict()
@@ -489,9 +479,9 @@ class Bench(object):
             size = bench_test.data.size / 1.0e6
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(file_name), size, bench_test.N))
             try:
-                t0 = time.time()
+                t0 = time.perf_counter()
                 _res = bench_test.stmt()
-                self.print_init(time.time() - t0)
+                self.print_init(time.perf_counter() - t0)
             except memory_error as error:
                 print(error)
                 break
@@ -531,7 +521,7 @@ class Bench(object):
             tmin *= 1000.0
             results[size] = tmin
             if first:
-                self.new_curve(results, label)
+                self.new_curve(results, label, marker="o")
                 first = False
             else:
                 self.new_point(size, tmin)
@@ -560,9 +550,9 @@ class Bench(object):
             print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(file_name), size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
 
             try:
-                t0 = time.time()
+                t0 = time.perf_counter()
                 res = ai.xrpd_OpenCL(data, N, devicetype=devicetype, useFp64=useFp64, platformid=platformid, deviceid=deviceid)
-                t1 = time.time()
+                t1 = time.perf_counter()
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
                 continue
@@ -583,7 +573,7 @@ class Bench(object):
                 tmin *= 1000.0
                 results[size] = tmin
                 if first:
-                    self.new_curve(results, label)
+                    self.new_curve(results, label, marker="o")
                     first = False
                 else:
                     self.new_point(size, tmin)
@@ -593,9 +583,13 @@ class Bench(object):
         self.results[label] = results
         self.update_mp()
 
-    def save(self, filename="benchmark.json"):
+    def save(self, filename=None):
+        if filename is None:
+            filename = f"benchmark{time.strftime('%Y%m%d-%H%M%S')}.json"
         self.update_mp()
         json.dump(self.results, open(filename, "w"), indent=4)
+        if self.fig is not None:
+            self.fig.savefig(filename[:-4] + "svg")
 
     def print_res(self):
         self.update_mp()
@@ -610,13 +604,15 @@ class Bench(object):
             print("Already initialized")
             return
         if pylab and (sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ):
-            self.fig = pylab.figure()
+            self.fig, self.ax = pyplot.subplots()
             self.fig.show()
-            self.ax = self.fig.add_subplot(1, 1, 1)
             self.ax.set_autoscale_on(False)
             self.ax.set_xlabel("Image size in mega-pixels")
             self.ax.set_ylabel("Frame per second (log scale)")
-            self.ax.set_yscale("log", basey=2)
+            try:
+                self.ax.set_yscale("log", base=2)
+            except Exception:
+                self.ax.set_yscale("log", basey=2)
             t = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
@@ -625,7 +621,7 @@ class Bench(object):
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
             update_fig(self.fig)
 
-    def new_curve(self, results, label, style="-"):
+    def new_curve(self, results, label, style="-", marker="x"):
         """
         Create a new curve within the current graph
 
@@ -639,7 +635,7 @@ class Bench(object):
         self.plot_x = list(results.keys())
         self.plot_x.sort()
         self.plot_y = [1000.0 / results[i] for i in self.plot_x]
-        self.plot = self.ax.plot(self.plot_x, self.plot_y, "o" + style, label=label)[0]
+        self.plot = self.ax.plot(self.plot_x, self.plot_y, marker + style, label=label)[0]
         self.ax.legend()
         update_fig(self.fig)
 
@@ -675,13 +671,11 @@ class Bench(object):
         """
         if not self.do_memprofile:
             return
-        self.memory_profile[0].append(time.time() - self.starttime)
+        self.memory_profile[0].append(time.perf_counter() - self.starttime)
         self.memory_profile[1].append(self.get_mem())
         if pylab:
-            if not self.fig_mp:
-                self.fig_mp = pylab.figure()
-                self.fig_mp.show()
-                self.ax_mp = self.fig_mp.add_subplot(1, 1, 1)
+            if self.fig_mp is None:
+                self.fig_mp, self.ax_mp = pyplot.subplots()
                 self.ax_mp.set_autoscale_on(False)
                 self.ax_mp.set_xlabel("Run time (s)")
                 self.ax_mp.set_xlim(0, 100)
@@ -689,6 +683,7 @@ class Bench(object):
                 self.ax_mp.set_ylabel("Memory occupancy (MB)")
                 self.ax_mp.set_title("Memory leak hunter")
                 self.plot_mp = self.ax_mp.plot(*self.memory_profile)[0]
+                self.fig_mp.show()
             else:
                 self.plot_mp.set_data(*self.memory_profile)
                 tmax = self.memory_profile[0][-1]
@@ -710,6 +705,7 @@ class Bench(object):
                 size = s
         size.sort()
         return size
+
     size = property(get_size)
 
 
@@ -747,13 +743,16 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                         ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "ACC"]
         print("Devices:", ocl_devices)
     if do_1d:
-        bench.bench_1d("splitBBox")
+        bench.bench_1d("splitBBox", True, function="integrate1d_legacy")
+        bench.bench_1d("splitBBox", True, function="integrate1d_ng")
 #         bench.bench_1d("lut", True)
-        bench.bench_1d("csr", True)
+        bench.bench_1d("csr", True, function="integrate1d_legacy")
+        bench.bench_1d("csr", True, function="integrate1d_ng")
         for device in ocl_devices:
             print("Working on device: " + str(device))
 #             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
-            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_legacy")
+            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_ng")
 
     if do_2d:
         bench.bench_2d("splitBBox")

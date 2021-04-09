@@ -34,12 +34,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2020"
+__date__ = "26/03/2021"
 __status__ = "development"
 
+import inspect
 from logging import getLogger
 logger = getLogger(__name__)
 from collections import OrderedDict, namedtuple
+
 ClassFunction = namedtuple("ClassFunction", ["klass", "function"])
 
 
@@ -63,8 +65,8 @@ class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
             result = Method(self.dim, self.split, "histogram", self.impl, self.target)
         elif self.split == "full":
             result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
-        elif self.split == "full":
-            result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
+#         elif self.split == "full":
+#             result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
         elif self.split == "pseudo":
             result = Method(self.dim, "bbox", self.algo, self.impl, self.target)
         elif self.split == "bbox":
@@ -338,7 +340,8 @@ class IntegrationMethod:
 
     def __init__(self, dim, split, algo, impl,
                  target=None, target_name=None, target_type=None,
-                 class_funct=None, old_method=None, extra=None):
+                 class_funct_legacy=None, class_funct_ng=None,
+                 old_method=None, extra=None):
         """Constructor of the class, registering the methods.
 
         DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI
@@ -350,7 +353,8 @@ class IntegrationMethod:
         :param impl: "python", "cython" or "opencl" to describe the implementation
         :param target: the OpenCL device as 2-tuple of indices
         :param target_name: Full name of the OpenCL device
-        :param class_funct: class used and function to be used
+        :param class_funct_legacy: class used and function to be used for legacy integrator
+        :param class_funct_ng: class used and function to be used for new generation integrator
         :param old_method: former method name (legacy)
         :param extra: extra informations
         """
@@ -364,8 +368,14 @@ class IntegrationMethod:
         self.target = target
         self.target_name = target_name or str(target)
         self.target_type = target_type
-        if class_funct:
-            self.class_funct = ClassFunction(*class_funct)
+        if class_funct_legacy:
+            self.class_funct_legacy = ClassFunction(*class_funct_legacy)
+        else:
+            self.class_funct_legacy = None
+        if class_funct_ng:
+            self.class_funct_ng = ClassFunction(*class_funct_ng)
+        else:
+            self.class_funct_ng = None
         self.old_method_name = old_method
         self.extra = extra
         self.method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)
@@ -374,6 +384,7 @@ class IntegrationMethod:
         assert self.algo_lower in self.AVAILABLE_ALGOS
         assert self.impl_lower in self.AVAILABLE_IMPLS
         self.__class__._registry[self.method] = self
+        self.manage_variance = self._does_manage_variance()
 
     def __repr__(self):
         if self.target:
@@ -381,3 +392,12 @@ class IntegrationMethod:
         else:
             string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation))
         return "IntegrationMethod(%s)" % string
+
+    def _does_manage_variance(self):
+        "Checks if the method handles alone the variance in the case poissonian=True or False"
+        manage_variance = False
+        if self.class_funct_ng and self.class_funct_ng.function:
+            function = self.class_funct_ng.function
+            sig = inspect.signature(function)
+            manage_variance = "poissonian" in sig.parameters
+        return manage_variance

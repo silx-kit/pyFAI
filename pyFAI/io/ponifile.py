@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,24 +28,19 @@
 """Module function to manage poni files.
 """
 
-from __future__ import absolute_import, print_function, division
-
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2019"
+__date__ = "06/04/2021"
 __docformat__ = 'restructuredtext'
-
 
 import collections
 import time
 import json
 import logging
-
 _logger = logging.getLogger(__name__)
-
+import numpy
 from .. import detectors
-from ..third_party import six
 
 
 class PoniFile(object):
@@ -63,10 +58,13 @@ class PoniFile(object):
             pass
         elif isinstance(data, dict):
             self.read_from_dict(data)
-        elif isinstance(data, six.string_types):
+        elif isinstance(data, (str,)):
             self.read_from_file(data)
         else:
             self.read_from_duck(data)
+
+    def __repr__(self):
+        return json.dumps(self.as_dict(), indent=4)
 
     def read_from_file(self, filename):
         data = collections.OrderedDict()
@@ -126,6 +124,8 @@ class PoniFile(object):
 
         if "distance" in config:
             self._dist = float(config["distance"])
+        elif "dist" in config:
+            self._dist = float(config["dist"])
         if "poni1" in config:
             self._poni1 = float(config["poni1"])
         if "poni2" in config:
@@ -145,13 +145,19 @@ class PoniFile(object):
         The duck object must provide dist, poni1, poni2, rot1, rot2, rot3,
         wavelength, and detector.
         """
-        # TODO: It would be good to test attribute types
+        assert numpy.isreal(duck.dist)
         self._dist = duck.dist
+        assert numpy.isreal(duck.poni1)
         self._poni1 = duck.poni1
+        assert numpy.isreal(duck.poni2)
         self._poni2 = duck.poni2
+        assert numpy.isreal(duck.rot1)
         self._rot1 = duck.rot1
+        assert numpy.isreal(duck.rot2)
         self._rot2 = duck.rot2
+        assert numpy.isreal(duck.rot3)
         self._rot3 = duck.rot3
+        assert numpy.isreal(duck.wavelength)
         self._wavelength = duck.wavelength
         self._detector = duck.detector
 

@@ -1,10 +1,10 @@
 :Author: Jérôme Kieffer
-:Date: 20/07/2016
+:Date: 19/01/2021
 :Keywords: generic description of the software
 :Target: General audiance
 
-General introduction to PyFAI
-=============================
+General introduction
+====================
 
 Python Fast Azimuthal Integration
 ---------------------------------
@@ -136,8 +136,7 @@ integrated before being plotted.
    :align: center
    :alt: image
 
-The :ref:`tutorials` section makes heavy use of *IPython notebooks*, now called
-*Jupyter notebooks* to process data using *pyFAI*.
+The :ref:`tutorial` section makes heavy use of *Jupyter notebooks* to process data using *pyFAI*.
 The first tutorial also explains a bit how *Python* and *Jupyter* works to be
 able to perform basic processing efficiently with pyFAI.
 
@@ -255,17 +254,10 @@ the higher number of single precision units and that the GPU is usually limited 
 
 .. _Kahan_summation: http://en.wikipedia.org/wiki/Kahan_summation_algorithm
 
-The performances of the parallel implementation based on a LUT, stored in CSR
-format, can reach 2.5 GPix/s on recent multi-core computer with a gaming
-graphics card.
-On multi-socket server featuring high-end GPUs like Tesla cards, the performances
-are similar with the additional capability to work on multiple detector
-simultaneously.
+.. toctree::
+   :maxdepth: 1
 
-.. figure:: img/benchmark.png
-   :align: center
-   :alt: benchmark performed on a 2016 single-socket workstation and a gaming graphics card.
-
+   performance
 
 Related Work
 ------------

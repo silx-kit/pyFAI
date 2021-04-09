@@ -19,17 +19,14 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """CSR rebinning engine implemented in pure python (with bits of scipy !) 
 """
-
-from __future__ import absolute_import, print_function, with_statement
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/01/2020"
+__date__ = "31/03/2021"
 __status__ = "development"
 
 import logging
@@ -49,6 +46,7 @@ from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
 class CSRIntegrator(object):
+
     def __init__(self,
                  image_size,
                  lut=None,
@@ -64,7 +62,7 @@ class CSRIntegrator(object):
         self.empty = empty
         self.bins = None
         self._csr = None
-        self._csr2 = None # Used for propagating variance
+        self._csr2 = None  # Used for propagating variance
         self.lut_size = 0  # actually nnz
         self.data = None
         self.indices = None
@@ -84,13 +82,13 @@ class CSRIntegrator(object):
         self.indptr = indptr
         self.lut_size = len(indices)
         self.bins = len(indptr) - 1
-        print(self.bins, self.size)
         self._csr = csr_matrix((data, indices, indptr), shape=(self.bins, self.size))
-        self._csr2 = csr_matrix((data * data, indices, indptr), shape=(self.bins, self.size)) # contains the coef squared, used for variance propagation
+        self._csr2 = csr_matrix((data * data, indices, indptr), shape=(self.bins, self.size))  # contains the coef squared, used for variance propagation
 
     def integrate(self,
                   signal,
                   variance=None,
+                  poissonian=None,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -104,6 +102,7 @@ class CSRIntegrator(object):
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
+        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model. 
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -131,20 +130,28 @@ class CSRIntegrator(object):
                        empty=self.empty,
                        split_result=4,
                        variance=variance,
-                       dtype=numpy.float32)
+                       dtype=numpy.float32,
+                       poissonian=bool(poissonian))
         prep.shape = numpy.prod(shape), -1
-        logger.warning("prep.shape %s lut_size %s, image_size %s, bins %s", prep.shape, self.lut_size, self.size, self.bins)
+        # logger.warning("prep.shape %s lut_size %s, image_size %s, bins %s", prep.shape, self.lut_size, self.size, self.bins)
         res = numpy.empty((numpy.prod(self.bins), 4), dtype=numpy.float32)
-        logger.warning(self._csr.shape)
+        # logger.warning(self._csr.shape)
         res[:, 0] = self._csr.dot(prep[:, 0])
-        if variance is not None:
-            res[:, 1] = self._csr2.dot(prep[:, 1])
         res[:, 2] = self._csr.dot(prep[:, 2])
         res[:, 3] = self._csr.dot(prep[:, 3])
+        if variance is not None or poissonian:
+            res[:, 1] = self._csr2.dot(prep[:, 1])
+        elif poissonian is False:
+            # ask for azimuthal error model
+            avg = res[:, 0] / res[:, 2]
+            avg_ext = self._csr.T.dot(avg)
+            delta = (prep[:, 0] / prep[:, 2] - avg_ext) ** 2
+            res[:, 1] = self._csr.dot(delta)
         return res
 
 
 class CsrIntegrator1d(CSRIntegrator):
+
     def __init__(self,
                  image_size,
                  lut=None,
@@ -198,6 +205,7 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
     def integrate(self,
                   signal,
                   variance=None,
+                  poissonian=None,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -211,6 +219,7 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
+        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model.
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -222,11 +231,12 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance 
         
         """
-        if variance is None:
+        if variance is None and poissonian is None:
             do_variance = False
         else:
             do_variance = True
-        trans = CSRIntegrator.integrate(self, signal, variance, dummy, delta_dummy,
+        trans = CSRIntegrator.integrate(self, signal, variance, poissonian,
+                                        dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         signal = trans[:, 0]
@@ -245,8 +255,9 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         return Integrate1dtpl(self.bin_centers,
                               intensity, error,
                               signal, variance, normalization, count)
+
     integrate_ng = integrate
-    
+
     def sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,
                    variance=None, dark_variance=None,
                    flat=None, solidangle=None, polarization=None, absorption=None,
@@ -288,10 +299,10 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         """
         shape = data.shape
         error_model = error_model.lower() if error_model else ""
-        
+
         if self._geometry is None:
             raise RuntimeError("Set geometry first")
-        
+
         prep = preproc(data,
                        dark=dark,
                        flat=flat,
@@ -316,26 +327,26 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
             std = numpy.sqrt(res[:, 1] / res[:, 2])
             avg[msk] = 0
             std[msk] = 0
-            
+
             avg2d = self._geometry.calcfrom1d(self.bin_centers, avg, shape=shape,
                     dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
             std2d = self._geometry.calcfrom1d(self.bin_centers, std, shape=shape,
                     dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
-            cnt = abs(prep[..., 0]/prep[..., 2] - avg2d)/std2d
-            msk2d = numpy.logical_and(numpy.logical_not(numpy.isfinite(cnt)), cnt> cutoff)
-            prep[msk2d, :] = 0
+            cnt = abs(prep[..., 0] / prep[..., 2] - avg2d) / std2d
+            msk2d = numpy.logical_and(numpy.logical_not(numpy.isfinite(cnt)), cnt > cutoff)
+            prep[msk2d,:] = 0
             res = self._csr.dot(prep_flat)
         msk = res[:, 2] == 0
         avg = res[:, 0] / res[:, 2]
         std = numpy.sqrt(res[:, 1] / res[:, 2])
         avg[msk] = 0
-        std[msk] = 0        
+        std[msk] = 0
 
-        return Integrate1dtpl(self.bin_centers,avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
-        
-        
+        return Integrate1dtpl(self.bin_centers, avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
+
 
 class CsrIntegrator2d(CSRIntegrator):
+
     def __init__(self,
                  image_size,
                  lut=None,
@@ -371,6 +382,7 @@ class CsrIntegrator2d(CSRIntegrator):
     def integrate(self,
                   signal,
                   variance=None,
+                  poissonian=False,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -383,6 +395,7 @@ class CsrIntegrator2d(CSRIntegrator):
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
+        :param poissonian: set to True to variance=max(signal,1), False will implement azimuthal variance
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -391,14 +404,14 @@ class CsrIntegrator2d(CSRIntegrator):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
-        :return: Integrate2dResult or Integrate2dWithErrorResult object depending is variance is provided 
+        :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
         
         """
-        if variance is None:
+        if variance is None and poissonian is None:
             do_variance = False
         else:
             do_variance = True
-        trans = CSRIntegrator.integrate(self, signal, variance, dummy, delta_dummy,
+        trans = CSRIntegrator.integrate(self, signal, variance, poissonian, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         trans.shape = self.bins + (-1,)

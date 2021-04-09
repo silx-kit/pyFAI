@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/10/2015
+:Date: 30/10/2020
 :Keywords: Cookbook
 :Target: Scientists
 
@@ -8,7 +8,7 @@
 Cookbook recipes
 ================
 
-Cookbook are short tutorials: 1 page, 5 minutes to read.
+Cookbooks are short tutorials which explain how to use pyFAI on a practical example (5 mn to read).
 
 
 .. toctree::

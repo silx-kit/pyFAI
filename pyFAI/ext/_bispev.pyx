@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#cython: embedsignature=True, language_level=3
+#cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping:
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
@@ -36,12 +36,12 @@ scipy."""
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/04/2020"
+__date__ = "15/12/2020"
 __status__ = "stable"
 __license__ = "MIT"
 
 import numpy
-cimport numpy as cnumpy
+from libc.stdint cimport int32_t
 import cython
 cimport cython
 from cython.parallel import prange
@@ -150,7 +150,7 @@ cdef void fpbspl(float[::1]t,
             h[i + 1] = f * (x - t[l + i - j])
 
 
-cdef void init_w(float[::1] t, int k, float[::1] x, cnumpy.int32_t[::1] lx, float[:, ::1] w) nogil:
+cdef void init_w(float[::1] t, int k, float[::1] x, int32_t[::1] lx, float[:, ::1] w) nogil:
     """
     Initialize w array for a 1D array
 
@@ -219,8 +219,8 @@ cdef cy_bispev(float[::1] tx,
         float[:, ::1] wx = numpy.empty((mx, kx1), dtype=numpy.float32)
         float[:, ::1] wy = numpy.empty((my, ky1), dtype=numpy.float32)
 
-        cnumpy.int32_t[::1] lx = numpy.empty(mx, dtype=numpy.int32)
-        cnumpy.int32_t[::1] ly = numpy.empty(my, dtype=numpy.int32)
+        int32_t[::1] lx = numpy.empty(mx, dtype=numpy.int32)
+        int32_t[::1] ly = numpy.empty(my, dtype=numpy.int32)
 
         int i, j, i1, l2, j1
         int size_z = mx * my

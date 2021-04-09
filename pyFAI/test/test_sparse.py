@@ -28,14 +28,11 @@
 
 """Test suites for sparse matrix multiplication modules"""
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2020"
-
+__date__ = "15/01/2021"
 
 import unittest
 import numpy
@@ -55,42 +52,27 @@ class TestSparseBBox(unittest.TestCase):
     Bounding box pixel splitting
     """
 
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.N = 1000
-        self.unit = "2th_deg"
-        self.ai = load(UtilsTest.getimage("Pilatus1M.poni"))
-        self.data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
-        self.ref = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="splitBBox")[1]
-        self.cython = splitBBox.histoBBox1d(self.data, self.ai.ttha, self.ai._cached_array["2th_delta"], bins=self.N)
+    def test_sparse_bbox(self):
+        N = 1000
+        unit = "r_mm"
+        method = ("bbox", "lut", "cython")
+        ai = load(UtilsTest.getimage("Pilatus1M.poni"))
+        data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        ref = ai.integrate1d_ng(data, N, correctSolidAngle=False, unit=unit, method=method)
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.N = self.unit = self.ai = None
-        self.data = self.ref = self.cython = None
+        method = ("bbox", "lut", "cython")
+        obt = ai.integrate1d_ng(data, N, correctSolidAngle=False, unit=unit, method=method)
+        logger.debug("delta on global result: %s", (abs(obt[1] - ref[1]) / ref[1]).max())
+        self.assertTrue(numpy.allclose(obt[1], ref[1]))
 
-    def test_LUT(self):
-        obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="LUT")[1]
-        logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
-        self.assertTrue(numpy.allclose(obt, self.ref))
-
-        cython = self.ai.engines["lut_integrator"].engine.integrate(self.data)
-        for ref, obt in zip(self.cython, cython):
-            logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
-            self.assertTrue(numpy.allclose(obt, ref))
-
-    def test_CSR(self):
-        obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="bbox CSR")[1]
-        logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
-        self.assertTrue(numpy.allclose(obt, self.ref))
-
-        cython = self.ai.engines["csr_integrator"].engine.integrate(self.data)
-        for ref, obt in zip(self.cython, cython):
-            logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
-            self.assertTrue(numpy.allclose(obt, ref))
+        method = ("bbox", "csr", "cython")
+        obt = ai.integrate1d_ng(data, N, correctSolidAngle=False, unit=unit, method=method)
+        logger.debug("delta on global result: %s", (abs(obt[1] - ref[1]) / ref[1]).max())
+        self.assertTrue(numpy.allclose(obt[1], ref[1]))
 
 
 class TestSparseUtils(unittest.TestCase):
+
     def test_conversion(self):
         dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
         shape = 99, 101
@@ -134,21 +116,23 @@ class TestSparseUtils(unittest.TestCase):
         img = numpy.random.random(detector.shape)
         res_csr = ai.integrate1d_ng(img, 100, method=("no", "csr", "cython"), unit="r_mm")
         res_lut = ai.integrate1d_ng(img, 100, method=("no", "lut", "cython"), unit="r_mm")
-        self.assertEqual(abs(res_csr.intensity-res_lut.intensity).max(), 0, "intensity matches")
-        self.assertEqual(abs(res_csr.radial-res_lut.radial).max(), 0, "radial matches")
+        self.assertEqual(abs(res_csr.intensity - res_lut.intensity).max(), 0, "intensity matches")
+        self.assertEqual(abs(res_csr.radial - res_lut.radial).max(), 0, "radial matches")
         sparse = {}
-        for k,v in ai.engines.items():
+        for k, v in ai.engines.items():
             sparse[k.algo_lower] = v.engine.lut
         lut2 = sparse_utils.CSR_to_LUT(*sparse["csr"])
-        self.assertEqual(abs(lut2["coef"]-sparse["lut"].coef).max(), 0, "LUT coef matches")
-        self.assertEqual(abs(lut2["idx"]-sparse["lut"].idx).max(), 0, "LUT idx matches")
+        self.assertEqual(abs(lut2["coef"] - sparse["lut"].coef).max(), 0, "LUT coef matches")
+        self.assertEqual(abs(lut2["idx"] - sparse["lut"].idx).max(), 0, "LUT idx matches")
 
         csr2 = sparse_utils.LUT_to_CSR(sparse["lut"])
-        self.assertEqual(abs(sparse["csr"][0]-csr2[0]).max(), 0, "CSR data matches")
-        self.assertEqual(abs(sparse["csr"][1]-csr2[1]).max(), 0, "CSR indices matches")
-        self.assertEqual(abs(sparse["csr"][2]-csr2[2]).max(), 0, "CSR indptr matches")
+        self.assertEqual(abs(sparse["csr"][0] - csr2[0]).max(), 0, "CSR data matches")
+        self.assertEqual(abs(sparse["csr"][1] - csr2[1]).max(), 0, "CSR indices matches")
+        self.assertEqual(abs(sparse["csr"][2] - csr2[2]).max(), 0, "CSR indptr matches")
+
 
 class TestContainer(unittest.TestCase):
+
     def test_vector(self):
         nelem = 12
         cont = sparse_utils.Vector()

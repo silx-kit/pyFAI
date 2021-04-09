@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/05/2019"
+__date__ = "04/12/2020"
 
 import logging
 import numpy
@@ -287,7 +285,7 @@ class RingCalibration(object):
         """
         Contains the common geometry refinement part
         """
-        self.__calibrant.set_wavelength(self.__wavelength)
+        self.__calibrant.setWavelength_change2th(self.__wavelength)
         self.__peakPicker.points.setWavelength_change2th(self.__wavelength)
 
         residual = previous_residual = float("+inf")

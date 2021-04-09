@@ -2,36 +2,36 @@ os: linux
 dist: xenial
 language: python
 python:
-  - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"
+  - "3.9"
 
-addons:
-  apt:
-    packages:
-      - libhdf5-dev
-      - gfortran
-      - libatlas-base-dev
+#addons:
+#  apt:
+#    packages:
+#      - libhdf5-dev
+#      - gfortran
+#      - libatlas-base-dev
 #For OpenCL:
-      - ocl-icd-libopencl1
-      - opencl-headers
-      - libnuma1
-      - ocl-icd-dev
-      - ocl-icd-opencl-dev
+#      - ocl-icd-libopencl1
+#      - opencl-headers
+#      - libnuma1
+#      - ocl-icd-dev
+#      - ocl-icd-opencl-dev
 # command to install dependencies
 
-before_install:
-  - "if [ ${TRAVIS_OS_NAME:-'linux'} = 'linux' ]; then . ./ci/before_install-linux.sh; fi"
+#before_install:
+#  - "if [ ${TRAVIS_OS_NAME:-'linux'} = 'linux' ]; then . ./ci/before_install-linux.sh; fi"
 #  - "if [ ${TRAVIS_OS_NAME:-'linux'} = 'osx' ]; then . ./ci/travis/before_install-osx.sh; fi"
 
 install:
   - "python ci/info_platform.py"
   - "pip install --upgrade pip setuptools wheel"
   - "pip install --upgrade numpy"
-  - "pip install --upgrade cython mako pybind11"
-  - "pip install --upgrade h5py "
+  - "pip install --upgrade cython"
   - "pip install --upgrade -r ci/requirements_travis.txt"
+  - "if [ -f ci/install_pyopencl.sh ]; then bash ci/install_pyopencl.sh ; fi"
   - "python ci/info_platform.py"
   - "python setup.py build"
   - "python setup.py bdist_wheel"

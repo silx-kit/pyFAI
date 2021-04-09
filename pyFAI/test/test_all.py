@@ -25,7 +25,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-from __future__ import absolute_import, division, print_function
 
 """Test suite for all pyFAI modules."""
 
@@ -33,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2019"
+__date__ = "20/01/2021"
 
 import sys
 import unittest
@@ -51,7 +50,6 @@ from . import test_peak_picking
 from . import test_geometry
 from . import test_mask
 from . import test_method_registry
-from . import test_openCL
 from . import test_export
 from . import test_saxs
 from . import test_integrate
@@ -73,7 +71,6 @@ from . import test_bispev
 from . import test_bug_regression
 from . import test_watershed
 from . import test_multi_geometry
-from . import test_ocl_sort
 from . import test_worker
 from . import test_utils_shell
 from . import test_utils_stringutil
@@ -93,6 +90,7 @@ from ..opencl import test as test_opencl
 from ..gui import test as test_gui
 from . import test_invert_geometry
 from . import test_massif
+from . import test_rectangle
 
 
 def suite():
@@ -107,7 +105,6 @@ def suite():
     testsuite.addTest(test_geometry.suite())
     testsuite.addTest(test_mask.suite())
     testsuite.addTest(test_method_registry.suite())
-    testsuite.addTest(test_openCL.suite())
     testsuite.addTest(test_export.suite())
     testsuite.addTest(test_saxs.suite())
     testsuite.addTest(test_integrate.suite())
@@ -131,7 +128,6 @@ def suite():
     testsuite.addTest(test_bug_regression.suite())
     testsuite.addTest(test_watershed.suite())
     testsuite.addTest(test_multi_geometry.suite())
-    testsuite.addTest(test_ocl_sort.suite())
     testsuite.addTest(test_worker.suite())
     testsuite.addTest(test_utils_shell.suite())
     testsuite.addTest(test_utils_stringutil.suite())
@@ -148,6 +144,7 @@ def suite():
     testsuite.addTest(test_pyfai_api.suite())
     testsuite.addTest(test_invert_geometry.suite())
     testsuite.addTest(test_massif.suite())
+    testsuite.addTest(test_rectangle.suite())
     return testsuite
 
 

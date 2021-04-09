@@ -1,12 +1,12 @@
 :Author: Jérôme Kieffer
-:Date: 07/09/2016
+:Date: 07/01/2021
 :Keywords: Other software related to pyFAI
 
-PyFAI Ecosystem
-===============
+Ecosystem
+=========
 
-Software pyFAI is relying on
-----------------------------
+Software pyFAI is relying on:
+-----------------------------
 
 PyFAI is relying on the full Python scientific stack which includes [NumPy]_,
 [SciPy]_, [Matplotlib]_, [PyOpenCL]_ but also on some ESRF-developped code:
@@ -14,27 +14,25 @@ PyFAI is relying on the full Python scientific stack which includes [NumPy]_,
 FabIO
 .....
 
-PyFAI is using FabIO everywhere access to a 2D images is needed.
-The *fabio_viewer* is also a lightweight convenient viewer for diffraction images.
-It has been described in `doi:10.1107/S0021889813000150 <http://journals.iucr.org/j/issues/2013/02/00/kk5124/>`_
-
-PyMca
-.....
-
-The X-ray Fluorescence Toolkit provides convenient tools for
-HDF5 file browsing and mask drawing.
-It has been described in `doi:10.1016/j.sab.2006.12.002 <http://www.sciencedirect.com/science/article/pii/S0584854706003764>`_
+While pyFAI uses internally *numpy* arrays everywhere, applications rely on FabIO to read and write 2D image files.
+FabIO is described in `doi:10.1107/S0021889813000150 <http://journals.iucr.org/j/issues/2013/02/00/kk5124/>`_
 
 Silx
 ....
 
-`The silx toolkit <http://www.silx.org>`_  is currently ongoing development.
-Future releases of pyFAI will use its input/output and graphical visualization capabilities
+`The silx toolkit <http://www.silx.org>`_  provides the basements for all GUI-application of pyFAI and also the OpenCL compute framework.
+
 
 .. _ecosystem:
 
 Program using pyFAI as a library
 --------------------------------
+
+`Github keeps track of dependant projects <https://github.com/silx-kit/pyFAI/network/dependents>`_ and 60 open source projects are
+explicitely dependant on pyFAI. 
+Those include data analysis in most synchrotrons in the world (NSLS-II, APS ...) but also on Free electron laser facilities and in electron microscopy.   
+Here is a list of friendly projects which developpers contributed back to pyFAI:
+
 
 Bubble
 ......

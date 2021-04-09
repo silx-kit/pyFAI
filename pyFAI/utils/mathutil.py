@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/08/2019"
+__date__ = "15/01/2021"
 __status__ = "production"
 
 import logging
@@ -52,7 +52,6 @@ except ImportError:
     logger.debug("Backtrace", exc_info=True)
     _relabel = None
 
-
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 
@@ -65,9 +64,9 @@ def deg2rad(dd, disc=1):
     """
     # range [0:2pi[
     rp = (dd / 180.0) % 2.0
-    if disc: # range [-pi:pi[
+    if disc:  # range [-pi:pi[
         if rp >= 1.0:
-            rp -= 2.0 
+            rp -= 2.0
     return rp * math.pi
 
 
@@ -102,7 +101,7 @@ def expand2d(vect, size2, vertical=True):
         out = numpy.empty((size1, size2), vect.dtype)
         q = vect.reshape(-1, 1)
         q.strides = vect.strides[0], 0
-    out[:, :] = q
+    out[:,:] = q
     return out
 
 
@@ -179,10 +178,10 @@ def shift(input_img, shift_val):
     d1 = shift_val[1] % s1
     r0 = (-d0) % s0
     r1 = (-d1) % s1
-    re[d0:, d1:] = input_img[:r0, :r1]
-    re[:d0, d1:] = input_img[r0:, :r1]
-    re[d0:, :d1] = input_img[:r0, r1:]
-    re[:d0, :d1] = input_img[r0:, r1:]
+    re[d0:, d1:] = input_img[:r0,:r1]
+    re[:d0, d1:] = input_img[r0:,:r1]
+    re[d0:,:d1] = input_img[:r0, r1:]
+    re[:d0,:d1] = input_img[r0:, r1:]
     return re
 
 
@@ -263,47 +262,47 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
     if (mode == "mirror"):
         # 4 corners
         output[s0 + k0:, s1 + k1:] = input_img[-2:-k0 - 2:-1, -2:-k1 - 2:-1]
-        output[:k0, :k1] = input_img[k0 - 0:0:-1, k1 - 0:0:-1]
+        output[:k0,:k1] = input_img[k0 - 0:0:-1, k1 - 0:0:-1]
         output[:k0, s1 + k1:] = input_img[k0 - 0:0:-1, s1 - 2: s1 - k1 - 2:-1]
-        output[s0 + k0:, :k1] = input_img[s0 - 2: s0 - k0 - 2:-1, k1 - 0:0:-1]
+        output[s0 + k0:,:k1] = input_img[s0 - 2: s0 - k0 - 2:-1, k1 - 0:0:-1]
         # 4 sides
-        output[k0:k0 + s0, :k1] = input_img[:s0, k1 - 0:0:-1]
-        output[:k0, k1:k1 + s1] = input_img[k0 - 0:0:-1, :s1]
-        output[-k0:, k1:s1 + k1] = input_img[-2:s0 - k0 - 2:-1, :]
+        output[k0:k0 + s0,:k1] = input_img[:s0, k1 - 0:0:-1]
+        output[:k0, k1:k1 + s1] = input_img[k0 - 0:0:-1,:s1]
+        output[-k0:, k1:s1 + k1] = input_img[-2:s0 - k0 - 2:-1,:]
         output[k0:s0 + k0, -k1:] = input_img[:, -2:s1 - k1 - 2:-1]
     elif mode == "reflect":
         # 4 corners
         output[s0 + k0:, s1 + k1:] = input_img[-1:-k0 - 1:-1, -1:-k1 - 1:-1]
-        output[:k0, :k1] = input_img[k0 - 1::-1, k1 - 1::-1]
+        output[:k0,:k1] = input_img[k0 - 1::-1, k1 - 1::-1]
         output[:k0, s1 + k1:] = input_img[k0 - 1::-1, s1 - 1: s1 - k1 - 1:-1]
-        output[s0 + k0:, :k1] = input_img[s0 - 1: s0 - k0 - 1:-1, k1 - 1::-1]
+        output[s0 + k0:,:k1] = input_img[s0 - 1: s0 - k0 - 1:-1, k1 - 1::-1]
         # 4 sides
-        output[k0:k0 + s0, :k1] = input_img[:s0, k1 - 1::-1]
-        output[:k0, k1:k1 + s1] = input_img[k0 - 1::-1, :s1]
-        output[-k0:, k1:s1 + k1] = input_img[:s0 - k0 - 1:-1, :]
-        output[k0:s0 + k0, -k1:] = input_img[:, :s1 - k1 - 1:-1]
+        output[k0:k0 + s0,:k1] = input_img[:s0, k1 - 1::-1]
+        output[:k0, k1:k1 + s1] = input_img[k0 - 1::-1,:s1]
+        output[-k0:, k1:s1 + k1] = input_img[:s0 - k0 - 1:-1,:]
+        output[k0:s0 + k0, -k1:] = input_img[:,:s1 - k1 - 1:-1]
     elif mode == "nearest":
         # 4 corners
         output[s0 + k0:, s1 + k1:] = input_img[-1, -1]
-        output[:k0, :k1] = input_img[0, 0]
+        output[:k0,:k1] = input_img[0, 0]
         output[:k0, s1 + k1:] = input_img[0, -1]
-        output[s0 + k0:, :k1] = input_img[-1, 0]
+        output[s0 + k0:,:k1] = input_img[-1, 0]
         # 4 sides
-        output[k0:k0 + s0, :k1] = expand2d(input_img[:, 0], k1, False)
-        output[:k0, k1:k1 + s1] = expand2d(input_img[0, :], k0)
-        output[-k0:, k1:s1 + k1] = expand2d(input_img[-1, :], k0)
+        output[k0:k0 + s0,:k1] = expand2d(input_img[:, 0], k1, False)
+        output[:k0, k1:k1 + s1] = expand2d(input_img[0,:], k0)
+        output[-k0:, k1:s1 + k1] = expand2d(input_img[-1,:], k0)
         output[k0:s0 + k0, -k1:] = expand2d(input_img[:, -1], k1, False)
     elif mode == "wrap":
         # 4 corners
-        output[s0 + k0:, s1 + k1:] = input_img[:k0, :k1]
-        output[:k0, :k1] = input_img[-k0:, -k1:]
-        output[:k0, s1 + k1:] = input_img[-k0:, :k1]
-        output[s0 + k0:, :k1] = input_img[:k0, -k1:]
+        output[s0 + k0:, s1 + k1:] = input_img[:k0,:k1]
+        output[:k0,:k1] = input_img[-k0:, -k1:]
+        output[:k0, s1 + k1:] = input_img[-k0:,:k1]
+        output[s0 + k0:,:k1] = input_img[:k0, -k1:]
         # 4 sides
-        output[k0:k0 + s0, :k1] = input_img[:, -k1:]
-        output[:k0, k1:k1 + s1] = input_img[-k0:, :]
-        output[-k0:, k1:s1 + k1] = input_img[:k0, :]
-        output[k0:s0 + k0, -k1:] = input_img[:, :k1]
+        output[k0:k0 + s0,:k1] = input_img[:, -k1:]
+        output[:k0, k1:k1 + s1] = input_img[-k0:,:]
+        output[-k0:, k1:s1 + k1] = input_img[:k0,:]
+        output[k0:s0 + k0, -k1:] = input_img[:,:k1]
     elif mode == "constant":
         # Nothing to do
         pass
@@ -444,7 +443,7 @@ def center_of_mass(img):
     :return: 2-tuple of float with the center of mass
     """
     d0, d1 = img.shape
-    a0, a1 = numpy.ogrid[:d0, :d1]
+    a0, a1 = numpy.ogrid[:d0,:d1]
     img = img.astype("float64")
     img /= img.sum()
     return ((a0 * img).sum(), (a1 * img).sum())
@@ -465,11 +464,11 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     shape = img1.shape
     logs = []
     assert img2.shape == shape
-    t0 = time.time()
+    t0 = time.perf_counter()
     i1f = numpy.fft.fft2(img1)
     i2f = numpy.fft.fft2(img2)
     res = numpy.fft.ifft2(i1f * i2f.conjugate()).real
-    t1 = time.time()
+    t1 = time.perf_counter()
 
     ################################################################################
     # END of convolutions
@@ -498,7 +497,7 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     if listOffset[1] > shape[1] // 2:
         listOffset[1] -= shape[1]
     offset = tuple(listOffset)
-    t2 = time.time()
+    t2 = time.perf_counter()
     logs.append("MeasureOffset: fine result: %s %s" % offset)
     logs.append("MeasureOffset: execution time: %.3fs with %.3fs for FFTs" % (t2 - t0, t1 - t0))
     if withLog:
@@ -745,8 +744,8 @@ def rwp(obt, ref):
     :type obt: 2-list of array of the same size
     :return:  Rwp value, lineary interpolated
     """
-    ref0, ref1 = ref
-    obt0, obt1 = obt
+    ref0, ref1 = ref[:2]
+    obt0, obt1 = obt[:2]
     big0 = numpy.concatenate((obt0, ref0))
     big0.sort()
     big0 = numpy.unique(big0)
@@ -756,6 +755,7 @@ def rwp(obt, ref):
     big_delta = (big_ref - big_obt)
     non_null = abs(big_mean) > 1e-10
     return numpy.sqrt(((big_delta[non_null]) ** 2 / ((big_mean[non_null]) ** 2)).sum())
+
 
 def chi_square(obt, ref):
     """Compute :math:`\\sqrt{\\sum \\frac{4\\cdot(obt-ref)^2}{(obt + ref)^2}}`.
@@ -776,9 +776,9 @@ def chi_square(obt, ref):
     big_ref_int = numpy.interp(big_pos, ref_pos, ref_int, 0.0, 0.0)
     big_obt_int = numpy.interp(big_pos, obt_pos, obt_int, 0.0, 0.0)
     big_delta_int = (big_ref_int - big_obt_int)
-    
-    big_ref_var = numpy.interp(big_pos, ref_pos, ref_std, 0.0, 0.0)**2
-    big_obt_var = numpy.interp(big_pos, obt_pos, obt_std, 0.0, 0.0)**2
+
+    big_ref_var = numpy.interp(big_pos, ref_pos, ref_std, 0.0, 0.0) ** 2
+    big_obt_var = numpy.interp(big_pos, obt_pos, obt_std, 0.0, 0.0) ** 2
     big_variance = (big_ref_var + big_obt_var) / 2.0
     non_null = abs(big_variance) > 1e-10
     return (big_delta_int[non_null] ** 2 / big_variance[non_null]).mean()

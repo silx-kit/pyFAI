@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#cython: embedsignature=True, language_level=3
+#cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
@@ -38,7 +38,7 @@ Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jerome Kieffer"
-__date__ = "29/04/2020"
+__date__ = "26/03/2021"
 __license__ = "MIT"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -61,8 +61,8 @@ from ..containers import Integrate1dtpl, Integrate2dtpl
 _COMPILED_WITH_OPENMP = _openmp.COMPILED_WITH_OPENMP
 
 
-def _histogram_omp(cnumpy.ndarray pos not None,
-                   cnumpy.ndarray weights not None,
+def _histogram_omp(pos,
+                   weights,
                    int bins=100,
                    bin_range=None,
                    pixelSize_in_Pos=None,
@@ -155,8 +155,8 @@ def _histogram_omp(cnumpy.ndarray pos not None,
             numpy.asarray(out_count))
 
 
-def _histogram_nomp(cnumpy.ndarray pos,
-                    cnumpy.ndarray weights,
+def _histogram_nomp(pos,
+                    weights,
                     int bins=100,
                     bin_range=None,
                     pixelSize_in_Pos=None,
@@ -237,10 +237,10 @@ else:
     histogram = _histogram_nomp
 
 
-def histogram2d(cnumpy.ndarray pos0 not None,
-                cnumpy.ndarray pos1 not None,
-                bins not None,
-                cnumpy.ndarray weights not None,
+def histogram2d(pos0,
+                pos1,
+                bins,
+                weights,
                 split=False,
                 nthread=None,
                 data_t empty=0.0,
@@ -436,7 +436,7 @@ def histogram1d_engine(radial, int npt,
     """
     cdef:
         acc_t[:, ::1] res
-        cnumpy.float32_t[:, ::1] prep
+        float32_t[:, ::1] prep
         position_t[::1] position
         data_t[::1] histo_normalization, histo_signal, histo_variance, histo_count, intensity, error
         data_t norm, sig, var, cnt
@@ -493,13 +493,13 @@ def histogram1d_engine(radial, int npt,
                           numpy.asarray(histo_count))
 
 
-def histogram2d_preproc(cnumpy.ndarray pos0 not None,
-                        cnumpy.ndarray pos1 not None,
-                        bins,
-                        cnumpy.ndarray weights not None,
-                        bint split=False,
-                        double empty=0.0,
-                        ):
+def histogram2d_engine(pos0,
+                       pos1,
+                       bins,
+                       weights,
+                       bint split=False,
+                       double empty=0.0,
+                       ):
     """
     Calculate 2D histogram of pos0,pos1 weighted by weights when the weights are
     preprocessed and contain: signal, variance, normalization for each pixel
@@ -511,8 +511,7 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
     :param split: pixel splitting is disabled in histogram
     :param nthread: OpenMP is disabled. unused here
     :param empty: value given to empty bins
-
-    :return: named tuple with ("sig",["var"], "norm", "count")
+    :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
     assert pos0.size == pos1.size, "Positions array have the same size"
 
@@ -520,7 +519,6 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
         int bins0, bins1, i, j, bin0, bin1, c
         int size = pos0.size
         int nchan = weights.shape[weights.ndim - 1]
-    print(size, nchan, weights.size, weights.size//nchan, weights.ndim)
     assert weights.ndim > 1, "Weights have been preprocessed"
     assert pos0.size == (weights.size // nchan), "Weights have the right size"
     assert nchan <= 4, "Maximum of 4 chanels"
@@ -591,15 +589,10 @@ def histogram2d_preproc(cnumpy.ndarray pos0 not None,
                         out_signal[i, j] = sig / norm
                 else:
                     out_signal[i, j] = out_data[i, j, 0]
-    if nchan >= 3:
-        result = Integrate2dWithErrorResult(numpy.asarray(out_signal),
-                                            numpy.asarray(out_error),
-                                            bin_centers0,
-                                            bin_centers1,
-                                            numpy.asarray(out_data).view(dtype=prop_d).reshape(bins0, bins1))
-    else:
-        result = Integrate2dResult(numpy.asarray(out_signal),
-                                   bin_centers0,
-                                   bin_centers1,
-                                   numpy.asarray(out_data).view(dtype=prop_d).reshape(bins0, bins1))
-    return result
+                    
+    return Integrate2dtpl(bin_centers0, bin_centers1,
+                          numpy.asarray(out_signal),
+                          numpy.asarray(out_error) if nchan >= 3 else None,
+                          numpy.asarray(out_data[...,0]), numpy.asarray(out_data[...,1]), numpy.asarray(out_data[...,2]), numpy.asarray(out_data[...,3]))
+
+histogram2d_preproc = histogram2d_engine 

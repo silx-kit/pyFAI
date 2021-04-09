@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-#cython: embedsignature=True, language_level=3
+# coding: utf-8
+#cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,19 +35,23 @@ to bilinear interpolations.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "29/04/2020"
-__copyright__ = "2011-2020, ESRF"
+__date__ = "14/01/2021"
+__copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
 import numpy
-cimport numpy as cnumpy
 from cython cimport floating
 from cython.parallel import prange
 
 import logging
 logger = logging.getLogger("pyFAI.ext.bilinear")
 
+from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
+                         int32_t, uint32_t, int64_t, uint64_t
+
+ctypedef double float64_t
+ctypedef float float32_t
 
 def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
                              float[:, :, :, ::1] pos,
@@ -62,11 +66,11 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
     :return: 3-tuple of position.
     """
     cdef:
-        int i, p1, p2, dim1, dim2, size = d1.size
-        float delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2
-        cnumpy.float32_t[::1] out1 = numpy.zeros(size, dtype=numpy.float32)
-        cnumpy.float32_t[::1] out2 = numpy.zeros(size, dtype=numpy.float32)
-        cnumpy.float32_t[::1] out3
+        int64_t i, p1, p2, dim1, dim2, size = d1.size
+        float32_t delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2
+        float32_t[::1] out1 = numpy.zeros(size, dtype=numpy.float32)
+        float32_t[::1] out2 = numpy.zeros(size, dtype=numpy.float32)
+        float32_t[::1] out3
     if not is_flat:
         out3 = numpy.zeros(size, dtype=numpy.float32)
     dim1 = pos.shape[0]
@@ -159,14 +163,14 @@ def convert_corner_2D_to_4D(int ndim,
     :param d3: 2D position in dim3 (z) (shape +1)
     :return: pos 4D array with position of pixels corners
     """
-    cdef int shape0, shape1, i, j
+    cdef int64_t shape0, shape1, i, j
     #  edges position are n+1 compared to number of pixels
     shape0 = d1.shape[0] - 1
     shape1 = d2.shape[1] - 1
     assert d1.shape[0] == d2.shape[0], "d1.shape[0] == d2.shape[0]"
     assert d1.shape[1] == d2.shape[1], "d1.shape[1] == d2.shape[1]"
-    cdef cnumpy.float32_t[:, :, :, ::1] pos = numpy.zeros((shape0, shape1, 4, ndim),
-                                                          dtype=numpy.float32)
+    cdef float32_t[:, :, :, ::1] pos = numpy.zeros((shape0, shape1, 4, ndim),
+                                                   dtype=numpy.float32)
     for i in prange(shape0, nogil=True, schedule="static"):
         for j in range(shape1):
             pos[i, j, 0, ndim - 2] += d1[i, j]

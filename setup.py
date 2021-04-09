@@ -25,9 +25,8 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2020" 
+__date__ = "28/01/2021"
 __status__ = "stable"
-
 
 import io
 import sys
@@ -76,8 +75,10 @@ try:
 except ImportError:
     sphinx = None
 
-
 PROJECT = "pyFAI"
+
+if sys.version_info[0] < 3:
+    raise RuntimeError("Python2 is no more supported")
 
 if "LANG" not in os.environ and sys.platform == "darwin" and sys.version_info[0] > 2:
     print("""WARNING: the LANG environment variable is not defined,
@@ -104,6 +105,7 @@ def get_readme():
         long_description = fp.read()
     return long_description
 
+
 # double check classifiers on https://pypi.python.org/pypi?%3Aaction=list_classifiers
 classifiers = ["Development Status :: 5 - Production/Stable",
                "Intended Audience :: Developers",
@@ -125,25 +127,26 @@ classifiers = ["Development Status :: 5 - Production/Stable",
                "Topic :: Scientific/Engineering :: Physics"
                ]
 
-
 # ########## #
 # version.py #
 # ########## #
+
 
 class build_py(_build_py):
     """
     Enhanced build_py which copies version.py to <PROJECT>._version.py
     """
+
     def find_package_modules(self, package, package_dir):
         modules = _build_py.find_package_modules(self, package, package_dir)
         if package == PROJECT:
             modules.append((PROJECT, '_version', 'version.py'))
         return modules
 
-
 ########
 # Test #
 ########
+
 
 class PyTest(Command):
     """Command to start tests running the script: run_tests.py"""
@@ -163,12 +166,13 @@ class PyTest(Command):
         if errno != 0:
             raise SystemExit(errno)
 
-
 # ################### #
 # build_doc command   #
 # ################### #
 
+
 if sphinx is None:
+
     class SphinxExpectedCommand(Command):
         """Command to inform that sphinx is missing"""
         user_options = []
@@ -299,6 +303,7 @@ class BuildMan(Command):
             synopsis = p.stdout.read().decode("utf-8").strip()
             if synopsis == 'None':
                 synopsis = None
+            p.stdout.close()
         finally:
             # clean up the script
             if script_name is not None:
@@ -405,9 +410,9 @@ if sphinx is not None:
                 self.mkpath(self.builder_target_dir)
                 BuildDoc.run(self)
             sys.path.pop(0)
+
 else:
     BuildDocCommand = SphinxExpectedCommand
-
 
 # ################### #
 # test_doc command    #
@@ -440,10 +445,10 @@ if sphinx is not None:
 else:
     TestDocCommand = SphinxExpectedCommand
 
-
 # ############################# #
 # numpy.distutils Configuration #
 # ############################# #
+
 
 def configuration(parent_package='', top_path=None):
     """Recursive construction of package info to be used in setup().
@@ -756,7 +761,6 @@ class BuildExt(build_ext):
             self.patch_extension(ext)
         build_ext.build_extensions(self)
 
-
 ################################################################################
 # Clean command
 ################################################################################
@@ -825,6 +829,7 @@ class CleanCommand(Clean):
 ################################################################################
 # Source tree
 ################################################################################
+
 
 class SourceDistWithCython(sdist):
     """
@@ -895,7 +900,7 @@ class sdist_debian(sdist):
                     self.filelist.exclude_pattern(pattern=base_file + ".html")
 
         # do not include third_party/_local files
-        self.filelist.exclude_pattern(pattern="*", prefix="pyFAI/third_party/_local")
+        # self.filelist.exclude_pattern(pattern="*", prefix="pyFAI/third_party/_local")
 
     def make_distribution(self):
         self.prune_file_list()
@@ -968,10 +973,10 @@ class PyFaiTestData(Command):
             for afile in datafiles:
                 tarball.add(os.path.join("testimages", afile), afile)
 
-
 # ##### #
 # setup #
 # ##### #
+
 
 def get_project_configuration(dry_run):
     """Returns project arguments for setup"""
@@ -1043,6 +1048,7 @@ def get_project_configuration(dry_run):
         'pyFAI-recalib = pyFAI.app.recalib:main',
         'pyFAI-saxs = pyFAI.app.saxs:main',
         'pyFAI-waxs = pyFAI.app.waxs:main',
+        'sparsify-Bragg = pyFAI.app.sparsify:main',
     ]
 
     entry_points = {

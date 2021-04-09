@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "08/01/2021"
 
 import logging
 import numpy
@@ -40,8 +38,6 @@ from silx.gui import colors
 import silx.gui.plot
 from silx.gui.plot.tools import PositionInfo
 from silx.gui.plot.items.shape import Shape
-
-from pyFAI.third_party import six
 import pyFAI.utils
 import pyFAI.massif
 import pyFAI.control_points
@@ -58,7 +54,6 @@ from ..helper import model_transform
 from ..widgets.ColoredCheckBox import ColoredCheckBox
 from ..widgets.AdvancedSpinBox import AdvancedSpinBox
 from ..dialog import MessageBox
-
 
 _logger = logging.getLogger(__name__)
 
@@ -1086,6 +1081,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
             def selectRing(ringNumber):
                 self.__ringSelection.selectRing(ringNumber)
+
             action.triggered.connect(functools.partial(selectRing, i))
             action.setShortcut(qt.QKeySequence(key))
             self.addAction(action)
@@ -1210,7 +1206,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         def createIcon(identifiyers):
             for i in identifiyers:
-                if isinstance(i, six.string_types):
+                if isinstance(i, (str,)):
                     if qt.QIcon.hasThemeIcon(i):
                         return qt.QIcon.fromTheme(i)
                 elif isinstance(i, qt.QIcon):

@@ -32,18 +32,21 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "18/12/2018"
+__date__ = "11/01/2021"
 __license__ = "MIT"
 
+import sys
 import distutils.util
 import logging
 import os
 import subprocess
-import sys
 import time
 import unittest
 import collections
 from argparse import ArgumentParser
+
+if sys.version_info[0] < 3:
+    raise RuntimeError("Python2 is not more supported")
 
 
 class StreamHandlerUnittestReady(logging.StreamHandler):
@@ -87,7 +90,6 @@ logger.setLevel(logging.WARNING)
 
 logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
 
-
 try:
     import resource
 except ImportError:
@@ -98,6 +100,7 @@ try:
     import importlib
     importer = importlib.import_module
 except ImportError:
+
     def importer(name):
         module = __import__(name)
         # returns the leaf module, instead of the root module
@@ -197,7 +200,7 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
         if resource:
             self.__mem_start = \
                 resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        self.__time_start = time.time()
+        self.__time_start = time.perf_counter()
 
     def stopTest(self, test):
         unittest.TextTestRunner.resultclass.stopTest(self, test)
@@ -212,7 +215,7 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
         else:
             memusage = 0
         self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s",
-                         time.time() - self.__time_start,
+                         time.perf_counter() - self.__time_start,
                          memusage, test.id())
 
 
@@ -420,7 +423,6 @@ PROJECT_PATH = project_module.__path__[0]
 test_options = get_test_options(project_module)
 """Contains extra configuration for the tests."""
 
-
 epilog = """Environment variables:
 WITH_QT_TEST=False to disable graphical tests
 PYFAI_OPENCL=False to disable OpenCL tests.
@@ -458,7 +460,6 @@ parser.add_argument("test_name", nargs='*',
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
 
-
 test_verbosity = 1
 use_buffer = True
 if options.verbose == 1:
@@ -488,13 +489,6 @@ if options.qt_binding:
     binding = options.qt_binding.lower()
     if binding == "pyqt4":
         logger.info("Force using PyQt4")
-        if sys.version < "3.0.0":
-            try:
-                import sip
-                sip.setapi("QString", 2)
-                sip.setapi("QVariant", 2)
-            except Exception:
-                logger.warning("Cannot set sip API")
         import PyQt4.QtCore  # noqa
     elif binding == "pyqt5":
         logger.info("Force using PyQt5")
@@ -532,7 +526,6 @@ if test_options is not None:
 else:
     logger.warning("No test options available.")
 
-
 if not options.test_name:
     # Do not use test loader to avoid cryptic exception
     # when an error occur during import
@@ -551,7 +544,6 @@ if result.wasSuccessful():
     exit_status = 0
 else:
     exit_status = 1
-
 
 if options.coverage:
     cov.stop()

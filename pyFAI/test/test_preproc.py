@@ -28,14 +28,11 @@
 
 "test suite for preprocessing corrections"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2019"
-
+__date__ = "16/10/2020"
 
 import os
 import unittest
@@ -44,13 +41,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 from ..engines import preproc as python_preproc
 from ..ext import preproc as cython_preproc
 from .utilstest import UtilsTest
 
 
 class TestPreproc(unittest.TestCase):
+
     def one_test(self, preproc):
         """
         The final pattern should look like a 4x4 square with 1 and -1 elsewhere.

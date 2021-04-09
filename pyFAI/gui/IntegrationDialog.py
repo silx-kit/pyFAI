@@ -31,13 +31,12 @@
 A graphical tool for performing azimuthal integration on series of files.
 
 """
-from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "16/10/2020"
 __status__ = "development"
 
 import logging
@@ -96,7 +95,7 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
 
     def __resultReceived(self, result):
         isFiltered = not self._displayResult.isChecked()
-        now = time.time()
+        now = time.perf_counter()
         if self.__lastDisplay is not None:
             # Display a new result every 500ms, no more
             if now - self.__lastDisplay < 0.5:
@@ -316,8 +315,8 @@ class IntegrationDialog(qt.QWidget):
         if filename is not None:
             logger.info("Dump to %s", filename)
             try:
-                with open(filename, "w") as myFile:
-                    json.dump(to_save, myFile, indent=4)
+                with open(filename, "w") as myfile:
+                    json.dump(to_save, myfile, indent=4)
             except IOError as error:
                 logger.error("Error while saving config: %s", error)
             else:

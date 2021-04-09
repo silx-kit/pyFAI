@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/01/2020
+:Date: 07/01/2021
 :Keywords: Installation procedure
 :Target: System administrators under windows
 
@@ -21,16 +21,14 @@ Get Python
 Unlike on Unix computers, Python is not available by default on Windows computers.
 We recommend you to install the 64 bit version of `Python <http://python.org>`_,
 preferably the latest 64 bits version from the
-`3.6 series <https://www.python.org/downloads/release/python-3600/>`_.
-Python 2.7 and 3.4 are no more supported since pyFAI v0.19.
-Python 2.6, 3.2 and 3.3 are no more supported since pyFAI v0.12.
+`Python 3 series 64 bits <https://www.python.org/downloads/windows/>`_.
 
 The 64 bits version is strongly advised if your hardware and operating system
 supports it, as the 32 bits versions is
 limited to 2 GB of memory, hence unable to treat large images (like 4096 x 4096).
 The test suite is not passing on Windows 32 bits due to the limited amount of
-memory available to the Python process,
-nevertheless, pyFAI is running on Windows 32 bits (but not as well).
+memory available to the Python process.
+PyFAI has not been tested under Windows 32 bits for a while now, this configuration is unsupported.
 
 Alternative Scientific Python stacks exists, like
 `Enthought Python Distribution <https://www.enthought.com>`_ ,
@@ -40,14 +38,12 @@ They all offer most of the scientific packages already installed which makes
 the installation of dependencies much easier.
 On the other hand, they all offer different packaging system and we cannot
 support all of them.
-Moreover, distribution from *Enthought* and *Continuum* are not free so you
+Moreover, distribution from *Enthought* and *Anaconda* are not free so you
 should be able to get support from those companies.
 
 **Nota:** any flavor of those Python distribution is probably incompatible with
 any other due to change in compiler or Python compilation options.
 Mixing them is really looking for trouble, hence strongly discouraged.
-If you want an advice on which scientific python distribution for Windows to use,
-I would recommend `WinPython <http://winpython.github.io/>`_.
 
 Install PIP
 -----------
@@ -59,15 +55,8 @@ download and install software packages from there.
 PIP has revolutionize the way Python libraries are installed as it is able to
 select the right build for your system, or compile them from the sources,
 which could be extremely tricky otherwise.
-If you installed Python compatible with pyFAI (3.5 or newer), PIP is already installed.
-If **pip** is not yet installed on your system, download
-`get_pip.py <https://bootstrap.pypa.io/get-pip.py>`_ and run it:
-
-.. code-block:: shell
-
-   python get-pip.py
-
-Assuming python.exe is already in your PATH.
+If you installed Python compatible with pyFAI (3.6 or newer), PIP is already installed.
+From now on, one expects *python.exe* to be in your **PATH**.
 
 **Nota:**  Because PIP connects to the network, the *http_proxy* and *https_proxy*
 environment variable may need to be set-up properly.

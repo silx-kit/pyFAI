@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2019"
+__date__ = "16/10/2020"
 
 import logging
 import os.path
@@ -44,7 +42,6 @@ from ..helper.SynchronizeRawView import SynchronizeRawView
 from ..helper.MarkerManager import MarkerManager
 from ..helper.SynchronizeMaskToolColor import SynchronizeMaskToolColor
 from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
-
 
 _logger = logging.getLogger(__name__)
 

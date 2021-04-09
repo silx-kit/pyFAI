@@ -27,13 +27,11 @@
 
 """Module for writing HDF5 in the Nexus style"""
 
-from __future__ import absolute_import, print_function, division
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2020"
+__date__ = "19/11/2020"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -146,13 +144,16 @@ class Nexus(object):
                 self.mode = "r"
             else:
                 self.mode = "a"
-        elif "w" in mode:
-            pre_existing = False
 
-        self.h5 = h5py.File(self.filename, mode=self.mode)
+        if self.mode == "r" and h5py.version.version_tuple >= (2, 9):
+            self.file_handle = open(self.filename, mode=self.mode + "b")
+            self.h5 = h5py.File(self.file_handle, mode=self.mode)
+        else:
+            self.file_handle = None
+            self.h5 = h5py.File(self.filename, mode=self.mode)
         self.to_close = []
 
-        if not pre_existing:
+        if not pre_existing or "w" in mode:
             self.h5.attrs["NX_class"] = "NXroot"
             self.h5.attrs["file_time"] = get_isotime()
             self.h5.attrs["file_name"] = self.filename
@@ -169,6 +170,8 @@ class Nexus(object):
                 entry["end_time"] = end_time
             self.h5.attrs["file_update_time"] = get_isotime()
         self.h5.close()
+        if self.file_handle:
+            self.file_handle.close()
 
     # Context manager for "with" statement compatibility
     def __enter__(self, *arg, **kwarg):
@@ -233,7 +236,7 @@ class Nexus(object):
 
         :param entry: name of the entry
         :param program_name: value of the field as string
-        :param title: description of experiment
+        :param title: description of experiment as str
         :param force_time: enforce the start_time (as string!)
         :param force_name: force the entry name as such, without numerical suffix.
         :return: the corresponding HDF5 group
@@ -333,6 +336,21 @@ class Nexus(object):
                 if isinstance(grp[name], h5py.Dataset) and
                 self.get_attr(grp[name], attr) == value]
         return coll
+
+    def get_default_NXdata(self):
+        """Return the default plot configured in the nexus structure.
+        
+        :return: the group with the default plot or None if not found
+        """
+        entry_name = self.h5.attrs.get("default")
+        if entry_name:
+            entry_grp = self.h5.get(entry_name)
+            nxdata_name = entry_grp.attrs.get("default")
+            if nxdata_name:
+                if nxdata_name.startswith("/"):
+                    return self.h5.get(nxdata_name)
+                else:
+                    return entry_grp.get(nxdata_name)
 
     def deep_copy(self, name, obj, where="/", toplevel=None, excluded=None, overwrite=False):
         """

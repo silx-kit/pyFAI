@@ -23,13 +23,12 @@
 # THE SOFTWARE.
 #
 "bunch of utility function/static classes to handle testing environment"
-from __future__ import print_function, division, absolute_import, with_statement
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2019"
+__date__ = "08/01/2021"
 
 PACKAGE = "pyFAI"
 
@@ -44,9 +43,6 @@ import tempfile
 import getpass
 import functools
 
-
-from argparse import ArgumentParser
-from ..third_party import six
 from silx.resources import ExternalResources
 from ..directories import testimages
 
@@ -67,6 +63,7 @@ class TestOptions(object):
     """
     Class providing useful stuff for preparing tests.
     """
+
     def __init__(self):
         self.WITH_QT_TEST = True
         """Qt tests are included"""
@@ -298,7 +295,7 @@ def diff_img(ref, obt, comment=""):
         y = imax // ref.shape[-1]
         ax3.plot([x], [y], "o", scalex=False, scaley=False)
         fig.show()
-        six.moves.input()
+        input()
 
 
 def diff_crv(ref, obt, comment=""):
@@ -316,14 +313,16 @@ def diff_crv(ref, obt, comment=""):
         _im_obt = ax1.plot(obt, label="%s obt" % comment)
         _im_delta = ax2.plot(delta, label="delta")
         fig.show()
-        six.moves.input()
+        input()
 
 
 if sys.hexversion >= 0x030400F0:  # Python >= 3.4
+
     class ParametricTestCase(unittest.TestCase):
         pass
 
 else:
+
     class ParametricTestCase(unittest.TestCase):
         """TestCase with subTest support for Python < 3.4.
 
@@ -352,8 +351,8 @@ else:
 
             return short_desc if short_desc else None
 
-
 # Test logging messages #######################################################
+
 
 class TestLogging(logging.Handler):
     """Context checking the number of logging messages from a specified Logger.
@@ -470,6 +469,7 @@ def test_logging(logger=None, critical=None, error=None,
     :param int notset: Expected number of NOTSET messages.
                        Default: Do not check.
     """
+
     def decorator(func):
         test_context = TestLogging(logger, critical, error,
                                    warning, info, debug, notset)
@@ -479,7 +479,9 @@ def test_logging(logger=None, critical=None, error=None,
             with test_context:
                 result = func(*args, **kwargs)
             return result
+
         return wrapper
+
     return decorator
 
 

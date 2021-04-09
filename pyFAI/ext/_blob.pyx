@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#cython: embedsignature=True, language_level=3
+#cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping:
 ##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
@@ -38,12 +38,12 @@ It is used to find peaks in images by performing subsequent blurs.
 
 __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "30/04/2020"
+__date__ = "15/12/2020"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
 import numpy
-cimport numpy
+from libc.stdint cimport int8_t
 from cython.parallel import prange
 
 
@@ -57,10 +57,10 @@ def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):
     """
     cdef bint do_mask = mask is not None
     cdef int ns, ny, nx, s, x, y
-    cdef numpy.int8_t m
+    cdef int8_t m
     cdef float c
-    cdef numpy.int8_t[:, ::1] cmask
-    cdef numpy.int8_t[:, :, ::1] is_max
+    cdef int8_t[:, ::1] cmask
+    cdef int8_t[:, :, ::1] is_max
     ns = dogs.shape[0]
     ny = dogs.shape[1]
     nx = dogs.shape[2]

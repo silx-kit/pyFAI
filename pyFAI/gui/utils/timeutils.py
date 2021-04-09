@@ -25,13 +25,9 @@
 """This module provides convenient functions about time.
 """
 
-from __future__ import division
-
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/05/2019"
-
+__date__ = "16/10/2020"
 
 import logging
 import time
@@ -51,8 +47,8 @@ class Timer(object):
     """
 
     def __init__(self, seconds):
-        self.end_time = time.time() + seconds
+        self.end_time = time.perf_counter() + seconds
 
     def isTimeout(self):
         """Returns True if the timeout was reached."""
-        return time.time() >= self.end_time
+        return time.perf_counter() >= self.end_time

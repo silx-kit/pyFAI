@@ -28,11 +28,9 @@
 
 """Test module for pyFAI GUI"""
 
-from __future__ import absolute_import, division, print_function
-
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/03/2019"
+__date__ = "16/10/2020"
 
 import sys
 import os

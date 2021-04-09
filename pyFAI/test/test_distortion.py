@@ -27,15 +27,12 @@
 #  THE SOFTWARE.
 
 "test suite for Distortion correction class"
-from __future__ import absolute_import, division, print_function
-
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2018"
-
+__date__ = "28/01/2021"
 
 import unittest
 import numpy
@@ -68,11 +65,11 @@ class TestHalfCCD(unittest.TestCase):
         cls.raw = fabio.open(cls.halfFrelon).data
         cls.dis = distortion.Distortion(cls.det, method="LUT")
         cls.larger = numpy.zeros(cls.det.shape)
-        cls.larger[:-1, :] = cls.raw
+        cls.larger[:-1,:] = cls.raw
         cls.preproc = numpy.zeros(cls.raw.shape + (3,))
-        cls.preproc[:, :, 0] = cls.raw
-        cls.preproc[:, :, 1] = cls.raw  # assume poissonian noise
-        cls.preproc[:, :, 2] = 1
+        cls.preproc[:,:, 0] = cls.raw
+        cls.preproc[:,:, 1] = cls.raw  # assume poissonian noise
+        cls.preproc[:,:, 2] = 1
 
     @classmethod
     def tearDownClass(cls):
@@ -91,13 +88,13 @@ class TestHalfCCD(unittest.TestCase):
 
         """
         self.dis.reset(prepare=False)
-        onp = self.dis.calc_pos(use_cython=False)[:, :, ::2, :]
+        onp = self.dis.calc_pos(use_cython=False)[:,:,::2,:]
         self.assertEqual(self.dis.delta1, 3)
         self.assertEqual(self.dis.delta2, 3)
 
         self.dis.reset(prepare=False)
-        ocy = self.dis.calc_pos(use_cython=True)[:, :, ::2, :]
-        ref = self.ref.calc_pos()[:, :, ::2, :]
+        ocy = self.dis.calc_pos(use_cython=True)[:,:,::2,:]
+        ref = self.ref.calc_pos()[:,:,::2,:]
         self.assertEqual(abs(onp - ocy).max(), 0, "Numpy and cython implementation are equivalent")
         self.assertLess(abs(ocy - ref).max(), 1e-3,
                         "equivalence of the _distortion and distortion Distortion classes at 1 per 1000 of a pixel")
@@ -153,7 +150,7 @@ class TestHalfCCD(unittest.TestCase):
         except MemoryError as error:
             logger.warning("TestHalfCCD.test_ref_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
             return
-        cor = self.dis.correct(self.raw)[:-1, :]
+        cor = self.dis.correct(self.raw)[:-1,:]
         delta = abs(cor - self.fit2d)
         logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)
@@ -166,8 +163,8 @@ class TestHalfCCD(unittest.TestCase):
         self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
         a, b, c = self.dis.correct(self.preproc)
-        cor = c[:-1, :, 0]
-        error = b[:-1, :]
+        cor = c[:-1,:, 0]
+        error = b[:-1,:]
         delta = abs(cor - self.fit2d)
         logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)
@@ -195,7 +192,7 @@ class TestHalfCCD(unittest.TestCase):
         except MemoryError as error:
             logger.warning("TestHalfCCD.test_ref_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
             return
-        cor = self.dis.correct(self.raw)[:-1, :]
+        cor = self.dis.correct(self.raw)[:-1,:]
         delta = abs(cor - self.fit2d)
         logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)
@@ -209,8 +206,8 @@ class TestHalfCCD(unittest.TestCase):
 
         # Now test with error propagation
         a, b, c = self.dis.correct(self.preproc)
-        cor = c[:-1, :, 0]
-        error = b[:-1, :]
+        cor = c[:-1,:, 0]
+        error = b[:-1,:]
         delta = abs(cor - self.fit2d)
         logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)
@@ -230,21 +227,24 @@ class TestHalfCCD(unittest.TestCase):
 
 class TestImplementations(unittest.TestCase):
     """Ensure equivalence of implementation between numpy & Cython"""
-    halfFrelon = "LaB6_0020.edf"
-    splineFile = "halfccd.spline"
+    _halfFrelon = "LaB6_0020.edf"
+    _splineFile = "halfccd.spline"
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        super(TestImplementations, cls).setUpClass()
         """Download files"""
-        self.halfFrelon = UtilsTest.getimage(self.__class__.halfFrelon)
-        self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
-        self.det = detectors.FReLoN(self.splineFile)
-        self.det.binning = 5, 8  # larger binning makes python loops faster
-        self.dis = distortion.Distortion(self.det, self.det.shape, resize=False,
-                                         mask=numpy.zeros(self.det.shape, "int8"))
+        cls.halfFrelon = UtilsTest.getimage(cls._halfFrelon)
+        cls.splineFile = UtilsTest.getimage(cls._splineFile)
+        cls.det = detectors.FReLoN(cls.splineFile)
+        cls.det.binning = 5, 8  # larger binning makes python loops faster
+        cls.dis = distortion.Distortion(cls.det, cls.det.shape, resize=False,
+                                         mask=numpy.zeros(cls.det.shape, "int8"))
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = None
+    @classmethod
+    def tearDownClass(cls):
+        super(TestImplementations, cls).tearDownClass()
+        cls.fit2dFile = cls.halfFrelon = cls.splineFile = cls.det = cls.dis = cls.fit2d = cls.raw = None
 
     def test_calc_pos(self):
         self.dis.reset(prepare=False)
@@ -295,102 +295,51 @@ class TestImplementations(unittest.TestCase):
 
 
 class TestOther(unittest.TestCase):
-    @unittest.skipIf(True, "TODO: fix broken test")
+
     def test_manual(self):
         data = numpy.empty((20, 20), dtype=numpy.float32)
         Q = distortion.Quad(data)
         Q.reinit(7.5, 6.5, 2.5, 5.5, 3.5, 1.5, 8.5, 1.5)
         Q.init_slope()
-        # print(Q.calc_area_AB(Q.A0, Q.B0)
-        # print(Q.calc_area_BC(Q.B0, Q.C0)
-        # print(Q.calc_area_CD(Q.C0, Q.D0)
-        # print(Q.calc_area_DA(Q.D0, Q.A0)
         print(Q.calc_area())
         Q.populate_box()
         print(Q)
-        # print(Q.get_box().sum()
         print(data.sum())
-        print("#" * 50)
-
         Q.reinit(8.5, 1.5, 3.5, 1.5, 2.5, 5.5, 7.5, 6.5)
         Q.init_slope()
-        # print(Q.calc_area_AB(Q.A0, Q.B0)
-        # print(Q.calc_area_BC(Q.B0, Q.C0)
-        # print(Q.calc_area_CD(Q.C0, Q.D0)
-        # print(Q.calc_area_DA(Q.D0, Q.A0)
-        print(Q.calc_area())
         Q.populate_box()
-        print(Q)
-        # print(Q.get_box().sum()
-        print(data.sum())
-
         Q.reinit(0.9, 0.9, 0.8, 6.9, 4.3, 3.9, 4.3, 0.9)
-        # Q = distortion.Quad((-0.3, 1.9), (-0.4, 2.9), (1.3, 2.9), (1.3, 1.9))
         Q.init_slope()
-        print("calc_area_vectorial", Q.calc_area())
-        # print(Q.A0, Q.A1, Q.B0, Q.B1, Q.C0, Q.C1, Q.D0, Q.D1
-        # print("Slope", Q.pAB, Q.pBC, Q.pCD, Q.pDA
-        # print(Q.calc_area_AB(Q.A0, Q.B0), Q.calc_area_BC(Q.B0, Q.C0), Q.calc_area_CD(Q.C0, Q.D0), Q.calc_area_DA(Q.D0, Q.A0)
-        print(Q.calc_area())
         Q.populate_box()
-        print(data.T)
-        # print(Q.get_box().sum()
-        print(Q.calc_area())
-
-        print("#" * 50)
-
-        # workin on 256x256
-        # x, y = numpy.ogrid[:256, :256]
-        # grid = numpy.logical_or(x % 10 == 0, y % 10 == 0) + numpy.ones((256, 256), numpy.float32)
-        # det = detectors.FReLoN("frelon_8_8.spline")
-
-        # working with halfccd spline
-        x, y = numpy.ogrid[:1024, :2048]
-        grid = numpy.logical_or(x % 100 == 0, y % 100 == 0) + numpy.ones((1024, 2048), numpy.float32)
-        det = detectors.FReLoN(UtilsTest.getimage("halfccd.spline"))
-        # working with halfccd spline
-        # x, y = numpy.ogrid[:2048, :2048]
-        # grid = numpy.logical_or(x % 100 == 0, y % 100 == 0).astype(numpy.float32) + numpy.ones((2048, 2048), numpy.float32)
-        # det = detectors.FReLoN("frelon.spline")
-
-        print(det, det.max_shape)
-        dis = distortion.Distortion(det)
-        print(dis)
-        lut = dis.calc_size()
-        print(dis.lut_size)
-        print(lut.mean())
-
-        dis.calc_LUT()
-        out = dis.correct(grid)
-        fabio.edfimage.edfimage(data=out.astype("float32")).write("test_correct.edf")
-
-        print("*" * 50)
-
-        # x, y = numpy.ogrid[:2048, :2048]
-        # grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
-        # det = detectors.FReLoN("frelon.spline")
-        # print(det, det.max_shape
-        # dis = Distortion(det)
-        # print(dis
-        # lut = dis.self.calc_size()
-        # print(dis.lut_size
-        # print("LUT mean & max", lut.mean(), lut.max()
-        # dis.calc_LUT()
-        # out = dis.correct(grid)
-        # fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
-        from ..gui.matplotlib import pylab
-        pylab.imshow(out)  # , interpolation="nearest")
-        pylab.show()
-
 
     def test_mask(self):
         d = detectors.detector_factory("Pilatus200k")
-        dc = distortion.Distortion(d, empty=-1)
+        dc = distortion.Distortion(d, empty=-1, method="csr")
+        dc.reset(prepare=True)
+        self.assertEqual(len(dc.lut[0]), numpy.prod(d.shape) - d.mask.sum(), "All empty bins have been removed")
+        w = numpy.where(dc.lut[2][1:] == dc.lut[2][:-1])
+        self.assertEqual(len(w[0]), d.mask.sum(), "masked pixels are all missing")
         a = numpy.random.randint(1, 100, size=d.shape)
         b = dc.correct_ng(a)
-        self.assertGreater(a.min(), 0) #1 is the lowset
-        self.assertLess(b.min(), 0) #-1 have appeared
+        self.assertGreater(a.min(), 0)  # 1 is the lowset
+        self.assertLess(b.min(), 0)  # -1 have appeared
         self.assertLess(b.mean(), a.mean())
+        from ..opencl import ocl, pyopencl
+        if ocl is not None:
+            ctx = ocl.create_context()
+            odevice = ctx.devices[0]
+            oplat = odevice.platform
+            device_id = oplat.get_devices().index(odevice)
+            platform_id = pyopencl.get_platforms().index(oplat)
+            target = (platform_id, device_id)
+            dc.reset("csr", target, prepare=True)
+            w = numpy.where(dc.lut[2][1:] == dc.lut[2][:-1])
+            self.assertEqual(len(w[0]), d.mask.sum(), "masked pixels are all missing, opencl")
+            b = dc.correct_ng(a)
+            self.assertGreater(a.min(), 0)  # 1 is the lowset
+            self.assertLess(b.min(), 0)  # -1 have appeared
+            self.assertLess(b.mean(), a.mean())
+
 
 def suite():
     testsuite = unittest.TestSuite()
@@ -402,6 +351,7 @@ def suite():
     testsuite.addTest(TestHalfCCD("test_lut_vs_fit2d"))
     testsuite.addTest(TestHalfCCD("test_csr_vs_fit2d"))
     testsuite.addTest(TestOther("test_mask"))
+    testsuite.addTest(TestOther("test_manual"))
     return testsuite
 
 

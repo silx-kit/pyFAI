@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#cython: embedsignature=True, language_level=3
+#cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/07/2020"
+__date__ = "29/01/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -124,10 +124,14 @@ class HistoBBox1d(CsrIntegrator):
 
         if pos1Range is not None:
             assert pos1.size == self.size, "pos1 size"
-            assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
-            self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
-            self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
+            if delta_pos0 is None:
+                "No pixel splitting"
+                self.cpos1_max = self.cpos1_min = numpy.ascontiguousarray((pos1).ravel(), dtype=position_d)
+            else:
+                assert delta_pos1.size == self.size, "delta_pos1.size == self.size"    
+                self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
+                self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
             self.pos1_min, pos1_maxin = pos1Range
             self.pos1_max = calc_upper_bound(<position_t> pos1_maxin)
         else:
@@ -253,15 +257,14 @@ class HistoBBox1d(CsrIntegrator):
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, 
             position_t min0, max0, fbin0_min, fbin0_max
-            cnumpy.int32_t k, idx, i, j, bin0_min, bin0_max, bins = self.bins, size, nnz
+            int32_t k, idx, i, j, bin0_min, bin0_max, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
-            cnumpy.int32_t[::1] indptr, indices
+            int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            int32_t[::1] indptr, indices
             float[::1] data
             position_t[::1] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
             mask_t[::1] cmask
             acc_t inv_area, delta_left, delta_right
-            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
 
         size = self.size
         if self.check_mask:
@@ -316,7 +319,7 @@ class HistoBBox1d(CsrIntegrator):
         # just recycle the outmax array
         outmax[:] = 0
 
-        lut_nbytes = nnz * (sizeof(cnumpy.int32_t) + sizeof(cnumpy.float32_t))
+        lut_nbytes = nnz * (sizeof(int32_t) + sizeof(float32_t))
         #Check we have enough memory
         if (os.name == "posix"):
             key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
@@ -397,11 +400,10 @@ class HistoBBox1d(CsrIntegrator):
         '''
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
-            cnumpy.int32_t k, idx, bin0, bins = self.bins, size, nnz
+            int32_t k, idx, bin0, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
-            cnumpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
-            cnumpy.int32_t[::1] indptr, indices
+            int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
+            int32_t[::1] indptr, indices
             float[::1] data
             position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
             mask_t[::1] cmask
@@ -443,7 +445,7 @@ class HistoBBox1d(CsrIntegrator):
         # just recycle the outmax array
         outmax[:] = 0
 
-        lut_nbytes = nnz * (sizeof(cnumpy.int32_t) + sizeof(cnumpy.float32_t))
+        lut_nbytes = nnz * (sizeof(int32_t) + sizeof(float32_t))
         #Check we have enough memory
         if (os.name == "posix"):
             key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
@@ -760,15 +762,14 @@ class HistoBBox2d(object):
             int bin0_min, bin0_max, bins0 = self.bins[0]
             int bin1_min, bin1_max, bins1 = self.bins[1]
             int k, idx, i, j, size = self.size, nnz
-            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
             bint check_mask
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
             position_t[::1] cpos1_inf = self.cpos1_inf
             position_t[::1] cpos1_sup = self.cpos1_sup
-            cnumpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            cnumpy.int32_t[::1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
-            cnumpy.int32_t[::1] indices
+            int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            int32_t[::1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
+            int32_t[::1] indices
             data_t[::1] data
             mask_t[::1] cmask
             acc_t inv_area, delta_left, delta_right, delta_down, delta_up
@@ -817,7 +818,7 @@ class HistoBBox2d(object):
         self.indptr = numpy.asarray(indptr)
         # Just recycle the outmax array
         outmax[:, :] = 0
-        lut_nbytes = nnz * (sizeof(float) + sizeof(cnumpy.int32_t)) + bins0 * bins1 * sizeof(cnumpy.int32_t)
+        lut_nbytes = nnz * (sizeof(float) + sizeof(int32_t)) + bins0 * bins1 * sizeof(int32_t)
         #Check we have enough memory
         if (os.name == "posix"):
             key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
@@ -992,13 +993,12 @@ class HistoBBox2d(object):
             float delta1 = self.delta1, pos1_min = self.pos1_min, c1, fbin1
             int bin0, bins0 = self.bins[0]
             int bin1, bins1 = self.bins[1]
-            Py_ssize_t memsize, key_page_cnt, key_page_size, lut_nbytes
-            cnumpy.int32_t k, idx, size = self.size, nnz
+            int32_t k, idx, size = self.size, nnz
             bint check_mask
             double[::1] cpos0 = self.cpos0
             double[::1] cpos1 = self.cpos1
-            cnumpy.int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            cnumpy.int32_t[::1] indptr, indices
+            int32_t[:, ::1] outmax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            int32_t[::1] indptr, indices
             float[::1] data
             mask_t[::1] cmask
 
@@ -1030,7 +1030,7 @@ class HistoBBox2d(object):
         self.indptr = numpy.asarray(indptr)
         # Just recycle the outmax array
         outmax[:, :] = 0
-        lut_nbytes = nnz * (sizeof(float) + sizeof(cnumpy.int32_t)) + bins0 * bins1 * sizeof(cnumpy.int32_t)
+        lut_nbytes = nnz * (sizeof(float) + sizeof(int32_t)) + bins0 * bins1 * sizeof(int32_t)
         #Check we have enough memory
         if (os.name == "posix"):
             key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
@@ -1108,7 +1108,7 @@ class HistoBBox2d(object):
 
         """
         cdef:
-            cnumpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
+            int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
             acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
             data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
@@ -1117,7 +1117,7 @@ class HistoBBox2d(object):
             data_t[::1] merged = numpy.empty(bins, dtype=data_d)
             data_t[::1] ccoef = self.data, 
             data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            cnumpy.int32_t[::1] indices = self.indices, indptr = self.indptr
+            int32_t[::1] indices = self.indices, indptr = self.indptr
 
         assert weights.size == size, "weights size"
 

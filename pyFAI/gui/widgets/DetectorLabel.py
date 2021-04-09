@@ -23,11 +23,9 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
-
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/02/2019"
+__date__ = "16/10/2020"
 
 import logging
 
@@ -35,7 +33,6 @@ from silx.gui import qt
 from silx.utils import html
 
 import pyFAI.detectors
-
 
 _logger = logging.getLogger(__name__)
 

@@ -26,7 +26,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-
 """Calibrant
 
 A module containing classical calibrant and also tools to generate d-spacing.
@@ -35,15 +34,12 @@ Interesting formula:
 http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
 """
 
-from __future__ import absolute_import, print_function, with_statement
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2019"
+__date__ = "19/01/2021"
 __status__ = "production"
-
 
 import os
 import logging
@@ -211,6 +207,7 @@ class Cell(object):
             self.selection_rules.append(lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3))
         if self._type == "R":
             self.selection_rules.append(lambda h, k, l: ((h - k + l) % 3 == 0))
+
     type = property(get_type, set_type)
 
     def d(self, hkl):
@@ -319,6 +316,7 @@ class Calibrant(object):
     A calibrant is a reference compound where the d-spacing (interplanar distances)
     are known. They are expressed in Angstrom (in the file)
     """
+
     def __init__(self, filename=None, dSpacing=None, wavelength=None):
         object.__init__(self)
         self._filename = filename
@@ -577,6 +575,10 @@ class Calibrant(object):
 
     def get_max_wavelength(self, index=None):
         """Calculate the maximum wavelength assuming the ring at index is visible
+
+        Bragg's law says: $\\lambda = 2d sin(\\theta)$
+        So at 180° $\\lambda = 2d$
+
         :param index: Ring number, otherwise assumes all rings are visible
         :return: the maximum visible wavelength
         """
@@ -585,7 +587,7 @@ class Calibrant(object):
             index = len(dSpacing) - 1
         if index >= len(dSpacing):
             raise IndexError("There are not than many (%s) rings indices in this calibrant" % (index))
-        return dSpacing[index] * 1e-10
+        return dSpacing[index] * 2e-10
 
     def get_peaks(self, unit="2th_deg"):
         """Calculate the peak position as
@@ -668,6 +670,7 @@ class CalibrantFactory(object):
 
     Each time one retrieves an object it is a new geniune new calibrant (unmodified)
     """
+
     def __init__(self, basedir=None):
         """
         Constructor
@@ -722,7 +725,6 @@ class CalibrantFactory(object):
 
 CALIBRANT_FACTORY = CalibrantFactory()
 """Default calibration factory provided by the library."""
-
 
 ALL_CALIBRANTS = CALIBRANT_FACTORY
 

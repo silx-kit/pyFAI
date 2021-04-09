@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "07/07/2020"
+__date__ = "29/03/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -58,9 +58,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
     It also performs the preprocessing using the preproc kernel
     """
-    BLOCK_SIZE = 64
-    buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
-               BufferDescription("output4", 4, numpy.float32, mf.WRITE_ONLY),
+    BLOCK_SIZE = 32
+    # Intel CPU driver calims preferred workgroup is 128 !
+    buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
@@ -88,7 +89,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     def __init__(self, lut, image_size, checksum=None,
                  empty=None, unit=None, bin_centers=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
-                 block_size=None, profile=False):
+                 block_size=None, profile=False, extra_buffers=None):
         """
         :param lut: 3-tuple of arrays
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
@@ -107,6 +108,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
+        :param extra_buffers: List of additional buffer description  needed by derived classes 
         """
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
@@ -119,7 +121,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             raise RuntimeError("data.shape[0] != indices.shape[0]")
         self.data_size = self._data.shape[0]
         self.size = image_size
-        self.empty = empty or 0.0
+        self.empty = empty or 0
         self.unit = unit
         self.bin_centers = bin_centers
         # a few place-folders
@@ -134,26 +136,38 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "solidangle": None,
                           "absorption": None,
                           "dark_variance": None}
-
+        platform = self.ctx.devices[0].platform.name.lower()
         if block_size is None:
-            block_size = self.BLOCK_SIZE
+            if "nvidia" in  platform:
+                block_size = 32
+            elif "amd" in  platform:
+                block_size = 64
+            elif "intel" in  platform:
+                block_size = 128
+            else:
+                block_size = self.BLOCK_SIZE
+            self.force_workgroup_size = False
+        else:
+            block_size = int(block_size)
+            self.force_workgroup_size = True
 
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
-        self.wdim_bins = (self.bins * self.BLOCK_SIZE),
-        self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
 
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
+
+        if extra_buffers is not None:
+            self.buffers += extra_buffers
 
         self.buffers += [BufferDescription("data", self.data_size, numpy.float32, mf.READ_ONLY),
                          BufferDescription("indices", self.data_size, numpy.int32, mf.READ_ONLY),
                          BufferDescription("indptr", (self.bins + 1), numpy.int32, mf.READ_ONLY),
                          BufferDescription("sum_data", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("averint", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("stderr", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("stderrmean", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("averint", self.bins, numpy.float32, mf.READ_WRITE),
+                         BufferDescription("stderr", self.bins, numpy.float32, mf.READ_WRITE),
+                         BufferDescription("stderrmean", self.bins, numpy.float32, mf.READ_WRITE),
                          BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
                          ]
@@ -164,9 +178,17 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.set_kernel_arguments()
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
-        self.send_buffer(self._data, "data")
+        if numpy.allclose(self._data, numpy.ones(self._data.shape)):
+            self.cl_mem["data"] = None
+            self.cl_kernel_args["csr_sigma_clip4"]["data"] = None
+            self.cl_kernel_args["csr_integrate"]["data"] = None
+            self.cl_kernel_args["csr_integrate4"]["data"] = None
+        else:
+            self.send_buffer(self._data, "data")
         self.send_buffer(self._indices, "indices")
         self.send_buffer(self._indptr, "indptr")
+        if "amd" in  platform:
+            self.workgroup_size["csr_integrate4_single"] = (1, 1)  # Very bad performances on AMD GPU for diverging threads!
 
     def __copy__(self):
         """Shallow copy of the object
@@ -221,9 +243,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
         if default_compiler_options:
             compile_options += " " + default_compiler_options
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
-        for kernel_name, kernel in self.kernels.get_kernels().items():
-            wg = kernel_workgroup_size(self.program, kernel)
-            self.workgroup_size[kernel_name] = (min(wg, self.BLOCK_SIZE),)  # this is a tuple
+        for kernel_name in self.kernels.__dict__:
+            if kernel_name.startswith("_"):
+                continue
+            if self.force_workgroup_size:
+                self.workgroup_size[kernel_name] = (self.BLOCK_SIZE, self.BLOCK_SIZE)
+            else:
+                wg_max = min(self.BLOCK_SIZE, self.kernels.max_workgroup_size(kernel_name))
+                wg_min = min(self.BLOCK_SIZE, self.kernels.min_workgroup_size(kernel_name))
+                self.workgroup_size[kernel_name] = (wg_min, wg_max)
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -285,6 +313,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("data", self.cl_mem["data"]),
                                                             ("indices", self.cl_mem["indices"]),
                                                             ("indptr", self.cl_mem["indptr"]),
+                                                            ("empty", numpy.float32(self.empty)),
+                                                            ("azimuthal", numpy.int8(1)),
                                                             ("merged8", self.cl_mem["merged8"]),
                                                             ("averint", self.cl_mem["averint"]),
                                                             ("stderr", self.cl_mem["stderr"]),
@@ -296,7 +326,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("indptr", self.cl_mem["indptr"]),
                                                               ("cutoff", numpy.float32(5)),
                                                               ("cycle", numpy.int32(5)),
-                                                              ("azimuthal", numpy.int32(0)),
+                                                              ("azimuthal", numpy.int8(1)),
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("stderr", self.cl_mem["stderr"]),
@@ -387,9 +417,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         events = []
         with self.sem:
             self.send_buffer(data, "image")
-            wg = self.workgroup_size["memset_out"]
-            wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
-            memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_out"].values()))
+            wg = max(self.workgroup_size["memset_out"])
+            wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
+            memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_out"].values()))
             events.append(EventDescription("memset_out", memset))
             kw_corr = self.cl_kernel_args["corrections"]
             kw_int = self.cl_kernel_args["csr_integrate"]
@@ -465,8 +495,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
 
-            wg = self.workgroup_size["corrections"]
-            ev = self.kernels.corrections(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
+            wg = max(self.workgroup_size["corrections"])
+            wdim_data = (self.size + wg - 1) & ~(wg - 1),
+            ev = self.kernels.corrections(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
             events.append(EventDescription("corrections", ev))
 
             if preprocess_only:
@@ -475,23 +506,22 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 events.append(EventDescription("copy D->H image", ev))
                 if self.profile:
                     self.events += events
-                ev.wait()
+                # ev.wait()
                 return image
 
-            wg = self.workgroup_size["csr_integrate"][0]
-            wdim_bins = (self.bins * wg),
-            if wg == 1:
-                wg = self.workgroup_size["csr_integrate_single"][0]
-                wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
-                integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw_int.values())
+            wg_min, wg_max = self.workgroup_size["csr_integrate"]
+            if wg_max == 1:
+                wg_min, wg_max = self.workgroup_size["csr_integrate_single"]
+                wdim_bins = (self.bins + wg_max - 1) & ~(wg_max - 1),
+                integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg_max,), *kw_int.values())
                 events.append(EventDescription("csr_integrate_single", integrate))
             else:
-                wdim_bins = (self.bins * wg),
-                integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw_int.values())
+                wdim_bins = (self.bins * wg_min),
+                integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg_min,), *kw_int.values())
                 events.append(EventDescription("csr_integrate", integrate))
             if out_merged is None:
                 merged = numpy.empty(self.bins, dtype=numpy.float32)
-            elif out_merge is False:
+            elif out_merged is False:
                 merged = None
             else:
                 merged = out_merged.data
@@ -517,7 +547,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if sum_count is not None:
                 ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
                 events.append(EventDescription("copy D->H sum_count", ev))
-            ev.wait()
+            # ev.wait()
         if self.profile:
             self.events += events
         return merged, sum_data, sum_count
@@ -548,7 +578,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
-        :param poissonian: set to use signal as variance (minimum 1)
+        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -569,9 +599,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         events = []
         with self.sem:
             self.send_buffer(data, "image")
-            wg = self.workgroup_size["memset_ng"]
-            wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
-            memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
+            wg = max(self.workgroup_size["memset_ng"])
+            wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
+            memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
             kw_corr = self.cl_kernel_args["corrections4"]
             kw_int = self.cl_kernel_args["csr_integrate4"]
@@ -594,6 +624,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
             kw_corr["poissonian"] = numpy.int8(1 if poissonian else 0)
+            kw_int["azimuthal"] = numpy.int8(poissonian is False)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:
@@ -656,19 +687,21 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
 
-            wg = self.workgroup_size["corrections4"]
-            ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
+            wg = max(self.workgroup_size["corrections4"])
+            wdim_data = (self.size + wg - 1) & ~(wg - 1),
+            ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
             events.append(EventDescription("corrections4", ev))
 
-            wg = self.workgroup_size["csr_integrate4"][0]
-            if wg == 1:
-                wg = self.workgroup_size["csr_integrate4_single"][0]
+            kw_int["empty"] = dummy
+            wg_min, wg_max = self.workgroup_size["csr_integrate4"]
+            if  wg_max == 1:
+                wg = max(self.workgroup_size["csr_integrate4_single"])
                 wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
                 integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("csr_integrate4_single", integrate))
             else:
-                wdim_bins = (self.bins * wg),
-                integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg,), *kw_int.values())
+                wdim_bins = (self.bins * wg_min),
+                integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
                 events.append(EventDescription("csr_integrate4", integrate))
 
             if out_merged is None:
@@ -763,9 +796,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
             error_model = ""
         with self.sem:
             self.send_buffer(data, "image")
-            wg = self.workgroup_size["memset_ng"]
-            wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
-            memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
+            wg = max(self.workgroup_size["memset_ng"])
+            wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
+            memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
             kw_corr = self.cl_kernel_args["corrections4"]
             kw_int = self.cl_kernel_args["csr_sigma_clip4"]
@@ -851,25 +884,24 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
 
-            wg = self.workgroup_size["corrections4"]
-            ev = self.kernels.corrections4(self.queue, self.wdim_data, wg, *list(kw_corr.values()))
+            wg = max(self.workgroup_size["corrections4"])
+            wdim_data = (self.size + wg - 1) & ~(wg - 1),
+            ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
             events.append(EventDescription("corrections", ev))
 
-            wg = self.workgroup_size["csr_sigma_clip4"][0]
             kw_int["cutoff"] = numpy.float32(cutoff)
             kw_int["cycle"] = numpy.int32(cycle)
-            if error_model.startswith("azim"):
-                kw_int["azimuthal"] = numpy.int32(1)
-            else:
-                kw_int["azimuthal"] = numpy.int32(0)
+            kw_int["azimuthal"] = numpy.int8(error_model.startswith("azim"))
 
-            wdim_bins = (self.bins * wg),
-            if wg == 1:
+            wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
+
+            if wg_max == 1:
                 raise RuntimeError("csr_sigma_clip4 is not yet available in single threaded OpenCL !")
-                integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
-                events.append(EventDescription("integrate4_single", integrate))
+                # integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg_min,), *kw_int.values())
+                # events.append(EventDescription("integrate4_single", integrate))
             else:
-                integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg,), *kw_int.values())
+                wdim_bins = (self.bins * wg_min),
+                integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
                 events.append(EventDescription("csr_sigma_clip4", integrate))
 
             if out_merged is None:

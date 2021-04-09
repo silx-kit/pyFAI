@@ -28,14 +28,11 @@
 
 "test suite for masked arrays"
 
-from __future__ import absolute_import, division, print_function
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/05/2019"
-
+__date__ = "13/01/2021"
 
 import unittest
 import logging
@@ -46,7 +43,6 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
-from ..third_party import six
 from ..utils import mathutil
 
 
@@ -70,8 +66,9 @@ class TestSaxs(unittest.TestCase):
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def testNumpy(self):
-        qref, Iref, _ = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
-        q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="numpy")
+        method = ("no", "histogram", "python")
+        qref, Iref, _ = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson")
+        q, I, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -88,8 +85,9 @@ class TestSaxs(unittest.TestCase):
 
     @unittest.skipIf(UtilsTest.low_mem, "skipping test using >100M")
     def testCython(self):
-        qref, Iref, _s = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
-        q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="cython")
+        method = ("no", "histogram", "cython")
+        qref, Iref, _s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson")
+        q, I, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -105,8 +103,9 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(R < 20, "Cython: Measure R=%s<2" % R)
 
     def testSplitBBox(self):
-        qref, Iref, _s = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
-        q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="splitbbox")
+        method = ("bbox", "histogram", "cython")
+        qref, Iref, _s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson")
+        q, I, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -122,8 +121,9 @@ class TestSaxs(unittest.TestCase):
         self.assertEqual(R < 20, True, "SplitBBox: Measure R=%s<20" % R)
 
     def testSplitPixel(self):
-        qref, Iref, _s = self.ai.integrate1d(self.data, self.npt, error_model="poisson")
-        q, I, s = self.ai.integrate1d(self.data, self.npt, error_model="poisson", method="splitpixel")
+        method = ("full", "histogram", "cython")
+        qref, Iref, _s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson")
+        q, I, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -152,5 +152,5 @@ if __name__ == '__main__':
     if logger.getEffectiveLevel() == logging.DEBUG:
         pylab.legend()
         pylab.show()
-        six.moves.input()
+        input()
         pylab.clf()
