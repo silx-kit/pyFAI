@@ -1098,7 +1098,7 @@ def get_project_configuration(dry_run):
                         package_data=package_data,
                         zip_safe=False,
                         entry_points=entry_points,
-			license="MIT",
+                        license="MIT",
                         python_requires='>=3.6',
                         )
     return setup_kwargs
