@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "22/04/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -176,7 +176,7 @@ class GeometryTransformation(object):
             self.pos_names = ("pos",)
         for key in self.param_names + self.pos_names:
             if key in self.variables:
-                raise RuntimeError("The keyword %s is already defined, please chose another variable name")
+                raise RuntimeError(f"The keyword `{key}` is already defined, please chose another variable name")
             self.variables[key] = numpy.NaN
 
         self.codes = [numexpr.NumExpr(expr) for expr in (self.dist_expr, self.poni1_expr, self.poni2_expr,
