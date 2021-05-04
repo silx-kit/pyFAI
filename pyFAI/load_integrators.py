@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "31/03/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -105,11 +105,13 @@ except ImportError as error:
 else:
     # Register splitBBoxCSR integrators
     IntegrationMethod(1, "no", "CSR", "cython", old_method="nosplit_csr",
-                      class_funct_legacy=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate_legacy))
+                      class_funct_legacy=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate_legacy),
+                      class_funct_ng=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate_ng))
     IntegrationMethod(2, "no", "CSR", "cython", old_method="nosplit_csr",
                       class_funct_legacy=(splitBBoxCSR.HistoBBox2d, splitBBoxCSR.HistoBBox2d.integrate))
     IntegrationMethod(1, "bbox", "CSR", "cython", old_method="csr",
-                      class_funct_legacy=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate_legacy))
+                      class_funct_legacy=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate_legacy),
+                      class_funct_ng=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate_ng))
     IntegrationMethod(2, "bbox", "CSR", "cython", old_method="csr",
                       class_funct_legacy=(splitBBoxCSR.HistoBBox2d, splitBBoxCSR.HistoBBox2d.integrate))
     from .engines import CSR_engine as py_CSR_engine
@@ -118,6 +120,10 @@ else:
     IntegrationMethod(2, "no", "CSR", "python",
                       class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
     # error propagation does not work properly with pixel splitting for now
+    IntegrationMethod(1, "bbox", "CSR", "python",
+                      class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+    IntegrationMethod(1, "full", "CSR", "python",
+                      class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
 #     IntegrationMethod(1, "bbox", "CSR", "python",
 #                       class_funct=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
 #     IntegrationMethod(2, "bbox", "CSR", "python",

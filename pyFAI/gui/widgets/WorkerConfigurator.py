@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/03/2021"
 __status__ = "development"
 
 import logging
@@ -108,6 +108,7 @@ class WorkerConfigurator(qt.QWidget):
 
         # Connect file selection windows
         self.file_import.clicked.connect(self.__selectFile)
+        self.poni_save.clicked.connect(self.__savePoni)
 
         # Connect mask/dark/flat
         self.mask_file.setModel(self.__model.maskFileModel)
@@ -521,6 +522,32 @@ class WorkerConfigurator(qt.QWidget):
             self.loadFromPoniFile(filename)
         else:
             logger.error("File %s unsupported", filename)
+
+    def __savePoni(self):
+        dialog = qt.QFileDialog(self)
+        dialog.setWindowTitle("Save poni file")
+        dialog.setModal(True)
+        dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
+
+        builder = FilterBuilder.FilterBuilder()
+        builder.addFileFormat("PONI files", "poni")
+#         builder.addFileFormat("JSON files", "json")
+        dialog.setNameFilters(builder.getFilters())
+
+        result = dialog.exec_()
+        if not result:
+            return
+
+        filename = dialog.selectedFiles()[0]
+        config = self.getConfig()
+        if config.get("wavelength") is None:
+            config.pop("wavelength")
+        from ...detectors import detector_factory
+        detector = detector_factory(config.get("detector"), config.get("detector_config"))
+        from ...geometry import Geometry
+        ai = Geometry(detector=detector)
+        ai.set_config(config)
+        ai.save(filename)
 
     def __maskFileChanged(self):
         model = self.__model.maskFileModel

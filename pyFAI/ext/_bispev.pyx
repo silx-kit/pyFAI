@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#cython: embedsignature=True, language_level=3
+#cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping:
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True

@@ -26,8 +26,9 @@
 #  THE SOFTWARE.
 
 cimport cython 
-from libc.math cimport floor, ceil
+from libc.math cimport floor, ceil, INFINITY
 import logging
+
 logger = logging.getLogger("bilinear")
 
 cdef class Bilinear:
@@ -215,7 +216,7 @@ cdef class Bilinear:
             float tmp, value, old_value
 
         value = self.data[current0, current1]
-        old_value = value - 1.0
+        old_value = -INFINITY
         new0, new1 = current0, current1
 
         while value > old_value:

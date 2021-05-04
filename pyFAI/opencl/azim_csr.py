@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "03/03/2021"
+__date__ = "29/03/2021"
 __copyright__ = "2014-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -138,7 +138,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "dark_variance": None}
         platform = self.ctx.devices[0].platform.name.lower()
         if block_size is None:
-
             if "nvidia" in  platform:
                 block_size = 32
             elif "amd" in  platform:
@@ -147,6 +146,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 block_size = 128
             else:
                 block_size = self.BLOCK_SIZE
+            self.force_workgroup_size = False
+        else:
+            block_size = int(block_size)
+            self.force_workgroup_size = True
 
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
@@ -175,7 +178,13 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.set_kernel_arguments()
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
-        self.send_buffer(self._data, "data")
+        if numpy.allclose(self._data, numpy.ones(self._data.shape)):
+            self.cl_mem["data"] = None
+            self.cl_kernel_args["csr_sigma_clip4"]["data"] = None
+            self.cl_kernel_args["csr_integrate"]["data"] = None
+            self.cl_kernel_args["csr_integrate4"]["data"] = None
+        else:
+            self.send_buffer(self._data, "data")
         self.send_buffer(self._indices, "indices")
         self.send_buffer(self._indptr, "indptr")
         if "amd" in  platform:
@@ -237,9 +246,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
         for kernel_name in self.kernels.__dict__:
             if kernel_name.startswith("_"):
                 continue
-            wg_max = min(self.BLOCK_SIZE, self.kernels.max_workgroup_size(kernel_name))
-            wg_min = min(self.BLOCK_SIZE, self.kernels.min_workgroup_size(kernel_name))
-            self.workgroup_size[kernel_name] = (wg_min, wg_max)
+            if self.force_workgroup_size:
+                self.workgroup_size[kernel_name] = (self.BLOCK_SIZE, self.BLOCK_SIZE)
+            else:
+                wg_max = min(self.BLOCK_SIZE, self.kernels.max_workgroup_size(kernel_name))
+                wg_min = min(self.BLOCK_SIZE, self.kernels.min_workgroup_size(kernel_name))
+                self.workgroup_size[kernel_name] = (wg_min, wg_max)
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -302,6 +314,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("indices", self.cl_mem["indices"]),
                                                             ("indptr", self.cl_mem["indptr"]),
                                                             ("empty", numpy.float32(self.empty)),
+                                                            ("azimuthal", numpy.int8(1)),
                                                             ("merged8", self.cl_mem["merged8"]),
                                                             ("averint", self.cl_mem["averint"]),
                                                             ("stderr", self.cl_mem["stderr"]),
@@ -313,7 +326,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("indptr", self.cl_mem["indptr"]),
                                                               ("cutoff", numpy.float32(5)),
                                                               ("cycle", numpy.int32(5)),
-                                                              ("azimuthal", numpy.int32(0)),
+                                                              ("azimuthal", numpy.int8(1)),
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("stderr", self.cl_mem["stderr"]),
@@ -565,7 +578,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
-        :param poissonian: set to use signal as variance (minimum 1)
+        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -611,6 +624,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
             kw_corr["poissonian"] = numpy.int8(1 if poissonian else 0)
+            kw_int["azimuthal"] = numpy.int8(poissonian is False)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:
@@ -877,10 +891,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             kw_int["cutoff"] = numpy.float32(cutoff)
             kw_int["cycle"] = numpy.int32(cycle)
-            if error_model.startswith("azim"):
-                kw_int["azimuthal"] = numpy.int32(1)
-            else:
-                kw_int["azimuthal"] = numpy.int32(0)
+            kw_int["azimuthal"] = numpy.int8(error_model.startswith("azim"))
 
             wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
 

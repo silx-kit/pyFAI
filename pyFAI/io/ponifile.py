@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "06/04/2021"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -124,6 +124,8 @@ class PoniFile(object):
 
         if "distance" in config:
             self._dist = float(config["distance"])
+        elif "dist" in config:
+            self._dist = float(config["dist"])
         if "poni1" in config:
             self._poni1 = float(config["poni1"])
         if "poni2" in config:

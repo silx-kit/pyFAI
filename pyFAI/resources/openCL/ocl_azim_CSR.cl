@@ -3,11 +3,11 @@
  *            Kernel with full pixel-split using a CSR sparse matrix
  *
  *
- *   Copyright (C) 2012-2020 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2021 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 07/07/2020
+ *   Last revision: 23/03/2021
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
  */
 
 #include "for_eclipse.h"
-
+#define NULL 0
 /**
  * \brief OpenCL workgroup function for sparse matrix-dense vector multiplication
  *
@@ -74,7 +74,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               coef = data[k];
+               coef = (data == NULL)?1.0f:data[k];
                idx = indices[k];
                signal = vector[idx];
                if (isfinite(signal)) {
@@ -144,10 +144,11 @@ static inline float4 CSRxVec2(const   global  float2   *data,
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               float coef = coefs[k];
+               float coef, signal, norm;
+               coef = (coefs == NULL)?1.0f:coefs[k];
                idx = indices[k];
-               float signal = data[idx].s0;
-               float norm = data[idx].s1;
+               signal = data[idx].s0;
+               norm = data[idx].s1;
                if (isfinite(signal) && isfinite(norm)) {
                    // defined in kahan.cl
                    sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
@@ -184,8 +185,171 @@ static inline float4 CSRxVec2(const   global  float2   *data,
     return super_sum[0];
 }
 
+
+/* _accumulate_poisson: accumulate one value assuming a known error model like the poissonian model
+ * 
+ * All processings are compensated for error accumulation 
+ * 
+ * :param accumulator8: float8 containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
+ * :param value4: one quadret read from the preproc4 array containing Signal, Variance, normalization and 1 if the pixel is valid.
+ * :param coef: how much of that pixel contributes due to pixel splitting [0-1] 
+ * :retuen: the updated accumulator8
+ * */
+
+static inline float8 _accumulate_poisson(float8 accum8,
+                                         float4 value4,
+                                         float coef){
+     
+    float signal, variance, norm, count;
+    signal = value4.s0;
+    variance = value4.s1;
+    norm = value4.s2;
+    count = value4.s3;
+    
+    if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0))
+    {
+        float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K;
+        sum_signal_K = (float2)(accum8.s0, accum8.s1);  
+        sum_variance_K = (float2)(accum8.s2, accum8.s3); 
+        sum_norm_K = (float2)(accum8.s4, accum8.s5);
+        sum_count_K = (float2)(accum8.s6, accum8.s7);
+        // defined in kahan.cl
+        sum_signal_K = compensated_sum(sum_signal_K, comp_prod(coef, signal));
+        sum_variance_K = compensated_sum(sum_variance_K, comp_prod(coef * coef, variance));
+        sum_norm_K = compensated_sum(sum_norm_K, comp_prod(coef, norm));
+        sum_count_K = compensated_sum(sum_count_K, comp_prod(coef, count));
+        accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+    }
+    return accum8;
+}
+
+/* _accumulate_azimuthal: accumulate one value considering the azimuthal regions
+ * 
+ * All processings are compensated for error accumulation
+ * See Schubert & Gretz 2018, especially Eq22. 
+ * 
+ * :param accumulator8: float8 containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
+ * :param value4: one quadret read from the preproc4 array containing Signal, (unused variance), normalization and 1 if the pixel is valid.
+ * :param coef: how much of that pixel contributes due to pixel splitting [0-1] 
+ * :retuen: the updated accumulator8
+ * 
+ * Nota: here the variance of the pixel is not used, the variance is calculated from the distance from the pixel to the mean.
+ * This algorithm is not numerically as stable as the `poisson` variant  
+ *   
+ * */
+
+static inline float8 _accumulate_azimuthal(float8 accum8,
+                                           float4 value4,
+                                           float coef){
+     
+    float signal, norm, count;
+    signal = value4.s0;
+//    variance = quatret.s1;
+    norm = value4.s2;
+    count = value4.s3;
+    
+    if (isfinite(signal) && isfinite(norm) && (count > 0) && (coef > 0))
+    {
+        if (accum8.s4 == 0.0f){
+            // Initialize the accumulator with data from the pixel
+            accum8 = (float8)(comp_prod(coef, signal),
+                              (float2)(0.0f, 0.0f),
+                              comp_prod(coef, norm), 
+                              comp_prod(coef, count));
+        }
+        else{
+            //The accumulator is already initialized
+            float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K, x, delta, delta2, omega_A, omega_B, omega3;
+            sum_signal_K = (float2)(accum8.s0, accum8.s1);
+            sum_variance_K = (float2)(accum8.s2, accum8.s3); 
+            omega_A = (float2)(accum8.s4, accum8.s5);
+            sum_count_K = (float2)(accum8.s6, accum8.s7);
+            // defined in kahan.cl
+            omega_B = comp_prod(coef, norm);
+            sum_norm_K = compensated_sum(omega_A, omega_B);
+            sum_count_K = compensated_sum(sum_count_K, comp_prod(coef, count));
+
+            // XX = XX + delta²/(w*W*(w+W))
+            //delta = sum_signal_K - sum_norm_K*signal/norm
+//            x = comp_prod(signal, 1.0f/norm);
+            x = comp_prod(coef, signal);
+            delta = compensated_sum(compensated_mul(omega_B, sum_signal_K), - compensated_mul(omega_A, x));               
+            delta2 = compensated_mul(delta, delta);
+            omega3 = compensated_mul(sum_norm_K, compensated_mul(omega_A, omega_B));
+            sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));
+            
+            // at the end as X_A is used in the variance XX_A
+            sum_signal_K = compensated_sum(sum_signal_K, x);
+            accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+        }        
+    }
+    return accum8;
+}
+
+/* _merge_poisson: Merge two partial dataset assuming a known error model like the poissonian model
+ * 
+ * All processings are compensated for error accumulation 
+ * 
+ * :param here, there: two float8-accumulators containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
+ * :return: the updated accumulator8
+ * */
+
+static inline float8 _merge_poisson(float8 here,
+                                    float8 there){
+    float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K;
+    sum_signal_K = compensated_sum((float2)(here.s0, here.s1), 
+                                   (float2)(there.s0, there.s1));
+    sum_variance_K = compensated_sum((float2)(here.s2, here.s3), 
+                                     (float2)(there.s2, there.s3));
+    sum_norm_K = compensated_sum((float2)(here.s4, here.s5),
+                                 (float2)(there.s4, there.s5));
+    sum_count_K = compensated_sum((float2)(here.s6, here.s7),
+                                  (float2)(there.s6, there.s7));
+    return (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+}
+
+/* _merge_azimuthal: Merge two partial dataset considering the azimuthal regions
+ * 
+ * All processings are compensated for error accumulation
+ * See Schubert & Gretz 2018, especially Eq22. 
+ * 
+ * :param here, there: two float8-accumulators containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
+ * :return: the updated accumulator8
+ * 
+ * Nota: here the variance of the pixel is not used, the variance is calculated from the distance from the pixel to the mean.
+ * This algorithm is not numerically as stable as the `poisson` variant  
+ *   
+ * */
+
+static inline float8 _merge_azimuthal(float8 here,
+                                      float8 there){
+    if (here.s6 == 0.0f){ // Check the counter is not null 
+        return there;
+    }
+    else if (there.s6 == 0.0f){
+        return here;
+    }
+    float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K, delta, delta2, omega3, omega_A, omega_B, V_A, V_B;
+    V_A = (float2)(here.s0, here.s1);
+    V_B = (float2)(there.s0, there.s1);
+    sum_signal_K = compensated_sum(V_A, V_B);
+    sum_variance_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
+    omega_A = (float2)(here.s4, here.s5);
+    omega_B = (float2)(there.s4, there.s5);
+    sum_norm_K = compensated_sum(omega_A, omega_B);
+    sum_count_K = compensated_sum((float2)(here.s6, here.s7), (float2)(there.s6, there.s7));
+    // Add the cross-ensemble part
+    // If one of the sub-ensemble is empty, the cross-region term is empty as well 
+    delta = compensated_sum(compensated_mul(omega_B, V_A), - compensated_mul(omega_A, V_B));
+    delta2 = compensated_mul(delta, delta);
+    omega3 = compensated_mul(sum_norm_K, compensated_mul( omega_A,  omega_B));
+    sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));          
+   
+    return (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+}
+
 /**
- * \brief OpenCL function for 1d azimuthal integration based on CSR matrix multiplication after normalization !
+ * \brief CSRxVec4 OpenCL function for 1d azimuthal integration based on CSR matrix multiplication after normalization !
  *
  * The CSR matrix is represented by a set of 3 arrays (coefs, indices, indptr)
  *
@@ -193,17 +357,17 @@ static inline float4 CSRxVec2(const   global  float2   *data,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
+ * @param azimuthal   set to 1 to estimate the variance from the azimuthal sector, or 0 to use a Poisson-like model        
  * @param super_sum   Local array of float8 of size WORKGROUP_SIZE: mandatory as a static function !
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
  *
  */
-
-
 static inline float8 CSRxVec4(const   global  float4   *data,
                               const   global  float    *coefs,
                               const   global  int      *indices,
                               const   global  int      *indptr,
+                              const           char     azimuthal,
                               volatile local  float8   *super_sum)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
@@ -213,58 +377,41 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
     int bin_size = bin_bounds.y - bin_bounds.x;
     // we use _K suffix to highlight it is float2 used for Kahan summation
-    float2 sum_signal_K = (float2)(0.0f, 0.0f);
-    float2 sum_variance_K = (float2)(0.0f, 0.0f);
-    float2 sum_norm_K = (float2)(0.0f, 0.0f); 
-    float2 sum_count_K = (float2)(0.0f, 0.0f);
+    float8 accum8 = (float8) (0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
     int idx, k, j;
 
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               float coef = coefs[k];
+               float coef, signal, variance, norm, count;
+               coef = (coefs == NULL)?1.0f: coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
-               float signal = quatret.s0;
-               float variance = quatret.s1;
-               float norm = quatret.s2;
-               float count = quatret.s3;
-               if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0))
-               {
-                   // defined in kahan.cl
-                   sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
-                   sum_variance_K = kahan_sum(sum_variance_K, coef * coef * variance);
-                   sum_norm_K = kahan_sum(sum_norm_K, coef * norm);
-                   sum_count_K = kahan_sum(sum_count_K, coef * count);
-               };//end if finite
+               if (azimuthal){
+                   accum8 = _accumulate_azimuthal(accum8, quatret, coef);
+               }
+               else{
+                   accum8 = _accumulate_poisson(accum8, quatret, coef);
+               }
        } //end if k < bin_bounds.y
     };//for j
 /*
  * parallel reduction
  */
-    if (bin_size < active_threads) {
-        if (thread_id_loc < bin_size) {
-            super_sum[thread_id_loc] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
-        }
-        else {
-            super_sum[thread_id_loc] = (float8)(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-        }
-    }
-    else {
-        super_sum[thread_id_loc] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
-    }
+    super_sum[thread_id_loc] = accum8;
     barrier(CLK_LOCAL_MEM_FENCE);
 
     while (active_threads > 1) {
         active_threads /= 2;
         if (thread_id_loc < active_threads) {
-            float8 here =  super_sum[thread_id_loc];
-            float8 there = super_sum[thread_id_loc + active_threads];
-            sum_signal_K = compensated_sum((float2)(here.s0, here.s1), (float2)(there.s0, there.s1));
-            sum_variance_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
-            sum_norm_K = compensated_sum((float2)(here.s4, here.s5), (float2)(there.s4, there.s5));
-            sum_count_K = compensated_sum((float2)(here.s6, here.s7), (float2)(there.s6, there.s7));
-            super_sum[thread_id_loc] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
+            if (azimuthal){
+                super_sum[thread_id_loc] = _merge_azimuthal(super_sum[thread_id_loc], 
+                                                            super_sum[thread_id_loc + active_threads]);
+            }//if azimuthal
+            else{
+                super_sum[thread_id_loc] = _merge_poisson(super_sum[thread_id_loc], 
+                                                          super_sum[thread_id_loc + active_threads]);
+            }//if poisson
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
@@ -323,75 +470,6 @@ static inline int _sigma_clip4(         global  float4   *data,
     return counter[0];
 }// functions
 
-/* Calculate the standard deviation of the signal within a bin assuming an azimuthal symmetry
- * 
- * 
- * @return: 2tuple containing std=sqrt(sum_error_squared/count) & sem=sqrt(sum_error_squared)/count
- */
-static inline float2 _azimuthal_deviation(        global  float4   *data, 
-                                          const   global  float    *coefs,
-                                          const   global  int      *indices,
-                                          const   global  int      *indptr,
-                                          const           float    aver,
-                                          volatile local  float4  *shared4)
-{
-    // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
-    int bin_num = get_group_id(0);
-    int thread_id_loc = get_local_id(0);
-    int active_threads = get_local_size(0);
-    int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
-    int bin_size = bin_bounds.y - bin_bounds.x;
-    // we use _K suffix to highlight it is float2 used for Kahan summation
-    float4 sum_K = (float4)(0.0f, 0.0f,0.0f, 0.0f);
-    float coef, signal;
-    int idx, k, j;
-    float2 sum_variance_K = (float2)(0.0f, 0.0f);
-    float2 sum_count_K = (float2)(0.0f, 0.0f);
-
-    // each thread processes a few points according to the LUT. 
-    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads){
-        k = j+thread_id_loc;
-        if (k < bin_bounds.y){
-               coef = coefs[k];
-               idx = indices[k];
-               float4 quatret = data[idx];
-               if (isfinite(quatret.s0) && isfinite(quatret.s1) && (quatret.s2>0) && (quatret.s3>0)){
-                   // defined in kahan.cl
-                   float delta = coef * (aver - (quatret.s0/quatret.s2));
-                   sum_variance_K = kahan_sum(sum_variance_K, delta*delta);
-                   sum_count_K = kahan_sum(sum_count_K, coef * quatret.s3);
-               }//end if finite
-       } //end if k < bin_bounds.y
-    }//for j
-
-    // parallel reduction between threads in a workgoup
-    int index;
-    if (bin_size < active_threads) {
-        if (thread_id_loc < bin_size)
-            shared4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
-        else
-            shared4[thread_id_loc] = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-    }
-    else
-        shared4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
-
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    while (active_threads > 1) {
-        active_threads /= 2;
-        if (thread_id_loc < active_threads) {            
-            float4 here =  shared4[thread_id_loc];
-            float4 there = shared4[thread_id_loc + active_threads];
-            sum_variance_K = compensated_sum((float2)(here.s0, here.s1), (float2)(there.s0, there.s1));
-            sum_count_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
-            shared4[thread_id_loc] = (float4)(sum_variance_K, sum_count_K);
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-    }
-    return (float2)(sqrt(shared4[0].s0/shared4[0].s2),
-                    sqrt(shared4[0].s0)/shared4[0].s2);
-}
-
 /**
  * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT in CSR form
  *
@@ -439,15 +517,15 @@ csr_integrate(  const   global  float   *weights,
     float coef, coefp, data;
     int idx, k, j;
 //    if (WORKGROUP_SIZE<active_threads){
-//    	if ((bin_num == 0) &&  (thread_id_loc == 0))
-//    		printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
-//    				WORKGROUP_SIZE, active_threads);
+//        if ((bin_num == 0) &&  (thread_id_loc == 0))
+//            printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
+//                    WORKGROUP_SIZE, active_threads);
 //    }
 
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
-               coef = coefs[k];
+               coef = (coefs == NULL)?1.0f:coefs[k];;
                idx = indices[k];
                data = weights[idx];
                if  (! isfinite(data))
@@ -549,7 +627,7 @@ csr_integrate_single(  const   global  float   *weights,
     int idx, j;
 
     for (j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-        coef = coefs[j];
+        coef = (coefs == NULL)?1.0f:coefs[j];
         idx = indices[j];
         data = weights[idx];
 
@@ -571,15 +649,17 @@ csr_integrate_single(  const   global  float   *weights,
         merged[bin_num] = dummy;
 }//end kernel
 
+
 /**
- * \brief Performs 1d azimuthal integration based on CSR sparse matrix multiplication on preprocessed data
- *  Unlike the former kernel, it works with a workgroup size of ONE (tailor made form MacOS bug)
+ *  \brief csr_integrate4a: Performs 1d azimuthal integration based on CSR sparse matrix multiplication on preprocessed data
+ *  
  *
  * @param weights     Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param empty       Float: value for bad pixels, NaN is a good guess
+ * @param azimuthal_variance int: set to True to calculate the variance on the aximuthal bin instead of propagated from poisson law 
  * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
  * @param averint     Float pointer to the output 1D array with the averaged signal
  * @param stderr      Float pointer to the output 1D array with the propagated error
@@ -587,25 +667,19 @@ csr_integrate_single(  const   global  float   *weights,
  */
 kernel void
 csr_integrate4(  const   global  float4  *weights,
-                 const   global  float   *coefs,
-                 const   global  int     *indices,
-                 const   global  int     *indptr,
-                 const           float    empty,
-                         global  float8  *summed,
-                         global  float   *averint,
-                         global  float   *stderr)
+                  const   global  float   *coefs,
+                  const   global  int     *indices,
+                  const   global  int     *indptr,
+                  const           float    empty,
+                  const           char      azimuthal_variance,      
+                         global  float8   *summed,
+                         global  float    *averint,
+                         global  float    *stderr)
 {
     int bin_num = get_group_id(0);
- 
-//    if (WORKGROUP_SIZE<get_local_size(0)){
-//    	if ((bin_num == 0) &&  (get_local_id(0) == 0))
-//    		printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
-//    				WORKGROUP_SIZE, get_local_size(0));
-//    }
-
-    
+     
     local float8 shared[WORKGROUP_SIZE];
-    float8 result = CSRxVec4(weights, coefs, indices, indptr, shared);
+    float8 result = CSRxVec4(weights, coefs, indices, indptr, azimuthal_variance, shared);
     if (get_local_id(0)==0) {
         summed[bin_num] = result;
         if (result.s4 > 0.0f) {
@@ -640,6 +714,7 @@ csr_integrate4_single(  const   global  float4  *weights,
                         const   global  int     *indices,
                         const   global  int     *indptr,
                         const           float    empty,
+                        const           char     azimuthal,
                                 global  float8  *summed,
                                 global  float   *averint,
                                 global  float   *stderr)
@@ -647,35 +722,24 @@ csr_integrate4_single(  const   global  float4  *weights,
     // each workgroup of size=warp is assinged to 1 bin
     int bin_num = get_global_id(0);
     // we use _K suffix to highlight it is float2 used for Kahan summation
-    float2 sum_signal_K = (float2)(0.0f, 0.0f);
-    float2 sum_variance_K = (float2)(0.0f, 0.0f);
-    float2 sum_norm_K = (float2)(0.0f, 0.0f);
-    float2 sum_count_K = (float2)(0.0f, 0.0f);
+    float8 accum8 = (float8)(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
     for (int j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-        float coef = coefs[j];
+        float coef = (coefs == NULL)?1.0f:coefs[j];
         int idx = indices[j];
-        float4 tmp = weights[idx];
-        float signal = tmp.s0;
-        float variance = tmp.s1;
-        float norm = tmp.s2;
-        float count = tmp.s3;
-
-        if( isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0.0f)) {
-            //Kahan summation allows single precision arithmetics with error compensation
-            //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-            // defined in kahan.cl
-            sum_signal_K = kahan_sum(sum_signal_K ,coef * signal);
-            sum_variance_K = kahan_sum(sum_variance_K, coef * coef * variance);
-            sum_norm_K = kahan_sum(sum_norm_K, coef * norm);
-            sum_count_K = kahan_sum(sum_count_K, coef * count);
-        }//end if finite
+        float4 quatret = weights[idx];
+        if (azimuthal){
+            accum8 = _accumulate_azimuthal(accum8, quatret, coef);
+        }
+        else{
+            accum8 = _accumulate_poisson(accum8, quatret, coef);
+        }
     }//for j
 
-    summed[bin_num] = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
-    if (sum_count_K.s0 > 0.0f) {
-        averint[bin_num] = sum_signal_K.s0 / sum_norm_K.s0;
-        stderr[bin_num] = sqrt(sum_variance_K.s0) / sum_norm_K.s0;
+    summed[bin_num] = accum8;
+    if (accum8.s6 > 0.0f) {
+        averint[bin_num] = accum8.s0 / accum8.s4;
+        stderr[bin_num] = sqrt(accum8.s2) / accum8.s4;
     }
     else {
         averint[bin_num] = empty;
@@ -707,7 +771,7 @@ csr_sigma_clip4(          global  float4  *data4,
                   const   global  int     *indptr,
                   const           float    cutoff,
                   const           int      cycle,
-                  const           int      azimuthal,
+                  const           char     azimuthal,
                           global  float8  *summed,
                           global  float   *averint,
                           global  float   *stdevpix,
@@ -723,21 +787,13 @@ csr_sigma_clip4(          global  float4  *data4,
     // 3 is the smallest integer above sqrt(2pi) -> math domain error  
     nbpix = max(3, indptr[bin_num + 1] - indptr[bin_num]);
     
-    
     // first calculation of azimuthal integration to initialize aver & std
     
-    float8 result = CSRxVec4(data4, coefs, indices, indptr, shared8);
+    float8 result = CSRxVec4(data4, coefs, indices, indptr, azimuthal, shared8);
     if (result.s4 > 0.0f){
         aver = result.s0 / result.s4;
-        if (azimuthal){
-            float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
-            std = res2.s0;
-            sem = res2.s1;
-        }             
-        else {
-            std = sqrt(result.s2 / result.s4);
-            sem = sqrt(result.s2) / result.s4;
-        }
+        std = sqrt(result.s2 / result.s4);
+        sem = sqrt(result.s2) / result.s4;
             
     }
     else {
@@ -752,22 +808,14 @@ csr_sigma_clip4(          global  float4  *data4,
 
         float chauvenet_cutoff = max(cutoff, sqrt(2.0f*log((float)nbpix/sqrt(2.0f*M_PI_F))));    
         cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, chauvenet_cutoff, counter);
-		nbpix = max(3, nbpix - cnt);
+        nbpix = max(3, nbpix - cnt);
         
-        result = CSRxVec4(data4, coefs, indices, indptr, shared8);
+        result = CSRxVec4(data4, coefs, indices, indptr, azimuthal, shared8);
 
         if (result.s4 > 0.0f) {
             aver = result.s0 / result.s4;
-            if (azimuthal){
-            	float2 res2 = _azimuthal_deviation(data4, coefs, indices, indptr, aver, (volatile local float4*) shared8);
-            	std = res2.s0;
-            	sem = res2.s1;
-            }                
-            else {
-            	std = sqrt(result.s2 / result.s4);
-            	sem = sqrt(result.s2) / result.s4;
-            }
-                
+            std = sqrt(result.s2 / result.s4);
+            sem = sqrt(result.s2) / result.s4;                
         }
         else {
             aver = NAN;

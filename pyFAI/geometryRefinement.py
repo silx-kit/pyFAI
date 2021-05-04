@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2020"
+__date__ = "22/03/2021"
 __status__ = "development"
 
 import os
@@ -42,6 +42,7 @@ import subprocess
 import logging
 import numpy
 import types
+import math
 from math import pi
 from . import azimuthalIntegrator
 from .calibrant import Calibrant, CALIBRANT_FACTORY
@@ -129,8 +130,12 @@ class GeometryRefinement(AzimuthalIntegrator):
         if (poni1 is None) or (poni2 is None):
             self.guess_poni()
         else:
-            self.poni1 = float(poni1)
-            self.poni2 = float(poni2)
+            if math.isfinite(poni1) and math.isfinite(poni2):
+                self.poni1 = float(poni1)
+                self.poni2 = float(poni2)
+            else:
+                self.guess_poni()
+
         self._dist_min = 0
         self._dist_max = 10
         self._poni1_min = -10000 * self.pixel1

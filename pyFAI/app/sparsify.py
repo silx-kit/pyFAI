@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/03/2021"
+__date__ = "29/03/2021"
 __status__ = "status"
 
 import os
@@ -50,6 +50,7 @@ import sys
 import argparse
 from collections import OrderedDict
 import numpy
+import numexpr
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -62,7 +63,7 @@ except ImportError:
 
 import fabio
 from .. import version, load
-from ..units import R_M
+from ..units import to_unit
 from ..opencl import ocl
 
 if ocl is None:
@@ -156,6 +157,8 @@ def parse():
     group = parser.add_argument_group("Sigma-clipping options")
     group.add_argument("--bins", type=int, default=80,
                        help="Number of radial bins to consider")
+    group.add_argument("--unit", type=str, default="r_m",
+                       help="radial unit to perform the calculation")
     group.add_argument("--cycle", type=int, default=5,
                        help="precision for dummy value")
     group.add_argument("--cutoff-clip", dest="cutoff_clip", type=float, default=5.0,
@@ -163,13 +166,15 @@ def parse():
     group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=3.0,
                        help="Threshold to be used when picking the pixels to be saved")
     group.add_argument("--error-model", dest="error_model", type=str, default="poisson",
-                       help="Statistical model for the signal error, may be `poisson`(default) or `azimuthal` (slower)")
+                       help="Statistical model for the signal error, may be `poisson`(default) or `azimuthal` (slower) or even a simple formula like '5*I+8'")
     group.add_argument("--noise", type=float, default=0.5,
                        help="Noise level: n-sigma cannot be smaller than this value")
 
     group = parser.add_argument_group("Opencl setup options")
+    group.add_argument("--workgroup", type=int, default=None,
+                       help="Enforce the workgroup size for OpenCL kernel. Impacts only on the execution speed, not on the result.")
     group.add_argument("--device", nargs=2, type=int, default=None,
-                       help="definition of thee platform and device identifyer: 2 integers. Use `clinfo` to get a description of your system")
+                       help="definition of the platform and device identifier: 2 integers. Use `clinfo` to get a description of your system")
     group.add_argument("--device-type", type=str, default="all",
                        help="device type like `cpu` or `gpu` or `acc`. Can help to select the proper device.")
     try:
@@ -222,8 +227,9 @@ def process(options):
         mask = ai.detector.mask
     shape = dense[0].shape
 
+    unit = to_unit(options.unit)
     if options.radial_range is not None:
-        rrange = [ i * numpy.mean(ai.detector.pixel1, ai.detector.pixel2) for i in options.radial_range]
+        rrange = [ float(i) for i in options.radial_range]
     else:
         rrange = None
 
@@ -231,7 +237,7 @@ def process(options):
                               options.bins,
                               mask=mask,
                               pos0_range=rrange,
-                              unit=R_M,
+                              unit=unit,
                               split="no",
                               scale=False)
 
@@ -248,23 +254,29 @@ def process(options):
     pf = OCL_PeakFinder(integrator.lut,
                         image_size=shape[0] * shape[1],
                         empty=options.dummy,
-                        unit=R_M,
+                        unit=unit,
                         bin_centers=integrator.bin_centers,
-                        radius=ai._cached_array["r_center"],
+                        radius=ai._cached_array[unit.name.split("_")[0] + "_center"],
                         mask=mask,
                         ctx=ctx,
                         profile=options.profile,
-                        block_size=64)
+                        block_size=options.workgroup)
 
     logger.debug("Start sparsification")
     frames = []
 
     cnt = 0
+    if "I" in options.error_model:
+        variance = numexpr.NumExpr(options.error_model)
+        error_model = None
+    else:
+        error_model = options.error_model
+        variance = None
 
     parameters = OrderedDict([("dummy", options.dummy),
                               ("delta_dummy", options.delta_dummy),
                               ("safe", False),
-                              ("error_model", options.error_model),
+                              ("error_model", error_model),
                               ("cutoff_clip", options.cutoff_clip),
                               ("cycle", options.cycle),
                               ("noise", options.noise),
@@ -272,7 +284,10 @@ def process(options):
                               ("radial_range", rrange)])
     for fabioimage in dense:
         for frame in fabioimage:
-            current = pf.sparsify(frame.data, **parameters)
+            intensity = frame.data
+            current = pf.sparsify(intensity,
+                                  variance=None if variance is None else variance(intensity),
+                                  **parameters)
             frames.append(current)
             if pb:
                 pb.update(cnt, message="%s: %i pixels" % (os.path.basename(fabioimage.filename), current.intensity.size))
@@ -286,6 +301,8 @@ def process(options):
     else:
         print("Saving: " + options.output)
 
+    parameters["unit"] = unit.name.split("_")[0]
+    parameters["error_model"] = options.error_model
     save_sparse(options.output,
                 frames,
                 beamline=options.beamline,

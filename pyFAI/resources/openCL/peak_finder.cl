@@ -3,11 +3,11 @@
  *            OpenCL Kernels  
  *
  *
- *   Copyright (C) 2012-2019 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2021 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 04/12/2019
+ *   Last revision: 15/03/2021
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,17 +45,17 @@
  * 
  * The kernel uses local memory for keeping track of peak count and positions 
  */
-kernel void find_peaks(       global  float4 *preproc4, //both input and output
-                        const global  float  *radius2d,
-                        const global  float  *radius1d,
-                        const global  float  *average1d,
-                        const global  float  *std1d,
-                        const         float   radius_min,
-                        const         float   radius_max,
-                        const         float   cutoff,
-                        const         float   noise,
-                              global  int    *counter,
-                              global  int    *highidx){
+kernel void find_peaks(       global  float4 *preproc4, // both input and output, pixel wise array of (signal, variance, norm, cnt) 
+                        const global  float  *radius2d, // contains the distance to the center for each pixel
+                        const global  float  *radius1d, // Radial bin postion 
+                        const global  float  *average1d,// average intensity in the bin
+                        const global  float  *std1d,    // associated deviation
+                        const         float   radius_min,// minimum radius
+                        const         float   radius_max,// maximum radius 
+                        const         float   cutoff,    // pick pixel with I>avg+min(cutoff*std, noise)
+                        const         float   noise,     // Noise level of the measurement
+                              global  int    *counter,   // Counter of the number of peaks found
+                              global  int    *highidx){  // indexes of the pixels of high intensity
     int tid = get_local_id(0);
     int gid = get_global_id(0);
     int wg = get_local_size(0);

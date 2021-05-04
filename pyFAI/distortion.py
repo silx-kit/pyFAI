@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2021"
+__date__ = "24/03/2021"
 __status__ = "development"
 
 import logging
@@ -508,9 +508,9 @@ class Distortion(object):
                     out = res.intensity
             else:
                 if image.ndim == 2:
-                    out = (res.intensity.reshape(self._shape_out), res.error.reshape(self._shape_out))
+                    out = (res.intensity.reshape(self._shape_out), res.sigma.reshape(self._shape_out))
                 else:
-                    out = (res.intensity, res.error)
+                    out = (res.intensity, res.sigma)
         else:
             if self.lut is None:
                 self.calc_LUT()
