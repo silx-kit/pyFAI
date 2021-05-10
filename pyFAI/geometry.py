@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2021"
+__date__ = "10/05/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1759,6 +1759,7 @@ class Geometry(object):
             chi = self.chiArray(shape)
             with self._sem:
                 if pol is None or (pol.array.shape != shape):
+                    # TODO: use numexpr for evaluation
                     cos2_tth = numpy.cos(tth) ** 2
                     pola = 0.5 * (1.0 + cos2_tth -
                                   factor * numpy.cos(2.0 * (chi + axis_offset)) * (1.0 - cos2_tth))
