@@ -34,12 +34,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2021"
+__date__ = "26/03/2021"
 __status__ = "development"
 
+import inspect
 from logging import getLogger
 logger = getLogger(__name__)
 from collections import OrderedDict, namedtuple
+
 ClassFunction = namedtuple("ClassFunction", ["klass", "function"])
 
 
@@ -382,6 +384,7 @@ class IntegrationMethod:
         assert self.algo_lower in self.AVAILABLE_ALGOS
         assert self.impl_lower in self.AVAILABLE_IMPLS
         self.__class__._registry[self.method] = self
+        self.manage_variance = self._does_manage_variance()
 
     def __repr__(self):
         if self.target:
@@ -389,3 +392,12 @@ class IntegrationMethod:
         else:
             string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation))
         return "IntegrationMethod(%s)" % string
+
+    def _does_manage_variance(self):
+        "Checks if the method handles alone the variance in the case poissonian=True or False"
+        manage_variance = False
+        if self.class_funct_ng and self.class_funct_ng.function:
+            function = self.class_funct_ng.function
+            sig = inspect.signature(function)
+            manage_variance = "poissonian" in sig.parameters
+        return manage_variance

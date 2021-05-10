@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2021"
+__date__ = "09/04/2021"
 __status__ = "stable"
 
 import io
@@ -110,10 +110,11 @@ def get_readme():
 classifiers = ["Development Status :: 5 - Production/Stable",
                "Intended Audience :: Developers",
                "Programming Language :: Python :: 3",
-               "Programming Language :: Python :: 3.5",
                "Programming Language :: Python :: 3.6",
                "Programming Language :: Python :: 3.7",
                "Programming Language :: Python :: 3.8",
+               "Programming Language :: Python :: 3.9",
+               "Programming Language :: Python :: Implementation :: CPython",
                "Programming Language :: Cython",
                "Environment :: Console",
                "Environment :: X11 Applications :: Qt",
@@ -1097,6 +1098,8 @@ def get_project_configuration(dry_run):
                         package_data=package_data,
                         zip_safe=False,
                         entry_points=entry_points,
+                        license="MIT",
+                        python_requires='>=3.6',
                         )
     return setup_kwargs
 

@@ -29,13 +29,13 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "08/03/2021"
-__copyright__ = "2014-2020, ESRF, Grenoble"
+__date__ = "23/03/2021"
+__copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
-import math, copy
+import math
 import numpy
 from ..containers import SparseFrame
 from ..utils import EPS32
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 
 class OCL_PeakFinder(OCL_CSR_Integrator):
-    BLOCK_SIZE = 512  # unlike in OCL_CSR_Integrator, here we need large blocks
+    BLOCK_SIZE = 64  # unlike in OCL_CSR_Integrator, here we need larger blocks
     buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
@@ -158,10 +158,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                radial_range=None):
         """
         Count the number of peaks by:
-        * sigma_clipping within a radial bin to measure the mean and the deviation of the background 
+        * sigma_clipping within a radial bin to measure the mean and the deviation of the background
         * reconstruct the background in 2D
-        * count the number of peaks above mean + cutoff*sigma  
-        
+        * count the number of peaks above mean + cutoff*sigma
+
         Note: this function does not lock the OpenCL context!
 
         :param data: 2D array with the signal
@@ -179,11 +179,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param normalization_factor: divide raw signal by this value
-        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common 
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
-        :param noise: minimum meaningful signal. Fixed threshold for picking 
+        :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
-        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search. 
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
         :return: number of pixel of high intensity found
         """
         events = []
@@ -287,11 +287,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         kw_int = self.cl_kernel_args["csr_sigma_clip4"]
         kw_int["cutoff"] = numpy.float32(cutoff_clip)
         kw_int["cycle"] = numpy.int32(cycle)
-
-        if error_model.startswith("azim"):
-            kw_int["azimuthal"] = numpy.int32(1)
-        else:
-            kw_int["azimuthal"] = numpy.int32(0)
+        kw_int["azimuthal"] = numpy.int8(error_model.startswith("azim"))
 
         wg_min = min(self.workgroup_size["csr_sigma_clip4"])
         wdim_bins = (self.bins * wg_min),
@@ -337,10 +333,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                radial_range=None):
         """
         Count the number of peaks by:
-        * sigma_clipping within a radial bin to measure the mean and the deviation of the background 
+        * sigma_clipping within a radial bin to measure the mean and the deviation of the background
         * reconstruct the background in 2D
-        * count the number of peaks above mean + cutoff*sigma  
-        
+        * count the number of peaks above mean + cutoff*sigma
+
         :param data: 2D array with the signal
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
@@ -357,12 +353,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 
-                   Values of 4-5 are quite common. 
-                   The minimum value is obtained from Chauvenet criterion: sqrt(2ln(n/sqrt(2pi))) 
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping.
+                   Values of 4-5 are quite common.
+                   The minimum value is obtained from Chauvenet criterion: sqrt(2ln(n/sqrt(2pi)))
                    where n is the number of pixel in the bin, usally around 2 to 3.
         :param cycle: perform at maximum this number of cycles. 5 is common.
-        :param noise: minimum meaningful signal. Fixed threshold for picking 
+        :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
         :return: number of pixel of high intensity found
@@ -416,7 +412,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             ev2 = pyopencl.enqueue_copy(self.queue, signal, self.cl_mem["peak_intensity"])
 
             if self.profile:
-                self.events += [EventDescription("copy D->D + cast %s intenity" % dtype.name, ev0),
+                self.events += [EventDescription(f"copy D->D + cast {numpy.dtype(dtype).name} intenity", ev0),
                                 EventDescription("copy D->H peak_position", ev1),
                                 EventDescription("copy D->H peak_intensty", ev2)]
         return indexes, signal
@@ -431,12 +427,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                  cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
                  radial_range=None):
         """
-        Perform a sigma-clipping iterative filter within each along each row. 
+        Perform a sigma-clipping iterative filter within each along each row.
         see the doc of scipy.stats.sigmaclip for more descriptions.
-        
+
         If the error model is "azimuthal": the variance is the variance within a bin,
         which is refined at each iteration, can be costly !
-        
+
         Else, the error is propagated according to:
 
         .. math::
@@ -464,12 +460,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common 
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
-        :param noise: minimum meaningful signal. Fixed threshold for picking 
+        :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
-        :return: SparseFrame object, see `intensity`, `x` and `y` properties   
+        :return: SparseFrame object, see `intensity`, `x` and `y` properties
 
         """
         if isinstance(error_model, str):
@@ -748,9 +744,9 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                noise=1.0
                ):
         """Just count the number of peaks
-        
+
         Note: this method in unprotected
-        
+
         See doc of `count`
         :return: number of peak found in image
         """
@@ -781,16 +777,16 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                noise=1.0
                ):
         """Just count the number of peaks in the image
-        
-        A peak is a positive outlier at background + cutoff * deviation 
+
+        A peak is a positive outlier at background + cutoff * deviation
         where the background is assessed as the mean over a patch of size (window x window)
-        The deviation is the std of the same patch. 
-        
+        The deviation is the std of the same patch.
+
         :param image: 2d array with an image
         :param window: size of the window, i.e. 7 for 7x7 patch size.
         :param threshhold: keep peaks with I > mean + cutoff*std
         :param radius: keep points with centroid on center within this radius (in pixel)
-        :param noise: minimum signal for peak to discard noisy region.        
+        :param noise: minimum signal for peak to discard noisy region.
         :return: number of peak found in image
         """
         assert image.shape == self.shape
@@ -806,13 +802,13 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                  ):
         """
         Search for peaks in this image and return a list of them
-        
+
         :param image: 2d array with an image
         :param window: size of the window, i.e. 7 for 7x7 patch size.
         :param threshhold: keep peaks with I > mean + cutoff*std
         :param radius: keep points with centroid on center within this radius (in pixel)
         :param noise: minimum signal for peak to discard noisy region.
-        :return: SparseFrame object, see `intensity`, `x` and `y` properties   
+        :return: SparseFrame object, see `intensity`, `x` and `y` properties
         """
         assert image.shape == self.shape
         with self.sem:
@@ -851,7 +847,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
 
 def densify(sparse):
     """Convert a SparseFrame object into a dense image
-    
+
     :param sparse: SparseFrame object
     :return: dense image as numpy array
     """

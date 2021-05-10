@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2021"
+__date__ = "31/03/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1157,16 +1157,25 @@ class AzimuthalIntegrator(Geometry):
         else:
             has_flat = "provided"
 
+        poissonian = None
         if variance is not None:
             assert variance.size == data.size
+            do_variance = True
         elif error_model:
             error_model = error_model.lower()
-            if error_model == "poisson":
-                if dark is None:
-                    variance = numpy.ascontiguousarray(abs(data), numpy.float32)
+            do_variance = True
+            if error_model.startswith("poisson"):
+                if method.manage_variance:
+                    poissonian = True
                 else:
-                    variance = abs(data) + abs(dark)
-
+                    if dark is None:
+                        variance = numpy.maximum(data, 1.0).astype(numpy.float32)
+                    else:
+                        variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
+            elif error_model.startswith("azim") and method.manage_variance:
+                poissonian = False
+        else:
+            do_variance = False
         # Prepare LUT if needed!
         if method.algo_lower in ("csr", "lut"):
             # initialize the CSR/LUT integrator in Cython as it may be needed later on.
@@ -1236,6 +1245,7 @@ class AzimuthalIntegrator(Geometry):
                 integr = self.engines[method].engine
                 intpl = integr.integrate_ng(data,
                                             variance=variance,
+                                            poissonian=poissonian,
                                             dummy=dummy,
                                             delta_dummy=delta_dummy,
                                             dark=dark,
@@ -1320,33 +1330,37 @@ class AzimuthalIntegrator(Geometry):
 
                     else:
                         integr = self.engines[method].engine
+                kwargs = {"poissonian": None,
+                          "variance": variance}
                 if method.impl_lower == "opencl":
-                    ocl_kwargs = {"polarization_checksum": polarization_crc,
-                                  "solidangle_checksum": solidangle_crc
-                                  }
-                else:
-                    ocl_kwargs = {}
+                    kwargs["polarization_checksum"] = polarization_crc
+                    kwargs["solidangle_checksum"] = solidangle_crc
+                if error_model:
+                    if error_model.startswith("poisson"):
+                        kwargs["poissonian"] = True
+                        kwargs["variance"] = None
+                    elif error_model.startswith("azim"):
+                        kwargs["poissonian"] = False
+                        kwargs["variance"] = None
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
-                                            variance=variance,
                                             flat=flat, solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
-                                            **ocl_kwargs)
+                                            **kwargs)
             # This section is common to all 3 CSR implementations...
-            if variance is None:
-                result = Integrate1dResult(intpl.position * unit.scale,
-                                           intpl.intensity)
-            else:
+            if do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
-                                           intpl.error)
+                                           intpl.sigma)
+                result._set_sum_variance(intpl.variance)
+            else:
+                result = Integrate1dResult(intpl.position * unit.scale,
+                                           intpl.intensity)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
             result._set_unit(integr.unit)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
-            if variance is not None:
-                result._set_sum_variance(intpl.variance)
             result._set_count(intpl.count)
         # END of CSR/LUT common implementations
         elif (method.method[1:3] == ("no", "histogram") and
@@ -1370,21 +1384,21 @@ class AzimuthalIntegrator(Geometry):
                            polarization=polarization,
                            normalization_factor=normalization_factor,
                            mask=mask,
-                           radial_range=radial_range)
+                           radial_range=radial_range,
+                           poissonian=poissonian)
 
-            if variance is None:
-                result = Integrate1dResult(intpl.position * unit.scale,
-                                           intpl.intensity)
-            else:
+            if do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
-                                           intpl.error)
+                                           intpl.sigma)
+                result._set_sum_variance(intpl.variance)
+            else:
+                result = Integrate1dResult(intpl.position * unit.scale,
+                                           intpl.intensity)
             result._set_compute_engine(integr.__module__ + "." + integr.__name__)
             result._set_unit(unit)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
-            if variance is not None:
-                result._set_sum_variance(intpl.variance)
             result._set_count(intpl.count)
         elif method.method[1:4] == ("no", "histogram", "opencl"):
             if method not in self.engines:
@@ -1436,21 +1450,21 @@ class AzimuthalIntegrator(Geometry):
                                polarization_checksum=polarization_crc,
                                normalization_factor=normalization_factor,
                                radial_range=radial_range,
-                               azimuth_range=azimuth_range)
+                               azimuth_range=azimuth_range,
+                               poissonian=poissonian)
 
-            if variance is None:
-                result = Integrate1dResult(intpl.position * unit.scale,
-                                           intpl.intensity)
-            else:
+            if do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
-                                           intpl.error)
+                                           intpl.sigma)
+                result._set_sum_variance(intpl.variance)
+            else:
+                result = Integrate1dResult(intpl.position * unit.scale,
+                                           intpl.intensity)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
             result._set_unit(integr.unit)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
-            if variance is not None:
-                result._set_sum_variance(intpl.variance)
             result._set_count(intpl.count)
         elif (method.method[2:4] == ("histogram", "cython")):
             integr = method.class_funct_ng.function  # should be histogram[_engine].histogram1d_engine
@@ -1488,14 +1502,14 @@ class AzimuthalIntegrator(Geometry):
                                pos1Range=azimuth_range)
             else:
                 raise RuntimeError("Should not arrive here")
-            if variance is None:
-                result = Integrate1dResult(intpl.position * unit.scale,
-                                           intpl.intensity)
-            else:
+            if do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
-                                           intpl.error)
+                                           intpl.sigma)
                 result._set_sum_variance(intpl.variance)
+            else:
+                result = Integrate1dResult(intpl.position * unit.scale,
+                                           intpl.intensity)
             result._set_compute_engine(integr.__module__ + "." + integr.__name__)
             result._set_unit(unit)
             result._set_sum_signal(intpl.signal)
@@ -2353,7 +2367,7 @@ class AzimuthalIntegrator(Geometry):
                     norm2d = res.normalization
                     count = res.count
                     if variance is not None:
-                        sigma = res.error
+                        sigma = res.sigma
                         var2d = res.variance
 
         elif method.algo_lower == "histogram":
@@ -2383,7 +2397,7 @@ class AzimuthalIntegrator(Geometry):
                 norm2d = res.normalization
                 count = res.count
                 if variance is not None:
-                    sigma = res.error
+                    sigma = res.sigma
                     var2d = res.variance
 
             elif method.split_lower == "bbox":
@@ -2418,7 +2432,7 @@ class AzimuthalIntegrator(Geometry):
                 norm2d = res.normalization
                 count = res.count
                 if variance is not None:
-                    sigma = res.error
+                    sigma = res.sigma
                     var2d = res.variance
 
             elif method.split_lower == "no":
@@ -2456,7 +2470,7 @@ class AzimuthalIntegrator(Geometry):
                     norm2d = res.normalization
                     count = res.count
                     if variance is not None:
-                        sigma = res.error
+                        sigma = res.sigma
                         var2d = res.variance
                 else:  # Python implementation:
                     logger.debug("integrate2d uses python implementation")
@@ -2503,7 +2517,7 @@ class AzimuthalIntegrator(Geometry):
                         norm2d = res.normalization
                         count = res.count
                         if variance is not None:
-                            sigma = res.error
+                            sigma = res.sigma
                             var2d = res.variance
 
         # Duplicate arrays on purpose ....
@@ -3199,7 +3213,7 @@ class AzimuthalIntegrator(Geometry):
                     intpl = integr.sigma_clip(data, **kwargs)
         else:
             raise RuntimeError("Not yet implemented. Sorry")
-        result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity, intpl.error)
+        result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity, intpl.sigma)
         result._set_method_called("sigma_clip_ng")
         result._set_compute_engine(str(method))
         result._set_percentile(thres)
