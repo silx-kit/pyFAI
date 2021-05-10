@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2021"
+__date__ = "10/05/2021"
 __status__ = "status"
 
 import os
@@ -154,7 +154,7 @@ def parse():
                        help="radial range as a 2-tuple of number of pixels, by default all available range")
     group.add_argument("-P", "--polarization", type=float, default=None,
                        help="Polarization factor of the incident beam [-1:1], by default disabled, 0.99 is a good guess")
-    group.add_argument("-A", "--solidangle", type=bool, action='store_true', default=None,
+    group.add_argument("-A", "--solidangle", action='store_true', default=None,
                        help="Correct for solid-angle correction (important if the detector is not mounted normally to the incident beam, off by default")
     group = parser.add_argument_group("Sigma-clipping options")
     group.add_argument("--bins", type=int, default=80,
