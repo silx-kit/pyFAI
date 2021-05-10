@@ -297,7 +297,8 @@ def process(options):
         parameters.pop("polarization_checksum")
         parameters["polarization_factor"] = options.polarization
     if options.solidangle:
-        parameters.pop("solidangle"),
+
+        parameters.pop("solidangle")
         parameters.pop("solidangle_checksum")
         parameters["correctSolidAngle"] = True
     save_sparse(options.output,
