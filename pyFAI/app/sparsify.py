@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/03/2021"
+__date__ = "07/05/2021"
 __status__ = "status"
 
 import os
@@ -152,7 +152,10 @@ def parse():
                        help="precision for dummy value")
     group.add_argument("--radial-range", dest="radial_range", nargs=2, type=float, default=None,
                        help="radial range as a 2-tuple of number of pixels, by default all available range")
-
+    group.add_argument("-P", "--polarization", type=float, default=None,
+                       help="Polarization factor of the incident beam [-1:1], by default disabled, 0.99 is a good guess")
+    group.add_argument("-A", "--solidangle", type=bool, action='store_true', default=None,
+                       help="Correct for solid-angle correction (important if the detector is not mounted normally to the incident beam, off by default")
     group = parser.add_argument_group("Sigma-clipping options")
     group.add_argument("--bins", type=int, default=80,
                        help="Number of radial bins to consider")
@@ -269,6 +272,10 @@ def process(options):
                               ("noise", options.noise),
                               ("cutoff_pick", options.cutoff_pick),
                               ("radial_range", rrange)])
+    if options.solidangle:
+        parameters["solidangle"], parameters["solidangle_checksum"] = ai.solidAngleArray(with_checksum=True)
+    if options.polarization is not None:
+        parameters["polarization"], parameters["polarization_checksum"] = ai.polarization(factor=options.polarization, with_checksum=True)
     for fabioimage in dense:
         for frame in fabioimage:
             current = pf.sparsify(frame.data, **parameters)
@@ -285,6 +292,14 @@ def process(options):
     else:
         print("Saving: " + options.output)
 
+    if options.polarization is not None:
+        parameters.pop("polarization")
+        parameters.pop("polarization_checksum")
+        parameters["polarization_factor"] = options.polarization
+    if options.solidangle:
+        parameters.pop("polarization"),
+        parameters.pop("polarization_checksum")
+        parameters["correctSolidAngle"] = True
     save_sparse(options.output,
                 frames,
                 beamline=options.beamline,
