@@ -131,12 +131,12 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             logger.error("Please upgrade your installation of h5py !!!")
 
         if ai is not None:
-            if extra.get("correctSolidAngle") or (extra.get("polarization") is not None):
+            if extra.get("correctSolidAngle") or (extra.get("polarization_factor") is not None):
                 if extra.get("correctSolidAngle"):
                     normalization = ai.solidAngleArray()
                 else:
                     normalization = None
-                pf = extra.get("polarization")
+                pf = extra.get("polarization_factor")
                 if pf:
                     if normalization is None:
                         normalization = ai.polarization(factor=pf)
