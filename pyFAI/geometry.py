@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "07/05/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1119,7 +1119,7 @@ class Geometry(object):
         dsa = ds * cosa ** self._dssa_order
         return dsa
 
-    def solidAngleArray(self, shape=None, order=3, absolute=False):
+    def solidAngleArray(self, shape=None, order=3, absolute=False, with_checksum=False):
         """Generate an array for the solid angle correction
         given the shape of the detector.
 
@@ -1128,6 +1128,7 @@ class Geometry(object):
         :param shape: shape of the array expected
         :param order: should be 3, power of the formula just obove
         :param absolute: the absolute solid angle is calculated as:
+        :param with_checksum: returns the array _and_ its checksum as a 2-tuple
 
         SA = pix1*pix2/dist^2 * cos(incidence)^3
 
@@ -1138,16 +1139,20 @@ class Geometry(object):
         else:
             self._dssa_order = float(order)
 
-        key = "solid_angle#%s" % (self._dssa_order)
-        key_crc = "solid_angle#%s_crc" % (self._dssa_order)
+        key = f"solid_angle#{self._dssa_order}"
+        key_crc = f"solid_angle#{self._dssa_order}_crc"
         dssa = self._cached_array.get(key)
         if dssa is None:
             dssa = numpy.fromfunction(self.diffSolidAngle,
                                       shape, dtype=numpy.float32)
             self._cached_array[key_crc] = crc32(dssa)
             self._cached_array[key] = dssa
+
         if absolute:
-            return dssa * self.pixel1 * self.pixel2 / self._dist / self._dist
+            # not inplace to avoid mangling  the cache !
+            dssa = self.pixel1 * self.pixel2 / (self._dist ** 2) * dssa
+        if with_checksum:
+            return (dssa, self._cached_array[key_crc])
         else:
             return dssa
 
