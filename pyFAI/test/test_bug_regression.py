@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2021"
+__date__ = "12/05/2021"
 
 import sys
 import os
@@ -485,6 +485,28 @@ class TestBugRegression(unittest.TestCase):
                 idx += 1
             std = out.std(axis=0)
             self.assertGreater(std.min(), 0, "output are not all the same with " + str(method))
+
+    def test_bug_1510(self):
+        """
+        CSR engine got systematically discarded when radial range is provided 
+        """
+        method = ("no", "csr", "cython")
+        detector = detectors.Pilatus100k()
+        ai = AzimuthalIntegrator(detector=detector)
+        rm = max(detector.shape) * detector.pixel1 * 1000
+        img = numpy.random.random(detector.shape)
+        ai.integrate1d(img, 5, unit="r_mm", radial_range=[0, rm], method=method)
+        id_before = None
+        for v in ai.engines.values():
+            csre = v.engine
+            id_before = id(csre)
+
+        ai.integrate1d(img, 5, unit="r_mm", radial_range=[0, rm], method=method)
+        id_after = None
+        for v in ai.engines.values():
+            id_after = id(v.engine)
+
+        self.assertEqual(id_before, id_after, "The CSR engine got reset")
 
 
 def suite():
