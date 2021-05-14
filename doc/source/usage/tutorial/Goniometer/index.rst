@@ -16,3 +16,4 @@ Advanced tutorials on goniometer calibration in pyFAI.
    Translation-Pilatus6M/TTcalibration
    Rotation-Pilatus100k/Multi120_Pilatus100k
    Rotation-XPADS540/D2AM-15
+   Fit_wavelength/fit_energy
