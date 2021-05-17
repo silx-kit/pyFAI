@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2021"
+__date__ = "10/05/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -46,10 +46,11 @@ from .nexus import Nexus, get_isotime
 try:
     import hdf5plugin
 except ImportError:
-    cmp = {"chunks":True}
+    cmp = {"chunks":True,
+           "compression": "gzip",
+           "compression_opts":1}
 else:
     cmp = hdf5plugin.Bitshuffle()
-    # Auto-chunking is automatically applied with compression
 
 
 def _generate_densify_script(integer):
@@ -130,6 +131,20 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             logger.error("Please upgrade your installation of h5py !!!")
 
         if ai is not None:
+            if extra.get("correctSolidAngle") or (extra.get("polarization_factor") is not None):
+                if extra.get("correctSolidAngle"):
+                    normalization = ai.solidAngleArray()
+                else:
+                    normalization = None
+                pf = extra.get("polarization_factor")
+                if pf:
+                    if normalization is None:
+                        normalization = ai.polarization(factor=pf)
+                    else:
+                        normalization *= ai.polarization(factor=pf)
+                nrmds = sparse_grp.create_dataset("normalization", data=normalization, **cmp)
+                nrmds.attrs["interpretation"] = "image"
+
             sparsify_grp = nexus.new_class(entry, "sparsify", class_type="NXprocess")
             sparsify_grp["program"] = "pyFAI"
             sparsify_grp["sequence_index"] = 1

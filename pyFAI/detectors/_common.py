@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2021"
+__date__ = "12/05/2021"
 __status__ = "stable"
 
 import logging
@@ -648,11 +648,11 @@ class Detector(metaclass=DetectorMeta):
 
         Precision float32 is ok: precision of 1µm for a detector size of 1m
         :param correct_binning: If True, check that the produced array have the right shape regarding binning
-        :return:  4D array containing:
-                    pixel index (slow dimension)
-                    pixel index (fast dimension)
-                    corner index (A, B, C or D), triangles or hexagons can be handled the same way
-                    vertex position (z,y,x)
+        :return:  4D array containing ...
+                  * pixel index (slow dimension)
+                  * pixel index (fast dimension)
+                  * corner index (A, B, C or D), triangles or hexagons can be handled the same way
+                  * vertex position (z,y,x)
         """
         if self._pixel_corners is None:
             with self._sem:
