@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "23/03/2021"
+__date__ = "31/05/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -64,7 +64,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                BufferDescription("peak_intensity", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("radius2d", 1, numpy.float32, mf.READ_ONLY),
                ]
-    kernel_files = ["pyfai:openCL/kahan.cl",
+    kernel_files = ["silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_CSR.cl",
