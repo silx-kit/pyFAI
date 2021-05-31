@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -49,6 +49,7 @@ from .. import ocl
 if ocl is not None:
     from .. import pyopencl, read_cl_file
     import pyopencl.array
+    from pyopencl.elementwise import ElementwiseKernel
 
 from ... import load
 from ...test  import utilstest
@@ -57,10 +58,6 @@ from ...method_registry import IntegrationMethod
 from ...test.utilstest import test_options
 from ...utils import mathutil
 from ...utils.decorators import depreclog
-if ocl is not None:
-    from .. import pyopencl
-    import pyopencl.array
-    from pyopencl.elementwise import ElementwiseKernel
 EPS32 = numpy.finfo("float32").eps
 EPS64 = numpy.finfo("float64").eps
 
@@ -522,7 +519,7 @@ class TestDoubleWord(unittest.TestCase):
     def setUpClass(cls):
         if not test_options.WITH_OPENCL_TEST:
             raise unittest.SkipTest("User request to skip OpenCL tests")
-        if pyopencl is None or ocl is None:
+        if ocl is None:
             raise unittest.SkipTest("OpenCL module (pyopencl) is not present or no device available")
 
         cls.ctx = ocl.create_context(devicetype="GPU")
