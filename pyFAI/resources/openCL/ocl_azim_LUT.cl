@@ -114,8 +114,8 @@ lut_integrate(  const     global    float              *weights,
                 //sum_count += coef;
                 //Kahan summation allows single precision arithmetics with error compensation
                 //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-                sum_data_K = kahan_sum(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
-                sum_count_K = kahan_sum(sum_count_K, coef);
+                sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
+                sum_count_K = dw_plus_fp(sum_count_K, coef);
             };//end if dummy
         };//for j
         sum_data[bin_num] = sum_data_K.s0;
@@ -169,10 +169,10 @@ float8 static inline LUTxVec4(const   global  float4  *data,
                    if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0))
                    {
                        // defined in kahan.cl
-                       sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
-                       sum_variance_K = kahan_sum(sum_variance_K, coef * coef * variance);
-                       sum_norm_K = kahan_sum(sum_norm_K, coef * norm);
-                       sum_count_K = kahan_sum(sum_count_K, coef * count);
+                       sum_signal_K = dw_plus_fp(sum_signal_K, coef * signal);
+                       sum_variance_K = dw_plus_fp(sum_variance_K, coef * coef * variance);
+                       sum_norm_K = dw_plus_fp(sum_norm_K, coef * norm);
+                       sum_count_K = dw_plus_fp(sum_count_K, coef * count);
                    };//end if finite
             } //end if valid point
         }//end for j
