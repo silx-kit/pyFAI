@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2021"
+__date__ = "08/06/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2688,6 +2688,7 @@ class AzimuthalIntegrator(Geometry):
 
     def medfilt1d(self, data, npt_rad=1024, npt_azim=512,
                   correctSolidAngle=True,
+                  radial_range=None, azimuth_range=None,
                   polarization_factor=None, dark=None, flat=None,
                   method="splitpixel", unit=units.Q,
                   percentile=50, dummy=None, delta_dummy=None,
@@ -2700,6 +2701,11 @@ class AzimuthalIntegrator(Geometry):
         :param npt_azim: number of azimuthal points
         :param correctSolidAngle: correct for solid angle of each pixel if True
         :type correctSolidAngle: bool
+        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type radial_range: (float, float), optional
+        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type azimuth_range: (float, float), optional
+
         :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
                0 for circular polarization or random,
                None for no correction,
@@ -2734,6 +2740,8 @@ class AzimuthalIntegrator(Geometry):
                                old, npt_azim)
         res2d = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                  flat=flat, dark=dark,
+                                 radial_range=radial_range,
+                                 azimuth_range=azimuth_range,
                                  unit=unit, method=method.method,
                                  dummy=dummy, delta_dummy=delta_dummy,
                                  correctSolidAngle=correctSolidAngle,
