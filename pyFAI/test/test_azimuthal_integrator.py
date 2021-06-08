@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,8 +32,9 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2021"
+__date__ = "08/06/2021"
 
+import sys
 import unittest
 import os
 import numpy
@@ -567,6 +568,50 @@ class TestIntergrationNextGeneration(unittest.TestCase):
                         f"opencl sum_variance are the same {abs(opencl.sum_variance.sum(axis=-1) - python.sum_variance).max()}")
         self.assertTrue(numpy.allclose(opencl.sum_normalization.sum(axis=-1), python.sum_normalization), "opencl sum_normalization are the same")
         self.assertTrue(numpy.allclose(opencl.count, python.count), "opencl count are the same")
+
+
+class TestRange(unittest.TestCase):
+    """Test for reduced range in radia/azimuthal direction"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus1M.poni"))
+        cls.unit = "r_mm"
+        cls.azim_range = (-90, 90)
+        cls.rad_range = (10, 100)
+        cls.npt = 500
+        # cls.ref_medfilt = cls.ai.medfilt1d(cls.img, cls.npt, unit=cls.unit)
+        centerx = cls.ai.getFit2D()["centerX"]
+        cls.img[:, int(centerx - 1)] = 0
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.unit = cls.azim_range = cls.rad_range = cls.ai = cls.img = None
+
+    def test_medfilt(self):
+        self.ai.reset()
+        res = self.ai.medfilt1d(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
+        self.assertLessEqual(res.radial.max(), max(self.rad_range))
+
+    def test_sigma_clip_legacy(self):
+        self.ai.reset()
+        res = self.ai._sigma_clip_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
+        self.assertLessEqual(res.radial.max(), max(self.rad_range))
+
+    def test_sigma_clip_ng(self):
+        self.ai.reset()
+        try:
+            res = self.ai.sigma_clip_ng(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range,
+                                        method=("no", "csr", "opencl"))
+        except RuntimeError as err:
+            logger.warning("got RuntimeError: %s", err)
+            return
+
+        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
+        self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
 
 def suite():
