@@ -34,6 +34,7 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "08/06/2021"
 
+import sys
 import unittest
 import os
 import numpy
@@ -591,6 +592,24 @@ class TestRange(unittest.TestCase):
     def test_medfilt(self):
         self.ai.reset()
         res = self.ai.medfilt1d(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
+        self.assertLessEqual(res.radial.max(), max(self.rad_range))
+
+    def test_sigma_clip_legacy(self):
+        self.ai.reset()
+        res = self.ai._sigma_clip_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
+        self.assertLessEqual(res.radial.max(), max(self.rad_range))
+
+    def test_sigma_clip_ng(self):
+        self.ai.reset()
+        try:
+            res = self.ai.sigma_clip_ng(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range,
+                                        method=("no", "csr", "opencl"))
+        except RuntimeError as err:
+            logger.warning("got RuntimeError: %s", err)
+            return
+
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
