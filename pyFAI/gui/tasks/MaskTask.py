@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2021 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "02/06/2021"
 
 import logging
 import os.path
@@ -108,6 +108,7 @@ class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
         try:
             result = silx.gui.plot.MaskToolsWidget.MaskToolsWidget.load(self, filename)
             self.__maskFilenameUpdated(filename)
+            self.__emitUserMaskChanged()
         finally:
             pass
         return result
@@ -295,15 +296,18 @@ class MaskTask(AbstractCalibrationTask):
         self.__updateModelFromWidget()
 
     def __maskFromPlotChanged(self):
+        _logger.debug("MaskTask.__maskFromPlotChanged")
         self.__plotMaskChanged = True
 
     def __maskFromModelChanged(self):
+        _logger.debug("MaskTask.__maskFromModelChanged")
         self.__modelMaskChanged = True
         if self.isVisible():
             self.__updateWidgetFromModel()
 
     def __updateWidgetFromModel(self):
         """Update the widget using the mask from the model, only if needed"""
+        _logger.debug("MaskTask.updateWidgetFromModel")
         if not self.__modelMaskChanged:
             return
 
@@ -317,6 +321,7 @@ class MaskTask(AbstractCalibrationTask):
 
     def __updateModelFromWidget(self):
         """Update the model using the mask stored on the widget, only if needed"""
+        _logger.debug("MaskTask.__updateModelFromWidget")
         if not self.__plotMaskChanged:
             return
 
