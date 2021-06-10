@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2021 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "02/06/2021"
 
 import logging
 import numpy
@@ -859,7 +859,7 @@ class GeometryTask(AbstractCalibrationTask):
         self._fitButton.setWaiting(False)
 
     def __initGeometry(self):
-        self.__initGeometryFromPeaks()
+        self.__initGeometryFromPeaks(useFittedGeometry=True)
 
         # Save this geometry into the history
         calibration = self.__getCalibration()

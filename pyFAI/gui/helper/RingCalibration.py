@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2021 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/12/2020"
+__date__ = "02/06/2021"
 
 import logging
 import numpy
@@ -47,17 +47,17 @@ class GeometryRefinementContext(object):
     constraints. It make the context difficult to manage and to trust.
     """
 
-    PARAMETERS = ["wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
+    PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
 
     def __init__(self, *args, **kwargs):
+        _logger.debug("GeometryRefinementContext.__init__")
         self.__geoRef = GeometryRefinement(*args, **kwargs)
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
         self.__fixed = fixed
 
         self.__bounds = {}
-        attrs = ("wavelength", "dist", "poni1", "poni2", "rot1", "rot2", "rot3")
-        for name in attrs:
+        for name in self.PARAMETERS:
             min_getter = getattr(self.__geoRef, "get_%s_min" % name)
             max_getter = getattr(self.__geoRef, "get_%s_max" % name)
             minValue, maxValue = min_getter(), max_getter()
@@ -124,14 +124,12 @@ class GeometryRefinementContext(object):
             max_setter(maxValue)
 
         try:
-            if "wavelength" in self.__fixed:
-                deltaS = self.__geoRef.refine2(maxiter, self.__fixed)
-            else:
-                deltaS = self.__geoRef.refine2_wavelength(maxiter, self.__fixed)
+            deltaS = self.__geoRef.refine3(maxiter, self.__fixed)
         except Exception:
             _logger.error("Error while refining the geometry", exc_info=True)
             return float("inf")
-        return deltaS
+        else:
+            return deltaS
 
 
 class RingCalibration(object):
@@ -251,7 +249,7 @@ class RingCalibration(object):
         score = geoRef.refine(1000000)
         scores.append((score, geoRef, "with-guess"))
 
-        # Use the better one
+        # Use the best one
         scores.sort(key=lambda x: x[0])
         score, geoRef, _ = scores[0]
         scores = None
@@ -305,9 +303,7 @@ class RingCalibration(object):
 
         print("Final residual: %s (after %s iterations)" % (residual, count))
 
-        self.__geoRef.del_ttha()
-        self.__geoRef.del_dssa()
-        self.__geoRef.del_chia()
+        self.__geoRef.reset()
 
     def getRms(self):
         """Returns the RMS (root mean square) computed from the current fitting.
