@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 23/11/2017
+:Date: 09/06/2021
 :Keywords: Tutorial
 :Target: Scientists
 
@@ -10,8 +10,9 @@ Thick detectors
 
 This is a long journey in the depth of the physics of the X-ray detector to
 understand the effect of the thickness of the sensor layer on our data.
-This study has been sponsored by ESRF-ID31 but deals mainly with images taken
-at ESRF-ID28 on a Pilatus 1M, mounted on a goniometer stage.
+This study has been sponsored by ESRF's beamlines ID31 and ID22 with the contribution
+from the SNBL and from the detector group.
+Most images were taken at ESRF-ID28 on a Pilatus 1M, mounted on a goniometer stage.
 Thus I would like to thank Veijo Honkimaki for the subject and Thanh Tra Nguyen
 for the images.
 
@@ -28,10 +29,14 @@ In a second time, the detector is modeled as a 2D array of voxels, hence with
 some thickness, and the signal is then deconvolved to invert this effect.
 Finally the corrected images are used to validate the correction.
 
+Another approach is presented where the *parallax* is modeled as a convolution of the beam profile
+with the absorption profile, leading to some numerical correction to apply to the position of absorption (WIP).
+
+
 .. toctree::
    :maxdepth: 1
-    
+
    goniometer_id28
    raytracing
    deconvolution
-    
+   Parallax_model
