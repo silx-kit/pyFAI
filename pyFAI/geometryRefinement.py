@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2021"
+__date__ = "02/06/2021"
 __status__ = "development"
 
 import os
@@ -385,6 +385,8 @@ class GeometryRefinement(AzimuthalIntegrator):
             weight = self.data[:, 3]
         else:
             weight = None
+
+        fix = [] if fix is None else fix
 
         free = []
         param = []
