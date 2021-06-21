@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/03/2021"
+__date__ = "21/06/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -361,6 +361,195 @@ cdef class CsrIntegrator(object):
             else:
                 merged[i] = empty
                 error[i] = empty
+        #"position intensity error signal variance normalization count"
+        return Integrate1dtpl(self.bin_centers, 
+                              numpy.asarray(merged),numpy.asarray(error) ,
+                              numpy.asarray(sum_sig),numpy.asarray(sum_var), 
+                              numpy.asarray(sum_norm), numpy.asarray(sum_count))
+    
+    def sigma_clip(self, 
+                   weights, 
+                   dark=None, 
+                   dummy=None, 
+                   delta_dummy=None,
+                   variance=None, 
+                   dark_variance=None,
+                   flat=None, 
+                   solidangle=None, 
+                   polarization=None, 
+                   absorption=None,
+                   bint safe=True, 
+                   error_model=None,
+                   data_t normalization_factor=1.0,
+                   double cutoff=0.0, 
+                   int cycle=5,
+                   ):
+        """Perform the sigma-clipping
+        
+        The threshold can automaticlly be calculated from Chauvenet's: sqrt(2*log(nbpix/sqrt(2.0f*pi)))
+        
+        TODO: doc
+        :return: Integrate1dtpl containing the result 
+        """
+        cdef:
+            int32_t i, j, c, idx = 0, bins = self.bins, size = self.size
+            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0
+            acc_t delta, x, omega_A, omega_B, omega3, aver, std, chauvenet_cutoff, signal
+            data_t empty
+            acc_t[::1] sum_sig = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_var = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_norm = numpy.empty(bins, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.empty(bins, dtype=acc_d)
+            data_t[::1] merged = numpy.empty(bins, dtype=data_d)
+            data_t[::1] error = numpy.empty(bins, dtype=data_d)
+            data_t[:, ::1] preproc4
+            bint do_azimuthal_variance = error_model.startswith("azim")
+        assert weights.size == size, "weights size"
+        empty = dummy if dummy is not None else self.empty
+        #Call the preprocessor ...
+        preproc4 = preproc(weights.ravel(),
+                           dark=dark,
+                           flat=flat,
+                           solidangle=solidangle,
+                           polarization=polarization,
+                           absorption=absorption,
+                           mask=self.cmask if self.check_mask else None,
+                           dummy=dummy, 
+                           delta_dummy=delta_dummy,
+                           normalization_factor=normalization_factor, 
+                           empty=self.empty,
+                           split_result=4,
+                           variance=variance,
+                           dtype=data_d,
+                           poissonian= error_model.startswith("poisson"))
+        with nogil:
+            # Integrate once
+            for i in prange(bins, schedule="guided"):
+                acc_sig = 0.0
+                acc_var = 0.0
+                acc_norm = 0.0
+                acc_count = 0.0
+                for j in range(self._indptr[i], self._indptr[i + 1]):
+                    coef = self._data[j]
+                    if coef == 0.0:
+                        continue
+                    idx = self._indices[j]
+                    if isnan(preproc4[idx, 3]):
+                        continue
+                    
+                    if do_azimuthal_variance:
+                        if acc_count == 0.0:
+                            acc_sig = coef * preproc4[idx, 0]
+                            #Variance remains at 0
+                            acc_norm = coef * preproc4[idx, 2] 
+                            acc_count = coef * preproc4[idx, 3]
+                        else:
+                            # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
+                            omega_A = acc_norm
+                            omega_B = coef * preproc4[idx, 2]
+                            acc_norm = omega_A + omega_B
+                            omega3 = acc_norm * omega_A * omega_B
+                            x = coef * preproc4[idx, 0]
+                            delta = omega_B*acc_sig - omega_A*x
+                            acc_var = acc_var +  delta*delta/omega3
+                            acc_sig = acc_sig + x
+                            acc_count = acc_count + coef * preproc4[idx, 3]
+                    else:
+                        acc_sig = acc_sig + coef * preproc4[idx, 0]
+                        acc_var = acc_var + coef * coef * preproc4[idx, 1]
+                        acc_norm = acc_norm + coef * preproc4[idx, 2] 
+                        acc_count = acc_count + coef * preproc4[idx, 3]
+                        
+                if (acc_norm > 0.0):
+                    aver = acc_sig / acc_norm
+                    std = sqrt(acc_sig / acc_norm)
+                    # sem = sqrt(acc_sig) / acc_norm
+                else:
+                    aver = NAN;
+                    std = NAN;
+                    # sem = NAN;
+                
+                # cycle for sigma-clipping
+                for c in range(cycle):
+                    # Sigma-clip
+                    if isnan(aver) or isnan(std):
+                        break
+                    
+                    chauvenet_cutoff = max(cutoff, sqrt(2.0*log(acc_count/sqrt(2.0*M_PI)))) * std
+                    
+                    for j in range(self._indptr[i], self._indptr[i + 1]):
+                        coef = self._data[j]
+                        if coef == 0.0:
+                            continue
+                        idx = self._indices[j]
+                        
+                        acc_sig = preproc4[idx, 0]
+                        acc_var = preproc4[idx, 1]
+                        acc_norm = preproc4[idx, 2]
+                        acc_count = preproc4[idx, 3]
+                        # Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division 
+                        if (not isnan(acc_count) and (acc_norm > 0.0)):
+                            signal = acc_sig / acc_norm;
+                            if fabs(signal-aver) > chauvenet_cutoff:
+                                preproc4[idx, 3] = NAN;
+                    
+                    #integrate again
+                    acc_sig = 0.0
+                    acc_var = 0.0
+                    acc_norm = 0.0
+                    acc_count = 0.0
+                    for j in range(self._indptr[i], self._indptr[i + 1]):
+                        coef = self._data[j]
+                        if coef == 0.0:
+                            continue
+                        idx = self._indices[j]
+                        if isnan(preproc4[idx, 3]):
+                            continue
+                                 
+                        if do_azimuthal_variance:
+                            if acc_count == 0.0:
+                                acc_sig = coef * preproc4[idx, 0]
+                                #Variance remains at 0
+                                acc_norm = coef * preproc4[idx, 2] 
+                                acc_count = coef * preproc4[idx, 3]
+                            else:
+                                # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
+                                omega_A = acc_norm
+                                omega_B = coef * preproc4[idx, 2]
+                                acc_norm = omega_A + omega_B
+                                omega3 = acc_norm * omega_A * omega_B
+                                x = coef * preproc4[idx, 0]
+                                delta = omega_B*acc_sig - omega_A*x
+                                acc_var = acc_var +  delta*delta/omega3
+                                acc_sig = acc_sig + x
+                                acc_count = acc_count + coef * preproc4[idx, 3]
+                        else:
+                            acc_sig = acc_sig + coef * preproc4[idx, 0]
+                            acc_var = acc_var + coef * coef * preproc4[idx, 1]
+                            acc_norm = acc_norm + coef * preproc4[idx, 2] 
+                            acc_count = acc_count + coef * preproc4[idx, 3]
+                    if (acc_norm > 0.0):
+                        aver = acc_sig / acc_norm
+                        std = sqrt(acc_sig / acc_norm)
+                        # sem = sqrt(acc_sig) / acc_norm
+                    else:
+                        aver = NAN;
+                        std = NAN;
+                        # sem = NAN;
+                    
+                #collect things ...                     
+                sum_sig[i] = acc_sig
+                sum_var[i] = acc_var
+                sum_norm[i] = acc_norm
+                sum_count[i] = acc_count
+                if acc_count > 0.0:
+                    merged[i] = acc_sig / acc_norm
+                    error[i] = sqrt(acc_var) / acc_norm
+                else:
+                    merged[i] = empty
+                    error[i] = empty
+
+        
         #"position intensity error signal variance normalization count"
         return Integrate1dtpl(self.bin_centers, 
                               numpy.asarray(merged),numpy.asarray(error) ,
