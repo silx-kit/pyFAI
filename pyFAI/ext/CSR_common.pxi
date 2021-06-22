@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "21/06/2021"
+__date__ = "22/06/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -391,6 +391,7 @@ cdef class CsrIntegrator(object):
         TODO: doc
         :return: Integrate1dtpl containing the result 
         """
+        error_model = error_model.lower() if error_model else ""
         cdef:
             int32_t i, j, c, idx = 0, bins = self.bins, size = self.size
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0

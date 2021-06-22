@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2021"
+__date__ = "22/06/2021"
 __status__ = "development"
 
 import logging
@@ -282,6 +282,8 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
 
         Integration is performed using the CSR representation of the look-up table on all
         arrays: signal, variance, normalization and count
+        
+        Nota: azimuthal variance is not implemented.
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
@@ -291,7 +293,7 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         :param flat: array of same shape as data for pre-processing
         :param solidangle: array of same shape as data for pre-processing
         :param polarization: array of same shape as data for pre-processing
-        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param safe: Unused in this implementation
         :param normalization_factor: divide raw signal by this value
         :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
         :param cycle: perform at maximum this number of cycles. 5 is common.
@@ -316,31 +318,34 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
                        empty=self.empty,
                        split_result=4,
                        variance=variance,
+                       dark_variance=dark_variance,
                        dtype=numpy.float32,
                        poissonian=error_model.startswith("pois"))
         prep_flat = prep.reshape((numpy.prod(shape), 4))
         res = self._csr.dot(prep_flat)
-        print(cycle)
         for _ in range(cycle):
             msk = res[:, 2] == 0
             avg = res[:, 0] / res[:, 2]
             std = numpy.sqrt(res[:, 1] / res[:, 2])
             avg[msk] = 0
             std[msk] = 0
-
+            cnt = numpy.maximum(res[:, 3], 3) #Needed for Chauvenet criterion
             avg2d = self._geometry.calcfrom1d(self.bin_centers, avg, shape=shape,
                     dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
             std2d = self._geometry.calcfrom1d(self.bin_centers, std, shape=shape,
                     dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
-            cnt = abs(prep[..., 0] / prep[..., 2] - avg2d) / std2d
-            msk2d = numpy.logical_and(numpy.logical_not(numpy.isfinite(cnt)), cnt > cutoff)
+            cnt2d = self._geometry.calcfrom1d(self.bin_centers, cnt, shape=shape,
+                    dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
+            delta = abs(prep[..., 0] / prep[..., 2] - avg2d) 
+            chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0*numpy.log(cnt2d/numpy.sqrt(2.0*numpy.pi)))) * std2d
+            msk2d = numpy.logical_and(numpy.isfinite(delta), delta > chauvenet)
             prep[msk2d,:] = 0
             res = self._csr.dot(prep_flat)
         msk = res[:, 2] == 0
         avg = res[:, 0] / res[:, 2]
         std = numpy.sqrt(res[:, 1] / res[:, 2])
-        avg[msk] = 0
-        std[msk] = 0
+        avg[msk] = self.empty
+        std[msk] = self.empty
 
         return Integrate1dtpl(self.bin_centers, avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
 
