@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "14/05/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -94,7 +94,7 @@ class BaseTransformation(object):
             if key in self.variables:
                 raise RuntimeError("The keyword %s is already defined, please chose another variable name")
             self.variables[key] = numpy.NaN
-        self.codes = []
+        self.codes = {}
 
     def __call__(self, param, pos):
         """This makes the class instance behave like a function,
@@ -158,12 +158,19 @@ class GeometryTransformation(object):
             assert content in (self.__class__.__name__, "GeometryTransformation")
         if numexpr is None:
             raise RuntimeError("Geometry translation requires the *numexpr* package")
-        self.dist_expr = dist_expr
-        self.poni1_expr = poni1_expr
-        self.poni2_expr = poni2_expr
-        self.rot1_expr = rot1_expr
-        self.rot2_expr = rot2_expr
-        self.rot3_expr = rot3_expr
+        self.expressions = OrderedDict()
+        if dist_expr is not None:
+            self.expressions["dist"] = dist_expr
+        if poni1_expr is not None:
+            self.expressions["poni1"] = poni1_expr
+        if poni2_expr is not None:
+            self.expressions["poni2"] = poni2_expr
+        if rot1_expr is not None:
+            self.expressions["rot1"] = rot1_expr
+        if rot2_expr is not None:
+            self.expressions["rot2"] = rot2_expr
+        if rot3_expr is not None:
+            self.expressions["rot3"] = rot3_expr
 
         self.variables = {"pi": numpy.pi}
         if constants is not None:
@@ -176,11 +183,33 @@ class GeometryTransformation(object):
             self.pos_names = ("pos",)
         for key in self.param_names + self.pos_names:
             if key in self.variables:
-                raise RuntimeError("The keyword %s is already defined, please chose another variable name")
+                raise RuntimeError(f"The keyword `{key}` is already defined, please chose another variable name")
             self.variables[key] = numpy.NaN
+        self.codes = OrderedDict(((name, numexpr.NumExpr(expr)) for name, expr in self.expressions.items()))
 
-        self.codes = [numexpr.NumExpr(expr) for expr in (self.dist_expr, self.poni1_expr, self.poni2_expr,
-                                                         self.rot1_expr, self.rot2_expr, self.rot3_expr)]
+    @property
+    def dist_expr(self):
+        return self.expressions.get("dist")
+
+    @property
+    def poni1_expr(self):
+        return self.expressions.get("poni1")
+
+    @property
+    def poni2_expr(self):
+        return self.expressions.get("poni2")
+
+    @property
+    def rot1_expr(self):
+        return self.expressions.get("rot1")
+
+    @property
+    def rot2_expr(self):
+        return self.expressions.get("rot2")
+
+    @property
+    def rot3_expr(self):
+        return self.expressions.get("rot3")
 
     def __call__(self, param, pos):
         """This makes the class instance behave like a function,
@@ -192,7 +221,7 @@ class GeometryTransformation(object):
         :return: 6-tuple with (dist, poni1, poni2, rot1, rot2, rot3) as needed
             for pyFAI.
         """
-        res = []
+        res = {}
         variables = self.variables.copy()
         for name, value in zip(self.param_names, param):
             variables[name] = value
@@ -201,11 +230,11 @@ class GeometryTransformation(object):
         else:
             for name, value in zip(self.pos_names, pos):
                 variables[name] = value
-        for code in self.codes:
+        for name, code in self.codes.items():
             signa = [variables.get(name, numpy.NaN) for name in code.input_names]
-            res.append(float(code(*signa)))
+            res[name] = (float(code(*signa)))
             # could ne done in a single liner but harder to understand !
-        return PoniParam(*res)
+        return PoniParam(**res)
 
     def __repr__(self):
         res = ["GeometryTransformation with param: %s and pos: %s" % (self.param_names, self.pos_names),
@@ -389,7 +418,7 @@ class Goniometer(object):
         self.param = param
         self.trans_function = trans_function
         self.detector = detector_factory(detector)
-        self.wavelength = wavelength
+        self._wavelength = wavelength
         if param_names is None and "param_names" in dir(trans_function):
             param_names = trans_function.param_names
         if param_names is not None:
@@ -405,16 +434,37 @@ class Goniometer(object):
     def __repr__(self):
         return "Goniometer with param %s    %s with %s" % (self.nt_param(*self.param), os.linesep, self.detector)
 
+    @property
+    def wavelength(self):
+        wl_fct = self.trans_function.codes.get("wavelength")
+        if wl_fct is not None:
+            # check that wavelengt does not depend on the motor position
+            params = wl_fct.input_names
+            for motor in self.trans_function.pos_names:
+                if motor in params:
+                    logger.warning("Wavelength depends on motors, returning the default value")
+                    return self._wavelength
+            dummy_position = [0] * len(self.nt_pos._fields)
+            return self.trans_function(self.param, dummy_position).wavelength
+        else:
+            return self._wavelength
+
+    @wavelength.setter
+    def wavelength(self, value):
+        if "wavelength" in self.trans_function.codes:
+            logger.warning("Wavelength is a fitted parameter, cannot be set. Please set fitted parameter")
+        else:
+            self._wavelength = value
+
     def get_ai(self, position):
         """Creates an azimuthal integrator from the motor position
 
-        :param position: the goniometer position, a float for a 1 axis
-            goniometer
+        :param position: the goniometer position, a float for a 1 axis goniometer
         :return: A freshly build AzimuthalIntegrator
         """
         res = self.trans_function(self.param, position)
         params = {"detector": self.detector,
-                  "wavelength": self.wavelength}
+                  "wavelength": self._wavelength}
         for name, value in zip(res._fields, res):
             params[name] = value
         return AzimuthalIntegrator(**params)
@@ -507,10 +557,10 @@ class Goniometer(object):
             # May be adapted for other classes of GeometryTransformation functions
             if content in ("GeometryTranslation", "GeometryTransformation"):
                 funct = GeometryTransformation(**tansfun)
-            elif content == "ExtendedTranformation":
+            elif content == "ExtendedTransformation":
                 funct = ExtendedTransformation(**tansfun)
             else:
-                raise RuntimeError("content= %s, not in in (GeometryTranslation, GeometryTransformation, ExtendedTranformation)")
+                raise RuntimeError(f"content={content}, not in in (GeometryTranslation, GeometryTransformation, ExtendedTransformation)")
         else:  # assume GeometryTransformation
             funct = GeometryTransformation(**tansfun)
 
