@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -185,14 +185,8 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         """
         self.bin_centers = bin_centers
         CSRIntegrator.__init__(self, image_size, lut, empty)
-        self.pos0_range = self.pos1_range = self._geometry = None
+        self.pos0_range = self.pos1_range = None
         self.unit = unit
-
-    def set_geometry(self, geometry):
-        from pyFAI.geometry import Geometry
-        assert numpy.prod(geometry.detector.shape) == self.size
-        assert isinstance(geometry, Geometry)
-        self._geometry = geometry
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
@@ -305,14 +299,8 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         shape = data.shape
         error_model = error_model.lower() if error_model else ""
 
-        if self._geometry is None:
-            raise RuntimeError("Set geometry first")
-
         poissonian = error_model.startswith("pois")
         azimuthal = (not poissonian) and (variance is None)
-        print(poissonian, azimuthal)
-
-        radial2d = self._geometry.array_from_unit(shape, unit=self.unit, scale=False)
 
         prep = preproc(data,
                        dark=dark,
@@ -357,24 +345,23 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
                 warnings.simplefilter("ignore")
                 avg = res[:, 0] / nrm
                 std = numpy.sqrt(res[:, 1] / nrm)
-            # Replace nans with interpolated values.
+            # Replace NaNs with interpolated values.
             avg = interp_filter(avg, avg)
             std = interp_filter(std, std)
             cnt = numpy.maximum(res[:, 3], 3)  # Needed for Chauvenet criterion
 
             # Interpolate in 2D:
-
-            avg2d = numpy.interp(radial2d.ravel(), self.bin_centers, avg).reshape(shape)
-            std2d = numpy.interp(radial2d.ravel(), self.bin_centers, std).reshape(shape)
-            cnt2d = numpy.interp(radial2d.ravel(), self.bin_centers, cnt).reshape(shape)
+            avg2d = self._csr.T.dot(avg)
+            std2d = self._csr.T.dot(std)
+            cnt2d = self._csr.T.dot(cnt)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                delta = abs(prep[..., 0] / prep[..., 2] - avg2d)
+                delta = abs(prep_flat[..., 0] / prep_flat[..., 2] - avg2d)
             chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0 * numpy.log(cnt2d / numpy.sqrt(2.0 * numpy.pi)))) * std2d
             # chauvenet = cutoff * std2d
             msk2d = numpy.where(numpy.logical_not(delta <= chauvenet))
-            print(len(msk2d[0]))
-            prep[msk2d] = 0
+            # print(len(msk2d[0]))
+            prep_flat[msk2d] = 0
             # subsequent integrations:
             res[:, 0] = self._csr.dot(prep_flat[:, 0])
             res[:, 2] = self._csr.dot(prep_flat[:, 2])

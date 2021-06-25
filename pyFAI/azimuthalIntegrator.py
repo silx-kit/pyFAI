@@ -3218,14 +3218,11 @@ class AzimuthalIntegrator(Geometry):
                         integr.pos0_range = csr_integr.pos0Range
                         integr.pos1_range = csr_integr.pos1Range
                         integr.mask_checksum = csr_integr.mask_checksum
-                        integr.set_geometry(self)
                         engine.set_engine(integr)
                     else:
                         logger.error(f"Implementation {method.impl_lower} not supported")
                 else:
                     integr = self.engines[method].engine
-                if safe and "set_geometry" in dir(integr):
-                    integr.set_geometry(self)
                 kwargs = {"dark":dark, "dummy":dummy, "delta_dummy":delta_dummy,
                           "variance":variance, "dark_variance":None,
                           "flat":flat, "solidangle":solidangle, "polarization":polarization, "absorption":None,
