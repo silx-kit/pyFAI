@@ -3181,7 +3181,6 @@ class AzimuthalIntegrator(Geometry):
                         reset = "azimuth_range not defined and CSR had azimuth_range defined"
                     elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range)):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
-                error = False
 
                 if reset:
                     logger.info("ai.sigma_clip_ng: Resetting ocl_csr integrator because %s", reset)
