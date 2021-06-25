@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2021"
+__date__ = "25/06/2021"
 
 import unittest
 import os
@@ -603,23 +603,25 @@ class TestRange(unittest.TestCase):
         results = {}
         for impl in ('python', 'cython', 'opencl'):
             try:
-                res = self.ai.sigma_clip_ng(self.img, self.npt, unit=self.unit, 
+                res = self.ai.sigma_clip_ng(self.img, self.npt, unit=self.unit,
                                             azimuth_range=self.azim_range, radial_range=self.rad_range,
-                                            method=("no", "csr", impl), 
-                                            error_model="poisson",
-                                            cycle=3, thres=0)
+                                            method=("no", "csr", impl),
+                                            error_model="azimuthal",
+                                            max_iter=3, thres=0)
             except RuntimeError as err:
                 logger.warning("got RuntimeError with impl %s: %s", impl, err)
                 continue
             else:
-                results[impl]=res
+                results[impl] = res
             self.assertGreaterEqual(res.radial.min(), min(self.rad_range), msg=f"impl: {impl}")
             self.assertLessEqual(res.radial.max(), max(self.rad_range), msg=f"impl: {impl}")
-        # if "opencl" not in 
+        # TODO: validate the test
+        # if "opencl" not in
         # for what in ("radial", "intensity", "sigma", "sum_signal", "sum_variance", "sum_norm", "count"):
         #     self.assertTrue(numpy.allclose(res["opencl"]), msg)
         print(list(results.keys()))
-        raise RuntimeError("stop here")
+        # raise RuntimeError("stop here")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
