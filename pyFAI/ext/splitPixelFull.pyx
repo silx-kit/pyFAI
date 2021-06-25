@@ -162,8 +162,8 @@ cdef double area_n(MyPoly poly) nogil:
 def fullSplit1D(numpy.ndarray pos not None,
                 numpy.ndarray weights not None,
                 size_t bins=100,
-                pos0Range=None,
-                pos1Range=None,
+                pos0_range=None,
+                pos1_range=None,
                 dummy=None,
                 delta_dummy=None,
                 mask=None,
@@ -184,8 +184,8 @@ def fullSplit1D(numpy.ndarray pos not None,
     :param pos: 3D or 4D array with the coordinates of each pixel point
     :param weights: array with intensities
     :param bins: number of output bins
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -229,16 +229,16 @@ def fullSplit1D(numpy.ndarray pos not None,
         bint do_flat = False, do_polarization = False, do_solidangle = False
         int i = 0, idx = 0, bin = 0, bin0, bin0_max = 0, bin0_min = 0
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0_range is not None and len(pos0_range) > 1:
+        pos0_min = min(pos0_range)
+        pos0_maxin = max(pos0_range)
     else:
         pos0_min = pos[:, :, 0].min()
         pos0_maxin = pos[:, :, 0].max()
     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
-    if pos1Range is not None and len(pos1Range) > 1:
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1_range is not None and len(pos1_range) > 1:
+        pos1_min = min(pos1_range)
+        pos1_maxin = max(pos1_range)
         check_pos1 = True
     else:
         pos1_min = pos[:, :, 1].min()
@@ -387,8 +387,8 @@ def fullSplit1D(numpy.ndarray pos not None,
 def fullSplit2D(numpy.ndarray pos not None,
                 numpy.ndarray weights not None,
                 bins not None,
-                pos0Range=None,
-                pos1Range=None,
+                pos0_range=None,
+                pos1_range=None,
                 dummy=None,
                 delta_dummy=None,
                 mask=None,
@@ -405,8 +405,8 @@ def fullSplit2D(numpy.ndarray pos not None,
     :param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
     :param weights: array with intensities
     :param bins: number of output bins int or 2-tuple of int
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -467,16 +467,16 @@ def fullSplit2D(numpy.ndarray pos not None,
         #  int range1 = 0, range2 = 0
         numpy.int8_t[:, :] is_inside = numpy.zeros((<int> (1.5 * sqrt(size) / all_bins0), <int> (1.5 * sqrt(size) / all_bins1)), dtype=numpy.int8)
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0_range is not None and len(pos0_range) > 1:
+        pos0_min = min(pos0_range)
+        pos0_maxin = max(pos0_range)
     else:
         pos0_min = pos[:, :, 0].min()
         pos0_maxin = pos[:, :, 0].max()
     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float64).eps)
-    if pos1Range is not None and len(pos1Range) > 1:
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1_range is not None and len(pos1_range) > 1:
+        pos1_min = min(pos1_range)
+        pos1_maxin = max(pos1_range)
     else:
         pos1_min = pos[:, :, 1].min()
         pos1_maxin = pos[:, :, 1].max()

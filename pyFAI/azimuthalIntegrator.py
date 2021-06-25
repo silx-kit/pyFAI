@@ -400,8 +400,8 @@ class AzimuthalIntegrator(Geometry):
         if int2d:
             return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
                                             bins=npt,
-                                            pos0Range=pos0_range,
-                                            pos1Range=pos1_range,
+                                            pos0_range=pos0_range,
+                                            pos1_range=pos1_range,
                                             mask=mask,
                                             mask_checksum=mask_checksum,
                                             allow_pos0_neg=False,
@@ -409,8 +409,8 @@ class AzimuthalIntegrator(Geometry):
         else:
             return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                             bins=npt,
-                                            pos0Range=pos0_range,
-                                            pos1Range=pos1_range,
+                                            pos0_range=pos0_range,
+                                            pos1_range=pos1_range,
                                             mask=mask,
                                             mask_checksum=mask_checksum,
                                             allow_pos0_neg=False,
@@ -505,8 +505,8 @@ class AzimuthalIntegrator(Geometry):
                 raise NotImplementedError("Full pixel splitting using CSR is not yet available in 2D")
                 # return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
                 #                                 bins=npt,
-                #                                 pos0Range=pos0Range,
-                #                                 pos1Range=pos1Range,
+                #                                 pos0_range=pos0_range,
+                #                                 pos1_range=pos1_range,
                 #                                 mask=mask,
                 #                                 mask_checksum=mask_checksum,
                 #                                 allow_pos0_neg=False,
@@ -514,8 +514,8 @@ class AzimuthalIntegrator(Geometry):
             else:
                 return splitPixelFullCSR.FullSplitCSR_1d(pos,
                                                          bins=npt,
-                                                         pos0Range=pos0_range,
-                                                         pos1Range=pos1_range,
+                                                         pos0_range=pos0_range,
+                                                         pos1_range=pos1_range,
                                                          mask=mask,
                                                          mask_checksum=mask_checksum,
                                                          allow_pos0_neg=False,
@@ -524,8 +524,8 @@ class AzimuthalIntegrator(Geometry):
             if int2d:
                 return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
                                                 bins=npt,
-                                                pos0Range=pos0_range,
-                                                pos1Range=pos1_range,
+                                                pos0_range=pos0_range,
+                                                pos1_range=pos1_range,
                                                 mask=mask,
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
@@ -533,8 +533,8 @@ class AzimuthalIntegrator(Geometry):
             else:
                 return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                 bins=npt,
-                                                pos0Range=pos0_range,
-                                                pos1Range=pos1_range,
+                                                pos0_range=pos0_range,
+                                                pos1_range=pos1_range,
                                                 mask=mask,
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
@@ -694,19 +694,19 @@ class AzimuthalIntegrator(Geometry):
                             (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
                     if (radial_range is None) and\
-                            (integr.pos0Range is not None):
+                            (integr.pos0_range is not None):
                         reset = "radial_range was defined in LUT"
                     elif (radial_range is not None) and\
-                            (integr.pos0Range !=
+                            (integr.pos0_range !=
                              (min(radial_range), max(radial_range) * EPS32)):
                         reset = ("radial_range is defined"
                                  " but not the same as in LUT")
                     if (azimuth_range is None) and\
-                            (integr.pos1Range is not None):
+                            (integr.pos1_range is not None):
                         reset = ("azimuth_range not defined and"
                                  " LUT had azimuth_range defined")
                     elif (azimuth_range is not None) and\
-                            (integr.pos1Range != [azimuth_range[0], azimuth_range[1] * EPS32]):
+                            (integr.pos1_range != [azimuth_range[0], azimuth_range[1] * EPS32]):
                         reset = ("azimuth_range requested and"
                                  " LUT's azimuth_range don't match")
                 if reset:
@@ -817,9 +817,9 @@ class AzimuthalIntegrator(Geometry):
                     elif (mask is not None) and\
                             (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if radial_range != integr.pos0Range:
+                    if radial_range != integr.pos0_range:
                         reset = "radial_range changed"
-                    if azimuth_range != integr.pos1Range:
+                    if azimuth_range != integr.pos1_range:
                         reset = "azimuth_range changed"
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s", reset)
@@ -904,8 +904,8 @@ class AzimuthalIntegrator(Geometry):
             qAxis, I, sum_, count = splitPixel.fullSplit1D(pos=pos,
                                                            weights=data,
                                                            bins=npt,
-                                                           pos0Range=radial_range,
-                                                           pos1Range=azimuth_range,
+                                                           pos0_range=radial_range,
+                                                           pos1_range=azimuth_range,
                                                            dummy=dummy,
                                                            delta_dummy=delta_dummy,
                                                            mask=mask,
@@ -921,8 +921,8 @@ class AzimuthalIntegrator(Geometry):
                 _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
                                                         weights=variance,
                                                         bins=npt,
-                                                        pos0Range=radial_range,
-                                                        pos1Range=azimuth_range,
+                                                        pos0_range=radial_range,
+                                                        pos1_range=azimuth_range,
                                                         dummy=dummy,
                                                         delta_dummy=delta_dummy,
                                                         mask=mask,
@@ -948,8 +948,8 @@ class AzimuthalIntegrator(Geometry):
                                                           pos1=chi,
                                                           delta_pos1=dchi,
                                                           bins=npt,
-                                                          pos0Range=radial_range,
-                                                          pos1Range=azimuth_range,
+                                                          pos0_range=radial_range,
+                                                          pos1_range=azimuth_range,
                                                           dummy=dummy,
                                                           delta_dummy=delta_dummy,
                                                           mask=mask,
@@ -967,8 +967,8 @@ class AzimuthalIntegrator(Geometry):
                                                        pos1=chi,
                                                        delta_pos1=dchi,
                                                        bins=npt,
-                                                       pos0Range=radial_range,
-                                                       pos1Range=azimuth_range,
+                                                       pos0_range=radial_range,
+                                                       pos1_range=azimuth_range,
                                                        dummy=dummy,
                                                        delta_dummy=delta_dummy,
                                                        mask=mask,
@@ -1205,13 +1205,13 @@ class AzimuthalIntegrator(Geometry):
                         cython_reset = "no mask but %s has mask" % method.algo_lower.upper()
                     elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
                         cython_reset = "mask changed"
-                    if (radial_range is None) and (cython_integr.pos0Range is not None):
+                    if (radial_range is None) and (cython_integr.pos0_range is not None):
                         cython_reset = "radial_range was defined in %s" % method.algo_lower.upper()
-                    elif (radial_range is not None) and cython_integr.pos0Range != (min(radial_range), max(radial_range)):
+                    elif (radial_range is not None) and cython_integr.pos0_range != (min(radial_range), max(radial_range)):
                         cython_reset = "radial_range is defined but differs in %s" % method.algo_lower.upper()
-                    if (azimuth_range is None) and (cython_integr.pos1Range is not None):
+                    if (azimuth_range is None) and (cython_integr.pos1_range is not None):
                         cython_reset = "azimuth_range not defined and %s had azimuth_range defined" % method.algo_lower.upper()
-                    elif (azimuth_range is not None) and cython_integr.pos1Range != (min(azimuth_range), max(azimuth_range)):
+                    elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and %s's azimuth_range don't match" % method.algo_lower.upper()
                 if cython_reset:
                     logger.info("AI.integrate1d_ng: Resetting Cython integrator because %s", cython_reset)
@@ -1279,13 +1279,13 @@ class AzimuthalIntegrator(Geometry):
                             reset = "no mask but %s has mask" % method.algo_lower.upper()
                         elif (mask is not None) and (integr.mask_checksum != mask_crc):
                             reset = "mask changed"
-                        if (radial_range is None) and (integr.pos0Range is not None):
+                        if (radial_range is None) and (integr.pos0_range is not None):
                             reset = "radial_range was defined in %s" % method.algo_lower.upper()
-                        elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range)):
+                        elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
                             reset = "radial_range is defined but differs in %s" % method.algo_lower.upper()
-                        if (azimuth_range is None) and (integr.pos1Range is not None):
+                        if (azimuth_range is None) and (integr.pos1_range is not None):
                             reset = "azimuth_range not defined and %s had azimuth_range defined" % method.algo_lower.upper()
-                        elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range)):
+                        elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                             reset = "azimuth_range requested and %s's azimuth_range don't match" % method.algo_lower.upper()
 
                     if reset:
@@ -1304,8 +1304,8 @@ class AzimuthalIntegrator(Geometry):
                                 # Copy some properties from the cython integrator
                                 integr.check_mask = csr_integr.check_mask
                                 integr.mask_checksum = csr_integr.mask_checksum
-                                integr.pos0Range = csr_integr.pos0Range
-                                integr.pos1Range = csr_integr.pos1Range
+                                integr.pos0_range = csr_integr.pos0_range
+                                integr.pos1_range = csr_integr.pos1_range
                             except MemoryError:
                                 logger.warning("MemoryError: falling back on default forward implementation")
                                 self.reset_engines()
@@ -1321,8 +1321,8 @@ class AzimuthalIntegrator(Geometry):
                             # Copy some properties from the cython integrator
                             integr.check_mask = csr_integr.check_mask
                             integr.mask_checksum = csr_integr.mask_checksum
-                            integr.pos0Range = csr_integr.pos0Range
-                            integr.pos1Range = csr_integr.pos1Range
+                            integr.pos0_range = csr_integr.pos0_range
+                            integr.pos1_range = csr_integr.pos1_range
                             engine.set_engine(integr)
                         else:
                             raise RuntimeError("Unexpected configuration")
@@ -1485,8 +1485,8 @@ class AzimuthalIntegrator(Geometry):
                                polarization=polarization,
                                normalization_factor=normalization_factor,
                                mask=mask,
-                               pos0Range=radial_range,
-                               pos1Range=azimuth_range)
+                               pos0_range=radial_range,
+                               pos1_range=azimuth_range)
             elif method.method[1] == "full":
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 intpl = integr(weights=data, variance=variance,
@@ -1497,8 +1497,8 @@ class AzimuthalIntegrator(Geometry):
                                polarization=polarization,
                                normalization_factor=normalization_factor,
                                mask=mask,
-                               pos0Range=radial_range,
-                               pos1Range=azimuth_range)
+                               pos0_range=radial_range,
+                               pos1_range=azimuth_range)
             else:
                 raise RuntimeError("Should not arrive here")
             if do_variance:
@@ -1789,9 +1789,9 @@ class AzimuthalIntegrator(Geometry):
                         reset = "no mask but LUT has mask"
                     elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if radial_range != integr.pos0Range:
+                    if radial_range != integr.pos0_range:
                         reset = "radial_range changed"
-                    if azimuth_range != integr.pos1Range:
+                    if azimuth_range != integr.pos1_range:
                         reset = "azimuth_range changed"
                 error = False
                 if reset:
@@ -1873,13 +1873,13 @@ class AzimuthalIntegrator(Geometry):
                         reset = "no mask but CSR has mask"
                     elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if (radial_range is None) and (integr.pos0Range is not None):
+                    if (radial_range is None) and (integr.pos0_range is not None):
                         reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range)):
+                    elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
                         reset = "radial_range is defined but differs in CSR"
-                    if (azimuth_range is None) and (integr.pos1Range is not None):
+                    if (azimuth_range is None) and (integr.pos1_range is not None):
                         reset = "azimuth_range not defined and CSR had azimuth_range defined"
-                    elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range)):
+                    elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 error = False
                 if reset:
@@ -1946,8 +1946,8 @@ class AzimuthalIntegrator(Geometry):
             I, bins_rad, bins_azim, sum_, count = splitPixel.fullSplit2D(pos=pos,
                                                                          weights=data,
                                                                          bins=(npt_rad, npt_azim),
-                                                                         pos0Range=radial_range,
-                                                                         pos1Range=azimuth_range,
+                                                                         pos0_range=radial_range,
+                                                                         pos1_range=azimuth_range,
                                                                          dummy=dummy,
                                                                          delta_dummy=delta_dummy,
                                                                          mask=mask,
@@ -1970,8 +1970,8 @@ class AzimuthalIntegrator(Geometry):
                                                                         pos1=chi,
                                                                         delta_pos1=dchi,
                                                                         bins=(npt_rad, npt_azim),
-                                                                        pos0Range=radial_range,
-                                                                        pos1Range=azimuth_range,
+                                                                        pos0_range=radial_range,
+                                                                        pos1_range=azimuth_range,
                                                                         dummy=dummy,
                                                                         delta_dummy=delta_dummy,
                                                                         mask=mask,
@@ -2212,13 +2212,13 @@ class AzimuthalIntegrator(Geometry):
                         reset = "no mask but LUT has mask"
                     elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if (radial_range is None) and (integr.pos0Range is not None):
+                    if (radial_range is None) and (integr.pos0_range is not None):
                         reset = "radial_range was defined in LUT"
-                    elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range)):
+                    elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
                         reset = "radial_range is defined but differs in LUT"
-                    if (azimuth_range is None) and (integr.pos1Range is not None):
+                    if (azimuth_range is None) and (integr.pos1_range is not None):
                         reset = "azimuth_range not defined and LUT had azimuth_range defined"
-                    elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range)):
+                    elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         reset = "azimuth_range requested and LUT's azimuth_range don't match"
                 error = False
                 if reset:
@@ -2297,13 +2297,13 @@ class AzimuthalIntegrator(Geometry):
                         reset = "no mask but CSR has mask"
                     elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if (radial_range is None) and (integr.pos0Range is not None):
+                    if (radial_range is None) and (integr.pos0_range is not None):
                         reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range)):
+                    elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
                         reset = "radial_range is defined but differs in CSR"
-                    if (azimuth_range is None) and (integr.pos1Range is not None):
+                    if (azimuth_range is None) and (integr.pos1_range is not None):
                         reset = "azimuth_range not defined and CSR had azimuth_range defined"
-                    elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range)):
+                    elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 error = False
                 if reset:
@@ -2376,8 +2376,8 @@ class AzimuthalIntegrator(Geometry):
                 res = splitPixel.pseudoSplit2D_ng(pos=pos,
                                                   weights=data,
                                                   bins=(npt_rad, npt_azim),
-                                                  pos0Range=radial_range,
-                                                  pos1Range=azimuth_range,
+                                                  pos0_range=radial_range,
+                                                  pos1_range=azimuth_range,
                                                   dummy=dummy,
                                                   delta_dummy=delta_dummy,
                                                   mask=mask,
@@ -2411,8 +2411,8 @@ class AzimuthalIntegrator(Geometry):
                                                pos1=chi,
                                                delta_pos1=dchi,
                                                bins=(npt_rad, npt_azim),
-                                               pos0Range=radial_range,
-                                               pos1Range=azimuth_range,
+                                               pos0_range=radial_range,
+                                               pos1_range=azimuth_range,
                                                dummy=dummy,
                                                delta_dummy=delta_dummy,
                                                mask=mask,
@@ -3115,13 +3115,13 @@ class AzimuthalIntegrator(Geometry):
                         cython_reset = "no mask but CSR has mask"
                     elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
                         cython_reset = "mask changed"
-                    if (radial_range is None) and (cython_integr.pos0Range is not None):
+                    if (radial_range is None) and (cython_integr.pos0_range is not None):
                         cython_reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and cython_integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
+                    elif (radial_range is not None) and cython_integr.pos0_range != (min(radial_range), max(radial_range) * EPS32):
                         cython_reset = "radial_range is defined but not the same as in CSR"
-                    if (azimuth_range is None) and (cython_integr.pos1Range is not None):
+                    if (azimuth_range is None) and (cython_integr.pos1_range is not None):
                         cython_reset = "azimuth_range not defined and CSR had azimuth_range defined"
-                    elif (azimuth_range is not None) and cython_integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
+                    elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range) * EPS32):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 error = False
                 if cython_reset:
@@ -3173,13 +3173,13 @@ class AzimuthalIntegrator(Geometry):
                     elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
                     # TODO
-                    if (radial_range is None) and (integr.pos0Range is not None):
+                    if (radial_range is None) and (integr.pos0_range is not None):
                         reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range)):
+                    elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
                         reset = "radial_range is defined but not the same as in CSR"
-                    if (azimuth_range is None) and (integr.pos1Range is not None):
+                    if (azimuth_range is None) and (integr.pos1_range is not None):
                         reset = "azimuth_range not defined and CSR had azimuth_range defined"
-                    elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range)):
+                    elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
 
                 if reset:
@@ -3195,16 +3195,16 @@ class AzimuthalIntegrator(Geometry):
                                                                  bin_centers=csr_integr.bin_centers,
                                                                  platformid=method.target[0],
                                                                  deviceid=method.target[1])
-                            # Copy some properties from the cython integrator
-                            integr.check_mask = csr_integr.check_mask
-                            integr.mask_checksum = csr_integr.mask_checksum
-                            integr.pos0Range = csr_integr.pos0Range
-                            integr.pos1Range = csr_integr.pos1Range
                         except MemoryError:
                             logger.warning("MemoryError: falling back on default forward implementation")
                             self.reset_engines()
                             method = self.DEFAULT_METHOD_1D
                         else:
+                            # Copy some properties from the cython integrator
+                            integr.check_mask = csr_integr.check_mask
+                            integr.mask_checksum = csr_integr.mask_checksum
+                            integr.pos0_range = csr_integr.pos0_range
+                            integr.pos1_range = csr_integr.pos1_range
                             engine.set_engine(integr)
                     elif method.impl_lower in ("python", "cython"):
                         integr = method.class_funct_ng.klass(lut=csr_integr.lut,
@@ -3214,8 +3214,8 @@ class AzimuthalIntegrator(Geometry):
                                                              bin_centers=csr_integr.bin_centers)
                         # Copy some properties from the cython integrator
                         integr.check_mask = csr_integr.check_mask
-                        integr.pos0_range = csr_integr.pos0Range
-                        integr.pos1_range = csr_integr.pos1Range
+                        integr.pos0_range = csr_integr.pos0_range
+                        integr.pos1_range = csr_integr.pos1_range
                         integr.mask_checksum = csr_integr.mask_checksum
                         engine.set_engine(integr)
                     else:

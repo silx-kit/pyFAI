@@ -178,7 +178,7 @@ class CsrIntegrator1d(CSRIntegrator):
    3509                             reset = "no mask but CSR has mask"
 -> 3510                         elif (mask is not None) and (integr.mask_checksum != mask_crc):
    3511                             reset = "mask changed"
-   3512 #                         if (radial_range is None) and (integr.pos0Range is not None):
+   3512 #                         if (radial_range is None) and (integr.pos0_range is not None):
 
 AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
 
@@ -348,12 +348,12 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
             # Replace NaNs with interpolated values.
             avg = interp_filter(avg, avg)
             std = interp_filter(std, std)
-            cnt = numpy.maximum(res[:, 3], 3)  # Needed for Chauvenet criterion
+            cnt = numpy.maximum(res[:, 3], 3)
 
             # Interpolate in 2D:
             avg2d = self._csr.T.dot(avg)
             std2d = self._csr.T.dot(std)
-            cnt2d = self._csr.T.dot(cnt)
+            cnt2d = numpy.maximum(self._csr.T.dot(cnt), 3)  # Needed for Chauvenet criterion
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 delta = abs(prep_flat[..., 0] / prep_flat[..., 2] - avg2d)
