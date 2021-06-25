@@ -620,14 +620,14 @@ class TestRange(unittest.TestCase):
             ref = results['cython']
             for what, tol in (("radial", 1e-8),
                               ("intensity", 1e-6),
-                              ("sigma", 10),
-                              ("sum_normalization", 1),
+                              ("sigma", 1e-6),
+                              ("sum_normalization", 1e-1),
                               ("count", 1e-1)):
                 for impl in results:
                     obt = results[impl]
-                    print(what, obt.__getattribute__(what).max(),
-                    abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
-                    abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
+                    # print(what, obt.__getattribute__(what).max(),
+                    # abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
+                    # abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
                     self.assertTrue(numpy.allclose(obt.__getattribute__(what), ref.__getattribute__(what), atol=10, rtol=tol),
                                     msg=f"Sigma clipping matches for impl {impl} on paramter {what}")
 
