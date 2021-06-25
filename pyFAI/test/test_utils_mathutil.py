@@ -139,7 +139,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
     def test_interp_filter(self):
         x = numpy.linspace(0, 10, 1000)
         y = numpy.sin(x)
-        w = numpy.random.randint(0, x.shape[0], size=500)  # Here we remove half of the points !
+        w = numpy.random.randint(1, x.shape[0] - 2, size=500)  # Here we remove half of the points !
         z = y.copy()
         z[w] = numpy.NaN
         self.assertLess(abs(y - utils.mathutil.interp_filter(z)).max(), 0.01, "error is small")
