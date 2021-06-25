@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2021"
+__date__ = "25/06/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3049,8 +3049,11 @@ class AzimuthalIntegrator(Geometry):
         The In
         
         """
-        if "npt_azim" in kwargs:
-            logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D intergration is performed anymore")
+        for k in kwargs:
+            if k == "npt_azim":
+                logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D intergration is performed anymore")
+            else:
+                logger.warning("Got unknown argument %s %s", k, kwargs[k])
 
         unit = units.to_unit(unit)
         if radial_range:
@@ -3150,7 +3153,7 @@ class AzimuthalIntegrator(Geometry):
                 integr = engine.engine
                 reset = None
                 # This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
-                
+
                 # Validate that the engine used is the proper one
                 if integr is None:
                     reset = "of first initialization"
@@ -3169,7 +3172,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = "no mask but CSR has mask"
                     elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    #TODO
+                    # TODO
                     if (radial_range is None) and (integr.pos0Range is not None):
                         reset = "radial_range was defined in CSR"
                     elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range)):
@@ -3221,6 +3224,8 @@ class AzimuthalIntegrator(Geometry):
                         logger.error(f"Implementation {method.impl_lower} not supported")
                 else:
                     integr = self.engines[method].engine
+                if safe and "set_geometry" in dir(integr):
+                    integr.set_geometry(self)
                 kwargs = {"dark":dark, "dummy":dummy, "delta_dummy":delta_dummy,
                           "variance":variance, "dark_variance":None,
                           "flat":flat, "solidangle":solidangle, "polarization":polarization, "absorption":None,

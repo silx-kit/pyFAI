@@ -26,14 +26,16 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2021"
+__date__ = "25/06/2021"
 __status__ = "development"
 
 import logging
+import warnings
 logger = logging.getLogger(__name__)
 import numpy
 from scipy.sparse import csr_matrix
 from .preproc import preproc as preproc_np
+from ..utils.mathutil import interp_filter
 try:
     from ..ext.preproc import preproc as preproc_cy
 except ImportError as err:
@@ -305,6 +307,12 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         if self._geometry is None:
             raise RuntimeError("Set geometry first")
 
+        poissonian = error_model.startswith("pois")
+        azimuthal = (not poissonian) and (variance is None)
+        print(poissonian, azimuthal)
+
+        radial2d = self._geometry.array_from_unit(shape, unit=self.unit, scale=False)
+
         prep = preproc(data,
                        dark=dark,
                        flat=flat,
@@ -320,30 +328,69 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
                        variance=variance,
                        dark_variance=dark_variance,
                        dtype=numpy.float32,
-                       poissonian=error_model.startswith("pois"))
+                       poissonian=poissonian)
+
         prep_flat = prep.reshape((numpy.prod(shape), 4))
-        res = self._csr.dot(prep_flat)
-        for _ in range(cycle):
-            msk = res[:, 2] == 0
+        res = numpy.empty((numpy.prod(self.bins), 4), dtype=numpy.float32)
+
+        # First azimuthal integration:
+        res[:, 0] = self._csr.dot(prep_flat[:, 0])
+        res[:, 2] = self._csr.dot(prep_flat[:, 2])
+        res[:, 3] = self._csr.dot(prep_flat[:, 3])
+        if azimuthal:
+            # ask for azimuthal error model
+            logger.warning("Untested !")
             avg = res[:, 0] / res[:, 2]
-            std = numpy.sqrt(res[:, 1] / res[:, 2])
-            avg[msk] = 0
-            std[msk] = 0
-            cnt = numpy.maximum(res[:, 3], 3) #Needed for Chauvenet criterion
-            avg2d = self._geometry.calcfrom1d(self.bin_centers, avg, shape=shape,
-                    dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
-            std2d = self._geometry.calcfrom1d(self.bin_centers, std, shape=shape,
-                    dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
-            cnt2d = self._geometry.calcfrom1d(self.bin_centers, cnt, shape=shape,
-                    dim1_unit=self.unit, correctSolidAngle=False, dummy=0.0)
-            delta = abs(prep[..., 0] / prep[..., 2] - avg2d) 
-            chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0*numpy.log(cnt2d/numpy.sqrt(2.0*numpy.pi)))) * std2d
-            msk2d = numpy.logical_and(numpy.isfinite(delta), delta > chauvenet)
-            prep[msk2d,:] = 0
-            res = self._csr.dot(prep_flat)
-        msk = res[:, 2] == 0
-        avg = res[:, 0] / res[:, 2]
-        std = numpy.sqrt(res[:, 1] / res[:, 2])
+            avg_ext = self._csr.T.dot(avg)
+            delta = (prep[:, 0] / prep[:, 2] - avg_ext) ** 2
+            res[:, 1] = self._csr.dot(delta)
+        else:
+            res[:, 1] = self._csr2.dot(prep_flat[:, 1])
+
+        for _ in range(cycle):
+            print("iter", _)
+            nrm = res[:, 2]
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                avg = res[:, 0] / nrm
+                std = numpy.sqrt(res[:, 1] / nrm)
+            # Replace nans with interpolated values.
+            avg = interp_filter(avg, avg)
+            std = interp_filter(std, std)
+            cnt = numpy.maximum(res[:, 3], 3)  # Needed for Chauvenet criterion
+
+            # Interpolate in 2D:
+
+            avg2d = numpy.interp(radial2d.ravel(), self.bin_centers, avg).reshape(shape)
+            std2d = numpy.interp(radial2d.ravel(), self.bin_centers, std).reshape(shape)
+            cnt2d = numpy.interp(radial2d.ravel(), self.bin_centers, cnt).reshape(shape)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                delta = abs(prep[..., 0] / prep[..., 2] - avg2d)
+            chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0 * numpy.log(cnt2d / numpy.sqrt(2.0 * numpy.pi)))) * std2d
+            # chauvenet = cutoff * std2d
+            msk2d = numpy.where(numpy.logical_not(delta <= chauvenet))
+            print(len(msk2d[0]))
+            prep[msk2d] = 0
+            # subsequent integrations:
+            res[:, 0] = self._csr.dot(prep_flat[:, 0])
+            res[:, 2] = self._csr.dot(prep_flat[:, 2])
+            res[:, 3] = self._csr.dot(prep_flat[:, 3])
+            if azimuthal:
+                # ask for azimuthal error model
+                logger.warning("Untested !")
+                avg = res[:, 0] / res[:, 2]
+                avg_ext = self._csr.T.dot(avg)
+                delta = (prep[:, 0] / prep[:, 2] - avg_ext) ** 2
+                res[:, 1] = self._csr.dot(delta)
+            else:
+                res[:, 1] = self._csr2.dot(prep_flat[:, 1])
+
+        nrm = res[:, 2]
+        msk = nrm <= 0
+        avg = res[:, 0] / nrm
+        # Here we return the standaard deviation and not the standard error of the mean !
+        std = numpy.sqrt(res[:, 1]) / nrm
         avg[msk] = self.empty
         std[msk] = self.empty
 
