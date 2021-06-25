@@ -284,8 +284,9 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
 
         Integration is performed using the CSR representation of the look-up table on all
         arrays: signal, variance, normalization and count
-        
-        Nota: azimuthal variance is not implemented.
+
+        Formula for azimuthal variance from:
+        https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
@@ -339,16 +340,18 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         res[:, 3] = self._csr.dot(prep_flat[:, 3])
         if azimuthal:
             # ask for azimuthal error model
-            logger.warning("Untested !")
-            avg = res[:, 0] / res[:, 2]
-            avg_ext = self._csr.T.dot(avg)
-            delta = (prep[:, 0] / prep[:, 2] - avg_ext) ** 2
-            res[:, 1] = self._csr.dot(delta)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                avg = res[:, 0] / res[:, 2]
+                avg_ext = self._csr.T.dot(interp_filter(avg, avg))  # backproject the average value to the image
+                msk = prep_flat[:, 2] == 0
+                delta2 = (prep_flat[:, 0] / prep_flat[:, 2] - avg_ext) ** 2
+                delta2[msk] = 0
+            res[:, 1] = self._csr.dot(delta2)
         else:
             res[:, 1] = self._csr2.dot(prep_flat[:, 1])
 
         for _ in range(cycle):
-            print("iter", _)
             nrm = res[:, 2]
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -377,20 +380,24 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
             res[:, 2] = self._csr.dot(prep_flat[:, 2])
             res[:, 3] = self._csr.dot(prep_flat[:, 3])
             if azimuthal:
-                # ask for azimuthal error model
-                logger.warning("Untested !")
-                avg = res[:, 0] / res[:, 2]
-                avg_ext = self._csr.T.dot(avg)
-                delta = (prep[:, 0] / prep[:, 2] - avg_ext) ** 2
-                res[:, 1] = self._csr.dot(delta)
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    avg = res[:, 0] / res[:, 2]
+                    avg_ext = self._csr.T.dot(interp_filter(avg, avg))  # backproject the average value to the image
+                    msk = prep_flat[:, 2] == 0
+                    delta2 = (prep_flat[:, 0] / prep_flat[:, 2] - avg_ext) ** 2
+                    delta2[msk] = 0
+                res[:, 1] = self._csr.dot(delta2)
             else:
                 res[:, 1] = self._csr2.dot(prep_flat[:, 1])
 
         nrm = res[:, 2]
         msk = nrm <= 0
-        avg = res[:, 0] / nrm
-        # Here we return the standaard deviation and not the standard error of the mean !
-        std = numpy.sqrt(res[:, 1]) / nrm
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            avg = res[:, 0] / nrm
+            # Here we return the standaard deviation and not the standard error of the mean !
+            std = numpy.sqrt(res[:, 1]) / nrm
         avg[msk] = self.empty
         std[msk] = self.empty
 
