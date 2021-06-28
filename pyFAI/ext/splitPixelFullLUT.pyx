@@ -111,8 +111,8 @@ class HistoLUT1dFullSplit(LutIntegrator):
     def __init__(self,
                  numpy.ndarray pos not None,
                  int bins=100,
-                 pos0Range=None,
-                 pos1Range=None,
+                 pos0_range=None,
+                 pos1_range=None,
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
@@ -121,8 +121,8 @@ class HistoLUT1dFullSplit(LutIntegrator):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins, 100 by default
-        :param pos0Range: minimum and maximum  of the 2th range
-        :param pos1Range: minimum and maximum  of the chi range
+        :param pos0_range: minimum and maximum  of the 2th range
+        :param pos1_range: minimum and maximum  of the chi range
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
@@ -151,8 +151,8 @@ class HistoLUT1dFullSplit(LutIntegrator):
             self.check_mask = False
             self.mask_checksum = None
         self.data = self.nnz = self.indices = self.indptr = None
-        self.pos0Range = pos0Range
-        self.pos1Range = pos1Range
+        self.pos0_range = pos0_range
+        self.pos1_range = pos1_range
 
         lut = self.calc_lut()
         #Call the constructor of the parent class
@@ -181,16 +181,16 @@ class HistoLUT1dFullSplit(LutIntegrator):
             bint check_pos1, check_mask = False
 
         bins = self.bins
-        if self.pos0Range is not None and len(self.pos0Range) > 1:
-            self.pos0_min = min(self.pos0Range)
-            self.pos0_maxin = max(self.pos0Range)
+        if self.pos0_range is not None and len(self.pos0_range) > 1:
+            self.pos0_min = min(self.pos0_range)
+            self.pos0_maxin = max(self.pos0_range)
         else:
             self.pos0_min = self.pos[:, :, 0].min()
             self.pos0_maxin = self.pos[:, :, 0].max()
         self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
-        if self.pos1Range is not None and len(self.pos1Range) > 1:
-            self.pos1_min = min(self.pos1Range)
-            self.pos1_maxin = max(self.pos1Range)
+        if self.pos1_range is not None and len(self.pos1_range) > 1:
+            self.pos1_min = min(self.pos1_range)
+            self.pos1_maxin = max(self.pos1_range)
             check_pos1 = True
         else:
             self.pos1_min = self.pos[:, :, 1].min()
@@ -434,8 +434,8 @@ class HistoLUT2dFullSplit(object):
     def __init__(self,
                  numpy.ndarray pos not None,
                  bins=(100, 36),
-                 pos0Range=None,
-                 pos1Range=None,
+                 pos0_range=None,
+                 pos1_range=None,
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
@@ -444,8 +444,8 @@ class HistoLUT2dFullSplit(object):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
-        :param pos0Range: minimum and maximum  of the 2th range
-        :param pos1Range: minimum and maximum  of the chi range
+        :param pos0_range: minimum and maximum  of the 2th range
+        :param pos1_range: minimum and maximum  of the chi range
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
@@ -473,8 +473,8 @@ class HistoLUT2dFullSplit(object):
             self.check_mask = False
             self.mask_checksum = None
         self.data = self.nnz = self.indices = self.indptr = None
-        self.pos0Range = pos0Range
-        self.pos1Range = pos1Range
+        self.pos0_range = pos0_range
+        self.pos1_range = pos1_range
 
         self.calc_lut()
         # self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
@@ -503,16 +503,16 @@ class HistoLUT2dFullSplit(object):
         cdef int all_bins0 = self.bins[0], all_bins1 = self.bins[1], all_bins = self.bins[0] * self.bins[1], tmp_i, index
         cdef bint check_mask = False
 
-        if self.pos0Range is not None and len(self.pos0Range) > 1:
-            self.pos0_min = min(self.pos0Range)
-            self.pos0_maxin = max(self.pos0Range)
+        if self.pos0_range is not None and len(self.pos0_range) > 1:
+            self.pos0_min = min(self.pos0_range)
+            self.pos0_maxin = max(self.pos0_range)
         else:
             self.pos0_min = self.pos[:, :, 0].min()
             self.pos0_maxin = self.pos[:, :, 0].max()
         self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
-        if self.pos1Range is not None and len(self.pos1Range) > 1:
-            self.pos1_min = min(self.pos1Range)
-            self.pos1_maxin = max(self.pos1Range)
+        if self.pos1_range is not None and len(self.pos1_range) > 1:
+            self.pos1_min = min(self.pos1_range)
+            self.pos1_maxin = max(self.pos1_range)
             self.check_pos1 = True
         else:
             self.pos1_min = self.pos[:, :, 1].min()

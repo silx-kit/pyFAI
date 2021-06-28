@@ -88,8 +88,8 @@ class HistoBBox1d(LutIntegrator):
                  pos1=None,
                  delta_pos1=None,
                  int bins=100,
-                 pos0Range=None,
-                 pos1Range=None,
+                 pos0_range=None,
+                 pos1_range=None,
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
@@ -101,8 +101,8 @@ class HistoBBox1d(LutIntegrator):
         :param pos1: 1D array with pos1: chi
         :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
         :param bins: number of output bins, 100 by default
-        :param pos0Range: minimum and maximum  of the 2th range
-        :param pos1Range: minimum and maximum  of the chi range
+        :param pos0_range: minimum and maximum  of the 2th range
+        :param pos1_range: minimum and maximum  of the chi range
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
@@ -129,23 +129,23 @@ class HistoBBox1d(LutIntegrator):
             self.check_mask = False
             self.mask_checksum = None
 
-        self.pos0Range = pos0Range
-        self.pos1Range = pos1Range
+        self.pos0_range = pos0_range
+        self.pos1_range = pos1_range
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         if delta_pos0 is None:
-            self.calc_boundaries_nosplit(pos0Range)
+            self.calc_boundaries_nosplit(pos0_range)
         else:
             self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
             self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
-            self.calc_boundaries(pos0Range)
-        if pos1Range is not None:
+            self.calc_boundaries(pos0_range)
+        if pos1_range is not None:
             assert pos1.size == self.size, "pos1 size"
             assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
             self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
             self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
-            self.pos1_min, pos1_maxin = pos1Range
+            self.pos1_min, pos1_maxin = pos1_range
             self.pos1_max = calc_upper_bound(<position_t> pos1_maxin)
         else:
             self.check_pos1 = False
@@ -171,7 +171,7 @@ class HistoBBox1d(LutIntegrator):
         self.unit = unit
         self.lut_nbytes = lut.nbytes
 
-    def calc_boundaries(self, pos0Range):
+    def calc_boundaries(self, pos0_range):
         """
         Called by constructor to calculate the boundaries and the bin position
         """
@@ -208,8 +208,8 @@ class HistoBBox1d(LutIntegrator):
                     if lower < pos0_min:
                         pos0_min = lower
 
-        if pos0Range is not None:
-            self.pos0_min, self.pos0_maxin = pos0Range
+        if pos0_range is not None:
+            self.pos0_min, self.pos0_maxin = pos0_range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
@@ -217,11 +217,11 @@ class HistoBBox1d(LutIntegrator):
             self.pos0_min = 0
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
 
-    def calc_boundaries_nosplit(self, pos0Range):
+    def calc_boundaries_nosplit(self, pos0_range):
         """
         Calculate self.pos0_min and self.pos0_max when no splitting is requested
 
-        :param pos0Range: 2-tuple containing the requested range
+        :param pos0_range: 2-tuple containing the requested range
         """
         cdef:
             int size = self.cpos0.size
@@ -232,8 +232,8 @@ class HistoBBox1d(LutIntegrator):
             bint allow_pos0_neg = self.allow_pos0_neg
             int idx
 
-        if pos0Range is not None:
-            self.pos0_min, self.pos0_maxin = pos0Range
+        if pos0_range is not None:
+            self.pos0_min, self.pos0_maxin = pos0_range
         else:
             cpos0 = self.cpos0
             pos0_min = pos0_max = cpos0[0]
@@ -554,8 +554,8 @@ class HistoBBox2d(object):
                  pos1,
                  delta_pos1,
                  bins=(100, 36),
-                 pos0Range=None,
-                 pos1Range=None,
+                 pos0_range=None,
+                 pos1_range=None,
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
@@ -569,8 +569,8 @@ class HistoBBox2d(object):
         :param pos1: 1D array with pos1: chi
         :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
         :param bins: number of output bins (tth=100, chi=36 by default)
-        :param pos0Range: minimum and maximum  of the 2th range
-        :param pos1Range: minimum and maximum  of the chi range
+        :param pos0_range: minimum and maximum  of the 2th range
+        :param pos1_range: minimum and maximum  of the chi range
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
@@ -611,14 +611,14 @@ class HistoBBox2d(object):
         self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
         self.cpos0_sup = numpy.empty_like(self.cpos0)
         self.cpos0_inf = numpy.empty_like(self.cpos0)
-        self.pos0Range = pos0Range
-        self.pos1Range = pos1Range
+        self.pos0_range = pos0_range
+        self.pos1_range = pos1_range
 
         self.cpos1 = numpy.ascontiguousarray((pos1).ravel(), dtype=position_d)
         self.dpos1 = numpy.ascontiguousarray((delta_pos1).ravel(), dtype=position_d)
         self.cpos1_sup = numpy.empty_like(self.cpos1)
         self.cpos1_inf = numpy.empty_like(self.cpos1)
-        self.calc_boundaries(pos0Range, pos1Range)
+        self.calc_boundaries(pos0_range, pos1_range)
         self.delta0 = (self.pos0_max - self.pos0_min) / float(bins0)
         self.delta1 = (self.pos1_max - self.pos1_min) / float(bins1)
         self.lut_max_idx = None
@@ -634,7 +634,7 @@ class HistoBBox2d(object):
         # Calculated at export time to python
         self._lut_checksum = None
 
-    def calc_boundaries(self, pos0Range, pos1Range):
+    def calc_boundaries(self, pos0_range, pos1_range):
         """
         Called by constructor to calculate the boundaries and the bin position
         """
@@ -694,14 +694,14 @@ class HistoBBox2d(object):
                     if lower1 < pos1_min:
                         pos1_min = lower1
 
-        if pos0Range is not None:
-            self.pos0_min, self.pos0_maxin = pos0Range
+        if pos0_range is not None:
+            self.pos0_min, self.pos0_maxin = pos0_range
         else:
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
 
-        if pos1Range is not None:
-            self.pos1_min, self.pos1_maxin = pos1Range
+        if pos1_range is not None:
+            self.pos1_min, self.pos1_maxin = pos1_range
         else:
             self.pos1_min = pos1_min
             self.pos1_maxin = pos1_max

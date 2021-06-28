@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/01/2021"
+__date__ = "21/06/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -50,7 +50,7 @@ _numpy_1_12_py2_bug = ((sys.version_info.major == 2) and
 # Imports at the C level
 from .isnan cimport isnan
 from cython cimport floating
-from libc.math cimport fabs, M_PI, sqrt
+from libc.math cimport fabs, M_PI, sqrt, log, NAN
 
 from .shared_types cimport int8_t, uint8_t, int16_t, uint16_t, \
                            int32_t, uint32_t, int64_t, uint64_t,\

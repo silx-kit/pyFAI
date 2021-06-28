@@ -115,7 +115,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.unit = unit
         self.bin_centers = bin_centers
         # a few place-folders
-        self.pos0Range = self.pos1Range = self.check_mask = None
+        self.pos0_range = self.pos1_range = self.check_mask = None
 
         if not checksum:
             checksum = calc_checksum(self._lut)
