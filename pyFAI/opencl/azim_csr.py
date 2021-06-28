@@ -73,7 +73,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["pyfai:openCL/kahan.cl",
+    kernel_files = ["silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_CSR.cl"
