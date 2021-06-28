@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,11 +25,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Common Look-Up table/CSR object creation tools"""
+"""Common CSR integrator"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "22/06/2021"
+__date__ = "25/06/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -463,7 +463,7 @@ cdef class CsrIntegrator(object):
                         
                 if (acc_norm > 0.0):
                     aver = acc_sig / acc_norm
-                    std = sqrt(acc_sig / acc_norm)
+                    std = sqrt(acc_var / acc_norm)
                     # sem = sqrt(acc_sig) / acc_norm
                 else:
                     aver = NAN;
@@ -473,9 +473,9 @@ cdef class CsrIntegrator(object):
                 # cycle for sigma-clipping
                 for c in range(cycle):
                     # Sigma-clip
-                    if isnan(aver) or isnan(std):
+                    if (acc_norm == 0.0) or (acc_count == 0.0):
                         break
-                    
+                    acc_count = max(3.0, acc_count) #This is for Chauvenet's criterion
                     chauvenet_cutoff = max(cutoff, sqrt(2.0*log(acc_count/sqrt(2.0*M_PI)))) * std
                     
                     for j in range(self._indptr[i], self._indptr[i + 1]):
@@ -490,8 +490,7 @@ cdef class CsrIntegrator(object):
                         acc_count = preproc4[idx, 3]
                         # Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division 
                         if (not isnan(acc_count) and (acc_norm > 0.0)):
-                            signal = acc_sig / acc_norm;
-                            if fabs(signal-aver) > chauvenet_cutoff:
+                            if fabs(acc_sig / acc_norm - aver) > chauvenet_cutoff:
                                 preproc4[idx, 3] = NAN;
                     
                     #integrate again
@@ -531,7 +530,7 @@ cdef class CsrIntegrator(object):
                             acc_count = acc_count + coef * preproc4[idx, 3]
                     if (acc_norm > 0.0):
                         aver = acc_sig / acc_norm
-                        std = sqrt(acc_sig / acc_norm)
+                        std = sqrt(acc_var / acc_norm)
                         # sem = sqrt(acc_sig) / acc_norm
                     else:
                         aver = NAN;
