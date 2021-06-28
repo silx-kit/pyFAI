@@ -57,44 +57,44 @@ static float8 sum_vector(float8 data)
 
     tmp = is_valid(data.s1, tmp.s1);
     value = tmp.s0;
-    sum1 = kahan_sum(sum1, value);
-    sum2 = kahan_sum(sum2, value*value);
+    sum1 = dw_plus_fp(sum1, value);
+    sum2 = dw_plus_fp(sum2, value*value);
 
     tmp = is_valid(data.s2, tmp.s1);
     value = tmp.s0;
     value = tmp.s0;
-    sum1 = kahan_sum(sum1, value);
-    sum2 = kahan_sum(sum2, value*value);
+    sum1 = dw_plus_fp(sum1, value);
+    sum2 = dw_plus_fp(sum2, value*value);
 
     tmp = is_valid(data.s3, tmp.s1);
     value = tmp.s0;
     value = tmp.s0;
-    sum1 = kahan_sum(sum1, value);
-    sum2 = kahan_sum(sum2, value*value);
+    sum1 = dw_plus_fp(sum1, value);
+    sum2 = dw_plus_fp(sum2, value*value);
 
     tmp = is_valid(data.s4, tmp.s1);
     value = tmp.s0;
     value = tmp.s0;
-    sum1 = kahan_sum(sum1, value);
-    sum2 = kahan_sum(sum2, value*value);
+    sum1 = dw_plus_fp(sum1, value);
+    sum2 = dw_plus_fp(sum2, value*value);
 
     tmp = is_valid(data.s5, tmp.s1);
     value = tmp.s0;
     value = tmp.s0;
-    sum1 = kahan_sum(sum1, value);
-    sum2 = kahan_sum(sum2, value*value);
+    sum1 = dw_plus_fp(sum1, value);
+    sum2 = dw_plus_fp(sum2, value*value);
 
     tmp = is_valid(data.s6, tmp.s1);
     value = tmp.s0;
     value = tmp.s0;
-    sum1 = kahan_sum(sum1, value);
-    sum2 = kahan_sum(sum2, value*value);
+    sum1 = dw_plus_fp(sum1, value);
+    sum2 = dw_plus_fp(sum2, value*value);
 
     tmp = is_valid(data.s7, tmp.s1);
     value = tmp.s0;
     value = tmp.s0;
-    sum1 = kahan_sum(sum1, value);
-    sum2 = kahan_sum(sum2, value*value);
+    sum1 = dw_plus_fp(sum1, value);
+    sum2 = dw_plus_fp(sum2, value*value);
 
     return (float8)(sum1.s0, sum1.s1, sum2.s0, sum2.s1, tmp.s1, 0.0f, 0.0f, 0.0f);
 }
@@ -125,9 +125,9 @@ static float2 mean_and_deviation(uint local_id,
             local_pos = 5 * local_id;
             remote_pos = 5 * (local_id + stride_size);
 
-            sum1 = compensated_sum((float2)(l_data[local_pos], l_data[local_pos+1]),
+            sum1 = dw_plus_dw((float2)(l_data[local_pos], l_data[local_pos+1]),
                                    (float2)(l_data[remote_pos], l_data[remote_pos + 1]));
-            sum2 = compensated_sum((float2)(l_data[local_pos + 2], l_data[local_pos+3]),
+            sum2 = dw_plus_dw((float2)(l_data[local_pos + 2], l_data[local_pos+3]),
                                    (float2)(l_data[remote_pos + 2], l_data[remote_pos + 3]));
 
             l_data[local_pos] = sum1.s0;
@@ -162,9 +162,9 @@ static float2 mean_and_deviation(uint local_id,
         // here we perform the Kahan summation
         // sigma**2 = (sum_x2 - (sum_x)**2/n )/n
 
-        sum = kahan_sum(sum2, -sum1.s0*sum1.s0/n);
-        sum = kahan_sum(sum, -sum1.s0*sum1.s1/n);
-        sum = kahan_sum(sum, -sum1.s1*sum1.s1/n);
+        sum = dw_plus_fp(sum2, -sum1.s0*sum1.s0/n);
+        sum = dw_plus_fp(sum, -sum1.s0*sum1.s1/n);
+        sum = dw_plus_fp(sum, -sum1.s1*sum1.s1/n);
 
         std = sqrt(sum.s0/n);
     }
