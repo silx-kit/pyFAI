@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/05/2021"
+__date__ = "29/06/2021"
 
 import unittest
 import os
@@ -164,7 +164,7 @@ class TestMask(unittest.TestCase):
                     r = mathutil.rwp(ref, res)
                     logger.info("OpenCL sigma clipping has R= %.3f for dataset %s", r, ds)
 #                     print(r)
-                    self.assertLess(r, 10.5, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
+                    self.assertLess(r, 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
 
 
 @unittest.skipIf(test_options.opencl is False, "User request to skip OpenCL tests")
