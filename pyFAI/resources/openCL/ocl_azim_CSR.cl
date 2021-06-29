@@ -772,6 +772,7 @@ csr_sigma_clip4(          global  float4  *data4,
                   const           float    cutoff,
                   const           int      cycle,
                   const           char     azimuthal,
+                  const           float    empty,
                           global  float8  *summed,
                           global  float   *averint,
                           global  float   *stdevpix,
@@ -827,9 +828,9 @@ csr_sigma_clip4(          global  float4  *data4,
         
     if (get_local_id(0) == 0) {
         summed[bin_num] = result;
-        averint[bin_num] = aver;
+        averint[bin_num] = isfinite(aver) ? aver : empty;
         //Note the standard error of the mean, SEM,  differs from std by sqrt of the normalization factor
-        stdevpix[bin_num] = std;
-        stderrmean[bin_num] = sem;
+        stdevpix[bin_num] = isfinite(std) ? std : empty;
+        stderrmean[bin_num] = isfinite(sem) ? sem : empty;
     }
 } //end kernel

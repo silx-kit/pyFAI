@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "25/06/2021"
 __status__ = "production"
 
 import logging
@@ -782,3 +782,27 @@ def chi_square(obt, ref):
     big_variance = (big_ref_var + big_obt_var) / 2.0
     non_null = abs(big_variance) > 1e-10
     return (big_delta_int[non_null] ** 2 / big_variance[non_null]).mean()
+
+
+def interp_filter(ary, out=None):
+    """Interpolate missing values (nan or infinite) in a 1D array
+    
+    :param ary: 1D array 
+    :param out: destination array (use ary to avoid allocation)
+    :return: 1D array
+    """
+    x = numpy.arange(ary.shape[0])
+    mask_valid = numpy.isfinite(ary)
+    mask_invalid = numpy.logical_not(mask_valid)
+    where = numpy.where(mask_valid)[0]
+    first = ary[where[0]]
+    last = ary[where[-1]]
+    if out is None:
+        out = ary.copy()
+    elif id(out) == id(ary):
+        pass
+    else:
+        out[mask_valid] = ary[mask_valid]
+    out[mask_invalid] = numpy.interp(x[mask_invalid], x[mask_valid], ary[mask_valid],
+                                     left=first, right=last)
+    return out

@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -28,8 +28,8 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "31/05/2021"
-__copyright__ = "2014-2020, ESRF, Grenoble"
+__date__ = "25/06/2021"
+__copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -125,7 +125,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.unit = unit
         self.bin_centers = bin_centers
         # a few place-folders
-        self.pos0Range = self.pos1Range = self.check_mask = None
+        self.pos0_range = self.pos1_range = self.check_mask = None
 
         if not checksum:
             checksum = calc_checksum(self._data)
@@ -327,6 +327,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("cutoff", numpy.float32(5)),
                                                               ("cycle", numpy.int32(5)),
                                                               ("azimuthal", numpy.int8(1)),
+                                                              ("empty", numpy.float32(self.empty)),
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("stderr", self.cl_mem["stderr"]),

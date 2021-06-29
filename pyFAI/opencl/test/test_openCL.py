@@ -164,7 +164,7 @@ class TestMask(unittest.TestCase):
                     r = mathutil.rwp(ref, res)
                     logger.info("OpenCL sigma clipping has R= %.3f for dataset %s", r, ds)
 #                     print(r)
-                    self.assertLess(r, 10, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
+                    self.assertLess(r, 10.5, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
 
 
 @unittest.skipIf(test_options.opencl is False, "User request to skip OpenCL tests")
