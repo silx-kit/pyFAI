@@ -115,12 +115,12 @@ class TestWorker(unittest.TestCase):
         worker.unit = units.TTH_DEG
         worker.dummy = "b"
         worker.delta_dummy = "c"
-        worker.method = "d"
+        worker.method = "lut"
         worker.polarization_factor = "e"
         worker.correct_solid_angle = "f"
         worker.nbpt_rad = "g"
-        # worker.nbpt_azim = 1
         worker.output = "numpy"
+        worker.update_processor()
         result = worker.process(data)
 
         # ai calls
@@ -130,7 +130,7 @@ class TestWorker(unittest.TestCase):
         self.assertEqual(ai_args["unit"], worker.unit)
         self.assertEqual(ai_args["dummy"], worker.dummy)
         self.assertEqual(ai_args["delta_dummy"], worker.delta_dummy)
-        self.assertEqual(ai_args["method"], worker.method)
+        self.assertTrue(worker.method in str(ai_args["method"]).lower())
         self.assertEqual(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEqual(ai_args["safe"], True)
         self.assertEqual(ai_args["data"], data)
@@ -138,7 +138,6 @@ class TestWorker(unittest.TestCase):
         self.assertEqual(ai_args["npt"], worker.nbpt_rad)
 
         # result
-        print(worker.radial)
         self.assertEqual(result.tolist(), [[0, 2], [1, 3]])
         self.assertEqual(worker.radial.tolist(), [0, 1])
         self.assertEqual(worker.azimuthal, None)
@@ -151,12 +150,12 @@ class TestWorker(unittest.TestCase):
         worker.unit = units.TTH_RAD
         worker.dummy = "b"
         worker.delta_dummy = "c"
-        worker.method = "d"
+        worker.method = "lut"
         worker.polarization_factor = "e"
         worker.correct_solid_angle = "f"
         worker.nbpt_rad = "g"
-        # worker.nbpt_azim = 2
         worker.output = "numpy"
+        worker.update_processor()
         result = worker.process(data)
 
         # ai calls
@@ -166,7 +165,7 @@ class TestWorker(unittest.TestCase):
         self.assertEqual(ai_args["unit"], worker.unit)
         self.assertEqual(ai_args["dummy"], worker.dummy)
         self.assertEqual(ai_args["delta_dummy"], worker.delta_dummy)
-        self.assertEqual(ai_args["method"], worker.method)
+        self.assertTrue(worker.method in str(ai_args["method"]).lower())
         self.assertEqual(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEqual(ai_args["safe"], True)
         self.assertEqual(ai_args["data"], data)
@@ -305,7 +304,6 @@ class TestWorkerConfig(unittest.TestCase):
     def setUpClass(cls):
         cls.directory = os.path.join(utilstest.test_options.tempdir, cls.__name__)
         os.makedirs(cls.directory)
-        print(cls.directory)
 
         cls.a = os.path.join(cls.directory, "a.npy")
         cls.b = os.path.join(cls.directory, "b.npy")
