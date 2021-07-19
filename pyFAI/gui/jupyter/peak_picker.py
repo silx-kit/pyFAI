@@ -47,7 +47,9 @@ class PeakPicker(_PeakPicker):
         super().__init__(*args, **kwargs)
         self.ics = {}
         self.image = self.data
-        self.figsize = (15, 8)    
+        self.figsize = (10, 8)
+        self.current_points = None    
+        self.reset_picked()
     
     def reset_picked(self):
         self.dict_annotated = {} 
@@ -105,10 +107,10 @@ class PeakPicker(_PeakPicker):
         print('then click save')
         
         
-        self.fig, self.ax1 = subplots(figsize=self.figsize)
-        self.ax1 = self.fig.add_subplot(111)
+        self.fig, self.ax = subplots(figsize=self.figsize)
+        self.ax = self.fig.add_subplot(111)
 
-        ringer = widgets.IntText(description="Continuous", continuous_update=True)
+        ringer = widgets.IntText(description="Ring#", continuous_update=True)
 
         button_merge = widgets.Button(description='merge rings')
         button_merge.on_click(merge_segments_on_click)
@@ -122,17 +124,19 @@ class PeakPicker(_PeakPicker):
         text_field_output_name = widgets.Text(
             value='./controlpoint_file.npt',
             #placeholder='Type something',
-            description='controlpoint file:',
+            description='control-point file:',
             disabled=False
         )        
-        button_save_ctrl_pts = widgets.Button(description='save control point file')
+        button_save_ctrl_pts = widgets.Button(description='save control-points file')
         button_save_ctrl_pts.on_click(save_ctrl_pts_on_click)
         
-        _ = display(widgets.HBox([ringer, button_add, button_merge, button_reset, text_field_output_name, button_save_ctrl_pts]))
+        _ = widgets.display(widgets.VBox([
+                                widgets.HBox([ringer, button_add, button_merge, button_reset]), 
+                                widgets.HBox([text_field_output_name, button_save_ctrl_pts])]))
                 
         disp_image, bounds = preprocess_image(self.data, log)
         show_min, show_max = bounds 
-        self.im = self.ax1.imshow(disp_image, 
+        self.im = self.ax.imshow(disp_image, 
                                   cmap='magma', 
                                   origin="lower",
                                   vmin=show_min, 
@@ -140,15 +144,11 @@ class PeakPicker(_PeakPicker):
                                   )
         self.ax.set_ylabel('y in pixels')
         self.ax.set_xlabel('x in pixels')
-        self.ax1.images[0].set_picker(True)
+        self.ax.images[0].set_picker(True)
         self.cid = self.fig.canvas.mpl_connect("pick_event", self.pick)
 
     def pick(self, event):
         e = event.mouseevent
-        #if ((event.button == 3) and (event.key == 'shift')) or \
-        #((event.button == 1) and (event.key == 'v')):
-        #k = event.keyevent
-        #self.ax1.set_cmap('viridis')
         if (e.inaxes and e.button == 1 and e.key == 'shift'):
             x, y = int(e.xdata), int(e.ydata)
             key = (x, y)
@@ -161,7 +161,7 @@ class PeakPicker(_PeakPicker):
                 pt0x, pt0y = key
                 """data"""
                 
-                annot = self.ax1.annotate("", xy=(1, 1), xytext=(-1, 1),
+                annot = self.ax.annotate("", xy=(1, 1), xytext=(-1, 1),
                                      textcoords="offset points",
                                      arrowprops=dict(arrowstyle="->", color="w",
                                                      connectionstyle="arc3"),
@@ -169,61 +169,23 @@ class PeakPicker(_PeakPicker):
                                      bbox=dict(boxstyle="round", fc="r"))
                 annot.set_visible(False)
                 self.dict_annotated[key] = annot
-                #myMatrix = np.ma.masked_where(self.selected)
-                #self.ax1.imshow(self.image)
-                #self.ax1.imshow(images[3], cmap='magma')
-                #self.selected[14, :] = True
-                #self.selected[27, :] = False
-                #x, y = key
-                #self.selected[x, y] = False
-                #self.ax1.matshow(np.ma.masked_where(self.selected, self.selected), cmap="Greens")
-                
-                #self._herep = key
-                        
-
-                #self.ax2.imshow(np.ma.masked_where(self.selected, self.selected), cmap='Greys')#, cmap='magma')
-                #self.ax1.imshow(myMatrix, cmap='grey')
-                #mask1=np.isnan(a)
-                #mask2=np.logical_not(mask1)
-                #plt.imshow(mask1,cmap='gray')
-                #plt.imshow(mask2,cmap='rainbow')
-                #self.ax2.imshow(self.selected, cmap='Greys')#,  interpolation='nearest')
-
-                #self.im.set_cmap('seismic')
             self.annotate(key)
-            
-            #def new_grp(event):
-            #" * new_grp Right-click (click+n):         try an auto find for a ring"
-            # ydata is a float, and matplotlib display pixels centered.
-            # we use floor (int cast) instead of round to avoid use of
-            # banker's rounding
             ypix, xpix = int(e.ydata + 0.5), int(e.xdata + 0.5)
-            #self._herep = (ypix, xpix, 'test')
-            
             try:
-                #    def find_peaks(self, x, nmax=200, annotate=None, massif_contour=None, stdout=sys.stdout):
                 points = self.massif.find_peaks([ypix, xpix],
                                             self.defaultNbPoints,
                                             None, None)
                 self.current_points = points
             except Exception as e:
-                self._herep = []
-            '''
-            if points:
-                gpt = common_creation(points)
-                annontate(points[0], [ypix, xpix], gpt=gpt)
-                logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
-            else:
-                logger.warning("No peak found !!!")
-            #'''
-            self.annotate_found(self._herep)
+                points = []
+            self.annotate_found(points)
     
     def annotate_found(self, points):
         for X in points:
             key = [int(x) for x in X]
             
             y, x = key
-            annot = self.ax1.annotate("", xy=(x, y), xytext=(-1, 1),
+            annot = self.ax.annotate("", xy=(x, y), xytext=(-1, 1),
                                  textcoords="offset points",
                                  arrowprops=dict(arrowstyle="->", color="w",
                                                  connectionstyle="arc3"),
