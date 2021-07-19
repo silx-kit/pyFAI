@@ -37,6 +37,7 @@ __status__ = "production"
 from matplotlib.pyplot import subplots
 import itertools
 import ipywidgets as widgets
+from IPython.display import display
 from ..peak_picker import PeakPicker as _PeakPicker, preprocess_image
 
 class PeakPicker(_PeakPicker):
@@ -130,9 +131,10 @@ class PeakPicker(_PeakPicker):
         button_save_ctrl_pts = widgets.Button(description='save control-points file')
         button_save_ctrl_pts.on_click(save_ctrl_pts_on_click)
         
-        _ = widgets.display(widgets.VBox([
+        layout = widgets.VBox([
                                 widgets.HBox([ringer, button_add, button_merge, button_reset]), 
-                                widgets.HBox([text_field_output_name, button_save_ctrl_pts])]))
+                                widgets.HBox([text_field_output_name, button_save_ctrl_pts])])
+        _ = display(layout)
                 
         disp_image, bounds = preprocess_image(self.data, log)
         show_min, show_max = bounds 
