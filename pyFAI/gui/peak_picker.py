@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "19/07/2021"
 __status__ = "production"
 
 import os
@@ -65,6 +65,28 @@ from ..massif import Massif
 from ..ext.reconstruct import reconstruct
 from ..ext.watershed import InverseWatershed
 
+
+def preprocess_image(data, log=False, clip=0.001):
+    """Preforms the pre-processing of the image
+    
+    :param data: the input image
+    :param log: set to apply logarithmic intensity scale
+    :param clip: discard pixel fraction which are too weak/intense
+    :return: scaled image, bounds  
+    """
+    if log:
+        data_disp = numpy.log1p(data - data.min())
+    else:
+        data_disp = data
+
+    # skip lowest and highest per mille of image values via vmin/vmax
+    sorted_list = data_disp.flatten()  # explicit copy
+    sorted_list.sort()
+    show_min = sorted_list[int(round(clip * (sorted_list.size - 1)))]
+    show_max = sorted_list[int(round((1.0-clip) * (sorted_list.size - 1)))]
+    bounds = (show_min, show_max)
+    return  data_disp, bounds
+    
 
 class PeakPicker(object):
     """
@@ -264,18 +286,8 @@ class PeakPicker(object):
                 self.ref_action = a
                 self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
-        if log:
-            data_disp = numpy.log1p(self.data - self.data.min())
-            txt = 'Log colour scale (skipping lowest/highest per mille)'
-        else:
-            data_disp = self.data
-            txt = 'Linear colour scale (skipping lowest/highest per mille)'
-
-        # skip lowest and highest per mille of image values via vmin/vmax
-        sorted_list = data_disp.flatten()  # explicit copy
-        sorted_list.sort()
-        show_min = sorted_list[int(round(1e-3 * (sorted_list.size - 1)))]
-        show_max = sorted_list[int(round(0.999 * (sorted_list.size - 1)))]
+        data_disp, bounds = preprocess_image(self.data, log, 1e-3)
+        show_min, show_max = bounds 
         im = self.ax.imshow(data_disp, vmin=show_min, vmax=show_max,
                             origin="lower", interpolation="nearest",
                             )
@@ -309,6 +321,10 @@ class PeakPicker(object):
             # ax.autoscale_view(False, False, False)
 
         else:
+            if log:
+                txt = 'Log colour scale (skipping lowest/highest per mille)'
+            else:
+                txt = 'Linear colour scale (skipping lowest/highest per mille)'                
             _cbar = self.fig.colorbar(im, label=txt)
         # self.ax.autoscale_view(False, False, False)
         update_fig(self.fig)
