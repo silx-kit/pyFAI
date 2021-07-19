@@ -34,11 +34,15 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "19/07/2021"
 __status__ = "production"
 
+import logging
+logger = logging.getLogger(__name__)
+import numpy
 from matplotlib.pyplot import subplots
 import itertools
 import ipywidgets as widgets
 from IPython.display import display
 from ..peak_picker import PeakPicker as _PeakPicker, preprocess_image
+
 
 class PeakPicker(_PeakPicker):
     """
@@ -51,6 +55,12 @@ class PeakPicker(_PeakPicker):
         self.figsize = (10, 8)
         self.current_points = None    
         self.reset_picked()
+        self.ringintwidget = None
+        
+    @property
+    def ring_value(self):
+        if self.ringintwidget:
+            return self.ringintwidget.value
     
     def reset_picked(self):
         self.dict_annotated = {} 
@@ -89,7 +99,7 @@ class PeakPicker(_PeakPicker):
             self.merge_segments()
 
         def add_to_ring_on_click(*kargs, **kwargs):
-            self.add_to_selected_ring(ringer.value, self.current_points)
+            self.add_to_selected_ring(self.ring_value, self.current_points)
         
         def reset_picking_on_click(*kargs, **kwargs):
             self.reset_picked()
@@ -101,22 +111,21 @@ class PeakPicker(_PeakPicker):
                 self.points.append(work[key][0], key)
             self.points.save(filename)
 
-        print('ATTENTION!!!!!!')
-        print('you must click add to selected ring after eack pick')
-        print('pick with shift and left mouse button')
+        print('1. Shift + left-click to pick a set of point ')
+        print('2. Click "assign group" to the ring numner (0-based!)')
         print('then you click merge')
-        print('then click save')
+        print('3. Click save to expose the control points')
         
         
         self.fig, self.ax = subplots(figsize=self.figsize)
         self.ax = self.fig.add_subplot(111)
 
-        ringer = widgets.IntText(description="Ring#", continuous_update=True)
+        self.ringintwidget = widgets.IntText(description="Ring#", continuous_update=True)
 
         button_merge = widgets.Button(description='merge rings')
         button_merge.on_click(merge_segments_on_click)
         
-        button_add = widgets.Button(description='add_to_selected_ring')
+        button_add = widgets.Button(description='Assign group')
         button_add.on_click(add_to_ring_on_click)
         
         button_reset = widgets.Button(description='reset')
@@ -125,14 +134,14 @@ class PeakPicker(_PeakPicker):
         text_field_output_name = widgets.Text(
             value='./controlpoint_file.npt',
             #placeholder='Type something',
-            description='control-point file:',
+            description='filename:',
             disabled=False
         )        
-        button_save_ctrl_pts = widgets.Button(description='save control-points file')
+        button_save_ctrl_pts = widgets.Button(description='Save control-points')
         button_save_ctrl_pts.on_click(save_ctrl_pts_on_click)
         
         layout = widgets.VBox([
-                                widgets.HBox([ringer, button_add, button_merge, button_reset]), 
+                                widgets.HBox([self.ringintwidget, button_add, button_merge, button_reset]), 
                                 widgets.HBox([text_field_output_name, button_save_ctrl_pts])])
         _ = display(layout)
                 
@@ -179,7 +188,13 @@ class PeakPicker(_PeakPicker):
                                             None, None)
                 self.current_points = points
             except Exception as e:
+                print(e)
                 points = []
+            else:
+                npyx = numpy.array(points)
+                npy, npx = npyx.T
+                self.ax.scatter(npx, npy, marker="o")                
+            self.points.append(points, ring=self.ring_value)
             self.annotate_found(points)
     
     def annotate_found(self, points):
@@ -193,8 +208,8 @@ class PeakPicker(_PeakPicker):
                                                  connectionstyle="arc3"),
                                  va="bottom", ha="left", fontsize=10,
                                  bbox=dict(boxstyle="round", fc="r"))
-            b3 = widgets.Button(description='button 3')
-            annot.set_text('•')
+            #b3 = widgets.Button(description='button 3')
+            annot.set_text('<')
             annot.xy = (x, y)
             annot.set_visible(True)
             self.dict_annotated[key] = annot
@@ -205,7 +220,7 @@ class PeakPicker(_PeakPicker):
         if key in self.dict_annotated:
             annot = self.dict_annotated.get(key)
             annot.set_visible(True)
-            annot.set_text('•')
+            annot.set_text('<')
             annot.xy = key
         print(self.dict_annotated)
 

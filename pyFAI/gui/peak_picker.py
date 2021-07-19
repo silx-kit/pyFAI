@@ -75,7 +75,7 @@ def preprocess_image(data, log=False, clip=0.001):
     :return: scaled image, bounds  
     """
     if log:
-        data_disp = numpy.log1p(data - data.min())
+        data_disp = numpy.arcsinh(data)
     else:
         data_disp = data
 
@@ -613,13 +613,17 @@ class PeakPicker(object):
         if self.fig is None:
             logging.warning("No diffraction image available => not showing the contour")
         else:
-            while len(self.msp.images) > 1:
-                self.msp.images.pop()
-            while len(self.ct.images) > 1:
-                self.ct.images.pop()
-            while len(self.ct.collections) > 0:
-                self.ct.collections.pop()
-
+            if self.msp is not None and self.ct is not None:
+                while len(self.msp.images) > 1:
+                    self.msp.images.pop()
+                while len(self.ct.images) > 1:
+                    self.ct.images.pop()
+                while len(self.ct.collections) > 0:
+                    self.ct.collections.pop()
+                ct = self.ct
+            else:
+                ct = self.ax
+            
             tth_max = data.max()
             tth_min = data.min()
             if self.points.calibrant:
@@ -633,7 +637,7 @@ class PeakPicker(object):
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 if not isinstance(cmap, matplotlib.colors.Colormap):
                     cmap = matplotlib.cm.get_cmap(cmap)
-                self.ct.contour(data, levels=angles, cmap=cmap, linewidths=linewidths, linestyles=linestyles)
+                ct.contour(data, levels=angles, cmap=cmap, linewidths=linewidths, linestyles=linestyles)
                 self.ax.set_xlim(xlim)
                 self.ax.set_ylim(ylim)
                 print("Visually check that the overlaid dashed curve on the Debye-Sherrer rings of the image")
