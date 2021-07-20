@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2021"
+__date__ = "19/07/2021"
 __status__ = "production"
 
 import os
@@ -1483,7 +1483,7 @@ decrease the value if arcs are mixed together.""", default=None)
         if self.gaussianWidth is not None:
             self.peakPicker.massif.valley_size = self.gaussianWidth
         else:
-            self.peakPicker.massif.initValleySize()
+            self.peakPicker.massif.init_valley_size()
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True, pick=True)
             update_fig(self.peakPicker.fig)

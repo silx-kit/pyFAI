@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/04/2021"
+__date__ = "16/07/2021"
 __status__ = "stable"
 
 import io
@@ -655,14 +655,14 @@ class BuildExt(build_ext):
         if not self.use_cython:
             self.patch_with_default_cythonized_files(ext)
         else:
-        	from Cython.Build import cythonize
-        	patched_exts = cythonize(
+            from Cython.Build import cythonize
+            patched_exts = cythonize(
                 	                 [ext],
                 	                 compiler_directives={'embedsignature': True,
                 	                 'language_level': 3},
                 	                 force=self.force_cython
         				)
-	        ext.sources = patched_exts[0].sources
+            ext.sources = patched_exts[0].sources
 
         # Remove OpenMP flags if OpenMP is disabled
         if not self.use_openmp:
@@ -923,12 +923,12 @@ class sdist_debian(sdist):
         self.archive_files = [debian_arch]
         print("Building debian .orig.tar.gz in %s" % self.archive_files[0])
 
+
 #################
 # PyFAI specific
 #################
 
-
-class PyFaiTestData(Command):
+class TestData(Command):
     """
     Tailor made tarball with test data
     """
@@ -1068,7 +1068,7 @@ def get_project_configuration(dry_run):
         clean=CleanCommand,
         sdist=SourceDistWithCython,
         debian_src=sdist_debian,
-        testimages=PyFaiTestData,
+        testimages=TestData,
     )
 
     if dry_run:

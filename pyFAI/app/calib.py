@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "19/07/2021"
 __satus__ = "development"
 
 import logging
@@ -53,14 +53,16 @@ except ImportError:
 
 
 # This is for debugging with rconsole
+c = None
+
 def main():
+    global c
     c = Calibration()
     c.parse()
     c.read_pixelsSize()
     c.preprocess()
     c.gui_peakPicker()
     input("Press enter to quit")
-
 
 if __name__ == "__main__":
     main()

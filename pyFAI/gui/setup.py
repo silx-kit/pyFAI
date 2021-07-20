@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "19/07/2021"
 
 from numpy.distutils.misc_util import Configuration
 
@@ -38,6 +38,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('helper')
     config.add_subpackage('widgets')
     config.add_subpackage('dialog')
+    config.add_subpackage('jupyter')
     return config
 
 
