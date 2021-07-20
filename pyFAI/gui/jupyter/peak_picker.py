@@ -38,85 +38,58 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy
 from matplotlib.pyplot import subplots
-import itertools
 import ipywidgets as widgets
 from IPython.display import display
 from ..peak_picker import PeakPicker as _PeakPicker, preprocess_image
 
 
 class PeakPicker(_PeakPicker):
-    """
+    """Peak picker optimized for the Jupyter environment with
+    * Matplotlib
+    * Ipywidgets
     """
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ics = {}
         self.image = self.data
         self.figsize = (10, 8)
-        self.current_points = None    
-        self.reset_picked()
         self.ringintwidget = None
         
     @property
     def ring_value(self):
         if self.ringintwidget:
             return self.ringintwidget.value
-    
-    def reset_picked(self):
-        self.dict_annotated = {} 
-        self.dict_all_points = {}
-    
-    def merge_segments(self):
-        work = self.dict_all_points
-        for key in work.keys():
-            sets = work[key]
-            work[key] = [list(itertools.chain.from_iterable(sets))]
-    
-    def add_to_selected_ring(self, ring, current_points):
-        """
-        ring is integer from
-        first ring has index 0
-        """
-        work = self.dict_all_points
-        key = ring
-        if work.get(key) is None:
-            work[key] = [current_points]
-        else:
-            work[key].append(current_points)
-    
-    def get_ring(self, ring):
-        """
-        maybe delete
-        """
-        self.current_ring = ring
+
     
     def gui(self, log=False, maximize=False, pick=True):
         """
         :param log: show z in log scale
         """
         ### Several nested functions:
-        def merge_segments_on_click(*kargs, **kwargs):
-            self.merge_segments()
-
-        def add_to_ring_on_click(*kargs, **kwargs):
-            self.add_to_selected_ring(self.ring_value, self.current_points)
-        
+        def undo_on_click(*kargs, **kwargs):
+            with self._sem:
+                lbls = self.points.get_labels()
+                if lbls:
+                    self.remove_grp(lbls[-1])
+       
         def reset_picking_on_click(*kargs, **kwargs):
-            self.reset_picked()
+            with self._sem:
+                self.reset()
 
         def save_ctrl_pts_on_click(b):
-            filename = text_field_output_name.value
-            work = self.dict_all_points
-            for key in work.keys():
-                self.points.append(work[key][0], key)
-            self.points.save(filename)
+            with self._sem:
+                filename = text_field_output_name.value
+                work = self.dict_all_points
+                for key in work.keys():
+                    self.points.append(work[key][0], key)
+                self.points.save(filename)
        
         self.fig, self.ax = subplots(figsize=self.figsize)
 
-        self.ringintwidget = widgets.IntText(description="Ring#", continuous_update=True)
+        self.ringintwidget = widgets.IntText(description="Ring #", continuous_update=True)
 
         button_undo = widgets.Button(description='undo')
-        button_undo.on_click(merge_segments_on_click)
+        button_undo.on_click(undo_on_click)
                 
         button_reset = widgets.Button(description='reset')
         button_reset.on_click(reset_picking_on_click)
@@ -147,72 +120,119 @@ class PeakPicker(_PeakPicker):
         self.ax.set_xlabel('x in pixels')
         self.ax.set_title("Shift+click to select a ring. Mind to first set the ring number")
         self.ax.images[0].set_picker(True)
-        self.cid = self.fig.canvas.mpl_connect("pick_event", self.pick)
+        self.cid = self.fig.canvas.mpl_connect("pick_event", self.onclick)
 
-    def pick(self, event):
-        e = event.mouseevent
-        if (e.inaxes and e.button == 1 and e.key == 'shift'):
-            x, y = int(e.xdata), int(e.ydata)
-            key = (x, y)
-            if key in self.dict_annotated:
-                annot = self.dict_annotated[key]
-                annot.set_visible(False)
-                annot.remove()
-                del self.dict_annotated[key]
+    def onclick(self, event):
+        
+        def annontate(x, x0=None, idx=None, gpt=None):
+            """
+            Call back method to annotate the figure while calculation are going on ...
+            :param x: coordinates
+            :param x0: coordinates of the starting point
+            :param gpt: group of point, instance of PointGroup
+            :return: annotatoin
+            """
+            if x0 is None:
+                annot = self.ax.annotate(".", xy=(x[1], x[0]), weight="bold", size="large", color="black")
             else:
-                pt0x, pt0y = key
-                """data"""
-                
-                annot = self.ax.annotate("", xy=(1, 1), xytext=(-1, 1),
-                                     textcoords="offset points",
-                                     arrowprops=dict(arrowstyle="->", color="w",
-                                                     connectionstyle="arc3"),
-                                     va="bottom", ha="left", fontsize=10,
-                                     bbox=dict(boxstyle="round", fc="r"))
-                annot.set_visible(False)
-                self.dict_annotated[key] = annot
-            self.annotate(key)
-            ypix, xpix = int(e.ydata + 0.5), int(e.xdata + 0.5)
-            try:
-                points = self.massif.find_peaks([ypix, xpix],
+                if gpt:
+                    annot = self.ax.annotate(gpt.label, xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
+                                             weight="bold", size="large", color="black",
+                                             arrowprops=dict(facecolor='white', edgecolor='white'),)
+                    gpt.annotate = annot
+                else:
+                    annot = self.ax.annotate("%i" % (len(self.points)), xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
+                                             weight="bold", size="large", color="black",
+                                             arrowprops=dict(facecolor='white', edgecolor='white'),)
+#                 self.draw()
+            return annot
+        
+        def create_gpt(points, gpt=None):
+            """
+            plot new set of points
+
+            :param points: list of points
+            :param gpt: : group of point, instance of PointGroup
+            """
+            if points:
+                if not gpt:
+                    gpt = self.points.append(points, ring=self.ring_value)
+                npl = numpy.array(points)
+                gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+#                 self.draw()
+            return gpt
+
+        def common_creation(points, gpt=None):
+            """
+            plot new set of points
+
+            :param points: list of points
+            :param gpt: : group of point, instance of PointGroup
+            """
+            if points:
+                if not gpt:
+                    gpt = self.points.append(points, ring=self.ring_value)
+                npl = numpy.array(points)
+                gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+#                 self.draw()
+            return gpt
+
+
+        def new_grp(event):
+            " * new_grp Right-click (click+n):         try an auto find for a ring"
+            # ydata is a float, and matplotlib display pixels centered.
+            # we use floor (int cast) instead of round to avoid use of
+            # banker's rounding
+            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
+            points = self.massif.find_peaks([ypix, xpix],
                                             self.defaultNbPoints,
                                             None, None)
-                self.current_points = points
-            except Exception as e:
-                print(e)
-                points = []
+            if points:
+                gpt = common_creation(points)
+                annontate(points[0], [ypix, xpix], gpt=gpt)
+                self.draw()
+                print(f"Created group {gpt.label} with {len(gpt)} points")
             else:
-                npyx = numpy.array(points)
-                npy, npx = npyx.T
-                self.ax.scatter(npx, npy, marker=".")                
-            self.points.append(points, ring=self.ring_value)
-            self.annotate_found(points)
-    
-    def annotate_found(self, points):
-        for X in points:
-            key = [int(x) for x in X]
-            
-            y, x = key
-            annot = self.ax.annotate("", xy=(x, y), xytext=(-1, 1),
-                                 textcoords="offset points",
-                                 arrowprops=dict(arrowstyle="->", color="w",
-                                                 connectionstyle="arc3"),
-                                 va="bottom", ha="left", fontsize=10,
-                                 bbox=dict(boxstyle="round", fc="r"))
-            #b3 = widgets.Button(description='button 3')
-            annot.set_text('<')
-            annot.xy = (x, y)
-            annot.set_visible(True)
-            self.dict_annotated[key] = annot
-            self.fig.canvas.draw_idle()        
-        
-    def annotate(self, X):
-        key = X
-        if key in self.dict_annotated:
-            annot = self.dict_annotated.get(key)
-            annot.set_visible(True)
-            annot.set_text('<')
-            annot.xy = key
-        print(self.dict_annotated)
+                print("No peak found !!!")
 
-        self.fig.canvas.draw_idle()
+        ## Core part of the function
+        with self._sem:
+            event = event.mouseevent
+            logger.debug("Button: %i, Key modifier: %s", event.button, event.key)
+            if (event.inaxes and event.button == 1 and event.key == 'shift'):
+                new_grp(event)
+
+    def remove_grp(self, lbl):
+        """
+        remove a group of points
+
+        :param lbl: label of the group of points
+        """
+        gpt = self.points.pop(lbl=lbl)
+        if gpt and self.ax:
+            if gpt.annotate in self.ax.texts:
+                self.ax.texts.remove(gpt.annotate)
+            for plot in gpt.plot:
+                    if plot in self.ax.lines:
+                        self.ax.lines.remove(plot)
+            self.draw()
+
+
+    def reset(self):
+        """
+        Reset control point and graph (if needed)
+        """
+        self.points.reset()
+        if self.fig and self.ax:
+            # empty annotate and plots
+            if len(self.ax.texts) > 0:
+                self.ax.texts = []
+            if len(self.ax.lines) > 0:
+                self.ax.lines = []
+            # Redraw the image
+            self.draw()
+            
+    def draw(self):
+        """Update plot"""
+        if self.fig is not None:
+            self.fig.canvas.draw_idle()
