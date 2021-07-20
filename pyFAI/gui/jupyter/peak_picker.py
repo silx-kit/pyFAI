@@ -31,7 +31,7 @@ __authors__ = ["Philipp Hans", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2021"
+__date__ = "20/07/2021"
 __status__ = "production"
 
 import logging
@@ -110,24 +110,14 @@ class PeakPicker(_PeakPicker):
             for key in work.keys():
                 self.points.append(work[key][0], key)
             self.points.save(filename)
-
-        print('1. Shift + left-click to pick a set of point ')
-        print('2. Click "assign group" to the ring numner (0-based!)')
-        print('then you click merge')
-        print('3. Click save to expose the control points')
-        
-        
+       
         self.fig, self.ax = subplots(figsize=self.figsize)
-        self.ax = self.fig.add_subplot(111)
 
         self.ringintwidget = widgets.IntText(description="Ring#", continuous_update=True)
 
-        button_merge = widgets.Button(description='merge rings')
-        button_merge.on_click(merge_segments_on_click)
-        
-        button_add = widgets.Button(description='Assign group')
-        button_add.on_click(add_to_ring_on_click)
-        
+        button_undo = widgets.Button(description='undo')
+        button_undo.on_click(merge_segments_on_click)
+                
         button_reset = widgets.Button(description='reset')
         button_reset.on_click(reset_picking_on_click)
         
@@ -141,7 +131,7 @@ class PeakPicker(_PeakPicker):
         button_save_ctrl_pts.on_click(save_ctrl_pts_on_click)
         
         layout = widgets.VBox([
-                                widgets.HBox([self.ringintwidget, button_add, button_merge, button_reset]), 
+                                widgets.HBox([self.ringintwidget, button_undo, button_reset]), 
                                 widgets.HBox([text_field_output_name, button_save_ctrl_pts])])
         _ = display(layout)
                 
@@ -155,6 +145,7 @@ class PeakPicker(_PeakPicker):
                                   )
         self.ax.set_ylabel('y in pixels')
         self.ax.set_xlabel('x in pixels')
+        self.ax.set_title("Shift+click to select a ring. Mind to first set the ring number")
         self.ax.images[0].set_picker(True)
         self.cid = self.fig.canvas.mpl_connect("pick_event", self.pick)
 
@@ -193,7 +184,7 @@ class PeakPicker(_PeakPicker):
             else:
                 npyx = numpy.array(points)
                 npy, npx = npyx.T
-                self.ax.scatter(npx, npy, marker="o")                
+                self.ax.scatter(npx, npy, marker=".")                
             self.points.append(points, ring=self.ring_value)
             self.annotate_found(points)
     
