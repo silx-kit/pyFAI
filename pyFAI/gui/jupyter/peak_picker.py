@@ -38,10 +38,13 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy
 from matplotlib.pyplot import subplots
-import ipywidgets as widgets
-from IPython.display import display
 from ..peak_picker import PeakPicker as _PeakPicker, preprocess_image
-
+try:
+    import ipywidgets as widgets
+    from IPython.display import display
+except ModuleNotFoundError:
+    logger.error("`ipywidgets` and `IPython` are needed to perform the calibration in Jupyter")
+    
 
 class PeakPicker(_PeakPicker):
     """Peak picker optimized for the Jupyter environment with
