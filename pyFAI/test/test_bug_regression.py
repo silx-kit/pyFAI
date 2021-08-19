@@ -514,9 +514,11 @@ class TestBugRegression(unittest.TestCase):
         detector = detectors.Detector(5e-4, 5e-4, max_shape=(1100, 1000))
         ref = AzimuthalIntegrator(detector=detector)
         geo = ref.getPyFAI()
+        print(geo)
+        print(ref.get_config())
         obt = AzimuthalIntegrator()
         obt.setPyFAI(**geo)
-        print(geo)
+        
         print(obt)
         self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
         
