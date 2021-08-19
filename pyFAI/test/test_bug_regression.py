@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,8 +35,8 @@ https://github.com/silx-kit/pyFAI/issues
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
-__copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2021"
+__copyright__ = "2015-2021 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "19/08/2021"
 
 import sys
 import os
@@ -49,7 +49,6 @@ logger = logging.getLogger(__name__)
 import fabio
 from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..calibrant import get_calibrant
 from .. import detectors
 from .. import units
 from math import pi
@@ -508,7 +507,20 @@ class TestBugRegression(unittest.TestCase):
 
         self.assertEqual(id_before, id_after, "The CSR engine got reset")
 
-
+    def test_bug_1536(self):
+        """Ensure setPyFAI accepts the output of getPyFAI() 
+        and that the detector description matches !
+        """
+        detector = detectors.Detector(5e-4, 5e-4, max_shape=(1100, 1000))
+        ref = AzimuthalIntegrator(detector=detector)
+        geo = ref.getPyFAI()
+        obt = AzimuthalIntegrator()
+        obt.setPyFAI(**geo)
+        print(geo)
+        print(obt)
+        self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
+        
+        
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
