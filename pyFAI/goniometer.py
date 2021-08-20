@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/05/2021"
+__date__ = "19/08/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -710,10 +710,9 @@ class SingleGeometry(object):
 
         :return: Azimuthal Integrator instance
         """
-        geo = self.geometry_refinement.getPyFAI()
-        geo["detector"] = self.detector
+        config = self.geometry_refinement.get_config()
         ai = AzimuthalIntegrator()
-        ai.setPyFAI(**geo)
+        ai.set_config(config)
         return ai
 
 
