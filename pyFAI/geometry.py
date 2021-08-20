@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/08/2021"
+__date__ = "20/08/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -60,6 +60,12 @@ from . import utils
 from .io import ponifile, integration_config
 
 logger = logging.getLogger(__name__)
+
+try:
+    import numexpr
+except ImportError:
+    logger.debug("Backtrace", exc_info=True)
+    numexpr = None
 
 try:
     from .ext import _geometry
@@ -1028,14 +1034,48 @@ class Geometry(object):
                 out = self.delta_array(shape, unit, scale=scale)
         return out
 
-    def cos_incidence(self, d1, d2, path="cython"):
+    def sin_incidence(self, d1, d2, path="cython"):
         """
-        Calculate the incidence angle (alpha) for current pixels (P).
+        Calculate the sinus of the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
-        it's incidence angle is :math:`\\{alpha} = 0` hence :math:`cos(\\{alpha}) = 1`.
+        it's incidence angle is :math:`\\{alpha} = 0` hence :math:`sin(\\{alpha}) = 0`.
+        
+        Works also for non-flat detectors where the normal of the pixel is considered.
 
         :param d1: 1d or 2d set of points in pixel coord
         :param d2:  1d or 2d set of points in pixel coord
+        :param path: can be "cython", "numexpr" or "numpy" (fallback).
+        :return: cosine of the incidence angle
+        """
+        
+        if self.detector.IS_FLAT:
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2)
+            if (_geometry is not None) and (path == "cython"):
+                sina = _geometry.calc_sina(self._dist, p1, p2)
+            elif (numexpr is not None) and (path!="numpy"):
+                sina = numexpr.evaluate("sqrt((p1*p1 + p2*p2) / (dist*dist + p1*p1 + p2*p2))",
+                                        local_dict={"dist": self._dist, "p1":p1, "p2":p2})
+            else:
+                sina = numpy.sqrt((p1 * p1 + p2 * p2) / (self._dist * self._dist + p1 * p1 + p2 * p2))
+        else:
+            cosa = self.cos_incidence(d1, d2, path)
+            if numexpr is not None and path!="numpy":
+                sina = numexpr.evaluate("sqrt(1.0-cosa*cosa)")
+            else:
+                sina = numpy.sqrt(1.0 - cosa*cosa) 
+        return sina
+            
+    def cos_incidence(self, d1, d2, path="cython"):
+        """
+        Calculate the cosinus of the incidence angle (alpha) for current pixels (P).
+        The poni being the point of normal incidence,
+        it's incidence angle is :math:`\\{alpha} = 0` hence :math:`cos(\\{alpha}) = 1`.
+        
+        Works also for non-flat detectors where the normal of the pixel is considered.
+
+        :param d1: 1d or 2d set of points in pixel coord
+        :param d2:  1d or 2d set of points in pixel coord
+        :param path: can be "cython", "numexpr" or "numpy" (fallback).
         :return: cosine of the incidence angle
         """
         p1, p2, p3 = self._calc_cartesian_positions(d1, d2)
@@ -1071,11 +1111,15 @@ class Geometry(object):
             length.strides = length.strides[:-1] + (0,)
             orth /= length
             # calculate the cosine of the vector using the dot product
-            return (t * orth).sum(axis=-1).reshape(d1.shape)
-        if (_geometry is not None) and (path == "cython"):
-            cosa = _geometry.calc_cosa(self._dist, p1, p2)
+            cosa = (t * orth).sum(axis=-1).reshape(d1.shape)
         else:
-            cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
+            if (_geometry is not None) and (path == "cython"):
+                cosa = _geometry.calc_cosa(self._dist, p1, p2)
+            elif (numexpr is not None) and (path!="numpy"):
+                cosa = numexpr.evaluate("dist/sqrt(dist*dist + p1*p1 + p2*p2)",
+                                        local_dict={"dist": self._dist, "p1":p1, "p2":p2})
+            else:
+                cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
         return cosa
 
     def diffSolidAngle(self, d1, d2):

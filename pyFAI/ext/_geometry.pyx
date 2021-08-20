@@ -37,7 +37,7 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "11/01/2021"
+__date__ = "20/08/2021"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -166,6 +166,16 @@ cdef inline double f_cosa(double p1, double p2, double L) nogil:
     :param L: distance sample - PONI
     """
     return L / sqrt((L * L) + (p1 * p1) + (p2 * p2))
+
+cdef inline double f_sina(double p1, double p2, double L) nogil:
+    """
+    calculate sinus of the incidence angle for 1 pixel
+
+    :param p1:distances in meter along dim1 from PONI
+    :param p2: distances in meter along dim2 from PONI
+    :param L: distance sample - PONI
+    """
+    return sqrt(((p1 * p1) + (p2 * p2)) / ((L * L) + (p1 * p1) + (p2 * p2)))
 
 
 ################################################################################
@@ -475,6 +485,42 @@ def calc_cosa(double L,
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_cosa(c1[i], c2[i], L + c3[i])
+
+    if pos1.ndim == 2:
+        return numpy.asarray(out).reshape(pos1.shape[0], pos1.shape[1])
+    else:
+        return numpy.asarray(out)
+
+
+def calc_sina(double L,
+              pos1 not None,
+              pos2 not None,
+              pos3=None):
+    """Calculate the sine of the incidence angle using OpenMP.
+    Used for sensors thickness effect corrections
+
+    :param L: distance sample - PONI
+    :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
+    :param pos2: numpy array with distances in meter along dim2 from PONI (X)
+    :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
+    :return: ndarray of double with same shape and size as pos1
+    """
+    cdef ssize_t  size = pos1.size, i = 0
+    assert pos2.size == size, "pos2.size == size"
+    cdef:
+        double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
+        double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
+        double[::1] c3
+        double[::1] out = numpy.empty(size, dtype=numpy.float64)
+
+    if pos3 is None:
+        for i in prange(size, nogil=True, schedule="static"):
+            out[i] = f_sina(c1[i], c2[i], L)
+    else:
+        assert pos3.size == size, "pos3.size == size"
+        c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
+        for i in prange(size, nogil=True, schedule="static"):
+            out[i] = f_sina(c1[i], c2[i], L + c3[i])
 
     if pos1.ndim == 2:
         return numpy.asarray(out).reshape(pos1.shape[0], pos1.shape[1])
