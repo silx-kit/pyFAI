@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/08/2021"
+__date__ = "23/08/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1053,16 +1053,16 @@ class Geometry(object):
             if (_geometry is not None) and (path == "cython"):
                 sina = _geometry.calc_sina(self._dist, p1, p2)
             elif (numexpr is not None) and (path!="numpy"):
-                sina = numexpr.evaluate("sqrt((p1*p1 + p2*p2) / (dist*dist + p1*p1 + p2*p2))",
+                sina = numexpr.evaluate("sqrt((p1*p1 + p2*p2) / (dist*dist + (p1*p1 + p2*p2)))",
                                         local_dict={"dist": self._dist, "p1":p1, "p2":p2})
             else:
-                sina = numpy.sqrt((p1 * p1 + p2 * p2) / (self._dist * self._dist + p1 * p1 + p2 * p2))
+                sina = numpy.sqrt((p1 * p1 + p2 * p2) / (self._dist * self._dist + (p1 * p1 + p2 * p2)))
         else:
-            cosa = self.cos_incidence(d1, d2, path)
+            cosa = self.cos_incidence(d1, d2, path).clip(0.0, 1.0)
             if numexpr is not None and path!="numpy":
                 sina = numexpr.evaluate("sqrt(1.0-cosa*cosa)")
             else:
-                sina = numpy.sqrt(1.0 - cosa*cosa) 
+                sina = numpy.sqrt(1.0 - (cosa*cosa)) 
         return sina
             
     def cos_incidence(self, d1, d2, path="cython"):
@@ -1116,10 +1116,10 @@ class Geometry(object):
             if (_geometry is not None) and (path == "cython"):
                 cosa = _geometry.calc_cosa(self._dist, p1, p2)
             elif (numexpr is not None) and (path!="numpy"):
-                cosa = numexpr.evaluate("dist/sqrt(dist*dist + p1*p1 + p2*p2)",
+                cosa = numexpr.evaluate("dist/sqrt(dist*dist + (p1*p1 + p2*p2))",
                                         local_dict={"dist": self._dist, "p1":p1, "p2":p2})
             else:
-                cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
+                cosa = self._dist / numpy.sqrt(self._dist * self._dist + (p1 * p1 + p2 * p2))
         return cosa
 
     def diffSolidAngle(self, d1, d2):

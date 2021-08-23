@@ -37,7 +37,7 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "20/08/2021"
+__date__ = "23/08/2021"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -165,7 +165,7 @@ cdef inline double f_cosa(double p1, double p2, double L) nogil:
     :param p2: distances in meter along dim2 from PONI
     :param L: distance sample - PONI
     """
-    return L / sqrt((L * L) + (p1 * p1) + (p2 * p2))
+    return L / sqrt((L * L) + ((p1 * p1) + (p2 * p2)))
 
 cdef inline double f_sina(double p1, double p2, double L) nogil:
     """
@@ -175,7 +175,8 @@ cdef inline double f_sina(double p1, double p2, double L) nogil:
     :param p2: distances in meter along dim2 from PONI
     :param L: distance sample - PONI
     """
-    return sqrt(((p1 * p1) + (p2 * p2)) / ((L * L) + (p1 * p1) + (p2 * p2)))
+    cdef double r2 = p1 * p1 + p2 * p2
+    return sqrt(r2 / (L * L + r2))
 
 
 ################################################################################
