@@ -161,6 +161,7 @@ class Geometry(object):
         self._correct_solid_angle_for_spline = True
         self._sem = threading.Semaphore()
         self._transmission_normal = None
+        self._parallax = None
 
         if detector:
             if isinstance(detector, utils.StringTypes):
@@ -254,7 +255,31 @@ class Geometry(object):
             self.check_chi_disc(azimuth_range)
         return azimuth_range
 
-    def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None):
+    def _correct_parallax(self, d1, d2, p1, p2):
+        """Calculate the displacement of pixels due to parallax effect.
+        :param d1: ndarray of dimention 1/2 containing the Y pixel positions
+        :param d2: ndarray of dimention 1/2 containing the X pixel positions
+        :param p1: ndarray of dimention 1/1 containing the x pixel positions in meter. MODIFIED IN PLACE!
+        :param p2: ndarray of dimention 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
+        :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
+        
+        d1, d2, p1 and p2 should all have the same shape !!!
+        p1 and p2 get modified in place !
+        """
+        delta1 = delta2 = 0
+        if self._parallax is not None:
+                r0 = numpy.vstack((p1, p2))
+                length = numpy.linalg.norm(r0, axis=0)
+                length[length==0] = 1.0 #avoid zero division error
+                r0 /= length  # normalize array r0 
+                
+                displacement = self._parallax(self.sin_incidence(d1, d2).ravel())
+                delta1, delta2 = displacement * r0 
+                p1 -= delta1
+                p2 -= delta2 
+        return delta1, delta2
+
+    def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None, do_parallax=False):
         """
         Calculate the position in cartesian coordinate (centered on the PONI)
         and in meter of a couple of coordinates.
@@ -264,7 +289,8 @@ class Geometry(object):
         :param d2: ndarray of dimention 1/2 containing the X pixel positions
         :param poni1: value in the Y direction of the poni coordinate (meter)
         :param poni2: value in the X direction of the poni coordinate (meter)
-        :return: 2-arrays of same shape as d1 & d2 with the position in meter
+        :param do_parallax: position should be corrected for parallax effect
+        :return: 2-arrays of same shape as d1 & d2 with the position in meters
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -275,9 +301,13 @@ class Geometry(object):
             poni2 = self.poni2
 
         p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
-        return p1 - poni1, p2 - poni2, p3
+        p1 = p1 - poni1
+        p2 =  p2 - poni2
+        if do_parallax and self._parallax is not None:
+            self._parallax_correction(d1, d2, p1, p2)
+        return p1, p2, p3
 
-    def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None, corners=False, use_cython=True):
+    def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None, corners=False, use_cython=True, do_parallax=False):
         """Calculate the position of a set of points in space in the sample's centers referential.
 
         This is usually used for calculating the pixel position in space.
@@ -288,6 +318,8 @@ class Geometry(object):
         :param d1: position on the detector along the slow dimension (i.e. y)
         :param d2: position on the detector along the fastest dimension (i.e. x)
         :param corners: return positions on the corners (instead of center)
+        :param use_cython: set to False to validate using pure numpy
+        :param do_parallax: position should be corrected for parallax effect
         :return: 3-tuple of nd-array, with dim0=along the beam,
                                            dim1=along slowest dimension
                                            dim2=along fastest dimension
@@ -313,7 +345,7 @@ class Geometry(object):
             p3 = tmp[..., 0]
         else:
             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
-        if use_cython and (_geometry is not None):
+        if ((not do_parallax) or (self._parallax is None)) and use_cython and (_geometry is not None):
             t3, t1, t2 = _geometry.calc_pos_zyx(L, poni1, poni2, rot1, rot2, rot3, p1, p2, p3)
         else:
             shape = p1.shape
@@ -322,6 +354,8 @@ class Geometry(object):
             p2 = (p2 - poni2).ravel()
             # we did make copies with the subtraction
             assert size == p2.size
+            if do_parallax and self._parallax is not None:
+                self._correct_parallax(d1, d2, p1, p2)
 
             # note the change of sign in the third dimension:
             # Before the rotation we are in the detector's referential,
@@ -360,7 +394,7 @@ class Geometry(object):
                 rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
             else:
                 dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
-            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2)
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2, do_parallax=True)
             tmp = _geometry.calc_tth(L=dist,
                                      rot1=rot1,
                                      rot2=rot2,
@@ -369,11 +403,11 @@ class Geometry(object):
                                      pos2=p2,
                                      pos3=p3)
         else:
-            t3, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
+            t3, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param, do_parallax=True)
             if path == "cos":
-                tmp = arccos(t3 / sqrt(t1 ** 2 + t2 ** 2 + t3 ** 2))
+                tmp = arccos(t3 / sqrt(t1*t1 + t2*t2 + t3*t3))
             else:
-                tmp = arctan2(sqrt(t1 ** 2 + t2 ** 2), t3)
+                tmp = arctan2(sqrt(t1*t1 + t2*t2), t3)
         return tmp
 
     def qFunction(self, d1, d2, param=None, path="cython"):
@@ -401,7 +435,7 @@ class Geometry(object):
             else:
                 dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
 
-            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2)
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2, do_parallax=True)
             out = _geometry.calc_q(L=dist,
                                    rot1=rot1,
                                    rot2=rot2,
@@ -437,7 +471,7 @@ class Geometry(object):
             else:
                 dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
 
-            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2)
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2, do_parallax=True)
             out = _geometry.calc_r(L=dist,
                                    rot1=rot1,
                                    rot2=rot2,
@@ -450,7 +484,7 @@ class Geometry(object):
             # cosTilt = cos(self._rot1) * cos(self._rot2)
             # directDist = self._dist / cosTilt  # in m
             # out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
-            _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
+            _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param, do_parallax=True)
             out = numpy.sqrt(t1 * t1 + t2 * t2)
         return out
 
@@ -572,13 +606,13 @@ class Geometry(object):
         :return: chi, the azimuthal angle in rad
         """
         if (path == "cython") and (_geometry is not None):
-            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2)
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2, do_parallax=True)
             chi = _geometry.calc_chi(L=self._dist,
                                      rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
                                      pos1=p1, pos2=p2, pos3=p3)
             chi.shape = d1.shape
         else:
-            _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=False)
+            _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True)
             chi = numpy.arctan2(t1, t2)
         return chi
 
@@ -620,7 +654,7 @@ class Geometry(object):
                     self._cached_array["chi_center"] = chia
         return self._cached_array["chi_center"]
 
-    def position_array(self, shape=None, corners=False, dtype=numpy.float64, use_cython=True):
+    def position_array(self, shape=None, corners=False, dtype=numpy.float64, use_cython=True, do_parallax=False):
         """Generate an array for the pixel position given the shape of the detector.
 
         if corners is False, the coordinates of the center of the pixel
@@ -637,6 +671,7 @@ class Geometry(object):
         :param corners: set to true to receive a (...,4,3) array of corner positions
         :param dtype: output format requested. Double precision is needed for fitting the geometry
         :param (bool) use_cython: set to false to test the Python path (slower)
+        :param do_parallax: correct for parallax effect (if parametrized)
         :return: 3D coodinates as nd-array of size (...,3) or (...,3) (default)
 
         Nota: this value is not cached and actually generated on demand (costly)
@@ -648,7 +683,8 @@ class Geometry(object):
 
         pos = numpy.fromfunction(lambda d1, d2: self.calc_pos_zyx(d0=None, d1=d1, d2=d2,
                                                                   corners=corners,
-                                                                  use_cython=use_cython),
+                                                                  use_cython=use_cython,
+                                                                  do_parallax=do_parallax),
                                  shape,
                                  dtype=dtype)
         outshape = pos[0].shape + (3,)
@@ -1049,7 +1085,7 @@ class Geometry(object):
         """
         
         if self.detector.IS_FLAT:
-            p1, p2, p3 = self._calc_cartesian_positions(d1, d2)
+            p1, p2, _ = self._calc_cartesian_positions(d1, d2)
             if (_geometry is not None) and (path == "cython"):
                 sina = _geometry.calc_sina(self._dist, p1, p2)
             elif (numexpr is not None) and (path!="numpy"):
@@ -2343,6 +2379,17 @@ class Geometry(object):
         return self.detector.get_mask()
 
     mask = property(get_mask, set_mask)
+
+    def get_parallax(self):
+        return self._parallax
+    
+    def set_parallax(self, value):
+        from .parallax import Parallax
+        if value is not None:
+            assert isinstance(value, Parallax)
+        self._parallax = value
+        self.reset()
+    parallax = property(get_parallax, set_parallax)
 
     # Property to provide _dssa and _dssa_crc and so one to maintain the API
     @property
