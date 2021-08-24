@@ -38,7 +38,7 @@ import unittest
 import numpy
 import logging
 logger = logging.getLogger(__name__)
-from ..parallax import Beam
+from ..parallax import Beam, ThinSensor, BaseSensor, Parallax
 
 
 class TestParallax(unittest.TestCase):
@@ -51,13 +51,34 @@ class TestParallax(unittest.TestCase):
             beam =  Beam(width, profile)
             x,y = beam()
             self.assertGreaterEqual(x[-1]-x[0], width, "{profile} profile is large enough")
-            self.assertTrue(numpy.close(y.sum(), 1.0), "intensity are normalized")
+            self.assertTrue(numpy.isclose(y.sum(), 1.0), "intensity are normalized")
+    
+        
+    
+    def test_decay(self):
+        t = ThinSensor(450e-6, 0.3)
+        self.assertTrue(isinstance(t, BaseSensor))
+        self.assertTrue(t.test(), msg="autotest OK")
+    
+    def test_serialize1(self):
+        beam = Beam(1e-3)
+        sensor=ThinSensor(1e-3, 0.3)
+        p = Parallax(beam=beam, sensor=sensor); q=Parallax()
+        q.set_config(p.get_config())
+        self.assertEqual(str(p), str(q))
 
+    def test_serialize2(self):
+        beam = Beam(1e-3)
+        sensor=BaseSensor(1e-3)
+        p = Parallax(beam=beam, sensor=sensor); q=Parallax()
+        q.set_config(p.get_config())
+        self.assertEqual(str(p), str(q))
 
+        
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(loader(TestBayes))
+    testsuite.addTest(loader(TestParallax))
     return testsuite
 
 

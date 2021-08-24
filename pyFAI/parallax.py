@@ -166,7 +166,7 @@ class BaseSensor:
         :param beam: shape of the beam. *Unused*
         :param over: oversampling factor. *Unused*
         """
-        return numpy.sin(numpy.deg2rad(angle))/self.mu
+        return numpy.sin(angle)/self.mu
 
     def __repr__(self):
         return f"Thick sensor with µ={self.mu} 1/m"
@@ -381,7 +381,7 @@ class Parallax:
         self.beam = beam
         self.displacement = None
         self.sin_incidence = None
-        if self.sensor and self.beam:
+        if self.sensor:
             self.init()
     
     @timeit

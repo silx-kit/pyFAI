@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/08/2021"
+__date__ = "24/08/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -268,13 +268,15 @@ class Geometry(object):
         """
         delta1 = delta2 = 0
         if self._parallax is not None:
-                r0 = numpy.vstack((p1, p2))
+                r0 = numpy.vstack((p1.ravel(), p2.ravel()))
                 length = numpy.linalg.norm(r0, axis=0)
                 length[length==0] = 1.0 #avoid zero division error
                 r0 /= length  # normalize array r0 
                 
-                displacement = self._parallax(self.sin_incidence(d1, d2).ravel())
-                delta1, delta2 = displacement * r0 
+                displacement = self._parallax(self.sin_incidence(d1.ravel(), d2.ravel()))
+                delta1, delta2 = displacement * r0
+                delta1.shape = p1.shape
+                delta2.shape = p2.shape                
                 p1 -= delta1
                 p2 -= delta2 
         return delta1, delta2
@@ -304,7 +306,7 @@ class Geometry(object):
         p1 = p1 - poni1
         p2 =  p2 - poni2
         if do_parallax and self._parallax is not None:
-            self._parallax_correction(d1, d2, p1, p2)
+            self._correct_parallax(d1, d2, p1, p2)
         return p1, p2, p3
 
     def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None, corners=False, use_cython=True, do_parallax=False):
