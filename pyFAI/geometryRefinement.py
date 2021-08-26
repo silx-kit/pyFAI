@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/06/2021"
+__date__ = "25/08/2021"
 __status__ = "development"
 
 import os
@@ -416,7 +416,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                                bounds=bounds,
                                acc=1.0e-12,
                                iprint=(logger.getEffectiveLevel() <= logging.INFO))
-        new_param7 = self.calc_param7(new_param, free, const)
+        # new_param7 = self.calc_param7(new_param, free, const)
 
         new_delta_theta2 = self.residu3(new_param, free, const, pos0, pos1, ring, weight) / npt
 
