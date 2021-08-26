@@ -159,7 +159,7 @@ class BaseSensor:
         """
         self.mu = mu
         
-    def measure_displacement(self, angle=None, beam=None):
+    def measure_displacement(self, angle=None, beam=None, over=None):
         """Measures the displacement of the peak due to parallax effect
         :param width: FWHM of the peak, same unit as thickness. *Unused*
         :param angle: incidence angle in degrees
