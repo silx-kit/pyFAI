@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2021"
+__date__ = "26/08/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -183,7 +183,10 @@ class BaseSensor:
         self.mu = cfg.get("mu")
         return self
 
-       
+
+ThickSensor = BaseSensor
+
+
 class ThinSensor(BaseSensor):
     """
     This class represents the sensor material.
@@ -291,6 +294,12 @@ class ThinSensor(BaseSensor):
             step = max((pos_dec[-1] - pos_dec[0])/(pos_dec.shape[0]-1),
                        (pos_peak[-1] - pos_peak[0])/(pos_dec.shape[0]-1))
         nsteps_2 = int(max(-pos_min, pos_max)/step + 0.5)
+
+        max_steps = 1<<20
+        if nsteps_2>max_steps:
+            nsteps_2 = max_steps
+            step = (pos_max-pos_min)/(max_steps-1)
+
         pos = (numpy.arange(2*nsteps_2+1) - nsteps_2) *  step
         big_decay = numpy.interp(pos, pos_dec, decay, left=0.0, right=0.0)
         dsum = big_decay.sum()
@@ -385,13 +394,13 @@ class Parallax:
             self.init()
     
     @timeit
-    def init(self):
+    def init(self, over=None):
         """Initialize actually the class...
 
+        :param over: enforce the oversampling factor for numerical integration 
         """
-        
         angles = numpy.linspace(0, pi/2.0, self.SIZE)
-        displacement = [self.sensor.measure_displacement(angle, beam=self.beam)
+        displacement = [self.sensor.measure_displacement(angle, beam=self.beam, over=over)
                         for angle in angles]
         self.sin_incidence = numpy.sin(angles) 
         self.displacement = numpy.array(displacement)
