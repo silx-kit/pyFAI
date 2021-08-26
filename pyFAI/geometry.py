@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2021"
+__date__ = "26/08/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -305,7 +305,7 @@ class Geometry(object):
         p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
         p1 = p1 - poni1
         p2 =  p2 - poni2
-        if do_parallax and self._parallax is not None:
+        if do_parallax and (self._parallax is not None):
             self._correct_parallax(d1, d2, p1, p2)
         return p1, p2, p3
 
