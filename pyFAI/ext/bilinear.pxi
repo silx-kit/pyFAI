@@ -144,7 +144,6 @@ cdef class Bilinear:
         If Hessian is singular or :math:`|delta|>1`: use a center of mass.
 
         :param x: 2-tuple of integers
-        :param w: half with of the window: 1 or 2 are advised
         :return: 2-tuple of float with the nearest local maximum
         """
         cdef:
