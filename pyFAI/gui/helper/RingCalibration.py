@@ -354,11 +354,31 @@ class RingCalibration(object):
         if len(angles) == 0:
             return result
 
-        rings = []
-        for angle in angles:
-            rings.append(angle)
+        return angles
 
-        return rings
+    def getIndexedRings(self):
+        """
+        Returns polygons of rings
+
+        :returns: List of tuples with ring (index, angle)  available
+        :rtype: dict[ringId] = angle
+        """
+        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+
+        result = collections.OrderedDict()
+
+        tth_max = tth.max()
+        tth_min = tth.min()
+        if not self.__calibrant:
+            return result
+
+        angles = collections.OrderedDict([(j, i) for (j,i) in enumerate(self.__calibrant.get_2th())
+                  if (i is not None) and (i >= tth_min) and (i <= tth_max)])
+        if len(angles) == 0:
+            return result
+
+        return angles
+
 
     def getBeamCenter(self):
         epsilon = 0.001

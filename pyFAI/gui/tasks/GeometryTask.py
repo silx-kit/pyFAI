@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/06/2021"
+__date__ = "26/08/2021"
 
 import logging
 import numpy
@@ -162,7 +162,11 @@ class CalibrationState(qt.QObject):
         return self.__tth
 
     def getRings(self):
+        return [i[1] for i in self.__rings]
+
+    def getIndexedRings(self):
         return self.__rings
+
 
     def getBeamCenter(self):
         return self.__beamCenter
@@ -209,7 +213,7 @@ class CalibrationState(qt.QObject):
         mask = calibration.getMask()
         self.__geoRef = calibration.getPyfaiGeometry()
         self.__geometry = None
-        self.__rings = calibration.getRings()
+        self.__rings = calibration.getIndexedRings()
         self.__previousRms = self.__rms
         self.__rms = calibration.getRms()
         tth = calibration.getTwoThetaArray()
@@ -239,7 +243,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         self.__axisOfCurrentView = None
         self.__state = None
         self.__tth = None
-        self.__rings = []
+        self.__rings = {}
         self.__ringItems = {}
         self.__angleUnderMouse = None
         self.__displayedAngles = []
@@ -328,7 +332,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         result = None
         iresult = None
         minDistance = float("inf")
-        for ringId, ringAngle in enumerate(self.__rings):
+        for ringId, ringAngle in self.__rings.items():
             distance = abs(angle - ringAngle)
             if distance < minDistance:
                 minDistance = distance
@@ -406,7 +410,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
 
     def __getAvailableAngles(self, minTth, maxTth):
         result = []
-        for ringId, angle in enumerate(self.__rings):
+        for ringId, angle in self.__rings.items():
             if minTth is None or maxTth is None:
                 result.append(ringId, angle)
             if minTth <= angle <= maxTth:
@@ -481,7 +485,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
                 self.removeCurve(item.getLegend())
         self.__ringItems = {}
         self.__tth = None
-        self.__rings = []
+        self.__rings = {}
 
     def __cleanupMarkers(self):
         try:
@@ -536,7 +540,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         if state.isEmpty():
             return
 
-        rings = state.getRings()
+        rings = state.getIndexedRings()
         tth = state.getTwoThetaArray()
         self.__tth = tth
         self.__rings = rings
