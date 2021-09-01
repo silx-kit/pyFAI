@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -82,7 +82,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/01/2021"
+__date__ = "30/06/2021"
 __status__ = "development"
 
 import threading
@@ -97,6 +97,7 @@ logger = logging.getLogger(__name__)
 from . import average
 from . import method_registry
 from .azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI.method_registry import IntegrationMethod
 from .distortion import Distortion
 from . import units
 from .io import integration_config
@@ -215,12 +216,19 @@ class Worker(object):
 
     def __init__(self, azimuthalIntegrator=None,
                  shapeIn=(2048, 2048), shapeOut=(360, 500),
-                 unit="r_mm", dummy=None, delta_dummy=None):
+                 unit="r_mm", dummy=None, delta_dummy=None,
+                 method=("bbox", "csr", "cython"),
+                 integrator_name=None, extra_options=None):
         """
         :param AzimuthalIntegrator azimuthalIntegrator: An AzimuthalIntegrator instance
-        :param shapeIn: image size in input
-        :param shapeOut: Integrated size: can be (1,2000) for 1D integration
-        :param unit: can be "2th_deg, r_mm or q_nm^-1 ...
+        :param tuple shapeIn: image size in input
+        :param tuple shapeOut: Integrated size: can be (1,2000) for 1D integration
+        :param str unit: can be "2th_deg, r_mm or q_nm^-1 ...
+        :param float dummy: the value making invalid pixels
+        :param float delta_dummy: the precision for dummy values
+        :param method: integration method: str like "csr" or tuple ("bbox", "csr", "cython") or IntegrationMethod instance.
+        :param str integrator_name: Offers an alternative to "integrate1d" like "sigma_clip_ng"
+        :param dict extra_options: extra kwargs for the integrator (like {"max_iter":3, "thres":0, "error_model": "azimuthal"} for sigma-clipping)
         """
         self._sem = threading.Semaphore()
         if azimuthalIntegrator is None:
@@ -228,6 +236,11 @@ class Worker(object):
         else:
             self.ai = azimuthalIntegrator
         self._normalization_factor = None  # Value of the monitor: divides the intensity by this value for normalization
+        self.integrator_name = integrator_name
+        self._processor = None
+        self._nbpt_azim = None
+        self.method = method
+        self._method = None
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
         self.polarization_factor = None
@@ -240,15 +253,16 @@ class Worker(object):
         self.subdir = ""
         self.extension = None
         self.do_poisson = None
+        self.do_azimuthal_error = None
         self.needs_reset = True
         self.output = "numpy"  # exports as numpy array by default
         self.shape = shapeIn
-        self.method = "csr"
         self.radial = None
         self.azimuthal = None
         self.radial_range = None
         self.azimuth_range = None
         self.safe = True
+        self.extra_options = {} if extra_options is None else extra_options.copy()
 
     def __repr__(self):
         """
@@ -273,6 +287,26 @@ class Worker(object):
     def do_2D(self):
         return self.nbpt_azim > 1
 
+    def update_processor(self, integrator_name=None):
+        if integrator_name is None:
+            integrator_name = self.integrator_name
+        if integrator_name is None:
+            if self.do_2D():
+                integrator_name = "integrate2d"
+            else:
+                integrator_name = "integrate1d"
+        self._processor = self.ai.__getattribute__(integrator_name)
+        self._method = IntegrationMethod.select_one_available(self.method, dim=2 if self.do_2D() else 1)
+
+    @property
+    def nbpt_azim(self):
+        return self._nbpt_azim
+
+    @nbpt_azim.setter
+    def nbpt_azim(self, value):
+        self._nbpt_azim = value
+        self.update_processor()
+
     def reset(self):
         """
         this is just to force the integrator to initialize
@@ -296,7 +330,7 @@ class Worker(object):
 
     def process(self, data, variance=None, normalization_factor=1.0, writer=None, metadata=None):
         """
-        Process a frame
+        Process one frame
         #TODO:
         dark, flat, sa are missing
 
@@ -306,17 +340,21 @@ class Worker(object):
 
         with self._sem:
             monitor = self._normalization_factor * normalization_factor if self._normalization_factor else normalization_factor
-        kwarg = {"unit": self.unit,
-                 "dummy": self.dummy,
-                 "delta_dummy": self.delta_dummy,
-                 "method": self.method,
-                 "polarization_factor": self.polarization_factor,
-                 # "filename": None,
-                 "data": data,
-                 "correctSolidAngle": self.correct_solid_angle,
-                 "safe": self.safe,
-                 "variance": variance
-                 }
+        kwarg = self.extra_options.copy()
+        kwarg["unit"] = self.unit
+        kwarg["dummy"] = self.dummy
+        kwarg["delta_dummy"] = self.delta_dummy
+        kwarg["method"] = self._method
+        kwarg["polarization_factor"] = self.polarization_factor
+        kwarg["data"] = data
+        kwarg["correctSolidAngle"] = self.correct_solid_angle
+        kwarg["safe"] = self.safe
+        kwarg["variance"] = variance
+
+        if self.do_poisson:
+            kwarg["error_model"] = "poisson"
+        elif self.do_azimuthal_error:
+            kwarg["error_model"] = "azimuth"
 
         if metadata is not None:
             kwarg["metadata"] = metadata
@@ -339,15 +377,14 @@ class Worker(object):
 
         error = None
         try:
+            integrated_result = self._processor(**kwarg)
             if self.do_2D():
-                integrated_result = self.ai.integrate2d(**kwarg)
                 self.radial = integrated_result.radial
                 self.azimuthal = integrated_result.azimuthal
                 result = integrated_result.intensity
                 if variance is not None:
                     error = integrated_result.sigma
             else:
-                integrated_result = self.ai.integrate1d_ng(**kwarg)
                 self.radial = integrated_result.radial
                 self.azimuthal = None
                 result = numpy.vstack(integrated_result).T
@@ -429,7 +466,7 @@ class Worker(object):
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
-                self.ai.mask = data
+                self.ai.detector.mask = data
 
         # Do it here while we have to store metadata
         filename = config.pop("dark_current", "")
@@ -506,7 +543,7 @@ class Worker(object):
 
         if "monitor_name" in config:
             logger.warning("Monitor name defined but unsupported by the worker.")
-
+        self.update_processor()
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown

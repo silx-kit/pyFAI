@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2021"
+__date__ = "29/06/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3031,7 +3031,8 @@ class AzimuthalIntegrator(Geometry):
 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param ndarray variance: the variance of the 
+        :param ndarray variance: the variance of the signal 
+        :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)  
         :param unit: unit to be used for integration
         :param method: pathway for integration and sort
         :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres.
@@ -3043,10 +3044,10 @@ class AzimuthalIntegrator(Geometry):
         :param safe: set to False to skip some tests
         :return: Integrate1D like result like
         
-        The difference with the previous version is that there is not 
-        The standard deviation is usually smaller the the signal cleaner. It is also slightly faster.
+        The difference with the previous version is that there is no 2D regrouping, hence this is faster. 
+        The standard deviation is usually smaller than previously and the signal cleaner. It is also slightly faster.
         
-        The In
+        The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model.
         
         """
         for k in kwargs:
@@ -3054,7 +3055,9 @@ class AzimuthalIntegrator(Geometry):
                 logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D intergration is performed anymore")
             else:
                 logger.warning("Got unknown argument %s %s", k, kwargs[k])
-
+        if (error_model is None) and (variance is None):
+            logger.warning("Either `variance` or `error_model` is needed for sigma-clipping, using a Poissonnian model as default !")
+            error_model = "poisson"
         unit = units.to_unit(unit)
         if radial_range:
             radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
@@ -3123,7 +3126,6 @@ class AzimuthalIntegrator(Geometry):
                         cython_reset = "azimuth_range not defined and CSR had azimuth_range defined"
                     elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range) * EPS32):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
-                error = False
                 if cython_reset:
                     logger.info("AI.sigma_clip_ng: Resetting Cython integrator because %s", cython_reset)
                     split = method.split_lower

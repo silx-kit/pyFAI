@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2021"
+__date__ = "30/06/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -709,7 +709,7 @@ class DefaultAiWriter(Writer):
 
             if error is not None:
                 try:
-                    img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
+                    img.append_frame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
                 except Exception:
                     logger.warning("Multi-frame format needed to save errors, saving as %s", img)
             img.write(filename)
