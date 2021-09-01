@@ -73,7 +73,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["pyfai:openCL/kahan.cl",
+    kernel_files = ["silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_CSR.cl"
@@ -108,7 +108,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
-        :param extra_buffers: List of additional buffer description  needed by derived classes 
+        :param extra_buffers: List of additional buffer description  needed by derived classes
         """
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
@@ -327,6 +327,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("cutoff", numpy.float32(5)),
                                                               ("cycle", numpy.int32(5)),
                                                               ("azimuthal", numpy.int8(1)),
+                                                              ("empty", numpy.float32(self.empty)),
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("stderr", self.cl_mem["stderr"]),
@@ -749,12 +750,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
                    cutoff=4.0, cycle=5,
                    out_avgint=None, out_stderr=None, out_merged=None):
         """
-        Perform a sigma-clipping iterative filter within each along each row. 
+        Perform a sigma-clipping iterative filter within each along each row.
         see the doc of scipy.stats.sigmaclip for more descriptions.
-        
+
         If the error model is "azimuthal": the variance is the variance within a bin,
         which is refined at each iteration, can be costly !
-        
+
         Else, the error is propagated according to:
 
         .. math::
@@ -782,7 +783,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
+        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param out_avgint: destination array or pyopencl array for sum of all data
         :param out_stderr: destination array or pyopencl array for sum of the number of pixels
