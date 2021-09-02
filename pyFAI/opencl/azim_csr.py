@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "25/06/2021"
+__date__ = "02/09/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -108,7 +108,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
-        :param extra_buffers: List of additional buffer description  needed by derived classes 
+        :param extra_buffers: List of additional buffer description  needed by derived classes
         """
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
@@ -750,12 +750,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
                    cutoff=4.0, cycle=5,
                    out_avgint=None, out_stderr=None, out_merged=None):
         """
-        Perform a sigma-clipping iterative filter within each along each row. 
+        Perform a sigma-clipping iterative filter within each along each row.
         see the doc of scipy.stats.sigmaclip for more descriptions.
-        
+
         If the error model is "azimuthal": the variance is the variance within a bin,
         which is refined at each iteration, can be costly !
-        
+
         Else, the error is propagated according to:
 
         .. math::
@@ -783,7 +783,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
+        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param out_avgint: destination array or pyopencl array for sum of all data
         :param out_stderr: destination array or pyopencl array for sum of the number of pixels
