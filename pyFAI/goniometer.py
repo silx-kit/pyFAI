@@ -808,6 +808,47 @@ class GoniometerRefinement(Goniometer):
                 npt += single.geometry_refinement.data.shape[0]
         return sumsquare / max(npt, 1)
 
+    def calc_param3(self, fit_param, free, const):
+        """Function that calculate the param vector 
+
+        :param fit_param: numpy array of float
+        :param free: names of the free parameters, array of same size as fit_param
+        :param const: dict with constant (non-fitted) parameters
+        :return: the parameter vector as in self.param 
+        """
+        param = [ ]
+        for name in self.nt_param.__fields:
+            if name in free:
+                value = fit_param[free.index(name)]
+                param.append(value)
+            else:
+                param.append(const[name])
+        return param
+
+    def residu3(self, fit_param, free, const):
+        """Evaluate the cost function:
+        
+        :param fit_param: numpy array of float
+        :param free: names of the free parameters, array of same size as fit_param
+        :param const: dict with constant (non-fitted) parameters
+        :return: cost function value
+        """
+        sumsquare = 0.0
+        npt = 0
+        
+        param = self._calc_param_3(fit_param, free, const)
+        
+        for single in self.single_geometries.values():
+            motor_pos = single.get_position()
+            single_param = self.trans_function(param, motor_pos)._asdict()
+            pyFAI_param = [single_param.get(name, 0.0)
+                           for name in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]]
+            pyFAI_param.append(single_param.get("wavelength", self.wavelength) * 1e10)
+            if (single.geometry_refinement is not None) and (len(single.geometry_refinement.data) >= 1):
+                sumsquare += single.geometry_refinement.chi2_wavelength(pyFAI_param)
+                npt += single.geometry_refinement.data.shape[0]
+        return sumsquare / max(npt, 1)
+
     def chi2(self, param=None):
         """Calculate the average of the square of the error for a given parameter set
         """
@@ -820,13 +861,17 @@ class GoniometerRefinement(Goniometer):
         """Geometry refinement tool
 
         See https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.minimize.html
+        
+        Nota: When upper and lower bounds are equal, the jacobian gets NaN since scipy 1.5.
 
         :param method: name of the minimizer
         :param options: options for the minimizer
+        :return: refined set of parameter
         """
         if method.lower() in ["simplex", "nelder-mead"]:
             method = "Nelder-Mead"
             bounds = None
+            logger.warning(f"No bounds for optimization method Nelder-Mead")
         else:
             bounds = self.bounds
         former_error = self.chi2()
@@ -863,6 +908,64 @@ class GoniometerRefinement(Goniometer):
                 sg.calibrant.setWavelength_change2th(former_wavelength)
             print(self.nt_param(*self.param))
         return self.param
+    
+    
+    
+    def refine3(self, fix=None, method="slsqp", **options):
+        """Geometry refinement tool
+        
+        :param fixed: list of parameters to be fixed (others are left free for refinement)
+        :param method: name of the minimizer
+        :param options: options for the minimizer
+        :return: refined set of parameter
+        """
+        if method.lower() in ["simplex", "nelder-mead"]:
+            method = "Nelder-Mead"
+            local_bounds = [(None, None) for i in self.param]
+            logger.warning(f"No bounds for optimization method Nelder-Mead")
+        else:
+            local_bounds = self.bounds
+
+        fix = [] if fix is None else fix
+        free = []
+        param = []
+        bounds = []
+        const = {}
+        for i, name in enumerate(self.nt_param._fields):
+            value = self.param[i]
+            if name in fix:
+                const[name] = value
+            else:
+                minmax = local_bounds[i]
+                if (minmax[0] == minmax[1]) and (minmax[0] is not None):
+                    const[name] = value
+                else:
+                    free.append(name)
+                    param.append(value)
+                    bounds.append(minmax)
+        param = numpy.array(param)
+
+        old_delta_theta2 = self.residu3(param, free, const)
+        res = minimize(self.residu3, param, method=method,
+                       args=(free, const),
+                       bounds=bounds, tol=1e-12,    
+                       options=options)
+
+        new_delta_theta2 = self.residu3(res.x, free, const)
+        
+        logger.info("Constrained Least square %s --> %s", old_delta_theta2, new_delta_theta2)
+
+        if new_delta_theta2 < old_delta_theta2:
+            i = abs(param - res.x).argmax()
+
+            logger.info("maxdelta on %s: %s --> %s ",
+                        free[i], param[i], res.x[i])
+            
+            self.param = self.calc_param3(res.x, free, const)
+            return new_delta_theta2
+        else:
+            return old_delta_theta2
+        
 
     def set_bounds(self, name, mini=None, maxi=None):
         """Redefines the bounds for the refinement
