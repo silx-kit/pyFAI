@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/08/2021"
+__date__ = "03/09/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -434,8 +434,7 @@ class Goniometer(object):
     def __repr__(self):
         return "Goniometer with param %s    %s with %s" % (self.nt_param(*self.param), os.linesep, self.detector)
 
-    @property
-    def wavelength(self):
+    def get_wavelength(self):
         wl_fct = self.trans_function.codes.get("wavelength")
         if wl_fct is not None:
             # check that wavelengt does not depend on the motor position
@@ -449,12 +448,13 @@ class Goniometer(object):
         else:
             return self._wavelength
 
-    @wavelength.setter
-    def wavelength(self, value):
+    def set_wavelength(self, value):
         if "wavelength" in self.trans_function.codes:
             logger.warning("Wavelength is a fitted parameter, cannot be set. Please set fitted parameter")
         else:
             self._wavelength = value
+            
+    wavelength = property(get_wavelength, set_wavelength)
 
     def get_ai(self, position):
         """Creates an azimuthal integrator from the motor position
@@ -714,6 +714,14 @@ class SingleGeometry(object):
         ai = AzimuthalIntegrator()
         ai.set_config(config)
         return ai
+    
+    def get_wavelength(self):
+        assert self.calibrant.wavelength == self.geometry_refinement.wavelength
+        return self.geometry_refinement.wavelength
+    def set_wavelength(self, value):
+        self.calibrant.setWavelength_change2th(value) 
+        self.geometry_refinement.set_wavelength(value)
+    wavelength = property(get_wavelength, set_wavelength)
 
 
 class GoniometerRefinement(Goniometer):
@@ -903,3 +911,13 @@ class GoniometerRefinement(Goniometer):
                     detector=detector,
                     wavelength=dico.get("wavelength"))
         return gonio
+
+    def get_wavelength(self):
+        return Goniometer.get_wavelength(self)
+
+    def set_wavelength(self, value):
+        Goniometer.set_wavelength(self, value)
+        for sg in self.single_geometries:
+            sg.set_wavelength(value)
+            
+    wavelength = property(get_wavelength, set_wavelength)
