@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/09/2021"
+__date__ = "06/09/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -817,7 +817,7 @@ class GoniometerRefinement(Goniometer):
         :return: the parameter vector as in self.param 
         """
         param = [ ]
-        for name in self.nt_param.__fields:
+        for name in self.nt_param._fields:
             if name in free:
                 value = fit_param[free.index(name)]
                 param.append(value)
@@ -836,7 +836,7 @@ class GoniometerRefinement(Goniometer):
         sumsquare = 0.0
         npt = 0
         
-        param = self._calc_param_3(fit_param, free, const)
+        param = self.calc_param3(fit_param, free, const)
         
         for single in self.single_geometries.values():
             motor_pos = single.get_position()
@@ -911,7 +911,7 @@ class GoniometerRefinement(Goniometer):
     
     
     
-    def refine3(self, fix=None, method="slsqp", **options):
+    def refine3(self, fix=None, method="slsqp", verbose=True, **options):
         """Geometry refinement tool
         
         :param fixed: list of parameters to be fixed (others are left free for refinement)
@@ -924,7 +924,10 @@ class GoniometerRefinement(Goniometer):
             local_bounds = [(None, None) for i in self.param]
             logger.warning(f"No bounds for optimization method Nelder-Mead")
         else:
-            local_bounds = self.bounds
+            if self.bounds:
+                local_bounds = self.bounds
+            else:
+                local_bounds = [(None, None) for i in self.param]
 
         fix = [] if fix is None else fix
         free = []
@@ -944,22 +947,25 @@ class GoniometerRefinement(Goniometer):
                     param.append(value)
                     bounds.append(minmax)
         param = numpy.array(param)
-
+        if verbose:
+            print(f"Free parameters: {free}\nFixed: {const}")
         old_delta_theta2 = self.residu3(param, free, const)
+
         res = minimize(self.residu3, param, method=method,
                        args=(free, const),
                        bounds=bounds, tol=1e-12,    
                        options=options)
 
         new_delta_theta2 = self.residu3(res.x, free, const)
-        
-        logger.info("Constrained Least square %s --> %s", old_delta_theta2, new_delta_theta2)
+
+        if verbose:
+            print(res)
+            print(f"Constrained Least square {old_delta_theta2} --> {new_delta_theta2}")
 
         if new_delta_theta2 < old_delta_theta2:
             i = abs(param - res.x).argmax()
-
-            logger.info("maxdelta on %s: %s --> %s ",
-                        free[i], param[i], res.x[i])
+            if verbose:
+                print(f"maxdelta on {free[i]}: {param[i]} --> {res.x[i]} ")
             
             self.param = self.calc_param3(res.x, free, const)
             return new_delta_theta2
