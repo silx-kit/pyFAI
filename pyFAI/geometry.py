@@ -1028,8 +1028,7 @@ class Geometry(object):
             # fast path may be available
             out = Geometry.__dict__[meth_name](self, shape)
             if scale and unit:
-                out = out.copy()
-                out[..., 0] *= unit.scale 
+                out = out * unit.scale
         else:
             # fast path is definitely not available, use the generic formula
             if typ == "center":
