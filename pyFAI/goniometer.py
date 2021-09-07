@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2021"
+__date__ = "07/09/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -469,15 +469,25 @@ class Goniometer(object):
             params[name] = value
         return AzimuthalIntegrator(**params)
 
-    def get_mg(self, positions):
+    def get_mg(self, positions, 
+               unit="2th_deg",
+               radial_range=(0, 180), azimuth_range=(-180, 180),
+               empty=0.0, chi_disc=180):
         """Creates a MultiGeometry integrator from a list of goniometer
         positions.
 
         :param positions: A list of goniometer positions
+        :param radial_range: common range for integration
+        :param azimuthal_range: common range for integration
+        :param empty: value for empty pixels
+        :param chi_disc: if 0, set the chi_discontinuity at 0, else pi
+
         :return: A freshly build multi-geometry
         """
         ais = [self.get_ai(pos) for pos in positions]
-        mg = MultiGeometry(ais)
+        mg = MultiGeometry(ais, unit=unit, 
+                           radial_range=radial_range, azimuth_range=azimuth_range, 
+                           empty=empty, chi_disc=chi_disc)
         return mg
 
     def to_dict(self):
@@ -1026,7 +1036,7 @@ class GoniometerRefinement(Goniometer):
 
     def set_wavelength(self, value):
         Goniometer.set_wavelength(self, value)
-        for sg in self.single_geometries:
+        for sg in self.single_geometries.values():
             sg.set_wavelength(value)
             
     wavelength = property(get_wavelength, set_wavelength)
