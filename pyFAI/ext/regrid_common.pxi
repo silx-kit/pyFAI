@@ -292,7 +292,7 @@ cdef inline floating area4(floating a0,
 cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi)nogil:
     """Helper function
     """
-    if (chiDiscAtPi and azim<0 or not chiDiscAtPi and azim<pi):
+    if (chiDiscAtPi and azim<0) or (not chiDiscAtPi and azim<pi):
         return azim + twopi
     else:
         return azim
@@ -316,7 +316,7 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nog
         c1 = _recenter_helper(c1, chiDiscAtPi)
         d1 = _recenter_helper(d1, chiDiscAtPi)
         center1 = 0.25 * (a1 + b1 + c1 + d1)
-        if not (chiDiscAtPi and center1>twopi) or (chiDiscAtPi and center1>pi):
+        if (not chiDiscAtPi and center1>twopi) or (chiDiscAtPi and center1>pi):
             a1 -= twopi
             b1 -= twopi
             c1 -= twopi
