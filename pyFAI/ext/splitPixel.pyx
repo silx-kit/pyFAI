@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/01/2021"
+__date__ = "08/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -45,30 +45,11 @@ include "regrid_common.pxi"
 
 
 cimport cython
-from cython cimport floating
 import numpy
 from libc.math cimport fabs, ceil, floor
 import logging
 logger = logging.getLogger(__name__)
-
-
-cdef inline floating area4(floating a0,
-                           floating a1,
-                           floating b0,
-                           floating b1,
-                           floating c0,
-                           floating c1,
-                           floating d0,
-                           floating d1) nogil:
-    """
-    Calculate the area of the ABCD polygon with 4 with corners:
-    A(a0,a1)
-    B(b0,b1)
-    C(c0,c1)
-    D(d0,d1)
-    :return: area, i.e. 1/2 * (AC ^ BD)
-    """
-    return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
+from cython cimport floating
 
 
 cdef inline floating calc_area(floating I1, floating I2, floating slope, floating intercept) nogil:
@@ -311,7 +292,7 @@ def fullSplit1D(pos,
             else:
                 bin0_min = max(0, bin0_min)
                 bin0_max = min(bins, bin0_max + 1)
-                area_pixel = area4(a0, a1, b0, b1, c0, c1, d0, d1)
+                area_pixel = fabs(area4(a0, a1, b0, b1, c0, c1, d0, d1))
                 inv_area = 1.0 / area_pixel
 
                 integrate(buffer, bins, a0, a1, b0, b1)  # A-B
@@ -560,7 +541,7 @@ def fullSplit1D_engine(pos not None,
             else:
                 bin0_min = max(0, bin0_min)
                 bin0_max = min(bins, bin0_max + 1)
-                area_pixel = area4(a0, a1, b0, b1, c0, c1, d0, d1)
+                area_pixel = fabs(area4(a0, a1, b0, b1, c0, c1, d0, d1))
                 inv_area = 1.0 / area_pixel
 
                 integrate(buffer, bins, a0, a1, b0, b1)  # A-B
