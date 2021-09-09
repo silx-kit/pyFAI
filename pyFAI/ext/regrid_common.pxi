@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/09/2021"
+__date__ = "09/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -299,7 +299,7 @@ cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi)nogil:
     
     
 cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nogil:
-    cdef position_t a0, a1, b0, b1, c0, c1, d0, d1, center1, area
+    cdef position_t a0, a1, b0, b1, c0, c1, d0, d1, center1, area, hi
     a0 = pixel[0, 0]
     a1 = pixel[0, 1]
     b0 = pixel[1, 0]
@@ -316,7 +316,8 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nog
         c1 = _recenter_helper(c1, chiDiscAtPi)
         d1 = _recenter_helper(d1, chiDiscAtPi)
         center1 = 0.25 * (a1 + b1 + c1 + d1)
-        if (not chiDiscAtPi and center1>twopi) or (chiDiscAtPi and center1>pi):
+        hi = pi if chiDiscAtPi else twopi
+        if center1>hi:
             a1 -= twopi
             b1 -= twopi
             c1 -= twopi
