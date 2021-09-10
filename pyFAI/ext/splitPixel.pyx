@@ -108,8 +108,8 @@ cdef inline void integrate(acc_t[::1] buffer, Py_ssize_t buffer_size, position_t
 def fullSplit1D(pos,
                 weights,
                 Py_ssize_t bins=100,
-                pos0Range=None,
-                pos1Range=None,
+                pos0_range=None,
+                pos1_range=None,
                 dummy=None,
                 delta_dummy=None,
                 mask=None,
@@ -131,8 +131,8 @@ def fullSplit1D(pos,
     :param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
     :param weights: array with intensities
     :param bins: number of output bins
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -179,9 +179,9 @@ def fullSplit1D(pos,
         assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0_range is not None and len(pos0_range) > 1:
+        pos0_min = min(pos0_range)
+        pos0_maxin = max(pos0_range)
     else:
         with nogil:
             for idx in range(size):
@@ -218,9 +218,9 @@ def fullSplit1D(pos,
         pos0_min = 0
     pos0_max = calc_upper_bound(pos0_maxin)
 
-    if pos1Range is not None and len(pos1Range) > 1:
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1_range is not None and len(pos1_range) > 1:
+        pos1_min = min(pos1_range)
+        pos1_maxin = max(pos1_range)
         check_pos1 = True
     else:
         if min1 == max1 == 0:
@@ -349,8 +349,8 @@ def fullSplit1D(pos,
 def fullSplit1D_engine(pos not None,
                        weights not None,
                        Py_ssize_t bins=100,
-                       pos0Range=None,
-                       pos1Range=None,
+                       pos0_range=None,
+                       pos1_range=None,
                        dummy=None,
                        delta_dummy=None,
                        mask=None,
@@ -372,8 +372,8 @@ def fullSplit1D_engine(pos not None,
     :param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
     :param weights: array with intensities
     :param bins: number of output bins
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -427,9 +427,9 @@ def fullSplit1D_engine(pos not None,
         assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0_range is not None and len(pos0_range) > 1:
+        pos0_min = min(pos0_range)
+        pos0_maxin = max(pos0_range)
     else:
         with nogil:
             for idx in range(size):
@@ -466,9 +466,9 @@ def fullSplit1D_engine(pos not None,
         pos0_min = 0
     pos0_max = calc_upper_bound(pos0_maxin)
 
-    if pos1Range is not None and len(pos1Range) > 1:
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1_range is not None and len(pos1_range) > 1:
+        pos1_min = min(pos1_range)
+        pos1_maxin = max(pos1_range)
         check_pos1 = True
     else:
         if min1 == max1 == 0:
@@ -607,8 +607,8 @@ fullSplit1D_ng = fullSplit1D_engine
 def fullSplit2D(pos,
                 weights,
                 bins not None,
-                pos0Range=None,
-                pos1Range=None,
+                pos0_range=None,
+                pos1_range=None,
                 dummy=None,
                 delta_dummy=None,
                 mask=None,
@@ -631,8 +631,8 @@ def fullSplit2D(pos,
     :param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
     :param weights: array with intensities
     :param bins: number of output bins int or 2-tuple of int
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -683,17 +683,17 @@ def fullSplit2D(pos,
         position_t delta0, delta1
         Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
 
-    if pos0Range is not None and len(pos0Range) == 2:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0_range is not None and len(pos0_range) == 2:
+        pos0_min = min(pos0_range)
+        pos0_maxin = max(pos0_range)
     else:
         pos0_min = pos[:, :, 0].min()
         pos0_maxin = pos[:, :, 0].max()
     pos0_max = calc_upper_bound(pos0_maxin)
 
-    if pos1Range is not None and len(pos1Range) > 1:
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1_range is not None and len(pos1_range) > 1:
+        pos1_min = min(pos1_range)
+        pos1_maxin = max(pos1_range)
     else:
         pos1_min = pos[:, :, 1].min()
         pos1_maxin = pos[:, :, 1].max()
@@ -914,8 +914,8 @@ def fullSplit2D(pos,
 def pseudoSplit2D_engine(pos not None,
                          weights not None,
                          bins not None,
-                         pos0Range=None,
-                         pos1Range=None,
+                         pos0_range=None,
+                         pos1_range=None,
                          dummy=None,
                          delta_dummy=None,
                          mask=None,
@@ -940,8 +940,8 @@ def pseudoSplit2D_engine(pos not None,
     :param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
     :param weights: array with intensities
     :param bins: number of output bins int or 2-tuple of int
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -994,17 +994,17 @@ def pseudoSplit2D_engine(pos not None,
         acc_t norm
         preproc_t value
 
-    if pos0Range is not None and len(pos0Range) == 2:
-        pos0_min = min(pos0Range)
-        pos0_maxin = max(pos0Range)
+    if pos0_range is not None and len(pos0_range) == 2:
+        pos0_min = min(pos0_range)
+        pos0_maxin = max(pos0_range)
     else:
         pos0_min = pos[:, :, 0].min()
         pos0_maxin = pos[:, :, 0].max()
     pos0_max = calc_upper_bound(pos0_maxin)
 
-    if pos1Range is not None and len(pos1Range) > 1:
-        pos1_min = min(pos1Range)
-        pos1_maxin = max(pos1Range)
+    if pos1_range is not None and len(pos1_range) > 1:
+        pos1_min = min(pos1_range)
+        pos1_maxin = max(pos1_range)
     else:
         pos1_min = pos[:, :, 1].min()
         pos1_maxin = pos[:, :, 1].max()

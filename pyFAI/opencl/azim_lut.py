@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "01/02/2021"
+__date__ = "31/05/2021"
 __copyright__ = "2012-2020, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -70,7 +70,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["pyfai:openCL/kahan.cl",
+    kernel_files = ["silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_LUT.cl"
@@ -115,7 +115,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.unit = unit
         self.bin_centers = bin_centers
         # a few place-folders
-        self.pos0Range = self.pos1Range = self.check_mask = None
+        self.pos0_range = self.pos1_range = self.check_mask = None
 
         if not checksum:
             checksum = calc_checksum(self._lut)

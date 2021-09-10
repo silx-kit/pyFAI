@@ -3,11 +3,11 @@
  *            1D & 2D histogram based on atomic adds
  *
  *
- *   Copyright (C) 2014-2019 European Synchrotron Radiation Facility
+ *   Copyright (C) 2014-2021 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 2019-08-06
+ *   Last revision: 2021-05-31
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -32,6 +32,7 @@
 .
  */
 
+//Mind to include doubleword.cl
 
 inline void atomic_add_global_float(volatile global float *addr, float val)
 {
@@ -60,7 +61,7 @@ inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
    current.f64    = *addr;
    do {
        expected.f64 = current.f64;
-       next.f64     = kahan_sum(expected.f64, val);
+       next.f64     = dw_plus_fp(expected.f64, val);
        current.u64  = atomic_cmpxchg( (volatile global unsigned long *)addr,
                                       expected.u64, next.u64);
    } while( current.u64 != expected.u64 );
@@ -77,7 +78,7 @@ inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
    current.f64    = *addr;
    do {
        expected.f64 = current.f64;
-       next.f64     = kahan_sum(expected.f64, val);
+       next.f64     = dw_plus_fp(expected.f64, val);
        current.u64.s0  = atomic_cmpxchg( (volatile global uint *)addr,
                                         expected.u64.s0, next.u64.s0);
    } while( current.u64.s0 != expected.u64.s0 );
