@@ -38,7 +38,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/04/2020"
+__date__ = "08/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -51,18 +51,6 @@ import numpy
 from libc.math cimport floor, sqrt, fabs
 from libc.stdio cimport printf, fflush, stdout
 from cython.view cimport array as cvarray
-
-
-cdef inline position_t area4(position_t a0, position_t a1, position_t b0, position_t b1, position_t c0, position_t c1, position_t d0, position_t d1) nogil:
-    """
-    Calculate the area of the ABCD quadrilataire  with corners:
-    A(a0,a1)
-    B(b0,b1)
-    C(c0,c1)
-    D(d0,d1)
-    :return: area, i.e. 1/2 * (AC ^ BD)
-    """
-    return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
 
 cdef struct Function:
@@ -356,7 +344,7 @@ def fullSplit1D(numpy.ndarray pos not None,
                 CD.intersect = C1 - CD.slope * C0
                 DA.slope = (A1 - D1) / (A0 - D0)
                 DA.intersect = D1 - DA.slope * D0
-                areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                 oneOverPixelArea = 1.0 / areaPixel
                 partialArea2 = 0.0
                 for bin in range(bin0_min, bin0_max + 1):
@@ -597,7 +585,7 @@ def fullSplit2D(numpy.ndarray pos not None,
                     DA.slope = (A0 - D0) / (A1 - D1)
                     DA.intersect = D0 - DA.slope * D1
 
-                    areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                    areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                     oneOverPixelArea = 1.0 / areaPixel
 
                     # for bin in range(bin0_min, bin0_max+1):
@@ -641,7 +629,7 @@ def fullSplit2D(numpy.ndarray pos not None,
                 DA.slope = (A1 - D1) / (A0 - D0)
                 DA.intersect = D1 - DA.slope * D0
 
-                areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                 oneOverPixelArea = 1.0 / areaPixel
 
                 # for bin in range(bin0_min, bin0_max+1):
@@ -678,7 +666,7 @@ def fullSplit2D(numpy.ndarray pos not None,
                 D0 -= bin0_min
                 D1 -= bin1_min
 
-                areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                 oneOverPixelArea = 1.0 / areaPixel
 
                 # perimeter skipped - not inside for sure

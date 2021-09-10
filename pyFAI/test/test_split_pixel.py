@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2021"
+__date__ = "09/09/2021"
 
 import unittest
 import platform
@@ -48,6 +48,41 @@ from ..detectors import Detector
 from ..utils import mathutil
 from ..ext import splitBBox, splitPixel
 from ..method_registry import IntegrationMethod
+
+
+class TestRecenter(unittest.TestCase):
+
+    """See sandbox/PixelSplitting.ipynb"""
+
+    def test_disc0(self):
+        disc_at_pi = 0
+        detector = Detector(1e-3, 1e-3, max_shape=(5, 5))
+        ai = AzimuthalIntegrator(1, 2.2e-3, 2.8e-3, rot3=0.5, detector=detector)
+        ai.setChiDiscAtZero()
+        pos = ai.array_from_unit(typ="corner", unit="r_mm", scale=True).astype(splitPixel.position_d)
+        area = []
+        for i0 in range(pos.shape[0]):
+            for i1 in range(pos.shape[1]):
+                area.append(splitPixel.recenter(pos[i0, i1], chiDiscAtPi=disc_at_pi))
+        self.assertLessEqual(max(area), 0, "All area are negative")
+        self.assertEqual((pos[..., 1] > 2 * numpy.pi).sum(), 3, "3 corner is >2pi")
+        self.assertEqual((pos[..., 1] < 0).sum(), 1, "1 corner are <0")
+
+    def test_discpi(self):
+        detector = Detector(1e-3, 1e-3, max_shape=(5, 5))
+        ai = AzimuthalIntegrator(1, 2.2e-3, 2.8e-3, rot3=-0.4, detector=detector)
+    
+        disc_at_pi = 2
+        ai.setChiDiscAtPi()
+        pos = ai.array_from_unit(typ="corner", unit="r_mm", scale=True).astype(splitPixel.position_d)
+        area = []
+        for i0 in range(pos.shape[0]):
+            for i1 in range(pos.shape[1]):
+                area.append(splitPixel.recenter(pos[i0, i1], chiDiscAtPi=disc_at_pi))
+        self.assertLessEqual(max(area), 0, "All area are negative")
+        print((pos[..., 1] > numpy.pi).sum(), (pos[..., 1] < -numpy.pi).sum())
+        self.assertEqual((pos[..., 1] > numpy.pi).sum(), 1, "1 corner is >pi")
+        self.assertEqual((pos[..., 1] < -numpy.pi).sum(), 5, "5 corner are <-pi")
 
 
 class TestSplitPixel(unittest.TestCase):
@@ -290,6 +325,7 @@ def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestSplitPixel))
     testsuite.addTest(loader(TestSplitBBoxNg))
+    testsuite.addTest(loader(TestRecenter))
     return testsuite
 
 

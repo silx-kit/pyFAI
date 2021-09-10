@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "21/06/2021"
+__date__ = "09/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -119,6 +119,7 @@ cdef:
         data_t count
  
     float pi = <float> M_PI
+    double twopi = 2.0 * M_PI
     float piover2 = <float> (pi * 0.5)
     float onef = <float> 1.0
     float zerof = <float> 1.0
@@ -267,3 +268,76 @@ cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
     out_data[bin0, bin1, 1] += value.variance * weight * weight  # Important for variance propagation
     out_data[bin0, bin1, 2] += value.norm * weight
     out_data[bin0, bin1, 3] += value.count * weight
+    
+
+cdef inline floating area4(floating a0,
+                           floating a1,
+                           floating b0,
+                           floating b1,
+                           floating c0,
+                           floating c1,
+                           floating d0,
+                           floating d1) nogil:
+    """
+    Calculate the area of the ABCD polygon with 4 with corners:
+    A(a0,a1)
+    B(b0,b1)
+    C(c0,c1)
+    D(d0,d1)
+    :return: area, i.e. 1/2 * (AC ^ BD)
+    """
+    return 0.5 * ((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0))
+
+
+cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi)nogil:
+    """Helper function
+    """
+    if (chiDiscAtPi and azim<0) or (not chiDiscAtPi and azim<pi):
+        return azim + twopi
+    else:
+        return azim
+    
+    
+cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nogil:
+    cdef position_t a0, a1, b0, b1, c0, c1, d0, d1, center1, area, hi
+    a0 = pixel[0, 0]
+    a1 = pixel[0, 1]
+    b0 = pixel[1, 0]
+    b1 = pixel[1, 1]
+    c0 = pixel[2, 0]
+    c1 = pixel[2, 1]
+    d0 = pixel[3, 0]
+    d1 = pixel[3, 1]
+    area = area4(a0, a1, b0, b1, c0, c1, d0, d1)
+    if area>0:
+        # area are expected to be negative except for pixel on the boundary
+        a1 = _recenter_helper(a1, chiDiscAtPi)
+        b1 = _recenter_helper(b1, chiDiscAtPi)
+        c1 = _recenter_helper(c1, chiDiscAtPi)
+        d1 = _recenter_helper(d1, chiDiscAtPi)
+        center1 = 0.25 * (a1 + b1 + c1 + d1)
+        hi = pi if chiDiscAtPi else twopi
+        if center1>hi:
+            a1 -= twopi
+            b1 -= twopi
+            c1 -= twopi
+            d1 -= twopi
+        pixel[0, 1] = a1
+        pixel[1, 1] = b1
+        pixel[2, 1] = c1
+        pixel[3, 1] = d1
+        area = area4(a0, a1, b0, b1, c0, c1, d0, d1)
+    return area
+
+def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
+    """This function checks the pixel to be on the azimuthal discontinuity 
+    via the sign of its algebric area and recenters the corner coordinates in a 
+    consistent manner to have all azimuthal coordinate in 
+    
+    Nota: the returned area is negative since the positive area indicate the pixel is on the discontinuity.
+    
+    :param pixel: 4x2 array with radius, azimuth for the 4 corners. MODIFIED IN PLACE !!! 
+    :param chiDiscAtPi: set to 0 to indicate the range goes from 0-2π instead of the default -π:π
+    :return: signed area (negative)
+    """  
+    return _recenter(pixel, chiDiscAtPi)
