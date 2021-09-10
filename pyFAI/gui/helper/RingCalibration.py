@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/06/2021"
+__date__ = "26/08/2021"
 
 import logging
 import numpy
@@ -354,25 +354,58 @@ class RingCalibration(object):
         if len(angles) == 0:
             return result
 
-        rings = []
-        for angle in angles:
-            rings.append(angle)
+        return angles
 
-        return rings
+    def getIndexedRings(self):
+        """
+        Returns polygons of rings
+
+        :returns: List of tuples with ring (index, angle)  available
+        :rtype: dict[ringId] = angle
+        """
+        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+
+        result = collections.OrderedDict()
+
+        tth_max = tth.max()
+        tth_min = tth.min()
+        if not self.__calibrant:
+            return result
+
+        angles = collections.OrderedDict([(j, i) for (j,i) in enumerate(self.__calibrant.get_2th())
+                  if (i is not None) and (i >= tth_min) and (i <= tth_max)])
+        if len(angles) == 0:
+            return result
+
+        return angles
+
 
     def getBeamCenter(self):
+        epsilon = 0.001
         try:
             f2d = self.__geoRef.getFit2D()
             x, y = f2d["centerX"], f2d["centerY"]
         except TypeError:
             return None
 
-        # Check if this pixel really contains the beam center
-        # If the detector contains gap, it is not always the case
-        ax, ay = numpy.array([x]), numpy.array([y])
-        tth = self.__geoRef.tth(ay, ax)[0]
-        if tth >= 0.001:
-            return None
+        tth = self.__geoRef.tth(numpy.array([y]), numpy.array([x]))[0]
+        if tth >= epsilon:
+            # Check if this pixel really contains the beam center
+            # If the detector contains gap, it is not always the case
+            tth_array = self.__geoRef.twoThetaArray()
+            pos = tth_array.argmin()
+            width = self.__geoRef.detector.shape[-1]
+            y = pos // width
+            x = pos %  width
+
+            #This is for sub-pixel refinement...
+            from ...ext.bilinear import Bilinear
+            bili = Bilinear(-tth_array)
+            y, x = bili.local_maxi((y,x))
+            
+            tth = self.__geoRef.tth(numpy.array([y]), numpy.array([x]))[0]
+            if tth >=epsilon:
+                return None
         return y, x
 
     def getPoni(self):
