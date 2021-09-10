@@ -35,7 +35,7 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "26/03/2021"
+__date__ = "10/09/2021"
 __copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -60,28 +60,12 @@ import fabio
 
 from .sparse_builder cimport SparseBuilder
 
-cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
-
 
 cdef inline float _calc_area(float I1, float I2, float slope, float intercept) nogil:
     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
 def calc_area(float I1, float I2, float slope, float intercept):
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return _calc_area(I1, I2, slope, intercept)
-
-
-cdef inline int _clip(int value, int min_val, int max_val) nogil:
-    "Limits the value to bounds"
-    if value < min_val:
-        return min_val
-    elif value > max_val:
-        return max_val
-    else:
-        return value
-def clip(int value, int min_val, int max_val):
-    "Limits the value to bounds"
-    return _clip(value, min_val, max_val)
-
 
 cdef inline float _floor_min4(float a, float b, float c, float d) nogil:
     "return floor(min(a,b,c,d))"
@@ -354,10 +338,10 @@ def calc_size(floating[:, :, :, ::1] pos not None,
                 C1 = pos[i, j, 2, 1] - offset1
                 D0 = pos[i, j, 3, 0] - offset0
                 D1 = pos[i, j, 3, 1] - offset1
-                min0 = _clip(<int> _floor_min4(A0, B0, C0, D0), 0, shape_out0)
-                min1 = _clip(<int> _floor_min4(A1, B1, C1, D1), 0, shape_out1)
-                max0 = _clip(<int> _ceil_max4(A0, B0, C0, D0) + 1, 0, shape_out0)
-                max1 = _clip(<int> _ceil_max4(A1, B1, C1, D1) + 1, 0, shape_out1)
+                min0 = _clip(<int> _floor_min4(A0, B0, C0, D0), <int>0, shape_out0)
+                min1 = _clip(<int> _floor_min4(A1, B1, C1, D1), <int>0, shape_out1)
+                max0 = _clip(<int> (_ceil_max4(A0, B0, C0, D0) + 1), <int>0, shape_out0)
+                max1 = _clip(<int> (_ceil_max4(A1, B1, C1, D1) + 1), <int>0, shape_out1)
                 for k in range(min0, max0):
                     for l in range(min1, max1):
                         lut_size[k, l] += 1

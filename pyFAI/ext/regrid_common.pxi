@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/09/2021"
+__date__ = "10/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -109,6 +109,20 @@ ctypedef fused any_int_t:
     int16_t
     int32_t
     int64_t
+
+ctypedef fused any_t:
+    int
+    long
+    uint8_t
+    uint16_t
+    uint32_t
+    uint64_t
+    int8_t
+    int16_t
+    int32_t
+    int64_t
+    float32_t
+    float64_t
 
 
 cdef:
@@ -328,7 +342,6 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nog
         pixel[3, 1] = d1
         area = area4(a0, a1, b0, b1, c0, c1, d0, d1)
     return area
-
 def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
     """This function checks the pixel to be on the azimuthal discontinuity 
     via the sign of its algebric area and recenters the corner coordinates in a 
@@ -341,3 +354,23 @@ def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
     :return: signed area (negative)
     """  
     return _recenter(pixel, chiDiscAtPi)
+
+
+cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) nogil:
+    "Limits the value to bounds"
+    if value < min_val:
+        return min_val
+    elif value > max_val:
+        return max_val
+    else:
+        return value
+def clip(value,  min_val, int max_val):
+    """Limits the value to bounds
+    
+    :param value: the value to clip
+    :param min_value: the lower bound
+    :param max_value: the upper bound
+    :return: clipped value in the requested range
+    
+    """
+    return _clip(<float64_t>value, <float64_t>min_val, <float64_t>max_val)
