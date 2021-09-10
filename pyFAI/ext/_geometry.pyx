@@ -37,7 +37,7 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "11/01/2021"
+__date__ = "10/09/2021"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,8 +45,11 @@ cimport cython
 import numpy
 from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
-
-cdef double twopi = 2.0 * M_PI
+import multiprocessing
+cdef: 
+    int MIN_SIZE = 1024
+    int MAX_THREADS = min(8, multiprocessing.cpu_count())  # Limit to 8 cores at maximum, avoids using multiple sockets usually. The value comes from numexpr 
+    double twopi = 2.0 * M_PI
 
 # We declare a second cython.floating so that it behaves like an actual template
 ctypedef fused float_or_double:
@@ -211,7 +214,7 @@ def calc_pos_zyx(double L, double poni1, double poni2,
         double[::1] t3 = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             p1 = c1[i] - poni1
             p2 = c2[i] - poni2
             t1[i] = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -220,7 +223,7 @@ def calc_pos_zyx(double L, double poni1, double poni2,
     else:
         assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             p1 = c1[i] - poni1
             p2 = c2[i] - poni2
             p3 = c3[i] + L
@@ -277,12 +280,12 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
         double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             out[i] = f_tth(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     else:
         assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             out[i] = f_tth(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 2:
@@ -331,12 +334,12 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
         double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             out[i] = f_chi(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     else:
         assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
-        for i in prange(size, nogil=True, schedule="static"): 
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             chi = f_chi(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
             if chi_discontinuity_at_pi:
                 out[i] = chi
@@ -387,12 +390,12 @@ def calc_q(double L, double rot1, double rot2, double rot3,
         double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             out[i] = f_q(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3, wavelength)
     else:
         assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             out[i] = f_q(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3, wavelength)
 
     if pos1.ndim == 2:
@@ -432,12 +435,12 @@ def calc_r(double L, double rot1, double rot2, double rot3,
         double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             out[i] = f_r(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     else:
         assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             out[i] = f_r(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 2:
@@ -468,12 +471,12 @@ def calc_cosa(double L,
         double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             out[i] = f_cosa(c1[i], c2[i], L)
     else:
         assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             out[i] = f_cosa(c1[i], c2[i], L + c3[i])
 
     if pos1.ndim == 2:
@@ -543,7 +546,7 @@ def calc_rad_azim(double L,
         raise KeyError("Not implemented space %s in cython" % space)
 
     if pos3 is None:
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             t1 = f_t1(c1[i] - poni1, c2[i] - poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
             t2 = f_t2(c1[i] - poni1, c2[i] - poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
             t3 = f_t3(c1[i] - poni1, c2[i] - poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -561,7 +564,7 @@ def calc_rad_azim(double L,
     else:
         assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
-        for i in prange(size, nogil=True, schedule="static"):
+        for i in prange(size, nogil=True, schedule="static", num_threads=1 if size<MIN_SIZE else MAX_THREADS):
             t1 = f_t1(c1[i] - poni1, c2[i] - poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
             t2 = f_t2(c1[i] - poni1, c2[i] - poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
             t3 = f_t3(c1[i] - poni1, c2[i] - poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -607,7 +610,7 @@ def calc_delta_chi(cython.floating[:, ::1] centers,
 
     res = numpy.empty((height, width), dtype=numpy.float64)
     with nogil:
-        for row in prange(height):
+        for row in prange(height, num_threads=MAX_THREADS):
             for col in range(width):
                 ce = centers[row, col]
                 delta = 0.0
