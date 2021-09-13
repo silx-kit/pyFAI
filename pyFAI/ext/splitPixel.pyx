@@ -1422,13 +1422,13 @@ def fullSplit2D_engine(pos not None,
                 continue
 
             # ABCD is anti-trigonometric order: order input position accordingly
-            _integrate2d(buffer, a0, b0, a1, b1)
-            _integrate2d(buffer, b0, c0, b1, c1)
-            _integrate2d(buffer, c0, d0, c1, d1)
-            _integrate2d(buffer, d0, a0, d1, a1)
+            _integrate2d(buffer, a0, a1, b0, b1)
+            _integrate2d(buffer, b0, b1, c0, c1)
+            _integrate2d(buffer, c0, c1, d0, d1)
+            _integrate2d(buffer, d0, d1, a0, a1)
 
             area = 0.5 * ((c1 - a1) * (d0 - b0) - (c0 - a0) * (d1 - b1))
-
+            inv_area = 1.0 / area
             sum_area = 0.0
             for i in range(w0):
                 for j in range(w1):
@@ -1438,7 +1438,7 @@ def fullSplit2D_engine(pos not None,
                                           ioffset0 + i,
                                           ioffset1 + j,
                                           value,
-                                          weight=loc_area/area)
+                                          weight=loc_area * inv_area)
             if fabs(area -  sum_area) > 1e-6:
                 with gil:
                     print(f"Invstigate idx {idx}, area {area} {sum_area}, {v8}, {w0}, {w1}")           
