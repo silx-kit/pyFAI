@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -89,37 +89,47 @@ cdef inline float _ceil_max4(float a, float b, float c, float d) nogil:
     return ceil(res)
 
 
-cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float slope, float intercept) nogil:
-    """Integrate in a box a line between start and stop, line defined by its slope & intercept
+cdef inline void _integrate2d(acc_t[:, ::1] box, floating start0, floating start1, floating stop0, floating stop1) nogil:
+    """Integrate in a box a line between start and stop0, line defined by its slope & intercept
 
-    :param box: buffer
+    :param box: buffer with the relative area. Gets modified in place
+    :param start0: coodinate of the start of the segment in dim0
+    :param start1: coodinate of the start of the segment in dim1
+    :param start0: coodinate of the end of the segment in dim0
+    :param start0: coodinate of the end of the segment in dim1
+    
     """
-    return
-    with gil:
-        raise RuntimeError("nop!")
     cdef:
         int i, h = 0
         float P, dP, segment_area, abs_area, dA
+        float slope, intercept
         # , sign
-    if start < stop:  # positive contribution
-        P = ceil(start)
-        dP = P - start
-        if P > stop:  # start and stop are in the same unit
-            segment_area = _calc_area(start, stop, slope, intercept)
+        
+    if start0 == stop0:
+        return 
+    else:
+        slope = (stop1 - start1) / (stop0 - start0)
+        intercept = stop1 - slope*stop0
+         
+    if start0 < stop0:  # positive contribution
+        P = ceil(start0)
+        dP = P - start0
+        if P > stop0:  # start0 and stop0 are in the same unit
+            segment_area = _calc_area(start0, stop0, slope, intercept)
             if segment_area != 0.0:
                 abs_area = fabs(segment_area)
-                dA = (stop - start)  # always positive
+                dA = (stop0 - start0)  # always positive
                 h = 0
                 while abs_area > 0:
                     if dA > abs_area:
                         dA = abs_area
                         abs_area = -1
-                    box[(<int> start), h] += copysign(dA, segment_area)
+                    box[(<int> start0), h] += copysign(dA, segment_area)
                     abs_area -= dA
                     h += 1
         else:
             if dP > 0:
-                segment_area = _calc_area(start, P, slope, intercept)
+                segment_area = _calc_area(start0, P, slope, intercept)
                 if segment_area != 0.0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -132,7 +142,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
                         abs_area -= dA
                         h += 1
             # subsection P1->Pn
-            for i in range((<int> floor(P)), (<int> floor(stop))):
+            for i in range((<int> floor(P)), (<int> floor(stop0))):
                 segment_area = _calc_area(i, i + 1, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
@@ -146,10 +156,10 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
                         abs_area -= dA
                         h += 1
             # Section Pn->B
-            P = floor(stop)
-            dP = stop - P
+            P = floor(stop0)
+            dP = stop0 - P
             if dP > 0:
-                segment_area = _calc_area(P, stop, slope, intercept)
+                segment_area = _calc_area(P, stop0, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -161,26 +171,26 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
                         box[(<int> P), h] += copysign(dA, segment_area)
                         abs_area -= dA
                         h += 1
-    elif start > stop:  # negative contribution. Nota if start==stop: no contribution
-        P = floor(start)
-        if stop > P:  # start and stop are in the same unit
-            segment_area = _calc_area(start, stop, slope, intercept)
+    elif start0 > stop0:  # negative contribution. Nota if start0==stop0: no contribution
+        P = floor(start0)
+        if stop0 > P:  # start0 and stop0 are in the same unit
+            segment_area = _calc_area(start0, stop0, slope, intercept)
             if segment_area != 0:
                 abs_area = fabs(segment_area)
                 # sign = segment_area / abs_area
-                dA = (start - stop)  # always positive
+                dA = (start0 - stop0)  # always positive
                 h = 0
                 while abs_area > 0:
                     if dA > abs_area:
                         dA = abs_area
                         abs_area = -1
-                    box[(<int> start), h] += copysign(dA, segment_area)
+                    box[(<int> start0), h] += copysign(dA, segment_area)
                     abs_area -= dA
                     h += 1
         else:
-            dP = P - start
+            dP = P - start0
             if dP < 0:
-                segment_area = _calc_area(start, P, slope, intercept)
+                segment_area = _calc_area(start0, P, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -193,7 +203,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
                         abs_area -= dA
                         h += 1
             # subsection P1->Pn
-            for i in range((<int> start), (<int> ceil(stop)), -1):
+            for i in range((<int> start0), (<int> ceil(stop0)), -1):
                 segment_area = _calc_area(i, i - 1, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
@@ -207,10 +217,10 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
                         abs_area -= dA
                         h += 1
             # Section Pn->B
-            P = ceil(stop)
-            dP = stop - P
+            P = ceil(stop0)
+            dP = stop0 - P
             if dP < 0:
-                segment_area = _calc_area(P, stop, slope, intercept)
+                segment_area = _calc_area(P, stop0, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -219,7 +229,7 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
-                        box[(<int> stop), h] += copysign(dA, segment_area)
+                        box[(<int> stop0), h] += copysign(dA, segment_area)
                         abs_area -= dA
                         h += 1
 
@@ -335,10 +345,10 @@ def calc_size(floating[:, :, :, ::1] pos not None,
                 C1 = pos[i, j, 2, 1] - offset1
                 D0 = pos[i, j, 3, 0] - offset0
                 D1 = pos[i, j, 3, 1] - offset1
-                min0 = _clip(<int> _floor_min4(A0, B0, C0, D0), <int>0, shape_out0)
-                min1 = _clip(<int> _floor_min4(A1, B1, C1, D1), <int>0, shape_out1)
-                max0 = _clip(<int> (_ceil_max4(A0, B0, C0, D0) + 1), <int>0, shape_out0)
-                max1 = _clip(<int> (_ceil_max4(A1, B1, C1, D1) + 1), <int>0, shape_out1)
+                min0 = _clip(<int> _floor_min4(A0, B0, C0, D0), 0, shape_out0)
+                min1 = _clip(<int> _floor_min4(A1, B1, C1, D1), 0, shape_out1)
+                max0 = _clip(<int> _ceil_max4(A0, B0, C0, D0) + 1, 0, shape_out0)
+                max1 = _clip(<int> _ceil_max4(A1, B1, C1, D1) + 1, 0, shape_out1)
                 for k in range(min0, max0):
                     for l in range(min1, max1):
                         lut_size[k, l] += 1
@@ -361,8 +371,8 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
         int offset0, offset1, box_size0, box_size1, size, k
         int32_t idx = 0
         int err_cnt = 0
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
-        float area, value, foffset0, foffset1, goffset0, goffset1
+        float A0, A1, B0, B1, C0, C1, D0, D1
+        float area, inv_area, value, foffset0, foffset1, goffset0, goffset1
         lut_t[:, :, :] lut
         bint do_mask = mask is not None
         acc_t[:, ::1] buffer
@@ -424,35 +434,15 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
                 C1 -= foffset1
                 D0 -= foffset0
                 D1 -= foffset1
-                if B0 != A0:
-                    pAB = (B1 - A1) / (B0 - A0)
-                    cAB = A1 - pAB * A0
-                else:
-                    pAB = cAB = 0.0
-                if C0 != B0:
-                    pBC = (C1 - B1) / (C0 - B0)
-                    cBC = B1 - pBC * B0
-                else:
-                    pBC = cBC = 0.0
-                if D0 != C0:
-                    pCD = (D1 - C1) / (D0 - C0)
-                    cCD = C1 - pCD * C0
-                else:
-                    pCD = cCD = 0.0
-                if A0 != D0:
-                    pDA = (A1 - D1) / (A0 - D0)
-                    cDA = D1 - pDA * D0
-                else:
-                    pDA = cDA = 0.0
 
                 # ABCD is trigonometric order: order input position accordingly
                 _integrate2d(buffer, B0, B1, A0, A1)
                 _integrate2d(buffer, C0, C1, B0, B1)
                 _integrate2d(buffer, D0, D1, C0, C1)
-                _integrate2d(buffer, A0, A1, D0, A1)
+                _integrate2d(buffer, A0, A1, D0, D1)
 
                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
-
+                inv_area = 1.0 / area
                 for ms in range(box_size0):
                     ml = ms + offset0
                     if ml < 0 or ml >= shape0:
@@ -462,7 +452,7 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
                         nl = ns + offset1
                         if nl < 0 or nl >= shape1:
                             continue
-                        value = buffer[ms, ns] / area
+                        value = buffer[ms, ns] * inv_area
                         if value == 0:
                             continue
                         if value < 0 or value > 1.0001:
@@ -506,8 +496,8 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
     cdef:
         int i, j, k, ms, ml, ns, nl, idx = 0, tmp_index, err_cnt = 0
         int lut_size, offset0, offset1, box_size0, box_size1
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
-        float area, value, foffset0, foffset1, goffset0, goffset1
+        float A0, A1, B0, B1, C0, C1, D0, D1
+        float area, inv_area, value, foffset0, foffset1, goffset0, goffset1
         int32_t[::1] indptr, indices
         float32_t[::1] data
         int32_t[:, ::1] outMax = numpy.zeros((shape0, shape1), dtype=numpy.int32)
@@ -568,31 +558,14 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
                 C1 -= foffset1
                 D0 -= foffset0
                 D1 -= foffset1
-                if B0 != A0:
-                    pAB = (B1 - A1) / (B0 - A0)
-                    cAB = A1 - pAB * A0
-                else:
-                    pAB = cAB = 0.0
-                if C0 != B0:
-                    pBC = (C1 - B1) / (C0 - B0)
-                    cBC = B1 - pBC * B0
-                else:
-                    pBC = cBC = 0.0
-                if D0 != C0:
-                    pCD = (D1 - C1) / (D0 - C0)
-                    cCD = C1 - pCD * C0
-                else:
-                    pCD = cCD = 0.0
-                if A0 != D0:
-                    pDA = (A1 - D1) / (A0 - D0)
-                    cDA = D1 - pDA * D0
-                else:
-                    pDA = cDA = 0.0
+
                 _integrate2d(buffer, B0, B1, A0, A1)
                 _integrate2d(buffer, C0, C1, B0, B1)
                 _integrate2d(buffer, D0, D1, C0, C1)
-                _integrate2d(buffer, A0, A1, D0, A1)
+                _integrate2d(buffer, A0, A1, D0, D1)
+
                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
+                inv_area = 1.0 / area
                 for ms in range(box_size0):
                     ml = ms + offset0
                     if ml < 0 or ml >= shape0:
@@ -602,7 +575,7 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
                         nl = ns + offset1
                         if nl < 0 or nl >= shape1:
                             continue
-                        value = buffer[ms, ns] / area
+                        value = buffer[ms, ns] * inv_area
                         if value == 0.0:
                             continue
                         if value < 0.0 or value > 1.0001:
@@ -656,8 +629,8 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
         int lut_size, offset0, offset1, box_size0, box_size1
         int counter, bin_number
         int idx, err_cnt = 0
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
-        float area, value, foffset0, foffset1, goffset0, goffset1
+        float A0, A1, B0, B1, C0, C1, D0, D1
+        float area, inv_area, value, foffset0, foffset1, goffset0, goffset1
         int32_t[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
         float32_t[::1] data, large_data
         acc_t[:, ::1] buffer
@@ -718,32 +691,13 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
             C1 = C1 - foffset1
             D0 = D0 - foffset0
             D1 = D1 - foffset1
-            if B0 != A0:
-                pAB = (B1 - A1) / (B0 - A0)
-                cAB = A1 - pAB * A0
-            else:
-                pAB = cAB = 0.0
-            if C0 != B0:
-                pBC = (C1 - B1) / (C0 - B0)
-                cBC = B1 - pBC * B0
-            else:
-                pBC = cBC = 0.0
-            if D0 != C0:
-                pCD = (D1 - C1) / (D0 - C0)
-                cCD = C1 - pCD * C0
-            else:
-                pCD = cCD = 0.0
-            if A0 != D0:
-                pDA = (A1 - D1) / (A0 - D0)
-                cDA = D1 - pDA * D0
-            else:
-                pDA = cDA = 0.0
-
             _integrate2d(buffer, B0, B1, A0, A1)
             _integrate2d(buffer, C0, C1, B0, B1)
             _integrate2d(buffer, D0, D1, C0, C1)
-            _integrate2d(buffer, A0, A1, D0, A1)
+            _integrate2d(buffer, A0, A1, D0, D1)
+
             area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
+            inv_area = 1.0 / area
             for ms in range(box_size0):
                 ml = ms + offset0
                 if ml < 0 or ml >= shape_out0:
@@ -753,7 +707,7 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
                     nl = ns + offset1
                     if nl < 0 or nl >= shape_out1:
                         continue
-                    value = buffer[ms, ns] / area
+                    value = buffer[ms, ns] * inv_area
                     if value == 0.0:
                         continue
                     if value < 0.0 or value > 1.0001:
@@ -852,8 +806,8 @@ def calc_sparse_v2(float32_t[:, :, :, ::1] pos not None,
         int offset0, offset1, box_size0, box_size1
         int counter, bin_number
         int idx, err_cnt = 0
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
-        float area, value, foffset0, foffset1
+        float A0, A1, B0, B1, C0, C1, D0, D1
+        float area, inv_area, value, foffset0, foffset1
         acc_t[:, ::1] buffer
         bint do_mask = mask is not None
 
@@ -906,32 +860,12 @@ def calc_sparse_v2(float32_t[:, :, :, ::1] pos not None,
             C1 = C1 - foffset1
             D0 = D0 - foffset0
             D1 = D1 - foffset1
-            if B0 != A0:
-                pAB = (B1 - A1) / (B0 - A0)
-                cAB = A1 - pAB * A0
-            else:
-                pAB = cAB = 0.0
-            if C0 != B0:
-                pBC = (C1 - B1) / (C0 - B0)
-                cBC = B1 - pBC * B0
-            else:
-                pBC = cBC = 0.0
-            if D0 != C0:
-                pCD = (D1 - C1) / (D0 - C0)
-                cCD = C1 - pCD * C0
-            else:
-                pCD = cCD = 0.0
-            if A0 != D0:
-                pDA = (A1 - D1) / (A0 - D0)
-                cDA = D1 - pDA * D0
-            else:
-                pDA = cDA = 0.0
-
             _integrate2d(buffer, B0, B1, A0, A1)
             _integrate2d(buffer, C0, C1, B0, B1)
             _integrate2d(buffer, D0, D1, C0, C1)
-            _integrate2d(buffer, A0, A1, D0, A1)
+            _integrate2d(buffer, A0, A1, D0, D1)
             area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
+            inv_area = 1.0 / area
             for ms in range(box_size0):
                 ml = ms + offset0
                 if ml < 0 or ml >= shape_out0:
@@ -941,7 +875,7 @@ def calc_sparse_v2(float32_t[:, :, :, ::1] pos not None,
                     nl = ns + offset1
                     if nl < 0 or nl >= shape_out1:
                         continue
-                    value = buffer[ms, ns] / area
+                    value = buffer[ms, ns] * inv_area
                     if value == 0.0:
                         continue
                     if value < 0.0 or value > 1.0001:
@@ -1748,7 +1682,7 @@ class Distortion(object):
             int i, j, ms, ml, ns, nl, shape0, shape1, size
             int offset0, offset1, box_size0, box_size1
             int32_t k, idx = 0
-            float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
+            float A0, A1, B0, B1, C0, C1, D0, D1, area, inv_area, value
             float32_t[:, :, :, ::1] pos
             lut_t[:, :, ::1] lut
             int32_t[:, ::1] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
@@ -1766,6 +1700,7 @@ class Distortion(object):
                     memset(&lut[0, 0, 0], 0, size)
                     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], size / 1.0e6))
                     buffer = numpy.empty((self.delta0, self.delta1), dtype=acc_d)
+                    #buffer_size = self.delta0 * self.delta1 * sizeof(float)
                     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], self.lut_size))
                     with nogil:
                         # i,j, idx are indexes of the raw image uncorrected
@@ -1793,36 +1728,13 @@ class Distortion(object):
                                 C1 -= <float> offset1
                                 D0 -= <float> offset0
                                 D1 -= <float> offset1
-                                if B0 != A0:
-                                    pAB = (B1 - A1) / (B0 - A0)
-                                    cAB = A1 - pAB * A0
-                                else:
-                                    pAB = cAB = 0.0
-                                if C0 != B0:
-                                    pBC = (C1 - B1) / (C0 - B0)
-                                    cBC = B1 - pBC * B0
-                                else:
-                                    pBC = cBC = 0.0
-                                if D0 != C0:
-                                    pCD = (D1 - C1) / (D0 - C0)
-                                    cCD = C1 - pCD * C0
-                                else:
-                                    pCD = cCD = 0.0
-                                if A0 != D0:
-                                    pDA = (A1 - D1) / (A0 - D0)
-                                    cDA = D1 - pDA * D0
-                                else:
-                                    pDA = cDA = 0.0
                                 # ABCD is ANTI-trigonometric order: order input position accordingly
-                                # integrate(buffer, B0, A0, pAB, cAB)
-                                # integrate(buffer, A0, D0, pDA, cDA)
-                                # integrate(buffer, D0, C0, pCD, cCD)
-                                # integrate(buffer, C0, B0, pBC, cBC)
                                 _integrate2d(buffer, B0, B1, A0, A1)
                                 _integrate2d(buffer, C0, C1, B0, B1)
                                 _integrate2d(buffer, D0, D1, C0, C1)
-                                _integrate2d(buffer, A0, A1, D0, A1)
+                                _integrate2d(buffer, A0, A1, D0, D1)
                                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
+                                inv_area = 1.0 / area
                                 for ms in range(box_size0):
                                     ml = ms + offset0
                                     if ml < 0 or ml >= shape0:
@@ -1832,7 +1744,7 @@ class Distortion(object):
                                         nl = ns + offset1
                                         if nl < 0 or nl >= shape1:
                                             continue
-                                        value = buffer[ms, ns] / area
+                                        value = buffer[ms, ns] * inv_area
                                         if value <= 0:
                                             continue
                                         k = outMax[ml, nl]
