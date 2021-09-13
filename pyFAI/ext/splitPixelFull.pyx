@@ -38,12 +38,14 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/09/2021"
+__date__ = "13/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
 
+
+raise RuntimeError("Unsupported module")
 
 import cython
 cimport numpy

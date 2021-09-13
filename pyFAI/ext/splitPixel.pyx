@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/09/2021"
+__date__ = "13/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -46,44 +46,8 @@ include "regrid_common.pxi"
 
 cimport cython
 import numpy
-from libc.math cimport fabs, ceil, floor
 import logging
 logger = logging.getLogger(__name__)
-from cython cimport floating
-
-
-cdef inline floating calc_area(floating I1, floating I2, floating slope, floating intercept) nogil:
-    "Calculate the area between I1 and I2 of a line with a given slope & intercept"
-    return 0.5 * ((I2 - I1) * (slope * (I2 + I1) + 2 * intercept))
-
-
-cdef inline void integrate(acc_t[::1] buffer, Py_ssize_t buffer_size, position_t start0, position_t start1, position_t stop0, position_t stop1) nogil:
-    "Integrate in a box a line between start and stop"
-
-    if stop0 == start0:
-        # slope is infinite, area is null: no change to the buffer
-        return
-    cdef position_t slope, intercept
-    cdef Py_ssize_t i, istart0 = <Py_ssize_t> floor(start0), istop0 = <Py_ssize_t> floor(stop0)
-    slope = (stop1 - start1) / (stop0 - start0)
-    intercept = start1 - slope * start0
-    if buffer_size > istop0 == istart0 >= 0:
-        buffer[istart0] += calc_area(start0, stop0, slope, intercept)
-    else:
-        if stop0 > start0:
-                if 0 <= start0 < buffer_size:
-                    buffer[istart0] += calc_area(start0, floor(start0 + 1), slope, intercept)
-                for i in range(max(istart0 + 1, 0), min(istop0, buffer_size)):
-                    buffer[i] += calc_area(i, i + 1, slope, intercept)
-                if buffer_size > stop0 >= 0:
-                    buffer[istop0] += calc_area(istop0, stop0, slope, intercept)
-        else:
-            if 0 <= start0 < buffer_size:
-                buffer[istart0] += calc_area(start0, istart0, slope, intercept)
-            for i in range(min(istart0, buffer_size) - 1, max(<Py_ssize_t> floor(stop0), -1), -1):
-                buffer[i] += calc_area(i + 1, i, slope, intercept)
-            if buffer_size > stop0 >= 0:
-                buffer[istop0] += calc_area(floor(stop0 + 1), stop0, slope, intercept)
 
 
 def fullSplit1D(pos,
@@ -295,10 +259,10 @@ def fullSplit1D(pos,
                 area_pixel = fabs(area4(a0, a1, b0, b1, c0, c1, d0, d1))
                 inv_area = 1.0 / area_pixel
 
-                integrate(buffer, bins, a0, a1, b0, b1)  # A-B
-                integrate(buffer, bins, b0, b1, c0, c1)  # B-C
-                integrate(buffer, bins, c0, c1, d0, d1)  # C-D
-                integrate(buffer, bins, d0, d1, a0, a1)  # D-A
+                _integrate1d(buffer, a0, a1, b0, b1)  # A-B
+                _integrate1d(buffer, b0, b1, c0, c1)  # B-C
+                _integrate1d(buffer, c0, c1, d0, d1)  # C-D
+                _integrate1d(buffer, d0, d1, a0, a1)  # D-A
 
                 # Distribute pixel area
                 sum_area = 0.0
@@ -544,10 +508,10 @@ def fullSplit1D_engine(pos not None,
                 area_pixel = fabs(area4(a0, a1, b0, b1, c0, c1, d0, d1))
                 inv_area = 1.0 / area_pixel
 
-                integrate(buffer, bins, a0, a1, b0, b1)  # A-B
-                integrate(buffer, bins, b0, b1, c0, c1)  # B-C
-                integrate(buffer, bins, c0, c1, d0, d1)  # C-D
-                integrate(buffer, bins, d0, d1, a0, a1)  # D-A
+                _integrate1d(buffer, a0, a1, b0, b1)  # A-B
+                _integrate1d(buffer, b0, b1, c0, c1)  # B-C
+                _integrate1d(buffer, c0, c1, d0, d1)  # C-D
+                _integrate1d(buffer, d0, d1, a0, a1)  # D-A
 
                 # Distribute pixel area
                 sum_area = 0.0
@@ -1319,7 +1283,9 @@ def fullSplit2D_engine(pos not None,
         acc_t norm
         preproc_t value
         Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=8, bw1=8
-        float32_t[:, ::1] buffer = numpy.empty((bw0, bw1), dtype=numpy.float32)
+        acc_t[:, ::1] buffer = numpy.empty((bw0, bw1), dtype=acc_d)
+        double foffset0, foffset1, sum_area, loc_area, bin_centers0, bin_centers1
+
 
     if pos0_range is not None and len(pos0_range) == 2:
         pos0_min = min(pos0_range)
@@ -1434,7 +1400,7 @@ def fullSplit2D_engine(pos not None,
                 bw0 = max(bw0, w0)
                 bw1 = max(bw1, w1)
                 with gil:
-                    buffer = numpy.zeros((bw0, bw1), dtype=numpy.float32)
+                    buffer = numpy.zeros((bw0, bw1), dtype=acc_d)
             else:
                 buffer[:, :] = 0.0
             
@@ -1455,20 +1421,27 @@ def fullSplit2D_engine(pos not None,
             if not is_valid:
                 continue
 
-            area = fabs(area4(a0, a1, b0, b1, c0, c1, d0, d1))
-            
-            #TODO... integrate the quad on the buffer
-            
-            
+            # ABCD is anti-trigonometric order: order input position accordingly
+            _integrate2d(buffer, a0, b0, a1, b1)
+            _integrate2d(buffer, b0, c0, b1, c1)
+            _integrate2d(buffer, c0, d0, c1, d1)
+            _integrate2d(buffer, d0, a0, d1, a1)
+
+            area = 0.5 * ((c1 - a1) * (d0 - b0) - (c0 - a0) * (d1 - b1))
+
+            sum_area = 0.0
             for i in range(w0):
                 for j in range(w1):
+                    loc_area = buffer[i, j]
+                    sum_area += loc_area
                     update_2d_accumulator(out_data,
                                           ioffset0 + i,
                                           ioffset1 + j,
                                           value,
-                                          weight=buffer[i, j])
-
-                        
+                                          weight=loc_area/area)
+            if fabs(area -  sum_area) > 1e-6:
+                with gil:
+                    print(f"Invstigate idx {idx}, area {area} {sum_area}, {v8}, {w0}, {w1}")           
         for i in range(bins0):
             for j in range(bins1):
                 norm = out_data[i, j, 2]

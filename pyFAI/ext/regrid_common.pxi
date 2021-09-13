@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/09/2021"
+__date__ = "13/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -41,6 +41,7 @@ __license__ = "MIT"
 import cython
 import numpy
 import sys
+from libc.math cimport ceil, floor, copysign
 
 # Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
 
@@ -374,3 +375,204 @@ def clip(value,  min_val, int max_val):
     
     """
     return _clip(<float64_t>value, <float64_t>min_val, <float64_t>max_val)
+
+
+cdef inline floating _calc_area(floating I1, floating I2, floating slope, floating intercept) nogil:
+    return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
+def calc_area(I1, I2, slope, intercept):
+    "Calculate the area between I1 and I2 of a line with a given slope & intercept"
+    return _calc_area(<float64_t> I1, <float64_t> I2, <float64_t> slope, <float64_t> intercept)
+
+
+cdef inline void _integrate1d(acc_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1) nogil:
+    """"Integrate in a box a segment between start and stop
+    
+    :param buffer: Buffer which is modified in place
+    :param start0: position of the start in dim0
+    :param start1: position of the start in dim1
+    :param stop0: position of the end of segment in dim0
+    :param stop1: position of the end of segment in dim1
+    """
+    cdef: 
+        floating slope, intercept
+        Py_ssize_t i, istart0, istop0, Py_ssize_t
+
+    if stop0 == start0:
+        # slope is infinite, area is null: no change to the buffer
+        return
+    
+    buffer_size = buffer.shape[0]
+    istart0 = <Py_ssize_t> floor(start0)
+    istop0 = <Py_ssize_t> floor(stop0)
+    
+    slope = (stop1 - start1) / (stop0 - start0)
+    intercept = start1 - slope * start0
+    
+    if buffer_size > istop0 == istart0 >= 0:
+        buffer[istart0] += _calc_area(start0, stop0, slope, intercept)
+    else:
+        if stop0 > start0:
+                if 0 <= start0 < buffer_size:
+                    buffer[istart0] += _calc_area(start0, floor(start0 + 1), slope, intercept)
+                for i in range(max(istart0 + 1, 0), min(istop0, buffer_size)):
+                    buffer[i] += _calc_area(i, i + 1, slope, intercept)
+                if buffer_size > stop0 >= 0:
+                    buffer[istop0] += _calc_area(istop0, stop0, slope, intercept)
+        else:
+            if 0 <= start0 < buffer_size:
+                buffer[istart0] += _calc_area(start0, istart0, slope, intercept)
+            for i in range(min(istart0, buffer_size) - 1, max(<Py_ssize_t> floor(stop0), -1), -1):
+                buffer[i] += _calc_area(i + 1, i, slope, intercept)
+            if buffer_size > stop0 >= 0:
+                buffer[istop0] += _calc_area(floor(stop0 + 1), stop0, slope, intercept)
+
+
+cdef inline void _integrate2d(acc_t[:, ::1] box, floating start0, floating start1, floating stop0, floating stop1) nogil:
+    """Integrate a segment in a box a line between start and stop, line defined by its slope & intercept
+    
+    Calculate: 
+    
+    x<stop0
+    SUM   slope * x + intercept dx
+    x=start0
+    
+    :param box: buffer to be updated in place
+    :param start0: start position of the segment in dim0
+    :param stop0: End position of the segment  in dim0
+    :param start1: start position of the segment in dim1
+    :param stop1: End position of the segment  in dim1
+    :return: nothing: the box is updated in place.
+    """
+    cdef:
+        Py_ssize_t i, h = 0
+        floating P, dP, segment_area, abs_area, dA, slope, intercept
+    
+    
+    if stop0 == start0:
+        slope = (stop1 - start1) / (stop0 - start0)
+        intercept =  start1 - slope * start0
+    else:
+        return #unchanged box
+
+    if start0 < stop0:  # positive contribution
+        P = ceil(start0)
+        dP = P - start0
+        if P > stop0:  # start and stop are in the same unit
+            segment_area = _calc_area(start0, stop0, slope, intercept)
+            if segment_area != 0.0:
+                abs_area = fabs(segment_area)
+                dA = (stop0 - start0)  # always positive
+                h = 0
+                while abs_area > 0:
+                    if dA > abs_area:
+                        dA = abs_area
+                        abs_area = -1
+                    box[(<Py_ssize_t> start0), h] += copysign(dA, segment_area)
+                    abs_area -= dA
+                    h += 1
+        else:
+            if dP > 0:
+                segment_area = _calc_area(start0, P, slope, intercept)
+                if segment_area != 0.0:
+                    abs_area = fabs(segment_area)
+                    h = 0
+                    dA = dP
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[(<Py_ssize_t> P) - 1, h] += copysign(dA, segment_area)
+                        abs_area -= dA
+                        h += 1
+            # subsection P1->Pn
+            for i in range((<Py_ssize_t> floor(P)), (<Py_ssize_t> floor(stop0))):
+                segment_area = _calc_area(i, i + 1, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
+                    h = 0
+                    dA = 1.0
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[i, h] += copysign(dA, segment_area)
+                        abs_area -= dA
+                        h += 1
+            # Section Pn->B
+            P = floor(stop0)
+            dP = stop0 - P
+            if dP > 0:
+                segment_area = _calc_area(P, stop0, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
+                    h = 0
+                    dA = fabs(dP)
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[(<Py_ssize_t> P), h] += copysign(dA, segment_area)
+                        abs_area -= dA
+                        h += 1
+    elif start0 > stop0:  # negative contribution. Nota if start0==stop0: no contribution
+        P = floor(start0)
+        if stop0 > P:  # start and stop are in the same unit
+            segment_area = _calc_area(start0, stop0, slope, intercept)
+            if segment_area != 0:
+                abs_area = fabs(segment_area)
+                # sign = segment_area / abs_area
+                dA = (start0 - stop0)  # always positive
+                h = 0
+                while abs_area > 0:
+                    if dA > abs_area:
+                        dA = abs_area
+                        abs_area = -1
+                    box[(<Py_ssize_t> P), h] += copysign(dA, segment_area)
+                    abs_area -= dA
+                    h += 1
+        else:
+            dP = P - start0
+            if dP < 0:
+                segment_area = _calc_area(start0, P, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
+                    h = 0
+                    dA = fabs(dP)
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[(<int> P), h] += copysign(dA, segment_area)
+                        abs_area -= dA
+                        h += 1
+            # subsection P1->Pn
+            for i in range((<int> start0), (<int> ceil(stop0)), -1):
+                segment_area = _calc_area(i, i - 1, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
+                    h = 0
+                    dA = 1
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[i - 1, h] += copysign(dA, segment_area)
+                        abs_area -= dA
+                        h += 1
+            # Section Pn->B
+            P = ceil(stop0)
+            dP = stop0 - P
+            if dP < 0:
+                segment_area = _calc_area(P, stop0, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
+                    h = 0
+                    dA = fabs(dP)
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[(<Py_ssize_t> stop0), h] += copysign(dA, segment_area)
+                        abs_area -= dA
+                        h += 1
+

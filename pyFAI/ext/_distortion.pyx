@@ -35,7 +35,7 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/09/2021"
+__date__ = "13/09/2021"
 __copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -60,12 +60,6 @@ import fabio
 
 from .sparse_builder cimport SparseBuilder
 
-
-cdef inline float _calc_area(float I1, float I2, float slope, float intercept) nogil:
-    return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
-def calc_area(float I1, float I2, float slope, float intercept):
-    "Calculate the area between I1 and I2 of a line with a given slope & intercept"
-    return _calc_area(I1, I2, slope, intercept)
 
 cdef inline float _floor_min4(float a, float b, float c, float d) nogil:
     "return floor(min(a,b,c,d))"
@@ -100,6 +94,9 @@ cdef inline void integrate(float32_t[:, ::1] box, float start, float stop, float
 
     :param box: buffer
     """
+    return
+    with gil:
+        raise RuntimeError("nop!")
     cdef:
         int i, h = 0
         float P, dP, segment_area, abs_area, dA
@@ -368,7 +365,7 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
         float area, value, foffset0, foffset1, goffset0, goffset1
         lut_t[:, :, :] lut
         bint do_mask = mask is not None
-        float32_t[:, ::1] buffer
+        acc_t[:, ::1] buffer
     size = bin_size.max()
     shape0, shape1 = shape
     if do_mask:
@@ -376,7 +373,7 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
         assert shape1 == mask.shape[1], "mask shape dim1"
     delta0, delta1 = max_pixel_size
     cdef int32_t[:, :] outMax = numpy.zeros((shape0, shape1), dtype=numpy.int32)
-    buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
+    buffer = numpy.empty((delta0, delta1), dtype=acc_d)
     #buffer_nbytes = buffer.nbytes
     if (size == 0):  # fix 271
         raise RuntimeError("The look-up table has dimension 0 which is a non-sense." +
@@ -417,7 +414,7 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
                     delta0 = offset0 if offset0 > delta0 else delta0
                     delta1 = offset1 if offset1 > delta1 else delta1
                     with gil:
-                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
+                        buffer = numpy.zeros((delta0, delta1), dtype=acc_d)
 
                 A0 -= foffset0
                 A1 -= foffset1
@@ -449,10 +446,10 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
                     pDA = cDA = 0.0
 
                 # ABCD is trigonometric order: order input position accordingly
-                integrate(buffer, B0, A0, pAB, cAB)
-                integrate(buffer, C0, B0, pBC, cBC)
-                integrate(buffer, D0, C0, pCD, cCD)
-                integrate(buffer, A0, D0, pDA, cDA)
+                _integrate2d(buffer, B0, B1, A0, A1)
+                _integrate2d(buffer, C0, C1, B0, B1)
+                _integrate2d(buffer, D0, D1, C0, C1)
+                _integrate2d(buffer, A0, A1, D0, A1)
 
                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
 
@@ -514,7 +511,7 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
         int32_t[::1] indptr, indices
         float32_t[::1] data
         int32_t[:, ::1] outMax = numpy.zeros((shape0, shape1), dtype=numpy.int32)
-        float32_t[:, ::1] buffer
+        acc_t[:, ::1] buffer
         bint do_mask = mask is not None
     if do_mask:
         assert shape0 == mask.shape[0], "mask shape dim0"
@@ -527,7 +524,7 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
     data = numpy.zeros(shape=lut_size, dtype=numpy.float32)
 
     logger.info("CSR matrix: %.3f MByte" % ((indices.nbytes + data.nbytes + indptr.nbytes) / 1.0e6))
-    buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
+    buffer = numpy.empty((delta0, delta1), dtype=acc_d)
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], lut_size))
     #global offset (in case the detector is centerred arround the origin)
     goffset0 = float(offset[0])
@@ -561,7 +558,7 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
                     delta0 = offset0 if offset0 > delta0 else delta0
                     delta1 = offset1 if offset1 > delta1 else delta1
                     with gil:
-                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
+                        buffer = numpy.zeros((delta0, delta1), dtype=acc_d)
 
                 A0 -= foffset0
                 A1 -= foffset1
@@ -591,10 +588,10 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
                     cDA = D1 - pDA * D0
                 else:
                     pDA = cDA = 0.0
-                integrate(buffer, B0, A0, pAB, cAB)
-                integrate(buffer, A0, D0, pDA, cDA)
-                integrate(buffer, D0, C0, pCD, cCD)
-                integrate(buffer, C0, B0, pBC, cBC)
+                _integrate2d(buffer, B0, B1, A0, A1)
+                _integrate2d(buffer, C0, C1, B0, B1)
+                _integrate2d(buffer, D0, D1, C0, C1)
+                _integrate2d(buffer, A0, A1, D0, A1)
                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
                 for ms in range(box_size0):
                     ml = ms + offset0
@@ -663,7 +660,7 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
         float area, value, foffset0, foffset1, goffset0, goffset1
         int32_t[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
         float32_t[::1] data, large_data
-        float32_t[:, ::1] buffer
+        acc_t[:, ::1] buffer
         bint do_mask = mask is not None
         lut_t[:, :] lut
     if do_mask:
@@ -678,7 +675,7 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
     logger.info("Temporary storage: %.3fMB",
                 (large_data.nbytes + pixel_count.nbytes + idx_pixel.nbytes + idx_bin.nbytes) / 1e6)
 
-    buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
+    buffer = numpy.empty((delta0, delta1), dtype=acc_d)
     counter = -1  # bin index
     #global offset (in case the detector is centerred arround the origin)
     goffset0 = float(offset[0])
@@ -711,7 +708,7 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
                 delta0 = offset0 if offset0 > delta0 else delta0
                 delta1 = offset1 if offset1 > delta1 else delta1
                 with gil:
-                    buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
+                    buffer = numpy.zeros((delta0, delta1), dtype=acc_d)
 
             A0 = A0 - foffset0
             A1 = A1 - foffset1
@@ -742,10 +739,10 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
             else:
                 pDA = cDA = 0.0
 
-            integrate(buffer, B0, A0, pAB, cAB)
-            integrate(buffer, A0, D0, pDA, cDA)
-            integrate(buffer, D0, C0, pCD, cCD)
-            integrate(buffer, C0, B0, pBC, cBC)
+            _integrate2d(buffer, B0, B1, A0, A1)
+            _integrate2d(buffer, C0, C1, B0, B1)
+            _integrate2d(buffer, D0, D1, C0, C1)
+            _integrate2d(buffer, A0, A1, D0, A1)
             area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
             for ms in range(box_size0):
                 ml = ms + offset0
@@ -857,7 +854,7 @@ def calc_sparse_v2(float32_t[:, :, :, ::1] pos not None,
         int idx, err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        float32_t[:, ::1] buffer
+        acc_t[:, ::1] buffer
         bint do_mask = mask is not None
 
     if do_mask:
@@ -869,7 +866,7 @@ def calc_sparse_v2(float32_t[:, :, :, ::1] pos not None,
         builder = SparseBuilder(bins, block_size=6, heap_size=bins)
     else:
         builder = SparseBuilder(bins, **builder_config)
-    buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
+    buffer = numpy.empty((delta0, delta1), dtype=acc_d)
     counter = -1  # bin index
     with nogil:
         # i, j, idx are indices of the raw image uncorrected
@@ -899,7 +896,7 @@ def calc_sparse_v2(float32_t[:, :, :, ::1] pos not None,
                 delta0 = offset0 if offset0 > delta0 else delta0
                 delta1 = offset1 if offset1 > delta1 else delta1
                 with gil:
-                    buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
+                    buffer = numpy.zeros((delta0, delta1), dtype=acc_d)
 
             A0 = A0 - foffset0
             A1 = A1 - foffset1
@@ -930,10 +927,10 @@ def calc_sparse_v2(float32_t[:, :, :, ::1] pos not None,
             else:
                 pDA = cDA = 0.0
 
-            integrate(buffer, B0, A0, pAB, cAB)
-            integrate(buffer, A0, D0, pDA, cDA)
-            integrate(buffer, D0, C0, pCD, cCD)
-            integrate(buffer, C0, B0, pBC, cBC)
+            _integrate2d(buffer, B0, B1, A0, A1)
+            _integrate2d(buffer, C0, C1, B0, B1)
+            _integrate2d(buffer, D0, D1, C0, C1)
+            _integrate2d(buffer, A0, A1, D0, A1)
             area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
             for ms in range(box_size0):
                 ml = ms + offset0
@@ -1755,7 +1752,7 @@ class Distortion(object):
             float32_t[:, :, :, ::1] pos
             lut_t[:, :, ::1] lut
             int32_t[:, ::1] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
-            float32_t[:, ::1] buffer
+            acc_t[:, ::1] buffer
         shape0, shape1 = self.shape
 
         if self.lut_size is None:
@@ -1768,8 +1765,7 @@ class Distortion(object):
                     size = self.shape[0] * self.shape[1] * self.lut_size * sizeof(lut_t)
                     memset(&lut[0, 0, 0], 0, size)
                     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], size / 1.0e6))
-                    buffer = numpy.empty((self.delta0, self.delta1), dtype=numpy.float32)
-                    #buffer_size = self.delta0 * self.delta1 * sizeof(float)
+                    buffer = numpy.empty((self.delta0, self.delta1), dtype=acc_d)
                     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], self.lut_size))
                     with nogil:
                         # i,j, idx are indexes of the raw image uncorrected
@@ -1818,10 +1814,14 @@ class Distortion(object):
                                 else:
                                     pDA = cDA = 0.0
                                 # ABCD is ANTI-trigonometric order: order input position accordingly
-                                integrate(buffer, B0, A0, pAB, cAB)
-                                integrate(buffer, A0, D0, pDA, cDA)
-                                integrate(buffer, D0, C0, pCD, cCD)
-                                integrate(buffer, C0, B0, pBC, cBC)
+                                # integrate(buffer, B0, A0, pAB, cAB)
+                                # integrate(buffer, A0, D0, pDA, cDA)
+                                # integrate(buffer, D0, C0, pCD, cCD)
+                                # integrate(buffer, C0, B0, pBC, cBC)
+                                _integrate2d(buffer, B0, B1, A0, A1)
+                                _integrate2d(buffer, C0, C1, B0, B1)
+                                _integrate2d(buffer, D0, D1, C0, C1)
+                                _integrate2d(buffer, A0, A1, D0, A1)
                                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
                                 for ms in range(box_size0):
                                     ml = ms + offset0
