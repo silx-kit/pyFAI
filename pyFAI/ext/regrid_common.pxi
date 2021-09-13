@@ -428,36 +428,31 @@ cdef inline void _integrate1d(acc_t[::1] buffer, floating start0, floating start
 
 
 cdef inline void _integrate2d(acc_t[:, ::1] box, floating start0, floating start1, floating stop0, floating stop1) nogil:
-    """Integrate a segment in a box a line between start and stop, line defined by its slope & intercept
+    """Integrate in a box a line between start and stop0, line defined by its slope & intercept
+
+    :param box: buffer with the relative area. Gets modified in place
+    :param start0: coodinate of the start of the segment in dim0
+    :param start1: coodinate of the start of the segment in dim1
+    :param start0: coodinate of the end of the segment in dim0
+    :param start0: coodinate of the end of the segment in dim1
     
-    Calculate: 
-    
-    x<stop0
-    SUM   slope * x + intercept dx
-    x=start0
-    
-    :param box: buffer to be updated in place
-    :param start0: start position of the segment in dim0
-    :param stop0: End position of the segment  in dim0
-    :param start1: start position of the segment in dim1
-    :param stop1: End position of the segment  in dim1
-    :return: nothing: the box is updated in place.
     """
     cdef:
         Py_ssize_t i, h = 0
-        floating P, dP, segment_area, abs_area, dA, slope, intercept
-    
-    
-    if stop0 == start0:
-        slope = (stop1 - start1) / (stop0 - start0)
-        intercept =  start1 - slope * start0
+        float P, dP, segment_area, abs_area, dA
+        float slope, intercept
+        # , sign
+        
+    if start0 == stop0:
+        return 
     else:
-        return #unchanged box
-
+        slope = (stop1 - start1) / (stop0 - start0)
+        intercept = stop1 - slope*stop0
+         
     if start0 < stop0:  # positive contribution
         P = ceil(start0)
         dP = P - start0
-        if P > stop0:  # start and stop are in the same unit
+        if P > stop0:  # start0 and stop0 are in the same unit
             segment_area = _calc_area(start0, stop0, slope, intercept)
             if segment_area != 0.0:
                 abs_area = fabs(segment_area)
@@ -516,7 +511,7 @@ cdef inline void _integrate2d(acc_t[:, ::1] box, floating start0, floating start
                         h += 1
     elif start0 > stop0:  # negative contribution. Nota if start0==stop0: no contribution
         P = floor(start0)
-        if stop0 > P:  # start and stop are in the same unit
+        if stop0 > P:  # start0 and stop0 are in the same unit
             segment_area = _calc_area(start0, stop0, slope, intercept)
             if segment_area != 0:
                 abs_area = fabs(segment_area)
@@ -527,7 +522,7 @@ cdef inline void _integrate2d(acc_t[:, ::1] box, floating start0, floating start
                     if dA > abs_area:
                         dA = abs_area
                         abs_area = -1
-                    box[(<Py_ssize_t> P), h] += copysign(dA, segment_area)
+                    box[(<Py_ssize_t> start0), h] += copysign(dA, segment_area)
                     abs_area -= dA
                     h += 1
         else:
@@ -542,11 +537,11 @@ cdef inline void _integrate2d(acc_t[:, ::1] box, floating start0, floating start
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
-                        box[(<int> P), h] += copysign(dA, segment_area)
+                        box[(<Py_ssize_t> P), h] += copysign(dA, segment_area)
                         abs_area -= dA
                         h += 1
             # subsection P1->Pn
-            for i in range((<int> start0), (<int> ceil(stop0)), -1):
+            for i in range((<Py_ssize_t> start0), (<Py_ssize_t> ceil(stop0)), -1):
                 segment_area = _calc_area(i, i - 1, slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
@@ -575,4 +570,5 @@ cdef inline void _integrate2d(acc_t[:, ::1] box, floating start0, floating start
                         box[(<Py_ssize_t> stop0), h] += copysign(dA, segment_area)
                         abs_area -= dA
                         h += 1
+
 
