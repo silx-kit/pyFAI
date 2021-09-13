@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2021"
+__date__ = "13/09/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2373,22 +2373,23 @@ class AzimuthalIntegrator(Geometry):
             if method.split_lower in ("pseudo", "full"):
                 logger.debug("integrate2d uses (full, histogram, cython) implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
-                res = splitPixel.pseudoSplit2D_ng(pos=pos,
-                                                  weights=data,
-                                                  bins=(npt_rad, npt_azim),
-                                                  pos0_range=radial_range,
-                                                  pos1_range=azimuth_range,
-                                                  dummy=dummy,
-                                                  delta_dummy=delta_dummy,
-                                                  mask=mask,
-                                                  dark=dark,
-                                                  flat=flat,
-                                                  solidangle=solidangle,
-                                                  polarization=polarization,
-                                                  normalization_factor=normalization_factor,
-                                                  chiDiscAtPi=self.chiDiscAtPi,
-                                                  empty=dummy if dummy is not None else self._empty,
-                                                  variance=variance)
+                integrator = method.class_funct_ng.function
+                res = integrator(pos=pos,
+                                 weights=data,
+                                 bins=(npt_rad, npt_azim),
+                                 pos0_range=radial_range,
+                                 pos1_range=azimuth_range,
+                                 dummy=dummy,
+                                 delta_dummy=delta_dummy,
+                                 mask=mask,
+                                 dark=dark,
+                                 flat=flat,
+                                 solidangle=solidangle,
+                                 polarization=polarization,
+                                 normalization_factor=normalization_factor,
+                                 chiDiscAtPi=self.chiDiscAtPi,
+                                 empty=dummy if dummy is not None else self._empty,
+                                 variance=variance)
                 I = res.intensity
                 bins_rad = res.radial
                 bins_azim = res.azimuthal
