@@ -37,7 +37,7 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/09/2021"
+__date__ = "14/09/2021"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,16 +45,25 @@ cimport cython
 import numpy
 from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
-import multiprocessing
-cdef: 
-    int MIN_SIZE = 1024
-    int MAX_THREADS = min(8, multiprocessing.cpu_count())  # Limit to 8 cores at maximum, avoids using multiple sockets usually. The value comes from numexpr 
-    double twopi = 2.0 * M_PI
 
+import multiprocessing
+
+cdef: 
+    Py_ssize_t MIN_SIZE = 1024  # Minumum size of the array to go parallel.
+    Py_ssize_t MAX_THREADS = 8  # Limit to 8 cores at maximum, avoids using multiple sockets usually. The value comes from numexpr 
+    double twopi = 2.0 * M_PI
+    
 # We declare a second cython.floating so that it behaves like an actual template
 ctypedef fused float_or_double:
     cython.double
     cython.float
+
+try:
+    import os
+    MAX_THREADS = min(MAX_THREADS, len(os.sched_getaffinity(os.getpid()))) # Limit to the actual number of threads
+except Exception:
+    MAX_THREADS = min(MAX_THREADS, multiprocessing.cpu_count())
+
 
 cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """Calculate t2 (aka y) for 1 pixel
@@ -202,7 +211,7 @@ def calc_pos_zyx(double L, double poni1, double poni2,
         double cosRot2 = cos(rot2)
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
-        ssize_t  size = pos1.size, i = 0
+        Py_ssize_t  size = pos1.size, i = 0
         double p1, p2, p3
     assert pos2.size == size, "pos2.size == size"
     cdef:
@@ -271,7 +280,7 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
         double cosRot2 = cos(rot2)
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
-        ssize_t  size = pos1.size, i = 0
+        Py_ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
@@ -325,7 +334,7 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
         double chi
-    cdef ssize_t  size = pos1.size, i = 0
+        Py_ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
@@ -381,7 +390,7 @@ def calc_q(double L, double rot1, double rot2, double rot3,
         double cosRot2 = cos(rot2)
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
-        ssize_t  size = pos1.size, i = 0
+        Py_ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
@@ -426,7 +435,7 @@ def calc_r(double L, double rot1, double rot2, double rot3,
         double cosRot2 = cos(rot2)
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
-        ssize_t  size = pos1.size, i = 0
+        Py_ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
@@ -462,7 +471,7 @@ def calc_cosa(double L,
     :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
     :return: ndarray of double with same shape and size as pos1
     """
-    cdef ssize_t  size = pos1.size, i = 0
+    cdef Py_ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
@@ -516,7 +525,7 @@ def calc_rad_azim(double L,
             ValueError when wavelength is missing
 
     """
-    cdef ssize_t  size = pos1.size, i = 0
+    cdef Py_ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
     cdef:
         double sinRot1 = sin(rot1)
@@ -598,7 +607,7 @@ def calc_delta_chi(cython.floating[:, ::1] centers,
     :return: ndarray of double with same shape and size as centers woth the delta chi per pixel
     """
     cdef:
-        int width, height, row, col, corn, nbcorn
+        Py_ssize_t width, height, row, col, corn, nbcorn
         double co, ce, delta0, delta1, delta2, delta
         double[:, ::1] res
 
