@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/09/2021"
+__date__ = "14/09/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2451,15 +2451,20 @@ class AzimuthalIntegrator(Geometry):
                                    delta_dummy=delta_dummy,
                                    normalization_factor=normalization_factor,
                                    empty=self._empty,
-                                   split_result=True,
+                                   split_result=4,
                                    variance=variance,
                                    # dark_variance=None,
                                    # poissonian=False,
                                    dtype=numpy.float32)
+                    print(prep.shape)
+                    pos0 = self.array_from_unit(shape, "center", unit, scale=False)
+                    chi = self.chiArray(shape)
                     res = histogram.histogram2d_engine(pos0=pos0,
                                                        pos1=chi,
                                                        weights=prep,
                                                        bins=(npt_rad, npt_azim),
+                                                       pos0_range=radial_range,
+                                                       pos1_range=azimuth_range,
                                                        split=False,
                                                        empty=dummy if dummy is not None else self._empty,
                                                        )
