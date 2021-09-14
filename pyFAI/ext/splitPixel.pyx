@@ -1290,9 +1290,9 @@ def fullSplit2D_engine(pos not None,
         Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
         acc_t norm
         preproc_t value
-        Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=7, bw1=7, nwarn=1000
-        # acc_t[::1] lin_buffer = numpy.empty[:64]
-        acc_t[:, ::1] buffer = numpy.empty((bw0+1, bw1+1), dtype=acc_d)
+        Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15, nwarn=1000
+        acc_t[::1] linbuffer = numpy.empty(256, dtype=acc_d)
+        acc_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
         double foffset0, foffset1, sum_area, loc_area
 
 
@@ -1425,13 +1425,18 @@ def fullSplit2D_engine(pos not None,
             w0 = <Py_ssize_t>(ceil(max0) - foffset0)
             w1 = <Py_ssize_t>(ceil(max1) - foffset1)
             if (w0>bw0) or (w1>bw1):
-                with gil:
-                    print(f"realloc {w0}->{bw0} and {w1}->{bw1}")
-                    bw0 = max(bw0, w0)
-                    bw1 = max(bw1, w1)
-                    buffer = numpy.zeros((bw0+1, bw1+1), dtype=acc_d)
-            else:
-                buffer[:, :] = 0.0
+                if (w0+1)*(w1+1)>linbuffer.shape[0]:
+                    with gil:
+                        linbuffer = numpy.empty((w0+1)*(w1+1), dtype=acc_d)
+                        buffer = numpy.asarray(linbuffer).reshape((w0+1,w1+1))
+                        logger.debug("malloc  %s->%s and %s->%s", w0, bw0, w1, bw1) 
+                else:
+                    with gil:
+                        buffer = numpy.asarray(linbuffer[:(w0+1)*(w1+1)]).reshape((w0+1,w1+1))
+                        logger.debug("reshape %s->%s and %s->%s", w0, bw0, w1, bw1)
+                bw0 = w0
+                bw1 = w1
+            buffer[:, :] = 0.0
             
             a0 -= foffset0
             a1 -= foffset1
@@ -1466,7 +1471,7 @@ def fullSplit2D_engine(pos not None,
                 nwarn -=1
                 if nwarn>0:
                     with gil:            
-                        print(f"Invstigate idx {idx}, area {area} {sum_area}, {numpy.asarray(v8)}, {w0}, {w1}")
+                        logger.info(f"Invstigate idx {idx}, area {area} {sum_area}, {numpy.asarray(v8)}, {w0}, {w1}")
                                
         for i in range(bins0):
             for j in range(bins1):
@@ -1481,7 +1486,7 @@ def fullSplit2D_engine(pos not None,
                     if do_variance:
                         out_error[i, j] = empty
     if nwarn<0:
-        print("Total number of spurious pixels: %s / %s total"%(NUM_WARNING - nwarn, weights.size))
+        logger.info(f"Total number of spurious pixels: {NUM_WARNING - nwarn} / { weights.size} total"%())
 
     
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
