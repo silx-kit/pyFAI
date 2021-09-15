@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/09/2021"
+__date__ = "15/09/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2456,7 +2456,6 @@ class AzimuthalIntegrator(Geometry):
                                    # dark_variance=None,
                                    # poissonian=False,
                                    dtype=numpy.float32)
-                    print(prep.shape)
                     pos0 = self.array_from_unit(shape, "center", unit, scale=False)
                     chi = self.chiArray(shape)
                     res = histogram.histogram2d_engine(pos0=pos0,
@@ -2468,15 +2467,15 @@ class AzimuthalIntegrator(Geometry):
                                                        split=False,
                                                        empty=dummy if dummy is not None else self._empty,
                                                        )
-                    I = res.intensity
+                    I = res.intensity.T
                     bins_azim = res.azimuthal
                     bins_rad = res.radial
-                    signal2d = res.signal
-                    norm2d = res.normalization
-                    count = res.count
+                    signal2d = res.signal.T
+                    norm2d = res.normalization.T
+                    count = res.count.T
                     if variance is not None:
-                        sigma = res.sigma
-                        var2d = res.variance
+                        sigma = res.sigma.T
+                        var2d = res.variance.T
                 else:  # Python implementation:
                     logger.debug("integrate2d uses python implementation")
                     data = data.astype(numpy.float32)  # it is important to make a copy see issue #88

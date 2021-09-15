@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/09/2021"
+__date__ = "15/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -108,7 +108,7 @@ def fullSplit1D(pos,
         data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
         mask_t[::1] cmask
         data_t[::1] cflat, cdark, cpolarization, csolidangle
-        acc_t[::1] buffer = numpy.zeros(bins, dtype=acc_d)
+        buffer_t[::1] buffer = numpy.zeros(bins, dtype=buffer_d)
 
         data_t cdummy = 0, cddummy = 0, data = 0
         position_t inv_area = 0
@@ -352,7 +352,7 @@ def fullSplit1D_engine(pos not None,
         data_t[::1] out_intensity = numpy.zeros(bins, dtype=data_d)
         data_t[::1] out_error
         mask_t[::1] cmask
-        acc_t[::1] buffer = numpy.zeros(bins, dtype=acc_d)
+        buffer_t[::1] buffer = numpy.zeros(bins, dtype=buffer_d)
         acc_t norm
         data_t cdummy = 0.0, ddummy = 0.0
         position_t inv_area = 0
@@ -532,7 +532,7 @@ def fullSplit1D_engine(pos not None,
                     if nwarn>0:
                         with gil:
                             logger.debug("area_pixel=%s area_sum=%s, Error= %s", area_pixel, sum_area, (area_pixel - sum_area) / area_pixel)
-                buffer[bin0_min:bin0_max] = 0
+                buffer[bin0_min:bin0_max] = 0.0
         for i in range(bins):
             norm = out_data[i, 2]
             if out_data[i, 3] > 0.0:
@@ -1291,8 +1291,8 @@ def fullSplit2D_engine(pos not None,
         acc_t norm
         preproc_t value
         Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15, nwarn=1000
-        acc_t[::1] linbuffer = numpy.empty(256, dtype=acc_d)
-        acc_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
+        buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
+        buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
         double foffset0, foffset1, sum_area, loc_area
 
 
@@ -1427,7 +1427,7 @@ def fullSplit2D_engine(pos not None,
             if (w0>bw0) or (w1>bw1):
                 if (w0+1)*(w1+1)>linbuffer.shape[0]:
                     with gil:
-                        linbuffer = numpy.empty((w0+1)*(w1+1), dtype=acc_d)
+                        linbuffer = numpy.empty((w0+1)*(w1+1), dtype=buffer_d)
                         buffer = numpy.asarray(linbuffer).reshape((w0+1,w1+1))
                         logger.debug("malloc  %s->%s and %s->%s", w0, bw0, w1, bw1) 
                 else:

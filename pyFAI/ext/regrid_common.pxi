@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/09/2021"
+__date__ = "15/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -76,6 +76,11 @@ mask_d = numpy.int8
 # type of the indexes:
 ctypedef int32_t index_t
 index_d = numpy.int32
+
+#type of the buffer:
+ctypedef float32_t buffer_t
+buffer_d = numpy.float32
+
 
 cdef struct lut_t:
     index_t idx
@@ -384,7 +389,7 @@ def calc_area(I1, I2, slope, intercept):
     return _calc_area(<float64_t> I1, <float64_t> I2, <float64_t> slope, <float64_t> intercept)
 
 
-cdef inline void _integrate1d(acc_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1) nogil:
+cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1) nogil:
     """"Integrate in a box a segment between start and stop
     
     :param buffer: Buffer which is modified in place
@@ -427,7 +432,7 @@ cdef inline void _integrate1d(acc_t[::1] buffer, floating start0, floating start
                 buffer[istop0] += _calc_area(floor(stop0 + 1), stop0, slope, intercept)
 
 
-cdef inline void _integrate2d(acc_t[:, ::1] box, floating start0, floating start1, floating stop0, floating stop1) nogil:
+cdef inline void _integrate2d(buffer_t[:, ::1] box, floating start0, floating start1, floating stop0, floating stop1) nogil:
     """Integrate in a box a line between start and stop0, line defined by its slope & intercept
 
     :param box: buffer with the relative area. Gets modified in place
@@ -570,5 +575,3 @@ cdef inline void _integrate2d(acc_t[:, ::1] box, floating start0, floating start
                         box[(<Py_ssize_t> stop0), h] += copysign(dA, segment_area)
                         abs_area -= dA
                         h += 1
-
-
