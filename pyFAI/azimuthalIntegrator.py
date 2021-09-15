@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2021"
+__date__ = "15/09/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2373,22 +2373,23 @@ class AzimuthalIntegrator(Geometry):
             if method.split_lower in ("pseudo", "full"):
                 logger.debug("integrate2d uses (full, histogram, cython) implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
-                res = splitPixel.pseudoSplit2D_ng(pos=pos,
-                                                  weights=data,
-                                                  bins=(npt_rad, npt_azim),
-                                                  pos0_range=radial_range,
-                                                  pos1_range=azimuth_range,
-                                                  dummy=dummy,
-                                                  delta_dummy=delta_dummy,
-                                                  mask=mask,
-                                                  dark=dark,
-                                                  flat=flat,
-                                                  solidangle=solidangle,
-                                                  polarization=polarization,
-                                                  normalization_factor=normalization_factor,
-                                                  chiDiscAtPi=self.chiDiscAtPi,
-                                                  empty=dummy if dummy is not None else self._empty,
-                                                  variance=variance)
+                integrator = method.class_funct_ng.function
+                res = integrator(pos=pos,
+                                 weights=data,
+                                 bins=(npt_rad, npt_azim),
+                                 pos0_range=radial_range,
+                                 pos1_range=azimuth_range,
+                                 dummy=dummy,
+                                 delta_dummy=delta_dummy,
+                                 mask=mask,
+                                 dark=dark,
+                                 flat=flat,
+                                 solidangle=solidangle,
+                                 polarization=polarization,
+                                 normalization_factor=normalization_factor,
+                                 chiDiscAtPi=self.chiDiscAtPi,
+                                 empty=dummy if dummy is not None else self._empty,
+                                 variance=variance)
                 I = res.intensity
                 bins_rad = res.radial
                 bins_azim = res.azimuthal
@@ -2450,27 +2451,31 @@ class AzimuthalIntegrator(Geometry):
                                    delta_dummy=delta_dummy,
                                    normalization_factor=normalization_factor,
                                    empty=self._empty,
-                                   split_result=True,
+                                   split_result=4,
                                    variance=variance,
                                    # dark_variance=None,
                                    # poissonian=False,
                                    dtype=numpy.float32)
+                    pos0 = self.array_from_unit(shape, "center", unit, scale=False)
+                    chi = self.chiArray(shape)
                     res = histogram.histogram2d_engine(pos0=pos0,
                                                        pos1=chi,
                                                        weights=prep,
                                                        bins=(npt_rad, npt_azim),
+                                                       pos0_range=radial_range,
+                                                       pos1_range=azimuth_range,
                                                        split=False,
                                                        empty=dummy if dummy is not None else self._empty,
                                                        )
-                    I = res.intensity
+                    I = res.intensity.T
                     bins_azim = res.azimuthal
                     bins_rad = res.radial
-                    signal2d = res.signal
-                    norm2d = res.normalization
-                    count = res.count
+                    signal2d = res.signal.T
+                    norm2d = res.normalization.T
+                    count = res.count.T
                     if variance is not None:
-                        sigma = res.sigma
-                        var2d = res.variance
+                        sigma = res.sigma.T
+                        var2d = res.variance.T
                 else:  # Python implementation:
                     logger.debug("integrate2d uses python implementation")
                     data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
