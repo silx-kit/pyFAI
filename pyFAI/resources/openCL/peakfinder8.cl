@@ -87,9 +87,9 @@ inline float2 correct_pixel2(
             }//Upper most bin: no interpolation
         }// this pixel is between radius_min and max
         float4 raw = preproc4[gid];
-        value = (float2)((value.s2>0.0) ? value.s0 / value.s2 - background : 0.0f, uncert);
+        value = (float2)((raw.s2>0.0) ? raw.s0 / raw.s2 - background : 0.0f, uncert);
     }// this pixel is valid
-    
+    return value;
 }
     
   
@@ -102,15 +102,14 @@ inline void set_shared2(
         const         float2  value      // 
                                          ){
     // Normalize the intensity of the pixel and store it
-    buffer[pf8_calc_buffer2(ldim0, ldim1, half_patch)] = value;
-    return value
+    buffer[pf8_calc_buffer2(lpos0, lpos1, half_patch)] = value;
 }
 
 /* 
  * Retrieve the background subtracted intensity and the associated uncertainty from the local buffer 
  */
 inline float2 get_shared2(local float2* buffer, int dim0, int dim1, int half_patch){
-    return buffer[_calc_buffer2(dim0, dim1, half_patch)];
+    return buffer[pf8_calc_buffer2(dim0, dim1, half_patch)];
 }
 
 
@@ -131,7 +130,12 @@ kernel void peakfinder8(        global  float4 *preproc4, // both input and outp
                                 global  int    *highidx,   // indexes of the pixels of high intensity
                                 global  float  *integrated,// Sum of signal in the patch
                                 global  float  *center0,   // Center of mass of the peak along dim0
-                                global  float  *center1){  // Center of mass of the peak along dim1
+                                global  float  *center1,   // Center of mass of the peak along dim1
+                                local   int    *local_highidx,   // size: wg0*wg1
+                                local   float *local_integrated, // size: wg0*wg1
+                                local   float *local_center0,    // size: wg0*wg1
+                                local   float *local_center1,    // size: wg0*wg1
+                                local   float2 *buffer){         // size: (wg0+2*half_patch)*(wg1+2*half_patch) 
     int tid0 = get_local_id(0);
     int tid1 = get_local_id(1);
     int gid0 = get_global_id(0);
@@ -155,7 +159,7 @@ kernel void peakfinder8(        global  float4 *preproc4, // both input and outp
     // load data into shared memory
     float2 value;
     float normed;
-    int p0, p1
+    int p0, p1;
     if (tid0 == 0){ // process first lines
         for (int i = -half_patch; i<0; i++){
             p0 = gid0+i; p1 = gid1;
@@ -194,7 +198,7 @@ kernel void peakfinder8(        global  float4 *preproc4, // both input and outp
             }
         }
     }
-    if ((tid0 == 0) && (tid1 == (wg1-1)){ // process second corner: top right
+    if ((tid0 == 0) && (tid1 == (wg1-1))){ // process second corner: top right
         for (int i = -half_patch; i<0; i++){
             for (int j = 0; j<half_patch; j++){
                 p0 = gid0+i; p1 = gid1+j+1;
@@ -203,7 +207,7 @@ kernel void peakfinder8(        global  float4 *preproc4, // both input and outp
             }
         }
     }
-    if ((tid0 == (wg0-1) && (tid1==0)){ // process third corner: bottom left
+    if ((tid0 == (wg0-1)) && (tid1==0)){ // process third corner: bottom left
         for (int i = 0; i<half_patch; i++){
             for (int j = -half_patch; j<0; j++){
                 p0 = gid0+i+1; p1 = gid1+j;
@@ -212,7 +216,7 @@ kernel void peakfinder8(        global  float4 *preproc4, // both input and outp
             }
         }
     }
-    if ((tid0 == (wg0-1) && (tid1 == (wg1-1)){ // process second corner: top right
+    if ((tid0 == (wg0-1)) && (tid1 == (wg1-1))){ // process second corner: top right
         for (int i = 0; i<half_patch; i++){
             for (int j = 0; j<half_patch; j++){
                 p0 = gid0+i+1; p1 = gid1+j+1;
@@ -233,20 +237,20 @@ kernel void peakfinder8(        global  float4 *preproc4, // both input and outp
         int active = 0;
         // value has been already calculated
         float local_value = value.s0; 
-        if value.s0 >= max(noise, cutoff*value.s1){
+        if (value.s0 >= max(noise, cutoff*value.s1)){
             float local_max = 0.0f;
             float sub, sum_int = 0.0f;
             float som0=0.0f, som1=0.0f;    
             for (int i=-half_patch; i<=half_patch; i++){
-                for (int j=-half_patch; i1<=half_patch; j++){
-                    value = get_shared(buffer, tid0+i, tid1+j);
-                    if value.s0 >= max(noise, cutoff*value.s1){
+                for (int j=-half_patch; j<=half_patch; j++){
+                    value = get_shared2(buffer, tid0+i, tid1+j);
+                    if (value.s0 >= max(noise, cutoff*value.s1)){
                         active+=1;
                     }
                     local_max = max(local_max, value.s0);
                     sub = max(0.0f, value.s0);
-                    som0 += i0 * sub;
-                    som1 += i1 * sub;
+                    som0 += i * sub;
+                    som1 += j * sub;
                     sum_int += sub;
                 }
             }
