@@ -28,41 +28,46 @@
  * THE SOFTWARE.
  */
 
+/* Constant to be provided at build time:
+    - NBINS Number of bins in the radial dimention
+ */
 
 #include "for_eclipse.h"
 
-// Deprecated!
-inline int _calc_buffer(int dim0, int dim1){   
-    return (clamp(dim0, -1, 1)+1)*(WORKGROUP_SIZE+2) + clamp(dim1, -1, WORKGROUP_SIZE + 1)+1;
-}
-/* Calculate the position in the local 1D buffer taking into account the local space is 2D.
-:param dim0: local position in dim0, i.e. y
-:param dim1: local position in dim1, i.e. x
-:param hw: half-width of the patch size, usually 1 or 2.
-:return: 1d buffer index for the given position.
+/* 
+ * Calculate the position in the local 1D buffer taking into account the local space is 2D.
+    :param dim0: local position in dim0, i.e. y
+    :param dim1: local position in dim1, i.e. x
+    :param hw: half-width of the patch size, usually 1 or 2.
+    :return: 1d buffer index for the given position.
 */
-inline int _calc_buffer2(int dim0, int dim1, int hw){
+inline int pf8_calc_buffer2(int dim0, int dim1, int hw){
     int wsy = get_local_size(0);
     int wsx = get_local_size(1);
     int width = wsx + 2 * hw;
-    return (clamp(dim0, -hw, wsy + hw) + hw)*width + clamp(dim1, -hw, wsx + hw) + hw
+    return (clamp(dim0, -hw, wsy + hw) + hw)*width + clamp(dim1, -hw, wsx + hw) + hw;
+}           
 
-inline void set_shared(local float* buffer, float4 value, int dim0, int dim1){
-    // Normalize the intensity of the pixel and store it
-    buffer[_calc_buffer(dim0, dim1)] = (value.s2>0.0) ? value.s0 / value.s2 : 0.0f;
-}
 
-inline float set_shared2(local float* buffer, int lpos0, int lpos1, int hw,
-                        global  float4 *preproc4, 
-                        const         int gpos0, 
-                        const         int gpos1,
-                        const         int     heigth,    // heigth of the image
-                        const         int     width,     // width of the image
-                        const global float* radius2d,
-                        ){
-    float value=0.0f;
-    float background = INFINITY
-    float uncert=0.0f;
+/*  
+ * For a pixel at position (gpos0, gpos1), calculate the I-<I> and associated uncertainty
+ */  
+inline float2 correct_pixel2(
+        global  float4 *preproc4,  // both input and output, pixel wise array of (signal, variance, norm, cnt)
+  const global  float  *radius2d,  // contains the distance to the center for each pixel
+  const global  float  *radius1d,  // Radial bin postion 
+  const global  float  *average1d, // average intensity in the bin
+  const global  float  *std1d,     // associated deviation
+  const         float   radius_min,// minimum radius
+  const         float   radius_max,// maximum radius 
+  const         int     heigth,    // heigth of the image
+  const         int     width,     // width of the image
+  const         int     gpos0,     // global position 0 
+  const         int     gpos1      // global position 1
+  ){
+    float2 value = (float2)(0.0f, 0.0f);
+    float background = INFINITY;
+    float uncert = 0.0f;
     if ((gpos0>=0) && (gpos0<heigth) && (gpos0>=0) &&(gpos1<width)){
         int gid = gpos0 * width + gpos1;
         // Read the value and calculate the background
@@ -80,22 +85,36 @@ inline float set_shared2(local float* buffer, int lpos0, int lpos1, int hw,
                 background = average1d[index];
                 uncert = std1d[index];
             }//Upper most bin: no interpolation
-        }
-
-    }
+        }// this pixel is between radius_min and max
+        float4 raw = preproc4[gid];
+        value = (float2)((value.s2>0.0) ? value.s0 / value.s2 - background : 0.0f, uncert);
+    }// this pixel is valid
     
+}
     
+  
+            
+inline void set_shared2(
+                local float2* buffer,    // local storage      
+        const         int     lpos0,     // local position 0
+        const         int     lpos1,     // local position 1
+        const         int     half_patch,// half of the size of the patch, 1 or 2 for 3x3 or 5x5 patch
+        const         float2  value      // 
+                                         ){
     // Normalize the intensity of the pixel and store it
-    buffer[_calc_buffer2(ldim0, ldim1, hw)] = max(0.0f, value);
+    buffer[pf8_calc_buffer2(ldim0, ldim1, half_patch)] = value;
+    return value
+}
+
+/* 
+ * Retrieve the background subtracted intensity and the associated uncertainty from the local buffer 
+ */
+inline float2 get_shared2(local float2* buffer, int dim0, int dim1, int half_patch){
+    return buffer[_calc_buffer2(dim0, dim1, half_patch)];
 }
 
 
-inline float get_shared(local float* buffer, int dim0, int dim1){
-    return buffer[_calc_buffer(dim0, dim1)];
-}
-
-
-kernel void peakfinder8(  global  float4 *preproc4,       // both input and output, pixel wise array of (signal, variance, norm, cnt) 
+kernel void peakfinder8(        global  float4 *preproc4, // both input and output, pixel wise array of (signal, variance, norm, cnt) 
                           const global  float  *radius2d, // contains the distance to the center for each pixel
                           const global  float  *radius1d, // Radial bin postion 
                           const global  float  *average1d,// average intensity in the bin
@@ -106,8 +125,8 @@ kernel void peakfinder8(  global  float4 *preproc4,       // both input and outp
                           const         float   noise,     // Noise level of the measurement
                           const         int     heigth,    // heigth of the image
                           const         int     width,     // width of the image
-                          const         int     half_patch,// half of the size of the patch, 1 or 2 
-                          const         int     connected, // keep only enough pixels are above threshold in 3x3 patch
+                          const         int     half_patch,// half of the size of the patch, 1 or 2 for 3x3 or 5x5 patch
+                          const         int     connected, // keep only enough pixels are above threshold in patch
                                 global  int    *counter,   // Counter of the number of peaks found
                                 global  int    *highidx,   // indexes of the pixels of high intensity
                                 global  float  *integrated,// Sum of signal in the patch
@@ -120,102 +139,125 @@ kernel void peakfinder8(  global  float4 *preproc4,       // both input and outp
     int wg0 = get_local_size(0);
     int wg1 = get_local_size(1);
     
-    int tid = tid0*wg1 + tid1;
+    int tid = tid0*wg1 + tid1; 
     bool valid = (gid0<heigth) && (gid1<width); //mind 0=y, 1=x !
     
     // all thread in this WG share this local counter, upgraded at the end
     volatile local int local_counter[2]; //first element MUST be set to zero
     if (tid<2) local_counter[tid] = 0;
-    local int local_highidx[WORKGROUP_SIZE]; //This array does not deserve to be initialized
-    local float local_integrated[WORKGROUP_SIZE];  //This array does not deserve to be initialized
-    local float local_center0[WORKGROUP_SIZE];    //This array does not deserve to be initialized
-    local float local_center1[WORKGROUP_SIZE];   //This array does not deserve to be initialized
-    local float buffer[3*WORKGROUP_SIZE+6];     //This array does not deserve to be initialized
+    // those buffer should come from the caller !
+    //local int local_highidx[WORKGROUP_SIZE]; //This array does not deserve to be initialized
+    //local float local_integrated[WORKGROUP_SIZE];  //This array does not deserve to be initialized
+    //local float local_center0[WORKGROUP_SIZE];    //This array does not deserve to be initialized
+    //local float local_center1[WORKGROUP_SIZE];   //This array does not deserve to be initialized
+    //local float buffer[3*WORKGROUP_SIZE+6];     //This array does not deserve to be initialized
     
     // load data into shared memory
-    float4 value;
+    float2 value;
     float normed;
-    value = ((gid - width  >= 0) && (gid - width < NIMAGE))?preproc4[gid-width]:(float4)(0.0f, 0.0f, 0.0f, 0.0f);
-    set_shared(buffer, value, -1, tid);
-    value = ((gid >= 0) && (gid < NIMAGE))?preproc4[gid]:(float4)(0.0f, 0.0f, 0.0f, 0.0f);
-    set_shared(buffer, value, 0, tid);
-    value = ((gid + width  >= 0) && (gid + width < NIMAGE))?preproc4[gid+width]:(float4)(0.0f, 0.0f, 0.0f, 0.0f);
-    set_shared(buffer, value, 1, tid);
-    if (tid == 0){
-        int delta;
-        delta = -1;
-        value = ((gid + delta >= 0) && (gid + delta < NIMAGE)) ? preproc4[gid + delta]: (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-        set_shared(buffer, value, 0, delta);
-
-        delta = WORKGROUP_SIZE;
-        value = ((gid + delta >= 0) && (gid + delta < NIMAGE)) ? preproc4[gid + delta]: (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-        set_shared(buffer, value, 0, delta);
-
-        delta = -width-1;
-        value = ((gid + delta >= 0) && (gid + delta < NIMAGE)) ? preproc4[gid + delta]: (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-        set_shared(buffer, value, -1, -1);
-
-        delta = -width+WORKGROUP_SIZE;
-        value = ((gid + delta >= 0) && (gid + delta < NIMAGE)) ? preproc4[gid + delta]: (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-        set_shared(buffer, value, -1, WORKGROUP_SIZE);
-
-        delta = +width-1;
-        value = ((gid + delta >= 0) && (gid + delta < NIMAGE)) ? preproc4[gid + delta]: (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-        set_shared(buffer, value, 1, -1);
-
-        delta = +width+WORKGROUP_SIZE;
-        value = ((gid + delta >= 0) && (gid + delta < NIMAGE)) ? preproc4[gid + delta]: (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-        set_shared(buffer, value, 1, WORKGROUP_SIZE);
-    }// All needed data have been copied to the local buffer.
+    int p0, p1
+    if (tid0 == 0){ // process first lines
+        for (int i = -half_patch; i<0; i++){
+            p0 = gid0+i; p1 = gid1;
+            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+            set_shared2(buffer, i, tid1, half_patch, value);
+        }
+    }
+    if (tid0 == (wg0-1)){ // process last lines
+        for (int i = 0; i<half_patch; i++){
+            p0 = gid0+1+i; p1 = gid1;
+            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+            set_shared2(buffer, wg0+i, tid1, half_patch, value);
+        }
+    }
+    if (tid1 == 0){ // process first column
+        for (int i = -half_patch; i<0; i++){
+            p0 = gid0; p1 = gid1+i;
+            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+            set_shared2(buffer, tid0, i, half_patch, value);
+        }
+    }
+    if (tid1 == (wg1-1)){ // process last column
+        for (int i = 0; i<half_patch; i++){
+            p0 = gid0; p1 = gid1+1+i;
+            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+            set_shared2(buffer, tid0, wg1+i, half_patch, value);
+        }
+    }
+    // remains the 4 corners !
+    if ((tid0 == 0) && (tid1==0)){ // process first corner: top left
+        for (int i = -half_patch; i<0; i++){
+            for (int j = -half_patch; j<0; j++){
+                p0 = gid0+i; p1 = gid1+j;
+                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+                set_shared2(buffer, i, j, half_patch, value);
+            }
+        }
+    }
+    if ((tid0 == 0) && (tid1 == (wg1-1)){ // process second corner: top right
+        for (int i = -half_patch; i<0; i++){
+            for (int j = 0; j<half_patch; j++){
+                p0 = gid0+i; p1 = gid1+j+1;
+                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+                set_shared2(buffer, i, wg1+j, half_patch, value);
+            }
+        }
+    }
+    if ((tid0 == (wg0-1) && (tid1==0)){ // process third corner: bottom left
+        for (int i = 0; i<half_patch; i++){
+            for (int j = -half_patch; j<0; j++){
+                p0 = gid0+i+1; p1 = gid1+j;
+                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+                set_shared2(buffer, wg0+i, j, half_patch, value);
+            }
+        }
+    }
+    if ((tid0 == (wg0-1) && (tid1 == (wg1-1)){ // process second corner: top right
+        for (int i = 0; i<half_patch; i++){
+            for (int j = 0; j<half_patch; j++){
+                p0 = gid0+i+1; p1 = gid1+j+1;
+                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+                set_shared2(buffer, wg0+i, wg1+j, half_patch, value);
+            }
+        }
+    }
+    // Finally the core of the buffer:
+    p0 = gid0; p1 = gid1; 
+    value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+    set_shared2(buffer, tid0, tid1, half_patch, value);
+    // All needed data have been copied to the local buffer.
     
     barrier(CLK_LOCAL_MEM_FENCE);
     
-    if (gid<NIMAGE) {
+    if (valid) {
         int active = 0;
-        float background = INFINITY, uncert=0.0f;
-        float radius = radius2d[gid];
-        
-        if (isfinite(radius) && (radius>=radius_min) && (radius<radius_max)) {
-            float step = radius1d[1] - radius1d[0];
-            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)NBINS);
-            int index = convert_int_rtz(pos);
-            float delta = pos - index;
-            if (index + 1 < NBINS) {
-                background = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // linear interpolation: averge
-                uncert = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // linear interpolation: std               
-            }
-            else { //Normal bin, using linear interpolation
-                background = average1d[index];
-                uncert = std1d[index];
-            }//Upper most bin: no interpolation
-        }
-        
-        float local_max = 0.0f; 
-        float thres = background + max(noise, cutoff*uncert);
-        float sub, sum_int = 0.0f;
-        float som0=0.0f, som1=0.0f;
-        for (int i0=-1; i0<2; i0++){
-            for (int i1=-1; i1<2; i1++){
-                normed = get_shared(buffer, i0, i1+tid);
-                if (normed  > thres){
-                    active +=1;
+        // value has been already calculated
+        float local_value = value.s0; 
+        if value.s0 >= max(noise, cutoff*value.s1){
+            float local_max = 0.0f;
+            float sub, sum_int = 0.0f;
+            float som0=0.0f, som1=0.0f;    
+            for (int i=-half_patch; i<=half_patch; i++){
+                for (int j=-half_patch; i1<=half_patch; j++){
+                    value = get_shared(buffer, tid0+i, tid1+j);
+                    if value.s0 >= max(noise, cutoff*value.s1){
+                        active+=1;
+                    }
+                    local_max = max(local_max, value.s0);
+                    sub = max(0.0f, value.s0);
+                    som0 += i0 * sub;
+                    som1 += i1 * sub;
+                    sum_int += sub;
                 }
-                local_max = max(local_max, normed);
-                sub = max(0.0f, normed - background);
-                som0 += i0 * sub;
-                som1 += i1 * sub;
-                sum_int += sub;
-            } //loop over the patch 3x3 dim1
-        } //loop over the patch 3x3 dim0
-        
-        normed = get_shared(buffer, 0, tid);
-        if ((normed == local_max) && (active>=connected)){
-            int position = atomic_inc(local_counter);
-            local_highidx[position] = gid;
-            local_integrated[position] = sum_int;
-            local_center0[position] = som0/sum_int + (float)(gid/width);
-            local_center1[position] = som1/sum_int + (float)(gid%width);
-        }//pixel is considered of high intensity: registering it. 
+            }
+            if ((local_value == local_max) && (active>=connected)){
+                int position = atomic_inc(local_counter);
+                local_highidx[position] = gid0*width + gid1;
+                local_integrated[position] = sum_int;
+                local_center0[position] = som0/sum_int + (float)(gid0);
+                local_center1[position] = som1/sum_int + (float)(gid1);
+            }// Record pixel
+        }//pixel is high
     } // pixel is in image
     
     //Update global memory counter
@@ -231,5 +273,4 @@ kernel void peakfinder8(  global  float4 *preproc4,       // both input and outp
             center1[write_pos] = local_center1[tid];        
         } //Thread is active for copying
     } // end update global memory
-    
-} // end kernel find_peaks8
+} // end kernel peakfinder8
