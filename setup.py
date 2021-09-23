@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2021"
+__date__ = "17/09/2021"
 __status__ = "stable"
 
 import io
@@ -923,10 +923,10 @@ class sdist_debian(sdist):
         self.archive_files = [debian_arch]
         print("Building debian .orig.tar.gz in %s" % self.archive_files[0])
 
-
 #################
 # PyFAI specific
 #################
+
 
 class TestData(Command):
     """
@@ -984,26 +984,22 @@ def get_project_configuration(dry_run):
     # Use installed numpy version as minimal required version
     # This is useful for wheels to advertise the numpy version they were built with
     if dry_run:
-        numpy_requested_version = ""
+        numpy_requested_version = "numpy"
     else:
         from numpy.version import version as numpy_version
-        numpy_requested_version = ">=%s" % numpy_version
+        numpy_requested_version = "numpy>=%s" % numpy_version
         logger.info("Install requires: numpy %s", numpy_requested_version)
 
     install_requires = [
-        "numpy%s" % numpy_requested_version,
-        # h5py was removed from dependencies cause it creates an issue with
-        # Debian 8. Pip is not aware that h5py is installed and pkg_resources
-        # check dependencies and in this case raise an exception
-        # FIXME we still have to investigate
-        # "h5py",
+        numpy_requested_version,
+        "h5py",
         "fabio>=0.5",
         "matplotlib",
         "scipy",
         "numexpr",
         # for the use of pkg_resources on script launcher
         "setuptools",
-        "silx>=0.10"]
+        "silx>=0.15.2"]
 
     setup_requires = [
         "setuptools",
