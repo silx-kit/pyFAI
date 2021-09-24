@@ -116,6 +116,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         else:
             self.mask = numpy.ascontiguousarray(mask, numpy.int8)
             self.send_buffer(self.mask, "mask")
+            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
 
         if self.bin_centers is None:
             raise RuntimeError("1D bin center position is mandatory")
