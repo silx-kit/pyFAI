@@ -68,7 +68,7 @@ inline float2 correct_pixel2(
     float2 value = (float2)(0.0f, 0.0f);
     float background = INFINITY;
     float uncert = 0.0f;
-    if ((gpos0>=0) && (gpos0<heigth) && (gpos0>=0) &&(gpos1<width)){
+    if ((gpos0>=0) && (gpos0<heigth) && (gpos1>=0) && (gpos1<width)){
         int gid = gpos0 * width + gpos1;
         // Read the value and calculate the background
         float radius = radius2d[gid];
