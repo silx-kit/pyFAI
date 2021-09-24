@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "31/05/2021"
+__date__ = "17/09/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -62,6 +62,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                BufferDescription("peak_position", 1, numpy.int32, mf.READ_WRITE),
                BufferDescription("peak_intensity", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("peak_position0", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("peak_position1", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("radius2d", 1, numpy.float32, mf.READ_ONLY),
                ]
     kernel_files = ["silx:opencl/doubleword.cl",
@@ -114,6 +116,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         else:
             self.mask = numpy.ascontiguousarray(mask, numpy.int8)
             self.send_buffer(self.mask, "mask")
+            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
 
         if self.bin_centers is None:
             raise RuntimeError("1D bin center position is mandatory")
