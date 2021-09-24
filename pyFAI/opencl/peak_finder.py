@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "23/09/2021"
+__date__ = "24/09/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -150,22 +150,28 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                         ("output4", self.cl_mem["output4"]),
                                                         ("peak_intensity", self.cl_mem["peak_intensity"])))
         self.cl_kernel_args["peakfinder8"] = OrderedDict((("output4", self.cl_mem["output4"]),
-                                                            ("radius2d", self.cl_mem["radius2d"]),
-                                                            ("radius1d", self.cl_mem["radius1d"]),
-                                                            ("averint", self.cl_mem["averint"]),
-                                                            ("stderr", self.cl_mem["stderr"]),
-                                                            ("radius_min", numpy.float32(0.0)),
-                                                            ("radius_max", numpy.float32(numpy.finfo(numpy.float32).max)),
-                                                            ("cutoff", numpy.float32(5.0)),
-                                                            ("noise", numpy.float32(1.0)),
-                                                            ("height",numpy.int32(2)),
-                                                            ("width", numpy.int32(2)),
-                                                            ("connected", numpy.int32(2)),
-                                                            ("counter", self.cl_mem["counter"]),
-                                                            ("peak_position", self.cl_mem["peak_position"]),
-                                                            ("peak_intensity", self.cl_mem["peak_intensity"]),
-                                                            ("peak_position0", self.cl_mem["peak_position0"]),
-                                                            ("peak_position1", self.cl_mem["peak_position1"]),))
+                                                          ("radius2d", self.cl_mem["radius2d"]),
+                                                          ("radius1d", self.cl_mem["radius1d"]),
+                                                          ("averint", self.cl_mem["averint"]),
+                                                          ("stderr", self.cl_mem["stderr"]),
+                                                          ("radius_min", numpy.float32(0.0)),
+                                                          ("radius_max", numpy.float32(numpy.finfo(numpy.float32).max)),
+                                                          ("cutoff", numpy.float32(5.0)),
+                                                          ("noise", numpy.float32(1.0)),
+                                                          ("height", numpy.int32(2)),
+                                                          ("width", numpy.int32(2)),
+                                                          ("half_patch", numpy.int32(1)),
+                                                          ("connected", numpy.int32(2)),
+                                                          ("counter", self.cl_mem["counter"]),
+                                                          ("peak_position", self.cl_mem["peak_position"]),
+                                                          ("peak_intensity", self.cl_mem["peak_intensity"]),
+                                                          ("peak_position0", self.cl_mem["peak_position0"]),
+                                                          ("peak_position1", self.cl_mem["peak_position1"]),
+                                                          ("local_highidx", None),
+                                                          ("local_integrated", None),
+                                                          ("local_center0", None),
+                                                          ("local_center1", None),
+                                                          ("local_buffer", None)))
 
     def _count(self, data, dark=None, dummy=None, delta_dummy=None,
                variance=None, dark_variance=None,
@@ -541,7 +547,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                safe=True, error_model=None,
                normalization_factor=1.0,
                cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
-               radial_range=None, connected=2):
+               radial_range=None, patch_size=3, connected=2):
         """
         Count the number of peaks by:
         * sigma_clipping within a radial bin to measure the mean and the deviation of the background
@@ -570,11 +576,13 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
-        :param connected: number of pixels above threshold in 3x3 region
+        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 
+        :param connected: number of pixels above threshold in local patch
         :return: number of pixel of high intensity found
         """
         events = []
         self.send_buffer(data, "image")
+        hw = patch_size // 2  # Half width of the patch
         wg = max(self.workgroup_size["memset_ng"])
         wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
         memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
@@ -689,7 +697,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         events.append(EventDescription("memset counter", memset2))
 
         # Prepare picking
-        kw_proj = self.cl_kernel_args["peakfinder8_4"]
+        kw_proj = self.cl_kernel_args["peakfinder8"]
         kw_proj["height"] = numpy.int32(data.shape[0])
         kw_proj["width"] = numpy.int32(data.shape[1])
         kw_proj["connected"] = numpy.int32(connected)
@@ -702,11 +710,25 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_min"] = numpy.float32(0.0)
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
-        wg = max(self.workgroup_size["peakfinder8_4"])
-        wdim_data = (self.size + wg - 1) & ~(wg - 1),
-#         print( wdim_data, (wg,))
-        peak_search = self.program.peakfinder8_4(self.queue, wdim_data, (wg,), *list(kw_proj.values()))
-        events.append(EventDescription("peakfinder8_4", peak_search))
+        wg = max(self.workgroup_size["peakfinder8"])
+        swg = math.sqrt(wg)
+        if int(swg) == swg:
+            wg0 = wg1 = swg
+        else:
+            wg /= 2
+            wg0 = wg1 = math.sqrt(wg)
+
+        wdim_data = (data.shape[0] + wg0 - 1) & ~(wg0 - 1), (data.shape[1] + wg1 - 1) & ~(wg1 - 1)
+        # allocate local memory:
+        kw_proj["local_highidx"] = pyopencl.LocalMemory(4 * wg)
+        kw_proj["local_integrated"] = pyopencl.LocalMemory(4 * wg)
+        kw_proj["local_center0"] = pyopencl.LocalMemory(4 * wg)
+        kw_proj["local_center1"] = pyopencl.LocalMemory(4 * wg)
+        kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
+        kw_proj["half_patch"] = numpy.int32(hw)
+        print(wdim_data, (wg,))
+        peak_search = self.program.peakfinder8_4(self.queue, wdim_data, (wg0, wg1), *list(kw_proj.values()))
+        events.append(EventDescription("peakfinder8", peak_search))
 
         # Return the number of peaks
         cnt = numpy.empty(1, dtype=numpy.int32)
@@ -715,7 +737,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         if self.profile:
             self.events += events
         return cnt[0]
-    
+
     def count8(self, data, dark=None, dummy=None, delta_dummy=None,
                variance=None, dark_variance=None,
                flat=None, solidangle=None, polarization=None, absorption=None,
@@ -768,6 +790,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             count = self._count8(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
                                 dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
                                 safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range, connected)
+        # Todo: retrieve position and intensities.
         return count
 
     # Name of the default "process" method

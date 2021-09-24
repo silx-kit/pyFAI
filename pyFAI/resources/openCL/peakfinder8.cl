@@ -53,7 +53,7 @@ inline int pf8_calc_buffer2(int dim0, int dim1, int hw){
  * For a pixel at position (gpos0, gpos1), calculate the I-<I> and associated uncertainty
  */  
 inline float2 correct_pixel2(
-        global  float4 *preproc4,  // both input and output, pixel wise array of (signal, variance, norm, cnt)
+  const global  float4 *preproc4,  // pixel wise array of (signal, variance, norm, cnt)
   const global  float  *radius2d,  // contains the distance to the center for each pixel
   const global  float  *radius1d,  // Radial bin postion 
   const global  float  *average1d, // average intensity in the bin
@@ -113,7 +113,7 @@ inline float2 get_shared2(local float2* buffer, int dim0, int dim1, int half_pat
 }
 
 
-kernel void peakfinder8(        global  float4 *preproc4, // both input and output, pixel wise array of (signal, variance, norm, cnt) 
+kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of (signal, variance, norm, cnt) 
                           const global  float  *radius2d, // contains the distance to the center for each pixel
                           const global  float  *radius1d, // Radial bin postion 
                           const global  float  *average1d,// average intensity in the bin
@@ -149,12 +149,6 @@ kernel void peakfinder8(        global  float4 *preproc4, // both input and outp
     // all thread in this WG share this local counter, upgraded at the end
     volatile local int local_counter[2]; //first element MUST be set to zero
     if (tid<2) local_counter[tid] = 0;
-    // those buffer should come from the caller !
-    //local int local_highidx[WORKGROUP_SIZE]; //This array does not deserve to be initialized
-    //local float local_integrated[WORKGROUP_SIZE];  //This array does not deserve to be initialized
-    //local float local_center0[WORKGROUP_SIZE];    //This array does not deserve to be initialized
-    //local float local_center1[WORKGROUP_SIZE];   //This array does not deserve to be initialized
-    //local float buffer[3*WORKGROUP_SIZE+6];     //This array does not deserve to be initialized
     
     // load data into shared memory
     float2 value;
@@ -243,7 +237,7 @@ kernel void peakfinder8(        global  float4 *preproc4, // both input and outp
             float som0=0.0f, som1=0.0f;    
             for (int i=-half_patch; i<=half_patch; i++){
                 for (int j=-half_patch; j<=half_patch; j++){
-                    value = get_shared2(buffer, tid0+i, tid1+j);
+                    value = get_shared2(buffer, tid0+i, tid1+j, half_patch);
                     if (value.s0 >= max(noise, cutoff*value.s1)){
                         active+=1;
                     }
