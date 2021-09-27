@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "24/09/2021"
+__date__ = "27/09/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -713,21 +713,26 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
         wg = max(self.workgroup_size["peakfinder8"])
-        swg = math.sqrt(wg)
-        iswg = int(swg)
-        if iswg == swg:
-            wg0 = wg1 = iswg
+        if wg>=32:
+            wg1 = 32
+            wg0 = wg//32
         else:
-            sqrt2 = math.sqrt(2.0)
-            wg1 = int(swg * sqrt2)
-            wg0 = wg // wg1
+            swg = math.sqrt(wg)
+            iswg = int(swg)
+            if iswg == swg:
+                wg0 = wg1 = iswg
+            else:
+                sqrt2 = math.sqrt(2.0)
+                wg1 = int(swg * sqrt2)
+                wg0 = wg // wg1
 
         wdim_data = (data.shape[0] + wg0 - 1) & ~(wg0 - 1), (data.shape[1] + wg1 - 1) & ~(wg1 - 1)
         # allocate local memory: we store 4 bytes but at most 1 pixel out of 4 can be a peak
-        kw_proj["local_highidx"] = pyopencl.LocalMemory(wg)
-        kw_proj["local_integrated"] = pyopencl.LocalMemory(wg)
-        kw_proj["local_center0"] = pyopencl.LocalMemory(wg)
-        kw_proj["local_center1"] = pyopencl.LocalMemory(wg)
+        buffer_size = int(math.ceil(wg * 4 / (patch_size*patch_size)))
+        kw_proj["local_highidx"] = pyopencl.LocalMemory(buffer_size)
+        kw_proj["local_integrated"] = pyopencl.LocalMemory(buffer_size)
+        kw_proj["local_center0"] = pyopencl.LocalMemory(buffer_size)
+        kw_proj["local_center1"] = pyopencl.LocalMemory(buffer_size)
         kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
         kw_proj["half_patch"] = numpy.int32(hw)
         # print(wdim_data, (wg0, wg1), hw)
