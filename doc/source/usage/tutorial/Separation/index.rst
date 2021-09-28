@@ -20,11 +20,14 @@ distribution of the background.
 Finally the sigma-clipping has been implemented
 using 1D integrators, avoiding pixel splitting and mixing together rings.
 
-The reconstitution of the Wilson plot is also presented.
+The reconstitution of the Wilson plot is also presented in another notebook.
+
+Finally an alternative implementation of the *peakfinder8* algorithm from the Cheetah software is presented.
 
 .. toctree::
    :maxdepth: 1
 
    Separate
    Wilson
+   Peakfinder8
 
