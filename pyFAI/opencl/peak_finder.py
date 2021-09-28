@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "31/05/2021"
+__date__ = "27/09/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 
 class OCL_PeakFinder(OCL_CSR_Integrator):
-    BLOCK_SIZE = 64  # unlike in OCL_CSR_Integrator, here we need larger blocks
+    BLOCK_SIZE = 1024  # unlike in OCL_CSR_Integrator, here we need larger blocks
     buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
@@ -63,12 +63,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                BufferDescription("peak_position", 1, numpy.int32, mf.READ_WRITE),
                BufferDescription("peak_intensity", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("radius2d", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("peak_position0", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("peak_position1", 1, numpy.float32, mf.WRITE_ONLY),
                ]
     kernel_files = ["silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_CSR.cl",
-                    "pyfai:openCL/peak_finder.cl"
+                    "pyfai:openCL/peak_finder.cl",
+                    "pyfai:openCL/peakfinder8.cl",
                     ]
 
     def __init__(self, lut, image_size, checksum=None,
@@ -103,10 +106,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                          BufferDescription("counter", 1, numpy.int32, mf.READ_WRITE),
                          ]
 
-        OCL_CSR_Integrator.__init__(self, lut, image_size, checksum,
-                 empty, unit, bin_centers,
-                 ctx, devicetype, platformid, deviceid,
-                 block_size, profile, extra_buffers=extra_buffers)
+        OCL_CSR_Integrator.__init__(self, lut=lut, image_size=image_size, checksum=checksum,
+                 empty=empty, unit=unit, bin_centers=bin_centers,
+                 ctx=ctx, devicetype=devicetype, platformid=platformid, deviceid=deviceid,
+                 block_size=block_size or self.BLOCK_SIZE,
+                 profile=profile, extra_buffers=extra_buffers)
 
         if mask is None:
             self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(0)
@@ -114,6 +118,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         else:
             self.mask = numpy.ascontiguousarray(mask, numpy.int8)
             self.send_buffer(self.mask, "mask")
+            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
 
         if self.bin_centers is None:
             raise RuntimeError("1D bin center position is mandatory")
@@ -146,6 +151,29 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                         ("counter", self.cl_mem["counter"]),
                                                         ("output4", self.cl_mem["output4"]),
                                                         ("peak_intensity", self.cl_mem["peak_intensity"])))
+        self.cl_kernel_args["peakfinder8"] = OrderedDict((("output4", self.cl_mem["output4"]),
+                                                          ("radius2d", self.cl_mem["radius2d"]),
+                                                          ("radius1d", self.cl_mem["radius1d"]),
+                                                          ("averint", self.cl_mem["averint"]),
+                                                          ("stderr", self.cl_mem["stderr"]),
+                                                          ("radius_min", numpy.float32(0.0)),
+                                                          ("radius_max", numpy.float32(numpy.finfo(numpy.float32).max)),
+                                                          ("cutoff", numpy.float32(5.0)),
+                                                          ("noise", numpy.float32(1.0)),
+                                                          ("height", numpy.int32(2)),
+                                                          ("width", numpy.int32(2)),
+                                                          ("half_patch", numpy.int32(1)),
+                                                          ("connected", numpy.int32(2)),
+                                                          ("counter", self.cl_mem["counter"]),
+                                                          ("peak_position", self.cl_mem["peak_position"]),
+                                                          ("peak_intensity", self.cl_mem["peak_intensity"]),
+                                                          ("peak_position0", self.cl_mem["peak_position0"]),
+                                                          ("peak_position1", self.cl_mem["peak_position1"]),
+                                                          ("local_highidx", None),
+                                                          ("local_integrated", None),
+                                                          ("local_center0", None),
+                                                          ("local_center1", None),
+                                                          ("local_buffer", None)))
 
     def _count(self, data, dark=None, dummy=None, delta_dummy=None,
                variance=None, dark_variance=None,
@@ -512,6 +540,289 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         # result.delta_dummy = delta_dummy
 
         return result
+
+    def _count8(self, data, dark=None, dummy=None, delta_dummy=None,
+               variance=None, dark_variance=None,
+               flat=None, solidangle=None, polarization=None, absorption=None,
+               dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+               polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+               safe=True, error_model=None,
+               normalization_factor=1.0,
+               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
+               radial_range=None, patch_size=3, connected=3):
+        """
+        Count the number of peaks by:
+        * sigma_clipping within a radial bin to measure the mean and the deviation of the background
+        * reconstruct the background in 2D
+        * count the number of peaks above mean + cutoff*sigma
+
+        Note: this function does not lock the OpenCL context!
+
+        :param data: 2D array with the signal
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidangle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param normalization_factor: divide raw signal by this value
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
+        :param cycle: perform at maximum this number of cycles. 5 is common.
+        :param noise: minimum meaningful signal. Fixed threshold for picking
+        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
+        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 
+        :param connected: number of pixels above threshold in local patch
+        :return: number of pixel of high intensity found
+        """
+        events = []
+        self.send_buffer(data, "image")
+        hw = patch_size // 2  # Half width of the patch
+        wg = max(self.workgroup_size["memset_ng"])
+        wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
+        memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
+        events.append(EventDescription("memset_ng", memset))
+
+        # Prepare preprocessing
+        kw_corr = self.cl_kernel_args["corrections4"]
+        if dummy is not None:
+            do_dummy = numpy.int8(1)
+            dummy = numpy.float32(dummy)
+            if delta_dummy is None:
+                delta_dummy = numpy.float32(0.0)
+            else:
+                delta_dummy = numpy.float32(abs(delta_dummy))
+        else:
+            do_dummy = numpy.int8(0)
+            dummy = numpy.float32(self.empty)
+            delta_dummy = numpy.float32(0.0)
+
+        kw_corr["do_dummy"] = do_dummy
+        kw_corr["dummy"] = dummy
+        kw_corr["delta_dummy"] = delta_dummy
+        kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
+
+        if variance is not None:
+            self.send_buffer(variance, "variance")
+        if dark_variance is not None:
+            if not dark_variance_checksum:
+                dark_variance_checksum = calc_checksum(dark_variance, safe)
+            if dark_variance_checksum != self.on_device["dark_variance"]:
+                self.send_buffer(dark_variance, "dark_variance", dark_variance_checksum)
+        else:
+            do_dark = numpy.int8(0)
+        kw_corr["do_dark"] = do_dark
+
+        if dark is not None:
+            do_dark = numpy.int8(1)
+            # TODO: what is do_checksum=False and image not on device ...
+            if not dark_checksum:
+                dark_checksum = calc_checksum(dark, safe)
+            if dark_checksum != self.on_device["dark"]:
+                self.send_buffer(dark, "dark", dark_checksum)
+        else:
+            do_dark = numpy.int8(0)
+        kw_corr["do_dark"] = do_dark
+
+        if flat is not None:
+            do_flat = numpy.int8(1)
+            if not flat_checksum:
+                flat_checksum = calc_checksum(flat, safe)
+            if self.on_device["flat"] != flat_checksum:
+                self.send_buffer(flat, "flat", flat_checksum)
+        else:
+            do_flat = numpy.int8(0)
+        kw_corr["do_flat"] = do_flat
+
+        if solidangle is not None:
+            do_solidangle = numpy.int8(1)
+            if not solidangle_checksum:
+                solidangle_checksum = calc_checksum(solidangle, safe)
+            if solidangle_checksum != self.on_device["solidangle"]:
+                self.send_buffer(solidangle, "solidangle", solidangle_checksum)
+        else:
+            do_solidangle = numpy.int8(0)
+        kw_corr["do_solidangle"] = do_solidangle
+
+        if polarization is not None:
+            do_polarization = numpy.int8(1)
+            if not polarization_checksum:
+                polarization_checksum = calc_checksum(polarization, safe)
+            if polarization_checksum != self.on_device["polarization"]:
+                self.send_buffer(polarization, "polarization", polarization_checksum)
+        else:
+            do_polarization = numpy.int8(0)
+        kw_corr["do_polarization"] = do_polarization
+
+        if absorption is not None:
+            do_absorption = numpy.int8(1)
+            if not absorption_checksum:
+                absorption_checksum = calc_checksum(absorption, safe)
+            if absorption_checksum != self.on_device["absorption"]:
+                self.send_buffer(absorption, "absorption", absorption_checksum)
+        else:
+            do_absorption = numpy.int8(0)
+        kw_corr["do_absorption"] = do_absorption
+
+        if error_model.startswith("poisson"):
+            kw_corr["poissonian"] = numpy.int8(1)
+        else:
+            kw_corr["poissonian"] = numpy.int8(0)
+        if self.mask is not None:
+            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
+        wg = max(self.workgroup_size["corrections4"])
+        wdim_data = (self.size + wg - 1) & ~(wg - 1),
+#         print(kw_corr)
+        ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
+        events.append(EventDescription("corrections", ev))
+
+        # Prepare sigma-clipping
+        kw_int = self.cl_kernel_args["csr_sigma_clip4"]
+        kw_int["cutoff"] = numpy.float32(cutoff_clip)
+        kw_int["cycle"] = numpy.int32(cycle)
+        kw_int["azimuthal"] = numpy.int8(error_model.startswith("azim"))
+
+        wg_min = min(self.workgroup_size["csr_sigma_clip4"])
+        wdim_bins = (self.bins * wg_min),
+        integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
+        events.append(EventDescription("csr_sigma_clip4", integrate))
+
+        # now perform the calc_from_1d on the device and count the number of pixels
+        memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
+        events.append(EventDescription("memset counter", memset2))
+
+        # Prepare picking
+        kw_proj = self.cl_kernel_args["peakfinder8"]
+        kw_proj["height"] = numpy.int32(data.shape[0])
+        kw_proj["width"] = numpy.int32(data.shape[1])
+        kw_proj["connected"] = numpy.int32(connected)
+        kw_proj["cutoff"] = numpy.float32(cutoff_pick)
+        kw_proj["noise"] = numpy.float32(noise)
+        if radial_range is not None:
+            kw_proj["radius_min"] = numpy.float32(min(radial_range))
+            kw_proj["radius_max"] = numpy.float32(max(radial_range) * EPS32)
+        else:
+            kw_proj["radius_min"] = numpy.float32(0.0)
+            kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
+
+        wg = max(self.workgroup_size["peakfinder8"])
+        if wg>=32:
+            wg1 = 32
+            wg0 = wg//32
+        else:
+            swg = math.sqrt(wg)
+            iswg = int(swg)
+            if iswg == swg:
+                wg0 = wg1 = iswg
+            else:
+                sqrt2 = math.sqrt(2.0)
+                wg1 = int(swg * sqrt2)
+                wg0 = wg // wg1
+
+        wdim_data = (data.shape[0] + wg0 - 1) & ~(wg0 - 1), (data.shape[1] + wg1 - 1) & ~(wg1 - 1)
+        # allocate local memory: we store 4 bytes but at most 1 pixel out of 4 can be a peak
+        buffer_size = int(math.ceil(wg * 4 / (patch_size*patch_size)))
+        kw_proj["local_highidx"] = pyopencl.LocalMemory(buffer_size)
+        kw_proj["local_integrated"] = pyopencl.LocalMemory(buffer_size)
+        kw_proj["local_center0"] = pyopencl.LocalMemory(buffer_size)
+        kw_proj["local_center1"] = pyopencl.LocalMemory(buffer_size)
+        kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
+        kw_proj["half_patch"] = numpy.int32(hw)
+        # print(wdim_data, (wg0, wg1), hw)
+        peak_search = self.program.peakfinder8(self.queue, wdim_data, (wg0, wg1), *list(kw_proj.values()))
+        events.append(EventDescription("peakfinder8", peak_search))
+        # peak_search.wait()
+
+        # Return the number of peaks
+        cnt = numpy.empty(1, dtype=numpy.int32)
+        ev = pyopencl.enqueue_copy(self.queue, cnt, self.cl_mem["counter"])
+        events.append(EventDescription("copy D->H counter", ev))
+        if self.profile:
+            self.events += events
+        return cnt[0]
+
+    def peakfinder8(self, data, dark=None, dummy=None, delta_dummy=None,
+               variance=None, dark_variance=None,
+               flat=None, solidangle=None, polarization=None, absorption=None,
+               dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+               polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+               safe=True, error_model=None,
+               normalization_factor=1.0,
+               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
+               radial_range=None, patch_size=3, connected=2):
+        """
+        Count the number of peaks by:
+        * sigma_clipping within a radial bin to measure the mean and the deviation of the background
+        * reconstruct the background in 2D
+        * count the number of peaks above mean + cutoff*sigma
+
+        :param data: 2D array with the signal
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidangle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
+        :param normalization_factor: divide raw signal by this value
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping.
+                   Values of 4-5 are quite common.
+                   The minimum value is obtained from Chauvenet criterion: sqrt(2ln(n/sqrt(2pi)))
+                   where n is the number of pixel in the bin, usally around 2 to 3.
+        :param cycle: perform at maximum this number of cycles. 5 is common.
+        :param noise: minimum meaningful signal. Fixed threshold for picking
+        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
+        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 
+        :param connected: number of pixels above threshold in 3x3 region
+        :return: number of pixel of high intensity found
+        """
+        if isinstance(error_model, str):
+            error_model = error_model.lower()
+        else:
+            if variance is None:
+                logger.warning("Nor variance not error-model is provided ...")
+            error_model = ""
+        with self.sem:
+            count = self._count8(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
+                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
+                                safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range, patch_size, connected)
+            # Todo: retrieve position and intensities.
+            index = numpy.zeros(count, dtype=numpy.int32)
+            integrated = numpy.zeros(count, dtype=numpy.float32)
+            pos0 = numpy.zeros(count, dtype=numpy.float32)
+            pos1 = numpy.zeros(count, dtype=numpy.float32)
+            idx = pyopencl.enqueue_copy(self.queue, index, self.cl_mem["peak_position"])
+            events = [EventDescription("copy D->H index", idx)]
+            idx = pyopencl.enqueue_copy(self.queue, integrated, self.cl_mem["peak_intensity"])
+            events.append(EventDescription("copy D->H intensity", idx))
+            idx = pyopencl.enqueue_copy(self.queue, pos0, self.cl_mem["peak_position0"])
+            events.append(EventDescription("copy D->H position0", idx))
+            idx = pyopencl.enqueue_copy(self.queue, pos1, self.cl_mem["peak_position1"])
+            events.append(EventDescription("copy D->H position1", idx))
+            if self.profile:
+                self.events += events
+        output = numpy.empty(count, dtype=[("index", numpy.int32), ("intensity", numpy.float32),
+                                           ("pos0", numpy.float32), ("pos1", numpy.float32)])
+        output["index"] = index
+        output["intensity"] = integrated
+        output["pos0"] = pos0
+        output["pos1"] = pos1
+        return output
 
     # Name of the default "process" method
     __call__ = sparsify
