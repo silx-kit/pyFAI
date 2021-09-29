@@ -137,7 +137,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "solidangle": None,
                           "absorption": None,
                           "dark_variance": None}
-        platform = self.ctx.devices[0].platform.name.lower()
+        device = self.ctx.devices[0]
+        platform = device.platform.name.lower()
         if block_size is None:
             if self.__class__.__name__ == "OCL_CSR_Integrator":
                 #use a small workgroup size, typically the size of a SIMD for simple integration
@@ -150,9 +151,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 else:
                     block_size = self.BLOCK_SIZE
             else:
-                #use as large workgroup size as possible, limited by the amount of shared memory
-                device = ctx.devices[0]
-                block_size = 1<<int(math.floor(math.log((device.local_mem_size - 40)/32, 2))) 
+                #use as large workgroup size as possible, limited by the amount of shared memory. 
+                # one float8, i.e. 32 bytes per thread of storage is needed 
+                block_size = 1<<int(math.floor(math.log((device.local_mem_size - 40)/32.0, 2.0))) 
             self.force_workgroup_size = False
         else:
             block_size = int(block_size)
