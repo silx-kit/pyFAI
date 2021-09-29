@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "27/09/2021"
+__date__ = "29/09/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -109,7 +109,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         OCL_CSR_Integrator.__init__(self, lut=lut, image_size=image_size, checksum=checksum,
                  empty=empty, unit=unit, bin_centers=bin_centers,
                  ctx=ctx, devicetype=devicetype, platformid=platformid, deviceid=deviceid,
-                 block_size=block_size or self.BLOCK_SIZE,
+                 block_size=block_size,
                  profile=profile, extra_buffers=extra_buffers)
 
         if mask is None:

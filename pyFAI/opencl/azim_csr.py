@@ -28,13 +28,14 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "02/09/2021"
+__date__ = "29/09/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
+import math
 from . import pyopencl
 from ..utils import calc_checksum
 if pyopencl:
@@ -138,14 +139,20 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "dark_variance": None}
         platform = self.ctx.devices[0].platform.name.lower()
         if block_size is None:
-            if "nvidia" in  platform:
-                block_size = 32
-            elif "amd" in  platform:
-                block_size = 64
-            elif "intel" in  platform:
-                block_size = 128
+            if self.__class__.__name__ == "OCL_CSR_Integrator":
+                #use a small workgroup size, typically the size of a SIMD for simple integration
+                if "nvidia" in  platform:
+                    block_size = 32
+                elif "amd" in  platform:
+                    block_size = 64
+                elif "intel" in  platform:
+                    block_size = 128
+                else:
+                    block_size = self.BLOCK_SIZE
             else:
-                block_size = self.BLOCK_SIZE
+                #use as large workgroup size as possible, limited by the amount of shared memory
+                device = ctx.devices[0]
+                block_size = 1<<int(math.floor(math.log((device.local_mem_size - 40)/32, 2))) 
             self.force_workgroup_size = False
         else:
             block_size = int(block_size)
