@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "27/09/2021"
+__date__ = "29/09/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -109,7 +109,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         OCL_CSR_Integrator.__init__(self, lut=lut, image_size=image_size, checksum=checksum,
                  empty=empty, unit=unit, bin_centers=bin_centers,
                  ctx=ctx, devicetype=devicetype, platformid=platformid, deviceid=deviceid,
-                 block_size=block_size or self.BLOCK_SIZE,
+                 block_size=block_size,
                  profile=profile, extra_buffers=extra_buffers)
 
         if mask is None:
@@ -133,6 +133,27 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 msk = numpy.where(self.mask)
                 self.radius2d[msk] = numpy.nan
             self.send_buffer(self.radius2d, "radius2d")
+
+    def guess_workgroup_size(self, block_size=None):
+        """Determines the optimal workgroup size.
+        
+        For peak finding, the larger, the better.
+        this is limited by the amount of shared memory available on the device.
+        
+        :param block_size: Input workgroup size (block is the cuda name)
+        :return: the optimal workgoup size   
+        """
+        if block_size is None:
+            # one float8, i.e. 32 bytes per thread of storage is needed
+            device = self.ctx.devices[0]
+            # platform = device.platform.name.lower()
+            block_size = 1<<int(math.floor(math.log((device.local_mem_size - 40)/32.0, 2.0)))
+            self.force_workgroup_size = False
+        else:
+            self.force_workgroup_size = True
+            block_size = int(block_size)
+        return block_size
+
 
     def set_kernel_arguments(self):
         OCL_CSR_Integrator.set_kernel_arguments(self)
