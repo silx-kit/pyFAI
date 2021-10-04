@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2021"
+__date__ = "04/10/2021"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -1005,7 +1005,6 @@ class GoniometerRefinement(Goniometer):
                     goniometer position
         :return: Goniometer object
         """
-
         with open(filename) as f:
             dico = json.load(f)
         assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
@@ -1017,10 +1016,10 @@ class GoniometerRefinement(Goniometer):
             # May be adapted for other classes of GeometryTransformation functions
             if content in ("GeometryTranslation", "GeometryTransformation"):
                 funct = GeometryTransformation(**tansfun)
-            elif content == "ExtendedTranformation":
+            elif content == "ExtendedTransformation":
                 funct = ExtendedTransformation(**tansfun)
             else:
-                raise RuntimeError("content= %s, not in in (GeometryTranslation, GeometryTransformation, ExtendedTranformation)")
+                raise RuntimeError(f"content= {content}, not in in (GeometryTranslation, GeometryTransformation, ExtendedTranformation)")
         else:  # assume GeometryTransformation
             funct = GeometryTransformation(**tansfun)
 
