@@ -42,11 +42,11 @@ __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 cimport cython
+import os
 import numpy
 from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
 
-import multiprocessing
 
 cdef: 
     Py_ssize_t MIN_SIZE = 1024  # Minumum size of the array to go parallel.
@@ -58,11 +58,10 @@ ctypedef fused float_or_double:
     cython.double
     cython.float
 
-try:
-    import os
+try:    
     MAX_THREADS = min(MAX_THREADS, len(os.sched_getaffinity(os.getpid()))) # Limit to the actual number of threads
 except Exception:
-    MAX_THREADS = min(MAX_THREADS, multiprocessing.cpu_count())
+    MAX_THREADS = min(MAX_THREADS, os.cpu_count() or 1)
 
 
 cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
