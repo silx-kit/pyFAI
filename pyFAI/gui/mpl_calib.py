@@ -135,32 +135,35 @@ class MplCalibWidget:
         """
         if self.fig is None:
             self.init()
-        
-        s1, s2 = detector.shape
-        s1 -= 1
-        s2 -= 1
-        self.ax.set_xlim(0, s2)
-        self.ax.set_ylim(0, s1)
-        d1 = numpy.array([0, s1, s1, 0])
-        d2 = numpy.array([0, 0, s2, s2])
-        p1, p2, _ = detector.calc_cartesian_positions(d1=d1, d2=d2)
-        self.axd = self.fig.add_subplot(1, 2, 1,
-                                      xbound=False,
-                                      ybound=False,
-                                      xlabel=r'dim2 ($\approx m$)',
-                                      ylabel=r'dim1 ($\approx m$)',
-                                      xlim=(p2.min(), p2.max()),
-                                      ylim=(p1.min(), p1.max()),
-                                      aspect='equal',
-                                      zorder=-1)
-        self.axd.xaxis.set_label_position('top')
-        self.axd.yaxis.set_label_position('right')
-        self.axd.yaxis.label.set_color('blue')
-        self.axd.xaxis.label.set_color('blue')
-        self.axd.tick_params(colors="blue", labelbottom='off', labeltop='on',
-                             labelleft='off', labelright='on')
-        if update:
-            self.update()
+        if detector is not None:
+            if detector.shape is None:
+                s1, s2 = self.shape
+            else:
+                s1, s2 = detector.shape
+            s1 -= 1
+            s2 -= 1
+            self.ax.set_xlim(0, s2)
+            self.ax.set_ylim(0, s1)
+            d1 = numpy.array([0, s1, s1, 0])
+            d2 = numpy.array([0, 0, s2, s2])
+            p1, p2, _ = detector.calc_cartesian_positions(d1=d1, d2=d2)
+            self.axd = self.fig.add_subplot(1, 2, 1,
+                                          xbound=False,
+                                          ybound=False,  
+                                          xlim=(p2.min(), p2.max()),
+                                          ylim=(p1.min(), p1.max()),
+                                          aspect='equal',
+                                          zorder=-1)
+            self.axd.xaxis.set_label_position('top')
+            self.axd.yaxis.set_label_position('right')
+            self.axd.yaxis.label.set_color('blue')
+            self.axd.xaxis.label.set_color('blue')
+            self.axd.tick_params(colors="blue", labelbottom='off', labeltop='on',
+                                 labelleft='off', labelright='on')
+            self.axd.set_xlabel(r'dim2 ($\approx m$)')
+            self.axd.set_ylabel(r'dim1 ($\approx m$)')
+            if update:
+                self.update()
     
     def imshow(self, img, bounds=None, log=False, update=True):
         """Display a 2Dscattering image
@@ -197,9 +200,9 @@ class MplCalibWidget:
         self.foreground = self.ax.imshow(img, norm=norm,
                                          origin="lower", 
                                          interpolation="nearest", alpha=1)
-        pyplot.colorbar(self.background, cax=self.axc, label=txt)
-        # self.axc.yaxis.set_label_position('left')
-        # self.axc.set_ylabel("Colorbar")
+        pyplot.colorbar(self.background, cax=self.axc)#, label=txt)
+        self.axc.yaxis.set_label_position('left')
+        self.axc.set_ylabel(txt)
         s1 -= 1
         s2 -= 1
         self.ax.set_xlim(0, s2)

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -37,10 +37,8 @@ __date__ = "15/10/2021"
 __status__ = "production"
 
 import os
-import sys
 import threading
 import logging
-import gc
 import operator
 import numpy
 import fabio
@@ -54,8 +52,7 @@ except ImportError:
     qt = None
 
 if qt is not None:
-    from .utils import update_fig, maximize_fig
-    from .matplotlib import matplotlib, pyplot, pylab
+    from .matplotlib import pylab
     from . import utils as gui_utils
 from .mpl_calib import MplCalibWidget
 from ..control_points import ControlPoints
