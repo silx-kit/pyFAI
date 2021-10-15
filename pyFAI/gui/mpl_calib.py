@@ -57,7 +57,7 @@ if qt is not None:
     from .matplotlib import matplotlib, pyplot, colors
     from . import utils as gui_utils
 
-GroupOfPoints = namedtuple("GroupOfPoints", "annotation plot")
+GroupOfPoints = namedtuple("GroupOfPoints", "annotate plot")
 
 
 class MplCalibWidget:
@@ -98,6 +98,7 @@ class MplCalibWidget:
         #This is for tracking the different types of plots  
         self.background = None
         self.overlay = None
+        self.foreground = None
         self.points = {} #key: label, value (
                 
     def init(self, pick=True, update=True):
@@ -121,8 +122,8 @@ class MplCalibWidget:
                 a.setToolTip('switch to refinement mode')
                 self.ref_action = a
                 self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
-            if update:
-                self.fig.show()
+            # if update:
+            self.fig.show()
         elif update:
             self.update()
     
@@ -182,8 +183,10 @@ class MplCalibWidget:
             if show_min<=0:
                 show_min = img[numpy.where(img>0)].min()
             norm = colors.LogNorm(show_min, show_max)
+            txt = 'Log colour scale (skipping lowest/highest per mille)'
         else:
             norm = colors.Normalize(show_min, show_max)
+            txt = 'Linear colour scale (skipping lowest/highest per mille)'
         
         self.background = self.ax.imshow(img, norm=norm,
                                          origin="lower", 
@@ -191,10 +194,12 @@ class MplCalibWidget:
         s1, s2 = self.shape = img.shape        
         mask = numpy.zeros(self.shape+(4,), "uint8")
         self.overlay = self.ax.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
-
-        pyplot.colorbar(self.background, cax=self.axc)
-        self.axc.yaxis.set_label_position('left')
-        self.axc.set_ylabel("Colorbar")
+        self.foreground = self.ax.imshow(img, norm=norm,
+                                         origin="lower", 
+                                         interpolation="nearest", alpha=1)
+        pyplot.colorbar(self.background, cax=self.axc, label=txt)
+        # self.axc.yaxis.set_label_position('left')
+        # self.axc.set_ylabel("Colorbar")
         s1 -= 1
         s2 -= 1
         self.ax.set_xlim(0, s2)
@@ -236,8 +241,7 @@ class MplCalibWidget:
             logging.warning("No diffraction image available => not showing the contour")
             return
         #clean previous contour plots:
-        while len(self.ax.collections) > 0:
-            self.ax.collections.pop()
+        self.ax.collections = []
         if data is not None:
             try:
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
@@ -282,7 +286,7 @@ class MplCalibWidget:
         """
         if self.fig:
             if len(points):
-                pt0y, pt0x = points.points[0]
+                pt0y, pt0x = points[0]
                 annotate = self.ax.annotate(label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
                                                     weight="bold", size="large", color="black",
                                                     arrowprops=dict(facecolor='white', edgecolor='white'))
@@ -354,9 +358,11 @@ class MplCalibWidget:
         if self.fig:
             update_fig(self.fig)
             
-    def maximize(self):
+    def maximize(self, update=True):
         if self.fig:
             maximize_fig(self.fig)
+            if update:
+                self.update()
     
     def close(self):
         if self.fig is not None:
