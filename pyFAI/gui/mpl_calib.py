@@ -43,6 +43,7 @@ __status__ = "development"
 
 import logging
 import gc
+from collections import namedtuple
 logger = logging.getLogger(__name__)
 import numpy
 try:
@@ -55,6 +56,8 @@ if qt is not None:
     from .utils import update_fig, maximize_fig
     from .matplotlib import matplotlib, pyplot, colors
     from . import utils as gui_utils
+
+GroupOfPoints = namedtuple("GroupOfPoints", "annotation plot")
 
 
 class MplCalibWidget:
@@ -95,9 +98,7 @@ class MplCalibWidget:
         #This is for tracking the different types of plots  
         self.background = None
         self.overlay = None
-        self.points = []
-        self.annotations = []
-        self.contours = []
+        self.points = {} #key: label, value (
                 
     def init(self, pick=True, update=True):
         if self.fig is None:
@@ -252,6 +253,62 @@ class MplCalibWidget:
                 logging.error("No contour-plot to display !")
         if update:
             self.update()
+
+    def reset(self, update=True):
+        """
+        Reset all control point and annotation from graph
+        
+        :param update: finally update the plot
+        """
+        if self.fig:
+            # empty annotate and plots
+            if len(self.ax.texts) > 0:
+                self.ax.texts = []
+            if len(self.ax.lines) > 0:
+                self.ax.lines = []
+            # Redraw the image
+            if update:
+                if not gui_utils.main_loop:
+                    self.fig.show()
+                self.update()
+
+    def add_grp(self, label, points, update=True):
+        """
+        Append a group of points to the graph with its annotations
+        
+        :param label: string with the label
+        :param points: list of coordinates [(y,x)]
+        :param update: finally update the plot 
+        """
+        if self.fig:
+            if len(points):
+                pt0y, pt0x = points.points[0]
+                annotate = self.ax.annotate(label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
+                                                    weight="bold", size="large", color="black",
+                                                    arrowprops=dict(facecolor='white', edgecolor='white'))
+                npl = numpy.array(points)
+                plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False, label=label)
+                self.points[label] = GroupOfPoints(annotate, plot)
+            if update:
+                self.update()
+                
+
+    def remove_grp(self, label, update=True):
+        """
+        remove a group of points
+
+        :param label: label of the group of points
+        :param update: finally update the plot 
+        """
+        if self.fig and label in self.points:
+            gpt = self.points[label]
+            if gpt.annotate in self.ax.texts:
+                self.ax.texts.remove(gpt.annotate)
+            for plot in gpt.plot:
+                    if plot in self.ax.lines:
+                        self.ax.lines.remove(plot)
+            if update:
+                self.update()
 
 
     def onclick(self, *args):
