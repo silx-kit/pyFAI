@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2021"
+__date__ = "15/10/2021"
 __status__ = "production"
 
 import os
@@ -670,8 +670,8 @@ class AbstractCalibration(object):
             if (size > 0):
                 rings += 1
                 self.peakPicker.massif_contour(mask)
-                if self.gui:
-                    update_fig(self.peakPicker.fig)
+                # if self.gui:
+                #     self.peakPicker.widget.update()
                 sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
@@ -1486,7 +1486,7 @@ decrease the value if arcs are mixed together.""", default=None)
             self.peakPicker.massif.init_valley_size()
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True, pick=True)
-            update_fig(self.peakPicker.fig)
+            # self.peakPicker.widget.update()
 
     def gui_peakPicker(self):
         if self.peakPicker is None:
@@ -1495,12 +1495,12 @@ decrease the value if arcs are mixed together.""", default=None)
         if os.path.isfile(self.pointfile):
             self.peakPicker.load(self.pointfile)
         if self.gui:
-            update_fig(self.peakPicker.fig)
+            self.peakPicker.widget.update()
 #        self.peakPicker.finish(self.pointfile, callback=self.set_data)
         self.set_data(self.peakPicker.finish(self.pointfile))
 #        input("Please press enter when you are happy with your selection" + os.linesep)
 #        while self.data is None:
-#            update_fig(self.peakPicker.fig)
+#            self.peakPicker.widget.update()
 #            time.sleep(0.1)
 
     def initgeoRef(self):
@@ -1692,7 +1692,7 @@ and a new option which lets you choose between the original `massif` algorithm a
 
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True, pick=False)
-            update_fig(self.peakPicker.fig)
+            # self.peakPicker.widget.update()
 
     def refine(self):
         """
