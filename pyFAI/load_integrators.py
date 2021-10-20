@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2021"
+__date__ = "13/09/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -92,6 +92,9 @@ else:
     IntegrationMethod(1, "full", "histogram", "cython", old_method="splitpixel",
                       class_funct_legacy=(None, splitPixel.fullSplit1D),
                       class_funct_ng=(None, splitPixel.fullSplit1D_engine))
+    IntegrationMethod(2, "full", "histogram", "cython", old_method="splitpixel",
+                      class_funct_legacy=(None, splitPixel.fullSplit2D),
+                      class_funct_ng=(None, splitPixel.fullSplit2D_engine))
     IntegrationMethod(2, "pseudo", "histogram", "cython", old_method="splitpixel",
                       class_funct_legacy=(None, splitPixel.fullSplit2D),
                       class_funct_ng=(None, splitPixel.pseudoSplit2D_engine))

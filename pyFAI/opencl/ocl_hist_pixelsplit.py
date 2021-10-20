@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 class OCL_Hist_Pixelsplit(object):
 
-    def __init__(self, pos, bins, image_size, pos0Range=None, pos1Range=None, devicetype="all",
+    def __init__(self, pos, bins, image_size, pos0_range=None, pos1_range=None, devicetype="all",
                  padded=False, block_size=32,
                  platformid=None, deviceid=None,
                  checksum=None, profile=False):
@@ -79,21 +79,21 @@ class OCL_Hist_Pixelsplit(object):
         self.size = image_size
         if self.pos_size != 8 * self.size:
             raise RuntimeError("pos.size != 8 * image_size")
-        self.pos0Range = numpy.zeros(1, pyopencl.array.vec.float2)
-        self.pos1Range = numpy.zeros(1, pyopencl.array.vec.float2)
-        if (pos0Range is not None) and (len(pos0Range) == 2):
-            self.pos0Range[0][0] = min(pos0Range)
-            self.pos0Range[0][1] = max(pos0Range)
+        self.pos0_range = numpy.zeros(1, pyopencl.array.vec.float2)
+        self.pos1_range = numpy.zeros(1, pyopencl.array.vec.float2)
+        if (pos0_range is not None) and (len(pos0_range) == 2):
+            self.pos0_range[0][0] = min(pos0_range)
+            self.pos0_range[0][1] = max(pos0_range)
         else:
-            self.pos0Range[0][0] = -float("inf")
-            self.pos0Range[0][1] = +float("inf")
+            self.pos0_range[0][0] = -float("inf")
+            self.pos0_range[0][1] = +float("inf")
 
-        if (pos1Range is not None) and (len(pos1Range) == 2):
-            self.pos1Range[0][0] = min(pos1Range)
-            self.pos1Range[0][1] = max(pos1Range)
+        if (pos1_range is not None) and (len(pos1_range) == 2):
+            self.pos1_range[0][0] = min(pos1_range)
+            self.pos1_range[0][1] = max(pos1_range)
         else:
-            self.pos1Range[0][0] = -float("inf")
-            self.pos1Range[0][1] = +float("inf")
+            self.pos1_range[0][0] = -float("inf")
+            self.pos1_range[0][1] = +float("inf")
 
         self.profile = profile
         if not checksum:
@@ -235,8 +235,8 @@ class OCL_Hist_Pixelsplit(object):
         self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"],
                                                numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"],
                                                numpy.int32(0), numpy.float32(0), numpy.float32(0)]
-        self._cl_kernel_args["integrate1"] = [self._cl_mem["pos"], self._cl_mem["image"], self._cl_mem["minmax"], numpy.int32(0), self.pos0Range[0],
-                                              self.pos1Range[0], numpy.int32(0), numpy.float32(0), self._cl_mem["outData"], self._cl_mem["outCount"]]
+        self._cl_kernel_args["integrate1"] = [self._cl_mem["pos"], self._cl_mem["image"], self._cl_mem["minmax"], numpy.int32(0), self.pos0_range[0],
+                                              self.pos1_range[0], numpy.int32(0), numpy.float32(0), self._cl_mem["outData"], self._cl_mem["outCount"]]
         self._cl_kernel_args["integrate2"] = [self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
         self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
         self._cl_kernel_args["u16_to_float"] = [self._cl_mem[i] for i in ["image_u16", "image"]]

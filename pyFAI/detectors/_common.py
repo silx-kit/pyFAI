@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2021"
+__date__ = "19/08/2021"
 __status__ = "stable"
 
 import logging
@@ -514,7 +514,12 @@ class Detector(metaclass=DetectorMeta):
         :param dico: JSON serializable dictionary
         :return: Detector instance
         """
-        return cls.factory(dico.get("detector"), dico)
+        if "detector" in dico:
+            dico = dico.copy()
+            name = dico.pop("detector")
+        else:
+            name=None
+        return cls.factory(name, dico)
 
     def setFit2D(self, **kwarg):
         """

@@ -192,7 +192,7 @@ kernel void trimmed_mean_vertical(global float *src,
               for (pos=lower*width; pos<upper*width; pos+=width)
               {
                   //Sum performed using Kahan summation
-                  sum = kahan_sum(sum, src[gid+pos]);
+                  sum = dw_plus_fp(sum, src[gid+pos]);
               }
               dst[gid] = sum.s0 / (float)(upper - lower);
           }
@@ -254,7 +254,7 @@ kernel void trimmed_mean_horizontal(global float *src,
               for (pos=lower; pos<upper; pos++)
               {
                   //Sum performed using Kahan summation
-                  sum = kahan_sum(sum, src[offset + pos]);
+                  sum = dw_plus_fp(sum, src[offset + pos]);
               }
               dst[gid] = sum.s0 / (float)(upper - lower);
           }

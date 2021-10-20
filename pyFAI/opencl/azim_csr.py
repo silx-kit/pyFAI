@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -28,13 +28,14 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "29/03/2021"
-__copyright__ = "2014-2020, ESRF, Grenoble"
+__date__ = "29/09/2021"
+__copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
+import math
 from . import pyopencl
 from ..utils import calc_checksum
 if pyopencl:
@@ -73,7 +74,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["pyfai:openCL/kahan.cl",
+    kernel_files = ["silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_CSR.cl"
@@ -108,7 +109,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
-        :param extra_buffers: List of additional buffer description  needed by derived classes 
+        :param extra_buffers: List of additional buffer description  needed by derived classes
         """
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
@@ -125,7 +126,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.unit = unit
         self.bin_centers = bin_centers
         # a few place-folders
-        self.pos0Range = self.pos1Range = self.check_mask = None
+        self.pos0_range = self.pos1_range = self.check_mask = None
 
         if not checksum:
             checksum = calc_checksum(self._data)
@@ -136,21 +137,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "solidangle": None,
                           "absorption": None,
                           "dark_variance": None}
-        platform = self.ctx.devices[0].platform.name.lower()
-        if block_size is None:
-            if "nvidia" in  platform:
-                block_size = 32
-            elif "amd" in  platform:
-                block_size = 64
-            elif "intel" in  platform:
-                block_size = 128
-            else:
-                block_size = self.BLOCK_SIZE
-            self.force_workgroup_size = False
-        else:
-            block_size = int(block_size)
-            self.force_workgroup_size = True
-
+        
+        block_size = self.guess_workgroup_size(block_size)
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
 
@@ -187,7 +175,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.send_buffer(self._data, "data")
         self.send_buffer(self._indices, "indices")
         self.send_buffer(self._indptr, "indptr")
-        if "amd" in  platform:
+        if "amd" in  self.ctx.devices[0].platform.name.lower():
             self.workgroup_size["csr_integrate4_single"] = (1, 1)  # Very bad performances on AMD GPU for diverging threads!
 
     def __copy__(self):
@@ -223,6 +211,48 @@ class OCL_CSR_Integrator(OpenclProcessing):
         memo[id(self)] = new_obj
         return new_obj
 
+    def guess_workgroup_size(self, block_size=None):
+        """Determines the optimal workgroup size.
+        
+        For azimuthal integration, especially the 2D variant, the 
+        smallest possible is the size of a warp/wavefront.
+        
+        The method can be overwritten by derived classes to select larger workgoup 
+        
+        :param block_size: Input workgroup size (block is the cuda name)
+        :return: the optimal workgoup size as integer  
+        """
+        device = self.ctx.devices[0]
+        platform = device.platform.name.lower()
+        try:
+            devtype = pyopencl.device_type.to_string(device.type).upper()
+        except ValueError:
+            # pocl does not describe itself as a CPU !
+            devtype = "CPU"
+
+        if block_size is None:
+            if "nvidia" in  platform:
+                try:
+                    block_size = device.warp_size_nv
+                except:    
+                    block_size = 32
+            elif "amd" in  platform:
+                try:
+                    block_size = device.wavefront_width_amd
+                except:
+                    block_size = 64
+            elif "intel" in  platform:
+                block_size = 128
+            elif "portable" in platform and "CPU" in devtype:
+                block_size = 8
+            else:
+                block_size = self.BLOCK_SIZE
+            self.force_workgroup_size = False
+        else:
+            self.force_workgroup_size = True
+            block_size = int(block_size)
+        return block_size
+    
     def compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
@@ -327,6 +357,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("cutoff", numpy.float32(5)),
                                                               ("cycle", numpy.int32(5)),
                                                               ("azimuthal", numpy.int8(1)),
+                                                              ("empty", numpy.float32(self.empty)),
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("stderr", self.cl_mem["stderr"]),
@@ -749,12 +780,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
                    cutoff=4.0, cycle=5,
                    out_avgint=None, out_stderr=None, out_merged=None):
         """
-        Perform a sigma-clipping iterative filter within each along each row. 
+        Perform a sigma-clipping iterative filter within each along each row.
         see the doc of scipy.stats.sigmaclip for more descriptions.
-        
+
         If the error model is "azimuthal": the variance is the variance within a bin,
         which is refined at each iteration, can be costly !
-        
+
         Else, the error is propagated according to:
 
         .. math::
@@ -782,7 +813,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
+        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param out_avgint: destination array or pyopencl array for sum of all data
         :param out_stderr: destination array or pyopencl array for sum of the number of pixels

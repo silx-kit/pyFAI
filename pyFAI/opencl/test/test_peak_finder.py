@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2021"
+__date__ = "27/09/2021"
 
 import logging
 import numpy
@@ -135,6 +135,29 @@ class TestOclPeakFinder(unittest.TestCase):
         self.assertLess(abs((dense - self.img).mean()), 1, "mean of difference is close to zero")
         self.assertLess((dense - self.img).std(), 3, "standard deviation of difference is contained")
 
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_peakfinder8(self):
+        """
+        test for peakfinder8
+        """
+        unit = "r_m"
+        msk = self.img < 0
+        engine = self.ai.setup_CSR(self.img.shape, 1000, mask=msk, split="no", unit=unit)
+        bin_centers = engine.bin_centers
+        lut = engine.lut
+        distance = self.ai._cached_array["r_center"]
+        pf = OCL_PeakFinder(lut, self.img.size, unit=unit, radius=distance, bin_centers=bin_centers, mask=msk, 
+                            block_size = 32) # leads to a 4x8 patch size
+        
+        np = pf.count(self.img, error_model="poisson")
+        res = pf.peakfinder8(self.img, error_model="poisson")
+        
+        s1 = numpy.vstack((self.ref["x"], self.ref["y"])).T
+        s2 = numpy.vstack((res["pos1"], res["pos0"])).T
+        from scipy.spatial import distance_matrix
+        dm = distance_matrix(s1, s2)
+        self.assertLess(len(res), np, "Many more peaks with default settings")
+        self.assertLess(numpy.median(dm.min(axis=1)), 1, "Most peaks are found")
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

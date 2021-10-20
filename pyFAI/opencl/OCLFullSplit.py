@@ -57,8 +57,8 @@ class OCLFullSplit1d(object):
     def __init__(self,
                  pos,
                  bins=100,
-                 pos0Range=None,
-                 pos1Range=None,
+                 pos0_range=None,
+                 pos1_range=None,
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
@@ -84,30 +84,30 @@ class OCLFullSplit1d(object):
         self.pos_size = pos.size
         self.size = self.pos_size / 8
         self.pos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
-        self.pos0Range = numpy.empty(2, dtype=numpy.float32)
-        self.pos1Range = numpy.empty(2, dtype=numpy.float32)
+        self.pos0_range = numpy.empty(2, dtype=numpy.float32)
+        self.pos1_range = numpy.empty(2, dtype=numpy.float32)
 
-        if (pos0Range is not None) and (len(pos0Range) == 2):
-            self.pos0Range[0] = min(pos0Range)  # do it on GPU?
-            self.pos0Range[1] = max(pos0Range)
-            if (not self.allow_pos0_neg) and (self.pos0Range[0] < 0):
-                self.pos0Range[0] = 0.0
-                if self.pos0Range[1] < 0:
+        if (pos0_range is not None) and (len(pos0_range) == 2):
+            self.pos0_range[0] = min(pos0_range)  # do it on GPU?
+            self.pos0_range[1] = max(pos0_range)
+            if (not self.allow_pos0_neg) and (self.pos0_range[0] < 0):
+                self.pos0_range[0] = 0.0
+                if self.pos0_range[1] < 0:
                     print("Warning: Invalid 0-dim range! Using the data derived range instead")
-                    self.pos0Range[1] = 0.0
-            # self.pos0Range[0] = pos0Range[0]
-            # self.pos0Range[1] = pos0Range[1]
+                    self.pos0_range[1] = 0.0
+            # self.pos0_range[0] = pos0_range[0]
+            # self.pos0_range[1] = pos0_range[1]
         else:
-            self.pos0Range[0] = 0.0
-            self.pos0Range[1] = 0.0
-        if (pos1Range is not None) and (len(pos1Range) == 2):
-            self.pos1Range[0] = min(pos1Range)  # do it on GPU?
-            self.pos1Range[1] = max(pos1Range)
-            # self.pos1Range[0] = pos1Range[0]
-            # self.pos1Range[1] = pos1Range[1]
+            self.pos0_range[0] = 0.0
+            self.pos0_range[1] = 0.0
+        if (pos1_range is not None) and (len(pos1_range) == 2):
+            self.pos1_range[0] = min(pos1_range)  # do it on GPU?
+            self.pos1_range[1] = max(pos1_range)
+            # self.pos1_range[0] = pos1_range[0]
+            # self.pos1_range[1] = pos1_range[1]
         else:
-            self.pos1Range[0] = 0.0
-            self.pos1Range[1] = 0.0
+            self.pos1_range[0] = 0.0
+            self.pos1_range[1] = 0.0
 
         if mask is not None:
             assert mask.size == self.size
@@ -242,7 +242,7 @@ class OCLFullSplit1d(object):
 
         ualloc = (self.pos_size * size_of_float)  # pos
         ualloc += (4 * size_of_float)  # minmax
-        ualloc += (2 * size_of_float) * 2  # pos0Range, pos1Range
+        ualloc += (2 * size_of_float) * 2  # pos0_range, pos1_range
         ualloc += (self.bins * size_of_int)  # outMax
         ualloc += (1 * size_of_int)  # lutsize
         ualloc += ((self.bins + 1) * size_of_int)  # idx_ptr
@@ -252,8 +252,8 @@ class OCLFullSplit1d(object):
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # # # allocate memory # # # # # # # #
         try:
-            # self._cl_mem["pos0Range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
-            # self._cl_mem["pos1Range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
+            # self._cl_mem["pos0_range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
+            # self._cl_mem["pos1_range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
             self._cl_mem["outMax"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * self.bins)
             self._cl_mem["lutsize"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 1)
             self._cl_mem["idx_ptr"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * (self.bins + 1))
@@ -263,13 +263,13 @@ class OCLFullSplit1d(object):
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # # # # move data # # # # # # # # # #
         # with self._sem:
-            # copy_pos0Range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos0Range"], self.pos0Range)
-            # self.events += [("copy pos0Range", copy_pos0Range)]
-            # copy_pos1Range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos1Range"], self.pos1Range)
-            # self.events += [("copy pos1Range", copy_pos1Range)]
+            # copy_pos0_range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos0_range"], self.pos0_range)
+            # self.events += [("copy pos0_range", copy_pos0_range)]
+            # copy_pos1_range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos1_range"], self.pos1_range)
+            # self.events += [("copy pos1_range", copy_pos1_range)]
         # # # # # # # # set arguments # # # # # # # # #
         self._cl_kernel_args["memset_outMax"] = [self._cl_mem["outMax"]]
-        self._cl_kernel_args["lut_1"] = [self._cl_mem["pos"], self._cl_mem["minmax"], self.pos0Range.data, self.pos1Range.data, self._cl_mem["outMax"]]
+        self._cl_kernel_args["lut_1"] = [self._cl_mem["pos"], self._cl_mem["minmax"], self.pos0_range.data, self.pos1_range.data, self._cl_mem["outMax"]]
         self._cl_kernel_args["lut_2"] = [self._cl_mem["outMax"], self._cl_mem["idx_ptr"], self._cl_mem["lutsize"]]
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # start the LUT creation  # # # # # #
@@ -303,7 +303,7 @@ class OCLFullSplit1d(object):
             raise MemoryError(error)
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # # # set arguments # # # # # # # # #
-        self._cl_kernel_args["lut_3"] = [self._cl_mem["pos"], self._cl_mem["minmax"], self.pos0Range.data, self.pos1Range.data, self._cl_mem["outMax"], self._cl_mem["idx_ptr"], self._cl_mem["indices"], self._cl_mem["data"]]
+        self._cl_kernel_args["lut_3"] = [self._cl_mem["pos"], self._cl_mem["minmax"], self.pos0_range.data, self.pos1_range.data, self._cl_mem["outMax"], self._cl_mem["idx_ptr"], self._cl_mem["indices"], self._cl_mem["data"]]
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # #   finish the LUT creation   # # # # #
         with self._sem:
@@ -317,10 +317,10 @@ class OCLFullSplit1d(object):
         self._cl_mem.pop("pos")
         self._cl_mem["minmax"].release()
         self._cl_mem.pop("minmax")
-        # self._cl_mem["pos0Range"].release()
-        # self._cl_mem.pop("pos0Range")
-        # self._cl_mem["pos1Range"].release()
-        # self._cl_mem.pop("pos1Range")
+        # self._cl_mem["pos0_range"].release()
+        # self._cl_mem.pop("pos0_range")
+        # self._cl_mem["pos1_range"].release()
+        # self._cl_mem.pop("pos1_range")
         self._cl_mem["outMax"].release()
         self._cl_mem.pop("outMax")
         self._cl_mem["lutsize"].release()

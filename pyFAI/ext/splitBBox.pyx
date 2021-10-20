@@ -51,8 +51,8 @@ def histoBBox1d(weights,
                 pos1=None,
                 delta_pos1=None,
                 size_t bins=100,
-                pos0Range=None,
-                pos1Range=None,
+                pos0_range=None,
+                pos1_range=None,
                 dummy=None,
                 delta_dummy=None,
                 mask=None,
@@ -75,8 +75,8 @@ def histoBBox1d(weights,
     :param pos1: 1D array with pos1: chi
     :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
     :param bins: number of output bins
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels & value of "no good" pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -168,21 +168,21 @@ def histoBBox1d(weights,
             if min0 < pos0_min:
                 pos0_min = min0
 
-    if pos0Range is not None:
-        pos0_min, pos0_maxin = pos0Range
+    if pos0_range is not None:
+        pos0_min, pos0_maxin = pos0_range
     else:
         pos0_maxin = pos0_max
     if pos0_min < 0:
         pos0_min = 0
     pos0_max = calc_upper_bound(pos0_maxin)
 
-    if pos1Range is not None:
+    if pos1_range is not None:
         assert pos1.size == size, "pos1.size == size"
         assert delta_pos1.size == size, "delta_pos1.size == size"
         check_pos1 = True
         cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
-        pos1_min, pos1_maxin = pos1Range
+        pos1_min, pos1_maxin = pos1_range
         pos1_max = calc_upper_bound(pos1_maxin)
 
     delta = (pos0_max - pos0_min) / (<position_t> (bins))
@@ -264,8 +264,8 @@ def histoBBox1d_engine(weights,
                        pos1=None,
                        delta_pos1=None,
                        size_t bins=100,
-                       pos0Range=None,
-                       pos1Range=None,
+                       pos0_range=None,
+                       pos1_range=None,
                        dummy=None,
                        delta_dummy=None,
                        mask=None,
@@ -290,8 +290,8 @@ def histoBBox1d_engine(weights,
     :param pos1: 1D array with pos1: chi
     :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
     :param bins: number of output bins
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels & value of "no good" pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -394,8 +394,8 @@ def histoBBox1d_engine(weights,
             if min0 < pos0_min:
                 pos0_min = min0
             
-    if pos0Range is not None:
-        pos0_min, pos0_maxin = pos0Range
+    if pos0_range is not None:
+        pos0_min, pos0_maxin = pos0_range
     else:
         pos0_maxin = pos0_max
 
@@ -403,13 +403,13 @@ def histoBBox1d_engine(weights,
         pos0_min = 0
     pos0_max = calc_upper_bound(pos0_maxin)
 
-    if pos1Range is not None:
+    if pos1_range is not None:
         assert pos1.size == size, "pos1.size == size"
         assert delta_pos1.size == size, "delta_pos1.size == size"
         check_pos1 = True
         cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
-        pos1_min, pos1_maxin = pos1Range
+        pos1_min, pos1_maxin = pos1_range
         pos1_max = calc_upper_bound(pos1_maxin)
 
     delta = (pos0_max - pos0_min) / (<position_t> bins)
@@ -502,8 +502,8 @@ def histoBBox2d(weights,
                 pos1,
                 delta_pos1,
                 bins=(100, 36),
-                pos0Range=None,
-                pos1Range=None,
+                pos0_range=None,
+                pos1_range=None,
                 dummy=None,
                 delta_dummy=None,
                 mask=None,
@@ -529,8 +529,8 @@ def histoBBox2d(weights,
     :param pos1: 1D array with pos1: chi
     :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
     :param bins: number of output bins (tth=100, chi=36 by default)
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels & value of "no good" pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -663,13 +663,13 @@ def histoBBox2d(weights,
             if min1 < pos1_min:
                 pos1_min = min1
 
-    if pos0Range is not None:
-        pos0_min, pos0_maxin = pos0Range
+    if pos0_range is not None:
+        pos0_min, pos0_maxin = pos0_range
     else:
         pos0_maxin = pos0_max
 
-    if pos1Range is not None:
-        pos1_min, pos1_maxin = pos1Range
+    if pos1_range is not None:
+        pos1_min, pos1_maxin = pos1_range
     else:
         pos1_maxin = pos1_max
 
@@ -820,8 +820,8 @@ def histoBBox2d_engine(weights,
                        pos1,
                        delta_pos1,
                        bins=(100, 36),
-                       pos0Range=None,
-                       pos1Range=None,
+                       pos0_range=None,
+                       pos1_range=None,
                        dummy=None,
                        delta_dummy=None,
                        mask=None,
@@ -848,8 +848,8 @@ def histoBBox2d_engine(weights,
     :param pos1: 1D array with pos1: chi
     :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
     :param bins: number of output bins (tth=100, chi=36 by default)
-    :param pos0Range: minimum and maximum  of the 2th range
-    :param pos1Range: minimum and maximum  of the chi range
+    :param pos0_range: minimum and maximum  of the 2th range
+    :param pos1_range: minimum and maximum  of the chi range
     :param dummy: value for bins without pixels & value of "no good" pixels
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
@@ -990,13 +990,13 @@ def histoBBox2d_engine(weights,
             if min1 < pos1_min:
                 pos1_min = min1
 
-    if pos0Range is not None:
-        pos0_min, pos0_maxin = pos0Range
+    if pos0_range is not None:
+        pos0_min, pos0_maxin = pos0_range
     else:
         pos0_maxin = pos0_max
 
-    if pos1Range is not None:
-        pos1_min, pos1_maxin = pos1Range
+    if pos1_range is not None:
+        pos1_min, pos1_maxin = pos1_range
     else:
         pos1_maxin = pos1_max
 

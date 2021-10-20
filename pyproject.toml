@@ -2,7 +2,7 @@
 requires = [
     "wheel",
     "setuptools",
-    "numpy",
+    "oldest-supported-numpy",
     "scipy",
     "sphinx",
     "nbsphinx",

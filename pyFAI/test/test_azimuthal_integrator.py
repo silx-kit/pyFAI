@@ -32,9 +32,8 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/06/2021"
+__date__ = "25/06/2021"
 
-import sys
 import unittest
 import os
 import numpy
@@ -45,7 +44,6 @@ import fabio
 import tempfile
 import gc
 import shutil
-from . import utilstest
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
@@ -54,7 +52,6 @@ if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
 from pyFAI import units, detector_factory
 from ..utils import mathutil
-from pyFAI.utils.decorators import depreclog
 
 
 @unittest.skipIf(UtilsTest.low_mem, "test using >500M")
@@ -603,15 +600,36 @@ class TestRange(unittest.TestCase):
 
     def test_sigma_clip_ng(self):
         self.ai.reset()
-        try:
-            res = self.ai.sigma_clip_ng(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range,
-                                        method=("no", "csr", "opencl"))
-        except RuntimeError as err:
-            logger.warning("got RuntimeError: %s", err)
-            return
 
-        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
-        self.assertLessEqual(res.radial.max(), max(self.rad_range))
+        for case in ({"error_model":"azimuthal", "max_iter":3, "thres":0},
+                     {"error_model":"poisson", "max_iter":3, "thres":6}):
+            results = {}
+            for impl in ('python', 'cython', 'opencl'):
+                try:
+                    res = self.ai.sigma_clip_ng(self.img, self.npt, unit=self.unit,
+                                                azimuth_range=self.azim_range, radial_range=self.rad_range,
+                                                method=("no", "csr", impl),
+                                                **case)
+                except RuntimeError as err:
+                    logger.warning("got RuntimeError with impl %s: %s case: %s", impl, err, case)
+                    continue
+                else:
+                    results[impl] = res
+                self.assertGreaterEqual(res.radial.min(), min(self.rad_range), msg=f"impl: {impl}, case {case}")
+                self.assertLessEqual(res.radial.max(), max(self.rad_range), msg=f"impl: {impl}, case {case}")
+            ref = results['cython']
+            for what, tol in (("radial", 1e-8),
+                              ("intensity", 1e-6),
+                              ("sigma", 1e-6),
+                              ("sum_normalization", 1e-1),
+                              ("count", 1e-1)):
+                for impl in results:
+                    obt = results[impl]
+                    # print(what, obt.__getattribute__(what).max(),
+                    # abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
+                    # abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
+                    self.assertTrue(numpy.allclose(obt.__getattribute__(what), ref.__getattribute__(what), atol=10, rtol=tol),
+                                    msg=f"Sigma clipping matches for impl {impl} on paramter {what}")
 
 
 def suite():
@@ -624,6 +642,7 @@ def suite():
     # testsuite.addTest(loader(TestAzimPilatus))
     testsuite.addTest(loader(TestSaxs))
     testsuite.addTest(loader(TestIntergrationNextGeneration))
+    testsuite.addTest(loader(TestRange))
     return testsuite
 
 

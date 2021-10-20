@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/03/2021"
+__date__ = "08/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -62,19 +62,7 @@ cdef struct Function:
     float slope
     float intersect
 
-cdef float area4(float a0, float a1, float b0, float b1, float c0, float c1, float d0, float d1) nogil:
-    """
-    Calculate the area of the ABCD quadrilataire  with corners:
-    A(a0,a1)
-    B(b0,b1)
-    C(c0,c1)
-    D(d0,d1)
-    :return: area, i.e. 1/2 * (AC ^ BD)
-    """
-    return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
-
-@cython.cdivision(True)
 cdef inline float getBin1Nr(float x0, float pos0_min, float delta, float var) nogil:
     """
     calculate the bin number for any point
@@ -114,7 +102,6 @@ cdef struct MyPoly:
     MyPoint[8] data
 
 
-@cython.cdivision(True)
 cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, float clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = clipEdge
@@ -122,7 +109,6 @@ cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, float clipEdge) n
     return intersection
 
 
-@cython.cdivision(True)
 cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, float clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = (E.i - S.i) * (clipEdge - S.j) / (E.j - S.j) + S.i
@@ -182,8 +168,8 @@ class FullSplitCSR_1d(CsrIntegrator):
     def __init__(self,
                  numpy.ndarray pos not None,
                  int bins=100,
-                 pos0Range=None,
-                 pos1Range=None,
+                 pos0_range=None,
+                 pos1_range=None,
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
@@ -192,8 +178,8 @@ class FullSplitCSR_1d(CsrIntegrator):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins, 100 by default
-        :param pos0Range: minimum and maximum  of the 2th range
-        :param pos1Range: minimum and maximum  of the chi range
+        :param pos0_range: minimum and maximum  of the 2th range
+        :param pos1_range: minimum and maximum  of the chi range
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
@@ -225,8 +211,8 @@ class FullSplitCSR_1d(CsrIntegrator):
             self.check_mask = False
             self.mask_checksum = None
         
-        self.pos0Range = pos0Range
-        self.pos1Range = pos1Range
+        self.pos0_range = pos0_range
+        self.pos1_range = pos1_range
 
         lut = self.calc_lut()
         #Call the constructor of the parent class
@@ -256,14 +242,14 @@ class FullSplitCSR_1d(CsrIntegrator):
             bint check_pos1, check_mask = False
 
         bins = self.bins
-        if self.pos0Range is not None:
-            self.pos0_min, self.pos0_maxin = self.pos0Range
+        if self.pos0_range is not None:
+            self.pos0_min, self.pos0_maxin = self.pos0_range
         else:
             self.pos0_min = self.pos[:, :, 0].min()
             self.pos0_maxin = self.pos[:, :, 0].max()
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
-        if self.pos1Range is not None:
-            self.pos1_min, self.pos1_maxin = self.pos1Range
+        if self.pos1_range is not None:
+            self.pos1_min, self.pos1_maxin = self.pos1_range
             check_pos1 = True
         else:
             self.pos1_min = self.pos[:, :, 1].min()
@@ -373,7 +359,7 @@ class FullSplitCSR_1d(CsrIntegrator):
                     DA.slope = 0.0 if A0 == D0 else (A1 - D1) / (A0 - D0)
                     DA.intersect = D1 - DA.slope * D0
 
-                    areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                    areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
 
                     areaPixel2 = integrate(A0, B0, AB)
                     areaPixel2 += integrate(B0, C0, BC)
@@ -429,8 +415,8 @@ class FullSplitCSR_2d(object):
     def __init__(self,
                  numpy.ndarray pos not None,
                  bins=(100, 36),
-                 pos0Range=None,
-                 pos1Range=None,
+                 pos0_range=None,
+                 pos1_range=None,
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
@@ -439,8 +425,8 @@ class FullSplitCSR_2d(object):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
-        :param pos0Range: minimum and maximum  of the 2th range
-        :param pos1Range: minimum and maximum  of the chi range
+        :param pos0_range: minimum and maximum  of the 2th range
+        :param pos1_range: minimum and maximum  of the chi range
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
@@ -471,8 +457,8 @@ class FullSplitCSR_2d(object):
             self.check_mask = False
             self.mask_checksum = None
         self.data = self.nnz = self.indices = self.indptr = None
-        self.pos0Range = pos0Range
-        self.pos1Range = pos1Range
+        self.pos0_range = pos0_range
+        self.pos1_range = pos1_range
 
         self.calc_lut()
         self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
@@ -508,14 +494,14 @@ class FullSplitCSR_2d(object):
             bint check_mask = False
 
         bins = self.bins
-        if self.pos0Range is not None:
-            self.pos0_min, self.pos0_maxin = self.pos0Range
+        if self.pos0_range is not None:
+            self.pos0_min, self.pos0_maxin = self.pos0_range
         else:
             self.pos0_min = self.pos[:, :, 0].min()
             self.pos0_maxin = self.pos[:, :, 0].max()
         self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
-        if self.pos1Range is not None:
-            self.pos1_min, self.pos1_maxin = self.pos1Range
+        if self.pos1_range is not None:
+            self.pos1_min, self.pos1_maxin = self.pos1_range
             self.check_pos1 = True
         else:
             self.pos1_min = self.pos[:, :, 1].min()
@@ -682,7 +668,7 @@ class FullSplitCSR_2d(object):
                         DA.slope = 0.0 if A1 == D1 else  (A0 - D0) / (A1 - D1)
                         DA.intersect = D0 - DA.slope * D1
 
-                        areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                        areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                         oneOverPixelArea = 1.0 / areaPixel
 
                         # for bin in range(bin0_min, bin0_max+1):
@@ -729,7 +715,7 @@ class FullSplitCSR_2d(object):
                     DA.slope = (A1 - D1) / (A0 - D0)
                     DA.intersect = D1 - DA.slope * D0
 
-                    areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                    areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                     oneOverPixelArea = 1.0 / areaPixel
 
                     # for bin in range(bin0_min, bin0_max+1):
@@ -770,7 +756,7 @@ class FullSplitCSR_2d(object):
                     D0 -= bin0_min
                     D1 -= bin1_min
 
-                    areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                    areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                     oneOverPixelArea = 1.0 / areaPixel
 
                     # perimeter skipped - not inside for sure

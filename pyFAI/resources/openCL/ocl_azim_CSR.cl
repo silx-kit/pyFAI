@@ -79,7 +79,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
                signal = vector[idx];
                if (isfinite(signal)) {
                    // defined in kahan.cl
-                   sum_K = kahan_sum(sum_K, coef * signal);
+                   sum_K = dw_plus_fp(sum_K, coef * signal);
                };//end if finite
        } //end if k < bin_bounds.y
      }//for j
@@ -102,7 +102,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
         active_threads /= 2; 
         if (thread_id_loc < active_threads) {
             index = thread_id_loc + active_threads;
-            super_sum[thread_id_loc] = compensated_sum(super_sum[thread_id_loc], super_sum[index]);
+            super_sum[thread_id_loc] = dw_plus_dw(super_sum[thread_id_loc], super_sum[index]);
         } //end active thread
         barrier(CLK_LOCAL_MEM_FENCE);
     } // end reduction
@@ -151,8 +151,8 @@ static inline float4 CSRxVec2(const   global  float2   *data,
                norm = data[idx].s1;
                if (isfinite(signal) && isfinite(norm)) {
                    // defined in kahan.cl
-                   sum_signal_K = kahan_sum(sum_signal_K, coef * signal);
-                   sum_norm_K = kahan_sum(sum_norm_K, coef * norm);
+                   sum_signal_K = dw_plus_fp(sum_signal_K, coef * signal);
+                   sum_norm_K = dw_plus_fp(sum_norm_K, coef * norm);
                };//end if finite
        } //end if k < bin_bounds.y
     } //for j
@@ -176,8 +176,8 @@ static inline float4 CSRxVec2(const   global  float2   *data,
         if (thread_id_loc < active_threads) {
             float4 here = super_sum[thread_id_loc];
             float4 there = super_sum[thread_id_loc + active_threads];
-            sum_signal_K = compensated_sum((float2)(here.s0, here.s1), (float2)(there.s0, there.s1));
-            sum_norm_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
+            sum_signal_K = dw_plus_dw((float2)(here.s0, here.s1), (float2)(there.s0, there.s1));
+            sum_norm_K = dw_plus_dw((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
             super_sum[thread_id_loc] = (float4) (sum_signal_K, sum_norm_K);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -214,10 +214,10 @@ static inline float8 _accumulate_poisson(float8 accum8,
         sum_norm_K = (float2)(accum8.s4, accum8.s5);
         sum_count_K = (float2)(accum8.s6, accum8.s7);
         // defined in kahan.cl
-        sum_signal_K = compensated_sum(sum_signal_K, comp_prod(coef, signal));
-        sum_variance_K = compensated_sum(sum_variance_K, comp_prod(coef * coef, variance));
-        sum_norm_K = compensated_sum(sum_norm_K, comp_prod(coef, norm));
-        sum_count_K = compensated_sum(sum_count_K, comp_prod(coef, count));
+        sum_signal_K = dw_plus_dw(sum_signal_K, fp_times_fp(coef, signal));
+        sum_variance_K = dw_plus_dw(sum_variance_K, fp_times_fp(coef * coef, variance));
+        sum_norm_K = dw_plus_dw(sum_norm_K, fp_times_fp(coef, norm));
+        sum_count_K = dw_plus_dw(sum_count_K, fp_times_fp(coef, count));
         accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
     }
     return accum8;
@@ -252,10 +252,10 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
     {
         if (accum8.s4 == 0.0f){
             // Initialize the accumulator with data from the pixel
-            accum8 = (float8)(comp_prod(coef, signal),
+            accum8 = (float8)(fp_times_fp(coef, signal),
                               (float2)(0.0f, 0.0f),
-                              comp_prod(coef, norm), 
-                              comp_prod(coef, count));
+                              fp_times_fp(coef, norm), 
+                              fp_times_fp(coef, count));
         }
         else{
             //The accumulator is already initialized
@@ -265,21 +265,21 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
             omega_A = (float2)(accum8.s4, accum8.s5);
             sum_count_K = (float2)(accum8.s6, accum8.s7);
             // defined in kahan.cl
-            omega_B = comp_prod(coef, norm);
-            sum_norm_K = compensated_sum(omega_A, omega_B);
-            sum_count_K = compensated_sum(sum_count_K, comp_prod(coef, count));
+            omega_B = fp_times_fp(coef, norm);
+            sum_norm_K = dw_plus_dw(omega_A, omega_B);
+            sum_count_K = dw_plus_dw(sum_count_K, fp_times_fp(coef, count));
 
             // XX = XX + delta²/(w*W*(w+W))
             //delta = sum_signal_K - sum_norm_K*signal/norm
-//            x = comp_prod(signal, 1.0f/norm);
-            x = comp_prod(coef, signal);
-            delta = compensated_sum(compensated_mul(omega_B, sum_signal_K), - compensated_mul(omega_A, x));               
-            delta2 = compensated_mul(delta, delta);
-            omega3 = compensated_mul(sum_norm_K, compensated_mul(omega_A, omega_B));
-            sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));
+//            x = fp_times_fp(signal, 1.0f/norm);
+            x = fp_times_fp(coef, signal);
+            delta = dw_plus_dw(dw_times_dw(omega_B, sum_signal_K), - dw_times_dw(omega_A, x));               
+            delta2 = dw_times_dw(delta, delta);
+            omega3 = dw_times_dw(sum_norm_K, dw_times_dw(omega_A, omega_B));
+            sum_variance_K = dw_plus_dw(sum_variance_K, dw_div_dw(delta2, omega3));
             
             // at the end as X_A is used in the variance XX_A
-            sum_signal_K = compensated_sum(sum_signal_K, x);
+            sum_signal_K = dw_plus_dw(sum_signal_K, x);
             accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
         }        
     }
@@ -297,13 +297,13 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
 static inline float8 _merge_poisson(float8 here,
                                     float8 there){
     float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K;
-    sum_signal_K = compensated_sum((float2)(here.s0, here.s1), 
+    sum_signal_K = dw_plus_dw((float2)(here.s0, here.s1), 
                                    (float2)(there.s0, there.s1));
-    sum_variance_K = compensated_sum((float2)(here.s2, here.s3), 
+    sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3), 
                                      (float2)(there.s2, there.s3));
-    sum_norm_K = compensated_sum((float2)(here.s4, here.s5),
+    sum_norm_K = dw_plus_dw((float2)(here.s4, here.s5),
                                  (float2)(there.s4, there.s5));
-    sum_count_K = compensated_sum((float2)(here.s6, here.s7),
+    sum_count_K = dw_plus_dw((float2)(here.s6, here.s7),
                                   (float2)(there.s6, there.s7));
     return (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
 }
@@ -332,18 +332,18 @@ static inline float8 _merge_azimuthal(float8 here,
     float2 sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K, delta, delta2, omega3, omega_A, omega_B, V_A, V_B;
     V_A = (float2)(here.s0, here.s1);
     V_B = (float2)(there.s0, there.s1);
-    sum_signal_K = compensated_sum(V_A, V_B);
-    sum_variance_K = compensated_sum((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
+    sum_signal_K = dw_plus_dw(V_A, V_B);
+    sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
     omega_A = (float2)(here.s4, here.s5);
     omega_B = (float2)(there.s4, there.s5);
-    sum_norm_K = compensated_sum(omega_A, omega_B);
-    sum_count_K = compensated_sum((float2)(here.s6, here.s7), (float2)(there.s6, there.s7));
+    sum_norm_K = dw_plus_dw(omega_A, omega_B);
+    sum_count_K = dw_plus_dw((float2)(here.s6, here.s7), (float2)(there.s6, there.s7));
     // Add the cross-ensemble part
     // If one of the sub-ensemble is empty, the cross-region term is empty as well 
-    delta = compensated_sum(compensated_mul(omega_B, V_A), - compensated_mul(omega_A, V_B));
-    delta2 = compensated_mul(delta, delta);
-    omega3 = compensated_mul(sum_norm_K, compensated_mul( omega_A,  omega_B));
-    sum_variance_K = compensated_sum(sum_variance_K, compensated_mul(delta2, compensated_inv(omega3)));          
+    delta = dw_plus_dw(dw_times_dw(omega_B, V_A), - dw_times_dw(omega_A, V_B));
+    delta2 = dw_times_dw(delta, delta);
+    omega3 = dw_times_dw(sum_norm_K, dw_times_dw( omega_A,  omega_B));
+    sum_variance_K = dw_plus_dw(sum_variance_K, dw_div_dw(delta2, omega3));          
    
     return (float8)(sum_signal_K, sum_variance_K, sum_norm_K, sum_count_K);
 }
@@ -538,8 +538,8 @@ csr_integrate(  const   global  float   *weights,
                    //Kahan summation allows single precision arithmetics with error compensation
                    //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
                    // defined in kahan.cl
-                   sum_data_K = kahan_sum(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
-                   sum_count_K = kahan_sum(sum_count_K, coef);
+                   sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
+                   sum_count_K = dw_plus_fp(sum_count_K, coef);
                };//end if dummy
        } //end if k < bin_bounds.y
     }//for j
@@ -572,8 +572,8 @@ csr_integrate(  const   global  float   *weights,
         active_threads /= 2 ;
         if (thread_id_loc < active_threads) {
             index = thread_id_loc + active_threads;
-            super_sum_data[thread_id_loc] = compensated_sum(super_sum_data[thread_id_loc], super_sum_data[index]);
-            super_sum_count[thread_id_loc] = compensated_sum(super_sum_count[thread_id_loc], super_sum_count[index]);
+            super_sum_data[thread_id_loc] = dw_plus_dw(super_sum_data[thread_id_loc], super_sum_data[index]);
+            super_sum_count[thread_id_loc] = dw_plus_dw(super_sum_count[thread_id_loc], super_sum_count[index]);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
@@ -637,8 +637,8 @@ csr_integrate_single(  const   global  float   *weights,
             //Kahan summation allows single precision arithmetics with error compensation
             //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
             // defined in kahan.cl
-            sum_data_K = kahan_sum(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
-            sum_count_K = kahan_sum(sum_count_K, coef);
+            sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
+            sum_count_K = dw_plus_fp(sum_count_K, coef);
         }//end if dummy
     }//for j
     sum_data[bin_num] = sum_data_K.s0;
@@ -772,6 +772,7 @@ csr_sigma_clip4(          global  float4  *data4,
                   const           float    cutoff,
                   const           int      cycle,
                   const           char     azimuthal,
+                  const           float    empty,
                           global  float8  *summed,
                           global  float   *averint,
                           global  float   *stdevpix,
@@ -827,9 +828,9 @@ csr_sigma_clip4(          global  float4  *data4,
         
     if (get_local_id(0) == 0) {
         summed[bin_num] = result;
-        averint[bin_num] = aver;
+        averint[bin_num] = isfinite(aver) ? aver : empty;
         //Note the standard error of the mean, SEM,  differs from std by sqrt of the normalization factor
-        stdevpix[bin_num] = std;
-        stderrmean[bin_num] = sem;
+        stdevpix[bin_num] = isfinite(std) ? std : empty;
+        stderrmean[bin_num] = isfinite(sem) ? sem : empty;
     }
 } //end kernel

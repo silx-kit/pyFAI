@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "26/03/2021"
+__date__ = "31/05/2021"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -78,7 +78,7 @@ class OCL_Histogram1d(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["pyfai:openCL/kahan.cl",
+    kernel_files = ["silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/ocl_histo.cl"
                     ]
@@ -622,7 +622,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                ]
-    kernel_files = ["pyfai:openCL/kahan.cl",
+    kernel_files = ["silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/ocl_histo.cl"
                     ]

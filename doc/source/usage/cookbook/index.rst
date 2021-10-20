@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 30/10/2020
+:Date: 20/07/2021
 :Keywords: Cookbook
 :Target: Scientists
 
@@ -16,6 +16,7 @@ Cookbooks are short tutorials which explain how to use pyFAI on a practical exam
 
    calib-gui/index
    calib-cli/calibrate
+   calibration_with_jupyter
    integration_with_the_gui
    integration_with_scripts
    integration_with_python

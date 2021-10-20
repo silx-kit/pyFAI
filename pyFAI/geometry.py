@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2021"
+__date__ = "07/09/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -754,7 +754,9 @@ class Geometry(object):
 
         res = self._cached_array[key]
         if scale and unit:
-            return res * unit.scale
+            tmp = res.copy()
+            tmp[..., 0] *= unit.scale
+            return tmp
         else:
             return res
 
@@ -834,7 +836,9 @@ class Geometry(object):
 
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
-                return ary * unit.scale
+                tmp = ary.copy()
+                tmp[..., 0] *= unit.scale 
+                return tmp
             else:
                 return ary
 
@@ -845,7 +849,9 @@ class Geometry(object):
         ary = unit.equation(x, y, z, self.wavelength)
         self._cached_array[key] = ary
         if scale and unit:
-            return ary * unit.scale
+                tmp = ary.copy()
+                tmp[..., 0] *= unit.scale 
+                return tmp
         else:
             return ary
 
@@ -876,7 +882,9 @@ class Geometry(object):
 
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
-                return ary * unit.scale
+                tmp = ary.copy()
+                tmp[..., 0] *= unit.scale 
+                return tmp
             else:
                 return ary
         center = self.center_array(shape, unit=unit, scale=False)
@@ -885,7 +893,10 @@ class Geometry(object):
         ary = delta.max(axis=-1)
         self._cached_array[space] = ary
         if scale and unit:
-            return ary * unit.scale
+            tmp = ary.copy()
+            tmp[..., 0] *= unit.scale 
+            return tmp
+
         else:
             return ary
 
@@ -1259,6 +1270,8 @@ class Geometry(object):
     def getPyFAI(self):
         """
         Export geometry setup with the geometry of PyFAI
+        
+        Deprecated, please use get/set_config which is cleaner! when it comes to detector specification
 
         :return: dict with the parameter-set of the PyFAI geometry
         """
@@ -1277,25 +1290,28 @@ class Geometry(object):
     def setPyFAI(self, **kwargs):
         """
         set the geometry from a pyFAI-like dict
+        
+        Deprecated, please use get/set_config which is cleaner! when it comes to detector specification
         """
         with self._sem:
-            if "detector" in kwargs:
-                self.detector = detectors.detector_factory(kwargs["detector"])
-            else:
-                self.detector = detectors.Detector()
             for key in ["dist", "poni1", "poni2",
                         "rot1", "rot2", "rot3",
-                        "pixel1", "pixel2", "splineFile", "wavelength"]:
+                        "wavelength"]:
                 if key in kwargs:
-                    setattr(self, key, kwargs[key])
+                    setattr(self, key, kwargs.pop(key))
+
+            if "detector" in kwargs:
+                self.detector = detectors.Detector.from_dict(kwargs)
+            else:
+                self.detector = detectors.Detector(pixel1=kwargs.get("pixel1"), 
+                                                   pixel2=kwargs.get("pixel2"), 
+                                                   splineFile=kwargs.get("splineFile"), 
+                                                   max_shape=kwargs.get("max_shape"))
             self.param = [self._dist, self._poni1, self._poni2,
                           self._rot1, self._rot2, self._rot3]
             self.chiDiscAtPi = True  # position of the discontinuity of chi in radians, pi by default
             self.reset()
-            # self._wavelength = None
             self._oversampling = None
-            if self.splineFile:
-                self.detector.set_splineFile(self.splineFile)
         return self
 
     def getFit2D(self):
