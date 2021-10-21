@@ -65,11 +65,11 @@ class TestEdfMonitor(unittest.TestCase):
 
     def test_monitor(self):
         result = header_utils._get_monitor_value_from_edf(self.image, "mon1")
-        self.assertEquals(100, result)
+        self.assertEqual(100, result)
 
     def test_monitor_in_counter(self):
         result = header_utils._get_monitor_value_from_edf(self.image, "counter/mon3")
-        self.assertEquals(13, result)
+        self.assertEqual(13, result)
 
     def test_bad_monitor(self):
         self.assertRaises(header_utils.MonitorNotFound, header_utils._get_monitor_value_from_edf, self.image, "bad")
@@ -143,7 +143,7 @@ class TestHdf5Monitor(unittest.TestCase):
             for iframe in range(image.nframes):
                 frame = image.getframe(iframe)
                 result = header_utils.get_monitor_value(frame, monitor_key)
-                self.assertEquals(1.5, result)
+                self.assertEqual(1.5, result)
 
     def test_missing_monitor(self):
         monitor_key = "/header/bar/vector"
