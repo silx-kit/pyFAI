@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2021"
+__date__ = "14/10/2021"
 __status__ = "production"
 
 import os
@@ -55,7 +55,7 @@ except ImportError:
 
 if qt is not None:
     from .utils import update_fig, maximize_fig
-    from .matplotlib import matplotlib, pyplot, pylab
+    from .matplotlib import matplotlib, pyplot
     from . import utils as gui_utils
 
 from ..control_points import ControlPoints
@@ -83,10 +83,10 @@ def preprocess_image(data, log=False, clip=0.001):
     sorted_list = data_disp.flatten()  # explicit copy
     sorted_list.sort()
     show_min = sorted_list[int(round(clip * (sorted_list.size - 1)))]
-    show_max = sorted_list[int(round((1.0-clip) * (sorted_list.size - 1)))]
+    show_max = sorted_list[int(round((1.0 - clip) * (sorted_list.size - 1)))]
     bounds = (show_min, show_max)
     return  data_disp, bounds
-    
+
 
 class PeakPicker(object):
     """
@@ -264,12 +264,12 @@ class PeakPicker(object):
         :param log: show z in log scale
         """
         if self.fig is None:
-            self.fig = pyplot.figure()
+            self.fig, self.ax = pyplot.subplots()
             self.fig.subplots_adjust(right=0.75)
             # add 3 subplots at the same position for debye-sherrer image, contour-plot and massif contour
-            self.ax = self.fig.add_subplot(111)
-            self.ct = self.fig.add_subplot(111)
-            self.msp = self.fig.add_subplot(111)
+            # # = self.fig.add_subplot(111)
+            self.ct = self.ax  # self.fig.add_subplot(111)
+            self.msp = self.ax  # self.fig.add_subplot(111)
             toolbar = self.fig.canvas.toolbar
             toolbar.addSeparator()
 
@@ -287,7 +287,7 @@ class PeakPicker(object):
                 self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
         data_disp, bounds = preprocess_image(self.data, log, 1e-3)
-        show_min, show_max = bounds 
+        show_min, show_max = bounds
         im = self.ax.imshow(data_disp, vmin=show_min, vmax=show_max,
                             origin="lower", interpolation="nearest",
                             )
@@ -295,6 +295,7 @@ class PeakPicker(object):
         self.ax.set_xlabel('x in pixels')
 
         if self.detector:
+        # if False:
             s1, s2 = self.data.shape
             s1 -= 1
             s2 -= 1
@@ -324,7 +325,7 @@ class PeakPicker(object):
             if log:
                 txt = 'Log colour scale (skipping lowest/highest per mille)'
             else:
-                txt = 'Linear colour scale (skipping lowest/highest per mille)'                
+                txt = 'Linear colour scale (skipping lowest/highest per mille)'
             _cbar = self.fig.colorbar(im, label=txt)
         # self.ax.autoscale_view(False, False, False)
         update_fig(self.fig)
@@ -623,7 +624,7 @@ class PeakPicker(object):
                 ct = self.ct
             else:
                 ct = self.ax
-            
+
             tth_max = data.max()
             tth_min = data.min()
             if self.points.calibrant:
