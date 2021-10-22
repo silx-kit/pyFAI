@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "04/10/2021"
 
 import os
 import unittest
@@ -41,7 +41,8 @@ import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 import numpy
-from ..goniometer import GeometryTranslation, Goniometer, numexpr
+from ..goniometer import GeometryTranslation, Goniometer, numexpr, \
+                         ExtendedTransformation, GoniometerRefinement
 
 
 @unittest.skipUnless(numexpr, "Numexpr package is missing")
@@ -112,6 +113,73 @@ class TestTranslation(unittest.TestCase):
         if os.path.exists(fname):
             os.unlink(fname)
 
+    def test_extended(self):
+        jsons = """
+{
+  "content": "Goniometer calibration v2",
+  "detector": "Imxpad S140",
+  "detector_config": {},
+  "wavelength": 6.888011024066681e-11,
+  "param": [
+    0.36741723973953894,
+    0.02006383261980703,
+    0.04928807714859762,
+    0.32615779536127476,
+    0.017464856972380878,
+    -0.012690222849625982,
+    17.8857568488636
+  ],
+  "param_names": [
+    "dist",
+    "poni1",
+    "poni2",
+    "rot1_offset",
+    "rot1_scale",
+    "rot2",
+    "energy"
+  ],
+  "pos_names": [
+    "pos"
+  ],
+  "trans_function": {
+    "content": "ExtendedTransformation",
+    "param_names": [
+      "dist",
+      "poni1",
+      "poni2",
+      "rot1_offset",
+      "rot1_scale",
+      "rot2",
+      "energy"
+    ],
+    "pos_names": [
+      "pos"
+    ],
+    "dist_expr": "dist",
+    "poni1_expr": "poni1",
+    "poni2_expr": "poni2",
+    "rot1_expr": "-rot1_scale * pos - rot1_offset",
+    "rot2_expr": "rot2",
+    "rot3_expr": "pi/2",
+    "wavelength_expr": "hc/energy*1e-10",
+    "constants": {
+      "pi": 3.141592653589793,
+      "hc": 12.398419843320026,
+      "q": 1.602176634e-19
+    }
+  }
+}
+        """
+        
+        fname = os.path.join(UtilsTest.tempdir, "extended.json")
+        with open(fname, "w") as of:
+            of.write(jsons)
+        gonio = Goniometer.sload(fname) 
+        assert isinstance(gonio.trans_function, ExtendedTransformation)
+        gonio = GoniometerRefinement.sload(fname) 
+        assert isinstance(gonio.trans_function, ExtendedTransformation)
+        if os.path.exists(fname):
+            os.unlink(fname)
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

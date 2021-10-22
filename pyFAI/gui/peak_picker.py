@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,14 +33,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/10/2021"
+__date__ = "15/10/2021"
 __status__ = "production"
 
 import os
-import sys
 import threading
 import logging
-import gc
 import operator
 import numpy
 import fabio
@@ -54,10 +52,9 @@ except ImportError:
     qt = None
 
 if qt is not None:
-    from .utils import update_fig, maximize_fig
-    from .matplotlib import matplotlib, pyplot
+    from .matplotlib import pylab
     from . import utils as gui_utils
-
+from .mpl_calib import MplCalibWidget
 from ..control_points import ControlPoints
 from ..calibrant import CALIBRANT_FACTORY
 from ..blob_detection import BlobDetection
@@ -86,7 +83,7 @@ def preprocess_image(data, log=False, clip=0.001):
     show_max = sorted_list[int(round((1.0 - clip) * (sorted_list.size - 1)))]
     bounds = (show_min, show_max)
     return  data_disp, bounds
-
+    
 
 class PeakPicker(object):
     """
@@ -126,13 +123,7 @@ class PeakPicker(object):
 
         self.shape = self.data.shape
         self.points = ControlPoints(pointfile, calibrant=calibrant, wavelength=wavelength)
-        self.fig = None
-        self.fig2 = None
-        self.fig2sp = None
-        self.ax = None
-        self.ct = None
-        self.msp = None
-        self.append_mode = None
+        self.widget = None
         self.spinbox = None
         self.refine_btn = None
         self.ref_action = None
@@ -232,15 +223,7 @@ class PeakPicker(object):
         points = obj.peaks_from_area(**kwargs)
         if points:
             gpt = self.points.append(points, ring)
-            if self.fig:
-                npl = numpy.array(points)
-                gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
-                pt0x = gpt.points[0][1]
-                pt0y = gpt.points[0][0]
-                gpt.annotate = self.ax.annotate(gpt.label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
-                                                weight="bold", size="large", color="black",
-                                                arrowprops=dict(facecolor='white', edgecolor='white'))
-                update_fig(self.fig)
+            self.widget.add_grp(gpt.label, points)
         return points
 
     def reset(self):
@@ -248,91 +231,25 @@ class PeakPicker(object):
         Reset control point and graph (if needed)
         """
         self.points.reset()
-        if self.fig and self.ax:
-            # empty annotate and plots
-            if len(self.ax.texts) > 0:
-                self.ax.texts = []
-            if len(self.ax.lines) > 0:
-                self.ax.lines = []
-            # Redraw the image
-            if not gui_utils.main_loop:
-                self.fig.show()
-            update_fig(self.fig)
-
+        self.widget.reset()
+        
     def gui(self, log=False, maximize=False, pick=True):
         """
         :param log: show z in log scale
         """
-        if self.fig is None:
-            self.fig, self.ax = pyplot.subplots()
-            self.fig.subplots_adjust(right=0.75)
-            # add 3 subplots at the same position for debye-sherrer image, contour-plot and massif contour
-            # # = self.fig.add_subplot(111)
-            self.ct = self.ax  # self.fig.add_subplot(111)
-            self.msp = self.ax  # self.fig.add_subplot(111)
-            toolbar = self.fig.canvas.toolbar
-            toolbar.addSeparator()
-
-            a = toolbar.addAction('Opts', self.on_option_clicked)
-            a.setToolTip('open options window')
-            if pick:
-                label = qt.QLabel("Ring #", toolbar)
-                toolbar.addWidget(label)
-                self.spinbox = qt.QSpinBox(toolbar)
-                self.spinbox.setMinimum(0)
-                self.sb_action = toolbar.addWidget(self.spinbox)
-                a = toolbar.addAction('Refine', self.on_refine_clicked)
-                a.setToolTip('switch to refinement mode')
-                self.ref_action = a
-                self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
-
-        data_disp, bounds = preprocess_image(self.data, log, 1e-3)
-        show_min, show_max = bounds
-        im = self.ax.imshow(data_disp, vmin=show_min, vmax=show_max,
-                            origin="lower", interpolation="nearest",
-                            )
-        self.ax.set_ylabel('y in pixels')
-        self.ax.set_xlabel('x in pixels')
-
+        if self.widget is None:
+            self.widget = MplCalibWidget(click_cb=self.onclick,
+                                         refine_cb=None,
+                                         option_cb=None,)
+            self.widget.init(update=False)
+        data_disp, bounds = preprocess_image(self.data, False, 1e-3)
+        self.widget.imshow(data_disp, bounds=bounds, log=log, update=False)
         if self.detector:
-        # if False:
-            s1, s2 = self.data.shape
-            s1 -= 1
-            s2 -= 1
-            self.ax.set_xlim(0, s2)
-            self.ax.set_ylim(0, s1)
-            d1 = numpy.array([0, s1, s1, 0])
-            d2 = numpy.array([0, 0, s2, s2])
-            p1, p2, _ = self.detector.calc_cartesian_positions(d1=d1, d2=d2)
-            ax = self.fig.add_subplot(1, 1, 1,
-                                      xbound=False,
-                                      ybound=False,
-                                      xlabel=r'dim2 ($\approx m$)',
-                                      ylabel=r'dim1 ($\approx m$)',
-                                      xlim=(p2.min(), p2.max()),
-                                      ylim=(p1.min(), p1.max()),
-                                      aspect='equal',
-                                      zorder=-1)
-            ax.xaxis.set_label_position('top')
-            ax.yaxis.set_label_position('right')
-            ax.yaxis.label.set_color('blue')
-            ax.xaxis.label.set_color('blue')
-            ax.tick_params(colors="blue", labelbottom='off', labeltop='on',
-                           labelleft='off', labelright='on')
-            # ax.autoscale_view(False, False, False)
-
-        else:
-            if log:
-                txt = 'Log colour scale (skipping lowest/highest per mille)'
-            else:
-                txt = 'Linear colour scale (skipping lowest/highest per mille)'
-            _cbar = self.fig.colorbar(im, label=txt)
-        # self.ax.autoscale_view(False, False, False)
-        update_fig(self.fig)
+            self.widget.set_detector(self.detector, update=False)
         if maximize:
-            maximize_fig(self.fig)
-        if not gui_utils.main_loop:
-            self.fig.show()
+            self.widget.maximize()
+        else:
+            self.widget.update()
 
     def load(self, filename):
         """
@@ -347,23 +264,17 @@ class PeakPicker(object):
         :param minIndex: ring index to start with
         :param reset: remove all point before re-displaying them
         """
-        if self.ax is not None:
+        if self.widget is not None:
             if reset:
-                self.ax.texts = []
-                self.ax.lines = []
+                self.widget.reset(False)
 
             for _lbl, gpt in self.points._groups.items():
                 idx = gpt.ring
                 if idx < minIndex:
                     continue
                 if len(gpt) > 0:
-                    pt0x = gpt.points[0][1]
-                    pt0y = gpt.points[0][0]
-                    gpt.annotate = self.ax.annotate(gpt.label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
-                                                    weight="bold", size="large", color="black",
-                                                    arrowprops=dict(facecolor='white', edgecolor='white'))
-                    npl = numpy.array(gpt.points)
-                    gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+                    self.widget.add_grp(gpt.label, gpt.points, update=False)
+            self.widget.update()
 
     def remove_grp(self, lbl):
         """
@@ -372,42 +283,14 @@ class PeakPicker(object):
         :param lbl: label of the group of points
         """
         gpt = self.points.pop(lbl=lbl)
-        if gpt and self.ax:
+        if gpt and self.widget:
             print(gpt.annotate)
-            if gpt.annotate in self.ax.texts:
-                self.ax.texts.remove(gpt.annotate)
-            for plot in gpt.plot:
-                    if plot in self.ax.lines:
-                        self.ax.lines.remove(plot)
-            update_fig(self.fig)
+            self.widget.remove_grp(gpt.label, update=True)
 
     def onclick(self, event):
         """
         Called when a mouse is clicked
         """
-
-        def annontate(x, x0=None, idx=None, gpt=None):
-            """
-            Call back method to annotate the figure while calculation are going on ...
-            :param x: coordinates
-            :param x0: coordinates of the starting point
-            :param gpt: group of point, instance of PointGroup
-            TODO
-            """
-            if x0 is None:
-                annot = self.ax.annotate(".", xy=(x[1], x[0]), weight="bold", size="large", color="black")
-            else:
-                if gpt:
-                    annot = self.ax.annotate(gpt.label, xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
-                                             weight="bold", size="large", color="black",
-                                             arrowprops=dict(facecolor='white', edgecolor='white'),)
-                    gpt.annotate = annot
-                else:
-                    annot = self.ax.annotate("%i" % (len(self.points)), xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
-                                             weight="bold", size="large", color="black",
-                                             arrowprops=dict(facecolor='white', edgecolor='white'),)
-                update_fig(self.fig)
-            return annot
 
         def common_creation(points, gpt=None):
             """
@@ -418,11 +301,8 @@ class PeakPicker(object):
             """
             if points:
                 if not gpt:
-                    gpt = self.points.append(points, ring=self.spinbox.value())
-                npl = numpy.array(points)
-                gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
-                update_fig(self.fig)
-            sys.stdout.flush()
+                    gpt = self.points.append(points, ring=self.widget.spinbox.value())
+                self.widget.add_grp(gpt.label, points)
             return gpt
 
         def new_grp(event):
@@ -458,11 +338,7 @@ class PeakPicker(object):
             if not gpt:
                 new_grp(event)
                 return
-            if gpt.plot:
-                if gpt.plot[0] in self.ax.lines:
-                    self.ax.lines.remove(gpt.plot[0])
-
-            update_fig(self.fig)
+            self.widget.remove_grp(gpt.label, update=False)
             # matplotlib coord to pixel coord, avoinding use of banker's round
             ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
             # need to annotate only if a new group:
@@ -478,14 +354,11 @@ class PeakPicker(object):
 
         def append_1_point(event):
             " * Right-click + Shift (click+v): add one point to current group"
-            gpt = self.points.get(self.spinbox.value())
+            gpt = self.points.get(self.widget.spinbox.value())
             if not gpt:
                 new_grp(event)
                 return
-            if gpt.plot:
-                if gpt.plot[0] in self.ax.lines:
-                    self.ax.lines.remove(gpt.plot[0])
-            update_fig(self.fig)
+            self.widget.remove_grp(gpt.label, update=False)            
             # matplotlib coord to pixel coord, avoinding use of banker's round
             ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
             newpeak = self.massif.nearest_peak([ypix, xpix])
@@ -498,39 +371,26 @@ class PeakPicker(object):
 
         def erase_grp(event):
             " * Center-click or (click+d):     erase current group"
-            ring = self.spinbox.value()
+            ring = self.widget.spinbox.value()
             gpt = self.points.pop(ring)
             if not gpt:
                 logger.warning("No group of points for ring %s", ring)
                 return
             # print("Remove group from ring %s label %s" % (ring, gpt.label))
-            if gpt.annotate:
-                if gpt.annotate in self.ax.texts:
-                    self.ax.texts.remove(gpt.annotate)
-            if gpt.plot:
-                if gpt.plot[0] in self.ax.lines:
-                    self.ax.lines.remove(gpt.plot[0])
+            self.widget.remove_grp(gpt.label, update=True)            
             if len(gpt) > 0:
                 logger.info("Removing group #%2s containing %i points", gpt.label, len(gpt))
             else:
                 logger.info("No groups to remove")
-            update_fig(self.fig)
-            sys.stdout.flush()
 
         def erase_1_point(event):
             " * Center-click + 1 or (click+1): erase closest point from current group"
-            ring = self.spinbox.value()
+            ring = self.widget.spinbox.value()
             gpt = self.points.get(ring)
             if not gpt:
                 logger.warning("No group of points for ring %s", ring)
                 return
-            # print("Remove 1 point from group from ring %s label %s" % (ring, gpt.label))
-            if gpt.annotate:
-                if gpt.annotate in self.ax.texts:
-                    self.ax.texts.remove(gpt.annotate)
-            if gpt.plot:
-                if gpt.plot[0] in self.ax.lines:
-                    self.ax.lines.remove(gpt.plot[0])
+            self.widget.remove_grp(gpt.label, update=True)            
             if len(gpt) > 1:
                 # delete single closest point from current group
                 # matplotlib coord to pixel coord, avoinding use of banker's round
@@ -541,17 +401,13 @@ class PeakPicker(object):
                 removedPt = gpt.points.pop(indexMin[0])
                 logger.info("x=%5.1f, y=%5.1f removed from group #%2s (%i points left)", removedPt[1], removedPt[0], gpt.label, len(gpt))
                 # annotate (new?) 1st point and add remaining points back
-                pt = (gpt.points[0][0], gpt.points[0][1])
-                gpt.annotate = annontate(pt, (pt[0] + 10, pt[1] + 10))
-                npl = numpy.array(gpt.points)
-                gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+                common_creation(gpt.points, gpt)
+                
             elif len(gpt) == 1:
                 logger.info("Removing group #%2s containing 1 point", gpt.label)
                 gpt = self.points.pop(ring)
             else:
                 logger.info("No groups to remove")
-            update_fig(self.fig)
-            sys.stdout.flush()
 
         with self._sem:
             logger.debug("Button: %i, Key modifier: %s", event.button, event.key)
@@ -591,8 +447,8 @@ class PeakPicker(object):
                 raise RuntimeError("Invalid calibrant")
             input("Please press enter when you are happy with your selection" + os.linesep)
             # need to disconnect 'button_press_event':
-            self.fig.canvas.mpl_disconnect(self.mpl_connectId)
-            self.mpl_connectId = None
+            if self.widget:
+                self.widget.on_refine_clicked()
             print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
             self.points.readRingNrFromKeyboard()
             if filename is not None:
@@ -611,20 +467,9 @@ class PeakPicker(object):
 
         :param data: 2darray with the 2theta values in radians...
         """
-        if self.fig is None:
+        if self.widget is None:
             logging.warning("No diffraction image available => not showing the contour")
         else:
-            if self.msp is not None and self.ct is not None:
-                while len(self.msp.images) > 1:
-                    self.msp.images.pop()
-                while len(self.ct.images) > 1:
-                    self.ct.images.pop()
-                while len(self.ct.collections) > 0:
-                    self.ct.collections.pop()
-                ct = self.ct
-            else:
-                ct = self.ax
-
             tth_max = data.max()
             tth_min = data.min()
             if self.points.calibrant:
@@ -634,21 +479,8 @@ class PeakPicker(object):
                     angles = None
             else:
                 angles = None
-            try:
-                xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
-                if not isinstance(cmap, matplotlib.colors.Colormap):
-                    cmap = matplotlib.cm.get_cmap(cmap)
-                ct.contour(data, levels=angles, cmap=cmap, linewidths=linewidths, linestyles=linestyles)
-                self.ax.set_xlim(xlim)
-                self.ax.set_ylim(ylim)
-                print("Visually check that the overlaid dashed curve on the Debye-Sherrer rings of the image")
-                print("Check also for correct indexing of rings")
-            except MemoryError:
-                logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
-            except ValueError:
-                logging.error("No contour-plot to display !")
-            update_fig(self.fig)
-
+            self.widget.contour(data, angles, cmap, linewidths, linestyles, update=True)
+            
     def massif_contour(self, data):
         """
         Overlays a mask over a diffraction image
@@ -656,32 +488,18 @@ class PeakPicker(object):
         :param data: mask to be overlaid
         """
 
-        if self.fig is None:
+        if self.widget is None:
             logging.error("No diffraction image available => not showing the contour")
         else:
-            tmp = 100 * numpy.logical_not(data)
-            mask = numpy.zeros((data.shape[0], data.shape[1], 4), dtype="uint8")
-
-            mask[:,:, 0] = tmp
-            mask[:,:, 1] = tmp
-            mask[:,:, 2] = tmp
-            mask[:,:, 3] = tmp
-            while len(self.msp.images) > 1:
-                self.msp.images.pop()
-            try:
-                xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
-                self.msp.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
-                self.ax.set_xlim(xlim)
-                self.ax.set_ylim(ylim)
-            except MemoryError:
-                logging.error("Sorry but your computer does NOT have enough memory to display the massif plot")
-            update_fig(self.fig)
-
+            self.widget.shadow(data)
+            
     def closeGUI(self):
-        if self.fig is not None:
-            self.fig.clear()
-            self.fig = None
-            gc.collect()
+        if self.widget is not None:
+            self.widget.close()
+
+    @property
+    def append_mode(self):
+        return self.widget.append_mode
 
     def on_plus_pts_clicked(self, *args):
         """
