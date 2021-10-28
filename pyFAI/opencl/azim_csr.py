@@ -926,14 +926,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
 
-            if wg_max == 1:
-                raise RuntimeError("csr_sigma_clip4 is not yet available in single threaded OpenCL !")
-                # integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-                # events.append(EventDescription("integrate4_single", integrate))
-            else:
-                wdim_bins = (self.bins * wg_min),
-                integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-                events.append(EventDescription("csr_sigma_clip4", integrate))
+            wdim_bins = (self.bins * wg_min),
+            integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
+            events.append(EventDescription("csr_sigma_clip4", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
