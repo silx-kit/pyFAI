@@ -418,6 +418,47 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     return super_sum[0];
 }
 
+
+/**
+ * \brief CSRxVec4_single OpenCL function for 1d azimuthal integration based on CSR matrix multiplication after normalization !
+ * Single threaded version for Apple-CPU driver
+ *
+ * The CSR matrix is represented by a set of 3 arrays (coefs, indices, indptr)
+ *
+ * @param data        float4 array in global memory storing the data as signal/variance/normalization/count.
+ * @param coefs       float  array in global memory holding the coeficient part of the LUT
+ * @param indices     integer array in global memory holding the corresponding column index of the coeficient
+ * @param indptr      Integer array in global memory holding the index of the start of the nth line
+ * @param azimuthal   set to 1 to estimate the variance from the azimuthal sector, or 0 to use a Poisson-like model        
+ * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
+ *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
+ *
+ */
+static inline float8 CSRxVec4_single(const   global  float4   *data,
+                                     const   global  float    *coefs,
+                                     const   global  int      *indices,
+                                     const   global  int      *indptr,
+                                     const           char     azimuthal)
+{
+    // each workgroup (size== 1) is assigned to 1 bin
+    int bin_num = get_global_id(0);
+    float8 accum8 = (float8)(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (int j=indptr[bin_num];j<indptr[bin_num+1];j++) {
+        float coef = (coefs == NULL)?1.0f:coefs[j];
+        int idx = indices[j];
+        float4 quatret = weights[idx];
+        if (azimuthal){
+            accum8 = _accumulate_azimuthal(accum8, quatret, coef);
+        }
+        else{
+            accum8 = _accumulate_poisson(accum8, quatret, coef);
+        }
+    }//for j
+    return accum8;
+} //end CSRxVec4_single function
+
+
 /**
  * \brief OpenCL function for sigma clipping CSR look up table. Sets count to NAN
  *
@@ -719,23 +760,9 @@ csr_integrate4_single(  const   global  float4  *weights,
                                 global  float   *averint,
                                 global  float   *stderr)
 {
-    // each workgroup of size=warp is assinged to 1 bin
+    // each workgroup of size==1 is assinged to 1 bin
     int bin_num = get_global_id(0);
-    // we use _K suffix to highlight it is float2 used for Kahan summation
-    float8 accum8 = (float8)(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-
-    for (int j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-        float coef = (coefs == NULL)?1.0f:coefs[j];
-        int idx = indices[j];
-        float4 quatret = weights[idx];
-        if (azimuthal){
-            accum8 = _accumulate_azimuthal(accum8, quatret, coef);
-        }
-        else{
-            accum8 = _accumulate_poisson(accum8, quatret, coef);
-        }
-    }//for j
-
+    float8 accum8 = CSRxVec4_single(data, coefs, indices, indptr, azimuthal);
     summed[bin_num] = accum8;
     if (accum8.s6 > 0.0f) {
         averint[bin_num] = accum8.s0 / accum8.s4;
