@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019-2020 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "28/10/2021"
 
 import logging
 import numpy
@@ -81,9 +81,9 @@ class TestOclAzimCSR(unittest.TestCase):
         cls.ai = None
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
-    def test_integrate_ng(self):
+    def integrate_ng(self, block_size=None):
         """
-        tests the 1d histogram kernel
+        tests the 1d histogram kernel, with variable workgroup size
         """
         from ..azim_csr import OCL_CSR_Integrator
         data = numpy.ones(self.ai.detector.shape)
@@ -94,14 +94,13 @@ class TestOclAzimCSR(unittest.TestCase):
         csr_method = IntegrationMethod.select_one_available(("no", "csr", "cython"),
                                                             dim=1, default=None, degradable=False)
 
-        print(method, csr_method)
         # Retrieve the CSR array
         cpu_integrate = self.ai._integrate1d_legacy(data, npt, unit=unit, method=csr_method)
         r_m = cpu_integrate[0]
         csr_engine = list(self.ai.engines.values())[0]
         csr = csr_engine.engine.lut
         ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method)
-        integrator = OCL_CSR_Integrator(csr, data.size)
+        integrator = OCL_CSR_Integrator(csr, data.size, block_size=block_size)
         solidangle = self.ai.solidAngleArray()
         res = integrator.integrate_ng(data, solidangle=solidangle)
         # for info, res contains: position intensity error signal variance normalization count
@@ -130,6 +129,20 @@ class TestOclAzimCSR(unittest.TestCase):
             ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method).sum_signal
             sig = res.signal
             self.assertLess(abs((sig - ref).sum()), 5e-5, "signal content is the same")
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_integrate_ng(self):
+        """
+        tests the 1d histogram kernel, default block size
+        """
+        self.integrate_ng(block_size=None)
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_integrate_ng_single(self):
+        """
+        tests the 1d histogram kernel, default block size
+        """
+        self.integrate_ng(block_size=1)
 
 
 def suite():
