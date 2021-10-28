@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            D. Karkoulis (dimitris.karkoulis@gmail.com)
@@ -33,7 +33,7 @@ Histogram (atomic-add) based integrator
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __date__ = "28/10/2021"
-__copyright__ = "2012, ESRF, Grenoble"
+__copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
