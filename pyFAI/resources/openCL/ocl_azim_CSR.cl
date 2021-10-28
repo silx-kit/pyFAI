@@ -447,7 +447,7 @@ static inline float8 CSRxVec4_single(const   global  float4   *data,
     for (int j=indptr[bin_num];j<indptr[bin_num+1];j++) {
         float coef = (coefs == NULL)?1.0f:coefs[j];
         int idx = indices[j];
-        float4 quatret = weights[idx];
+        float4 quatret = data[idx];
         if (azimuthal){
             accum8 = _accumulate_azimuthal(accum8, quatret, coef);
         }
@@ -762,7 +762,7 @@ csr_integrate4_single(  const   global  float4  *weights,
 {
     // each workgroup of size==1 is assinged to 1 bin
     int bin_num = get_global_id(0);
-    float8 accum8 = CSRxVec4_single(data, coefs, indices, indptr, azimuthal);
+    float8 accum8 = CSRxVec4_single(weights, coefs, indices, indptr, azimuthal);
     summed[bin_num] = accum8;
     if (accum8.s6 > 0.0f) {
         averint[bin_num] = accum8.s0 / accum8.s4;
@@ -805,6 +805,7 @@ csr_sigma_clip4(          global  float4  *data4,
                           global  float   *stdevpix,
                           global  float   *stderrmean) {
     int bin_num = get_group_id(0);
+    int wg = get_local_size(0);
     float aver, std, sem;
     int cnt, nbpix;
     volatile local float8 shared8[WORKGROUP_SIZE];
@@ -817,7 +818,9 @@ csr_sigma_clip4(          global  float4  *data4,
     
     // first calculation of azimuthal integration to initialize aver & std
     
-    float8 result = CSRxVec4(data4, coefs, indices, indptr, azimuthal, shared8);
+    float8 result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, azimuthal):
+                            CSRxVec4(data4, coefs, indices, indptr, azimuthal, shared8));
+
     if (result.s4 > 0.0f){
         aver = result.s0 / result.s4;
         std = sqrt(result.s2 / result.s4);
@@ -838,12 +841,13 @@ csr_sigma_clip4(          global  float4  *data4,
         cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, chauvenet_cutoff, counter);
         nbpix = max(3, nbpix - cnt);
         
-        result = CSRxVec4(data4, coefs, indices, indptr, azimuthal, shared8);
+        result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, azimuthal):
+                         CSRxVec4(data4, coefs, indices, indptr, azimuthal, shared8));
 
         if (result.s4 > 0.0f) {
             aver = result.s0 / result.s4;
             std = sqrt(result.s2 / result.s4);
-            sem = sqrt(result.s2) / result.s4;                
+            sem = sqrt(result.s2) / result.s4;
         }
         else {
             aver = NAN;
@@ -860,4 +864,4 @@ csr_sigma_clip4(          global  float4  *data4,
         stdevpix[bin_num] = isfinite(std) ? std : empty;
         stderrmean[bin_num] = isfinite(sem) ? sem : empty;
     }
-} //end kernel
+} //end csr_sigma_clip4 kernel
