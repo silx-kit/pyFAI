@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "25/06/2021"
+__date__ = "31/10/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -40,6 +40,7 @@ import numpy
 
 from .preproc import preproc
 from ..containers import Integrate1dtpl
+
 
 cdef class CsrIntegrator(object):
     """Abstract class which implements only the integrator...
@@ -384,17 +385,58 @@ cdef class CsrIntegrator(object):
                    double cutoff=0.0, 
                    int cycle=5,
                    ):
-        """Perform the sigma-clipping
-        
+        """Perform a sigma-clipping iterative filter within each along each row.
+        see the doc of scipy.stats.sigmaclip for more descriptions.
+
+        If the error model is "azimuthal": the variance is the variance within a bin,
+        which is refined at each iteration, can be costly !
+
+        Else, the error is propagated according to:
+
+        .. math::
+
+            signal = (raw - dark)
+            variance = variance + dark_variance
+            normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
+            count = number of pixel contributing
+
+        Integration is performed using the CSR representation of the look-up table on all
+        arrays: signal, variance, normalization and count
+
         The threshold can automaticlly be calculated from Chauvenet's: sqrt(2*log(nbpix/sqrt(2.0f*pi)))
         
-        TODO: doc
-        :return: Integrate1dtpl containing the result 
+        :param weights: input image
+        :type weights: ndarray
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param variance: the variance associate to the image
+        :type variance: ndarray
+        :param dark_variance: the variance associate to the dark
+        :type dark_variance: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param absorption: Apparent efficiency of a pixel due to parallax effect
+        :type absorption: ndarray        
+        :param safe: set to True to save some tests
+        :param error_model: set to "poissonian" to use signal as variance (minimum 1), "azimuthal" to use the variance in a ring. 
+        :param normalization_factor: divide the valid result by this value
+
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
         error_model = error_model.lower() if error_model else ""
         cdef:
-            int32_t i, j, c, idx = 0, bins = self.bins, size = self.size
+            int32_t i, j, c, bad_pix, idx = 0, bins = self.bins, size = self.size
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0
+            acc_t sig, norm, count, var
             acc_t delta, x, omega_A, omega_B, omega3, aver, std, chauvenet_cutoff, signal
             data_t empty
             acc_t[::1] sum_sig = numpy.empty(bins, dtype=acc_d)
@@ -435,31 +477,36 @@ cdef class CsrIntegrator(object):
                     if coef == 0.0:
                         continue
                     idx = self._indices[j]
-                    if isnan(preproc4[idx, 3]):
+                    sig = preproc4[idx, 0]
+                    var = preproc4[idx, 1]
+                    norm = preproc4[idx, 2]
+                    count = preproc4[idx, 3]
+                    if isnan(sig) or isnan(var) or isnan(norm) or isnan(count) or (norm == 0.0) or (count == 0.0):
                         continue
                     
                     if do_azimuthal_variance:
-                        if acc_count == 0.0:
-                            acc_sig = coef * preproc4[idx, 0]
+                        if acc_norm == 0.0:
+                            # Initialize the accumulator with data from the pixel
+                            acc_sig = coef * sig
                             #Variance remains at 0
-                            acc_norm = coef * preproc4[idx, 2] 
-                            acc_count = coef * preproc4[idx, 3]
+                            acc_norm = coef * norm
+                            acc_count = coef * count
                         else:
                             # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                             omega_A = acc_norm
-                            omega_B = coef * preproc4[idx, 2]
+                            omega_B = coef * norm
                             acc_norm = omega_A + omega_B
                             omega3 = acc_norm * omega_A * omega_B
-                            x = coef * preproc4[idx, 0]
+                            x = coef * sig
                             delta = omega_B*acc_sig - omega_A*x
                             acc_var = acc_var +  delta*delta/omega3
                             acc_sig = acc_sig + x
-                            acc_count = acc_count + coef * preproc4[idx, 3]
+                            acc_count = acc_count + coef * count
                     else:
-                        acc_sig = acc_sig + coef * preproc4[idx, 0]
-                        acc_var = acc_var + coef * coef * preproc4[idx, 1]
-                        acc_norm = acc_norm + coef * preproc4[idx, 2] 
-                        acc_count = acc_count + coef * preproc4[idx, 3]
+                        acc_sig = acc_sig + coef * sig
+                        acc_var = acc_var + coef * coef * var
+                        acc_norm = acc_norm + coef * norm 
+                        acc_count = acc_count + coef * count
                         
                 if (acc_norm > 0.0):
                     aver = acc_sig / acc_norm
@@ -475,23 +522,29 @@ cdef class CsrIntegrator(object):
                     # Sigma-clip
                     if (acc_norm == 0.0) or (acc_count == 0.0):
                         break
-                    acc_count = max(3.0, acc_count) #This is for Chauvenet's criterion
+                    #This is for Chauvenet's criterion
+                    acc_count = max(3.0, acc_count) 
                     chauvenet_cutoff = max(cutoff, sqrt(2.0*log(acc_count/sqrt(2.0*M_PI)))) * std
-                    
+                    # Discard  outliers
+                    bad_pix = 0
                     for j in range(self._indptr[i], self._indptr[i + 1]):
                         coef = self._data[j]
                         if coef == 0.0:
                             continue
                         idx = self._indices[j]
-                        
-                        acc_sig = preproc4[idx, 0]
-                        acc_var = preproc4[idx, 1]
-                        acc_norm = preproc4[idx, 2]
-                        acc_count = preproc4[idx, 3]
+                        sig = preproc4[idx, 0]
+                        var = preproc4[idx, 1]
+                        norm = preproc4[idx, 2]
+                        count = preproc4[idx, 3]
+                        if isnan(sig) or isnan(var) or isnan(norm) or isnan(count) or (norm == 0.0) or (count == 0.0):
+                            continue
                         # Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division 
-                        if (not isnan(acc_count) and (acc_norm > 0.0)):
-                            if fabs(acc_sig / acc_norm - aver) > chauvenet_cutoff:
-                                preproc4[idx, 3] = NAN;
+                        x = sig / norm
+                        if fabs(x - aver) > chauvenet_cutoff:
+                            preproc4[idx, 3] = NAN;
+                            bad_pix = bad_pix + 1
+                    if bad_pix == 0:
+                        break
                     
                     #integrate again
                     acc_sig = 0.0
@@ -503,32 +556,37 @@ cdef class CsrIntegrator(object):
                         if coef == 0.0:
                             continue
                         idx = self._indices[j]
-                        if isnan(preproc4[idx, 3]):
+                        sig = preproc4[idx, 0]
+                        var = preproc4[idx, 1]
+                        norm = preproc4[idx, 2]
+                        count = preproc4[idx, 3]
+                        if isnan(sig) or isnan(var) or isnan(norm) or isnan(count) or (norm == 0.0) or (count == 0.0):
                             continue
-                                 
+
                         if do_azimuthal_variance:
-                            if acc_count == 0.0:
-                                acc_sig = coef * preproc4[idx, 0]
+                            if acc_norm == 0.0:
+                                # Initialize the accumulator with data from the pixel
+                                acc_sig = coef * sig
                                 #Variance remains at 0
-                                acc_norm = coef * preproc4[idx, 2] 
-                                acc_count = coef * preproc4[idx, 3]
+                                acc_norm = coef * norm 
+                                acc_count = coef * count
                             else:
                                 # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                                 omega_A = acc_norm
-                                omega_B = coef * preproc4[idx, 2]
+                                omega_B = coef * norm
                                 acc_norm = omega_A + omega_B
                                 omega3 = acc_norm * omega_A * omega_B
-                                x = coef * preproc4[idx, 0]
+                                x = coef * sig
                                 delta = omega_B*acc_sig - omega_A*x
                                 acc_var = acc_var +  delta*delta/omega3
                                 acc_sig = acc_sig + x
-                                acc_count = acc_count + coef * preproc4[idx, 3]
+                                acc_count = acc_count + coef * count
                         else:
-                            acc_sig = acc_sig + coef * preproc4[idx, 0]
-                            acc_var = acc_var + coef * coef * preproc4[idx, 1]
-                            acc_norm = acc_norm + coef * preproc4[idx, 2] 
-                            acc_count = acc_count + coef * preproc4[idx, 3]
-                    if (acc_norm > 0.0):
+                            acc_sig = acc_sig + coef * sig
+                            acc_var = acc_var + coef * coef * var
+                            acc_norm = acc_norm + coef * norm 
+                            acc_count = acc_count + coef * count
+                    if (acc_norm != 0.0):
                         aver = acc_sig / acc_norm
                         std = sqrt(acc_var / acc_norm)
                         # sem = sqrt(acc_sig) / acc_norm
@@ -537,12 +595,12 @@ cdef class CsrIntegrator(object):
                         std = NAN;
                         # sem = NAN;
                     
-                #collect things ...                     
+                #collect things ...
                 sum_sig[i] = acc_sig
                 sum_var[i] = acc_var
                 sum_norm[i] = acc_norm
                 sum_count[i] = acc_count
-                if acc_count > 0.0:
+                if (acc_count > 0.0) and (acc_norm != 0.0):
                     merged[i] = acc_sig / acc_norm
                     error[i] = sqrt(acc_var) / acc_norm
                 else:

@@ -481,7 +481,6 @@ static inline int _sigma_clip4(         global  float4   *data,
                                 const   global  int      *indices,
                                 const   global  int      *indptr,
                                                 float    aver,
-                                                float    std,
                                                 float    cutoff,
                                volatile local   int      *counter){
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
@@ -498,9 +497,9 @@ static inline int _sigma_clip4(         global  float4   *data,
             idx = indices[k];
             float4 quatret = data[idx];
             // Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division 
-            if (isfinite(quatret.s3) && (quatret.s2 > 0.0f)){
+            if (isfinite(quatret.s3) && (quatret.s2 != 0.0f)){
                 float signal = quatret.s0 / quatret.s2;
-                if (fabs(signal-aver) > cutoff*std){
+                if (fabs(signal-aver) > cutoff){
                     data[idx].s3 = NAN;
                     atomic_inc(counter);
                 }       
@@ -837,8 +836,11 @@ csr_sigma_clip4(          global  float4  *data4,
         if ( ! (isfinite(aver) && isfinite(std)))
             break;
 
-        float chauvenet_cutoff = max(cutoff, sqrt(2.0f*log((float)nbpix/sqrt(2.0f*M_PI_F))));    
-        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std, chauvenet_cutoff, counter);
+        float chauvenet_cutoff = max(cutoff, sqrt(2.0f*log((float)nbpix/sqrt(2.0f*M_PI_F))));
+        cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std *chauvenet_cutoff, counter);
+        if (cnt == 0)
+            break;
+
         nbpix = max(3, nbpix - cnt);
         
         result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, azimuthal):
