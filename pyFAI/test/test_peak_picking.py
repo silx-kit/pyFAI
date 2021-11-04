@@ -116,7 +116,7 @@ class TestPeakPicking(unittest.TestCase):
                 logger.info("refinement finished after %s iteration", i)
                 break
             last = delta2
-        self.assertEquals(last < 1e-4, True, "residual error is less than 1e-4, got %s" % last)
+        self.assertEqual(last < 1e-4, True, "residual error is less than 1e-4, got %s" % last)
         self.assertAlmostEqual(gr.dist, 0.1, 2, "distance is OK, got %s, expected 0.1" % gr.dist)
         self.assertAlmostEqual(gr.poni1, 3e-2, 2, "PONI1 is OK, got %s, expected 3e-2" % gr.poni1)
         self.assertAlmostEqual(gr.poni2, 3e-2, 2, "PONI2 is OK, got %s, expected 3e-2" % gr.poni2)

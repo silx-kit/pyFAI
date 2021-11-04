@@ -32,8 +32,8 @@ Simple test of peak-pickers within pyFAI
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
-__copyright__ = "2020 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2021"
+__copyright__ = "2020-2021 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "28/10/2021"
 
 import logging
 import numpy
@@ -112,6 +112,32 @@ class TestOclPeakFinder(unittest.TestCase):
         self.assertLess((dense - self.img).std(), 3, "standard deviation of difference is contained")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_azimuthal_peak_finder_single(self):
+        """
+        test for peak picker with background calculate from an azimuthal sigma-clipping
+
+        single threaded version
+        """
+        unit = "r_m"
+        msk = self.img < 0
+        engine = self.ai.setup_CSR(self.img.shape, 128, mask=msk, split="no", unit=unit)
+        bin_centers = engine.bin_centers
+        lut = engine.lut
+        distance = self.ai._cached_array["r_center"]
+        pf = OCL_PeakFinder(lut, self.img.size, unit=unit, radius=distance, bin_centers=bin_centers, mask=msk,
+                            block_size=1)
+        res = pf(self.img, error_model="poisson", dummy=-1)
+        s1 = set((i["x"], i["y"]) for i in self.ref)
+        s2 = set(zip(res.x, res.y))
+        self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")
+        self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
+        # Test densification function
+        dense = densify(res)
+        self.assertLess(abs(dense - self.img).max(), 20, "max difference is contained")
+        self.assertLess(abs((dense - self.img).mean()), 1, "mean of difference is close to zero")
+        self.assertLess((dense - self.img).std(), 3, "standard deviation of difference is contained")
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_azimuthal_peak_finder_chauvenet(self):
         """
         test for peak picker with background calculate from an azimuthal sigma-clipping
@@ -135,6 +161,29 @@ class TestOclPeakFinder(unittest.TestCase):
         self.assertLess(abs((dense - self.img).mean()), 1, "mean of difference is close to zero")
         self.assertLess((dense - self.img).std(), 3, "standard deviation of difference is contained")
 
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_peakfinder8(self):
+        """
+        test for peakfinder8
+        """
+        unit = "r_m"
+        msk = self.img < 0
+        engine = self.ai.setup_CSR(self.img.shape, 1000, mask=msk, split="no", unit=unit)
+        bin_centers = engine.bin_centers
+        lut = engine.lut
+        distance = self.ai._cached_array["r_center"]
+        pf = OCL_PeakFinder(lut, self.img.size, unit=unit, radius=distance, bin_centers=bin_centers, mask=msk, 
+                            block_size = 32) # leads to a 4x8 patch size
+        
+        np = pf.count(self.img, error_model="poisson")
+        res = pf.peakfinder8(self.img, error_model="poisson")
+        
+        s1 = numpy.vstack((self.ref["x"], self.ref["y"])).T
+        s2 = numpy.vstack((res["pos1"], res["pos0"])).T
+        from scipy.spatial import distance_matrix
+        dm = distance_matrix(s1, s2)
+        self.assertLess(len(res), np, "Many more peaks with default settings")
+        self.assertLess(numpy.median(dm.min(axis=1)), 1, "Most peaks are found")
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

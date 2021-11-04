@@ -28,13 +28,14 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "02/09/2021"
+__date__ = "28/10/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
+import math
 from . import pyopencl
 from ..utils import calc_checksum
 if pyopencl:
@@ -136,21 +137,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "solidangle": None,
                           "absorption": None,
                           "dark_variance": None}
-        platform = self.ctx.devices[0].platform.name.lower()
-        if block_size is None:
-            if "nvidia" in  platform:
-                block_size = 32
-            elif "amd" in  platform:
-                block_size = 64
-            elif "intel" in  platform:
-                block_size = 128
-            else:
-                block_size = self.BLOCK_SIZE
-            self.force_workgroup_size = False
-        else:
-            block_size = int(block_size)
-            self.force_workgroup_size = True
-
+        
+        block_size = self.guess_workgroup_size(block_size)
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
 
@@ -187,7 +175,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.send_buffer(self._data, "data")
         self.send_buffer(self._indices, "indices")
         self.send_buffer(self._indptr, "indptr")
-        if "amd" in  platform:
+        if "amd" in  self.ctx.devices[0].platform.name.lower():
             self.workgroup_size["csr_integrate4_single"] = (1, 1)  # Very bad performances on AMD GPU for diverging threads!
 
     def __copy__(self):
@@ -223,6 +211,48 @@ class OCL_CSR_Integrator(OpenclProcessing):
         memo[id(self)] = new_obj
         return new_obj
 
+    def guess_workgroup_size(self, block_size=None):
+        """Determines the optimal workgroup size.
+        
+        For azimuthal integration, especially the 2D variant, the 
+        smallest possible is the size of a warp/wavefront.
+        
+        The method can be overwritten by derived classes to select larger workgoup 
+        
+        :param block_size: Input workgroup size (block is the cuda name)
+        :return: the optimal workgoup size as integer  
+        """
+        device = self.ctx.devices[0]
+        platform = device.platform.name.lower()
+        try:
+            devtype = pyopencl.device_type.to_string(device.type).upper()
+        except ValueError:
+            # pocl does not describe itself as a CPU !
+            devtype = "CPU"
+
+        if block_size is None:
+            if "nvidia" in  platform:
+                try:
+                    block_size = device.warp_size_nv
+                except:    
+                    block_size = 32
+            elif "amd" in  platform:
+                try:
+                    block_size = device.wavefront_width_amd
+                except:
+                    block_size = 64
+            elif "intel" in  platform:
+                block_size = 128
+            elif "portable" in platform and "CPU" in devtype:
+                block_size = 8
+            else:
+                block_size = min(device.max_work_group_size, self.BLOCK_SIZE)
+            self.force_workgroup_size = False
+        else:
+            self.force_workgroup_size = True
+            block_size = int(block_size)
+        return block_size
+    
     def compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
@@ -896,14 +926,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
 
-            if wg_max == 1:
-                raise RuntimeError("csr_sigma_clip4 is not yet available in single threaded OpenCL !")
-                # integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-                # events.append(EventDescription("integrate4_single", integrate))
-            else:
-                wdim_bins = (self.bins * wg_min),
-                integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-                events.append(EventDescription("csr_sigma_clip4", integrate))
+            wdim_bins = (self.bins * wg_min),
+            integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
+            events.append(EventDescription("csr_sigma_clip4", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)

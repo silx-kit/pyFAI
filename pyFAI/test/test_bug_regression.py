@@ -310,10 +310,10 @@ class TestBugRegression(unittest.TestCase):
             chi_pi_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1,:, 1]
             logger.debug("disc @pi corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_corner.min(), chi_pi_corner.max())
 
-            self.assertAlmostEquals(chi_pi_center.min(), chi_range[0][0], msg="chi_pi_center.min", delta=0.1)
-            self.assertAlmostEquals(chi_pi_corner.min(), chi_range[0][0], msg="chi_pi_corner.min", delta=0.1)
-            self.assertAlmostEquals(chi_pi_center.max(), chi_range[0][1], msg="chi_pi_center.max", delta=0.1)
-            self.assertAlmostEquals(chi_pi_corner.max(), chi_range[0][1], msg="chi_pi_corner.max", delta=0.1)
+            self.assertAlmostEqual(chi_pi_center.min(), chi_range[0][0], msg="chi_pi_center.min", delta=0.1)
+            self.assertAlmostEqual(chi_pi_corner.min(), chi_range[0][0], msg="chi_pi_corner.min", delta=0.1)
+            self.assertAlmostEqual(chi_pi_center.max(), chi_range[0][1], msg="chi_pi_center.max", delta=0.1)
+            self.assertAlmostEqual(chi_pi_corner.max(), chi_range[0][1], msg="chi_pi_corner.max", delta=0.1)
 
             ai.reset()
             ai.setChiDiscAtZero()
@@ -326,10 +326,10 @@ class TestBugRegression(unittest.TestCase):
 
             dmin = lambda v: v - chi_range[1][0]
             dmax = lambda v: v - chi_range[1][1]
-            self.assertAlmostEquals(dmin(chi_0_center.min()), 0, msg="chi_0_center.min", delta=0.1)
-            self.assertAlmostEquals(dmin(chi_0_corner.min()), 0, msg="chi_0_corner.min", delta=0.1)
-            self.assertAlmostEquals(dmax(chi_0_center.max()), 0, msg="chi_0_center.max", delta=0.1)
-            self.assertAlmostEquals(dmax(chi_0_corner.max()), 0, msg="chi_0_corner.max", delta=0.1)
+            self.assertAlmostEqual(dmin(chi_0_center.min()), 0, msg="chi_0_center.min", delta=0.1)
+            self.assertAlmostEqual(dmin(chi_0_corner.min()), 0, msg="chi_0_corner.min", delta=0.1)
+            self.assertAlmostEqual(dmax(chi_0_center.max()), 0, msg="chi_0_center.max", delta=0.1)
+            self.assertAlmostEqual(dmax(chi_0_corner.max()), 0, msg="chi_0_corner.max", delta=0.1)
 
     def test_bug_924(self):
         "Regression on spline calculation for single pixel coordinate"

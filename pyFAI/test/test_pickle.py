@@ -61,9 +61,9 @@ class TestPickle(unittest.TestCase):
     def test_Detector_pickle(self):
         det = self.ai.detector
         dets = dumps(det)
-        self.assert_(dets, "pickle works")
+        self.assertTrue(dets, "pickle works")
         rest = loads(dets)
-        self.assert_(rest, "unpickle works")
+        self.assertTrue(rest, "unpickle works")
         self.assertEqual(rest.shape, self.ai.detector.MAX_SHAPE)
 
         # test the binning

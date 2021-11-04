@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/03/2021"
+__date__ = "08/09/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -62,19 +62,7 @@ cdef struct Function:
     float slope
     float intersect
 
-cdef float area4(float a0, float a1, float b0, float b1, float c0, float c1, float d0, float d1) nogil:
-    """
-    Calculate the area of the ABCD quadrilataire  with corners:
-    A(a0,a1)
-    B(b0,b1)
-    C(c0,c1)
-    D(d0,d1)
-    :return: area, i.e. 1/2 * (AC ^ BD)
-    """
-    return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
-
-@cython.cdivision(True)
 cdef inline float getBin1Nr(float x0, float pos0_min, float delta, float var) nogil:
     """
     calculate the bin number for any point
@@ -114,7 +102,6 @@ cdef struct MyPoly:
     MyPoint[8] data
 
 
-@cython.cdivision(True)
 cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, float clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = clipEdge
@@ -122,7 +109,6 @@ cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, float clipEdge) n
     return intersection
 
 
-@cython.cdivision(True)
 cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, float clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = (E.i - S.i) * (clipEdge - S.j) / (E.j - S.j) + S.i
@@ -373,7 +359,7 @@ class FullSplitCSR_1d(CsrIntegrator):
                     DA.slope = 0.0 if A0 == D0 else (A1 - D1) / (A0 - D0)
                     DA.intersect = D1 - DA.slope * D0
 
-                    areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                    areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
 
                     areaPixel2 = integrate(A0, B0, AB)
                     areaPixel2 += integrate(B0, C0, BC)
@@ -682,7 +668,7 @@ class FullSplitCSR_2d(object):
                         DA.slope = 0.0 if A1 == D1 else  (A0 - D0) / (A1 - D1)
                         DA.intersect = D0 - DA.slope * D1
 
-                        areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                        areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                         oneOverPixelArea = 1.0 / areaPixel
 
                         # for bin in range(bin0_min, bin0_max+1):
@@ -729,7 +715,7 @@ class FullSplitCSR_2d(object):
                     DA.slope = (A1 - D1) / (A0 - D0)
                     DA.intersect = D1 - DA.slope * D0
 
-                    areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                    areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                     oneOverPixelArea = 1.0 / areaPixel
 
                     # for bin in range(bin0_min, bin0_max+1):
@@ -770,7 +756,7 @@ class FullSplitCSR_2d(object):
                     D0 -= bin0_min
                     D1 -= bin1_min
 
-                    areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                    areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
                     oneOverPixelArea = 1.0 / areaPixel
 
                     # perimeter skipped - not inside for sure

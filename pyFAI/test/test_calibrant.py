@@ -128,19 +128,19 @@ class TestCalibrant(unittest.TestCase):
         c1 = get_calibrant("LaB6")
         c2 = get_calibrant("LaB6")
         self.assertIsNot(c1, c2)
-        self.assertEquals(c1, c2)
+        self.assertEqual(c1, c2)
 
     def test_same(self):
         c1 = get_calibrant("LaB6")
         c2 = get_calibrant("LaB6")
-        self.assertEquals(c1, c2)
+        self.assertEqual(c1, c2)
 
     def test_same2(self):
         c1 = get_calibrant("LaB6")
         c2 = get_calibrant("LaB6")
         c1.set_wavelength(1e-10)
         c2.set_wavelength(1e-10)
-        self.assertEquals(c1, c2)
+        self.assertEqual(c1, c2)
 
     def test_not_same_dspace(self):
         # this 2 calibrant must only be used there to test the lazy-loading
@@ -158,7 +158,7 @@ class TestCalibrant(unittest.TestCase):
         c1 = get_calibrant("AgBh")
         c2 = copy.copy(c1)
         self.assertIsNot(c1, c2)
-        self.assertEquals(c1, c2)
+        self.assertEqual(c1, c2)
         c2.set_wavelength(1e-10)
         self.assertNotEquals(c1, c2)
 
@@ -208,9 +208,9 @@ class TestCell(unittest.TestCase):
         tds = list(td.keys())
         tds.sort()
 
-        self.assertEquals(cds, tds, msg="d-spacings are the same")
+        self.assertEqual(cds, tds, msg="d-spacings are the same")
         for k in cds:
-            self.assertEquals(cd[k], td[k], msg="plans are the same for d=%s" % k)
+            self.assertEqual(cd[k], td[k], msg="plans are the same for d=%s" % k)
 
     def test_helium(self):
         # self.skipTest("Not working")
