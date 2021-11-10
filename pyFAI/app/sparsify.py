@@ -42,12 +42,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2021"
+__date__ = "09/11/2021"
 __status__ = "status"
 
 import os
 import sys
 import argparse
+import time
 from collections import OrderedDict
 import numpy
 import numexpr
@@ -289,6 +290,7 @@ def process(options):
         parameters["solidangle"], parameters["solidangle_checksum"] = ai.solidAngleArray(with_checksum=True)
     if options.polarization is not None:
         parameters["polarization"], parameters["polarization_checksum"] = ai.polarization(factor=options.polarization, with_checksum=True)
+    t0 = time.perf_counter()
     for fabioimage in dense:
         for frame in fabioimage:
             intensity = frame.data
@@ -301,12 +303,13 @@ def process(options):
             else:
                 print("%s frame #%d, found %d intense pixels" % (fabioimage.filename, fabioimage.currentframe, current.intensity.size))
             cnt += 1
-
-    logger.debug("Save data")
+    t1 = time.perf_counter()
     if pb:
         pb.update(nframes, message="Saving: " + options.output)
+        pb.clear()
     else:
         print("Saving: " + options.output)
+    logger.debug("Save data")
 
     parameters["unit"] = unit.name.split("_")[0]
     parameters["error_model"] = options.error_model
@@ -331,6 +334,10 @@ def process(options):
             pf.log_profile(True)
         except Exception:
             pf.log_profile()
+    if pb:
+        pb.clear()
+    logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1-t0, cnt/(t1-t0))
+
     return EXIT_SUCCESS
 
 
