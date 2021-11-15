@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2021"
+__date__ = "05/11/2021"
 __status__ = "development"
 
 import logging
@@ -332,10 +332,11 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
                 warnings.simplefilter("ignore")
                 avg = res[:, 0] / res[:, 2]
                 avg_ext = self._csr.T.dot(interp_filter(avg, avg))  # backproject the average value to the image
-                msk = prep_flat[:, 2] == 0
-                delta2 = (prep_flat[:, 0] / prep_flat[:, 2] - avg_ext) ** 2
+                norm = prep_flat[:, 2]
+                msk = (norm == 0)
+                delta2 = (prep_flat[:, 0] / norm - avg_ext) ** 2
                 delta2[msk] = 0
-            res[:, 1] = self._csr.dot(delta2)
+            res[:, 1] = self._csr.dot(delta2 )#* norm) / self._csr.dot(norm)
         else:
             res[:, 1] = self._csr2.dot(prep_flat[:, 1])
 
