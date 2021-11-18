@@ -33,10 +33,9 @@ __date__ = "18/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
-
+from libc.string cimport memcpy
 from cython.parallel import prange
 import numpy
-
 from .preproc import preproc
 from ..containers import Integrate1dtpl, Integrate2dtpl
 
@@ -80,7 +79,18 @@ cdef class LutIntegrator(object):
         self.input_size = 0
         self.output_size = 0 
         self.nnz = 0
-        
+
+    @property
+    def lut(self):
+        """Getter a copy of the LUT as an actual numpy array"""
+        cdef double[:,::1] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
+        memcpy(&tmp_ary[0, 0], &self._lut[0, 0], self._lut.nbytes)
+
+        return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
+                                        shape=self._lut.shape, dtype=lut_d,
+                                        copy=True)
+
+
     def integrate_legacy(self, weights,
                          dummy=None,
                          delta_dummy=None,

@@ -1,13 +1,13 @@
 # coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/01/2021"
+__date__ = "18/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -170,6 +170,7 @@ class HistoBBox1d(LutIntegrator):
 
         self.unit = unit
         self.lut_nbytes = lut.nbytes
+        self.lut_checksum = crc32(lut)
 
     def calc_boundaries(self, pos0_range):
         """
@@ -510,26 +511,6 @@ class HistoBBox1d(LutIntegrator):
         return lut
 
     @property
-    def lut(self):
-        """Getter for the LUT as actual numpy array"""
-        
-        cdef lut_t[:, ::1] lut = self._lut
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
-        memcpy(&tmp_ary[0, 0], &lut[0, 0], self._lut.nbytes)
-        self._lut_checksum = crc32(tmp_ary)
-
-        return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
-                                        shape=self._lut.shape, dtype=lut_d,
-                                        copy=True)
-
-    @property
-    def lut_checksum(self):
-        if self._lut_checksum is None:
-            self.lut
-        return self._lut_checksum
-
-
-    @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
     def outPos(self):
         return self.bin_centers
@@ -540,7 +521,7 @@ class HistoBBox1d(LutIntegrator):
 ################################################################################
 
 
-class HistoBBox2d(object):
+class HistoBBox2d(LutIntegrator):
     """
     2D histogramming with pixel splitting based on a look-up table
 
@@ -594,7 +575,7 @@ class HistoBBox2d(object):
         if bins1 <= 0:
             bins1 = 1
         self.bins = (int(bins0), int(bins1))
-        self.lut_size = 0
+        # self.lut_size = 0
         if mask is not None:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
@@ -622,8 +603,15 @@ class HistoBBox2d(object):
         self.delta0 = (self.pos0_max - self.pos0_min) / float(bins0)
         self.delta1 = (self.pos1_max - self.pos1_min) / float(bins1)
         self.lut_max_idx = None
-        self._lut = None
-        self.calc_lut()
+        # self._lut = None
+        if delta_pos0 is not None:
+            lut = self.calc_lut()
+        else:
+            lut = self.calc_lut_nosplit()
+
+        #Call the constructor of the parent class
+        super().__init__(numpy.asarray(lut).reshape((bins0*bins1, -1)), pos0.size, empty)
+        self.bin_centers = None
         self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0,
                                            self.pos0_max - 0.5 * self.delta0,
                                            bins0)
@@ -770,7 +758,7 @@ class HistoBBox2d(object):
                     for j in range(bin1_min, bin1_max + 1):
                         outmax[i, j] += 1
 
-        self.lut_size = lut_size = numpy.max(outmax)
+        lut_size = numpy.max(outmax)
         # just recycle the outmax array
         outmax[:, :] = 0
 
@@ -938,172 +926,9 @@ class HistoBBox2d(object):
                             outmax[bin0_max, j] += 1
 
         self.lut_max_idx = outmax
-        self._lut = lut
+        return lut
 
-    @property
-    def lut(self):
-        """Getter for the LUT as actual numpy array
-        Hack against a bug in ref-counting under python2.6
-        """
-        cdef:
-            tuple shape
-            lut_t[:, :, ::1] lut=self._lut
-            numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary
-        shape = (self._lut.shape[0] * self._lut.shape[1], self._lut.shape[2])
-        tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
-        memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], self._lut.nbytes)
-        self._lut_checksum = crc32(tmp_ary)
 
-        return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
-                                        shape=shape, dtype=lut_d,
-                                        copy=True)
-
-    @property
-    def lut_checksum(self):
-        if self._lut_checksum is None:
-            self.lut
-        return self._lut_checksum
-
-    def integrate(self, weights,
-                  dummy=None,
-                  delta_dummy=None,
-                  dark=None,
-                  flat=None,
-                  solidAngle=None,
-                  polarization=None,
-                  double normalization_factor=1.0,
-                  int coef_power=1):
-        """
-        Actually perform the 2D integration which in this case looks more like a matrix-vector product
-
-        :param weights: input image
-        :type weights: ndarray
-        :param dummy: value for dead pixels (optional)
-        :type dummy: float
-        :param delta_dummy: precision for dead-pixel value in dynamic masking
-        :type delta_dummy: float
-        :param dark: array with the dark-current value to be subtracted (if any)
-        :type dark: ndarray
-        :param flat: array with the dark-current value to be divided by (if any)
-        :type flat: ndarray
-        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        :type solidAngle: ndarray
-        :param polarization: array with the polarization correction values to be divided by (if any)
-        :type polarization: ndarray
-        :param normalization_factor: divide the valid result by this value
-        :param coef_power: set to 1 for mean en to 2 for variance propagation
-        :return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
-        :rtype: 5-tuple of ndarrays
-
-        """
-        cdef:
-            int32_t i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, lut_size = self.lut_size, size = self.size, i0 = 0, i1 = 0
-            acc_t acc_data = 0, acc_count = 0, epsilon = 1e-10
-            data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
-            bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            acc_t[:, ::1] sum_data = numpy.empty(self.bins, dtype=numpy.float64)
-            acc_t[:, ::1] sum_count = numpy.empty(self.bins, dtype=numpy.float64)
-            data_t[:, ::1] merged = numpy.empty(self.bins, dtype=numpy.float32)
-            data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            lut_t[:, :, ::1] lut = self._lut
-        assert weights.size == size, "weights size"
-
-        if dummy is not None:
-            do_dummy = True
-            cdummy = <data_t> float(dummy)
-            if delta_dummy is None:
-                cddummy = zerof
-            else:
-                cddummy = <data_t> float(delta_dummy)
-
-        if flat is not None:
-            do_flat = True
-            assert flat.size == size, "flat-field array size"
-            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=data_d)
-        if dark is not None:
-            do_dark = True
-            assert dark.size == size, "dark current array size"
-            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=data_d)
-        if solidAngle is not None:
-            do_solidAngle = True
-            assert solidAngle.size == size, "Solid angle array size"
-            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=data_d)
-        if polarization is not None:
-            do_polarization = True
-            assert polarization.size == size, "polarization array size"
-            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=data_d)
-
-        if (do_dark + do_flat + do_polarization + do_solidAngle):
-            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-            cdata = numpy.zeros(size, dtype=data_d)
-            if do_dummy:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        # Nota: -= and /= operatore are seen as reduction in cython parallel.
-                        if do_dark:
-                            data = data - cdark[i]
-                        if do_flat:
-                            data = data / cflat[i]
-                        if do_polarization:
-                            data = data / cpolarization[i]
-                        if do_solidAngle:
-                            data = data / csolidAngle[i]
-                        cdata[i] = data
-                    else:
-                        # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] = cdummy
-            else:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if do_dark:
-                        data = data - cdark[i]
-                    if do_flat:
-                        data = data / cflat[i]
-                    if do_polarization:
-                        data = data / cpolarization[i]
-                    if do_solidAngle:
-                        data = data / csolidAngle[i]
-                    cdata[i] = data
-        else:
-            if do_dummy:
-                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-                cdata = numpy.zeros(size, dtype=numpy.float32)
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] = data
-                    else:
-                        cdata[i] = cdummy
-            else:
-                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-
-        for i0 in prange(bins0, nogil=True, schedule="guided"):
-            for i1 in range(bins1):
-                acc_data = 0.0
-                acc_count = 0.0
-                for j in range(lut_size):
-                    idx = lut[i0, i1, j].idx
-                    coef = lut[i0, i1, j].coef
-                    if coef == 0.0 or idx < 0:
-                        continue
-                    data = cdata[idx]
-                    if do_dummy and data == cdummy:
-                        continue
-
-                    acc_data = acc_data + coef ** coef_power * data
-                    acc_count = acc_count + coef
-                sum_data[i0, i1] = acc_data
-                sum_count[i0, i1] = acc_count
-                if acc_count > epsilon:
-                    merged[i0, i1] = <data_t> (acc_data / acc_count / normalization_factor)
-                else:
-                    merged[i0, i1] = cdummy
-
-        return (numpy.asarray(merged).T,
-                self.bin_centers0, self.bin_centers1,
-                numpy.asarray(sum_data).T,
-                numpy.asarray(sum_count).T)
 
     @property
     @deprecated(replacement="bin_centers0", since_version="0.16", only_once=True)

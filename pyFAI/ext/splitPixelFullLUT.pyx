@@ -1,8 +1,8 @@
 # coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,7 +31,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/09/2021"
+__date__ = "18/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -411,7 +411,7 @@ cdef inline int foo(float A, float B, float C, float D) nogil:
             ((A < -piover2) and (B > piover2) and (C > piover2) and (D < -piover2)))
 
 
-class HistoLUT2dFullSplit(object):
+class HistoLUT2dFullSplit(LutIntegrator):
     """
     Now uses CSR (Compressed Sparse raw) with main attributes:
     * nnz: number of non zero elements
@@ -466,7 +466,7 @@ class HistoLUT2dFullSplit(object):
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
 
-        self.calc_lut()
+        lut = self.calc_lut()
         # self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = crc32(self.data)
 
@@ -599,7 +599,7 @@ class HistoLUT2dFullSplit(object):
         cdef numpy.ndarray[numpy.int32_t, ndim=1] indices = numpy.zeros(indptr[all_bins], dtype=numpy.int32)
         cdef numpy.ndarray[numpy.float32_t, ndim=1] data = numpy.zeros(indptr[all_bins], dtype=numpy.float32)
 
-        print(self.size, indptr[all_bins])
+
         # just recycle the outmax array
         memset(&outmax[0, 0], 0, all_bins * sizeof(numpy.int32_t))
 
@@ -888,129 +888,127 @@ class HistoLUT2dFullSplit(object):
                                 data[indptr[index] + k] = partialArea * oneOverPixelArea
                                 outmax[bin0_min + i, bin1_min + j] += 1  # k+1
 
-        self.data = data
-        self.indices = indices
-        self.outmax = outmax
+        return data, indices, indptr
 
-    def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
-        """
-        Actually perform the integration which in this case looks more like a matrix-vector product
-
-        :param weights: input image
-        :type weights: ndarray
-        :param dummy: value for dead pixels (optional)
-        :type dummy: float
-        :param delta_dummy: precision for dead-pixel value in dynamic masking
-        :type delta_dummy: float
-        :param dark: array with the dark-current value to be subtracted (if any)
-        :type dark: ndarray
-        :param flat: array with the dark-current value to be divided by (if any)
-        :type flat: ndarray
-        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        :type solidAngle: ndarray
-        :param polarization: array with the polarization correction values to be divided by (if any)
-        :type polarization: ndarray
-        :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: 4-tuple of ndarrays
-        """
-        cdef numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
-        cdef float sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
-        cdef float data = 0, coef = 0, cdummy = 0, cddummy = 0
-        cdef bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] outData = numpy.empty(bins, dtype=numpy.float64)
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] outCount = numpy.empty(bins, dtype=numpy.float64)
-        cdef numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.empty(bins, dtype=numpy.float32)
-        cdef float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-
-        cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
-        assert weights.size == size, "weights size"
-
-        if dummy is not None:
-            do_dummy = True
-            cdummy = <float> float(dummy)
-            if delta_dummy is None:
-                cddummy = <float> 0.0
-            else:
-                cddummy = <float> float(delta_dummy)
-
-        if flat is not None:
-            do_flat = True
-            assert flat.size == size, "flat-field array size"
-            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
-        if dark is not None:
-            do_dark = True
-            assert dark.size == size, "dark current array size"
-            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
-        if solidAngle is not None:
-            do_solidAngle = True
-            assert solidAngle.size == size, "Solid angle array size"
-            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
-        if polarization is not None:
-            do_polarization = True
-            assert polarization.size == size, "polarization array size"
-            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
-
-        if (do_dark + do_flat + do_polarization + do_solidAngle):
-            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-            cdata = numpy.zeros(size, dtype=numpy.float32)
-            if do_dummy:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        # Nota: -= and /= operatore are seen as reduction in cython parallel.
-                        if do_dark:
-                            data = data - cdark[i]
-                        if do_flat:
-                            data = data / cflat[i]
-                        if do_polarization:
-                            data = data / cpolarization[i]
-                        if do_solidAngle:
-                            data = data / csolidAngle[i]
-                        cdata[i] = data
-                    else:  # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] = cdummy
-            else:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if do_dark:
-                        data = data - cdark[i]
-                    if do_flat:
-                        data = data / cflat[i]
-                    if do_polarization:
-                        data = data / cpolarization[i]
-                    if do_solidAngle:
-                        data = data / csolidAngle[i]
-                    cdata[i] = data
-        else:
-            if do_dummy:
-                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-                cdata = numpy.zeros(size, dtype=numpy.float32)
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] = data
-                    else:
-                        cdata[i] = cdummy
-            else:
-                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-
-        for i in prange(bins, nogil=True, schedule="guided"):
-            sum_data = 0.0
-            sum_count = 0.0
-            for j in range(indptr[i], indptr[i + 1]):
-                idx = indices[j]
-                coef = ccoef[j]
-                if coef == 0.0:
-                    continue
-                data = cdata[idx]
-                if do_dummy and data == cdummy:
-                    continue
-                sum_data = sum_data + coef * data
-                sum_count = sum_count + coef
-            outData[i] = sum_data
-            outCount[i] = sum_count
-            if sum_count > epsilon:
-                outMerge[i] = sum_data / sum_count
-            else:
-                outMerge[i] = cdummy
-        return outMerge, outData, outCount
+    # def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+    #     """
+    #     Actually perform the integration which in this case looks more like a matrix-vector product
+    #
+    #     :param weights: input image
+    #     :type weights: ndarray
+    #     :param dummy: value for dead pixels (optional)
+    #     :type dummy: float
+    #     :param delta_dummy: precision for dead-pixel value in dynamic masking
+    #     :type delta_dummy: float
+    #     :param dark: array with the dark-current value to be subtracted (if any)
+    #     :type dark: ndarray
+    #     :param flat: array with the dark-current value to be divided by (if any)
+    #     :type flat: ndarray
+    #     :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+    #     :type solidAngle: ndarray
+    #     :param polarization: array with the polarization correction values to be divided by (if any)
+    #     :type polarization: ndarray
+    #     :return: positions, pattern, weighted_histogram and unweighted_histogram
+    #     :rtype: 4-tuple of ndarrays
+    #     """
+    #     cdef numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
+    #     cdef float sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
+    #     cdef float data = 0, coef = 0, cdummy = 0, cddummy = 0
+    #     cdef bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
+    #     cdef numpy.ndarray[numpy.float64_t, ndim=1] outData = numpy.empty(bins, dtype=numpy.float64)
+    #     cdef numpy.ndarray[numpy.float64_t, ndim=1] outCount = numpy.empty(bins, dtype=numpy.float64)
+    #     cdef numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.empty(bins, dtype=numpy.float32)
+    #     cdef float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+    #
+    #     cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
+    #     assert weights.size == size, "weights size"
+    #
+    #     if dummy is not None:
+    #         do_dummy = True
+    #         cdummy = <float> float(dummy)
+    #         if delta_dummy is None:
+    #             cddummy = <float> 0.0
+    #         else:
+    #             cddummy = <float> float(delta_dummy)
+    #
+    #     if flat is not None:
+    #         do_flat = True
+    #         assert flat.size == size, "flat-field array size"
+    #         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
+    #     if dark is not None:
+    #         do_dark = True
+    #         assert dark.size == size, "dark current array size"
+    #         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
+    #     if solidAngle is not None:
+    #         do_solidAngle = True
+    #         assert solidAngle.size == size, "Solid angle array size"
+    #         csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
+    #     if polarization is not None:
+    #         do_polarization = True
+    #         assert polarization.size == size, "polarization array size"
+    #         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+    #
+    #     if (do_dark + do_flat + do_polarization + do_solidAngle):
+    #         tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+    #         cdata = numpy.zeros(size, dtype=numpy.float32)
+    #         if do_dummy:
+    #             for i in prange(size, nogil=True, schedule="static"):
+    #                 data = tdata[i]
+    #                 if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
+    #                     # Nota: -= and /= operatore are seen as reduction in cython parallel.
+    #                     if do_dark:
+    #                         data = data - cdark[i]
+    #                     if do_flat:
+    #                         data = data / cflat[i]
+    #                     if do_polarization:
+    #                         data = data / cpolarization[i]
+    #                     if do_solidAngle:
+    #                         data = data / csolidAngle[i]
+    #                     cdata[i] = data
+    #                 else:  # set all dummy_like values to cdummy. simplifies further processing
+    #                     cdata[i] = cdummy
+    #         else:
+    #             for i in prange(size, nogil=True, schedule="static"):
+    #                 data = tdata[i]
+    #                 if do_dark:
+    #                     data = data - cdark[i]
+    #                 if do_flat:
+    #                     data = data / cflat[i]
+    #                 if do_polarization:
+    #                     data = data / cpolarization[i]
+    #                 if do_solidAngle:
+    #                     data = data / csolidAngle[i]
+    #                 cdata[i] = data
+    #     else:
+    #         if do_dummy:
+    #             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+    #             cdata = numpy.zeros(size, dtype=numpy.float32)
+    #             for i in prange(size, nogil=True, schedule="static"):
+    #                 data = tdata[i]
+    #                 if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
+    #                     cdata[i] = data
+    #                 else:
+    #                     cdata[i] = cdummy
+    #         else:
+    #             cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+    #
+    #     for i in prange(bins, nogil=True, schedule="guided"):
+    #         sum_data = 0.0
+    #         sum_count = 0.0
+    #         for j in range(indptr[i], indptr[i + 1]):
+    #             idx = indices[j]
+    #             coef = ccoef[j]
+    #             if coef == 0.0:
+    #                 continue
+    #             data = cdata[idx]
+    #             if do_dummy and data == cdummy:
+    #                 continue
+    #             sum_data = sum_data + coef * data
+    #             sum_count = sum_count + coef
+    #         outData[i] = sum_data
+    #         outCount[i] = sum_count
+    #         if sum_count > epsilon:
+    #             outMerge[i] = sum_data / sum_count
+    #         else:
+    #             outMerge[i] = cdummy
+    #     return outMerge, outData, outCount
