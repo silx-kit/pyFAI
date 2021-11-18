@@ -387,8 +387,8 @@ class TestFastPath(utilstest.ParametricTestCase):
         self.assertEqual(len(geometries), len(matrices), "length is the same")
         for kwds, quat, mat in zip(geometries, quaternions, matrices):
             geo = geometry.Geometry(**kwds)
-            self.assert_(numpy.allclose(geo.rotation_matrix(), mat), "matrice are the same %s" % kwds)
-            self.assert_(numpy.allclose(geo.quaternion(), quat), "quaternions are the same %s" % kwds)
+            self.assertTrue(numpy.allclose(geo.rotation_matrix(), mat), "matrice are the same %s" % kwds)
+            self.assertTrue(numpy.allclose(geo.quaternion(), quat), "quaternions are the same %s" % kwds)
 
 
 class TestGeometry(utilstest.ParametricTestCase):

@@ -63,9 +63,10 @@ inline float2 correct_pixel2(
   const         int     heigth,    // heigth of the image
   const         int     width,     // width of the image
   const         int     gpos0,     // global position 0 
-  const         int     gpos1      // global position 1
+  const         int     gpos1,     // global position 1
+  const         float   noise      // addition noise level
   ){
-    float2 value = (float2)(0.0f, 0.0f);
+    float2 value = (float2)(-1.0f, 0.0f);
     float background = INFINITY;
     float uncert = 0.0f;
     if ((gpos0>=0) && (gpos0<heigth) && (gpos1>=0) && (gpos1<width)){
@@ -87,7 +88,7 @@ inline float2 correct_pixel2(
             }//Upper most bin: no interpolation
         }// this pixel is between radius_min and max
         float4 raw = preproc4[gid];
-        value = (float2)((raw.s2>0.0) ? raw.s0 / raw.s2 - background : 0.0f, uncert);
+        value = (float2)((raw.s2>0.0) ? raw.s0 / raw.s2 - background : 0.0f,  fast_length((float2)(uncert, noise)));
     }// this pixel is valid
     return value;
 }
@@ -128,13 +129,9 @@ kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of
                           const         int     connected, // keep only enough pixels are above threshold in patch
                                 global  int    *counter,   // Counter of the number of peaks found
                                 global  int    *highidx,   // indexes of the pixels of high intensity
-                                global  float  *integrated,// Sum of signal in the patch
-                                global  float  *center0,   // Center of mass of the peak along dim0
-                                global  float  *center1,   // Center of mass of the peak along dim1
+                                global  float4 *peaks,     // Contains center0, center1, integrated, sigma 
                                 local   int    *local_highidx,   // size: wg0*wg1
-                                local   float *local_integrated, // size: wg0*wg1
-                                local   float *local_center0,    // size: wg0*wg1
-                                local   float *local_center1,    // size: wg0*wg1
+                                local   float4 *local_peaks, // size: wg0*wg1
                                 local   float2 *buffer){         // size: (wg0+2*half_patch)*(wg1+2*half_patch) 
     int tid0 = get_local_id(0);
     int tid1 = get_local_id(1);
@@ -157,28 +154,28 @@ kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of
     if (tid0 == 0){ // process first lines
         for (int i = -half_patch; i<0; i++){
             p0 = gid0+i; p1 = gid1;
-            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1, noise);
             set_shared2(buffer, i, tid1, half_patch, value);
         }
     }
     if (tid0 == (wg0-1)){ // process last lines
         for (int i = 0; i<half_patch; i++){
             p0 = gid0+1+i; p1 = gid1;
-            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1, noise);
             set_shared2(buffer, wg0+i, tid1, half_patch, value);
         }
     }
     if (tid1 == 0){ // process first column
         for (int i = -half_patch; i<0; i++){
             p0 = gid0; p1 = gid1+i;
-            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1, noise);
             set_shared2(buffer, tid0, i, half_patch, value);
         }
     }
     if (tid1 == (wg1-1)){ // process last column
         for (int i = 0; i<half_patch; i++){
             p0 = gid0; p1 = gid1+1+i;
-            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+            value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1, noise);
             set_shared2(buffer, tid0, wg1+i, half_patch, value);
         }
     }
@@ -187,7 +184,7 @@ kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of
         for (int i = -half_patch; i<0; i++){
             for (int j = -half_patch; j<0; j++){
                 p0 = gid0+i; p1 = gid1+j;
-                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1, noise);
                 set_shared2(buffer, i, j, half_patch, value);
             }
         }
@@ -196,7 +193,7 @@ kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of
         for (int i = -half_patch; i<0; i++){
             for (int j = 0; j<half_patch; j++){
                 p0 = gid0+i; p1 = gid1+j+1;
-                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1, noise);
                 set_shared2(buffer, i, wg1+j, half_patch, value);
             }
         }
@@ -205,7 +202,7 @@ kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of
         for (int i = 0; i<half_patch; i++){
             for (int j = -half_patch; j<0; j++){
                 p0 = gid0+i+1; p1 = gid1+j;
-                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1, noise);
                 set_shared2(buffer, wg0+i, j, half_patch, value);
             }
         }
@@ -214,14 +211,14 @@ kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of
         for (int i = 0; i<half_patch; i++){
             for (int j = 0; j<half_patch; j++){
                 p0 = gid0+i+1; p1 = gid1+j+1;
-                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+                value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1, noise);
                 set_shared2(buffer, wg0+i, wg1+j, half_patch, value);
             }
         }
     }
     // Finally the core of the buffer:
     p0 = gid0; p1 = gid1; 
-    value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1);
+    value = correct_pixel2(preproc4, radius2d, radius1d, average1d, std1d, radius_min, radius_max, heigth, width, p0, p1, noise);
     set_shared2(buffer, tid0, tid1, half_patch, value);
     // All needed data have been copied to the local buffer.
     
@@ -231,29 +228,32 @@ kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of
         int active = 0;
         // value has been already calculated
         float local_value = value.s0; 
-        if (value.s0 >= max(noise, cutoff*value.s1)){
+        if (local_value >= cutoff * value.s1){
             float local_max = 0.0f;
-            float sub, sum_int = 0.0f;
+            float sum_int = 0.0f, sum_var=0.0f;
             float som0=0.0f, som1=0.0f;    
             for (int i=-half_patch; i<=half_patch; i++){
                 for (int j=-half_patch; j<=half_patch; j++){
                     value = get_shared2(buffer, tid0+i, tid1+j, half_patch);
-                    if (value.s0 >= max(noise, cutoff*value.s1)){
+                    if (value.s0 >= cutoff * value.s1){
                         active+=1;
                     }
                     local_max = max(local_max, value.s0);
-                    sub = max(0.0f, value.s0);
-                    som0 += i * sub;
-                    som1 += j * sub;
-                    sum_int += sub;
-                }
-            }
+                    if (value.s0>0.0f){
+                        som0 += i * value.s0;
+                        som1 += j * value.s0;
+                        sum_int += value.s0;
+                        sum_var += value.s1*value.s1;
+                    }// add pixel to intgral
+                } // for j
+            } // for i
             if ((local_value == local_max) && (active>=connected)){
                 int position = atomic_inc(local_counter);
                 local_highidx[position] = gid0*width + gid1;
-                local_integrated[position] = sum_int;
-                local_center0[position] = som0/sum_int + (float)(gid0);
-                local_center1[position] = som1/sum_int + (float)(gid1);
+                local_peaks[position] = (float4)(som0/sum_int + (float)(gid0), 
+                                                 som1/sum_int + (float)(gid1),
+                                                 sum_int,
+                                                 sqrt(sum_var));
             }// Record pixel
         }//pixel is high
     } // pixel is in image
@@ -266,9 +266,7 @@ kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of
         if (tid<local_counter[0]){
             int write_pos =  tid +local_counter[1];
             highidx[write_pos] = local_highidx[tid];
-            integrated[write_pos] = local_integrated[tid];
-            center0[write_pos] = local_center0[tid];
-            center1[write_pos] = local_center1[tid];        
+            peaks[write_pos] = local_peaks[tid];
         } //Thread is active for copying
     } // end update global memory
 } // end kernel peakfinder8

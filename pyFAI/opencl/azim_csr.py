@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "29/09/2021"
+__date__ = "28/10/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -246,7 +246,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             elif "portable" in platform and "CPU" in devtype:
                 block_size = 8
             else:
-                block_size = self.BLOCK_SIZE
+                block_size = min(device.max_work_group_size, self.BLOCK_SIZE)
             self.force_workgroup_size = False
         else:
             self.force_workgroup_size = True
@@ -926,14 +926,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
 
-            if wg_max == 1:
-                raise RuntimeError("csr_sigma_clip4 is not yet available in single threaded OpenCL !")
-                # integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-                # events.append(EventDescription("integrate4_single", integrate))
-            else:
-                wdim_bins = (self.bins * wg_min),
-                integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-                events.append(EventDescription("csr_sigma_clip4", integrate))
+            wdim_bins = (self.bins * wg_min),
+            integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
+            events.append(EventDescription("csr_sigma_clip4", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
