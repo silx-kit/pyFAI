@@ -56,7 +56,7 @@ import numpy
 cimport numpy
 from ..utils import crc32
 from ..utils.decorators import deprecated
-
+from .sparse_builder cimport SparseBuilder
 
 if LUT_ITEMSIZE == lut_d.itemsize == 8:
     logger.debug("LUT sizes C:%s \t Numpy: %s", lut_d.itemsize, LUT_ITEMSIZE)
@@ -278,6 +278,7 @@ class HistoBBox1d(LutIntegrator):
             position_t[::1] cpos1_min, cpos1_max
             lut_t[:, ::1] lut
             mask_t[::1] cmask
+            SparseBuilder builder
 
         size = self.size
         if self.check_mask:
@@ -294,7 +295,68 @@ class HistoBBox1d(LutIntegrator):
             pos1_min = self.pos1_min
         else:
             check_pos1 = False
-
+        #
+        # with nogil:
+        #     for idx in range(size):
+        #         if (check_mask) and (cmask[idx]):
+        #             continue
+        #
+        #         min0 = cpos0_inf[idx]
+        #         max0 = cpos0_sup[idx]
+        #
+        #         if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
+        #             continue
+        #
+        #         fbin0_min = get_bin_number(min0, pos0_min, delta)
+        #         fbin0_max = get_bin_number(max0, pos0_min, delta)
+        #         bin0_min = <int> fbin0_min
+        #         bin0_max = <int> fbin0_max
+        #
+        #         if (bin0_max < 0) or (bin0_min >= bins):
+        #             continue
+        #         if bin0_max >= bins:
+        #             bin0_max = bins - 1
+        #         if bin0_min < 0:
+        #             bin0_min = 0
+        #
+        #         if bin0_min == bin0_max:
+        #             # All pixel is within a single bin
+        #             outmax[bin0_min] += 1
+        #
+        #         else:  # We have pixel spliting.
+        #             for i in range(bin0_min, bin0_max + 1):
+        #                 outmax[i] += 1
+        #
+        # lut_size = numpy.max(outmax)
+        # # just recycle the outmax array
+        # outmax[:] = 0
+        #
+        # #self.lut_size = lut_size
+        #
+        # lut_nbytes = bins * lut_size * sizeof(lut_t)
+        # #Check we have enough memory
+        # if (os.name == "posix"):
+        #     key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+        #     key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+        #     if key_page_size*key_page_cnt:
+        #         try:
+        #             memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
+        #         except OSError:
+        #             pass
+        #         else:
+        #             if memsize < lut_nbytes:
+        #                 raise MemoryError("Lookup-table (%i, %i) is %sGB whereas the memory of the system is only %sGB" %
+        #                                   (bins, lut_size, lut_nbytes>>30, memsize>>30))
+        # # else hope we have enough memory
+        #
+        # if (bins == 0) or (lut_size == 0):
+        #     # fix issue #271
+        #     msg = "The look-up table has dimension (%s,%s) which is a non-sense." +\
+        #           "Did you mask out all pixel or is your image out of the geometry range?"
+        #     raise RuntimeError(msg % (bins, lut_size))
+        # lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_t), format="if")
+        # memset(&lut[0,0], 0, lut_nbytes)
+        builder = SparseBuilder(bins, block_size=6, heap_size=bins)
         with nogil:
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
@@ -320,71 +382,11 @@ class HistoBBox1d(LutIntegrator):
 
                 if bin0_min == bin0_max:
                     # All pixel is within a single bin
-                    outmax[bin0_min] += 1
-
-                else:  # We have pixel spliting.
-                    for i in range(bin0_min, bin0_max + 1):
-                        outmax[i] += 1
-
-        lut_size = numpy.max(outmax)
-        # just recycle the outmax array
-        outmax[:] = 0
-
-        #self.lut_size = lut_size
-
-        lut_nbytes = bins * lut_size * sizeof(lut_t)
-        #Check we have enough memory
-        if (os.name == "posix"):
-            key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
-            key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
-            if key_page_size*key_page_cnt:
-                try:
-                    memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
-                except OSError:
-                    pass
-                else:
-                    if memsize < lut_nbytes:
-                        raise MemoryError("Lookup-table (%i, %i) is %sGB whereas the memory of the system is only %sGB" %
-                                          (bins, lut_size, lut_nbytes>>30, memsize>>30))
-        # else hope we have enough memory
-
-        if (bins == 0) or (lut_size == 0):
-            # fix issue #271
-            msg = "The look-up table has dimension (%s,%s) which is a non-sense." +\
-                  "Did you mask out all pixel or is your image out of the geometry range?"
-            raise RuntimeError(msg % (bins, lut_size))
-        lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_t), format="if")
-        memset(&lut[0,0], 0, lut_nbytes)
-
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-
-                min0 = cpos0_inf[idx]
-                max0 = cpos0_sup[idx]
-
-                if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
-                    continue
-
-                fbin0_min = get_bin_number(min0, pos0_min, delta)
-                fbin0_max = get_bin_number(max0, pos0_min, delta)
-                bin0_min = <int> fbin0_min
-                bin0_max = <int> fbin0_max
-
-                if (bin0_max < 0) or (bin0_min >= bins):
-                    continue
-                if bin0_max >= bins:
-                    bin0_max = bins - 1
-                if bin0_min < 0:
-                    bin0_min = 0
-
-                if bin0_min == bin0_max:
-                    # All pixel is within a single bin
-                    k = outmax[bin0_min]
-                    lut[bin0_min, k].idx = idx
-                    lut[bin0_min, k].coef = 1.0
-                    outmax[bin0_min] += 1
+                    builder.cinsert(bin0_min, idx, 1.0)
+                    # k = outmax[bin0_min]
+                    # lut[bin0_min, k].idx = idx
+                    # lut[bin0_min, k].coef = 1.0
+                    # outmax[bin0_min] += 1
                 else:
                     # we have pixel splitting.
                     inv_area = 1.0 / (fbin0_max - fbin0_min)
@@ -392,25 +394,26 @@ class HistoBBox1d(LutIntegrator):
                     delta_left = <acc_t>(bin0_min + 1) - fbin0_min
                     delta_right = fbin0_max - (<acc_t> bin0_max)
 
-                    k = outmax[bin0_min]
-                    lut[bin0_min, k].idx = idx
-                    lut[bin0_min, k].coef = inv_area * delta_left
-                    outmax[bin0_min] += 1
+                    # k = outmax[bin0_min]
+                    # lut[bin0_min, k].idx = idx
+                    # lut[bin0_min, k].coef = inv_area * delta_left
+                    # outmax[bin0_min] += 1
+                    builder.cinsert(bin0_min, idx, inv_area * delta_left)
 
-                    k = outmax[bin0_max]
-                    lut[bin0_max, k].idx = idx
-                    lut[bin0_max, k].coef = inv_area * delta_right
-                    outmax[bin0_max] += 1
+                    # k = outmax[bin0_max]
+                    # lut[bin0_max, k].idx = idx
+                    # lut[bin0_max, k].coef = inv_area * delta_right
+                    # outmax[bin0_max] += 1
+                    builder.cinsert(bin0_max, idx,  inv_area * delta_right)
 
                     if bin0_min + 1 < bin0_max:
                         for i in range(bin0_min + 1, bin0_max):
-                            k = outmax[i]
-                            lut[i, k].idx = idx
-                            lut[i, k].coef = inv_area
-                            outmax[i] += 1
-
-        self.lut_max_idx = outmax
-        return lut
+                            # k = outmax[i]
+                            # lut[i, k].idx = idx
+                            # lut[i, k].coef = inv_area
+                            # outmax[i] += 1
+                            builder.cinsert(i, idx,  inv_area)
+        return builder.to_lut()
 
     def calc_lut_nosplit(self):
         '''
@@ -424,6 +427,7 @@ class HistoBBox1d(LutIntegrator):
             lut_t[:, ::1] lut
             position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
             mask_t[::1] cmask
+            SparseBuilder builder
 
         size = self.size
         if self.check_mask:
@@ -441,52 +445,52 @@ class HistoBBox1d(LutIntegrator):
         else:
             check_pos1 = False
 
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-
-                pos0 = cpos0[idx]
-
-                if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
-                    continue
-
-                fbin0 = get_bin_number(pos0, pos0_min, delta)
-                bin0 = < int > fbin0
-
-                if (bin0 >= 0) and (bin0 < bins):
-                    outmax[bin0] += 1
-
-        lut_size = numpy.max(outmax)
-        # just recycle the outmax array
-        outmax[:] = 0
-
-        #self.lut_size = lut_size
-
-        lut_nbytes = bins * lut_size * sizeof(lut_t)
-        #Check we have enough memory
-        if (os.name == "posix"):
-            key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
-            key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
-            if key_page_size*key_page_cnt:
-                try:
-                    memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
-                except OSError:
-                    pass
-                else:
-                    if memsize < lut_nbytes:
-                        raise MemoryError("Lookup-table (%i, %i) is %sGB whereas the memory of the system is only %sGB" %
-                                          (bins, lut_size, lut_nbytes>>30, memsize>>30))
-        # else hope we have enough memory
-
-        if (bins == 0) or (lut_size == 0):
-            # fix issue #271
-            msg = "The look-up table has dimension (%s,%s) which is a non-sense." +\
-                  "Did you mask out all pixel or is your image out of the geometry range?"
-            raise RuntimeError(msg % (bins, lut_size))
-        lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_t), format="if")
-        memset(&lut[0,0], 0, lut_nbytes)
-
+        # with nogil:
+        #     for idx in range(size):
+        #         if (check_mask) and (cmask[idx]):
+        #             continue
+        #
+        #         pos0 = cpos0[idx]
+        #
+        #         if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
+        #             continue
+        #
+        #         fbin0 = get_bin_number(pos0, pos0_min, delta)
+        #         bin0 = < int > fbin0
+        #
+        #         if (bin0 >= 0) and (bin0 < bins):
+        #             outmax[bin0] += 1
+        #
+        # lut_size = numpy.max(outmax)
+        # # just recycle the outmax array
+        # outmax[:] = 0
+        #
+        # #self.lut_size = lut_size
+        #
+        # lut_nbytes = bins * lut_size * sizeof(lut_t)
+        # #Check we have enough memory
+        # if (os.name == "posix"):
+        #     key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
+        #     key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
+        #     if key_page_size*key_page_cnt:
+        #         try:
+        #             memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
+        #         except OSError:
+        #             pass
+        #         else:
+        #             if memsize < lut_nbytes:
+        #                 raise MemoryError("Lookup-table (%i, %i) is %sGB whereas the memory of the system is only %sGB" %
+        #                                   (bins, lut_size, lut_nbytes>>30, memsize>>30))
+        # # else hope we have enough memory
+        #
+        # if (bins == 0) or (lut_size == 0):
+        #     # fix issue #271
+        #     msg = "The look-up table has dimension (%s,%s) which is a non-sense." +\
+        #           "Did you mask out all pixel or is your image out of the geometry range?"
+        #     raise RuntimeError(msg % (bins, lut_size))
+        # lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_t), format="if")
+        # memset(&lut[0,0], 0, lut_nbytes)
+        builder = SparseBuilder(bins, block_size=32, heap_size=bins)
         with nogil:
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
@@ -502,13 +506,14 @@ class HistoBBox1d(LutIntegrator):
 
                 if (bin0 < 0) or (bin0 >= bins):
                     continue
-                k = outmax[bin0]
-                lut[bin0, k].idx = idx
-                lut[bin0, k].coef = onef
-                outmax[bin0] += 1  # k+1
+                builder.cinsert(bin0, idx, onef)
+                # k = outmax[bin0]
+                # lut[bin0, k].idx = idx
+                # lut[bin0, k].coef = onef
+                # outmax[bin0] += 1  # k+1
 
-        self.lut_max_idx = outmax
-        return lut
+        # self.lut_max_idx = outmax
+        return builder.to_lut()
 
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
@@ -761,6 +766,7 @@ class HistoBBox2d(LutIntegrator):
         # just recycle the outmax array
         outmax[:, :] = 0
 
+        
         lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_t)
         #Check we have enough memory
         if (os.name == "posix"):
