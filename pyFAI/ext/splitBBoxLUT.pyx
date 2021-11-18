@@ -170,7 +170,7 @@ class HistoBBox1d(LutIntegrator):
 
         self.unit = unit
         self.lut_nbytes = lut.nbytes
-        self.lut_checksum = crc32(lut)
+        self.lut_checksum = crc32(numpy.asarray(lut))
 
     def calc_boundaries(self, pos0_range):
         """
@@ -619,8 +619,7 @@ class HistoBBox2d(LutIntegrator):
                                            self.pos1_max - 0.5 * self.delta1,
                                            bins1)
         self.unit = unit
-        # Calculated at export time to python
-        self._lut_checksum = None
+        self.lut_checksum = crc32(numpy.asarray(lut))
 
     def calc_boundaries(self, pos0_range, pos1_range):
         """

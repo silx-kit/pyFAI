@@ -83,11 +83,11 @@ cdef class LutIntegrator(object):
     @property
     def lut(self):
         """Getter a copy of the LUT as an actual numpy array"""
-        cdef double[:,::1] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
+        cdef double[:, ::1] tmp_ary = numpy.empty((self.output_size, self.lut_size), dtype=numpy.float64)
         memcpy(&tmp_ary[0, 0], &self._lut[0, 0], self._lut.nbytes)
 
-        return numpy.core.records.array(tmp_ary.view(dtype=lut_d),
-                                        shape=self._lut.shape, dtype=lut_d,
+        return numpy.core.records.array(numpy.asarray(tmp_ary).view(dtype=lut_d),
+                                        shape=(self.output_size, self.lut_size), dtype=lut_d,
                                         copy=True)
 
 
