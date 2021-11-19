@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/09/2021"
+__date__ = "19/11/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -62,7 +62,8 @@ else:
     preproc = preproc_cy
 
 from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
-                                splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, histogram_engine
+                                splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
+                                histogram_engine, splitPixelFullLUT
 from .engines import Engine
 
 # Few constants for engine names:
@@ -371,50 +372,74 @@ class AzimuthalIntegrator(Geometry):
             int2d = True
         else:
             int2d = False
-        pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-        if split == "no":
-            dpos0 = None
+        if split == "full":
+            pos = self.array_from_unit(shape, "corner", unit, scale=False)
         else:
-            dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
-        if (pos1_range is None) and (not int2d):
-            pos1 = None
-            dpos1 = None
-        else:
-            pos1 = self.chiArray(shape)
+            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             if split == "no":
+                dpos0 = None
+            else:
+                dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
+            if (pos1_range is None) and (not int2d):
+                pos1 = None
                 dpos1 = None
             else:
+                pos1 = self.chiArray(shape)
+                if split == "no":
+                    dpos1 = None
+                else:
+                    dpos1 = self.deltaChi(shape)
+            if (pos1_range is None) and (not int2d):
+                pos1 = None
+                dpos1 = None
+            else:
+                pos1 = self.chiArray(shape)
                 dpos1 = self.deltaChi(shape)
-        if (pos1_range is None) and (not int2d):
-            pos1 = None
-            dpos1 = None
-        else:
-            pos1 = self.chiArray(shape)
-            dpos1 = self.deltaChi(shape)
 
         if mask is None:
             mask_checksum = None
         else:
             assert mask.shape == shape
-
-        if int2d:
-            return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
-                                            bins=npt,
-                                            pos0_range=pos0_range,
-                                            pos1_range=pos1_range,
-                                            mask=mask,
-                                            mask_checksum=mask_checksum,
-                                            allow_pos0_neg=False,
-                                            unit=unit)
+        if split == "full":
+            if int2d:
+                raise NotImplementedError("Full pixel splitting using LUT is not yet available in 2D")
+                # TODO
+                # return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+                #                                 bins=npt,
+                #                                 pos0_range=pos0_range,
+                #                                 pos1_range=pos1_range,
+                #                                 mask=mask,
+                #                                 mask_checksum=mask_checksum,
+                #                                 allow_pos0_neg=False,
+                #                                 unit=unit)
+            else:
+                return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
+                                                             bins=npt,
+                                                             pos0_range=pos0_range,
+                                                             pos1_range=pos1_range,
+                                                             mask=mask,
+                                                             mask_checksum=mask_checksum,
+                                                             allow_pos0_neg=False,
+                                                             unit=unit)
         else:
-            return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
-                                            bins=npt,
-                                            pos0_range=pos0_range,
-                                            pos1_range=pos1_range,
-                                            mask=mask,
-                                            mask_checksum=mask_checksum,
-                                            allow_pos0_neg=False,
-                                            unit=unit)
+            if int2d:
+                return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+                                                bins=npt,
+                                                pos0_range=pos0_range,
+                                                pos1_range=pos1_range,
+                                                mask=mask,
+                                                mask_checksum=mask_checksum,
+                                                allow_pos0_neg=False,
+                                                unit=unit)
+            else:
+                return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
+                                                bins=npt,
+                                                pos0_range=pos0_range,
+                                                pos1_range=pos1_range,
+                                                mask=mask,
+                                                mask_checksum=mask_checksum,
+                                                allow_pos0_neg=False,
+                                                unit=unit)
 
     def setup_CSR(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,

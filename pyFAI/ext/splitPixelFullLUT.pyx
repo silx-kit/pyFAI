@@ -1,8 +1,8 @@
 # coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
-##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,7 +31,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/11/2021"
+__date__ = "19/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -50,7 +50,7 @@ cimport numpy
 from libc.math cimport fabs, floor, sqrt
 from libc.stdlib cimport abs
 from libc.stdio cimport printf, fflush, stdout
-
+from .sparse_builder cimport SparseBuilder
 
 from ..utils import crc32
 from ..utils.decorators import deprecated
@@ -63,7 +63,7 @@ cdef struct Function:
 
 
 @cython.cdivision(True)
-cdef inline float getBin1Nr(float x0, float pos0_min, float delta, float var) nogil:
+cdef inline float getBin1Nr(floating x0, floating pos0_min, floating delta, floating var) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -80,7 +80,7 @@ cdef inline float getBin1Nr(float x0, float pos0_min, float delta, float var) no
 
 
 @cython.cdivision(True)
-cdef inline float integrate(float A0, float B0, Function AB) nogil:
+cdef inline floating integrate(floating A0, floating B0, Function AB) nogil:
     """
     integrates the line defined by AB, from A0 to B0
     param A0: first limit
@@ -126,9 +126,7 @@ class HistoLUT1dFullSplit(LutIntegrator):
         self.pos = pos
         self.size = pos.shape[0]
         self.bins = bins
-        self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
-        self.empty = empty or 0.0
         if mask is not None:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
@@ -156,21 +154,21 @@ class HistoLUT1dFullSplit(LutIntegrator):
 
     def calc_lut(self):
         cdef:
-            numpy.ndarray[numpy.float64_t, ndim=3] cpos = numpy.ascontiguousarray(self.pos, dtype=numpy.float64)
-            numpy.int8_t[:] cmask
-            numpy.ndarray[numpy.int32_t, ndim=1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
-            lut_t[:,::1] lut
-            float pos0_min = 0, pos1_min = 0, pos1_maxin = 0
-            float max0, min0
-            float areaPixel = 0, delta = 0, areaPixel2 = 0
-            float A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
-            float A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
-            float partialArea = 0, oneOverPixelArea
+            position_t[:,:, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
+            mask_t[:] cmask
+            # numpy.ndarray[numpy.int32_t, ndim=1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
+            # lut_t[:,::1] lut
+            position_t pos0_min = 0, pos1_min = 0, pos1_maxin = 0
+            position_t max0, min0
+            position_t areaPixel = 0, delta = 0, areaPixel2 = 0
+            position_t A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
+            position_t A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
+            position_t partialArea = 0, oneOverPixelArea
             Function AB, BC, CD, DA
-            int bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0
+            int bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0
             bint check_pos1, check_mask = False
+            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=bins*32)
 
-        bins = self.bins
         if self.pos0_range is not None and len(self.pos0_range) > 1:
             self.pos0_min = min(self.pos0_range)
             self.pos0_maxin = max(self.pos0_range)
@@ -201,77 +199,18 @@ class HistoLUT1dFullSplit(LutIntegrator):
             cmask = self.cmask
 
         with nogil:
-            # for idx in range(range1, range2):
-            for idx in range(size):
-
-                if (check_mask) and (cmask[idx]):
-                    continue
-
-                A0 = get_bin_number(<float> cpos[idx, 0, 0], pos0_min, delta)
-                A1 = <float> cpos[idx, 0, 1]
-                B0 = get_bin_number(<float> cpos[idx, 1, 0], pos0_min, delta)
-                B1 = <float> cpos[idx, 1, 1]
-                C0 = get_bin_number(<float> cpos[idx, 2, 0], pos0_min, delta)
-                C1 = <float> cpos[idx, 2, 1]
-                D0 = get_bin_number(<float> cpos[idx, 3, 0], pos0_min, delta)
-                D1 = <float> cpos[idx, 3, 1]
-
-                min0 = min(A0, B0, C0, D0)
-                max0 = max(A0, B0, C0, D0)
-
-                if (max0 < 0) or (min0 >= bins):
-                    continue
-                if check_pos1:
-                    if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
-                        continue
-
-                bin0_min = < int > floor(min0)
-                bin0_max = < int > floor(max0)
-
-                for bin in range(bin0_min, bin0_max + 1):
-                    outmax[bin] += 1
-
-        lut_size = numpy.max(outmax)
-        # just recycle the outmax array
-        outmax[:] = 0
-
-        lut_nbytes = bins * lut_size * sizeof(lut_t)
-        #Check we have enough memory
-        if (os.name == "posix"):
-            key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
-            key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
-            if key_page_size*key_page_cnt:
-                try:
-                    memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
-                except OSError:
-                    pass
-                else:
-                    if memsize < lut_nbytes:
-                        raise MemoryError("Lookup-table (%i, %i) is %sGB whereas the memory of the system is only %sGB" %
-                                          (bins, lut_size, lut_nbytes>>30, memsize>>30))
-        # else hope we have enough memory
-
-        if (bins == 0) or (lut_size == 0):
-            # fix issue #271
-            msg = "The look-up table has dimension (%s,%s) which is a non-sense." +\
-                  "Did you mask out all pixel or is your image out of the geometry range?"
-            raise RuntimeError(msg % (bins, lut_size))
-        lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_t), format="if")
-        memset(&lut[0,0], 0, lut_nbytes)
-
-        with nogil:
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = get_bin_number(<float> cpos[idx, 0, 0], pos0_min, delta)
-                A1 = <float> cpos[idx, 0, 1]
-                B0 = get_bin_number(<float> cpos[idx, 1, 0], pos0_min, delta)
-                B1 = <float> cpos[idx, 1, 1]
-                C0 = get_bin_number(<float> cpos[idx, 2, 0], pos0_min, delta)
-                C1 = <float> cpos[idx, 2, 1]
-                D0 = get_bin_number(<float> cpos[idx, 3, 0], pos0_min, delta)
-                D1 = <float> cpos[idx, 3, 1]
+                A0 = get_bin_number(cpos[idx, 0, 0], pos0_min, delta)
+                A1 = cpos[idx, 0, 1]
+                B0 = get_bin_number(cpos[idx, 1, 0], pos0_min, delta)
+                B1 = cpos[idx, 1, 1]
+                C0 = get_bin_number(cpos[idx, 2, 0], pos0_min, delta)
+                C1 = cpos[idx, 2, 1]
+                D0 = get_bin_number(cpos[idx, 3, 0], pos0_min, delta)
+                D1 = cpos[idx, 3, 1]
 
 
                 min0 = min(A0, B0, C0, D0)
@@ -288,10 +227,7 @@ class HistoLUT1dFullSplit(LutIntegrator):
 
                 if bin0_min == bin0_max:
                     # All pixel is within a single bin
-                    k = outmax[bin0_min]
-                    lut[bin0_min, k].idx = idx
-                    lut[bin0_min, k].coef = 1.0
-                    outmax[bin0_min] += 1
+                    builder.cinsert(bin0_min, idx, 1.0)
 
                 else:  # else we have pixel spliting.
                     # offseting the min bin of the pixel to be zero to avoid percision problems
@@ -335,19 +271,15 @@ class HistoLUT1dFullSplit(LutIntegrator):
                         partialArea += integrate(B_lim, C_lim, BC)
                         partialArea += integrate(C_lim, D_lim, CD)
                         partialArea += integrate(D_lim, A_lim, DA)
-
-                        k = outmax[bin]
-                        lut[bin, k].idx = idx
-                        lut[bin, k].coef = fabs(partialArea) * oneOverPixelArea
-                        outmax[bin] += 1
-
-        return lut
-
+                        
+                        builder.cinsert(bin, idx, fabs(partialArea) * oneOverPixelArea)
+        return builder.to_lut()
 
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
     def outPos(self):
         return self.bin_centers
+
 ################################################################################
 # Bidimensionnal regrouping
 ################################################################################
@@ -377,7 +309,7 @@ cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, float clipEdge) n
     return intersection
 
 
-cdef inline int point_and_line(float x0, float y0, float x1, float y1, float x, float y) nogil:
+cdef inline int point_and_line(floating x0, floating y0, floating x1, floating y1, floating x, floating y) nogil:
     cdef float tmp = (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0)
     return (tmp > 0) - (tmp < 0)
 

@@ -328,12 +328,12 @@ class HistoBBox1d(LutIntegrator):
                     delta_right = fbin0_max - (<acc_t> bin0_max)
 
                     builder.cinsert(bin0_min, idx, inv_area * delta_left)
-
                     builder.cinsert(bin0_max, idx,  inv_area * delta_right)
 
                     if bin0_min + 1 < bin0_max:
                         for i in range(bin0_min + 1, bin0_max):
                             builder.cinsert(i, idx,  inv_area)
+                            
         return builder.to_lut()
 
     def calc_lut_nosplit(self):
