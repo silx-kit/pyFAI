@@ -2288,15 +2288,23 @@ class AzimuthalIntegrator(Geometry):
                                                               polarization_checksum=polarization_crc,
                                                               normalization_factor=normalization_factor,
                                                               safe=safe)
-                if res is None:
-                    # Fall back on cython integrator: TODO: missing implementation
+                if res is None:  # fallback if OpenCL failed !
                     res = integr.integrate_ng(data, dark=dark, flat=flat,
-                                              solidAngle=solidangle,
+                                              solidangle=solidangle,
                                               dummy=dummy,
                                               delta_dummy=delta_dummy,
                                               polarization=polarization,
                                               normalization_factor=normalization_factor
                                               )
+                I = res.intensity
+                bins_rad = res.radial
+                bins_azim = res.azimuthal
+                signal2d = res.signal
+                norm2d = res.normalization
+                count = res.count
+                if variance is not None:
+                    sigma = res.sigma
+                    var2d = res.variance
 
         elif method.algo_lower == "csr":
             if EXT_CSR_ENGINE not in self.engines:
@@ -2375,10 +2383,9 @@ class AzimuthalIntegrator(Geometry):
                                                                          polarization_checksum=polarization_crc,
                                                                          safe=safe,
                                                                          normalization_factor=normalization_factor)
-                    else:
-                        # TODO: integrator not implemented at the cython level !
+                    if res is None:  # fallback if OpenCL failed !
                         res = integr.integrate_ng(data, dark=dark, flat=flat,
-                                                  solidAngle=solidangle,
+                                                  solidangle=solidangle,
                                                   dummy=dummy,
                                                   delta_dummy=delta_dummy,
                                                   polarization=polarization,

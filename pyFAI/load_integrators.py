@@ -149,6 +149,9 @@ else:
     IntegrationMethod(1, "no", "LUT", "cython", old_method="nosplit_lut",
                       class_funct_legacy=(splitBBoxLUT.HistoBBox1d, splitBBoxLUT.HistoBBox1d.integrate_legacy),
                       class_funct_ng=(splitBBoxLUT.HistoBBox1d, splitBBoxLUT.HistoBBox1d.integrate_ng))
+    IntegrationMethod(2, "no", "LUT", "cython", old_method="nosplit_lut",
+                      class_funct_legacy=(splitBBoxLUT.HistoBBox2d, splitBBoxLUT.HistoBBox2d.integrate),
+                      class_funct_ng=(splitBBoxLUT.HistoBBox2d, splitBBoxLUT.HistoBBox2d.integrate_ng))
 
 try:
     from .ext import splitPixelFullLUT
