@@ -1,8 +1,8 @@
 # coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
-##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -602,62 +602,6 @@ class HistoBBox2d(LutIntegrator):
         else:
             check_mask = False
 
-        # with nogil:
-        #     for idx in range(size):
-        #         if (check_mask) and (cmask[idx]):
-        #             continue
-        #
-        #         min0 = cpos0_inf[idx]
-        #         max0 = cpos0_sup[idx]
-        #         min1 = cpos1_inf[idx]
-        #         max1 = cpos1_sup[idx]
-        #
-        #         bin0_min = <int> get_bin_number(min0, pos0_min, delta0)
-        #         bin0_max = <int> get_bin_number(max0, pos0_min, delta0)
-        #
-        #         bin1_min = <int> get_bin_number(min1, pos1_min, delta1)
-        #         bin1_max = <int> get_bin_number(max1, pos1_min, delta1)
-        #
-        #         if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
-        #             continue
-        #
-        #         if bin0_max >= bins0:
-        #             bin0_max = bins0 - 1
-        #         if bin0_min < 0:
-        #             bin0_min = 0
-        #         if bin1_max >= bins1:
-        #             bin1_max = bins1 - 1
-        #         if bin1_min < 0:
-        #             bin1_min = 0
-        #
-        #         for i in range(bin0_min, bin0_max + 1):
-        #             for j in range(bin1_min, bin1_max + 1):
-        #                 outmax[i, j] += 1
-        #
-        # lut_size = numpy.max(outmax)
-        # # just recycle the outmax array
-        # outmax[:, :] = 0
-        #
-        #
-        # lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_t)
-        # #Check we have enough memory
-        # if (os.name == "posix"):
-        #     key_page_size = os.sysconf_names.get("SC_PAGE_SIZE", 0)
-        #     key_page_cnt = os.sysconf_names.get("SC_PHYS_PAGES",0)
-        #     if key_page_size*key_page_cnt:
-        #         try:
-        #             memsize = os.sysconf(key_page_size) * os.sysconf(key_page_cnt)
-        #         except OSError:
-        #             pass
-        #         else:
-        #             if memsize < lut_nbytes:
-        #                 raise MemoryError("Lookup-table (%i, %i, %i) is %sGB whereas the memory of the system is only %sGB" %
-        #                                   (bins0, bins1, lut_size, lut_nbytes>>30, memsize>>30))
-        #
-        # # else hope we have enough memory
-        # lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_t), format="if")
-        # memset(&lut[0, 0, 0], 0, lut_nbytes)
-
         # NOGIL
         with nogil:
             for idx in range(size):
@@ -695,10 +639,6 @@ class HistoBBox2d(LutIntegrator):
                     if bin1_min == bin1_max:
                         # All pixel is within a single bin
                         builder.cinsert(bin0_min*bins1+bin1_min, idx, 1.0)
-                        # k = outmax[bin0_min, bin1_min]
-                        # lut[bin0_min, bin1_min, k].idx = idx
-                        # lut[bin0_min, bin1_min, k].coef = 1.0
-                        # outmax[bin0_min, bin1_min] = k + 1
 
                     else:
                         # spread on more than 2 bins
@@ -707,23 +647,11 @@ class HistoBBox2d(LutIntegrator):
                         inv_area = 1.0 / (fbin1_max - fbin1_min)
 
                         builder.cinsert(bin0_min*bins1+bin1_min, idx, inv_area * delta_down)
-                        # k = outmax[bin0_min, bin1_min]
-                        # lut[bin0_min, bin1_min, k].idx = idx
-                        # lut[bin0_min, bin1_min, k].coef = inv_area * delta_down
-                        # outmax[bin0_min, bin1_min] += 1
 
                         builder.cinsert(bin0_min*bins1+bin1_max, idx, inv_area * delta_up)
-                        # k = outmax[bin0_min, bin1_max]
-                        # lut[bin0_min, bin1_max, k].idx = idx
-                        # lut[bin0_min, bin1_max, k].coef = inv_area * delta_up
-                        # outmax[bin0_min, bin1_max] += 1
 
                         for j in range(bin1_min + 1, bin1_max):
                             builder.cinsert(bin0_min*bins1+j, idx, inv_area)
-                            # k = outmax[bin0_min, j]
-                            # lut[bin0_min, j, k].idx = idx
-                            # lut[bin0_min, j, k].coef = inv_area
-                            # outmax[bin0_min, j] += 1
 
                 else:
                     # spread on more than 2 bins in dim 0
@@ -732,25 +660,12 @@ class HistoBBox2d(LutIntegrator):
                         inv_area = 1.0 / (fbin0_max - fbin0_min)
                         delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
                         builder.cinsert(bin0_min*bins1+bin1_min, idx, inv_area * delta_left)
-                        # k = outmax[bin0_min, bin1_min]
-                        # lut[bin0_min, bin1_min, k].idx = idx
-                        # lut[bin0_min, bin1_min, k].coef = inv_area * delta_left
-                        # outmax[bin0_min, bin1_min] = k + 1
 
                         delta_right = fbin0_max - (<acc_t> bin0_max)
-
                         builder.cinsert(bin0_max*bins1+bin1_min, idx, inv_area * delta_right)
-                        # k = outmax[bin0_max, bin1_min]
-                        # lut[bin0_max, bin1_min, k].idx = idx
-                        # lut[bin0_max, bin1_min, k].coef = inv_area * delta_right
-                        # outmax[bin0_max, bin1_min] += 1
 
                         for i in range(bin0_min + 1, bin0_max):
                             builder.cinsert(i*bins1+bin1_min, idx, inv_area)
-                            # k = outmax[i, bin1_min]
-                            # lut[i, bin1_min, k].idx = idx
-                            # lut[i, bin1_min, k].coef = inv_area
-                            # outmax[i, bin1_min] += 1
 
                     else:
                         # spread on n pix in dim0 and m pixel in dim1:
@@ -761,66 +676,24 @@ class HistoBBox2d(LutIntegrator):
                         inv_area = 1.0 / ((fbin0_max - fbin0_min) * (fbin1_max - fbin1_min))
 
                         builder.cinsert(bin0_min*bins1+bin1_min, idx, inv_area * delta_left * delta_down)
-                        # k = outmax[bin0_min, bin1_min]
-                        # lut[bin0_min, bin1_min, k].idx = idx
-                        # lut[bin0_min, bin1_min, k].coef = inv_area * delta_left * delta_down
-                        # outmax[bin0_min, bin1_min] += 1
-
                         builder.cinsert(bin0_min*bins1+bin1_max, idx, inv_area * delta_left * delta_up)
-                        # k = outmax[bin0_min, bin1_max]
-                        # lut[bin0_min, bin1_max, k].idx = idx
-                        # lut[bin0_min, bin1_max, k].coef = inv_area * delta_left * delta_up
-                        # outmax[bin0_min, bin1_max] += 1
-
                         builder.cinsert(bin0_max*bins1+bin1_min, idx, inv_area * delta_right * delta_down)
-                        # k = outmax[bin0_max, bin1_min]
-                        # lut[bin0_max, bin1_min, k].idx = idx
-                        # lut[bin0_max, bin1_min, k].coef = inv_area * delta_right * delta_down
-                        # outmax[bin0_max, bin1_min] += 1
-
                         builder.cinsert(bin0_max*bins1+bin1_max, idx, inv_area * delta_right * delta_up)
-                        # k = outmax[bin0_max, bin1_max]
-                        # lut[bin0_max, bin1_max, k].idx = idx
-                        # lut[bin0_max, bin1_max, k].coef = inv_area * delta_right * delta_up
-                        # outmax[bin0_max, bin1_max] += 1
 
                         for i in range(bin0_min + 1, bin0_max):
                             builder.cinsert(i*bins1+bin1_min, idx, inv_area * delta_down)
-                            # k = outmax[i, bin1_min]
-                            # lut[i, bin1_min, k].idx = idx
-                            # lut[i, bin1_min, k].coef = inv_area * delta_down
-                            # outmax[i, bin1_min] += 1
 
                             for j in range(bin1_min + 1, bin1_max):
                                 builder.cinsert(i*bins1+j, idx, inv_area)
-                                # k = outmax[i, j]
-                                # lut[i, j, k].idx = idx
-                                # lut[i, j, k].coef = inv_area
-                                # outmax[i, j] += 1
 
                             builder.cinsert(i*bins1+bin1_max, idx, inv_area * delta_up)
-                            # k = outmax[i, bin1_max]
-                            # lut[i, bin1_max, k].idx = idx
-                            # lut[i, bin1_max, k].coef = inv_area * delta_up
-                            # outmax[i, bin1_max] += 1
 
                         for j in range(bin1_min + 1, bin1_max):
                             builder.cinsert(bin0_min*bins1+j, idx, inv_area * delta_left)
-                            # k = outmax[bin0_min, j]
-                            # lut[bin0_min, j, k].idx = idx
-                            # lut[bin0_min, j, k].coef = inv_area * delta_left
-                            # outmax[bin0_min, j] += 1
 
                             builder.cinsert(bin0_max*bins1+j, idx, inv_area * delta_right)
-                            # k = outmax[bin0_max, j]
-                            # lut[bin0_max, j, k].idx = idx
-                            # lut[bin0_max, j, k].coef = inv_area * delta_right
-                            # outmax[bin0_max, j] += 1
 
-        # self.lut_max_idx = outmax
         return builder.to_lut()
-
-
 
     @property
     @deprecated(replacement="bin_centers0", since_version="0.16", only_once=True)
