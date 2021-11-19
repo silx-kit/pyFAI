@@ -402,16 +402,15 @@ class AzimuthalIntegrator(Geometry):
             assert mask.shape == shape
         if split == "full":
             if int2d:
-                raise NotImplementedError("Full pixel splitting using LUT is not yet available in 2D")
-                # TODO
-                # return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
-                #                                 bins=npt,
-                #                                 pos0_range=pos0_range,
-                #                                 pos1_range=pos1_range,
-                #                                 mask=mask,
-                #                                 mask_checksum=mask_checksum,
-                #                                 allow_pos0_neg=False,
-                #                                 unit=unit)
+                return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
+                                                bins=npt,
+                                                pos0_range=pos0_range,
+                                                pos1_range=pos1_range,
+                                                mask=mask,
+                                                mask_checksum=mask_checksum,
+                                                allow_pos0_neg=False,
+                                                unit=unit,
+                                                chiDiscAtPi=self.chiDiscAtPi)
             else:
                 return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
                                                              bins=npt,
