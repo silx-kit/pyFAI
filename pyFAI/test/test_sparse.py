@@ -182,6 +182,7 @@ class TestSparseUtils(unittest.TestCase):
 
 
 class TestContainer(unittest.TestCase):
+    "Those classes are deprecated"
 
     def test_vector(self):
         nelem = 12
