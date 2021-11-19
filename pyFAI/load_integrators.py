@@ -180,9 +180,9 @@ else:
     IntegrationMethod(1, "full", "CSR", "cython", old_method="full_csr",
                       class_funct_legacy=(splitPixelFullCSR.FullSplitCSR_1d, splitPixelFullCSR.FullSplitCSR_1d.integrate_legacy),
                       class_funct_ng=(splitPixelFullCSR.FullSplitCSR_1d, splitPixelFullCSR.FullSplitCSR_1d.integrate_ng))
-    # FIXME: The implementation is there but the routing have to be fixed
-    # IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr",
-    #                   class_funct=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate))
+    IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr",
+                      class_funct_legacy=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate),
+                      class_funct_ng=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate_ng))
 
 try:
     from .opencl import ocl
