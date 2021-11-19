@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/11/2021"
+__date__ = "19/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -420,7 +420,9 @@ class FullSplitCSR_2d(CsrIntegrator):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 empty=None):
+                 empty=None,
+                 #TODO: chiDiscAtPi=self.chiDiscAtPi
+                 ):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
