@@ -2307,6 +2307,7 @@ class AzimuthalIntegrator(Geometry):
                     var2d = res.variance
 
         elif method.algo_lower == "csr":
+            res = None
             if EXT_CSR_ENGINE not in self.engines:
                 engine = self.engines[EXT_CSR_ENGINE] = Engine()
             else:
@@ -2383,13 +2384,13 @@ class AzimuthalIntegrator(Geometry):
                                                                          polarization_checksum=polarization_crc,
                                                                          safe=safe,
                                                                          normalization_factor=normalization_factor)
-                    if res is None:  # fallback if OpenCL failed !
-                        res = integr.integrate_ng(data, dark=dark, flat=flat,
-                                                  solidangle=solidangle,
-                                                  dummy=dummy,
-                                                  delta_dummy=delta_dummy,
-                                                  polarization=polarization,
-                                                  normalization_factor=normalization_factor)
+                if res is None:  # fallback if OpenCL failed !
+                    res = integr.integrate_ng(data, dark=dark, flat=flat,
+                                              solidangle=solidangle,
+                                              dummy=dummy,
+                                              delta_dummy=delta_dummy,
+                                              polarization=polarization,
+                                              normalization_factor=normalization_factor)
                     I = res.intensity
                     bins_rad = res.radial
                     bins_azim = res.azimuthal

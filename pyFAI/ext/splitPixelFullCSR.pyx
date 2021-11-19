@@ -407,13 +407,13 @@ class FullSplitCSR_2d(CsrIntegrator):
         self.size = pos.shape[0]
         self.bins = bins
         # self.bad_pixel = bad_pixel
-        self.lut_size = 0
+        # self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
         self.chiDiscAtPi = chiDiscAtPi
         if mask is not None:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int64)
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
             if mask_checksum:
                 self.mask_checksum = mask_checksum
             else:
@@ -424,7 +424,7 @@ class FullSplitCSR_2d(CsrIntegrator):
             self.mask_checksum = None
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
-
+        self.calc_boundaries(pos0_range, pos1_range, self.cmask)
         lut = self.calc_lut()
         #Call the constructor of the parent class
         super().__init__(lut, pos.shape[0], empty or 0.0)    
@@ -441,6 +441,19 @@ class FullSplitCSR_2d(CsrIntegrator):
 
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
+
+    def calc_boundaries(self, pos0_range, pos1_range, mask=None):
+        """
+        Calculate self.pos0_min/max and self.pos1_min/max
+        
+        TODO: as referenced in #1589
+
+        :param pos0_range: 2-tuple containing the requested range
+        :param pos1_range: 2-tuple containing the requested range
+        :param mask: binary mask
+        :return: 2tuple of 2 tuple with lower and upper bound in dim0 and dim1
+        """
+        pass
 
     def calc_lut(self):
         cdef Py_ssize_t bins0, bins1, size = self.size
@@ -464,7 +477,7 @@ class FullSplitCSR_2d(CsrIntegrator):
             buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
             buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
             double foffset0, foffset1, sum_area, loc_area
-            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=6, heap_size=bins1*bins0)
+            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=bins1*bins0)
             
         if check_mask:
             cmask = self.cmask
@@ -478,6 +491,8 @@ class FullSplitCSR_2d(CsrIntegrator):
             pos0_min = max(pos0_min, 0.0)
             pos0_maxin = max(pos0_maxin, 0.0)
         pos0_max = calc_upper_bound(pos0_maxin)
+        self.pos0_min = pos0_min
+        self.pos0_max = pos0_max
         
         if self.pos1_range is not None and len(self.pos1_range) > 1:
             pos1_min = min(self.pos1_range)
@@ -486,9 +501,11 @@ class FullSplitCSR_2d(CsrIntegrator):
             pos1_min = self.pos[:, :, 1].min()
             pos1_maxin = self.pos[:, :, 1].max()
         pos1_max = calc_upper_bound(pos1_maxin)
-    
-        delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
-        delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
+        self.pos1_min = pos1_min
+        self.pos1_max = pos1_max
+            
+        self.delta0 = delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
+        self.delta1 = delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
     
         with nogil:
             for idx in range(size):
