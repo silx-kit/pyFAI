@@ -33,11 +33,12 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/06/2020"
+__date__ = "19/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
 
+from ..utils.decorators import deprecated_warning
 include "regrid_common.pxi"
 include "CSR_common.pxi"
 include "LUT_common.pxi"
@@ -119,13 +120,16 @@ def CSR_to_LUT(data, indices, indptr):
 
 
 cdef class Vector:
-    """Variable size vector"""
+    """Variable size vector: deprecated, please use sparse_builder"""
     cdef:
         readonly int size, allocated
         data_t[::1] coef
         index_t[::1] idx
 
     def __cinit__(self, int min_size=4):
+        deprecated_warning("class", "Vector", reason=None, replacement="sparse_builder.SparseBuilder",
+                           since_version='0.21.0', only_once=True,
+                           skip_backtrace_count=0, deprecated_since='0.21.0')
         self.allocated = min_size
         self.coef = numpy.empty(self.allocated, dtype=data_d)
         self.idx = numpy.empty(self.allocated, dtype=index_d)
@@ -174,12 +178,17 @@ cdef class Vector:
 
 
 cdef class ArrayBuilder:
+    """Sparse matrix builder: deprecated, please use sparse_builder"""
     cdef:
         readonly int size
         Vector[:] lines
 
 
     def __cinit__(self, int nlines, min_size=4):
+        deprecated_warning("class", "ArrayBuilder", reason=None, 
+                           replacement="sparse_builder.SparseBuilder",
+                           since_version='0.21.0', only_once=True,
+                           skip_backtrace_count=0, deprecated_since='0.21.0')
         cdef int i
         self.size = nlines
         nullarray = numpy.array([None] * nlines)

@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/09/2021"
+__date__ = "19/11/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -62,7 +62,8 @@ else:
     preproc = preproc_cy
 
 from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
-                                splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, histogram_engine
+                                splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
+                                histogram_engine, splitPixelFullLUT
 from .engines import Engine
 
 # Few constants for engine names:
@@ -371,50 +372,73 @@ class AzimuthalIntegrator(Geometry):
             int2d = True
         else:
             int2d = False
-        pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-        if split == "no":
-            dpos0 = None
+        if split == "full":
+            pos = self.array_from_unit(shape, "corner", unit, scale=False)
         else:
-            dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
-        if (pos1_range is None) and (not int2d):
-            pos1 = None
-            dpos1 = None
-        else:
-            pos1 = self.chiArray(shape)
+            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             if split == "no":
+                dpos0 = None
+            else:
+                dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
+            if (pos1_range is None) and (not int2d):
+                pos1 = None
                 dpos1 = None
             else:
+                pos1 = self.chiArray(shape)
+                if split == "no":
+                    dpos1 = None
+                else:
+                    dpos1 = self.deltaChi(shape)
+            if (pos1_range is None) and (not int2d):
+                pos1 = None
+                dpos1 = None
+            else:
+                pos1 = self.chiArray(shape)
                 dpos1 = self.deltaChi(shape)
-        if (pos1_range is None) and (not int2d):
-            pos1 = None
-            dpos1 = None
-        else:
-            pos1 = self.chiArray(shape)
-            dpos1 = self.deltaChi(shape)
 
         if mask is None:
             mask_checksum = None
         else:
             assert mask.shape == shape
-
-        if int2d:
-            return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
-                                            bins=npt,
-                                            pos0_range=pos0_range,
-                                            pos1_range=pos1_range,
-                                            mask=mask,
-                                            mask_checksum=mask_checksum,
-                                            allow_pos0_neg=False,
-                                            unit=unit)
+        if split == "full":
+            if int2d:
+                return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
+                                                bins=npt,
+                                                pos0_range=pos0_range,
+                                                pos1_range=pos1_range,
+                                                mask=mask,
+                                                mask_checksum=mask_checksum,
+                                                allow_pos0_neg=False,
+                                                unit=unit,
+                                                chiDiscAtPi=self.chiDiscAtPi)
+            else:
+                return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
+                                                             bins=npt,
+                                                             pos0_range=pos0_range,
+                                                             pos1_range=pos1_range,
+                                                             mask=mask,
+                                                             mask_checksum=mask_checksum,
+                                                             allow_pos0_neg=False,
+                                                             unit=unit)
         else:
-            return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
-                                            bins=npt,
-                                            pos0_range=pos0_range,
-                                            pos1_range=pos1_range,
-                                            mask=mask,
-                                            mask_checksum=mask_checksum,
-                                            allow_pos0_neg=False,
-                                            unit=unit)
+            if int2d:
+                return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+                                                bins=npt,
+                                                pos0_range=pos0_range,
+                                                pos1_range=pos1_range,
+                                                mask=mask,
+                                                mask_checksum=mask_checksum,
+                                                allow_pos0_neg=False,
+                                                unit=unit)
+            else:
+                return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
+                                                bins=npt,
+                                                pos0_range=pos0_range,
+                                                pos1_range=pos1_range,
+                                                mask=mask,
+                                                mask_checksum=mask_checksum,
+                                                allow_pos0_neg=False,
+                                                unit=unit)
 
     def setup_CSR(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
@@ -502,15 +526,15 @@ class AzimuthalIntegrator(Geometry):
         if split == "full":
 
             if int2d:
-                raise NotImplementedError("Full pixel splitting using CSR is not yet available in 2D")
-                # return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
-                #                                 bins=npt,
-                #                                 pos0_range=pos0_range,
-                #                                 pos1_range=pos1_range,
-                #                                 mask=mask,
-                #                                 mask_checksum=mask_checksum,
-                #                                 allow_pos0_neg=False,
-                #                                 unit=unit)
+                return splitPixelFullCSR.FullSplitCSR_2d(pos,
+                                                         bins=npt,
+                                                         pos0_range=pos0_range,
+                                                         pos1_range=pos1_range,
+                                                         mask=mask,
+                                                         mask_checksum=mask_checksum,
+                                                         allow_pos0_neg=False,
+                                                         unit=unit,
+                                                         chiDiscAtPi=self.chiDiscAtPi)
             else:
                 return splitPixelFullCSR.FullSplitCSR_1d(pos,
                                                          bins=npt,
@@ -2264,17 +2288,26 @@ class AzimuthalIntegrator(Geometry):
                                                               polarization_checksum=polarization_crc,
                                                               normalization_factor=normalization_factor,
                                                               safe=safe)
-                if res is None:
-                    # Fall back on cython integrator: TODO: missing implementation
+                if res is None:  # fallback if OpenCL failed !
                     res = integr.integrate_ng(data, dark=dark, flat=flat,
-                                              solidAngle=solidangle,
+                                              solidangle=solidangle,
                                               dummy=dummy,
                                               delta_dummy=delta_dummy,
                                               polarization=polarization,
                                               normalization_factor=normalization_factor
                                               )
+                I = res.intensity
+                bins_rad = res.radial
+                bins_azim = res.azimuthal
+                signal2d = res.signal
+                norm2d = res.normalization
+                count = res.count
+                if variance is not None:
+                    sigma = res.sigma
+                    var2d = res.variance
 
         elif method.algo_lower == "csr":
+            res = None
             if EXT_CSR_ENGINE not in self.engines:
                 engine = self.engines[EXT_CSR_ENGINE] = Engine()
             else:
@@ -2351,14 +2384,13 @@ class AzimuthalIntegrator(Geometry):
                                                                          polarization_checksum=polarization_crc,
                                                                          safe=safe,
                                                                          normalization_factor=normalization_factor)
-                    else:
-                        # TODO: integrator not implemented at the cython level !
-                        res = integr.integrate_ng(data, dark=dark, flat=flat,
-                                                  solidAngle=solidangle,
-                                                  dummy=dummy,
-                                                  delta_dummy=delta_dummy,
-                                                  polarization=polarization,
-                                                  normalization_factor=normalization_factor)
+                if res is None:  # fallback if OpenCL failed !
+                    res = integr.integrate_ng(data, dark=dark, flat=flat,
+                                              solidangle=solidangle,
+                                              dummy=dummy,
+                                              delta_dummy=delta_dummy,
+                                              polarization=polarization,
+                                              normalization_factor=normalization_factor)
                     I = res.intensity
                     bins_rad = res.radial
                     bins_azim = res.azimuthal

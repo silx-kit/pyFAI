@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/09/2021"
+__date__ = "19/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -49,7 +49,15 @@ import numpy
 import logging
 logger = logging.getLogger(__name__)
 
-cdef Py_ssize_t NUM_WARNING = 100
+cdef Py_ssize_t NUM_WARNING
+if logger.level >= logging.ERROR:
+    NUM_WARNING = -1
+elif logger.level >= logging.WARNING:
+    NUM_WARNING = 10 
+elif logger.level >= logging.INFO:
+    NUM_WARNING = 100 
+else:
+    NUM_WARNING = 10000
 
 def fullSplit1D(pos,
                 weights,
@@ -279,7 +287,8 @@ def fullSplit1D(pos,
                     nwarn -=1
                     if nwarn>0:
                         with gil:
-                            print(f"area_pixel={area_pixel} area_sum={sum_area}, Error= {(area_pixel - sum_area) / area_pixel}")
+                            #Please investigate, this is buggy !
+                            logger.debug(f"area_pixel={area_pixel} area_sum={sum_area}, Error= {(area_pixel - sum_area) / area_pixel}")
                         
                 buffer[bin0_min:bin0_max] = 0
         for i in range(bins):
@@ -287,8 +296,8 @@ def fullSplit1D(pos,
                 merged[i] = sum_data[i] / sum_count[i] / normalization_factor
             else:
                 merged[i] = cdummy
-    if nwarn<0:
-        logger.debug("Total spurious pixels %s / %s in total"%(NUM_WARNING-nwarn, cdata.size))
+    if nwarn<NUM_WARNING:
+        logger.info(f"fullSplit1D: Total spurious pixels {NUM_WARNING-nwarn} / {size} in total")
     bin_centers = numpy.linspace(pos0_min + 0.5 * dpos,
                                  pos0_max - 0.5 * dpos,
                                  bins)
@@ -545,8 +554,8 @@ def fullSplit1D_engine(pos not None,
                 if do_variance:
                     out_error[i] = empty
 
-    if nwarn<0:
-        logger.debug("Total number of spurious pixels: %s / %s total", NUM_WARNING - nwarn, weights.size)
+    if nwarn<NUM_WARNING:
+        logger.info("fullSplit1D_engine: Total number of spurious pixels: %s / %s total", NUM_WARNING - nwarn, size)
         
     bin_centers = numpy.linspace(pos0_min + 0.5 * dpos,
                                  pos0_max - 0.5 * dpos,
@@ -1290,12 +1299,11 @@ def fullSplit2D_engine(pos not None,
         Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
         acc_t norm
         preproc_t value
-        Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15, nwarn=1000
+        Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15, nwarn=NUM_WARNING
         buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
         buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
         double foffset0, foffset1, sum_area, loc_area
-
-
+    
     if pos0_range is not None and len(pos0_range) == 2:
         pos0_min = min(pos0_range)
         pos0_maxin = max(pos0_range)
@@ -1317,8 +1325,6 @@ def fullSplit2D_engine(pos not None,
 
     delta0 = (pos0_max - pos0_min) / (<acc_t> (bins0))
     delta1 = (pos1_max - pos1_min) / (<acc_t> (bins1))
-
-    
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
@@ -1467,7 +1473,7 @@ def fullSplit2D_engine(pos not None,
                                           ioffset1 + j,
                                           value,
                                           weight=loc_area * inv_area)
-            if fabs(area -  sum_area)*inv_area > 1e-3:
+            if fabs(area - sum_area)*inv_area > 1e-3:
                 nwarn -=1
                 if nwarn>0:
                     with gil:            
