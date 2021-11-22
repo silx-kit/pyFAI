@@ -127,12 +127,14 @@ kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of
                           const         int     width,     // width of the image
                           const         int     half_patch,// half of the size of the patch, 1 or 2 for 3x3 or 5x5 patch
                           const         int     connected, // keep only enough pixels are above threshold in patch
+//                          const         int    max_pkg,    // size of the peak array in global memory
+//                          const         int    max_pkl,    // size of the peak array in local memory
                                 global  int    *counter,   // Counter of the number of peaks found
                                 global  int    *highidx,   // indexes of the pixels of high intensity
                                 global  float4 *peaks,     // Contains center0, center1, integrated, sigma 
                                 local   int    *local_highidx,   // size: wg0*wg1
                                 local   float4 *local_peaks, // size: wg0*wg1
-                                local   float2 *buffer){         // size: (wg0+2*half_patch)*(wg1+2*half_patch) 
+                                local   float2 *buffer){   // size: (wg0+2*half_patch)*(wg1+2*half_patch) 
     int tid0 = get_local_id(0);
     int tid1 = get_local_id(1);
     int gid0 = get_global_id(0);
