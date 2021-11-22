@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/11/2021"
+__date__ = "22/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -276,7 +276,7 @@ class HistoBBox1d(LutIntegrator):
             position_t[::1] cpos0_inf = self.cpos0_inf
             position_t[::1] cpos1_min, cpos1_max
             mask_t[::1] cmask
-            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=bins*32)
+            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
 
         size = self.size
         if self.check_mask:
@@ -348,7 +348,7 @@ class HistoBBox1d(LutIntegrator):
             bint check_mask, check_pos1
             position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
             mask_t[::1] cmask
-            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=bins*32)
+            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
             
         size = self.size
         if self.check_mask:
@@ -594,7 +594,7 @@ class HistoBBox2d(LutIntegrator):
             lut_t[:, :, ::1] lut
             mask_t[:] cmask
             acc_t inv_area, delta_down, delta_up, delta_right, delta_left
-            SparseBuilder builder = SparseBuilder(bins0*bins1, block_size=6, heap_size=bins0*bins1)
+            SparseBuilder builder = SparseBuilder(bins0*bins1, block_size=8, heap_size=size)
 
         if self.check_mask:
             cmask = self.cmask
