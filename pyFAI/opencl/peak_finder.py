@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "22/11/2021"
+__date__ = "23/11/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -745,9 +745,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         wdim_data = (data.shape[0] + wg0 - 1) & ~(wg0 - 1), (data.shape[1] + wg1 - 1) & ~(wg1 - 1)
         # allocate local memory: we store 4 bytes but at most 1 pixel out of 4 can be a peak
         
-        buffer_size = int(math.ceil(wg * 4 / (patch_size * patch_size)))
-        print(wg, wdim_data, buffer_size)
-        kw_proj["local_highidx"] = pyopencl.LocalMemory(4 * buffer_size)
+        buffer_size = int(math.ceil(wg * 4 / (patch_size)))
+        print(wg, wg0, wg1, wdim_data, buffer_size)
+        kw_proj["local_highidx"] = pyopencl.LocalMemory(1 * buffer_size)
         kw_proj["local_peaks"] = pyopencl.LocalMemory(4 * buffer_size)
         kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
         kw_proj["half_patch"] = numpy.int32(hw)
