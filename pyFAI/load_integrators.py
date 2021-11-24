@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/09/2021"
+__date__ = "19/11/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -149,6 +149,9 @@ else:
     IntegrationMethod(1, "no", "LUT", "cython", old_method="nosplit_lut",
                       class_funct_legacy=(splitBBoxLUT.HistoBBox1d, splitBBoxLUT.HistoBBox1d.integrate_legacy),
                       class_funct_ng=(splitBBoxLUT.HistoBBox1d, splitBBoxLUT.HistoBBox1d.integrate_ng))
+    IntegrationMethod(2, "no", "LUT", "cython", old_method="nosplit_lut",
+                      class_funct_legacy=(splitBBoxLUT.HistoBBox2d, splitBBoxLUT.HistoBBox2d.integrate),
+                      class_funct_ng=(splitBBoxLUT.HistoBBox2d, splitBBoxLUT.HistoBBox2d.integrate_ng))
 
 try:
     from .ext import splitPixelFullLUT
@@ -159,10 +162,12 @@ except ImportError as error:
     splitPixelFullLUT = None
 else:
     # Register splitPixelFullLUT integrators
-    IntegrationMethod(1, "pseudo", "LUT", "cython", old_method="full_lut",
-                      class_funct_legacy=(splitPixelFullLUT.HistoLUT1dFullSplit, splitPixelFullLUT.HistoLUT1dFullSplit.integrate))
+    IntegrationMethod(1, "full", "LUT", "cython", old_method="full_lut",
+                      class_funct_legacy=(splitPixelFullLUT.HistoLUT1dFullSplit, splitPixelFullLUT.HistoLUT1dFullSplit.integrate),
+                      class_funct_ng=(splitPixelFullLUT.HistoLUT1dFullSplit, splitPixelFullLUT.HistoLUT1dFullSplit.integrate_ng))
     IntegrationMethod(2, "full", "LUT", "cython", old_method="full_lut",
-                      class_funct_legacy=(splitPixelFullLUT.HistoLUT2dFullSplit, splitPixelFullLUT.HistoLUT2dFullSplit.integrate))
+                      class_funct_legacy=(splitPixelFullLUT.HistoLUT2dFullSplit, splitPixelFullLUT.HistoLUT2dFullSplit.integrate),
+                      class_funct_ng=(splitPixelFullLUT.HistoLUT2dFullSplit, splitPixelFullLUT.HistoLUT2dFullSplit.integrate_ng))
 
 try:
     from .ext import splitPixelFullCSR  # IGNORE:F0401
@@ -175,9 +180,9 @@ else:
     IntegrationMethod(1, "full", "CSR", "cython", old_method="full_csr",
                       class_funct_legacy=(splitPixelFullCSR.FullSplitCSR_1d, splitPixelFullCSR.FullSplitCSR_1d.integrate_legacy),
                       class_funct_ng=(splitPixelFullCSR.FullSplitCSR_1d, splitPixelFullCSR.FullSplitCSR_1d.integrate_ng))
-    # FIXME: The implementation is there but the routing have to be fixed
-    # IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr",
-    #                   class_funct=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate))
+    IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr",
+                      class_funct_legacy=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate),
+                      class_funct_ng=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate_ng))
 
 try:
     from .opencl import ocl

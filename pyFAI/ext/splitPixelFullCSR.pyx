@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3, binding=True
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/09/2021"
+__date__ = "19/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -57,11 +57,22 @@ from libc.stdio cimport printf, fflush, stdout
 from ..utils import crc32
 from ..utils.decorators import deprecated
 from .preproc import preproc
-from ..containers import Integrate1dtpl
+from .sparse_builder cimport SparseBuilder
+
 cdef struct Function:
     float slope
     float intersect
 
+
+cdef Py_ssize_t NUM_WARNING
+if logger.level >= logging.ERROR:
+    NUM_WARNING = -1
+elif logger.level >= logging.WARNING:
+    NUM_WARNING = 10 
+elif logger.level >= logging.INFO:
+    NUM_WARNING = 100 
+else:
+    NUM_WARNING = 10000
 
 cdef inline float getBin1Nr(float x0, float pos0_min, float delta, float var) nogil:
     """
@@ -229,8 +240,6 @@ class FullSplitCSR_1d(CsrIntegrator):
         cdef:
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
             mask_t[::1] cmask
-            numpy.int32_t[::1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
-            numpy.int32_t[::1] indptr
             float pos0_min = 0, pos1_min = 0, pos1_maxin = 0
             float max0, min0
             float areaPixel = 0, delta = 0, areaPixel2 = 0
@@ -238,10 +247,10 @@ class FullSplitCSR_1d(CsrIntegrator):
             float A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
             float partialArea = 0, oneOverPixelArea
             Function AB, BC, CD, DA
-            Py_ssize_t bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0
+            Py_ssize_t bins=self.bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0
             bint check_pos1, check_mask = False
+            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=bins*32)
 
-        bins = self.bins
         if self.pos0_range is not None:
             self.pos0_min, self.pos0_maxin = self.pos0_range
         else:
@@ -257,7 +266,7 @@ class FullSplitCSR_1d(CsrIntegrator):
             check_pos1 = False
         self.pos1_max = calc_upper_bound(<position_t> self.pos1_maxin)
 
-        self.delta = (self.pos0_max - self.pos0_min) / (<double> (bins))
+        self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (bins))
 
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
@@ -269,44 +278,6 @@ class FullSplitCSR_1d(CsrIntegrator):
         check_mask = self.check_mask
         if check_mask:
             cmask = self.cmask
-
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-
-                A0 = get_bin_number(<float> cpos[idx, 0, 0], pos0_min, delta)
-                A1 = <float> cpos[idx, 0, 1]
-                B0 = get_bin_number(<float> cpos[idx, 1, 0], pos0_min, delta)
-                B1 = <float> cpos[idx, 1, 1]
-                C0 = get_bin_number(<float> cpos[idx, 2, 0], pos0_min, delta)
-                C1 = <float> cpos[idx, 2, 1]
-                D0 = get_bin_number(<float> cpos[idx, 3, 0], pos0_min, delta)
-                D1 = <float> cpos[idx, 3, 1]
-
-                min0 = min(A0, B0, C0, D0)
-                max0 = max(A0, B0, C0, D0)
-
-                if (max0 < 0) or (min0 >= bins):
-                    continue
-                if check_pos1:
-                    if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
-                        continue
-
-                bin0_min = < int > floor(min0)
-                bin0_max = < int > floor(max0)
-                for bin in range(max(bin0_min,0), min(bins, bin0_max + 1)):
-                    outmax[bin] += 1
-
-        indptr = numpy.concatenate(([numpy.int32(0)], 
-                                    numpy.asarray(outmax).cumsum(dtype=index_d)))
-
-        cdef:
-            index_t[::1] indices = numpy.zeros(indptr[bins], dtype=index_d)
-            data_t[::1] data = numpy.zeros(indptr[bins], dtype=data_d)
-
-        # just recycle the outmax array
-        outmax[:] = 0
 
         with nogil:
             for idx in range(size):
@@ -337,10 +308,7 @@ class FullSplitCSR_1d(CsrIntegrator):
 
                 if bin0_min == bin0_max:
                     # All pixel is within a single bin
-                    k = outmax[bin0_min]
-                    indices[indptr[bin0_min] + k] = idx
-                    data[indptr[bin0_min] + k] = 1.0
-                    outmax[bin0_min] += 1  # k+1
+                    builder.cinsert(bin0_min, idx, 1.0)
                 else:
                     # else we have pixel spliting.
                     # offseting the min bin of the pixel to be zero to avoid percision problems
@@ -382,13 +350,8 @@ class FullSplitCSR_1d(CsrIntegrator):
                         partialArea += integrate(C_lim, D_lim, CD)
                         partialArea += integrate(D_lim, A_lim, DA)
 
-                        k = outmax[bin]
-                        pos = indptr[bin] + k
-                        indices[pos] = idx
-                        data[pos] = fabs(partialArea) * oneOverPixelArea
-                        outmax[bin] = k + 1
-        self.outmax = numpy.asarray(outmax)
-        return (data, indices, indptr)
+                        builder.cinsert(bin, idx, fabs(partialArea) * oneOverPixelArea)
+        return builder.to_csr()
 
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
@@ -402,7 +365,7 @@ class FullSplitCSR_1d(CsrIntegrator):
 ################################################################################
 
 
-class FullSplitCSR_2d(object):
+class FullSplitCSR_2d(CsrIntegrator):
     """
     Now uses CSR (Compressed Sparse raw) with main attributes:
     * nnz: number of non zero elements
@@ -421,7 +384,9 @@ class FullSplitCSR_2d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 empty=None):
+                 empty=None,
+                 chiDiscAtPi=1
+                 ):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
@@ -442,25 +407,28 @@ class FullSplitCSR_2d(object):
         self.size = pos.shape[0]
         self.bins = bins
         # self.bad_pixel = bad_pixel
-        self.lut_size = 0
-        self.empty = empty or 0.0
+        # self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
+        self.chiDiscAtPi = chiDiscAtPi
         if mask is not None:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int64)
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
             if mask_checksum:
                 self.mask_checksum = mask_checksum
             else:
                 self.mask_checksum = crc32(mask)
         else:
+            self.cmask = None
             self.check_mask = False
             self.mask_checksum = None
-        self.data = self.nnz = self.indices = self.indptr = None
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
-
-        self.calc_lut()
+        self.calc_boundaries(pos0_range, pos1_range, self.cmask)
+        lut = self.calc_lut()
+        #Call the constructor of the parent class
+        super().__init__(lut, pos.shape[0], empty or 0.0)    
+        self.bin_centers = None
         self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
                                            self.pos0_max - 0.5 * self.delta0, 
                                            bins[0])
@@ -474,564 +442,171 @@ class FullSplitCSR_2d(object):
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
+    def calc_boundaries(self, pos0_range, pos1_range, mask=None):
+        """
+        Calculate self.pos0_min/max and self.pos1_min/max
+        
+        TODO: as referenced in #1589
+
+        :param pos0_range: 2-tuple containing the requested range
+        :param pos1_range: 2-tuple containing the requested range
+        :param mask: binary mask
+        :return: 2tuple of 2 tuple with lower and upper bound in dim0 and dim1
+        """
+        pass
+
     def calc_lut(self):
+        cdef Py_ssize_t bins0, bins1, size = self.size
+        bins0, bins1 = tuple(self.bins)
+        bins0 = max(bins0, 1)
+        bins1 = max(bins1, 1)
+    
         cdef:
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
-            mask_t[:] cmask
-            numpy.int32_t[:, ::1] outmax = numpy.zeros(self.bins, dtype=numpy.int32)
-            numpy.int32_t[::1] indptr
-            float pos0_min = 0, pos1_min = 0
-            float max0, min0, min1, max1
-            float areaPixel = 0, delta0 = 0, delta1 = 0
-            float A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
-            float A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
-            float partialArea = 0, var = 0, oneOverPixelArea
-            Function AB, BC, CD, DA
-            MyPoint A, B, C, D, S, E
-            MyPoly list1, list2
-            int bins0, bins1, i = 0, j = 0, idx = 0, bin = 0, bin0 = 0, bin1 = 0, bin0_max = 0, bin0_min = 0, bin1_min = 0, bin1_max = 0, k = 0, size = 0
-            int all_bins0 = self.bins[0], all_bins1 = self.bins[1], all_bins = self.bins[0] * self.bins[1], tmp_i, index
-            bint check_mask = False
-
-        bins = self.bins
-        if self.pos0_range is not None:
-            self.pos0_min, self.pos0_maxin = self.pos0_range
-        else:
-            self.pos0_min = self.pos[:, :, 0].min()
-            self.pos0_maxin = self.pos[:, :, 0].max()
-        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
-        if self.pos1_range is not None:
-            self.pos1_min, self.pos1_maxin = self.pos1_range
-            self.check_pos1 = True
-        else:
-            self.pos1_min = self.pos[:, :, 1].min()
-            self.pos1_maxin = self.pos[:, :, 1].max()
-        self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
-
-        self.delta0 = (self.pos0_max - self.pos0_min) / (<float> (all_bins0))
-        self.delta1 = (self.pos1_max - self.pos1_min) / (<float> (all_bins1))
-
-        pos0_min = self.pos0_min
-        pos1_min = self.pos1_min
-        delta0 = self.delta0
-        delta1 = self.delta1
-
-        size = self.size
-        check_mask = self.check_mask
+            position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
+            mask_t[:] cmask = self.cmask
+            bint check_mask = self.check_mask, allow_pos0_neg = self.allow_pos0_neg, chiDiscAtPi = self.chiDiscAtPi
+            position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
+            position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
+            position_t fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
+            position_t a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
+            position_t center0 = 0.0, center1 = 0.0, area, width, height,   
+            position_t delta0, delta1, new_width, new_height, new_min0, new_max0, new_min1, new_max1
+            Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
+            Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15, nwarn=NUM_WARNING
+            buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
+            buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
+            double foffset0, foffset1, sum_area, loc_area
+            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=bins1*bins0)
+            
         if check_mask:
             cmask = self.cmask
-
-        cdef mask_t[:, ::1] is_inside = numpy.zeros((<int> (1.5 * sqrt(size) / all_bins0) ,<int> (1.5 * sqrt(size) / all_bins1)), 
-                                                    dtype=mask_d)
-
+        if self.pos0_range is not None and len(self.pos0_range) == 2:
+            pos0_min = min(self.pos0_range)
+            pos0_maxin = max(self.pos0_range)
+        else:
+            pos0_min = self.pos[:, :, 0].min()
+            pos0_maxin = self.pos[:, :, 0].max()
+        if not allow_pos0_neg:
+            pos0_min = max(pos0_min, 0.0)
+            pos0_maxin = max(pos0_maxin, 0.0)
+        pos0_max = calc_upper_bound(pos0_maxin)
+        self.pos0_min = pos0_min
+        self.pos0_max = pos0_max
+        
+        if self.pos1_range is not None and len(self.pos1_range) > 1:
+            pos1_min = min(self.pos1_range)
+            pos1_maxin = max(self.pos1_range)
+        else:
+            pos1_min = self.pos[:, :, 1].min()
+            pos1_maxin = self.pos[:, :, 1].max()
+        pos1_max = calc_upper_bound(pos1_maxin)
+        self.pos1_min = pos1_min
+        self.pos1_max = pos1_max
+            
+        self.delta0 = delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
+        self.delta1 = delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
+    
         with nogil:
             for idx in range(size):
+    
                 if (check_mask) and (cmask[idx]):
                     continue
-
-                A0 = get_bin_number(<float> cpos[idx, 0, 0], pos0_min, delta0)
-                B0 = get_bin_number(<float> cpos[idx, 1, 0], pos0_min, delta0)
-                C0 = get_bin_number(<float> cpos[idx, 2, 0], pos0_min, delta0)
-                D0 = get_bin_number(<float> cpos[idx, 3, 0], pos0_min, delta0)
-
-                var = on_boundary(cpos[idx, 0, 1], cpos[idx, 1, 1], cpos[idx, 2, 1], cpos[idx, 3, 1])
-                A1 = getBin1Nr(<float> cpos[idx, 0, 1], pos1_min, delta1, var)
-                B1 = getBin1Nr(<float> cpos[idx, 1, 1], pos1_min, delta1, var)
-                C1 = getBin1Nr(<float> cpos[idx, 2, 1], pos1_min, delta1, var)
-                D1 = getBin1Nr(<float> cpos[idx, 3, 1], pos1_min, delta1, var)
-
-                min0 = min(A0, B0, C0, D0)
-                max0 = max(A0, B0, C0, D0)
-                min1 = min(A1, B1, C1, D1)
-                max1 = max(A1, B1, C1, D1)
-
-                if (max0 < 0) or (min0 >= all_bins0) or (max1 < 0):  # or (min1 >= all_bins1+2):
-                    continue
-
-                bin0_min = < int > floor(min0)
-                bin0_max = < int > floor(max0)
-                bin1_min = < int > floor(min1)
-                bin1_max = < int > floor(max1)
-
-                if bin0_min == bin0_max:
-                    if bin1_min == bin1_max:
-                        outmax[bin0_min, bin1_min] += 1
+                    
+                # Play with coordinates ...
+                v8[:, :] = cpos[idx, :, :]
+                area = _recenter(v8, chiDiscAtPi)
+                a0 = v8[0, 0]
+                a1 = v8[0, 1]
+                b0 = v8[1, 0]
+                b1 = v8[1, 1]
+                c0 = v8[2, 0]
+                c1 = v8[2, 1]
+                d0 = v8[3, 0]
+                d1 = v8[3, 1]
+    
+                min0 = min(a0, b0, c0, d0)
+                max0 = max(a0, b0, c0, d0)
+                min1 = min(a1, b1, c1, d1)
+                max1 = max(a1, b1, c1, d1)
+                
+                if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):
+                        continue
+    
+                # Swith to bin space.
+                a0 = get_bin_number(_clip(a0, pos0_min, pos0_maxin), pos0_min, delta0)
+                a1 = get_bin_number(_clip(a1, pos1_min, pos1_maxin), pos1_min, delta1)
+                b0 = get_bin_number(_clip(b0, pos0_min, pos0_maxin), pos0_min, delta0)
+                b1 = get_bin_number(_clip(b1, pos1_min, pos1_maxin), pos1_min, delta1)
+                c0 = get_bin_number(_clip(c0, pos0_min, pos0_maxin), pos0_min, delta0)
+                c1 = get_bin_number(_clip(c1, pos1_min, pos1_maxin), pos1_min, delta1)
+                d0 = get_bin_number(_clip(d0, pos0_min, pos0_maxin), pos0_min, delta0)
+                d1 = get_bin_number(_clip(d1, pos1_min, pos1_maxin), pos1_min, delta1)
+                
+                # Recalculate here min0, max0, min1, max1 based on the actual area of ABCD and the width/height ratio
+                min0 = min(a0, b0, c0, d0)
+                max0 = max(a0, b0, c0, d0)
+                min1 = min(a1, b1, c1, d1)
+                max1 = max(a1, b1, c1, d1)
+                foffset0 = floor(min0)
+                foffset1 = floor(min1)
+                ioffset0 = <Py_ssize_t> foffset0
+                ioffset1 = <Py_ssize_t> foffset1
+                w0 = <Py_ssize_t>(ceil(max0) - foffset0)
+                w1 = <Py_ssize_t>(ceil(max1) - foffset1)
+                if (w0>bw0) or (w1>bw1):
+                    if (w0+1)*(w1+1)>linbuffer.shape[0]:
+                        with gil:
+                            linbuffer = numpy.empty((w0+1)*(w1+1), dtype=buffer_d)
+                            buffer = numpy.asarray(linbuffer).reshape((w0+1,w1+1))
+                            logger.debug("malloc  %s->%s and %s->%s", w0, bw0, w1, bw1) 
                     else:
-                        for bin in range(bin1_min, bin1_max + 1):
-                            outmax[bin0_min, bin] += 1
-                elif bin1_min == bin1_max:
-                    for bin in range(bin0_min, bin0_max + 1):
-                        outmax[bin, bin1_min] += 1
-                else:
-                    bins0 = bin0_max - bin0_min + 1
-                    bins1 = bin1_max - bin1_min + 1
-
-                    A0 -= bin0_min
-                    A1 -= bin1_min
-                    B0 -= bin0_min
-                    B1 -= bin1_min
-                    C0 -= bin0_min
-                    C1 -= bin1_min
-                    D0 -= bin0_min
-                    D1 -= bin1_min
-
-                    # perimeter skipped
-                    for i in range(1, bins0):
-                        for j in range(1, bins1):
-                            tmp_i = point_and_line(A0, A1, B0, B1, i, j)
-                            tmp_i += point_and_line(B0, B1, C0, C1, i, j)
-                            tmp_i += point_and_line(C0, C1, D0, D1, i, j)
-                            tmp_i += point_and_line(D0, D1, A0, A1, i, j)
-                            is_inside[i, j] = abs(tmp_i // 4)
-
-                    for i in range(bins0):
-                        for j in range(bins1):
-                            tmp_i = is_inside[i, j]
-                            tmp_i += is_inside[i, j + 1]
-                            tmp_i += is_inside[i + 1, j]
-                            tmp_i += is_inside[i + 1, j + 1]
-                            if tmp_i: #!=0
-                                outmax[i + bin0_min, j + bin1_min] += 1
-
-        indptr = numpy.concatenate([numpy.int32(0)],
-                                   numpy.asarray(outmax.ravel()).cumsum())
-        self.indptr = numpy.asarray(indptr)
-
-        cdef numpy.int32_t[::1] indices = numpy.zeros(indptr[all_bins], dtype=numpy.int32)
-        cdef data_t[::1] data = numpy.zeros(indptr[all_bins], dtype=data_d)
-
-        # just recycle the outmax array
-        outmax[:] = 0
-
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
+                        with gil:
+                            buffer = numpy.asarray(linbuffer[:(w0+1)*(w1+1)]).reshape((w0+1,w1+1))
+                            logger.debug("reshape %s->%s and %s->%s", w0, bw0, w1, bw1)
+                    bw0 = w0
+                    bw1 = w1
+                buffer[:, :] = 0.0
+                
+                a0 -= foffset0
+                a1 -= foffset1
+                b0 -= foffset0
+                b1 -= foffset1
+                c0 -= foffset0
+                c1 -= foffset1            
+                d0 -= foffset0
+                d1 -= foffset1
+                
+                # ABCD is anti-trigonometric order: order input position accordingly
+                _integrate2d(buffer, a0, a1, b0, b1)
+                _integrate2d(buffer, b0, b1, c0, c1)
+                _integrate2d(buffer, c0, c1, d0, d1)
+                _integrate2d(buffer, d0, d1, a0, a1)
+    
+                area = 0.5 * ((c1 - a1) * (d0 - b0) - (c0 - a0) * (d1 - b1))
+                if area == 0.0:
                     continue
-
-                A0 = get_bin_number(<float> cpos[idx, 0, 0], pos0_min, delta0)
-                B0 = get_bin_number(<float> cpos[idx, 1, 0], pos0_min, delta0)
-                C0 = get_bin_number(<float> cpos[idx, 2, 0], pos0_min, delta0)
-                D0 = get_bin_number(<float> cpos[idx, 3, 0], pos0_min, delta0)
-
-                var = on_boundary(cpos[idx, 0, 1], cpos[idx, 1, 1], cpos[idx, 2, 1], cpos[idx, 3, 1])
-                A1 = getBin1Nr(<float> cpos[idx, 0, 1], pos1_min, delta1, var)
-                B1 = getBin1Nr(<float> cpos[idx, 1, 1], pos1_min, delta1, var)
-                C1 = getBin1Nr(<float> cpos[idx, 2, 1], pos1_min, delta1, var)
-                D1 = getBin1Nr(<float> cpos[idx, 3, 1], pos1_min, delta1, var)
-
-                min0 = min(A0, B0, C0, D0)
-                max0 = max(A0, B0, C0, D0)
-                min1 = min(A1, B1, C1, D1)
-                max1 = max(A1, B1, C1, D1)
-
-                if (max0 < 0) or (min0 >= all_bins0) or (max1 < 0):  # or (min1 >= all_bins1 + 2 ):
-                    continue
-
-                bin0_min = < int > floor(min0)
-                bin0_max = < int > floor(max0)
-                bin1_min = < int > floor(min1)
-                bin1_max = < int > floor(max1)
-
-                if bin0_min == bin0_max:
-                    if bin1_min == bin1_max:
-                        # Whole pixel is within a single bin
-                        k = outmax[bin0_min, bin1_min]
-                        index = bin0_min * all_bins1 + bin1_min
-                        if index > all_bins:
-                            printf("0 index = %d > %d!! \n", index, all_bins)
-                            fflush(stdout)
-                        if indptr[index] > indptr[all_bins]:
-                            printf("0 indptr = %d > %d!! \n", indptr[index], indptr[all_bins])
-                            fflush(stdout)
-                        indices[indptr[index] + k] = idx
-                        data[indptr[index] + k] = 1.0
-                        outmax[bin0_min, bin1_min] += 1  # k+1
-                    else:
-                        # printf("  1 %d  %d \n",bin1_min,bin1_max)
-                        # fflush(stdout)
-                        # transpose previous code
-                        # A0 -= bin0_min
-                        A1 -= bin1_min
-                        # B0 -= bin0_min
-                        B1 -= bin1_min
-                        # C0 -= bin0_min
-                        C1 -= bin1_min
-                        # D0 -= bin0_min
-                        D1 -= bin1_min
-
-                        AB.slope = 0.0 if A1 == B1 else  (B0 - A0) / (B1 - A1)
-                        AB.intersect = A0 - AB.slope * A1
-                        BC.slope = 0.0 if C1 == B1 else  (C0 - B0) / (C1 - B1)
-                        BC.intersect = B0 - BC.slope * B1
-                        CD.slope = 0.0 if D1 == C1 else  (D0 - C0) / (D1 - C1)
-                        CD.intersect = C0 - CD.slope * C1
-                        DA.slope = 0.0 if A1 == D1 else  (A0 - D0) / (A1 - D1)
-                        DA.intersect = D0 - DA.slope * D1
-
-                        areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
-                        oneOverPixelArea = 1.0 / areaPixel
-
-                        # for bin in range(bin0_min, bin0_max+1):
-                        for bin1 in range(bin1_max + 1 - bin1_min):
-                            # bin1 = bin - bin1_min
-                            A_lim = (A1 <= bin1) * (A1 <= (bin1 + 1)) * bin1 + (A1 > bin1) * (A1 <= (bin1 + 1)) * A1 + (A1 > bin1) * (A1 > (bin1 + 1)) * (bin1 + 1)
-                            B_lim = (B1 <= bin1) * (B1 <= (bin1 + 1)) * bin1 + (B1 > bin1) * (B1 <= (bin1 + 1)) * B1 + (B1 > bin1) * (B1 > (bin1 + 1)) * (bin1 + 1)
-                            C_lim = (C1 <= bin1) * (C1 <= (bin1 + 1)) * bin1 + (C1 > bin1) * (C1 <= (bin1 + 1)) * C1 + (C1 > bin1) * (C1 > (bin1 + 1)) * (bin1 + 1)
-                            D_lim = (D1 <= bin1) * (D1 <= (bin1 + 1)) * bin1 + (D1 > bin1) * (D1 <= (bin1 + 1)) * D1 + (D1 > bin1) * (D1 > (bin1 + 1)) * (bin1 + 1)
-
-                            partialArea = integrate(A_lim, B_lim, AB)
-                            partialArea += integrate(B_lim, C_lim, BC)
-                            partialArea += integrate(C_lim, D_lim, CD)
-                            partialArea += integrate(D_lim, A_lim, DA)
-
-                            k = outmax[bin0_min, bin1_min + bin1]
-                            index = bin0_min * all_bins1 + bin1_min + bin1
-                            if index > all_bins:
-                                printf("1 index = %d > %d!! \n", index, all_bins)
-                                fflush(stdout)
-                            if indptr[index] > indptr[all_bins]:
-                                printf("1 indptr = %d > %d!! \n", indptr[index], indptr[all_bins])
-                                fflush(stdout)
-                            indices[indptr[index] + k] = idx
-                            data[indptr[index] + k] = fabs(partialArea) * oneOverPixelArea
-                            outmax[bin0_min, bin1_min + bin1] += 1  # k+1
-
-                elif bin1_min == bin1_max:
-                    A0 -= bin0_min
-                    # A1 -= bin1_min
-                    B0 -= bin0_min
-                    # B1 -= bin1_min
-                    C0 -= bin0_min
-                    # C1 -= bin1_min
-                    D0 -= bin0_min
-                    # D1 -= bin1_min
-
-                    AB.slope = (B1 - A1) / (B0 - A0)
-                    AB.intersect = A1 - AB.slope * A0
-                    BC.slope = (C1 - B1) / (C0 - B0)
-                    BC.intersect = B1 - BC.slope * B0
-                    CD.slope = (D1 - C1) / (D0 - C0)
-                    CD.intersect = C1 - CD.slope * C0
-                    DA.slope = (A1 - D1) / (A0 - D0)
-                    DA.intersect = D1 - DA.slope * D0
-
-                    areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
-                    oneOverPixelArea = 1.0 / areaPixel
-
-                    # for bin in range(bin0_min, bin0_max+1):
-                    for bin0 in range(bin0_max + 1 - bin0_min):
-                        # bin0 = bin - bin0_min
-                        A_lim = (A0 <= bin0) * (A0 <= (bin0 + 1)) * bin0 + (A0 > bin0) * (A0 <= (bin0 + 1)) * A0 + (A0 > bin0) * (A0 > (bin0 + 1)) * (bin0 + 1)
-                        B_lim = (B0 <= bin0) * (B0 <= (bin0 + 1)) * bin0 + (B0 > bin0) * (B0 <= (bin0 + 1)) * B0 + (B0 > bin0) * (B0 > (bin0 + 1)) * (bin0 + 1)
-                        C_lim = (C0 <= bin0) * (C0 <= (bin0 + 1)) * bin0 + (C0 > bin0) * (C0 <= (bin0 + 1)) * C0 + (C0 > bin0) * (C0 > (bin0 + 1)) * (bin0 + 1)
-                        D_lim = (D0 <= bin0) * (D0 <= (bin0 + 1)) * bin0 + (D0 > bin0) * (D0 <= (bin0 + 1)) * D0 + (D0 > bin0) * (D0 > (bin0 + 1)) * (bin0 + 1)
-
-                        partialArea = integrate(A_lim, B_lim, AB)
-                        partialArea += integrate(B_lim, C_lim, BC)
-                        partialArea += integrate(C_lim, D_lim, CD)
-                        partialArea += integrate(D_lim, A_lim, DA)
-
-                        k = outmax[bin0_min + bin0, bin1_min]
-                        index = (bin0_min + bin0) * all_bins1 + bin1_min
-                        if index > all_bins:
-                            printf("2 index = %d > %d!! \n", index, all_bins)
-                            fflush(stdout)
-                        if indptr[index] > indptr[all_bins]:
-                            printf("2 indptr = %d > %d!! \n", indptr[index], indptr[all_bins])
-                            fflush(stdout)
-                        indices[indptr[index] + k] = idx
-                        data[indptr[index] + k] = fabs(partialArea) * oneOverPixelArea
-                        outmax[bin0_min + bin0, bin1_min] += 1  # k+1
-
-                else:
-                    bins0 = bin0_max - bin0_min + 1
-                    bins1 = bin1_max - bin1_min + 1
-
-                    A0 -= bin0_min
-                    A1 -= bin1_min
-                    B0 -= bin0_min
-                    B1 -= bin1_min
-                    C0 -= bin0_min
-                    C1 -= bin1_min
-                    D0 -= bin0_min
-                    D1 -= bin1_min
-
-                    areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
-                    oneOverPixelArea = 1.0 / areaPixel
-
-                    # perimeter skipped - not inside for sure
-                    for i in range(1, bins0):
-                        for j in range(1, bins1):
-                            tmp_i = point_and_line(A0, A1, B0, B1, i, j)
-                            tmp_i += point_and_line(B0, B1, C0, C1, i, j)
-                            tmp_i += point_and_line(C0, C1, D0, D1, i, j)
-                            tmp_i += point_and_line(D0, D1, A0, A1, i, j)
-                            is_inside[i, j] = abs(tmp_i // 4)
-
-                    for i in range(bins0):
-                        for j in range(bins1):
-                            tmp_i = is_inside[i, j]
-                            tmp_i += is_inside[i, j + 1]
-                            tmp_i += is_inside[i + 1, j]
-                            tmp_i += is_inside[i + 1, j + 1]
-                            if tmp_i == 4:
-                                k = outmax[bin0_min + i, bin1_min + j]
-                                index = (i + bin0_min) * all_bins1 + j + bin1_min
-                                if index > all_bins:
-                                    printf("3 index = %d > %d!! \n", index, all_bins)
-                                    fflush(stdout)
-                                if indptr[index] > indptr[all_bins]:
-                                    printf("3 indptr = %d > %d!! \n", indptr[index], indptr[all_bins])
-                                    fflush(stdout)
-                                indices[indptr[index] + k] = idx
-                                data[indptr[index] + k] = oneOverPixelArea
-                                outmax[bin0_min + i, bin1_min + j] += 1  # k+1
-
-                            elif 1<=tmp_i<=3:
-                                ###################################################
-                                #  Sutherland-Hodgman polygon clipping algorithm  #
-                                ###################################################
-                                #
-                                #  ...adjusted to utilise the peculiarities of our problem
-                                #
-
-                                A.i = A0
-                                A.j = A1
-                                B.i = B0
-                                B.j = B1
-                                C.i = C0
-                                C.j = C1
-                                D.i = D0
-                                D.j = D1
-
-                                list1.data[0] = A
-                                list1.data[1] = B
-                                list1.data[2] = C
-                                list1.data[3] = D
-                                list1.size = 4
-                                list2.size = 0
-
-                                S = list1.data[list1.size - 1]  # last element
-                                for tmp_i in range(list1.size):
-                                    E = list1.data[tmp_i]
-                                    if E.i > i:  # is_inside(E, clipEdge):   -- i is the x coord of current bin
-                                        if S.i <= i:  # not is_inside(S, clipEdge):
-                                            list2.data[list2.size] = ComputeIntersection0(S, E, i)
-                                            list2.size += 1
-                                        list2.data[list2.size] = E
-                                        list2.size += 1
-                                    elif S.i > i:  # is_inside(S, clipEdge):
-                                        list2.data[list2.size] = ComputeIntersection0(S, E, i)
-                                        list2.size += 1
-                                    S = E
-                                # y=b+1
-                                list1.size = 0
-                                S = list2.data[list2.size - 1]
-                                for tmp_i in range(list2.size):
-                                    E = list2.data[tmp_i]
-                                    if E.j < j + 1:  # is_inside(E, clipEdge):   -- j is the y coord of current bin
-                                        if S.j >= j + 1:  # not is_inside(S, clipEdge):
-                                            list1.data[list1.size] = ComputeIntersection1(S, E, j + 1)
-                                            list1.size += 1
-                                        list1.data[list1.size] = E
-                                        list1.size += 1
-                                    elif S.j < j + 1:  # is_inside(S, clipEdge):
-                                        list1.data[list1.size] = ComputeIntersection1(S, E, j + 1)
-                                        list1.size += 1
-                                    S = E
-                                # x=a+1
-                                list2.size = 0
-                                S = list1.data[list1.size - 1]
-                                for tmp_i in range(list1.size):
-                                    E = list1.data[tmp_i]
-                                    if E.i < i + 1:  # is_inside(E, clipEdge):
-                                        if S.i >= i + 1:  # not is_inside(S, clipEdge):
-                                            list2.data[list2.size] = ComputeIntersection0(S, E, i + 1)
-                                            list2.size += 1
-                                        list2.data[list2.size] = E
-                                        list2.size += 1
-                                    elif S.i < i + 1:  # is_inside(S, clipEdge):
-                                        list2.data[list2.size] = ComputeIntersection0(S, E, i + 1)
-                                        list2.size += 1
-                                    S = E
-                                # y=b
-                                list1.size = 0
-                                S = list2.data[list2.size - 1]
-                                for tmp_i in range(list2.size):
-                                    E = list2.data[tmp_i]
-                                    if E.j > j:  # is_inside(E, clipEdge):
-                                        if S.j <= j:  # not is_inside(S, clipEdge):
-                                            list1.data[list1.size] = ComputeIntersection1(S, E, j)
-                                            list1.size += 1
-                                        list1.data[list1.size] = E
-                                        list1.size += 1
-                                    elif S.j > j:  # is_inside(S, clipEdge):
-                                        list1.data[list1.size] = ComputeIntersection1(S, E, j)
-                                        list1.size += 1
-                                    S = E
-
-                                partialArea = area_n(list1)
-
-                                k = outmax[bin0_min + i, bin1_min + j]
-                                index = (i + bin0_min) * all_bins1 + j + bin1_min
-                                if index > all_bins:
-                                    printf("3.1 index = %d > %d!! \n", index, all_bins)
-                                    fflush(stdout)
-                                if indptr[index] > indptr[all_bins]:
-                                    printf("3.1 indptr = %d > %d!! \n", indptr[index], indptr[all_bins])
-                                    fflush(stdout)
-                                indices[indptr[index] + k] = idx
-                                data[indptr[index] + k] = partialArea * oneOverPixelArea
-                                outmax[bin0_min + i, bin1_min + j] += 1  # k+1
-
-        self.data = numpy.asarray(data)
-        self.indices = numpy.asarray(indices)
-        self.outmax = numpy.asarray(outmax)
-
-    def integrate(self, weights,
-                  dummy=None,
-                  delta_dummy=None,
-                  dark=None,
-                  flat=None,
-                  solidAngle=None,
-                  polarization=None,
-                  double normalization_factor=1.0,
-                  int coef_power=1
-                  ):
-        """
-        Actually perform the 2D integration which in this case looks more like a matrix-vector product
-
-        :param weights: input image
-        :type weights: ndarray
-        :param dummy: value for dead pixels (optional)
-        :type dummy: float
-        :param delta_dummy: precision for dead-pixel value in dynamic masking
-        :type delta_dummy: float
-        :param dark: array with the dark-current value to be subtracted (if any)
-        :type dark: ndarray
-        :param flat: array with the dark-current value to be divided by (if any)
-        :type flat: ndarray
-        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        :type solidAngle: ndarray
-        :param polarization: array with the polarization correction values to be divided by (if any)
-        :type polarization: ndarray
-        :param normalization_factor: divide the valid result by this value
-        :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-        :return:  I(2d), bin_centers0(1d), bin_centers1(1d), weighted histogram(2d), unweighted histogram (2d)
-        :rtype: 5-tuple of ndarrays
-
-        """
-        cdef:
-            numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins[0] * self.bins[1], size = self.size
-            acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
-            data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
-            bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            acc_t[::1] sum_data = numpy.empty(bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.empty(bins, dtype=acc_d)
-            data_t[::1] merged = numpy.empty(bins, dtype=data_d)
-            data_t[::1] ccoef = self.data, 
-            data_t[::1] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-            numpy.int32_t[::1] indices = self.indices, indptr = self.indptr
-
-        assert weights.size == size, "weights size"
-
-        if dummy is not None:
-            do_dummy = True
-            cdummy = <data_t> float(dummy)
-            if delta_dummy is None:
-                cddummy = <data_t> 0.0
-            else:
-                cddummy = <data_t> float(delta_dummy)
-        else:
-            do_dummy = False
-            cdummy = <data_t> float(self.empty)
-
-        if flat is not None:
-            do_flat = True
-            assert flat.size == size, "flat-field array size"
-            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
-        if dark is not None:
-            do_dark = True
-            assert dark.size == size, "dark current array size"
-            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
-        if solidAngle is not None:
-            do_solidAngle = True
-            assert solidAngle.size == size, "Solid angle array size"
-            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
-        if polarization is not None:
-            do_polarization = True
-            assert polarization.size == size, "polarization array size"
-            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
-
-        if (do_dark + do_flat + do_polarization + do_solidAngle):
-            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-            cdata = numpy.empty(size, dtype=data_d)
-            if do_dummy:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        # Nota: -= and /= operatore are seen as reduction in cython parallel.
-                        if do_dark:
-                            data = data - cdark[i]
-                        if do_flat:
-                            data = data / cflat[i]
-                        if do_polarization:
-                            data = data / cpolarization[i]
-                        if do_solidAngle:
-                            data = data / csolidAngle[i]
-                        cdata[i] = data
-                    else:
-                        # set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i] = cdummy
-            else:
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if do_dark:
-                        data = data - cdark[i]
-                    if do_flat:
-                        data = data / cflat[i]
-                    if do_polarization:
-                        data = data / cpolarization[i]
-                    if do_solidAngle:
-                        data = data / csolidAngle[i]
-                    cdata[i] = data
-        else:
-            if do_dummy:
-                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-                cdata = numpy.empty(size, dtype=data_d)
-                for i in prange(size, nogil=True, schedule="static"):
-                    data = tdata[i]
-                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
-                        cdata[i] = data
-                    else:
-                        cdata[i] = cdummy
-            else:
-                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-
-        for i in prange(bins, nogil=True, schedule="guided"):
-            acc_data = 0.0
-            acc_count = 0.0
-            for j in range(indptr[i], indptr[i + 1]):
-                idx = indices[j]
-                coef = ccoef[j]
-                if coef == 0.0:
-                    continue
-                data = cdata[idx]
-                if do_dummy and (data == cdummy):
-                    continue
-                acc_data = acc_data + (coef ** coef_power) * data
-                acc_count = acc_count + coef
-            sum_data[i] = acc_data
-            sum_count[i] = acc_count
-            if acc_count > epsilon:
-                merged[i] = acc_data / acc_count / normalization_factor
-            else:
-                merged[i] = cdummy
-        return (numpy.asarray(merged).reshape(self.bins).T, 
-                self.bin_centers0, 
-                self.bin_centers1, 
-                numpy.asarray(sum_data).reshape(self.bins).T, 
-                numpy.asarray(sum_count).reshape(self.bins).T)
+                inv_area = 1.0 / area
+                sum_area = 0.0
+                for i in range(w0):
+                    for j in range(w1):
+                        loc_area = buffer[i, j]
+                        sum_area += loc_area
+                        builder.cinsert((ioffset0 + i)*bins1 + ioffset1 + j, idx, loc_area * inv_area)
+                        # update_2d_accumulator(out_data,
+                        #                       ioffset0 + i,
+                        #                       ioffset1 + j,
+                        #                       value,
+                        #                       weight=loc_area * inv_area)
+                if fabs(area - sum_area)*inv_area > 1e-3:
+                    nwarn -=1
+                    if nwarn>0:
+                        with gil:            
+                            logger.info(f"Invstigate idx {idx}, area {area} {sum_area}, {numpy.asarray(v8)}, {w0}, {w1}")
+        if nwarn<NUM_WARNING:
+            logger.info(f"Total number of spurious pixels: {NUM_WARNING - nwarn} / {size} total")
+      
+        return builder.to_csr()
 
     @property
     @deprecated(replacement="bin_centers0", since_version="0.16", only_once=True)
