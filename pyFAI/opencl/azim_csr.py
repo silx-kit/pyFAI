@@ -28,14 +28,13 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "28/10/2021"
+__date__ = "24/11/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-import math
 from . import pyopencl
 from ..utils import calc_checksum
 if pyopencl:

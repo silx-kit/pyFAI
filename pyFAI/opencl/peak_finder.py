@@ -695,7 +695,6 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
         wg = max(self.workgroup_size["corrections4"])
         wdim_data = (self.size + wg - 1) & ~(wg - 1),
-#         print(kw_corr)
         ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
         events.append(EventDescription("corrections", ev))
 
@@ -728,9 +727,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_min"] = numpy.float32(0.0)
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
-        print(self.workgroup_size["peakfinder8"])
         wg = max(self.workgroup_size["peakfinder8"])
-        if wg >= 32:
+        if wg > 32:
             wg1 = 32
             wg0 = wg // 32
         else:
@@ -747,7 +745,6 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         # allocate local memory: we store 4 bytes but at most 1 pixel out of 4 can be a peak
         
         buffer_size = int(math.ceil(wg * 4 / ((1+hw)*min(wg0, 1+hw))))
-        print(wg, wg0, wg1, wdim_data, buffer_size)
         kw_proj["local_highidx"] = pyopencl.LocalMemory(1 * buffer_size)
         kw_proj["local_peaks"] = pyopencl.LocalMemory(4 * buffer_size)
         kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
