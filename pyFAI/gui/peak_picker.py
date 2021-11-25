@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2021"
+__date__ = "25/11/2021"
 __status__ = "production"
 
 import os
@@ -223,7 +223,8 @@ class PeakPicker(object):
         points = obj.peaks_from_area(**kwargs)
         if points:
             gpt = self.points.append(points, ring)
-            self.widget.add_grp(gpt.label, points)
+            if self.widget is not None:
+                self.widget.add_grp(gpt.label, points)
         return points
 
     def reset(self):
@@ -231,7 +232,8 @@ class PeakPicker(object):
         Reset control point and graph (if needed)
         """
         self.points.reset()
-        self.widget.reset()
+        if self.widget is not None:
+            self.widget.reset()
         
     def gui(self, log=False, maximize=False, pick=True):
         """
@@ -300,7 +302,7 @@ class PeakPicker(object):
             :param gpt: : group of point, instance of PointGroup
             """
             if points:
-                if not gpt:
+                if not gpt and self.widget:
                     gpt = self.points.append(points, ring=self.widget.spinbox.value())
                 self.widget.add_grp(gpt.label, points)
             return gpt
