@@ -113,26 +113,63 @@ inline float2 get_shared2(local float2* buffer, int dim0, int dim1, int half_pat
     return buffer[pf8_calc_buffer2(dim0, dim1, half_patch)];
 }
 
-
-kernel void peakfinder8(  const global  float4 *preproc4, // pixel wise array of (signal, variance, norm, cnt) 
-                          const global  float  *radius2d, // contains the distance to the center for each pixel
+/*peakfinder8: kernel that pick peaks in an image after the sigma-clipping
+ * 
+ * In this kernel, each thread works on one pixel and uses data from the neighborhood of radius `half_patch` size
+ * The sigma-clipping step preceeding provides the mean signal and the associated uncertainty.
+ * This uncertainty sees some noise added quadratically.   
+ * 
+ * A pixel is kepts if: 
+ *  - if it a local maximum, 
+ *  - its intensity is greater than `mean` plus `cutoff`*`std` (including noise)
+ *  - more than `connected` pixels are also intense in the direct vinicy defined by a radius of `half_patch` size.
+ *  
+ * For each peak is calculated:
+ *  - the local sum of intensity over the vinicy, only accounting intense pixels
+ *  - the associated uncertainty (variance propagation).
+ *  - the center of mass of the peak 
+ *  
+ * The workgroup size should be as square as possible since the kernel first load all information and uses an explicit stencil pattern   
+ *
+ * parameters:
+ *  - preproc4: pixel wise array of (signal, variance, norm, cnt)
+ *  - radius2d: Contains the distance to the beamcenter for each pixel
+ *  - radius1d: Radial bin postion
+ *  - average1d: average intensity for pixels at the given distance from beam-center
+ *  - std1d: uncertainty associated to average1d
+ *  - radius_min: inner-most radius considered (not in bin, but actual radius)
+ *  - radius_min: outer-most radius considered (not in bin, but actual radius)
+ *  - cutoff: Intense pixels are the onve with I > avg + cutoff*√(std²+noise²)
+ *  - noise: noise level of the measurement, added quadratically to the uncertainty
+ *  - heigth: heigth of the image
+ *  - width: width of the image
+ *  - half_patch: radius or half of the size of the patch to consider for the neighborhood definition. Usually 1 or 2 to have a 3x3 or 5x5 patch.
+ *  - connected: keep peak if so many intense pixels are found in the patch
+ *  - counter: Number of peaks found
+ *  - highidx: index of the most intense pixel of each peak
+ *  - peaks: array of struct containing the centroid0, centroid1, sum of intensity and associated uncertainty calculated over all intensi pixels in the patch
+ */
+kernel void peakfinder8(  const global  float4 *preproc4, // Pixel wise array of (signal, variance, norm, cnt) 
+                          const global  float  *radius2d, // Contains the distance to the center for each pixel
                           const global  float  *radius1d, // Radial bin postion 
                           const global  float  *average1d,// average intensity in the bin
                           const global  float  *std1d,    // associated deviation
                           const         float   radius_min,// minimum radius
                           const         float   radius_max,// maximum radius 
-                          const         float   cutoff,    // pick pixel with I>avg+min(cutoff*std, noise)
+                          const         float   cutoff,    // pick pixel with I>avg+cutoff*√(std²+noise²)
                           const         float   noise,     // Noise level of the measurement
                           const         int     heigth,    // heigth of the image
                           const         int     width,     // width of the image
                           const         int     half_patch,// half of the size of the patch, 1 or 2 for 3x3 or 5x5 patch
                           const         int     connected, // keep only enough pixels are above threshold in patch
+//                          const         int    max_pkg,    // size of the peak array in global memory
+//                          const         int    max_pkl,    // size of the peak array in local memory
                                 global  int    *counter,   // Counter of the number of peaks found
                                 global  int    *highidx,   // indexes of the pixels of high intensity
                                 global  float4 *peaks,     // Contains center0, center1, integrated, sigma 
                                 local   int    *local_highidx,   // size: wg0*wg1
                                 local   float4 *local_peaks, // size: wg0*wg1
-                                local   float2 *buffer){         // size: (wg0+2*half_patch)*(wg1+2*half_patch) 
+                                local   float2 *buffer){   // size: (wg0+2*half_patch)*(wg1+2*half_patch) 
     int tid0 = get_local_id(0);
     int tid1 = get_local_id(1);
     int gid0 = get_global_id(0);

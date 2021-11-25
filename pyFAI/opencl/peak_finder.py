@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "18/11/2021"
+__date__ = "24/11/2021"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -182,6 +182,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                           ("width", numpy.int32(2)),
                                                           ("half_patch", numpy.int32(1)),
                                                           ("connected", numpy.int32(2)),
+                                                          # ("max_pkg", numpy.int32(2)),
+                                                          # ("max_pkl", numpy.int32(2)),
                                                           ("counter", self.cl_mem["counter"]),
                                                           ("peak_position", self.cl_mem["peak_position"]),
                                                           ("peak_descriptor", self.cl_mem["peak_descriptor"]),
@@ -693,7 +695,6 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
         wg = max(self.workgroup_size["corrections4"])
         wdim_data = (self.size + wg - 1) & ~(wg - 1),
-#         print(kw_corr)
         ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
         events.append(EventDescription("corrections", ev))
 
@@ -727,7 +728,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
         wg = max(self.workgroup_size["peakfinder8"])
-        if wg >= 32:
+        if wg > 32:
             wg1 = 32
             wg0 = wg // 32
         else:
@@ -742,8 +743,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
         wdim_data = (data.shape[0] + wg0 - 1) & ~(wg0 - 1), (data.shape[1] + wg1 - 1) & ~(wg1 - 1)
         # allocate local memory: we store 4 bytes but at most 1 pixel out of 4 can be a peak
-        buffer_size = int(math.ceil(wg * 4 / (patch_size * patch_size)))
-        kw_proj["local_highidx"] = pyopencl.LocalMemory(buffer_size)
+        
+        buffer_size = int(math.ceil(wg * 4 / ((1+hw)*min(wg0, 1+hw))))
+        kw_proj["local_highidx"] = pyopencl.LocalMemory(1 * buffer_size)
         kw_proj["local_peaks"] = pyopencl.LocalMemory(4 * buffer_size)
         kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
         kw_proj["half_patch"] = numpy.int32(hw)
