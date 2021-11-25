@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3, binding=True
-##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/11/2021"
+__date__ = "22/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -249,7 +249,7 @@ class FullSplitCSR_1d(CsrIntegrator):
             Function AB, BC, CD, DA
             Py_ssize_t bins=self.bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0
             bint check_pos1, check_mask = False
-            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=bins*32)
+            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
 
         if self.pos0_range is not None:
             self.pos0_min, self.pos0_maxin = self.pos0_range
@@ -477,7 +477,7 @@ class FullSplitCSR_2d(CsrIntegrator):
             buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
             buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
             double foffset0, foffset1, sum_area, loc_area
-            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=bins1*bins0)
+            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=size)
             
         if check_mask:
             cmask = self.cmask
