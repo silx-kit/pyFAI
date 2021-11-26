@@ -318,7 +318,7 @@ class PeakPicker(object):
                                             None, self.massif_contour)
             if points:
                 gpt = common_creation(points)
-                annontate(points[0], [ypix, xpix], gpt=gpt)
+                #annontate(points[0], [ypix, xpix], gpt=gpt)
                 logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
             else:
                 logger.warning("No peak found !!!")
@@ -329,7 +329,7 @@ class PeakPicker(object):
             newpeak = self.massif.nearest_peak([ypix, xpix])
             if newpeak:
                 gpt = common_creation([newpeak])
-                annontate(newpeak, [ypix, xpix], gpt=gpt)
+                #annontate(newpeak, [ypix, xpix], gpt=gpt)
                 logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f", gpt.label, newpeak[1], newpeak[0])
             else:
                 logger.warning("No peak found !!!")
