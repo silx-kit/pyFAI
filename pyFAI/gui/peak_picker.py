@@ -80,7 +80,7 @@ def preprocess_image(data, log=False, clip=0.001):
     sorted_list = data_disp.flatten()  # explicit copy
     sorted_list.sort()
     show_min = sorted_list[int(round(clip * (sorted_list.size - 1)))]
-    show_max = sorted_list[int(round((1.0-clip) * (sorted_list.size - 1)))]
+    show_max = sorted_list[int(round((1.0 - clip) * (sorted_list.size - 1)))]
     bounds = (show_min, show_max)
     return  data_disp, bounds
     
@@ -318,6 +318,7 @@ class PeakPicker(object):
                                             None, self.massif_contour)
             if points:
                 gpt = common_creation(points)
+                #annontate(points[0], [ypix, xpix], gpt=gpt)
                 logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
             else:
                 logger.warning("No peak found !!!")
@@ -328,6 +329,7 @@ class PeakPicker(object):
             newpeak = self.massif.nearest_peak([ypix, xpix])
             if newpeak:
                 gpt = common_creation([newpeak])
+                #annontate(newpeak, [ypix, xpix], gpt=gpt)
                 logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f", gpt.label, newpeak[1], newpeak[0])
             else:
                 logger.warning("No peak found !!!")
@@ -470,7 +472,6 @@ class PeakPicker(object):
         if self.widget is None:
             logging.warning("No diffraction image available => not showing the contour")
         else:
-            
             tth_max = data.max()
             tth_min = data.min()
             if self.points.calibrant:

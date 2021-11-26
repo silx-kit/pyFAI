@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2021"
+__date__ = "26/11/2021"
 
 import unittest
 import os
@@ -321,22 +321,28 @@ class TestAzimHalfFrelon(unittest.TestCase):
 
 class TestFlatimage(unittest.TestCase):
     """test the caking of a flat image"""
-    epsilon = 1e-4
+
+    @classmethod
+    def setUpClass(cls):
+        cls.epsilon = 1e-4
+        cls.shape = (200, 201)
+        cls.data = numpy.ones(cls.shape, dtype="float64")
+        det = Detector(1e-4, 1e-4, max_shape=cls.shape)
+        cls.ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.epsilon = cls.shape = cls.data = cls.ai = None
 
     def test_splitPixel(self):
-        shape = (200, 201)
-        data = numpy.ones(shape, dtype="float64")
-        det = Detector(1e-4, 1e-4, max_shape=shape)
-        ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
-
-        I = ai.integrate2d(data, 256, 2256, correctSolidAngle=False, dummy=-1.0,
-                           method='splitpixel', unit='2th_deg')[0]
+        res = self.ai.integrate2d(self.data, 256, 256, correctSolidAngle=False, dummy=-1.0,
+                           method='splitpixel', unit='2th_deg')
+        I = res[0]
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
-            fig = pylab.figure()
+            fig, ax = pylab.subplots()
             fig.suptitle('cacking of a flat image: SplitPixel')
-            sp = fig.add_subplot(111)
-            sp.imshow(I, interpolation="nearest")
+            ax.imshow(I, interpolation="nearest")
             fig.show()
             input("Press enter to quit")
         I[I == -1.0] = 1.0
@@ -344,19 +350,14 @@ class TestFlatimage(unittest.TestCase):
         assert abs(I.max() - 1.0) < self.epsilon
 
     def test_splitBBox(self):
-        shape = (200, 201)
-        data = numpy.ones(shape, dtype="float64")
-        det = Detector(1e-4, 1e-4, max_shape=shape)
-        ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
-        I = ai.integrate2d(data, 256, 256, correctSolidAngle=False, dummy=-1.0,
+        I = self.ai.integrate2d(self.data, 256, 256, correctSolidAngle=False, dummy=-1.0,
                            unit="2th_deg", method='splitbbox')[0]
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
-            fig = pylab.figure()
+            fig, ax = pylab.subplots()
             fig.suptitle('cacking of a flat image: SplitBBox')
-            sp = fig.add_subplot(111)
-            sp.imshow(I, interpolation="nearest")
+            ax.imshow(I, interpolation="nearest")
             fig.show()
             input("Press enter to quit")
         I[I == -1.0] = 1.0

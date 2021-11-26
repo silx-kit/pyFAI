@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/01/2021"
+__date__ = "26/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -299,6 +299,7 @@ def histoBBox1d_engine(weights,
     :param flat: array (of float32) with flat-field image
     :param solidangle: array (of float32) with solid angle corrections
     :param polarization: array (of float32) with polarization corrections
+    :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
     :return: namedtuple with "position intensity error signal variance normalization count"
