@@ -250,6 +250,14 @@
    <header>pyFAI.gui.widgets.ChoiceToolButton</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>_extract</tabstop>
+  <tabstop>_moreRingToExtract</tabstop>
+  <tabstop>_maxRingToExtract</tabstop>
+  <tabstop>_numberOfPeakPerDegree</tabstop>
+  <tabstop>_geometrySource</tabstop>
+  <tabstop>_nextStep</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

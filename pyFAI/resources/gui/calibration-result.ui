@@ -219,14 +219,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>UnitSelector</class>
-   <extends>QComboBox</extends>
-   <header>pyFAI.gui.widgets.UnitSelector</header>
-  </customwidget>
-  <customwidget>
    <class>QuantityEdit</class>
    <extends>QLineEdit</extends>
    <header>pyFAI.gui.widgets.QuantityEdit</header>
+  </customwidget>
+  <customwidget>
+   <class>UnitSelector</class>
+   <extends>QComboBox</extends>
+   <header>pyFAI.gui.widgets.UnitSelector</header>
   </customwidget>
   <customwidget>
    <class>ThreadPoolPushButton</class>
@@ -245,6 +245,18 @@
    <header>pyFAI.gui.widgets.MethodLabel</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>_radialUnit</tabstop>
+  <tabstop>_radialPoints</tabstop>
+  <tabstop>_azimuthalPoints</tabstop>
+  <tabstop>_polarizationFactorCheck</tabstop>
+  <tabstop>_polarizationFactor</tabstop>
+  <tabstop>_customMethodButton</tabstop>
+  <tabstop>_displayMask</tabstop>
+  <tabstop>_integrateButton</tabstop>
+  <tabstop>_savePoniButton</tabstop>
+  <tabstop>_nextStep</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

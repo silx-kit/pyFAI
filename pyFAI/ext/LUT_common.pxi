@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,16 +29,15 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/03/2021"
+__date__ = "18/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
-
+from libc.string cimport memcpy
 from cython.parallel import prange
 import numpy
-
 from .preproc import preproc
-from ..containers import Integrate1dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
 cdef class LutIntegrator(object):
@@ -80,7 +79,18 @@ cdef class LutIntegrator(object):
         self.input_size = 0
         self.output_size = 0 
         self.nnz = 0
-        
+
+    @property
+    def lut(self):
+        """Getter a copy of the LUT as an actual numpy array"""
+        cdef double[:, ::1] tmp_ary = numpy.empty((self.output_size, self.lut_size), dtype=numpy.float64)
+        memcpy(&tmp_ary[0, 0], &self._lut[0, 0], self._lut.nbytes)
+
+        return numpy.core.records.array(numpy.asarray(tmp_ary).view(dtype=lut_d),
+                                        shape=(self.output_size, self.lut_size), dtype=lut_d,
+                                        copy=True)
+
+
     def integrate_legacy(self, weights,
                          dummy=None,
                          delta_dummy=None,
@@ -115,16 +125,16 @@ cdef class LutIntegrator(object):
 
         """
         cdef:
-            int i = 0, j = 0, idx = 0, bins = self.bins, lut_size = self.lut_size, size = self.size
+            index_t i = 0, j = 0, idx = 0, lut_size = self.lut_size
             acc_t acc_data = 0, acc_count = 0, epsilon = 1e-10
             data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            acc_t[::1] sum_data = numpy.empty(self.bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.empty(self.bins, dtype=acc_d)
-            data_t[::1] merged = numpy.empty(self.bins, dtype=data_d)
+            acc_t[::1] sum_data = numpy.empty(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.empty(self.output_size, dtype=acc_d)
+            data_t[::1] merged = numpy.empty(self.output_size, dtype=data_d)
             float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
 
-        assert weights.size == size, "weights size"
+        assert weights.size == self.input_size, "weights size"
 
         if dummy is not None:
             do_dummy = True
@@ -138,26 +148,26 @@ cdef class LutIntegrator(object):
 
         if flat is not None:
             do_flat = True
-            assert flat.size == size, "flat-field array size"
+            assert flat.size == self.input_size, "flat-field array size"
             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=data_d)
         if dark is not None:
             do_dark = True
-            assert dark.size == size, "dark current array size"
+            assert dark.size == self.input_size, "dark current array size"
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=data_d)
         if solidAngle is not None:
             do_solidAngle = True
-            assert solidAngle.size == size, "Solid angle array size"
+            assert solidAngle.size == self.input_size, "Solid angle array size"
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=data_d)
         if polarization is not None:
             do_polarization = True
-            assert polarization.size == size, "polarization array size"
+            assert polarization.size == self.input_size, "polarization array size"
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=data_d)
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-            cdata = numpy.zeros(size, dtype=numpy.float32)
+            cdata = numpy.zeros(self.input_size, dtype=numpy.float32)
             if do_dummy:
-                for i in prange(size, nogil=True, schedule="static"):
+                for i in prange(self.input_size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
                         # Nota: -= and /= operatore are seen as reduction in cython parallel.
@@ -174,7 +184,7 @@ cdef class LutIntegrator(object):
                         # set all dummy_like values to cdummy. simplifies further processing
                         cdata[i] = cdummy
             else:
-                for i in prange(size, nogil=True, schedule="static"):
+                for i in prange(self.input_size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if do_dark:
                         data = data - cdark[i]
@@ -188,8 +198,8 @@ cdef class LutIntegrator(object):
         else:
             if do_dummy:
                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-                cdata = numpy.zeros(size, dtype=numpy.float32)
-                for i in prange(size, nogil=True, schedule="static"):
+                cdata = numpy.zeros(self.input_size, dtype=numpy.float32)
+                for i in prange(self.input_size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
                         cdata[i] = data
@@ -198,7 +208,7 @@ cdef class LutIntegrator(object):
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
 
-        for i in prange(bins, nogil=True):
+        for i in prange(self.output_size, nogil=True):
             acc_data = 0.0
             acc_count = 0.0
             for j in range(lut_size):
@@ -219,10 +229,19 @@ cdef class LutIntegrator(object):
             else:
                 merged[i] = cdummy
 
-        return (self.bin_centers, 
-                numpy.asarray(merged), 
-                numpy.asarray(sum_data), 
-                numpy.asarray(sum_count))
+        if self.bin_centers is None:
+            # 2D integration case
+            return (numpy.asarray(merged).reshape(self.bins).T, 
+                    self.bin_centers0, 
+                    self.bin_centers1, 
+                    numpy.asarray(sum_data).reshape(self.bins).T, 
+                    numpy.asarray(sum_count).reshape(self.bins).T)
+        else:
+            # 1D integration case
+            return (self.bin_centers, 
+                    numpy.asarray(merged), 
+                    numpy.asarray(sum_data), 
+                    numpy.asarray(sum_count))
 
     def integrate_ng(self,
                      weights,
@@ -268,20 +287,20 @@ cdef class LutIntegrator(object):
         """
         cdef:
             int32_t i, j, idx = 0, 
-            index_t bins = self.bins, size = self.size, lut_size = self.lut_size
+            index_t lut_size = self.lut_size
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0
             acc_t delta, x, omega_A, omega_B, omega3
             data_t empty
-            acc_t[::1] sum_sig = numpy.empty(bins, dtype=acc_d)
-            acc_t[::1] sum_var = numpy.empty(bins, dtype=acc_d)
-            acc_t[::1] sum_norm = numpy.empty(bins, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.empty(bins, dtype=acc_d)
-            data_t[::1] merged = numpy.empty(bins, dtype=data_d)
-            data_t[::1] error = numpy.empty(bins, dtype=data_d)
+            acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_norm = numpy.empty(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.empty(self.output_size, dtype=acc_d)
+            data_t[::1] merged = numpy.empty(self.output_size, dtype=data_d)
+            data_t[::1] error = numpy.empty(self.output_size, dtype=data_d)
             data_t[:, ::1] preproc4
             bint do_azimuthal_variance = poissonian is False
             
-        assert weights.size == size, "weights size"
+        assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
         preproc4 = preproc(weights.ravel(),
@@ -300,7 +319,7 @@ cdef class LutIntegrator(object):
                            dtype=data_d,
                            poissonian= poissonian is True)
 
-        for i in prange(bins, nogil=True):
+        for i in prange(self.output_size, nogil=True):
             acc_sig = 0.0
             acc_var = 0.0
             acc_norm = 0.0
@@ -343,10 +362,20 @@ cdef class LutIntegrator(object):
             else:
                 merged[i] = empty
                 error[i] = empty
-        #"position intensity error signal variance normalization count"
-        return Integrate1dtpl(self.bin_centers, 
-                              numpy.asarray(merged),numpy.asarray(error) ,
-                              numpy.asarray(sum_sig),numpy.asarray(sum_var), 
-                              numpy.asarray(sum_norm), numpy.asarray(sum_count))
+        if self.bin_centers is None:
+            # 2D integration case
+            return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
+                              numpy.asarray(merged).reshape(self.bins).T, 
+                              numpy.asarray(error).reshape(self.bins).T,
+                              numpy.asarray(sum_sig).reshape(self.bins).T, 
+                              numpy.asarray(sum_var).reshape(self.bins).T, 
+                              numpy.asarray(sum_norm).reshape(self.bins).T, 
+                              numpy.asarray(sum_count).reshape(self.bins).T,)
+        else:
+            # 1D integration case: "position intensity error signal variance normalization count"
+            return Integrate1dtpl(self.bin_centers, 
+                                  numpy.asarray(merged),numpy.asarray(error) ,
+                                  numpy.asarray(sum_sig),numpy.asarray(sum_var), 
+                                  numpy.asarray(sum_norm), numpy.asarray(sum_count))
 
     integrate = integrate_legacy
