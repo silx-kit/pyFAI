@@ -1,6 +1,6 @@
 # coding: utf-8
-#cython: embedsignature=True, language_level=3, binding=True
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+# cython: embedsignature=True, language_level=3, binding=True
+# cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
@@ -29,9 +29,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/11/2021"
+__date__ = "26/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -53,10 +53,9 @@ from libc.math cimport fabs, floor, sqrt
 from libc.stdlib cimport abs
 from libc.stdio cimport printf, fflush, stdout
 from .sparse_builder cimport SparseBuilder
-
+from .splitpixel_common import calc_boundaries
 from ..utils import crc32
 from ..utils.decorators import deprecated
-
 
 
 cdef Py_ssize_t NUM_WARNING
@@ -129,17 +128,21 @@ class HistoLUT1dFullSplit(LutIntegrator):
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
         """
-
         if pos.ndim > 3:  # create a view
             pos = pos.reshape((-1, 4, 2))
         assert pos.shape[1] == 4, "pos.shape[1] == 4"
         assert pos.shape[2] == 2, "pos.shape[2] == 2"
         assert pos.ndim == 3, "pos.ndim == 3"
-        self.pos = pos
+        self.pos = numpy.ascontiguousarray(pos, dtype=position_d)
         self.size = pos.shape[0]
         self.bins = bins
         self.allow_pos0_neg = allow_pos0_neg
-        if mask is not None:
+        self.unit = unit
+        if mask is None:
+            self.cmask = None
+            self.check_mask = False
+            self.mask_checksum = None
+        else:
             assert mask.size == self.size, "mask size"
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
@@ -147,65 +150,55 @@ class HistoLUT1dFullSplit(LutIntegrator):
                 self.mask_checksum = mask_checksum
             else:
                 self.mask_checksum = crc32(mask)
-        else:
-            self.check_mask = False
-            self.mask_checksum = None
-        self.data = self.nnz = self.indices = self.indptr = None
+
+        #keep this unchanged for validation of the range or not
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
+        cdef:
+            position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
+        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
+        if (not allow_pos0_neg):
+            pos0_min = max(0.0, pos0_min)
+            pos0_maxin = max(pos0_maxin, 0.0)
+        self.pos0_min = pos0_min
+        self.pos1_min = pos1_min
+        self.pos0_max = pos0_max = calc_upper_bound(pos0_maxin)
+        self.pos1_max = pos1_max = calc_upper_bound(pos1_maxin)
+
+        self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (bins))
+        self.bin_centers = numpy.linspace(pos0_min + 0.5 * self.delta, 
+                                          pos0_max - 0.5 * self.delta, 
+                                          self.bins)
+        
 
         lut = self.calc_lut()
         #Call the constructor of the parent class
         super().__init__(lut, pos.shape[0], empty or 0.0)
-        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta, 
-                                          self.pos0_max - 0.5 * self.delta, 
-                                          self.bins)
         self.lut_checksum = crc32(self.lut)
-        self.unit = unit
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
     def calc_lut(self):
         cdef:
             position_t[:,:, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
-            mask_t[:] cmask
-            position_t pos0_min = 0, pos1_min = 0, pos1_maxin = 0
+            mask_t[:] cmask = None
+            position_t pos0_min, pos1_min, pos1_max
             position_t max0, min0
-            position_t areaPixel = 0, delta = 0, areaPixel2 = 0
+            position_t delta = self.delta, areaPixel = 0, areaPixel2 = 0
             position_t A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
             position_t A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
             position_t partialArea = 0, oneOverPixelArea
             Function AB, BC, CD, DA
-            int bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0
-            bint check_pos1, check_mask = self.check_mask
-            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=bins*32)
+            Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, size = self.size
+            bint check_pos1, check_mask = self.cmask is not None
+            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
             
-        if self.check_mask:
+        if check_mask:
             cmask = self.cmask
-        if self.pos0_range is not None and len(self.pos0_range) > 1:
-            self.pos0_min = min(self.pos0_range)
-            self.pos0_maxin = max(self.pos0_range)
-        else:
-            self.pos0_min = self.pos[:, :, 0].min()
-            self.pos0_maxin = self.pos[:, :, 0].max()
-        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
-        if self.pos1_range is not None and len(self.pos1_range) > 1:
-            self.pos1_min = min(self.pos1_range)
-            self.pos1_maxin = max(self.pos1_range)
-            check_pos1 = True
-        else:
-            self.pos1_min = self.pos[:, :, 1].min()
-            self.pos1_maxin = self.pos[:, :, 1].max()
-            check_pos1 = False
-        self.pos1_max = calc_upper_bound(<position_t>self.pos1_maxin)
-
-        self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (bins))
-
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
-        delta = self.delta
-        pos1_maxin = self.pos1_maxin
-        size = self.size
-
+        pos1_max = self.pos1_max  
+        check_pos1 = self.pos1_range is not None
+        
         with nogil:
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
@@ -220,14 +213,13 @@ class HistoLUT1dFullSplit(LutIntegrator):
                 D0 = get_bin_number(cpos[idx, 3, 0], pos0_min, delta)
                 D1 = cpos[idx, 3, 1]
 
-
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
 
                 if (max0 < 0) or (min0 >= bins):
                     continue
                 if check_pos1:
-                    if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
+                    if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) >= pos1_max):
                         continue
 
                 bin0_min = < int > floor(min0)
@@ -243,11 +235,6 @@ class HistoLUT1dFullSplit(LutIntegrator):
                     B0 -= bin0_min
                     C0 -= bin0_min
                     D0 -= bin0_min
-
-                    # A1 -= bin1_min
-                    # B1 -= bin1_min
-                    # C1 -= bin1_min
-                    # D1 -= bin1_min
 
                     AB.slope = (B1 - A1) / (B0 - A0)
                     AB.intersect = A1 - AB.slope * A0
@@ -327,10 +314,10 @@ class HistoLUT2dFullSplit(LutIntegrator):
         assert pos.shape[1] == 4, "pos.shape[1] == 4"
         assert pos.shape[2] == 2, "pos.shape[2] == 2"
         assert pos.ndim == 3, "pos.ndim == 3"
-        self.pos = pos
+        self.pos = numpy.ascontiguousarray(pos, dtype=position_d)
         self.size = pos.shape[0]
-        self.bins = bins
-        # self.bad_pixel = bad_pixel
+        self.bins = (max(bins[0], 1), max(bins[1], 1))
+        self.unit = unit
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
         self.chiDiscAtPi = chiDiscAtPi
@@ -345,62 +332,60 @@ class HistoLUT2dFullSplit(LutIntegrator):
         else:
             self.check_mask = False
             self.mask_checksum = None
-        self.data = self.nnz = self.indices = self.indptr = None
+            self.mask = None
+
+        #keep this unchanged for validation of the range or not
         self.pos0_range = pos0_range
-        self.pos1_range = pos1_range
+        self.pos1_range = pos1_range        
+        cdef:
+            position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
+        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
+        if (not allow_pos0_neg):
+            pos0_min = max(0.0, pos0_min)
+            pos0_maxin = max(pos0_maxin, 0.0)
+        self.pos0_min = pos0_min
+        self.pos1_min = pos1_min
+        self.pos0_max = pos0_max = calc_upper_bound(pos0_maxin)
+        self.pos1_max = pos1_max = calc_upper_bound(pos1_maxin)
+
+        self.delta0 = (pos0_max - pos0_min) / (<position_t> (bins[0]))
+        self.delta1 = (pos1_max - pos1_min) / (<position_t> (bins[1]))
+        self.bin_centers0 = numpy.linspace(pos0_min + 0.5 * self.delta0, 
+                                           pos0_max - 0.5 * self.delta0, 
+                                           self.bins[0])
+        self.bin_centers1 = numpy.linspace(pos1_min + 0.5 * self.delta1, 
+                                           pos1_max - 0.5 * self.delta1, 
+                                           self.bins[1])
 
         lut = self.calc_lut()
-        # self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
+
         self.lut_checksum = crc32(numpy.asarray(lut))
-        self.unit = unit
         
     def calc_lut(self):
-        cdef Py_ssize_t bins0, bins1, size = self.size
-        bins0, bins1 = tuple(self.bins)
-        bins0 = max(bins0, 1)
-        bins1 = max(bins1, 1)
-    
         cdef:
+            Py_ssize_t bins0=self.bins[0], bins1=self.bins[1], size = self.size
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
             position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
             mask_t[:] cmask = self.cmask
-            bint check_mask = self.check_mask, allow_pos0_neg = self.allow_pos0_neg, chiDiscAtPi = self.chiDiscAtPi
+            bint check_mask = self.mask is not None, chiDiscAtPi = self.chiDiscAtPi
             position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
             position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
-            position_t fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
             position_t a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
-            position_t center0 = 0.0, center1 = 0.0, area, width, height,   
-            position_t delta0, delta1, new_width, new_height, new_min0, new_max0, new_min1, new_max1
-            Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
+            position_t area
+            position_t delta0=self.delta0, delta1=self.delta1
+            Py_ssize_t i = 0, j = 0, idx = 0
             Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15, nwarn=NUM_WARNING
             buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
             buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
-            double foffset0, foffset1, sum_area, loc_area
-            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=6, heap_size=bins1*bins0)
+            position_t foffset0, foffset1, sum_area, loc_area
+            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=size)
             
         if check_mask:
             cmask = self.cmask
-        if self.pos0_range is not None and len(self.pos0_range) == 2:
-            pos0_min = min(self.pos0_range)
-            pos0_maxin = max(self.pos0_range)
-        else:
-            pos0_min = self.pos[:, :, 0].min()
-            pos0_maxin = self.pos[:, :, 0].max()
-        if not allow_pos0_neg:
-            pos0_min = max(pos0_min, 0.0)
-            pos0_maxin = max(pos0_maxin, 0.0)
-        pos0_max = calc_upper_bound(pos0_maxin)
-        
-        if self.pos1_range is not None and len(self.pos1_range) > 1:
-            pos1_min = min(self.pos1_range)
-            pos1_maxin = max(self.pos1_range)
-        else:
-            pos1_min = self.pos[:, :, 1].min()
-            pos1_maxin = self.pos[:, :, 1].max()
-        pos1_max = calc_upper_bound(pos1_maxin)
-    
-        delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
-        delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
+        pos0_min = self.pos0_min
+        pos0_max = self.pos0_max
+        pos1_min = self.pos1_min
+        pos1_max = self.pos1_max
     
         with nogil:
             for idx in range(size):
@@ -425,7 +410,7 @@ class HistoLUT2dFullSplit(LutIntegrator):
                 min1 = min(a1, b1, c1, d1)
                 max1 = max(a1, b1, c1, d1)
                 
-                if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):
+                if (max0 < pos0_min) or (min0 >= pos0_max) or (max1 < pos1_min) or (min1 >= pos1_max):
                         continue
     
                 # Swith to bin space.
@@ -488,11 +473,7 @@ class HistoLUT2dFullSplit(LutIntegrator):
                         loc_area = buffer[i, j]
                         sum_area += loc_area
                         builder.cinsert((ioffset0 + i)*bins1 + ioffset1 + j, idx, loc_area * inv_area)
-                        # update_2d_accumulator(out_data,
-                        #                       ioffset0 + i,
-                        #                       ioffset1 + j,
-                        #                       value,
-                        #                       weight=loc_area * inv_area)
+                        
                 if fabs(area - sum_area)*inv_area > 1e-3:
                     nwarn -=1
                     if nwarn>0:

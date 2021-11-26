@@ -106,3 +106,12 @@ def calc_boundaries(position_t[:, :, ::1] cpos,
         pos1_max = max(pos1_range)
 
     return (pos0_min, pos0_max, pos1_min, pos1_max)
+
+
+class FullSplitIntegrator:
+    """
+    Abstract class which contains the boundary selection and the LUT calculation 
+    """
+
+    def __init__(self):
+        pass #TODO
