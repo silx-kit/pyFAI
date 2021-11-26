@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "22/11/2021"
+__date__ = "26/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -59,10 +59,6 @@ from ..utils.decorators import deprecated
 from .preproc import preproc
 from .sparse_builder cimport SparseBuilder
 
-cdef struct Function:
-    float slope
-    float intersect
-
 
 cdef Py_ssize_t NUM_WARNING
 if logger.level >= logging.ERROR:
@@ -74,20 +70,10 @@ elif logger.level >= logging.INFO:
 else:
     NUM_WARNING = 10000
 
-cdef inline float getBin1Nr(float x0, float pos0_min, float delta, float var) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
-    """
-    if var:
-        if x0 >= 0:
-            return (x0 - pos0_min) / delta
-        else:
-            return (x0 + 2 * pi - pos0_min) / delta   # temporary fix....
-    else:
-        return (x0 - pos0_min) / delta
+
+cdef struct Function:
+    float slope
+    float intersect
 
 
 cdef inline float integrate(float A0, float B0, Function AB) nogil:
@@ -101,68 +87,6 @@ cdef inline float integrate(float A0, float B0, Function AB) nogil:
         return 0.0
     else:
         return AB.slope * (B0 * B0 - A0 * A0) * 0.5 + AB.intersect * (B0 - A0)
-
-
-cdef struct MyPoint:
-    float i
-    float j
-
-
-cdef struct MyPoly:
-    int size
-    MyPoint[8] data
-
-
-cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, float clipEdge) nogil:
-    cdef MyPoint intersection
-    intersection.i = clipEdge
-    intersection.j = (E.j - S.j) * (clipEdge - S.i) / (E.i - S.i) + S.j
-    return intersection
-
-
-cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, float clipEdge) nogil:
-    cdef MyPoint intersection
-    intersection.i = (E.i - S.i) * (clipEdge - S.j) / (E.j - S.j) + S.i
-    intersection.j = clipEdge
-    return intersection
-
-
-cdef inline int point_and_line(float x0, float y0, float x1, float y1, float x, float y) nogil:
-    cdef float tmp = (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0)
-    return (tmp > 0) - (tmp < 0)
-
-
-cdef float area_n(MyPoly poly) nogil:
-    if poly.size is 3:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[0].i * poly.data[2].j)
-    elif poly.size is 4:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[0].i * poly.data[3].j)
-    elif poly.size is 5:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[4].j + poly.data[4].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[4].i * poly.data[3].j - poly.data[0].i * poly.data[4].j)
-    elif poly.size is 6:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[4].j + poly.data[4].i * poly.data[5].j + poly.data[5].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[4].i * poly.data[3].j - poly.data[5].i * poly.data[4].j - poly.data[0].i * poly.data[5].j)
-    elif poly.size is 7:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[4].j + poly.data[4].i * poly.data[5].j + poly.data[5].i * poly.data[6].j + poly.data[6].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[4].i * poly.data[3].j - poly.data[5].i * poly.data[4].j - poly.data[6].i * poly.data[5].j - poly.data[0].i * poly.data[6].j)
-    elif poly.size is 8:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[4].j + poly.data[4].i * poly.data[5].j + poly.data[5].i * poly.data[6].j + poly.data[6].i * poly.data[7].j + poly.data[7].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[4].i * poly.data[3].j - poly.data[5].i * poly.data[4].j - poly.data[6].i * poly.data[5].j - poly.data[7].i * poly.data[6].j - poly.data[0].i * poly.data[7].j)
-
-
-cdef inline int on_boundary(float A, float B, float C, float D) nogil:
-    """
-    Check if we are on a discontinuity ....
-    """
-    return (((A > piover2) and (B > piover2) and (C < -piover2) and (D < -piover2)) or
-            ((A < -piover2) and (B < -piover2) and (C > piover2) and (D > piover2)) or
-            ((A > piover2) and (B < -piover2) and (C > piover2) and (D < -piover2)) or
-            ((A < -piover2) and (B > piover2) and (C < -piover2) and (D > piover2)) or
-            ((A > piover2) and (B < -piover2) and (C < -piover2) and (D > piover2)) or
-            ((A < -piover2) and (B > piover2) and (C > piover2) and (D < -piover2)))
 
 
 class FullSplitCSR_1d(CsrIntegrator):

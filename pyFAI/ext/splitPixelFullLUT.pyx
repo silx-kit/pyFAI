@@ -73,25 +73,7 @@ cdef struct Function:
     float intersect
 
 
-@cython.cdivision(True)
-cdef inline float getBin1Nr(floating x0, floating pos0_min, floating delta, floating var) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
-    """
-    if var:
-        if x0 >= 0:
-            return (x0 - pos0_min) / delta
-        else:
-            return (x0 + 2 * pi - pos0_min) / delta   # temporary fix....
-    else:
-        return (x0 - pos0_min) / delta
-
-
-@cython.cdivision(True)
-cdef inline floating integrate(floating A0, floating B0, Function AB) nogil:
+cdef inline float integrate(float A0, float B0, Function AB) nogil:
     """
     integrates the line defined by AB, from A0 to B0
     param A0: first limit

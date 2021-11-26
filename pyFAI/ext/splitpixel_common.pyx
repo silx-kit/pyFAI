@@ -39,7 +39,6 @@ __date__ = "26/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
-
 include "regrid_common.pxi"
 
 
