@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/11/2021"
+__date__ = "26/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -48,6 +48,8 @@ cimport cython
 import numpy
 import logging
 logger = logging.getLogger(__name__)
+
+from .splitpixel_common import calc_boundaries
 
 cdef Py_ssize_t NUM_WARNING
 if logger.level >= logging.ERROR:
@@ -73,7 +75,8 @@ def fullSplit1D(pos,
                 polarization=None,
                 float empty=0.0,
                 double normalization_factor=1.0,
-                Py_ssize_t coef_power=1
+                Py_ssize_t coef_power=1,
+                bint allow_pos0_neg=False,
                 ):
     """
     Calculates histogram of pos weighted by weights
@@ -97,7 +100,7 @@ def fullSplit1D(pos,
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
     :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-
+    :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :return: 2theta, I, weighted histogram, unweighted histogram
     """
     cdef Py_ssize_t  size = weights.size
@@ -114,7 +117,7 @@ def fullSplit1D(pos,
         acc_t[::1] sum_data = numpy.zeros(bins, dtype=acc_d)
         acc_t[::1] sum_count = numpy.zeros(bins, dtype=acc_d)
         data_t[::1] merged = numpy.zeros(bins, dtype=data_d)
-        mask_t[::1] cmask
+        mask_t[::1] cmask = None
         data_t[::1] cflat, cdark, cpolarization, csolidangle
         buffer_t[::1] buffer = numpy.zeros(bins, dtype=buffer_d)
 
@@ -133,53 +136,11 @@ def fullSplit1D(pos,
         assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
-    if pos0_range is not None and len(pos0_range) > 1:
-        pos0_min = min(pos0_range)
-        pos0_maxin = max(pos0_range)
-    else:
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    pos0_max = pos0_min = cpos[idx, 0, 0]
-                    pos1_max = pos1_min = cpos[idx, 0, 1]
-                    break
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-                a0 = cpos[idx, 0, 0]
-                a1 = cpos[idx, 0, 1]
-                b0 = cpos[idx, 1, 0]
-                b1 = cpos[idx, 1, 1]
-                c0 = cpos[idx, 2, 0]
-                c1 = cpos[idx, 2, 1]
-                d0 = cpos[idx, 3, 0]
-                d1 = cpos[idx, 3, 1]
-                min0 = min(a0, b0, c0, d0)
-                max0 = max(a0, b0, c0, d0)
-                if max0 > pos0_max:
-                    pos0_max = max0
-                if min0 < pos0_min:
-                    pos0_min = min0
-                min1 = min(a1, b1, c1, d1)
-                max1 = max(a1, b1, c1, d1)
-                if max1 > pos1_max:
-                    pos1_max = max1
-                if min1 < pos1_min:
-                    pos1_min = min1
-
-            pos0_maxin = pos0_max
-    if pos0_min < 0:
-        pos0_min = 0
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    if (not allow_pos0_neg):
+        pos0_min = max(pos0_min, 0.0)
+        pos1_maxin = max(pos1_maxin, 0.0)      
     pos0_max = calc_upper_bound(pos0_maxin)
-
-    if pos1_range is not None and len(pos1_range) > 1:
-        pos1_min = min(pos1_range)
-        pos1_maxin = max(pos1_range)
-        check_pos1 = True
-    else:
-        if min1 == max1 == 0:
-            pos1_min = pos[:, :, 1].min()
-            pos1_maxin = pos[:, :, 1].max()
     pos1_max = calc_upper_bound(pos1_maxin)
     dpos = (pos0_max - pos0_min) / (<position_t> (bins))
 
@@ -320,6 +281,7 @@ def fullSplit1D_engine(pos not None,
                        polarization=None,
                        data_t empty=0.0,
                        double normalization_factor=1.0,
+                       bint allow_pos0_neg=False,
                        ):
     """
     Calculates histogram of pos weighted by weights
@@ -342,7 +304,7 @@ def fullSplit1D_engine(pos not None,
     :param solidangle: array (of float64) with flat image
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
-    
+    :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :return: namedtuple with "position intensity error signal variance normalization count"
     """
     cdef Py_ssize_t  size = weights.size
@@ -360,7 +322,7 @@ def fullSplit1D_engine(pos not None,
         acc_t[:, ::1] out_data = numpy.zeros((bins, 4), dtype=acc_d)
         data_t[::1] out_intensity = numpy.zeros(bins, dtype=data_d)
         data_t[::1] out_error
-        mask_t[::1] cmask
+        mask_t[::1] cmask = None
         buffer_t[::1] buffer = numpy.zeros(bins, dtype=buffer_d)
         acc_t norm
         data_t cdummy = 0.0, ddummy = 0.0
@@ -386,53 +348,11 @@ def fullSplit1D_engine(pos not None,
         assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
-    if pos0_range is not None and len(pos0_range) > 1:
-        pos0_min = min(pos0_range)
-        pos0_maxin = max(pos0_range)
-    else:
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    pos0_max = pos0_min = cpos[idx, 0, 0]
-                    pos1_max = pos1_min = cpos[idx, 0, 1]
-                    break
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-                a0 = cpos[idx, 0, 0]
-                a1 = cpos[idx, 0, 1]
-                b0 = cpos[idx, 1, 0]
-                b1 = cpos[idx, 1, 1]
-                c0 = cpos[idx, 2, 0]
-                c1 = cpos[idx, 2, 1]
-                d0 = cpos[idx, 3, 0]
-                d1 = cpos[idx, 3, 1]
-                min0 = min(a0, b0, c0, d0)
-                max0 = max(a0, b0, c0, d0)
-                if max0 > pos0_max:
-                    pos0_max = max0
-                if min0 < pos0_min:
-                    pos0_min = min0
-                min1 = min(a1, b1, c1, d1)
-                max1 = max(a1, b1, c1, d1)
-                if max1 > pos1_max:
-                    pos1_max = max1
-                if min1 < pos1_min:
-                    pos1_min = min1
-
-            pos0_maxin = pos0_max
-    if pos0_min < 0:
-        pos0_min = 0
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    if not allow_pos0_neg:
+        pos0_min = max(0.0, pos0_min)
+        pos0_maxin = max(0.0, pos0_maxin)         
     pos0_max = calc_upper_bound(pos0_maxin)
-
-    if pos1_range is not None and len(pos1_range) > 1:
-        pos1_min = min(pos1_range)
-        pos1_maxin = max(pos1_range)
-        check_pos1 = True
-    else:
-        if min1 == max1 == 0:
-            pos1_min = pos[:, :, 1].min()
-            pos1_maxin = pos[:, :, 1].max()
     pos1_max = calc_upper_bound(pos1_maxin)
     dpos = (pos0_max - pos0_min) / (<position_t> (bins))
 
@@ -603,12 +523,11 @@ def fullSplit2D(pos,
     :param flat: array (of float64) with flat-field image
     :param polarization: array (of float64) with polarization correction
     :param solidangle: array (of float64)with solid angle corrections
-    :param allow_pos0_neg: set to true to allow negative radial values.
+    :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)    
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
     :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-
     :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
@@ -634,7 +553,7 @@ def fullSplit2D(pos,
         acc_t[:, ::1] sum_data = numpy.zeros((bins0, bins1), dtype=acc_d)
         acc_t[:, ::1] sum_count = numpy.zeros((bins0, bins1), dtype=acc_d)
         data_t[:, ::1] merged = numpy.zeros((bins0, bins1), dtype=data_d)
-        mask_t[:] cmask
+        mask_t[:] cmask = None
         data_t[:] cflat, cdark, cpolarization, csolidangle
         bint check_mask = False, check_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
         data_t cdummy = 0, cddummy = 0, data = 0
@@ -646,20 +565,11 @@ def fullSplit2D(pos,
         position_t delta0, delta1
         Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
 
-    if pos0_range is not None and len(pos0_range) == 2:
-        pos0_min = min(pos0_range)
-        pos0_maxin = max(pos0_range)
-    else:
-        pos0_min = pos[:, :, 0].min()
-        pos0_maxin = pos[:, :, 0].max()
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    if (not allow_pos0_neg):
+        pos0_min = max(0.0, pos0_min)
+        pos0_maxin = max(0.0, pos0_maxin)
     pos0_max = calc_upper_bound(pos0_maxin)
-
-    if pos1_range is not None and len(pos1_range) > 1:
-        pos1_min = min(pos1_range)
-        pos1_maxin = max(pos1_range)
-    else:
-        pos1_min = pos[:, :, 1].min()
-        pos1_maxin = pos[:, :, 1].max()
     pos1_max = calc_upper_bound(pos1_maxin)
 
     delta0 = (pos0_max - pos0_min) / (<acc_t> (bins0))
@@ -727,10 +637,8 @@ def fullSplit2D(pos,
                     continue
 
             if not allow_pos0_neg:
-                if min0 < 0.0:
-                    min0 = 0.0
-                if max0 < 0.0:
-                    max0 = 0.0
+                min0 = max(min0, 0.0)
+                max0 = max(max0, 0.0)
 
             if max1 > (2 - chiDiscAtPi) * pi:
                 max1 = (2 - chiDiscAtPi) * pi
@@ -941,7 +849,7 @@ def pseudoSplit2D_engine(pos not None,
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
         data_t[:, ::1] out_error, out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
-        mask_t[:] cmask
+        mask_t[:] cmask = None
         data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
         bint check_mask = False, check_dummy = False, do_dark = False, 
         bint do_flat = False, do_polarization = False, do_solidangle = False, 
@@ -957,24 +865,15 @@ def pseudoSplit2D_engine(pos not None,
         acc_t norm
         preproc_t value
 
-    if pos0_range is not None and len(pos0_range) == 2:
-        pos0_min = min(pos0_range)
-        pos0_maxin = max(pos0_range)
-    else:
-        pos0_min = pos[:, :, 0].min()
-        pos0_maxin = pos[:, :, 0].max()
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    if (not allow_pos0_neg):
+        pos0_min = max(0.0, pos0_min)
+        pos0_maxin = max(pos0_maxin, 0.0)
     pos0_max = calc_upper_bound(pos0_maxin)
-
-    if pos1_range is not None and len(pos1_range) > 1:
-        pos1_min = min(pos1_range)
-        pos1_maxin = max(pos1_range)
-    else:
-        pos1_min = pos[:, :, 1].min()
-        pos1_maxin = pos[:, :, 1].max()
     pos1_max = calc_upper_bound(pos1_maxin)
 
-    delta0 = (pos0_max - pos0_min) / (<acc_t> (bins0))
-    delta1 = (pos1_max - pos1_min) / (<acc_t> (bins1))
+    delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
+    delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
@@ -1068,10 +967,8 @@ def pseudoSplit2D_engine(pos not None,
                 max1 = new_max1
                 
             if not allow_pos0_neg:
-                if min0 < 0.0:
-                    min0 = 0.0
-                if max0 < 0.0:
-                    max0 = 0.0
+                min0 = max(0.0, min0)
+                max0 = max(0.0, max0)
 
             if max1 > (2 - chiDiscAtPi) * pi:
                 max1 = (2 - chiDiscAtPi) * pi
@@ -1284,7 +1181,7 @@ def fullSplit2D_engine(pos not None,
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
         data_t[:, ::1] out_error, out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
-        mask_t[:] cmask
+        mask_t[:] cmask = None
         data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
         bint check_mask = False, check_dummy = False, do_dark = False, 
         bint do_flat = False, do_polarization = False, do_solidangle = False, 
@@ -1304,27 +1201,15 @@ def fullSplit2D_engine(pos not None,
         buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
         double foffset0, foffset1, sum_area, loc_area
     
-    if pos0_range is not None and len(pos0_range) == 2:
-        pos0_min = min(pos0_range)
-        pos0_maxin = max(pos0_range)
-    else:
-        pos0_min = pos[:, :, 0].min()
-        pos0_maxin = pos[:, :, 0].max()
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
     if not allow_pos0_neg:
-        pos0_min = max(pos0_min, 0.0)
-        pos0_maxin = max(pos0_maxin, 0.0)
+        pos0_min = max(0.0, pos0_min)
+        pos0_maxin = max(0.0, pos0_maxin)
     pos0_max = calc_upper_bound(pos0_maxin)
-    
-    if pos1_range is not None and len(pos1_range) > 1:
-        pos1_min = min(pos1_range)
-        pos1_maxin = max(pos1_range)
-    else:
-        pos1_min = pos[:, :, 1].min()
-        pos1_maxin = pos[:, :, 1].max()
     pos1_max = calc_upper_bound(pos1_maxin)
 
-    delta0 = (pos0_max - pos0_min) / (<acc_t> (bins0))
-    delta1 = (pos1_max - pos1_min) / (<acc_t> (bins1))
+    delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
+    delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
