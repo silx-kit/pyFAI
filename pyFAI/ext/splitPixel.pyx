@@ -331,8 +331,7 @@ def fullSplit1D_engine(pos not None,
         position_t area_pixel = 0, sum_area = 0, sub_area = 0, dpos = 0
         position_t a0 = 0, b0 = 0, c0 = 0, d0 = 0, max0 = 0, min0 = 0, a1 = 0, b1 = 0, c1 = 0, d1 = 0, max1 = 0, min1 = 0
         double epsilon = 1e-10
-
-        bint check_pos1=False, check_mask=False, check_dummy=False, do_dark=False, 
+        bint check_pos1=pos1_range is not None, check_mask=False, check_dummy=False, do_dark=False, 
         bint do_flat=False, do_polarization=False, do_solidangle=False, do_variance = False
         Py_ssize_t i = 0, idx = 0, bin0_max = 0, bin0_min = 0, nwarn=NUM_WARNING
         preproc_t value
@@ -352,14 +351,7 @@ def fullSplit1D_engine(pos not None,
     if not allow_pos0_neg:
         pos0_min = max(0.0, pos0_min)
         pos0_maxin = max(0.0, pos0_maxin)
-    if pos0_range and len(pos0_range)>1:
-        pos0_min = min(pos0_range)
-        pos0_maxin = max(pos0_range)
     pos0_max = calc_upper_bound(pos0_maxin)
-    if pos1_range and len(pos1_range)>1:
-        pos1_min = min(pos1_range)
-        pos1_maxin = max(pos1_range)
-        check_pos1 = True
     pos1_max = calc_upper_bound(pos1_maxin)
     
     dpos = (pos0_max - pos0_min) / (<position_t> (bins))

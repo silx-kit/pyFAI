@@ -122,16 +122,11 @@ class HistoLUT1dFullSplit(LutIntegrator):
         self.unit = unit
         if mask is None:
             self.cmask = None
-            self.check_mask = False
             self.mask_checksum = None
         else:
             assert mask.size == self.size, "mask size"
-            self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
-            if mask_checksum:
-                self.mask_checksum = mask_checksum
-            else:
-                self.mask_checksum = crc32(mask)
+            self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
 
         #keep this unchanged for validation of the range or not
         self.pos0_range = pos0_range
@@ -171,15 +166,14 @@ class HistoLUT1dFullSplit(LutIntegrator):
             position_t partialArea = 0, oneOverPixelArea
             Function AB, BC, CD, DA
             Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, size = self.size
-            bint check_pos1, check_mask = self.cmask is not None
+            bint check_pos1=self.pos1_range is not None, check_mask = self.cmask is not None
             SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
             
         if check_mask:
             cmask = self.cmask
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
-        pos1_max = self.pos1_max  
-        check_pos1 = self.pos1_range is not None
+        pos1_max = self.pos1_max 
         
         with nogil:
             for idx in range(size):
@@ -257,6 +251,10 @@ class HistoLUT1dFullSplit(LutIntegrator):
     def outPos(self):
         return self.bin_centers
 
+    @property
+    def check_mask(self):
+        return self.cmask is not None
+
 ################################################################################
 # Bidimensionnal regrouping
 ################################################################################
@@ -281,7 +279,6 @@ class HistoLUT2dFullSplit(LutIntegrator):
                  allow_pos0_neg=False,
                  unit="undefined",
                  chiDiscAtPi=True):
-
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
@@ -305,16 +302,11 @@ class HistoLUT2dFullSplit(LutIntegrator):
         self.chiDiscAtPi = chiDiscAtPi
         if mask is not None:
             assert mask.size == self.size, "mask size"
-            self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
-            if mask_checksum:
-                self.mask_checksum = mask_checksum
-            else:
-                self.mask_checksum = crc32(mask)
+            self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
         else:
-            self.check_mask = False
             self.mask_checksum = None
-            self.mask = None
+            self.cmask = None
 
         #keep this unchanged for validation of the range or not
         self.pos0_range = pos0_range
@@ -340,7 +332,6 @@ class HistoLUT2dFullSplit(LutIntegrator):
                                            self.bins[1])
 
         lut = self.calc_lut()
-
         self.lut_checksum = crc32(numpy.asarray(lut))
         
     def calc_lut(self):
@@ -465,3 +456,7 @@ class HistoLUT2dFullSplit(LutIntegrator):
             logger.info(f"Total number of spurious pixels: {NUM_WARNING - nwarn} / {size} total")
       
         return builder.to_lut()
+    
+    @property
+    def check_mask(self):
+        return self.cmask is not None
