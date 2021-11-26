@@ -574,11 +574,18 @@ def fullSplit2D(pos,
     if (not allow_pos0_neg):
         pos0_min = max(0.0, pos0_min)
         pos0_maxin = max(0.0, pos0_maxin)
+    if pos0_range:
+        pos0_min = min(pos0_range)
+        pos0_maxin = max(pos0_range)
+    if pos1_range:
+        pos1_min = min(pos1_range)
+        pos1_maxin = max(pos1_range)
+
     pos0_max = calc_upper_bound(pos0_maxin)
     pos1_max = calc_upper_bound(pos1_maxin)
 
-    delta0 = (pos0_max - pos0_min) / (<acc_t> (bins0))
-    delta1 = (pos1_max - pos1_min) / (<acc_t> (bins1))
+    delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
+    delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
@@ -634,7 +641,7 @@ def fullSplit2D(pos,
             min1 = min(a1, b1, c1, d1)
             max1 = max(a1, b1, c1, d1)
 
-            if (max0 < pos0_min) or (min0 >= pos0_max) or (max1 < pos1_min) or (min1 >= pos1_max):
+            if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):
                     continue
 
             if not allow_pos0_neg:
@@ -661,10 +668,10 @@ def fullSplit2D(pos,
             if min1 < pos1_min:
                 data = data * (pos1_min - min1) / (max1 - min1)
                 min1 = pos1_min
-            if max0 >= pos0_maxin:
+            if max0 > pos0_maxin:
                 data = data * (max0 - pos0_maxin) / (max0 - min0)
                 max0 = pos0_maxin
-            if max1 >= pos1_maxin:
+            if max1 > pos1_maxin:
                 data = data * (max1 - pos1_maxin) / (max1 - min1)
                 max1 = pos1_maxin
 

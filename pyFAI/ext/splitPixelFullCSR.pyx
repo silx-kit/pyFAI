@@ -136,7 +136,6 @@ class FullSplitCSR_1d(CsrIntegrator):
         self.unit = unit
         if mask is not None:
             assert mask.size == self.size, "mask size"
-            # self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
             self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
         else:
@@ -146,21 +145,21 @@ class FullSplitCSR_1d(CsrIntegrator):
         #Keep this unchanged
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
-#        cdef:
-#            position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
-#        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
-#        if (not allow_pos0_neg):
-#            pos0_min = max(0.0, pos0_min)
-#            pos0_maxin = max(pos0_maxin, 0.0)
-#        self.pos0_min = pos0_min
-#        self.pos1_min = pos1_min
-#        self.pos0_max = pos0_max = calc_upper_bound(pos0_maxin)
-#        self.pos1_max = pos1_max = calc_upper_bound(pos1_maxin)
-#        
-#        self.delta = (pos0_max - pos0_min) / (<position_t> (bins))
-#        self.bin_centers = numpy.linspace(pos0_min + 0.5 * self.delta, 
-#                                          pos0_max - 0.5 * self.delta, 
-#                                          self.bins)
+        cdef:
+            position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
+        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
+        if (not allow_pos0_neg):
+            pos0_min = max(0.0, pos0_min)
+            pos0_maxin = max(pos0_maxin, 0.0)
+        self.pos0_min = pos0_min
+        self.pos1_min = pos1_min
+        self.pos0_max = pos0_max = calc_upper_bound(pos0_maxin)
+        self.pos1_max = pos1_max = calc_upper_bound(pos1_maxin)
+        
+        self.delta = (pos0_max - pos0_min) / (<position_t> (bins))
+        self.bin_centers = numpy.linspace(pos0_min + 0.5 * self.delta, 
+                                          pos0_max - 0.5 * self.delta, 
+                                          self.bins)
 
         lut = self.calc_lut()
         #Call the constructor of the parent class
@@ -176,7 +175,7 @@ class FullSplitCSR_1d(CsrIntegrator):
         cdef:
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
             mask_t[::1] cmask = None
-            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_maxin = 0.0
+            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0
             position_t max0, min0
             position_t areaPixel = 0, delta = 0, areaPixel2 = 0
             position_t A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
@@ -187,26 +186,9 @@ class FullSplitCSR_1d(CsrIntegrator):
             bint check_pos1=self.pos1_range is not None, check_mask = False
             SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
 
-        if self.pos0_range is not None:
-            self.pos0_min, self.pos0_maxin = self.pos0_range
-        else:
-            self.pos0_min = self.pos[:, :, 0].min()
-            self.pos0_maxin = self.pos[:, :, 0].max()
-        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
-        if self.pos1_range is not None:
-            self.pos1_min, self.pos1_maxin = self.pos1_range
-            check_pos1 = True
-        else:
-            self.pos1_min = self.pos[:, :, 1].min()
-            self.pos1_maxin = self.pos[:, :, 1].max()
-            check_pos1 = False
-        self.pos1_max = calc_upper_bound(<position_t> self.pos1_maxin)
-
-        self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (bins))
-
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
-        pos1_maxin = self.pos1_maxin
+        pos1_max = self.pos1_max
         
         delta = self.delta
 
@@ -221,14 +203,14 @@ class FullSplitCSR_1d(CsrIntegrator):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = get_bin_number(<float> cpos[idx, 0, 0], pos0_min, delta)
-                A1 = <float> cpos[idx, 0, 1]
-                B0 = get_bin_number(<float> cpos[idx, 1, 0], pos0_min, delta)
-                B1 = <float> cpos[idx, 1, 1]
-                C0 = get_bin_number(<float> cpos[idx, 2, 0], pos0_min, delta)
-                C1 = <float> cpos[idx, 2, 1]
-                D0 = get_bin_number(<float> cpos[idx, 3, 0], pos0_min, delta)
-                D1 = <float> cpos[idx, 3, 1]
+                A0 = get_bin_number(cpos[idx, 0, 0], pos0_min, delta)
+                A1 = cpos[idx, 0, 1]
+                B0 = get_bin_number(cpos[idx, 1, 0], pos0_min, delta)
+                B1 = cpos[idx, 1, 1]
+                C0 = get_bin_number(cpos[idx, 2, 0], pos0_min, delta)
+                C1 = cpos[idx, 2, 1]
+                D0 = get_bin_number(cpos[idx, 3, 0], pos0_min, delta)
+                D1 = cpos[idx, 3, 1]
 
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
@@ -236,7 +218,7 @@ class FullSplitCSR_1d(CsrIntegrator):
                 if (max0 < 0) or (min0 >= bins):
                     continue
                 if check_pos1:
-                    if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
+                    if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) >= pos1_max):
                         continue
 
                 bin0_min = < int > floor(min0)

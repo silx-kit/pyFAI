@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/11/2021"
+__date__ = "26/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -99,17 +99,15 @@ class HistoBBox1d(CsrIntegrator):
         #self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
         #self.empty = empty
-        if mask is not None:
-            assert mask.size == self.size, "mask size"
-            self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
-            if mask_checksum:
-                self.mask_checksum = mask_checksum
-            else:
-                self.mask_checksum = crc32(mask)
-        else:
-            self.check_mask = False
+        
+        if mask is None:
+            self.cmask = None
             self.mask_checksum = None
+        else:
+            assert mask.size == self.size, "mask size"
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
+            self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
+            
         #self.data = self.nnz = self.indices = self.indptr = None
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
@@ -165,7 +163,7 @@ class HistoBBox1d(CsrIntegrator):
         """
         cdef:
             int size = self.cpos0.size
-            bint check_mask = self.check_mask
+            bint check_mask = self.cmask is not None
             mask_t[::1] cmask
             double[::1] cpos0, dpos0, cpos0_sup, cpos0_inf,
             double upper, lower, pos0_max, pos0_min, c, d
@@ -214,7 +212,7 @@ class HistoBBox1d(CsrIntegrator):
         """
         cdef:
             int size = self.cpos0.size
-            bint check_mask = self.check_mask
+            bint check_mask = self.cmask is not None
             mask_t[::1] cmask
             position_t[::1] cpos0
             position_t pos0_max, pos0_min, c
@@ -258,7 +256,7 @@ class HistoBBox1d(CsrIntegrator):
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, 
             position_t min0, max0, fbin0_min, fbin0_max
             int32_t k, idx, i, j, bin0_min, bin0_max, bins = self.bins, size, nnz
-            bint check_mask, check_pos1
+            bint check_mask=self.cmask is not None, check_pos1
             int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             int32_t[::1] indptr, indices
             float[::1] data
@@ -267,11 +265,8 @@ class HistoBBox1d(CsrIntegrator):
             acc_t inv_area, delta_left, delta_right
 
         size = self.size
-        if self.check_mask:
+        if check_mask:
             cmask = self.cmask
-            check_mask = True
-        else:
-            check_mask = False
 
         if self.check_pos1:
             check_pos1 = True
@@ -401,7 +396,7 @@ class HistoBBox1d(CsrIntegrator):
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
             int32_t k, idx, bin0, bins = self.bins, size, nnz
-            bint check_mask, check_pos1
+            bint check_mask=self.cmask is not None, check_pos1
             int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             int32_t[::1] indptr, indices
             float[::1] data
@@ -409,11 +404,8 @@ class HistoBBox1d(CsrIntegrator):
             mask_t[::1] cmask
 
         size = self.size
-        if self.check_mask:
+        if check_mask:
             cmask = self.cmask
-            check_mask = True
-        else:
-            check_mask = False
 
         if self.check_pos1:
             check_pos1 = True
@@ -491,6 +483,9 @@ class HistoBBox1d(CsrIntegrator):
     def outPos(self):
         return self.bin_centers
 
+    @property
+    def check_mask(self):
+        return self.cmask is not None
 
 ################################################################################
 # Bidimensionnal regrouping
@@ -561,17 +556,13 @@ class HistoBBox2d(CsrIntegrator):
             bins1 = 1
         self.bins = (int(bins0), int(bins1))
         self.lut_size = 0
-        if mask is not None:
-            assert mask.size == self.size, "mask size"
-            self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-            if mask_checksum:
-                self.mask_checksum = mask_checksum
-            else:
-                self.mask_checksum = crc32(mask)
-        else:
-            self.check_mask = False
+        if mask is None:
             self.mask_checksum = None
+            self.cmask = None
+        else:
+            assert mask.size == self.size, "mask size"
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+            self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)            
 
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
@@ -621,7 +612,7 @@ class HistoBBox2d(CsrIntegrator):
         """
         cdef:
             int idx, size = self.cpos0.size
-            bint check_mask = self.check_mask
+            bint check_mask = self.cmask is not None
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf
             position_t[::1] cpos1, dpos1, cpos1_sup, cpos1_inf
@@ -704,7 +695,7 @@ class HistoBBox2d(CsrIntegrator):
         """
         cdef:
             int idx, size = self.cpos0.size
-            bint check_mask = self.check_mask
+            bint check_mask = self.cmask is not None
             mask_t[::1] cmask
             double[::1] cpos0
             double[::1] cpos1
@@ -766,7 +757,7 @@ class HistoBBox2d(CsrIntegrator):
             int bin0_min, bin0_max, bins0 = self.bins[0]
             int bin1_min, bin1_max, bins1 = self.bins[1]
             int k, idx, i, j, size = self.size, nnz
-            bint check_mask
+            bint check_mask = self.cmask is not None
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
             position_t[::1] cpos1_inf = self.cpos1_inf
@@ -778,11 +769,8 @@ class HistoBBox2d(CsrIntegrator):
             mask_t[::1] cmask
             acc_t inv_area, delta_left, delta_right, delta_down, delta_up
 
-        if self.check_mask:
+        if check_mask:
             cmask = self.cmask
-            check_mask = True
-        else:
-            check_mask = False
 
         with nogil:
             for idx in range(size):
@@ -1085,4 +1073,8 @@ class HistoBBox2d(CsrIntegrator):
     @deprecated(replacement="bin_centers1", since_version="0.16", only_once=True)
     def outPos1(self):
         return self.bin_centers1
+
+    @property
+    def check_mask(self):
+        return self.cmask is not None
 
