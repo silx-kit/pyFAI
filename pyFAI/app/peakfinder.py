@@ -27,10 +27,10 @@
 #  THE SOFTWARE.
 #
 
-"""Sparsify 2D single crystall diffraction images by separating Bragg peaks from background signal.
+"""peakfinder: Count the number of Bragg-peaks on an image
 
-Positive outlier pixels (i.e. Bragg peaks) are all recorded as they are without destruction. 
-Peaks are not integrated.
+Bragg peaks are local maxima of the background subtracted signal. 
+Peaks are integrated and variance propagated. The centroids are reported.
 
 Background is calculated by an iterative sigma-clipping in the polar space. 
 The number of iteration, the clipping value and the number of radial bins could be adjusted.
@@ -72,7 +72,7 @@ if ocl is None:
 else:
     from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
-from ..io.sparse_frame import save_sparse
+from ..io.spots import save_spots
 # Define few constants:
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
@@ -102,7 +102,7 @@ def parse():
                                      description=__doc__,
                                      epilog=epilog)
     parser.add_argument("IMAGE", nargs="*",
-                        help="File with input images. All frames will be concatenated in a single HDF5 file.")
+                        help="File with input images. All results are concatenated into a single HDF5 file.")
     parser.add_argument("-V", "--version", action='version', version=version,
                         help="output version and exit")
     parser.add_argument("-v", "--verbose", action='store_true', dest="verbose", default=False,
@@ -114,11 +114,16 @@ def parse():
     group = parser.add_argument_group("main arguments")
 #     group.add_argument("-l", "--list", action="store_true", dest="list", default=None,
 #                        help="show the list of available formats and exit")
-    group.add_argument("-o", "--output", default='sparse.h5', type=str,
+    group.add_argument("-o", "--output", default='spots.h5', type=str,
                        help="Output filename")
     group.add_argument("--save-source", action='store_true', dest="save_source", default=False,
                        help="save the path for all source files")
-
+    
+    group = parser.add_argument_group("Scan options")
+    group.add_argument("--grid-size", nargs=2, type=int, dest="grid_size", default=None,
+                       help="Grid along which the data was acquired")
+    group.add_argument("--zig-zag", action='store_true', dest="zig_zag", default=False,
+                       help="The scan was performed with a zig-zag pattern")
 # TODO: implement those
 #     group = parser.add_argument_group("optional behaviour arguments")
 #     group.add_argument("-f", "--force", dest="force", action="store_true", default=False,
@@ -159,21 +164,25 @@ def parse():
     group.add_argument("-A", "--solidangle", action='store_true', default=None,
                        help="Correct for solid-angle correction (important if the detector is not mounted normally to the incident beam, off by default")
     group = parser.add_argument_group("Sigma-clipping options")
-    group.add_argument("--bins", type=int, default=80,
+    group.add_argument("--bins", type=int, default=1000,
                        help="Number of radial bins to consider")
     group.add_argument("--unit", type=str, default="r_m",
                        help="radial unit to perform the calculation")
     group.add_argument("--cycle", type=int, default=5,
                        help="precision for dummy value")
-    group.add_argument("--cutoff-clip", dest="cutoff_clip", type=float, default=5.0,
-                       help="Threshold to be used when performing the sigma-clipping")
-    group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=3.0,
-                       help="Threshold to be used when picking the pixels to be saved")
+    group.add_argument("--cutoff-clip", dest="cutoff_clip", type=float, default=0.0,
+                       help="SNR threshold for considering a pixel outlier when performing the sigma-clipping")
     group.add_argument("--error-model", dest="error_model", type=str, default="poisson",
                        help="Statistical model for the signal error, may be `poisson`(default) or `azimuthal` (slower) or even a simple formula like '5*I+8'")
-    group.add_argument("--noise", type=float, default=0.5,
-                       help="Noise level: quadratically added to the background uncertainty")
-
+    group = parser.add_argument_group("Peak finding options")
+    group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=3.0,
+                       help="SNR threshold for considering a pixel high when searching for peaks")
+    group.add_argument("--noise", type=float, default=1.0,
+                       help="Quadratically added noise to the background")
+    group.add_argument("--patch-size", type=int, default=5,
+                       help="size of the neighborhood for integration")
+    group.add_argument("--connected", type=int, default=3,
+                       help="Number of high pixels in neighborhood to be considered as a peak")
     group = parser.add_argument_group("Opencl setup options")
     group.add_argument("--workgroup", type=int, default=None,
                        help="Enforce the workgroup size for OpenCL kernel. Impacts only on the execution speed, not on the result.")
@@ -212,7 +221,7 @@ def process(options):
     if options.verbose:
         pb = None
     else:
-        pb = ProgressBar("Sparsification", 100, 30)
+        pb = ProgressBar("Peak-finder", 100, 30)
 
     logger.debug("Count the number of frames")
     if pb:
@@ -254,7 +263,7 @@ def process(options):
     else:
         ctx = ocl.create_context(devicetype=options.device_type)
 
-    logger.debug("Initialize the sparsificator")
+    logger.debug("Initialize the azimuthal integrator")
     pf = OCL_PeakFinder(integrator.lut,
                         image_size=shape[0] * shape[1],
                         empty=options.dummy,
@@ -266,7 +275,7 @@ def process(options):
                         profile=options.profile,
                         block_size=options.workgroup)
 
-    logger.debug("Start sparsification")
+    logger.debug("Start peak search")
     frames = []
 
     cnt = 0
@@ -285,7 +294,9 @@ def process(options):
                               ("cycle", options.cycle),
                               ("noise", options.noise),
                               ("cutoff_pick", options.cutoff_pick),
-                              ("radial_range", rrange)])
+                              ("radial_range", rrange),
+                              ('patch_size', options.patch_size), 
+                              ("connected", options.connected)])
     if options.solidangle:
         parameters["solidangle"], parameters["solidangle_checksum"] = ai.solidAngleArray(with_checksum=True)
     if options.polarization is not None:
@@ -294,14 +305,14 @@ def process(options):
     for fabioimage in dense:
         for frame in fabioimage:
             intensity = frame.data
-            current = pf.sparsify(intensity,
-                                  variance=None if variance is None else variance(intensity),
-                                  **parameters)
+            current = pf.peakfinder8(intensity,
+                                     variance=None if variance is None else variance(intensity),
+                                     **parameters)
             frames.append(current)
             if pb:
-                pb.update(cnt, message="%s: %i pixels" % (os.path.basename(fabioimage.filename), current.intensity.size))
+                pb.update(cnt, message="%s: %i pixels" % (os.path.basename(fabioimage.filename), len(current)))
             else:
-                print("%s frame #%d, found %d intense pixels" % (fabioimage.filename, fabioimage.currentframe, current.intensity.size))
+                print("%s frame #%d, found %d intense pixels" % (fabioimage.filename, fabioimage.currentframe, len(current)))
             cnt += 1
     t1 = time.perf_counter()
     if pb:
@@ -322,12 +333,16 @@ def process(options):
         parameters.pop("solidangle")
         parameters.pop("solidangle_checksum")
         parameters["correctSolidAngle"] = True
-    save_sparse(options.output,
+    if options.mask is not None:
+        parameters["mask"] = True
+        
+    save_spots(options.output,
                 frames,
                 beamline=options.beamline,
                 ai=ai,
                 source=options.images if options.save_source else None,
-                extra=parameters)
+                extra=parameters,
+                grid = (options.grid_size, options.zig_zag))
 
     if options.profile:
         try:
@@ -336,7 +351,7 @@ def process(options):
             pf.log_profile()
     if pb:
         pb.clear()
-    logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1-t0, cnt/(t1-t0))
+    logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1-t0, cnt/(t1-t0))
 
     return EXIT_SUCCESS
 
