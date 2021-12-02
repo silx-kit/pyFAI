@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/12/2021"
+__date__ = "02/12/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -74,7 +74,7 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
         entry = instrument.parent
         spot_grp = nexus.new_class(entry, "spots", class_type="NXdata")
         entry.attrs["default"] = spot_grp.name
-        if grid and len(grid[0])>1:
+        if grid and grid[0] and len(grid[0])>1:
             img = spots_per_frame.reshape(grid[0])
             if grid[1]:
                 img[1::2,:] = img[1::2,-1::-1] # flip one line out of 2 
@@ -96,11 +96,12 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
         sigma = numpy.concatenate([i["sigma"] for i in spots])
         peaks_grp.create_dataset("sigma", data=sigma, **cmp)
 
+        #to have pos1 and pos2 along same dim as poni1 and poni2
         pos0 = numpy.concatenate([i["pos0"] for i in spots])
-        peaks_grp.create_dataset("pos0", data=pos0, **cmp)
+        peaks_grp.create_dataset("pos1", data=pos0, **cmp)
 
         pos1 = numpy.concatenate([i["pos1"] for i in spots])
-        peaks_grp.create_dataset("pos1", data=pos1, **cmp)
+        peaks_grp.create_dataset("pos2", data=pos1, **cmp)
 
         #radius = frames[0].radius
         #mask = frames[0].mask
