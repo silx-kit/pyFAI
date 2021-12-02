@@ -35,6 +35,8 @@ __date__ = "02/12/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import sys
+import os
 import json
 from collections import OrderedDict
 import logging
@@ -63,7 +65,7 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
     :param ai: Instance of geometry or azimuthal integrator
     :param source: list of input files
     :param extra: dict with extra metadata
-    :param gris: 2-tuple with grid shape and if it was acquired in zigzag mode 
+    :param grid: 2-tuple with grid shape and if it was acquired in zigzag mode
     :return: None
     """
     assert len(spots)
@@ -108,6 +110,8 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
         sparsify_grp["sequence_index"] = 1
         sparsify_grp["version"] = version
         sparsify_grp["date"] = get_isotime()
+        sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, h5py.string_dtype("utf8"))).attrs["help"] = "Command line arguments" 
+        sparsify_grp.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
         if source is not None:
             sparsify_grp.create_dataset("source", data=numpy.array(source, h5py.string_dtype("utf8")))
         if ai is not None:
