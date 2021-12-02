@@ -35,30 +35,40 @@ A factor larger than 2 sould be considered as a bug.
 Usage 
 -----
 
-pyFAI-bencmark [options]
+**-h**, **--help**
+   show this help message and exit
 
-optional arguments:
-  -h, --help            show the help message and exit
-  -v, --version         show program's version number and exit
-  -d, --debug           switch to verbose/debug mode
-  -c, --cpu             perform benchmark using OpenCL on the CPU
-  -g, --gpu             perform benchmark using OpenCL on the GPU
-  -a, --acc             perform benchmark using OpenCL on the Accelerator (like XeonPhi/MIC)
-  -s SIZE, --size SIZE  Limit the size of the dataset to X Mpixel images (for computer with limited memory)
-  -n NUMBER, --number NUMBER
-                        Number of repetition of the test (or time used for each test), by default 10 (sec)
-  -2d, --2dimention     Benchmark also algorithm for 2D-regrouping
-  --no-1dimention       Do not benchmark algorithms for 1D-regrouping
-  -m, --memprof         Perfrom memory profiling (Linux only)
-  -r REPEAT, --repeat REPEAT
-                        Repeat each benchmark x times to take the best
-Result
-------
+**-v**, **--version**
+   show program's version number and exit
 
-The typical result looks like this:
+**-d**, **--debug**
+   switch to verbose/debug mode
 
-.. figure:: ../img/benchmark.svg
-   :align: center
-   :alt: benchmark performed on a 2016 single-socket workstation and a gaming graphics card.
+**-c**, **--cpu**
+   perform benchmark using OpenCL on the CPU
 
-For the detailed explaination on how to read this plot, please refer to :ref:`performances`.
+**-g**, **--gpu**
+   perform benchmark using OpenCL on the GPU
+
+**-a**, **--acc**
+   perform benchmark using OpenCL on the Accelerator (like XeonPhi/MIC)
+
+**-s** SIZE, **--size** SIZE
+   Limit the size of the dataset to X Mpixel images (for computer with
+   limited memory)
+
+**-n** NUMBER, **--number** NUMBER
+   Runtime for each test, in seconds, by
+   default 10
+
+**-2d**, **--2dimention**
+   Benchmark also algorithm for 2D-regrouping
+
+**--no-1dimention**
+   Do not benchmark algorithms for 1D-regrouping
+
+**-m**, **--memprof**
+   Perfrom memory profiling (Linux only)
+
+**-r** REPEAT, **--repeat** REPEAT
+   Repeat each benchmark x times to take the best

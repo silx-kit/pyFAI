@@ -58,3 +58,5 @@ and remain available only for compatibility reasons.
    pyFAI-saxs
    pyFAI-waxs
    pyFAI-benchmark
+   sparsify-Bragg
+   peakfinder
