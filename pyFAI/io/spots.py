@@ -41,7 +41,7 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy
 from .. import version
-from .nexus import Nexus, get_isotime
+from .nexus import Nexus, get_isotime, h5py
 
 try:
     import hdf5plugin
@@ -55,7 +55,7 @@ else:
 
 
 def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None):
-    """Write the list of frames into a HDF5 file
+    """Write the list of spots per frame into a HDF5 file
     
     :param filename: name of the file
     :param frames: list of spots per frame (as built by peakfinder)
@@ -72,20 +72,19 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
         
         instrument = nexus.new_instrument(instrument_name=beamline)
         entry = instrument.parent
-        spot_grp = nexus.new_class(entry, "spots", class_type="NXdata")
-        entry.attrs["default"] = spot_grp.name
+        peaks_grp = nexus.new_class(entry, "peaks", class_type="NXdata")
+        entry.attrs["default"] = peaks_grp.name
         if grid and grid[0] and len(grid[0])>1:
             img = spots_per_frame.reshape(grid[0])
             if grid[1]:
                 img[1::2,:] = img[1::2,-1::-1] # flip one line out of 2 
-            spot_ds = spot_grp.create_dataset("spots", data=img)    
+            spot_ds = peaks_grp.create_dataset("spots", data=img)    
             spot_ds.attrs["interpretation"] = "image"
         else:
-            spot_ds = spot_grp.create_dataset("spots", data=spots_per_frame)
+            spot_ds = peaks_grp.create_dataset("spots", data=spots_per_frame)
             spot_ds.attrs["interpretation"] = "spectrum"
-        spot_grp.attrs["signal"] = "spots"
+        peaks_grp.attrs["signal"] = "spots"
 
-        peaks_grp = nexus.new_class(entry, "peaks", class_type="NXdata")
         peaks_grp["frame_ptr"] = numpy.concatenate(([0], numpy.cumsum(spots_per_frame))).astype(dtype=numpy.int32)
         index = numpy.concatenate([i["index"] for i in spots])
         peaks_grp.create_dataset("index", data=index, **cmp)
@@ -98,63 +97,20 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
 
         #to have pos1 and pos2 along same dim as poni1 and poni2
         pos0 = numpy.concatenate([i["pos0"] for i in spots])
-        peaks_grp.create_dataset("pos1", data=pos0, **cmp)
+        peaks_grp.create_dataset("pos1", data=pos0, **cmp).attrs["dir"] = "y"
 
         pos1 = numpy.concatenate([i["pos1"] for i in spots])
-        peaks_grp.create_dataset("pos2", data=pos1, **cmp)
+        peaks_grp.create_dataset("pos2", data=pos1, **cmp).attrs["dir"] = "x"
 
-        #radius = frames[0].radius
-        #mask = frames[0].mask
-        #dummy = frames[0].dummy
-        #if dummy is None:
-        #    if is_integer:
-        #        dummy = 0
-        #    else:
-        #        dummy = numpy.NaN
-        #sparse_grp.create_dataset("dummy", data=dummy)
-        #rds = sparse_grp.create_dataset("radius", data=radius, dtype=numpy.float32)
-        #rds.attrs["interpretation"] = "spectrum"
-        #
-        # mskds = peaks_grp.create_dataset("mask", data=extra.get("mask", 0), **cmp)
-        # mskds.attrs["interpretation"] = "image"
-        #background_avg = numpy.vstack([f.background_avg for f in frames])
-        #background_std = numpy.vstack([f.background_std for f in frames])
-        #bgavgds = sparse_grp.create_dataset("background_avg", data=background_avg, **cmp)
-        #bgavgds.attrs["interpretation"] = "spectrum"
-        #bgavgds.attrs["signal"] = 1
-        #bgavgds.attrs["long_name"] = "Average value of background"
-        # bgstdds = sparse_grp.create_dataset("background_std", data=background_std, **cmp)
-        # sparse_grp["errors"] = bgstdds
-        # bgstdds.attrs["interpretation"] = "spectrum"
-        # bgstdds.attrs["long_name"] = "Standard deviation of background"
-        # sparse_grp.attrs["signal"] = "background_avg"
-        # try:
-        #     sparse_grp.attrs["axes"] = [".", "radius"]
-        # except TypeError:
-        #     logger.error("Please upgrade your installation of h5py !!!")
 
+        sparsify_grp = nexus.new_class(entry, "peakfinder", class_type="NXprocess")
+        sparsify_grp["program"] = "pyFAI"
+        sparsify_grp["sequence_index"] = 1
+        sparsify_grp["version"] = version
+        sparsify_grp["date"] = get_isotime()
+        if source is not None:
+            sparsify_grp.create_dataset("source", data=numpy.array(source, h5py.string_dtype("utf8")))
         if ai is not None:
-            # if extra.get("correctSolidAngle") or (extra.get("polarization_factor") is not None):
-            #     if extra.get("correctSolidAngle"):
-            #         normalization = ai.solidAngleArray()
-            #     else:
-            #         normalization = None
-            #     pf = extra.get("polarization_factor")
-            #     if pf:
-            #         if normalization is None:
-            #             normalization = ai.polarization(factor=pf)
-            #         else:
-            #             normalization *= ai.polarization(factor=pf)
-                # nrmds = sparse_grp.create_dataset("normalization", data=normalization, **cmp)
-                # nrmds.attrs["interpretation"] = "image"
-
-            sparsify_grp = nexus.new_class(entry, "sigma_clipping", class_type="NXprocess")
-            sparsify_grp["program"] = "pyFAI"
-            sparsify_grp["sequence_index"] = 1
-            sparsify_grp["version"] = version
-            sparsify_grp["date"] = get_isotime()
-            if source is not None:
-                sparsify_grp["source"] = source
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")
             config_grp["type"] = "text/json"
             parameters = OrderedDict([("geometry", ai.get_config()),
@@ -177,7 +133,3 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
                 monochromator_grp = nexus.new_class(instrument, "monchromator", "NXmonochromator")
                 wl_ds = monochromator_grp.create_dataset("wavelength", data=numpy.float32(ai.wavelength * 1e10))
                 wl_ds.attrs["units"] = "Å"
-                # wl_ds.attrs["resolution"] = 0.014
-#                 nrj_ds = monochromator_grp.create_dataset("energy", data=numpy.floaself.energy)
-#                 nrj_ds.attrs["units"] = "keV"
-#                 #nrj_ds.attrs["resolution"] = 0.014

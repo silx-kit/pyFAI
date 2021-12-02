@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/12/2021"
+__date__ = "02/12/2021"
 __status__ = "status"
 
 import os
@@ -68,7 +68,7 @@ from ..units import to_unit
 from ..opencl import ocl
 
 if ocl is None:
-    logger.error("Sparsfy requires a valid OpenCL stack to be installed")
+    logger.error("Peakfinder requires a valid OpenCL stack to be installed")
 else:
     from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
