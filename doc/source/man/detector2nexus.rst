@@ -20,23 +20,48 @@ detector2nexus [options] [options] -o nxs.h5
 Options:
 --------
 
-  -h, --help            show this help message and exit
-  -V, --version         show program's version number and exit
-  -o OUTPUT, --output OUTPUT
-                        Output nexus file, unless detector_name.h5
-  -n NAME, --name NAME  name of the detector
-  -m MASK, --mask MASK  mask corresponding to the detector
-  -D DETECTOR, --detector DETECTOR
-                        Base detector name (see documentation of
-                        pyFAI.detectors
-  -s SPLINEFILE, --splinefile SPLINEFILE
-                        Geometric distortion file from FIT2D
-  --dx DX, --x-corr DX   Geometric correction for pilatus
-  --dy DY, --y-corr DY   Geometric correction for pilatus
-  -p PIXEL, --pixel PIXEL
-                        pixel size (comma separated): x,y
-  -S SHAPE, --shape SHAPE
-                        shape of the detector (comma separated): x,y
-  -d DARK, --dark DARK  Dark noise to be subtracted
-  -f FLAT, --flat FLAT  Flat field correction
-  -v, --verbose         switch to verbose/debug mode
+**-h**, **--help**
+   show this help message and exit
+
+**-V**, **--version**
+   show program's version number and exit
+
+**-o** OUTPUT, **--output** OUTPUT
+   Output nexus file, unless detector_name.h5
+
+**-n** NAME, **--name** NAME
+   name of the detector
+
+**-m** MASK, **--mask** MASK
+   mask corresponding to the detector
+
+**-D** DETECTOR, **--detector** DETECTOR
+   Base detector name (see documentation of pyFAI.detectors
+
+**-s** SPLINEFILE, **--splinefile** SPLINEFILE
+   Geometric distortion file from FIT2D
+
+**--dx** DX, **--x-corr** DX
+   Geometric correction for pilatus
+
+**--dy** DY, **--y-corr** DY
+   Geometric correction for pilatus
+
+**-p** PIXEL, **--pixel** PIXEL
+   pixel size (comma separated): x,y
+
+**-S** SHAPE, **--shape** SHAPE
+   shape of the detector (comma separated): x,y
+
+**-d** DARK, **--dark** DARK
+   Dark noise to be subtracted
+
+**-f** FLAT, **--flat** FLAT
+   Flat field correction
+
+**-v**, **--verbose**
+   switch to verbose/debug mode
+
+This summarizes detector2nexus
+
+detector2nexus version 0.21.0-dev2 from 19/11/2021

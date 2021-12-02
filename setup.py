@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/09/2021"
+__date__ = "01/12/2021"
 __status__ = "stable"
 
 import io
@@ -1046,6 +1046,7 @@ def get_project_configuration(dry_run):
         'pyFAI-saxs = pyFAI.app.saxs:main',
         'pyFAI-waxs = pyFAI.app.waxs:main',
         'sparsify-Bragg = pyFAI.app.sparsify:main',
+        'peakfinder = pyFAI.app.peakfinder:main',   
     ]
 
     entry_points = {
