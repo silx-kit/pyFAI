@@ -613,34 +613,9 @@
    <header>pyFAI.gui.widgets.DetectorLabel</header>
   </customwidget>
   <customwidget>
-   <class>UnitSelector</class>
-   <extends>QComboBox</extends>
-   <header>pyFAI.gui.widgets.UnitSelector</header>
-  </customwidget>
-  <customwidget>
-   <class>OpenClDeviceLabel</class>
-   <extends>QLabel</extends>
-   <header>pyFAI.gui.widgets.OpenClDeviceLabel</header>
-  </customwidget>
-  <customwidget>
    <class>QuantityEdit</class>
    <extends>QLineEdit</extends>
    <header>pyFAI.gui.widgets.QuantityEdit</header>
-  </customwidget>
-  <customwidget>
-   <class>UnitLabel</class>
-   <extends>QLabel</extends>
-   <header>pyFAI.gui.widgets.UnitLabel</header>
-  </customwidget>
-  <customwidget>
-   <class>GeometryLabel</class>
-   <extends>QLabel</extends>
-   <header>pyFAI.gui.widgets.GeometryLabel</header>
-  </customwidget>
-  <customwidget>
-   <class>MethodLabel</class>
-   <extends>QLabel</extends>
-   <header>pyFAI.gui.widgets.MethodLabel</header>
   </customwidget>
   <customwidget>
    <class>LoadImageToolButton</class>
@@ -648,16 +623,81 @@
    <header>pyFAI.gui.widgets.LoadImageToolButton</header>
   </customwidget>
   <customwidget>
-   <class>MonitorNameEdit</class>
-   <extends>QLineEdit</extends>
-   <header>pyFAI.gui.widgets.MonitorNameEdit</header>
-  </customwidget>
-  <customwidget>
    <class>FileEdit</class>
    <extends>QLineEdit</extends>
    <header>pyFAI.gui.widgets.FileEdit</header>
   </customwidget>
+  <customwidget>
+   <class>UnitSelector</class>
+   <extends>QComboBox</extends>
+   <header>pyFAI.gui.widgets.UnitSelector</header>
+  </customwidget>
+  <customwidget>
+   <class>MethodLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.MethodLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>UnitLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.UnitLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>OpenClDeviceLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.OpenClDeviceLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>GeometryLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.GeometryLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>MonitorNameEdit</class>
+   <extends>QLineEdit</extends>
+   <header>pyFAI.gui.widgets.MonitorNameEdit</header>
+  </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>file_import</tabstop>
+  <tabstop>poni_save</tabstop>
+  <tabstop>load_detector</tabstop>
+  <tabstop>show_geometry</tabstop>
+  <tabstop>wavelengthEdit</tabstop>
+  <tabstop>do_mask</tabstop>
+  <tabstop>mask_file</tabstop>
+  <tabstop>file_mask_file</tabstop>
+  <tabstop>do_dark</tabstop>
+  <tabstop>dark_current</tabstop>
+  <tabstop>file_dark_current</tabstop>
+  <tabstop>do_flat</tabstop>
+  <tabstop>flat_field</tabstop>
+  <tabstop>file_flat_field</tabstop>
+  <tabstop>do_dummy</tabstop>
+  <tabstop>val_dummy</tabstop>
+  <tabstop>delta_dummy</tabstop>
+  <tabstop>do_polarization</tabstop>
+  <tabstop>polarization_factor</tabstop>
+  <tabstop>do_solid_angle</tabstop>
+  <tabstop>do_2D</tabstop>
+  <tabstop>radial_unit</tabstop>
+  <tabstop>nbpt_rad</tabstop>
+  <tabstop>nbpt_azim</tabstop>
+  <tabstop>do_radial_range</tabstop>
+  <tabstop>radial_range_min</tabstop>
+  <tabstop>radial_range_max</tabstop>
+  <tabstop>do_azimuthal_range</tabstop>
+  <tabstop>azimuth_range_min</tabstop>
+  <tabstop>azimuth_range_max</tabstop>
+  <tabstop>chi_discontinuity_at_0</tabstop>
+  <tabstop>do_poisson</tabstop>
+  <tabstop>error_selection</tabstop>
+  <tabstop>do_normalization</tabstop>
+  <tabstop>normalization_factor</tabstop>
+  <tabstop>monitor_name</tabstop>
+  <tabstop>method_config_button</tabstop>
+  <tabstop>opencl_config_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

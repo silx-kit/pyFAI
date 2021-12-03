@@ -34,7 +34,7 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/10/2021"
+__date__ = "26/11/2021"
 
 import logging
 import numpy
@@ -116,7 +116,7 @@ class TestOclHistogram(unittest.TestCase):
         sig = res.normalization.sum(axis=-1, dtype="float64")
         err = abs((sig - ref).sum())
 
-        epsilon = 1e-5 if precise else 3e-3
+        epsilon = 1e-5 if precise else 4e-3
         self.assertLess(err, epsilon, "normalization content is the same: %s<%s on device %s" % (err, epsilon, integrator.ctx.devices[0]))
         self.assertLess(abs(gaussian_filter1d(sig - ref, 9)).max(), 1.5, "normalization, after smoothing is flat")
 

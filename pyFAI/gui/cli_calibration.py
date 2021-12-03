@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2021"
+__date__ = "02/12/2021"
 __status__ = "production"
 
 import os
@@ -2197,7 +2197,7 @@ class CheckCalib(object):
     def parse(self):
         logger.debug("in parse")
         usage = "check_calib [options] -p param.poni image.edf"
-        description = """Check_calib is a research tool aiming at validating both the geometric
+        description = """Check_calib is a deprecated tool aiming at validating both the geometric
 calibration and everything else like flat-field correction, distortion
 correction, at a sub-pixel level.
 

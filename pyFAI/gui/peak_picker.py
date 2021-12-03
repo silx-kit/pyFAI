@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2021"
+__date__ = "25/11/2021"
 __status__ = "production"
 
 import os
@@ -80,7 +80,7 @@ def preprocess_image(data, log=False, clip=0.001):
     sorted_list = data_disp.flatten()  # explicit copy
     sorted_list.sort()
     show_min = sorted_list[int(round(clip * (sorted_list.size - 1)))]
-    show_max = sorted_list[int(round((1.0-clip) * (sorted_list.size - 1)))]
+    show_max = sorted_list[int(round((1.0 - clip) * (sorted_list.size - 1)))]
     bounds = (show_min, show_max)
     return  data_disp, bounds
     
@@ -223,7 +223,8 @@ class PeakPicker(object):
         points = obj.peaks_from_area(**kwargs)
         if points:
             gpt = self.points.append(points, ring)
-            self.widget.add_grp(gpt.label, points)
+            if self.widget is not None:
+                self.widget.add_grp(gpt.label, points)
         return points
 
     def reset(self):
@@ -231,7 +232,8 @@ class PeakPicker(object):
         Reset control point and graph (if needed)
         """
         self.points.reset()
-        self.widget.reset()
+        if self.widget is not None:
+            self.widget.reset()
         
     def gui(self, log=False, maximize=False, pick=True):
         """
@@ -300,7 +302,7 @@ class PeakPicker(object):
             :param gpt: : group of point, instance of PointGroup
             """
             if points:
-                if not gpt:
+                if not gpt and self.widget:
                     gpt = self.points.append(points, ring=self.widget.spinbox.value())
                 self.widget.add_grp(gpt.label, points)
             return gpt
@@ -316,6 +318,7 @@ class PeakPicker(object):
                                             None, self.massif_contour)
             if points:
                 gpt = common_creation(points)
+                #annontate(points[0], [ypix, xpix], gpt=gpt)
                 logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
             else:
                 logger.warning("No peak found !!!")
@@ -326,6 +329,7 @@ class PeakPicker(object):
             newpeak = self.massif.nearest_peak([ypix, xpix])
             if newpeak:
                 gpt = common_creation([newpeak])
+                #annontate(newpeak, [ypix, xpix], gpt=gpt)
                 logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f", gpt.label, newpeak[1], newpeak[0])
             else:
                 logger.warning("No peak found !!!")
@@ -468,7 +472,6 @@ class PeakPicker(object):
         if self.widget is None:
             logging.warning("No diffraction image available => not showing the contour")
         else:
-            
             tth_max = data.max()
             tth_min = data.min()
             if self.points.calibrant:

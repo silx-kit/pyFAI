@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "22/11/2021"
+__date__ = "01/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -57,11 +57,8 @@ from libc.stdio cimport printf, fflush, stdout
 from ..utils import crc32
 from ..utils.decorators import deprecated
 from .preproc import preproc
+from .splitpixel_common import calc_boundaries
 from .sparse_builder cimport SparseBuilder
-
-cdef struct Function:
-    float slope
-    float intersect
 
 
 cdef Py_ssize_t NUM_WARNING
@@ -74,20 +71,10 @@ elif logger.level >= logging.INFO:
 else:
     NUM_WARNING = 10000
 
-cdef inline float getBin1Nr(float x0, float pos0_min, float delta, float var) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
-    """
-    if var:
-        if x0 >= 0:
-            return (x0 - pos0_min) / delta
-        else:
-            return (x0 + 2 * pi - pos0_min) / delta   # temporary fix....
-    else:
-        return (x0 - pos0_min) / delta
+
+cdef struct Function:
+    float slope
+    float intersect
 
 
 cdef inline float integrate(float A0, float B0, Function AB) nogil:
@@ -101,68 +88,6 @@ cdef inline float integrate(float A0, float B0, Function AB) nogil:
         return 0.0
     else:
         return AB.slope * (B0 * B0 - A0 * A0) * 0.5 + AB.intersect * (B0 - A0)
-
-
-cdef struct MyPoint:
-    float i
-    float j
-
-
-cdef struct MyPoly:
-    int size
-    MyPoint[8] data
-
-
-cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, float clipEdge) nogil:
-    cdef MyPoint intersection
-    intersection.i = clipEdge
-    intersection.j = (E.j - S.j) * (clipEdge - S.i) / (E.i - S.i) + S.j
-    return intersection
-
-
-cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, float clipEdge) nogil:
-    cdef MyPoint intersection
-    intersection.i = (E.i - S.i) * (clipEdge - S.j) / (E.j - S.j) + S.i
-    intersection.j = clipEdge
-    return intersection
-
-
-cdef inline int point_and_line(float x0, float y0, float x1, float y1, float x, float y) nogil:
-    cdef float tmp = (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0)
-    return (tmp > 0) - (tmp < 0)
-
-
-cdef float area_n(MyPoly poly) nogil:
-    if poly.size is 3:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[0].i * poly.data[2].j)
-    elif poly.size is 4:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[0].i * poly.data[3].j)
-    elif poly.size is 5:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[4].j + poly.data[4].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[4].i * poly.data[3].j - poly.data[0].i * poly.data[4].j)
-    elif poly.size is 6:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[4].j + poly.data[4].i * poly.data[5].j + poly.data[5].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[4].i * poly.data[3].j - poly.data[5].i * poly.data[4].j - poly.data[0].i * poly.data[5].j)
-    elif poly.size is 7:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[4].j + poly.data[4].i * poly.data[5].j + poly.data[5].i * poly.data[6].j + poly.data[6].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[4].i * poly.data[3].j - poly.data[5].i * poly.data[4].j - poly.data[6].i * poly.data[5].j - poly.data[0].i * poly.data[6].j)
-    elif poly.size is 8:
-            return 0.5 * fabs(poly.data[0].i * poly.data[1].j + poly.data[1].i * poly.data[2].j + poly.data[2].i * poly.data[3].j + poly.data[3].i * poly.data[4].j + poly.data[4].i * poly.data[5].j + poly.data[5].i * poly.data[6].j + poly.data[6].i * poly.data[7].j + poly.data[7].i * poly.data[0].j -
-                              poly.data[1].i * poly.data[0].j - poly.data[2].i * poly.data[1].j - poly.data[3].i * poly.data[2].j - poly.data[4].i * poly.data[3].j - poly.data[5].i * poly.data[4].j - poly.data[6].i * poly.data[5].j - poly.data[7].i * poly.data[6].j - poly.data[0].i * poly.data[7].j)
-
-
-cdef inline int on_boundary(float A, float B, float C, float D) nogil:
-    """
-    Check if we are on a discontinuity ....
-    """
-    return (((A > piover2) and (B > piover2) and (C < -piover2) and (D < -piover2)) or
-            ((A < -piover2) and (B < -piover2) and (C > piover2) and (D > piover2)) or
-            ((A > piover2) and (B < -piover2) and (C > piover2) and (D < -piover2)) or
-            ((A < -piover2) and (B > piover2) and (C < -piover2) and (D > piover2)) or
-            ((A > piover2) and (B < -piover2) and (C < -piover2) and (D > piover2)) or
-            ((A < -piover2) and (B > piover2) and (C > piover2) and (D < -piover2)))
 
 
 class FullSplitCSR_1d(CsrIntegrator):
@@ -198,32 +123,43 @@ class FullSplitCSR_1d(CsrIntegrator):
 
         """
 
-        # self.padding = int(padding)
         if pos.ndim > 3:  # create a view
             pos = pos.reshape((-1, 4, 2))
         assert pos.shape[1] == 4, "pos.shape[1] == 4"
         assert pos.shape[2] == 2, "pos.shape[2] == 2"
         assert pos.ndim == 3, "pos.ndim == 3"
-        self.pos = pos
+        self.pos = numpy.ascontiguousarray(pos, dtype=position_d)
         self.size = pos.shape[0]
         self.bins = bins
-        # self.bad_pixel = bad_pixel
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
+        self.unit = unit
         if mask is not None:
             assert mask.size == self.size, "mask size"
-            self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
-            if mask_checksum:
-                self.mask_checksum = mask_checksum
-            else:
-                self.mask_checksum = crc32(mask)
+            self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
         else:
-            self.check_mask = False
+            self.cmask = None
             self.mask_checksum = None
         
+        #Keep this unchanged
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
+        cdef:
+            position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
+        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
+        if (not allow_pos0_neg):
+            pos0_min = max(0.0, pos0_min)
+            pos0_maxin = max(pos0_maxin, 0.0)
+        self.pos0_min = pos0_min
+        self.pos1_min = pos1_min
+        self.pos0_max = pos0_max = calc_upper_bound(pos0_maxin)
+        self.pos1_max = pos1_max = calc_upper_bound(pos1_maxin)
+        
+        self.delta = (pos0_max - pos0_min) / (<position_t> (bins))
+        self.bin_centers = numpy.linspace(pos0_min + 0.5 * self.delta, 
+                                          pos0_max - 0.5 * self.delta, 
+                                          self.bins)
 
         lut = self.calc_lut()
         #Call the constructor of the parent class
@@ -233,44 +169,26 @@ class FullSplitCSR_1d(CsrIntegrator):
                                           self.bins)
         self.lut = (numpy.asarray(self.data), numpy.asarray(self.indices), numpy.asarray(self.indptr))
         self.lut_checksum = crc32(self.data)
-        self.unit = unit
         self.lut_nbytes = sum([i.nbytes for i in lut])
 
     def calc_lut(self):
         cdef:
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
-            mask_t[::1] cmask
-            float pos0_min = 0, pos1_min = 0, pos1_maxin = 0
-            float max0, min0
-            float areaPixel = 0, delta = 0, areaPixel2 = 0
-            float A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
-            float A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
-            float partialArea = 0, oneOverPixelArea
+            mask_t[::1] cmask = None
+            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0
+            position_t max0, min0
+            position_t areaPixel = 0, delta = 0, areaPixel2 = 0
+            position_t A0 = 0, B0 = 0, C0 = 0, D0 = 0, A1 = 0, B1 = 0, C1 = 0, D1 = 0
+            position_t A_lim = 0, B_lim = 0, C_lim = 0, D_lim = 0
+            position_t partialArea = 0, oneOverPixelArea
             Function AB, BC, CD, DA
             Py_ssize_t bins=self.bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0
-            bint check_pos1, check_mask = False
+            bint check_pos1=self.pos1_range is not None, check_mask = False
             SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
-
-        if self.pos0_range is not None:
-            self.pos0_min, self.pos0_maxin = self.pos0_range
-        else:
-            self.pos0_min = self.pos[:, :, 0].min()
-            self.pos0_maxin = self.pos[:, :, 0].max()
-        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
-        if self.pos1_range is not None:
-            self.pos1_min, self.pos1_maxin = self.pos1_range
-            check_pos1 = True
-        else:
-            self.pos1_min = self.pos[:, :, 1].min()
-            self.pos1_maxin = self.pos[:, :, 1].max()
-            check_pos1 = False
-        self.pos1_max = calc_upper_bound(<position_t> self.pos1_maxin)
-
-        self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (bins))
 
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
-        pos1_maxin = self.pos1_maxin
+        pos1_max = self.pos1_max
         
         delta = self.delta
 
@@ -285,14 +203,14 @@ class FullSplitCSR_1d(CsrIntegrator):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = get_bin_number(<float> cpos[idx, 0, 0], pos0_min, delta)
-                A1 = <float> cpos[idx, 0, 1]
-                B0 = get_bin_number(<float> cpos[idx, 1, 0], pos0_min, delta)
-                B1 = <float> cpos[idx, 1, 1]
-                C0 = get_bin_number(<float> cpos[idx, 2, 0], pos0_min, delta)
-                C1 = <float> cpos[idx, 2, 1]
-                D0 = get_bin_number(<float> cpos[idx, 3, 0], pos0_min, delta)
-                D1 = <float> cpos[idx, 3, 1]
+                A0 = get_bin_number(cpos[idx, 0, 0], pos0_min, delta)
+                A1 = cpos[idx, 0, 1]
+                B0 = get_bin_number(cpos[idx, 1, 0], pos0_min, delta)
+                B1 = cpos[idx, 1, 1]
+                C0 = get_bin_number(cpos[idx, 2, 0], pos0_min, delta)
+                C1 = cpos[idx, 2, 1]
+                D0 = get_bin_number(cpos[idx, 3, 0], pos0_min, delta)
+                D1 = cpos[idx, 3, 1]
 
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
@@ -300,7 +218,7 @@ class FullSplitCSR_1d(CsrIntegrator):
                 if (max0 < 0) or (min0 >= bins):
                     continue
                 if check_pos1:
-                    if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
+                    if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) >= pos1_max):
                         continue
 
                 bin0_min = < int > floor(min0)
@@ -358,6 +276,9 @@ class FullSplitCSR_1d(CsrIntegrator):
     def outPos(self):
         return self.bin_centers
     
+    @property
+    def check_mask(self):
+        return self.cmask is not None
 
 
 ################################################################################
@@ -410,62 +331,59 @@ class FullSplitCSR_2d(CsrIntegrator):
         # self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
         self.chiDiscAtPi = chiDiscAtPi
-        if mask is not None:
-            assert mask.size == self.size, "mask size"
-            self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
-            if mask_checksum:
-                self.mask_checksum = mask_checksum
-            else:
-                self.mask_checksum = crc32(mask)
-        else:
+        self.unit = unit
+        
+        if mask is None:
             self.cmask = None
             self.check_mask = False
             self.mask_checksum = None
+        else:
+            assert mask.size == self.size, "mask size"
+            self.check_mask = True
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
+            self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
+
+        #keep this unchanged for validation of the range or not
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
-        self.calc_boundaries(pos0_range, pos1_range, self.cmask)
+        cdef:
+            position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
+        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
+        if (not allow_pos0_neg):
+            pos0_min = max(0.0, pos0_min)
+            pos0_maxin = max(pos0_maxin, 0.0)
+        self.pos0_min = pos0_min
+        self.pos1_min = pos1_min
+        self.pos0_max = pos0_max = calc_upper_bound(pos0_maxin)
+        self.pos1_max = pos1_max = calc_upper_bound(pos1_maxin)
+
+        self.delta0 = (pos0_max - pos0_min) / (<position_t> (bins[0]))
+        self.delta1 = (pos1_max - pos1_min) / (<position_t> (bins[1]))
+        self.bin_centers0 = numpy.linspace(pos0_min + 0.5 * self.delta0, 
+                                           pos0_max - 0.5 * self.delta0, 
+                                           self.bins[0])
+        self.bin_centers1 = numpy.linspace(pos1_min + 0.5 * self.delta1, 
+                                           pos1_max - 0.5 * self.delta1, 
+                                           self.bins[1])
+
+        
         lut = self.calc_lut()
         #Call the constructor of the parent class
         super().__init__(lut, pos.shape[0], empty or 0.0)    
-        self.bin_centers = None
-        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
-                                           self.pos0_max - 0.5 * self.delta0, 
-                                           bins[0])
-        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
-                                           self.pos1_max - 0.5 * self.delta1, 
-                                           bins[1])
+
         self.lut_checksum = crc32(self.data)
-
-        self.unit = unit
-
+        
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
-    def calc_boundaries(self, pos0_range, pos1_range, mask=None):
-        """
-        Calculate self.pos0_min/max and self.pos1_min/max
-        
-        TODO: as referenced in #1589
-
-        :param pos0_range: 2-tuple containing the requested range
-        :param pos1_range: 2-tuple containing the requested range
-        :param mask: binary mask
-        :return: 2tuple of 2 tuple with lower and upper bound in dim0 and dim1
-        """
-        pass
 
     def calc_lut(self):
-        cdef Py_ssize_t bins0, bins1, size = self.size
-        bins0, bins1 = tuple(self.bins)
-        bins0 = max(bins0, 1)
-        bins1 = max(bins1, 1)
-    
         cdef:
+            Py_ssize_t bins0=self.bins[0], bins1=self.bins[1], size = self.size
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
             position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
             mask_t[:] cmask = self.cmask
-            bint check_mask = self.check_mask, allow_pos0_neg = self.allow_pos0_neg, chiDiscAtPi = self.chiDiscAtPi
+            bint check_mask = False, allow_pos0_neg = self.allow_pos0_neg, chiDiscAtPi = self.chiDiscAtPi
             position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
             position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
             position_t fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
@@ -479,33 +397,16 @@ class FullSplitCSR_2d(CsrIntegrator):
             double foffset0, foffset1, sum_area, loc_area
             SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=size)
             
-        if check_mask:
+        if self.cmask is not None:
+            check_mask = True
             cmask = self.cmask
-        if self.pos0_range is not None and len(self.pos0_range) == 2:
-            pos0_min = min(self.pos0_range)
-            pos0_maxin = max(self.pos0_range)
-        else:
-            pos0_min = self.pos[:, :, 0].min()
-            pos0_maxin = self.pos[:, :, 0].max()
-        if not allow_pos0_neg:
-            pos0_min = max(pos0_min, 0.0)
-            pos0_maxin = max(pos0_maxin, 0.0)
-        pos0_max = calc_upper_bound(pos0_maxin)
-        self.pos0_min = pos0_min
-        self.pos0_max = pos0_max
-        
-        if self.pos1_range is not None and len(self.pos1_range) > 1:
-            pos1_min = min(self.pos1_range)
-            pos1_maxin = max(self.pos1_range)
-        else:
-            pos1_min = self.pos[:, :, 1].min()
-            pos1_maxin = self.pos[:, :, 1].max()
-        pos1_max = calc_upper_bound(pos1_maxin)
-        self.pos1_min = pos1_min
-        self.pos1_max = pos1_max
-            
-        self.delta0 = delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
-        self.delta1 = delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
+
+        pos0_max = self.pos0_max
+        pos0_min = self.pos0_min
+        pos1_max = self.pos1_max
+        pos1_min = self.pos1_min
+        delta0 = self.delta0  
+        delta1 = self.delta1  
     
         with nogil:
             for idx in range(size):
@@ -593,11 +494,7 @@ class FullSplitCSR_2d(CsrIntegrator):
                         loc_area = buffer[i, j]
                         sum_area += loc_area
                         builder.cinsert((ioffset0 + i)*bins1 + ioffset1 + j, idx, loc_area * inv_area)
-                        # update_2d_accumulator(out_data,
-                        #                       ioffset0 + i,
-                        #                       ioffset1 + j,
-                        #                       value,
-                        #                       weight=loc_area * inv_area)
+
                 if fabs(area - sum_area)*inv_area > 1e-3:
                     nwarn -=1
                     if nwarn>0:
@@ -618,3 +515,6 @@ class FullSplitCSR_2d(CsrIntegrator):
     def outPos1(self):
         return self.bin_centers1
 
+    @property
+    def check_mask(self):
+        return self.cmask is not None

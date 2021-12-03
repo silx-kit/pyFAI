@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/09/2021"
+__date__ = "26/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -400,7 +400,7 @@ cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating st
     """
     cdef: 
         floating slope, intercept
-        Py_ssize_t i, istart0, istop0, Py_ssize_t
+        Py_ssize_t i, istart0, istop0
 
     if stop0 == start0:
         # slope is infinite, area is null: no change to the buffer

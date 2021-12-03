@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/08/2021"
+__date__ = "26/11/2021"
 
 import sys
 import os
@@ -474,16 +474,19 @@ class TestBugRegression(unittest.TestCase):
         npt = 10
         sector_size = 20
         out = numpy.empty((180 // sector_size, npt))
-        for method in [("full", "csr", "cython"),
-                       ("full", "lut", "cython")]:
+        for method in [("full", "histogram", "cython"),
+                       ("full", "lut", "cython"),
+                       ("full", "csr", "cython"),
+                       ]:
             idx = 0
             for start in range(-90, 90, sector_size):
                 end = start + sector_size
                 res = ai.integrate1d(img, npt, method=method, azimuth_range=[start, end])
                 out[idx] = res.intensity
                 idx += 1
+            # print(out)
             std = out.std(axis=0)
-            self.assertGreater(std.min(), 0, "output are not all the same with " + str(method))
+            self.assertGreater(std.min(), 0, f"output are not all the same with {method}")
 
     def test_bug_1510(self):
         """
@@ -518,11 +521,11 @@ class TestBugRegression(unittest.TestCase):
         print(ref.get_config())
         obt = AzimuthalIntegrator()
         obt.setPyFAI(**geo)
-        
+
         print(obt)
         self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
-        
-        
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()

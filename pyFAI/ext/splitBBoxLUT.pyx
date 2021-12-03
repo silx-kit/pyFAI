@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "22/11/2021"
+__date__ = "26/11/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -117,17 +117,13 @@ class HistoBBox1d(LutIntegrator):
         #self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
         #self.empty = empty
-        if mask is not None:
-            assert mask.size == self.size, "mask size"
-            self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
-            if mask_checksum:
-                self.mask_checksum = mask_checksum
-            else:
-                self.mask_checksum = crc32(mask)
-        else:
-            self.check_mask = False
+        if mask is None:
+            self.cmask = None
             self.mask_checksum = None
+        else:
+            assert mask.size == self.size, "mask size"
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
+            self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
 
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
@@ -178,7 +174,7 @@ class HistoBBox1d(LutIntegrator):
         """
         cdef:
             int idx, size = self.cpos0.size
-            bint check_mask = self.check_mask
+            bint check_mask = self.cmask is not None
             mask_t[::1] cmask
             position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf,
             position_t upper, lower, pos0_max, pos0_min, c, d
@@ -226,7 +222,7 @@ class HistoBBox1d(LutIntegrator):
         """
         cdef:
             int size = self.cpos0.size
-            bint check_mask = self.check_mask
+            bint check_mask = self.cmask is not None
             mask_t[::1] cmask
             position_t[::1] cpos0
             position_t pos0_max, pos0_min, c
@@ -271,7 +267,7 @@ class HistoBBox1d(LutIntegrator):
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max
             acc_t delta_left, delta_right, inv_area
             int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size = self.size
-            bint check_mask, check_pos1
+            bint check_mask=self.cmask is not None, check_pos1
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
             position_t[::1] cpos1_min, cpos1_max
@@ -279,11 +275,8 @@ class HistoBBox1d(LutIntegrator):
             SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
 
         
-        if self.check_mask:
+        if check_mask:
             cmask = self.cmask
-            check_mask = True
-        else:
-            check_mask = False
 
         if self.check_pos1:
             check_pos1 = True
@@ -345,16 +338,13 @@ class HistoBBox1d(LutIntegrator):
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
             int32_t k, idx, bin0, bins = self.bins, nnz, size = self.size
-            bint check_mask, check_pos1
+            bint check_mask=self.cmask is not None, check_pos1
             position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
             mask_t[::1] cmask
             SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
 
-        if self.check_mask:
+        if check_mask:
             cmask = self.cmask
-            check_mask = True
-        else:
-            check_mask = False
 
         if self.check_pos1:
             check_pos1 = True
@@ -389,7 +379,10 @@ class HistoBBox1d(LutIntegrator):
     def outPos(self):
         return self.bin_centers
 
-
+    @property
+    def check_mask(self):
+        return self.cmask is not None
+    
 ################################################################################
 # Bidimensionnal regrouping
 ################################################################################
@@ -448,19 +441,14 @@ class HistoBBox2d(LutIntegrator):
             bins0 = 1
         if bins1 <= 0:
             bins1 = 1
-        self.bins = (int(bins0), int(bins1))
-        # self.lut_size = 0
-        if mask is not None:
-            assert mask.size == self.size, "mask size"
-            self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-            if mask_checksum:
-                self.mask_checksum = mask_checksum
-            else:
-                self.mask_checksum = crc32(mask)
-        else:
-            self.check_mask = False
+        self.bins = (max(1, int(bins0)), max(1, int(bins1)))
+        if mask is None:
             self.mask_checksum = None
+            self.cmask = None
+        else:
+            assert mask.size == self.size, "mask size"
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
+            self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)            
 
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
@@ -703,3 +691,7 @@ class HistoBBox2d(LutIntegrator):
     @deprecated(replacement="bin_centers1", since_version="0.16", only_once=True)
     def outPos1(self):
         return self.bin_centers1
+
+    @property
+    def check_mask(self):
+        return self.cmask is not None

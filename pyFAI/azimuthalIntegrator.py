@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2021"
+__date__ = "26/11/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -721,8 +721,7 @@ class AzimuthalIntegrator(Geometry):
                             (integr.pos0_range is not None):
                         reset = "radial_range was defined in LUT"
                     elif (radial_range is not None) and\
-                            (integr.pos0_range !=
-                             (min(radial_range), max(radial_range) * EPS32)):
+                            (integr.pos0_range != radial_range):
                         reset = ("radial_range is defined"
                                  " but not the same as in LUT")
                     if (azimuth_range is None) and\
@@ -730,7 +729,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = ("azimuth_range not defined and"
                                  " LUT had azimuth_range defined")
                     elif (azimuth_range is not None) and\
-                            (integr.pos1_range != [azimuth_range[0], azimuth_range[1] * EPS32]):
+                            (integr.pos1_range != azimuth_range[0]):
                         reset = ("azimuth_range requested and"
                                  " LUT's azimuth_range don't match")
                 if reset:
@@ -1224,19 +1223,19 @@ class AzimuthalIntegrator(Geometry):
                     if cython_integr.empty != empty:
                         cython_reset = "empty value changed"
                     if (mask is not None) and (not cython_integr.check_mask):
-                        cython_reset = "mask but %s was without mask" % method.algo_lower.upper()
-                    elif (mask is None) and (cython_integr.check_mask):
-                        cython_reset = "no mask but %s has mask" % method.algo_lower.upper()
+                        cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
+                    elif (mask is None) and (cython_integr.cmask is not None):
+                        cython_reset = f"no mask but { method.algo_lower.upper()} has mask"
                     elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
                         cython_reset = "mask changed"
                     if (radial_range is None) and (cython_integr.pos0_range is not None):
-                        cython_reset = "radial_range was defined in %s" % method.algo_lower.upper()
-                    elif (radial_range is not None) and cython_integr.pos0_range != (min(radial_range), max(radial_range)):
-                        cython_reset = "radial_range is defined but differs in %s" % method.algo_lower.upper()
+                        cython_reset = f"radial_range was defined in { method.algo_lower.upper()}"
+                    elif (radial_range is not None) and (cython_integr.pos0_range != radial_range):
+                        cython_reset = f"radial_range is defined but differs in %s" % method.algo_lower.upper()
                     if (azimuth_range is None) and (cython_integr.pos1_range is not None):
-                        cython_reset = "azimuth_range not defined and %s had azimuth_range defined" % method.algo_lower.upper()
-                    elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
-                        cython_reset = "azimuth_range requested and %s's azimuth_range don't match" % method.algo_lower.upper()
+                        cython_reset = f"azimuth_range not defined and {method.algo_lower.upper()} had azimuth_range defined"
+                    elif (azimuth_range is not None) and (cython_integr.pos1_range != azimuth_range):
+                        cython_reset = f"azimuth_range requested and {method.algo_lower.upper()}'s azimuth_range don't match"
                 if cython_reset:
                     logger.info("AI.integrate1d_ng: Resetting Cython integrator because %s", cython_reset)
                     split = method.split_lower
@@ -1298,19 +1297,19 @@ class AzimuthalIntegrator(Geometry):
                         if integr.empty != empty:
                             reset = "empty value changed"
                         if (mask is not None) and (not integr.check_mask):
-                            reset = "mask but %s was without mask" % method.algo_lower.upper()
+                            reset = f"mask but {method.algo_lower.upper()} was without mask"
                         elif (mask is None) and (integr.check_mask):
-                            reset = "no mask but %s has mask" % method.algo_lower.upper()
+                            reset = f"no mask but {method.algo_lower.upper()} has mask"
                         elif (mask is not None) and (integr.mask_checksum != mask_crc):
                             reset = "mask changed"
                         if (radial_range is None) and (integr.pos0_range is not None):
-                            reset = "radial_range was defined in %s" % method.algo_lower.upper()
-                        elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
-                            reset = "radial_range is defined but differs in %s" % method.algo_lower.upper()
+                            reset = f"radial_range was defined in {method.algo_lower.upper()}"
+                        elif (radial_range is not None) and (integr.pos0_range != radial_range):
+                            reset = f"radial_range is defined but differs in {method.algo_lower.upper()}"
                         if (azimuth_range is None) and (integr.pos1_range is not None):
-                            reset = "azimuth_range not defined and %s had azimuth_range defined" % method.algo_lower.upper()
-                        elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
-                            reset = "azimuth_range requested and %s's azimuth_range don't match" % method.algo_lower.upper()
+                            reset = f"azimuth_range not defined and {method.algo_lower.upper()} had azimuth_range defined"
+                        elif (azimuth_range is not None) and (integr.pos1_range != azimuth_range):
+                            reset = f"azimuth_range requested and {method.algo_lower.upper()}'s azimuth_range don't match"
 
                     if reset:
                         logger.info("ai.integrate1d_ng: Resetting ocl_csr integrator because %s", reset)
