@@ -1,12 +1,13 @@
 #!/usr/bin/make -f
 
-export PYBUILD_NAME=pyfai
-
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
     NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 else
 	NUMJOBS = 1
 endif
+
+export PYBUILD_NAME=pyfai
+export PYBUILD_BUILD_ARGS=-j ${NUMJOBS}
 
 %:
 	dh $@ --with python3,sphinxdoc --buildsystem=pybuild
@@ -18,9 +19,12 @@ override_dh_clean:
 	rm -rf *.egg-info
 
 override_dh_auto_build:
-	python3 setup.py build -j ${NUMJOBS}  
+	python3 setup.py build -j ${NUMJOBS}
 	dh_auto_build
 	python3 setup.py build_man build_doc
+
+override_pybuild_build:
+	pybuild
 
 override_dh_install:
 	dh_numpy3
