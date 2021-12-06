@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/11/2021"
+__date__ = "06/12/2021"
 __status__ = "production"
 
 import os
@@ -303,7 +303,7 @@ class PeakPicker(object):
             """
             if points:
                 if not gpt and self.widget:
-                    gpt = self.points.append(points, ring=self.widget.spinbox.value())
+                    gpt = self.points.append(points, ring=self.widget.get_ring_value())
                 self.widget.add_grp(gpt.label, points)
             return gpt
 
@@ -356,7 +356,7 @@ class PeakPicker(object):
 
         def append_1_point(event):
             " * Right-click + Shift (click+v): add one point to current group"
-            gpt = self.points.get(self.widget.spinbox.value())
+            gpt = self.points.get(self.widget.get_ring_value())
             if not gpt:
                 new_grp(event)
                 return
@@ -373,7 +373,7 @@ class PeakPicker(object):
 
         def erase_grp(event):
             " * Center-click or (click+d):     erase current group"
-            ring = self.widget.spinbox.value()
+            ring = self.widget.get_ring_value()
             gpt = self.points.pop(ring)
             if not gpt:
                 logger.warning("No group of points for ring %s", ring)
@@ -387,7 +387,7 @@ class PeakPicker(object):
 
         def erase_1_point(event):
             " * Center-click + 1 or (click+1): erase closest point from current group"
-            ring = self.widget.spinbox.value()
+            ring = self.widget.get_ring_value()
             gpt = self.points.get(ring)
             if not gpt:
                 logger.warning("No group of points for ring %s", ring)

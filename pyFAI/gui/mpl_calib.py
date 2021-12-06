@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2021"
+__date__ = "06/12/2021"
 __status__ = "development"
 
 
@@ -366,6 +366,10 @@ class MplCalibWidget:
             maximize_fig(self.fig)
             if update:
                 self.update()
+                
+    def get_ring_value(self):
+        "Return the value of the ring widget"
+        return self.spinbox.value()
     
     def close(self):
         if self.fig is not None:
