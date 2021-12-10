@@ -389,7 +389,7 @@ def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
     
     :param pixel: 4x2 array with radius, azimuth for the 4 corners. MODIFIED IN PLACE !!! 
     :param chiDiscAtPi: set to 0 to indicate the range goes from 0-2π instead of the default -π:π
-    :return: signed area (negative)
+    :return: signed area (approximate & negative)
     """  
     return _recenter(pixel, chiDiscAtPi)
 

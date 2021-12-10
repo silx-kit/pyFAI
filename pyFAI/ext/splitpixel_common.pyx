@@ -149,7 +149,7 @@ class FullSplitIntegrator:
         assert pos.shape[1] == 4, "pos.shape[1] == 4"
         assert pos.shape[2] == 2, "pos.shape[2] == 2"
         assert pos.ndim == 3, "pos.ndim == 3"
-        self.pos = numpy.ascontinuousarray(pos, dtype=position_d)
+        self.pos = numpy.ascontiguousarray(pos, dtype=position_d)
         self.size = pos.shape[0]
         if "__len__" in dir(bins): 
             self.bins = tuple(max(i, 1) for i in bins)
@@ -160,11 +160,9 @@ class FullSplitIntegrator:
 
         if mask is None:
             self.cmask = None
-            self.check_mask = False
             self.mask_checksum = None
         else:
             assert mask.size == self.size, "mask size"
-            self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
             self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
 
@@ -195,7 +193,7 @@ class FullSplitIntegrator:
             position_t a0, b0, c0, d0, a1, b1, c1, d1
             position_t inv_area, area_pixel, sub_area, sum_area
             position_t min0, max0, min1, max1
-            Py_ssize_t bins=self.bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0
+            Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0, nwarn=0
             bint check_pos1=self.pos1_range is not None, check_mask = False, chiDiscAtPi=self.chiDiscAtPi
             SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
 
@@ -250,7 +248,6 @@ class FullSplitIntegrator:
                     bin0_min = max(0, bin0_min)
                     bin0_max = min(bins, bin0_max + 1)
 
-                    inv_area = 1.0 / area_pixel 
                     _integrate1d(buffer, a0, a1, b0, b1)  # A-B
                     _integrate1d(buffer, b0, b1, c0, c1)  # B-C
                     _integrate1d(buffer, c0, c1, d0, d1)  # C-D
@@ -258,45 +255,13 @@ class FullSplitIntegrator:
 
                     sum_area = 0.0
                     for bin in range(bin0_min, bin0_max):
-                        sub_area = fabs(buffer[i])
-                        sum_area += sub_area
-                        sub_area *= inv_area
-                        # update_1d_accumulator(out_data, i, value, sub_area)
-                        builder.cinsert(bin, idx, sub_area)
-                    # # Avoid Zero-division error
-                    # AB.slope = 0.0 if A0 == B0 else (B1 - A1) / (B0 - A0)  
-                    # AB.intersect = A1 - AB.slope * A0
-                    # BC.slope = 0.0 if B0 == C0 else (C1 - B1) / (C0 - B0)
-                    # BC.intersect = B1 - BC.slope * B0
-                    # CD.slope = 0.0 if D0 == C0 else (D1 - C1) / (D0 - C0)
-                    # CD.intersect = C1 - CD.slope * C0
-                    # DA.slope = 0.0 if A0 == D0 else (A1 - D1) / (A0 - D0)
-                    # DA.intersect = D1 - DA.slope * D0
-                    #
-                    # areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
-                    #
-                    # areaPixel2 = integrate(A0, B0, AB)
-                    # areaPixel2 += integrate(B0, C0, BC)
-                    # areaPixel2 += integrate(C0, D0, CD)
-                    # areaPixel2 += integrate(D0, A0, DA)
-                    #
-                    # oneOverPixelArea = 1.0 / areaPixel
+                        sum_area += buffer[bin]
+                    inv_area = 1.0 / sum_area
+                    for bin in range(bin0_min, bin0_max):
+                        builder.cinsert(bin, idx, buffer[bin]*inv_area)
+                    # Check the total area:
+                    buffer[bin0_min:bin0_max] = 0.0
 
-                    # for bin in range(max(bin0_min,0), min(bins, bin0_max + 1)):
-                    #
-                    #
-                    #     bin0 = bin - bin0_min
-                    #     A_lim = (A0 <= bin0) * (A0 <= (bin0 + 1)) * bin0 + (A0 > bin0) * (A0 <= (bin0 + 1)) * A0 + (A0 > bin0) * (A0 > (bin0 + 1)) * (bin0 + 1)
-                    #     B_lim = (B0 <= bin0) * (B0 <= (bin0 + 1)) * bin0 + (B0 > bin0) * (B0 <= (bin0 + 1)) * B0 + (B0 > bin0) * (B0 > (bin0 + 1)) * (bin0 + 1)
-                    #     C_lim = (C0 <= bin0) * (C0 <= (bin0 + 1)) * bin0 + (C0 > bin0) * (C0 <= (bin0 + 1)) * C0 + (C0 > bin0) * (C0 > (bin0 + 1)) * (bin0 + 1)
-                    #     D_lim = (D0 <= bin0) * (D0 <= (bin0 + 1)) * bin0 + (D0 > bin0) * (D0 <= (bin0 + 1)) * D0 + (D0 > bin0) * (D0 > (bin0 + 1)) * (bin0 + 1)
-                    #
-                    #     partialArea = integrate(A_lim, B_lim, AB)
-                    #     partialArea += integrate(B_lim, C_lim, BC)
-                    #     partialArea += integrate(C_lim, D_lim, CD)
-                    #     partialArea += integrate(D_lim, A_lim, DA)
-                    #
-                    #     builder.cinsert(bin, idx, fabs(partialArea) * oneOverPixelArea)
         return builder
 
     def calc_lut_2d(self):
