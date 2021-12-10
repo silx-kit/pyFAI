@@ -66,6 +66,7 @@ def calc_boundaries(position_t[:, :, ::1] cpos,
      
     :return: (pos0_min, pos0_max, pos1_min, pos1_max)
     """
+    print("pos1_range", pos1_range)
     cdef:
         Py_ssize_t idx, size= cpos.shape[0]
         bint check_mask = False
@@ -172,6 +173,7 @@ class FullSplitIntegrator:
         cdef:
             position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
         pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
+        print("FullSplitIntegrator", pos0_min, pos0_maxin, pos1_min, pos1_maxin)
         if (not allow_pos0_neg):
             pos0_min = max(0.0, pos0_min)
             pos0_maxin = max(pos0_maxin, 0.0)

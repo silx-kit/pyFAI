@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2021"
+__date__ = "10/12/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -402,7 +402,7 @@ class AzimuthalIntegrator(Geometry):
             assert mask.shape == shape
         if split == "full":
             if int2d:
-                return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
+                return splitPixelFullLUT.HistoLUT2dFullSplit(pos,
                                                 bins=npt,
                                                 pos0_range=pos0_range,
                                                 pos1_range=pos1_range,
@@ -2246,9 +2246,11 @@ class AzimuthalIntegrator(Geometry):
                 error = False
                 if reset:
                     logger.info("ai.integrate2d: Resetting integrator because %s", reset)
+                    split = method.split_lower
                     try:
                         integr = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range,
-                                                mask_checksum=mask_crc, unit=unit, scale=False)
+                                                mask_checksum=mask_crc, unit=unit, scale=False,
+                                                split=split)
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         integr = None
@@ -2288,6 +2290,7 @@ class AzimuthalIntegrator(Geometry):
                                                               normalization_factor=normalization_factor,
                                                               safe=safe)
                 if res is None:  # fallback if OpenCL failed !
+                    print(integr)
                     res = integr.integrate_ng(data, dark=dark, flat=flat,
                                               solidangle=solidangle,
                                               dummy=dummy,

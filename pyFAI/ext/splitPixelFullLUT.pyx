@@ -29,6 +29,10 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""Full pixel Splitting implemented using Sparse-matrix Dense-Vector multiplication,
+Sparse matrix represented using the LUT representation.
+"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __date__ = "10/12/2021"
@@ -55,7 +59,6 @@ from libc.stdio cimport printf, fflush, stdout
 
 from ..utils import crc32
 from ..utils.decorators import deprecated
-from .splitpixel_common cimport NUM_WARNING
 from .splitpixel_common import calc_boundaries, FullSplitIntegrator
 from .sparse_builder cimport SparseBuilder
 
@@ -136,7 +139,7 @@ class HistoLUT2dFullSplit(LutIntegrator, FullSplitIntegrator):
                  allow_pos0_neg=False,
                  unit="undefined",
                  empty=None,
-                 chiDiscAtPi=True):
+                 bint chiDiscAtPi=True):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
@@ -145,10 +148,12 @@ class HistoLUT2dFullSplit(LutIntegrator, FullSplitIntegrator):
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
+        :param empty: value for bins where no pixels are contributing
+        :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
         """
         FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi)
         self.unit = unit
-
+        self.bin_centers = None
         self.delta0 = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins[0]))
         self.delta1 = (self.pos1_max - self.pos1_min) / (<position_t> (self.bins[1]))
         self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
@@ -157,11 +162,14 @@ class HistoLUT2dFullSplit(LutIntegrator, FullSplitIntegrator):
         self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
                                            self.pos1_max - 0.5 * self.delta1, 
                                            self.bins[1])
-
+        
         lut = self.calc_lut_2d().to_lut()
-        self.lut_checksum = crc32(numpy.asarray(lut))
+        #Call the constructor of the parent class
         LutIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)    
-
+        
+        self.lut_checksum = crc32(self.lut)
+        self.lut_nbytes = lut.nbytes
+        
     @property
     def check_mask(self):
         return self.cmask is not None

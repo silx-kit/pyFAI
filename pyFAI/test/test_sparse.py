@@ -187,24 +187,22 @@ class TestSparseIntegrate2d(unittest.TestCase):
 
     def test_sparse_fullsplit(self):
         ref = self.integrate(method=("full", "histogram", "cython"))
+        for m in "CSR", "LUT":
+            # print(m)
+            obt = self.integrate(method=("full", m, "cython"))
+            print(obt.compute_engine)
+            self.assertLess(abs(ref.radial - obt.radial).max(), 1e-3, f"radial matches {m}")
 
-        method = ("full", "lut", "cython")
-        obt = self.integrate(method=method)
-        res = self.cost(ref, obt)
-        if res > 1:
-            logger.error("Numerical values are odd (R=%s)... please refine this test!", res)
-        else:
-            logger.info("R on global result: %s for method %s", res, method)
-            self.assertTrue(numpy.allclose(obt[0], ref[0]))
+            # print("ref", ref.azimuthal)
+            # print("obt", obt.azimuthal)
+            self.assertLess(abs(ref.azimuthal - obt.azimuthal).max(), 1e-3, f"azimuthal matches {m}")
+            res = self.cost(ref, obt)
+            if res > 1:
+                logger.error("Numerical values are odd (R=%s)... please refine this test!", res)
+            else:
+                logger.info("R on global result: %s for method %s", res, m)
+                self.assertTrue(numpy.allclose(obt[0], ref[0]))
 
-        method = ("full", "csr", "cython")
-        obt = self.integrate(method=method)
-        res = self.cost(ref, obt)
-        if res > 1:
-            logger.error("Numerical values are odd (R=%s)... please refine this test!", res)
-        else:
-            logger.info("R on global result: %s for method %s", res, method)
-            self.assertTrue(numpy.allclose(obt[0], ref[0]))
         raise unittest.SkipTest("Fix this test")
 
 

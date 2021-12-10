@@ -145,8 +145,7 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
                  allow_pos0_neg=False,
                  unit="undefined",
                  empty=None,
-                 bint chiDiscAtPi=True
-                 ):
+                 bint chiDiscAtPi=True):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
@@ -158,9 +157,9 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
         :param empty: value for bins where no pixels are contributing
         :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
         """
-        self.unit = unit
         FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi)
-
+        self.unit = unit
+        self.bin_centers = None
         self.delta0 = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins[0]))
         self.delta1 = (self.pos1_max - self.pos1_min) / (<position_t> (self.bins[1]))
         self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
@@ -169,13 +168,12 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
         self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
                                            self.pos1_max - 0.5 * self.delta1, 
                                            self.bins[1])
-
-        
+    
         lut = self.calc_lut_2d().to_csr()
         #Call the constructor of the parent class
         CsrIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)    
 
-        self.lut_checksum = crc32(self.data)        
+        self.lut_checksum = crc32(self.data) 
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
