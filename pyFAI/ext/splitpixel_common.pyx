@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/12/2021"
+__date__ = "10/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -142,7 +142,7 @@ class FullSplitIntegrator:
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param mask_checksum: int with the checksum of the mask
         :param allow_pos0_neg: enforce the q<0 is usually not possible
-        :param chiDiscAtPi: 
+        :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
         """
         if pos.ndim > 3:  # create a view
             pos = pos.reshape((-1, 4, 2))
