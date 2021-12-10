@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3, binding=True
-## cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+# cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -66,7 +66,6 @@ def calc_boundaries(position_t[:, :, ::1] cpos,
      
     :return: (pos0_min, pos0_max, pos1_min, pos1_max)
     """
-    print("pos1_range", pos1_range)
     cdef:
         Py_ssize_t idx, size= cpos.shape[0]
         bint check_mask = False

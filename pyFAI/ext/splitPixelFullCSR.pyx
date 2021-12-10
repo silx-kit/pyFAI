@@ -168,7 +168,8 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
         self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
                                            self.pos1_max - 0.5 * self.delta1, 
                                            self.bins[1])
-    
+
+        print(self.pos1_max, self.pos1_min, self.delta0, self.delta1)
         lut = self.calc_lut_2d().to_csr()
         #Call the constructor of the parent class
         CsrIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)    

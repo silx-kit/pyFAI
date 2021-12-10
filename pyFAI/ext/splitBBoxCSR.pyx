@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -554,14 +554,14 @@ class HistoBBox2d(CsrIntegrator):
             bins0 = 1
         if bins1 <= 0:
             bins1 = 1
-        self.bins = (int(bins0), int(bins1))
+        self.bins = (max(1, int(bins0)), max(1, int(bins1)))
         self.lut_size = 0
         if mask is None:
             self.mask_checksum = None
             self.cmask = None
         else:
             assert mask.size == self.size, "mask size"
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
             self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)            
 
         self.pos0_range = pos0_range
@@ -588,7 +588,7 @@ class HistoBBox2d(CsrIntegrator):
         if delta_pos0 is not None:
             lut = self.calc_lut()
         else:
-            lut =  self.calc_lut_nosplit()
+            lut = self.calc_lut_nosplit()
 
         #Call the constructor of the parent class
         super().__init__(lut, pos0.size, empty)    

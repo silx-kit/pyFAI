@@ -1185,6 +1185,7 @@ def fullSplit2D_engine(pos not None,
         double foffset0, foffset1, sum_area, loc_area
     
     pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    print("fullSplit2D_engine", pos0_min, pos0_maxin, pos1_min, pos1_maxin)
     if not allow_pos0_neg:
         pos0_min = max(0.0, pos0_min)
         pos0_maxin = max(0.0, pos0_maxin)
@@ -1193,7 +1194,7 @@ def fullSplit2D_engine(pos not None,
 
     delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
     delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
-
+    print(delta0, delta1)
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
         cdummy = <data_t> float(dummy)
