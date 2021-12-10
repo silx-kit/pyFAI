@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/11/2021"
+__date__ = "10/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -290,6 +290,25 @@ cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
     out_data[bin0, bin1, 3] += value.count * weight
     
 
+cdef inline floating area4p(floating a0,
+                            floating a1,
+                            floating b0,
+                            floating b1,
+                            floating c0,
+                            floating c1,
+                            floating d0,
+                            floating d1) nogil:
+    """
+    Calculate the _APPROXIMATE_ area of the ABCD considering the parallelogram formula with 4 with corners:
+    A(a0,a1)
+    B(b0,b1)
+    C(c0,c1)
+    D(d0,d1)
+    
+    :return: approximative area 1/2 * (AC ^ BD)
+    """
+    return 0.5 * ((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0))
+
 cdef inline floating area4(floating a0,
                            floating a1,
                            floating b0,
@@ -304,10 +323,23 @@ cdef inline floating area4(floating a0,
     B(b0,b1)
     C(c0,c1)
     D(d0,d1)
-    :return: area, i.e. 1/2 * (AC ^ BD)
+    
+    see http://villemin.gerard.free.fr/GeomLAV/Carre/QuadAire.htm
+    
+    :return: area, i.e. a complicated formule, not 1/2 * (AC ^ BD)
     """
-    return 0.5 * ((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0))
+    cdef floating a, b, c, d, p, q
+    
+    a = sqrt((b1-a1)**2 + (b0-a0)**2) # AB
+    b = sqrt((b1-c1)**2 + (b0-c0)**2) # BC
+    c = sqrt((c1-d1)**2 + (c0-d0)**2) # CD
+    d = sqrt((d1-a1)**2 + (d0-a0)**2) # DA
+    p = sqrt((c1-a1)**2 + (c0-a0)**2) # AC       
+    q = sqrt((b1-d1)**2 + (b0-d0)**2) # BD
+    return 0.25 * sqrt(4*p*p*q*q - (b*b+d*d-a*a-c*c)**2)
 
+def _sp_area4(floating a0, floating a1, floating b0, floating b1, floating c0, floating c1, floating d0, floating d1):
+    return area4(a0, a1, b0, b1, c0, c1, d0, d1)
 
 cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi)nogil:
     """Helper function
@@ -328,7 +360,7 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nog
     c1 = pixel[2, 1]
     d0 = pixel[3, 0]
     d1 = pixel[3, 1]
-    area = area4(a0, a1, b0, b1, c0, c1, d0, d1)
+    area = area4p(a0, a1, b0, b1, c0, c1, d0, d1) # check if the quad is crossed
     if area>0:
         # area are expected to be negative except for pixel on the boundary
         a1 = _recenter_helper(a1, chiDiscAtPi)
@@ -346,7 +378,7 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nog
         pixel[1, 1] = b1
         pixel[2, 1] = c1
         pixel[3, 1] = d1
-        area = area4(a0, a1, b0, b1, c0, c1, d0, d1)
+        area = area4p(a0, a1, b0, b1, c0, c1, d0, d1)
     return area
 def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
     """This function checks the pixel to be on the azimuthal discontinuity 
@@ -383,10 +415,11 @@ def clip(value,  min_val, int max_val):
 
 
 cdef inline floating _calc_area(floating I1, floating I2, floating slope, floating intercept) nogil:
-    return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
+    #return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
+    return (I2 - I1) * (0.5 * slope * (I2 + I1) + intercept)
 def calc_area(I1, I2, slope, intercept):
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
-    return _calc_area(<float64_t> I1, <float64_t> I2, <float64_t> slope, <float64_t> intercept)
+    return _calc_area(<position_t> I1, <position_t> I2, <position_t> slope, <position_t> intercept)
 
 
 cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1) nogil:
@@ -430,7 +463,8 @@ cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating st
                 buffer[i] += _calc_area(i + 1, i, slope, intercept)
             if buffer_size > stop0 >= 0:
                 buffer[istop0] += _calc_area(floor(stop0 + 1), stop0, slope, intercept)
-
+def _sp_integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1):
+    _integrate1d(buffer, start0, start1, stop0, stop1)
 
 cdef inline void _integrate2d(buffer_t[:, ::1] box, floating start0, floating start1, floating stop0, floating stop1) nogil:
     """Integrate in a box a line between start and stop0, line defined by its slope & intercept
