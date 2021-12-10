@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2021"
+__date__ = "10/12/2021"
 
 import unittest
 import numpy
@@ -56,7 +56,8 @@ class TestFlat1D(unittest.TestCase):
         self.raw = self.flat + self.dark
         self.eps = 1e-6
         self.ai = AzimuthalIntegrator()
-        self.ai.setFit2D(directDist=1, centerX=self.shape[1] // 2, centerY=self.shape[0] // 2, pixelX=1, pixelY=1)
+        # 100mm distance and 100µm pixel size
+        self.ai.setFit2D(directDist=100, centerX=self.shape[1] // 2, centerY=self.shape[0] // 2, pixelX=100, pixelY=100)
         self.bins = 500
 
     def tearDown(self):
