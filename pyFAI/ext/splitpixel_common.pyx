@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3, binding=True
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -45,11 +45,11 @@ from .sparse_builder cimport SparseBuilder
 import logging
 logger = logging.getLogger(__name__)
 
-if logger.level >= logging.ERROR:
+if logging.root.level >= logging.ERROR:
     NUM_WARNING = -1
-elif logger.level >= logging.WARNING:
+elif logging.root.level >= logging.WARNING:
     NUM_WARNING = 10 
-elif logger.level >= logging.INFO:
+elif logging.root.level >= logging.INFO:
     NUM_WARNING = 100 
 else:
     NUM_WARNING = 10000
@@ -182,6 +182,123 @@ class FullSplitIntegrator:
         self.pos0_max = calc_upper_bound(pos0_maxin)
         self.pos1_max = calc_upper_bound(pos1_maxin)
 
+    def calc_lut_1d(self):
+        """Calculate the LUT and return the LUT-builder object
+        """
+        cdef:
+            position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
+            position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
+            buffer_t[::1] buffer = numpy.zeros(self.bins, dtype=buffer_d)
+            mask_t[::1] cmask = None
+            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0
+            position_t areaPixel = 0, delta = 0, areaPixel2 = 0
+            position_t a0, b0, c0, d0, a1, b1, c1, d1
+            position_t inv_area, area_pixel, sub_area, sum_area
+            position_t min0, max0, min1, max1
+            Py_ssize_t bins=self.bins, i = 0, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0
+            bint check_pos1=self.pos1_range is not None, check_mask = False, chiDiscAtPi=self.chiDiscAtPi
+            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
+
+        pos0_min = self.pos0_min
+        pos1_min = self.pos1_min
+        pos1_max = self.pos1_max
+        
+        delta = self.delta
+
+        size = self.size
+        check_mask = self.check_mask
+        if check_mask:
+            cmask = self.cmask
+
+        with nogil:
+            for idx in range(size):
+
+                if (check_mask) and (cmask[idx]):
+                    continue
+                # Play with coordinates ...
+                v8[:, :] = cpos[idx, :, :]
+                area_pixel = - _recenter(v8, chiDiscAtPi) / delta
+                a0 = get_bin_number(v8[0, 0], pos0_min, delta)
+                a1 = v8[0, 1]
+                b0 = get_bin_number(v8[1, 0], pos0_min, delta)
+                b1 = v8[1, 1]
+                c0 = get_bin_number(v8[2, 0], pos0_min, delta)
+                c1 = v8[2, 1]
+                d0 = get_bin_number(v8[3, 0], pos0_min, delta)
+                d1 = v8[3, 1]
+
+                min0 = min(a0, b0, c0, d0)
+                max0 = max(a0, b0, c0, d0)
+
+                if (max0 < 0) or (min0 >= bins):
+                    continue
+                if check_pos1:
+                    min1 = min(a1, b1, c1, d1)
+                    max1 = max(a1, b1, c1, d1)
+                    if (max1 < pos1_min) or (min1 >= pos1_max):
+                        continue
+
+                bin0_min = < Py_ssize_t > floor(min0)
+                bin0_max = < Py_ssize_t > floor(max0)
+
+                if bin0_min == bin0_max:
+                    # All pixel is within a single bin
+                    builder.cinsert(bin0_min, idx, 1.0)
+                else:
+                    # else we have pixel spliting.
+                    # offseting the min bin of the pixel to be zero to avoid percision problems
+                    bin0_min = max(0, bin0_min)
+                    bin0_max = min(bins, bin0_max + 1)
+
+                    inv_area = 1.0 / area_pixel 
+                    _integrate1d(buffer, a0, a1, b0, b1)  # A-B
+                    _integrate1d(buffer, b0, b1, c0, c1)  # B-C
+                    _integrate1d(buffer, c0, c1, d0, d1)  # C-D
+                    _integrate1d(buffer, d0, d1, a0, a1)  # D-A
+
+                    sum_area = 0.0
+                    for bin in range(bin0_min, bin0_max):
+                        sub_area = fabs(buffer[i])
+                        sum_area += sub_area
+                        sub_area *= inv_area
+                        # update_1d_accumulator(out_data, i, value, sub_area)
+                        builder.cinsert(bin, idx, sub_area)
+                    # # Avoid Zero-division error
+                    # AB.slope = 0.0 if A0 == B0 else (B1 - A1) / (B0 - A0)  
+                    # AB.intersect = A1 - AB.slope * A0
+                    # BC.slope = 0.0 if B0 == C0 else (C1 - B1) / (C0 - B0)
+                    # BC.intersect = B1 - BC.slope * B0
+                    # CD.slope = 0.0 if D0 == C0 else (D1 - C1) / (D0 - C0)
+                    # CD.intersect = C1 - CD.slope * C0
+                    # DA.slope = 0.0 if A0 == D0 else (A1 - D1) / (A0 - D0)
+                    # DA.intersect = D1 - DA.slope * D0
+                    #
+                    # areaPixel = fabs(area4(A0, A1, B0, B1, C0, C1, D0, D1))
+                    #
+                    # areaPixel2 = integrate(A0, B0, AB)
+                    # areaPixel2 += integrate(B0, C0, BC)
+                    # areaPixel2 += integrate(C0, D0, CD)
+                    # areaPixel2 += integrate(D0, A0, DA)
+                    #
+                    # oneOverPixelArea = 1.0 / areaPixel
+
+                    # for bin in range(max(bin0_min,0), min(bins, bin0_max + 1)):
+                    #
+                    #
+                    #     bin0 = bin - bin0_min
+                    #     A_lim = (A0 <= bin0) * (A0 <= (bin0 + 1)) * bin0 + (A0 > bin0) * (A0 <= (bin0 + 1)) * A0 + (A0 > bin0) * (A0 > (bin0 + 1)) * (bin0 + 1)
+                    #     B_lim = (B0 <= bin0) * (B0 <= (bin0 + 1)) * bin0 + (B0 > bin0) * (B0 <= (bin0 + 1)) * B0 + (B0 > bin0) * (B0 > (bin0 + 1)) * (bin0 + 1)
+                    #     C_lim = (C0 <= bin0) * (C0 <= (bin0 + 1)) * bin0 + (C0 > bin0) * (C0 <= (bin0 + 1)) * C0 + (C0 > bin0) * (C0 > (bin0 + 1)) * (bin0 + 1)
+                    #     D_lim = (D0 <= bin0) * (D0 <= (bin0 + 1)) * bin0 + (D0 > bin0) * (D0 <= (bin0 + 1)) * D0 + (D0 > bin0) * (D0 > (bin0 + 1)) * (bin0 + 1)
+                    #
+                    #     partialArea = integrate(A_lim, B_lim, AB)
+                    #     partialArea += integrate(B_lim, C_lim, BC)
+                    #     partialArea += integrate(C_lim, D_lim, CD)
+                    #     partialArea += integrate(D_lim, A_lim, DA)
+                    #
+                    #     builder.cinsert(bin, idx, fabs(partialArea) * oneOverPixelArea)
+        return builder
+
     def calc_lut_2d(self):
         """Calculate the LUT and return the LUT-builder object
         """
@@ -238,7 +355,7 @@ class FullSplitIntegrator:
                 min1 = min(a1, b1, c1, d1)
                 max1 = max(a1, b1, c1, d1)
                 
-                if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):
+                if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 >= pos1_max):
                         continue
     
                 # Swith to bin space.
