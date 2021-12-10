@@ -44,7 +44,7 @@ from ..utils import crc32
 from .sparse_builder cimport SparseBuilder
 import logging
 logger = logging.getLogger(__name__)
-cdef Py_ssize_t NUM_WARNING
+
 if logger.level >= logging.ERROR:
     NUM_WARNING = -1
 elif logger.level >= logging.WARNING:
