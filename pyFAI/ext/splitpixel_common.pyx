@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3, binding=True
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+# cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/12/2021"
+__date__ = "10/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -44,12 +44,12 @@ from ..utils import crc32
 from .sparse_builder cimport SparseBuilder
 import logging
 logger = logging.getLogger(__name__)
-cdef Py_ssize_t NUM_WARNING
-if logger.level >= logging.ERROR:
+
+if logging.root.level >= logging.ERROR:
     NUM_WARNING = -1
-elif logger.level >= logging.WARNING:
+elif logging.root.level >= logging.WARNING:
     NUM_WARNING = 10 
-elif logger.level >= logging.INFO:
+elif logging.root.level >= logging.INFO:
     NUM_WARNING = 100 
 else:
     NUM_WARNING = 10000
@@ -142,14 +142,14 @@ class FullSplitIntegrator:
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param mask_checksum: int with the checksum of the mask
         :param allow_pos0_neg: enforce the q<0 is usually not possible
-        :param chiDiscAtPi: 
+        :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
         """
         if pos.ndim > 3:  # create a view
             pos = pos.reshape((-1, 4, 2))
         assert pos.shape[1] == 4, "pos.shape[1] == 4"
         assert pos.shape[2] == 2, "pos.shape[2] == 2"
         assert pos.ndim == 3, "pos.ndim == 3"
-        self.pos = numpy.ascontinuousarray(pos, dtype=position_d)
+        self.pos = numpy.ascontiguousarray(pos, dtype=position_d)
         self.size = pos.shape[0]
         if "__len__" in dir(bins): 
             self.bins = tuple(max(i, 1) for i in bins)
@@ -160,11 +160,9 @@ class FullSplitIntegrator:
 
         if mask is None:
             self.cmask = None
-            self.check_mask = False
             self.mask_checksum = None
         else:
             assert mask.size == self.size, "mask size"
-            self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
             self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
 
@@ -174,6 +172,7 @@ class FullSplitIntegrator:
         cdef:
             position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
         pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
+        print("FullSplitIntegrator", pos0_min, pos0_maxin, pos1_min, pos1_maxin)
         if (not allow_pos0_neg):
             pos0_min = max(0.0, pos0_min)
             pos0_maxin = max(pos0_maxin, 0.0)
@@ -181,6 +180,90 @@ class FullSplitIntegrator:
         self.pos1_min = pos1_min
         self.pos0_max = calc_upper_bound(pos0_maxin)
         self.pos1_max = calc_upper_bound(pos1_maxin)
+
+    def calc_lut_1d(self):
+        """Calculate the LUT and return the LUT-builder object
+        """
+        cdef:
+            position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
+            position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
+            buffer_t[::1] buffer = numpy.zeros(self.bins, dtype=buffer_d)
+            mask_t[::1] cmask = None
+            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0
+            position_t areaPixel = 0, delta = 0, areaPixel2 = 0
+            position_t a0, b0, c0, d0, a1, b1, c1, d1
+            position_t inv_area, area_pixel, sub_area, sum_area
+            position_t min0, max0, min1, max1
+            Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0, nwarn=0
+            bint check_pos1=self.pos1_range is not None, check_mask = False, chiDiscAtPi=self.chiDiscAtPi
+            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
+
+        pos0_min = self.pos0_min
+        pos1_min = self.pos1_min
+        pos1_max = self.pos1_max
+        
+        delta = self.delta
+
+        size = self.size
+        check_mask = self.check_mask
+        if check_mask:
+            cmask = self.cmask
+
+        with nogil:
+            for idx in range(size):
+
+                if (check_mask) and (cmask[idx]):
+                    continue
+                # Play with coordinates ...
+                v8[:, :] = cpos[idx, :, :]
+                area_pixel = - _recenter(v8, chiDiscAtPi) / delta
+                a0 = get_bin_number(v8[0, 0], pos0_min, delta)
+                a1 = v8[0, 1]
+                b0 = get_bin_number(v8[1, 0], pos0_min, delta)
+                b1 = v8[1, 1]
+                c0 = get_bin_number(v8[2, 0], pos0_min, delta)
+                c1 = v8[2, 1]
+                d0 = get_bin_number(v8[3, 0], pos0_min, delta)
+                d1 = v8[3, 1]
+
+                min0 = min(a0, b0, c0, d0)
+                max0 = max(a0, b0, c0, d0)
+
+                if (max0 < 0) or (min0 >= bins):
+                    continue
+                if check_pos1:
+                    min1 = min(a1, b1, c1, d1)
+                    max1 = max(a1, b1, c1, d1)
+                    if (max1 < pos1_min) or (min1 >= pos1_max):
+                        continue
+
+                bin0_min = < Py_ssize_t > floor(min0)
+                bin0_max = < Py_ssize_t > floor(max0)
+
+                if bin0_min == bin0_max:
+                    # All pixel is within a single bin
+                    builder.cinsert(bin0_min, idx, 1.0)
+                else:
+                    # else we have pixel spliting.
+                    # offseting the min bin of the pixel to be zero to avoid percision problems
+                    bin0_min = max(0, bin0_min)
+                    bin0_max = min(bins, bin0_max + 1)
+
+                    _integrate1d(buffer, a0, a1, b0, b1)  # A-B
+                    _integrate1d(buffer, b0, b1, c0, c1)  # B-C
+                    _integrate1d(buffer, c0, c1, d0, d1)  # C-D
+                    _integrate1d(buffer, d0, d1, a0, a1)  # D-A
+
+                    sum_area = 0.0
+                    for bin in range(bin0_min, bin0_max):
+                        sum_area += buffer[bin]
+                    inv_area = 1.0 / sum_area
+                    for bin in range(bin0_min, bin0_max):
+                        builder.cinsert(bin, idx, buffer[bin]*inv_area)
+                    # Check the total area:
+                    buffer[bin0_min:bin0_max] = 0.0
+
+        return builder
 
     def calc_lut_2d(self):
         """Calculate the LUT and return the LUT-builder object
@@ -238,7 +321,7 @@ class FullSplitIntegrator:
                 min1 = min(a1, b1, c1, d1)
                 max1 = max(a1, b1, c1, d1)
                 
-                if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):
+                if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 >= pos1_max):
                         continue
     
                 # Swith to bin space.

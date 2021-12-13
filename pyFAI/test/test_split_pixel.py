@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/09/2021"
+__date__ = "10/12/2021"
 
 import unittest
 import platform
@@ -71,7 +71,7 @@ class TestRecenter(unittest.TestCase):
     def test_discpi(self):
         detector = Detector(1e-3, 1e-3, max_shape=(5, 5))
         ai = AzimuthalIntegrator(1, 2.2e-3, 2.8e-3, rot3=-0.4, detector=detector)
-    
+
         disc_at_pi = 2
         ai.setChiDiscAtPi()
         pos = ai.array_from_unit(typ="corner", unit="r_mm", scale=True).astype(splitPixel.position_d)
@@ -83,6 +83,21 @@ class TestRecenter(unittest.TestCase):
         print((pos[..., 1] > numpy.pi).sum(), (pos[..., 1] < -numpy.pi).sum())
         self.assertEqual((pos[..., 1] > numpy.pi).sum(), 1, "1 corner is >pi")
         self.assertEqual((pos[..., 1] < -numpy.pi).sum(), 5, "5 corner are <-pi")
+
+    def test_area(self):
+        "Test the formula to calculate the area of any quad"
+        pos = numpy.random.random(8) * 10  # this is a random quad !
+
+        ref = splitPixel._sp_area4(*pos)
+        trp = splitPixel._sp_area4(*pos.reshape((-1, 2))[:, -1::-1].ravel())
+        self.assertEqual(ref, trp, "Check transposed order")
+
+        b = numpy.concatenate((pos, pos))
+        buf = numpy.zeros(int(max(pos) + 3), numpy.float32)
+        for i in range(4):
+            splitPixel._sp_integrate1d(buf, *b[2 * i:2 * i + 4])
+        print(buf, buf.sum(), ref, trp)
+        self.assertAlmostEqual(abs(buf.sum()), ref, 4, "Check integration")
 
 
 class TestSplitPixel(unittest.TestCase):

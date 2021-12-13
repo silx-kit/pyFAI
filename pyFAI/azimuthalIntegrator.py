@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2021"
+__date__ = "10/12/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -400,9 +400,10 @@ class AzimuthalIntegrator(Geometry):
             mask_checksum = None
         else:
             assert mask.shape == shape
+        print("403", split)
         if split == "full":
             if int2d:
-                return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
+                return splitPixelFullLUT.HistoLUT2dFullSplit(pos,
                                                 bins=npt,
                                                 pos0_range=pos0_range,
                                                 pos1_range=pos1_range,
@@ -523,6 +524,7 @@ class AzimuthalIntegrator(Geometry):
             mask_checksum = None
         else:
             assert mask.shape == shape
+        print(split)
         if split == "full":
 
             if int2d:
@@ -2145,6 +2147,7 @@ class AzimuthalIntegrator(Geometry):
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
+        empty = dummy if dummy is not None else self._empty
         if mask is None:
             has_mask = "from detector"
             mask = self.mask
@@ -2211,151 +2214,121 @@ class AzimuthalIntegrator(Geometry):
         norm2d = None
         var2d = None
 
-        if method.algo_lower == "lut":
-            res = None
-            if EXT_LUT_ENGINE not in self.engines:
-                engine = self.engines[EXT_LUT_ENGINE] = Engine()
+        if method.algo_lower in ("csr", "lut"):
+            intpl = None
+            cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
+            if cython_method not in self.engines:
+                cython_engine = self.engines[cython_method] = Engine()
             else:
-                engine = self.engines[EXT_LUT_ENGINE]
-            with engine.lock:
-                integr = engine.engine
-                reset = None
-                if integr is None:
-                    reset = "init"
-                if (not reset) and safe:
-                    if integr.unit != unit:
-                        reset = "unit changed"
-                    if integr.bins != npt:
-                        reset = "number of points changed"
-                    if integr.size != data.size:
-                        reset = "input image size changed"
-                    if (mask is not None) and (not integr.check_mask):
-                        reset = "mask but LUT was without mask"
-                    elif (mask is None) and (integr.check_mask):
-                        reset = "no mask but LUT has mask"
-                    elif (mask is not None) and (integr.mask_checksum != mask_crc):
-                        reset = "mask changed"
-                    if (radial_range is None) and (integr.pos0_range is not None):
-                        reset = "radial_range was defined in LUT"
-                    elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
-                        reset = "radial_range is defined but differs in LUT"
-                    if (azimuth_range is None) and (integr.pos1_range is not None):
-                        reset = "azimuth_range not defined and LUT had azimuth_range defined"
-                    elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
-                        reset = "azimuth_range requested and LUT's azimuth_range don't match"
-                error = False
-                if reset:
-                    logger.info("ai.integrate2d: Resetting integrator because %s", reset)
-                    try:
-                        integr = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range,
-                                                mask_checksum=mask_crc, unit=unit, scale=False)
-                    except MemoryError:  # LUT method is hungry...
-                        logger.warning("MemoryError: falling back on forward implementation")
-                        integr = None
-                        self.reset_engines()
-                        method = self.DEFAULT_METHOD_2D
-                        error = True
-                    else:
-                        error = False
-                        engine.set_engine(integr)
-                if not error:
-                    if method.impl_lower == "opencl":
-                        if OCL_LUT_ENGINE in self.engines:
-                            ocl_engine = self.engines[OCL_LUT_ENGINE]
-                        else:
-                            ocl_engine = self.engines[OCL_LUT_ENGINE] = Engine()
-                        with ocl_engine.lock:
-                            if method.target is not None:
-                                platformid, deviceid = method.target[0]
-                            ocl_integr = ocl_engine.engine
-                            if (ocl_integr is None) or \
-                                    (ocl_integr.on_device["lut"] != integr.lut_checksum):
-                                ocl_integr = ocl_azim_lut.OCL_LUT_Integrator(integr.lut,
-                                                                             integr.size,
-                                                                             platformid=platformid,
-                                                                             deviceid=deviceid,
-                                                                             checksum=integr.lut_checksum)
-                                ocl_engine.set_engine(ocl_integr)
-
-                            if (not error) and (ocl_integr is not None):
-                                res = ocl_integr.integrate_ng(data, dark=dark, flat=flat,
-                                                              solidangle=solidangle,
-                                                              solidangle_checksum=self._dssa_crc,
-                                                              dummy=dummy,
-                                                              delta_dummy=delta_dummy,
-                                                              polarization=polarization,
-                                                              polarization_checksum=polarization_crc,
-                                                              normalization_factor=normalization_factor,
-                                                              safe=safe)
-                if res is None:  # fallback if OpenCL failed !
-                    res = integr.integrate_ng(data, dark=dark, flat=flat,
-                                              solidangle=solidangle,
-                                              dummy=dummy,
-                                              delta_dummy=delta_dummy,
-                                              polarization=polarization,
-                                              normalization_factor=normalization_factor
-                                              )
-                I = res.intensity
-                bins_rad = res.radial
-                bins_azim = res.azimuthal
-                signal2d = res.signal
-                norm2d = res.normalization
-                count = res.count
-                if variance is not None:
-                    sigma = res.sigma
-                    var2d = res.variance
-
-        elif method.algo_lower == "csr":
-            res = None
-            if EXT_CSR_ENGINE not in self.engines:
-                engine = self.engines[EXT_CSR_ENGINE] = Engine()
-            else:
-                engine = self.engines[EXT_CSR_ENGINE]
-            with engine.lock:
-                integr = engine.engine
-                reset = None
-                if integr is None:
-                    reset = "init"
-                if (not reset) and safe:
-                    if integr.unit != unit:
-                        reset = "unit changed"
-                    if integr.bins != npt:
-                        reset = "number of points changed"
-                    if integr.size != data.size:
-                        reset = "input image size changed"
-                    if (mask is not None) and (not integr.check_mask):
-                        reset = "mask but CSR was without mask"
-                    elif (mask is None) and (integr.check_mask):
-                        reset = "no mask but CSR has mask"
-                    elif (mask is not None) and (integr.mask_checksum != mask_crc):
-                        reset = "mask changed"
-                    if (radial_range is None) and (integr.pos0_range is not None):
-                        reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
-                        reset = "radial_range is defined but differs in CSR"
-                    if (azimuth_range is None) and (integr.pos1_range is not None):
-                        reset = "azimuth_range not defined and CSR had azimuth_range defined"
-                    elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
-                        reset = "azimuth_range requested and CSR's azimuth_range don't match"
-                error = False
-                if reset:
-                    logger.info("AI.integrate2d: Resetting integrator because %s", reset)
+                cython_engine = self.engines[cython_method]
+            with cython_engine.lock:
+                cython_integr = cython_engine.engine
+                cython_reset = None
+                if cython_integr is None:
+                    cython_reset = "of first initialization"
+                if (not cython_reset) and safe:
+                    if cython_integr.unit != unit:
+                        cython_reset = "unit was changed"
+                    if cython_integr.bins != npt:
+                        cython_reset = "number of points changed"
+                    if cython_integr.size != data.size:
+                        cython_reset = "input image size changed"
+                    if cython_integr.empty != empty:
+                        cython_reset = "empty value changed"
+                    if (mask is not None) and (not cython_integr.check_mask):
+                        cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
+                    elif (mask is None) and (cython_integr.cmask is not None):
+                        cython_reset = f"no mask but { method.algo_lower.upper()} has mask"
+                    elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
+                        cython_reset = "mask changed"
+                    if (radial_range is None) and (cython_integr.pos0_range is not None):
+                        cython_reset = f"radial_range was defined in { method.algo_lower.upper()}"
+                    elif (radial_range is not None) and (cython_integr.pos0_range != radial_range):
+                        cython_reset = f"radial_range is defined but differs in %s" % method.algo_lower.upper()
+                    if (azimuth_range is None) and (cython_integr.pos1_range is not None):
+                        cython_reset = f"azimuth_range not defined and {method.algo_lower.upper()} had azimuth_range defined"
+                    elif (azimuth_range is not None) and (cython_integr.pos1_range != azimuth_range):
+                        cython_reset = f"azimuth_range requested and {method.algo_lower.upper()}'s azimuth_range don't match"
+                if cython_reset:
+                    logger.info("AI.integrate2d_ng: Resetting Cython integrator because %s", cython_reset)
                     split = method.split_lower
+                    if split == "pseudo":
+                        split = "full"
                     try:
-                        integr = self.setup_CSR(shape, npt, mask,
-                                                radial_range, azimuth_range,
-                                                mask_checksum=mask_crc,
-                                                unit=unit, split=split,
-                                                scale=False)
-                    except MemoryError:
-                        logger.warning("MemoryError: falling back on default forward implementation")
-                        integr = None
+                        if method.algo_lower == "csr":
+                            cython_integr = self.setup_CSR(shape, npt, mask,
+                                                           radial_range, azimuth_range,
+                                                           mask_checksum=mask_crc,
+                                                           unit=unit, split=split,
+                                                           scale=False)
+                        else:
+                            cython_integr = self.setup_LUT(shape, npt, mask,
+                                                           radial_range, azimuth_range,
+                                                           mask_checksum=mask_crc,
+                                                           unit=unit, split=split,
+                                                           scale=False)
+                        print("Freshly built integrator", cython_integr, self.engines.keys())
+                    except MemoryError:  # CSR method is hungry...
+                        logger.warning("MemoryError: falling back on forward implementation")
+                        cython_integr = None
                         self.reset_engines()
-                        method = self.DEFAULT_METHOD_2D
-                        error = True
+                        method = self.DEFAULT_METHOD_1D
                     else:
-                        error = False
-                        engine.set_engine(integr)
+                        cython_engine.set_engine(cython_integr)
+            # This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
+            if method.impl_lower != "cython":
+                # method.impl_lower in ("opencl", "python"):
+                if method not in self.engines:
+                    # instanciated the engine
+                    engine = self.engines[method] = Engine()
+                else:
+                    engine = self.engines[method]
+                with engine.lock:
+                    # Validate that the engine used is the proper one
+                    integr = engine.engine
+                    reset = None
+                    if integr is None:
+                        reset = "init"
+                    if (not reset) and safe:
+                        if integr.unit != unit:
+                            reset = "unit changed"
+                        if integr.bins != npt:
+                            reset = "number of points changed"
+                        if integr.size != data.size:
+                            reset = "input image size changed"
+                        if (mask is not None) and (not integr.check_mask):
+                            reset = "mask but CSR was without mask"
+                        elif (mask is None) and (integr.check_mask):
+                            reset = "no mask but CSR has mask"
+                        elif (mask is not None) and (integr.mask_checksum != mask_crc):
+                            reset = "mask changed"
+                        if (radial_range is None) and (integr.pos0_range is not None):
+                            reset = "radial_range was defined in CSR"
+                        elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
+                            reset = "radial_range is defined but differs in CSR"
+                        if (azimuth_range is None) and (integr.pos1_range is not None):
+                            reset = "azimuth_range not defined and CSR had azimuth_range defined"
+                        elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
+                            reset = "azimuth_range requested and CSR's azimuth_range don't match"
+                    error = False
+                    if reset:
+                        logger.info("AI.integrate2d: Resetting integrator because %s", reset)
+                        split = method.split_lower
+                        try:
+                            integr = self.setup_CSR(shape, npt, mask,
+                                                    radial_range, azimuth_range,
+                                                    mask_checksum=mask_crc,
+                                                    unit=unit, split=split,
+                                                    scale=False)
+                        except MemoryError:
+                            logger.warning("MemoryError: falling back on default forward implementation")
+                            integr = None
+                            self.reset_engines()
+                            method = self.DEFAULT_METHOD_2D
+                            error = True
+                        else:
+                            error = False
+                            engine.set_engine(integr)
                 if not error:
                     if (method.impl_lower == "opencl"):
                         if OCL_CSR_ENGINE in self.engines:
@@ -2383,22 +2356,28 @@ class AzimuthalIntegrator(Geometry):
                                                                          polarization_checksum=polarization_crc,
                                                                          safe=safe,
                                                                          normalization_factor=normalization_factor)
-                if res is None:  # fallback if OpenCL failed !
-                    res = integr.integrate_ng(data, dark=dark, flat=flat,
-                                              solidangle=solidangle,
-                                              dummy=dummy,
-                                              delta_dummy=delta_dummy,
-                                              polarization=polarization,
-                                              normalization_factor=normalization_factor)
-                    I = res.intensity
-                    bins_rad = res.radial
-                    bins_azim = res.azimuthal
-                    signal2d = res.signal
-                    norm2d = res.normalization
-                    count = res.count
-                    if variance is not None:
-                        sigma = res.sigma
-                        var2d = res.variance
+            if intpl is None:  # fallback if OpenCL failed or default cython
+                # The integrator has already been initialized previously
+                intpl = cython_integr.integrate_ng(data,
+                                                   variance=variance,
+                                                   # poissonian=poissonian,
+                                                   dummy=dummy,
+                                                   delta_dummy=delta_dummy,
+                                                   dark=dark,
+                                                   flat=flat,
+                                                   solidangle=solidangle,
+                                                   polarization=polarization,
+                                                   normalization_factor=normalization_factor)
+
+                I = intpl.intensity
+                bins_rad = intpl.radial
+                bins_azim = intpl.azimuthal
+                signal2d = intpl.signal
+                norm2d = intpl.normalization
+                count = intpl.count
+                if variance is not None:
+                    sigma = intpl.sigma
+                    var2d = intpl.variance
 
         elif method.algo_lower == "histogram":
             if method.split_lower in ("pseudo", "full"):
@@ -2419,7 +2398,7 @@ class AzimuthalIntegrator(Geometry):
                                  polarization=polarization,
                                  normalization_factor=normalization_factor,
                                  chiDiscAtPi=self.chiDiscAtPi,
-                                 empty=dummy if dummy is not None else self._empty,
+                                 empty=empty,
                                  variance=variance)
                 I = res.intensity
                 bins_rad = res.radial
@@ -2454,7 +2433,7 @@ class AzimuthalIntegrator(Geometry):
                                                polarization=polarization,
                                                normalization_factor=normalization_factor,
                                                chiDiscAtPi=self.chiDiscAtPi,
-                                               empty=dummy if dummy is not None else self._empty,
+                                               empty=empty,
                                                variance=variance)
                 I = res.intensity
                 bins_rad = res.radial
@@ -2496,7 +2475,7 @@ class AzimuthalIntegrator(Geometry):
                                                        pos0_range=radial_range,
                                                        pos1_range=azimuth_range,
                                                        split=False,
-                                                       empty=dummy if dummy is not None else self._empty,
+                                                       empty=empty,
                                                        )
                     I = res.intensity.T
                     bins_azim = res.azimuthal

@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/11/2021"
+__date__ = "10/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -51,15 +51,6 @@ logger = logging.getLogger(__name__)
 
 from .splitpixel_common import calc_boundaries
 
-cdef Py_ssize_t NUM_WARNING
-if logger.level >= logging.ERROR:
-    NUM_WARNING = -1
-elif logger.level >= logging.WARNING:
-    NUM_WARNING = 10 
-elif logger.level >= logging.INFO:
-    NUM_WARNING = 100 
-else:
-    NUM_WARNING = 10000
 
 def fullSplit1D(pos,
                 weights,
@@ -129,7 +120,7 @@ def fullSplit1D(pos,
         double epsilon = 1e-10
 
         bint check_pos1=False, check_mask=False, check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
-        Py_ssize_t i = 0, idx = 0, bin0_max = 0, bin0_min = 0, nwarn=NUM_WARNING
+        Py_ssize_t i = 0, idx = 0, bin0_max = 0, bin0_min = 0
 
     if mask is not None:
         check_mask = True
@@ -226,8 +217,6 @@ def fullSplit1D(pos,
             else:
                 bin0_min = max(0, bin0_min)
                 bin0_max = min(bins, bin0_max + 1)
-                area_pixel = fabs(area4(a0, a1, b0, b1, c0, c1, d0, d1))
-                inv_area = 1.0 / area_pixel
 
                 _integrate1d(buffer, a0, a1, b0, b1)  # A-B
                 _integrate1d(buffer, b0, b1, c0, c1)  # B-C
@@ -237,19 +226,12 @@ def fullSplit1D(pos,
                 # Distribute pixel area
                 sum_area = 0.0
                 for i in range(bin0_min, bin0_max):
-                    sub_area = fabs(buffer[i])
-                    sum_area += sub_area
-                    sub_area = sub_area * inv_area
+                    sum_area += buffer[i]
+                inv_area = 1.0 / sum_area                
+                for i in range(bin0_min, bin0_max):
+                    sub_area = buffer[i] * inv_area 
                     sum_count[i] += sub_area
                     sum_data[i] += (sub_area ** coef_power) * data
-
-                # Check the total area:
-                if fabs(sum_area - area_pixel) / area_pixel > 1e-2 and bin0_min != 0 and bin0_max != bins:
-                    nwarn -=1
-                    if nwarn>0:
-                        with gil:
-                            #Please investigate, this is buggy !
-                            logger.debug(f"area_pixel={area_pixel} area_sum={sum_area}, Error= {(area_pixel - sum_area) / area_pixel}")
                         
                 buffer[bin0_min:bin0_max] = 0
         for i in range(bins):
@@ -257,8 +239,6 @@ def fullSplit1D(pos,
                 merged[i] = sum_data[i] / sum_count[i] / normalization_factor
             else:
                 merged[i] = cdummy
-    if nwarn<NUM_WARNING:
-        logger.info(f"fullSplit1D: Total spurious pixels {NUM_WARNING-nwarn} / {size} in total")
     bin_centers = numpy.linspace(pos0_min + 0.5 * dpos,
                                  pos0_max - 0.5 * dpos,
                                  bins)
@@ -282,6 +262,7 @@ def fullSplit1D_engine(pos not None,
                        data_t empty=0.0,
                        double normalization_factor=1.0,
                        bint allow_pos0_neg=False,
+                       bint chiDiscAtPi=True
                        ):
     """
     Calculates histogram of pos weighted by weights
@@ -305,6 +286,7 @@ def fullSplit1D_engine(pos not None,
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
     :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
+    :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
     :return: namedtuple with "position intensity error signal variance normalization count"
     """
     cdef Py_ssize_t  size = weights.size
@@ -317,6 +299,7 @@ def fullSplit1D_engine(pos not None,
     assert bins > 1, "at lease one bin"
     cdef:
         position_t[:, :, ::1] cpos = numpy.ascontiguousarray(pos, dtype=position_d)
+        position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
         acc_t[:, ::1] out_data = numpy.zeros((bins, 4), dtype=acc_d)
@@ -333,7 +316,7 @@ def fullSplit1D_engine(pos not None,
         double epsilon = 1e-10
         bint check_pos1=pos1_range is not None, check_mask=False, check_dummy=False, do_dark=False, 
         bint do_flat=False, do_polarization=False, do_solidangle=False, do_variance = False
-        Py_ssize_t i = 0, idx = 0, bin0_max = 0, bin0_min = 0, nwarn=NUM_WARNING
+        Py_ssize_t i = 0, idx = 0, bin0_max = 0, bin0_min = 0
         preproc_t value
 
     if variance is not None:
@@ -407,16 +390,18 @@ def fullSplit1D_engine(pos not None,
                                              normalization_factor=normalization_factor,
                                              dark_variance=0.0)
 
-            # a0, b0, c0 and d0 are in bin number (2theta, q or r)
-            # a1, b1, c1 and d1 are in Chi angle in radians ...
-            a0 = get_bin_number(cpos[idx, 0, 0], pos0_min, dpos)
-            a1 = <  position_t > cpos[idx, 0, 1]
-            b0 = get_bin_number(cpos[idx, 1, 0], pos0_min, dpos)
-            b1 = <  position_t > cpos[idx, 1, 1]
-            c0 = get_bin_number(cpos[idx, 2, 0], pos0_min, dpos)
-            c1 = <  position_t > cpos[idx, 2, 1]
-            d0 = get_bin_number(cpos[idx, 3, 0], pos0_min, dpos)
-            d1 = <  position_t > cpos[idx, 3, 1]
+            # Play with coordinates ...
+            v8[:, :] = cpos[idx, :, :]
+            area_pixel = _recenter(v8, chiDiscAtPi) # this area is only approximate
+            a0 = get_bin_number(v8[0, 0], pos0_min, dpos)
+            a1 = v8[0, 1]
+            b0 = get_bin_number(v8[1, 0], pos0_min, dpos)
+            b1 = v8[1, 1]
+            c0 = get_bin_number(v8[2, 0], pos0_min, dpos)
+            c1 = v8[2, 1]
+            d0 = get_bin_number(v8[3, 0], pos0_min, dpos)
+            d1 = v8[3, 1]
+
             min0 = min(a0, b0, c0, d0)
             max0 = max(a0, b0, c0, d0)
 
@@ -439,8 +424,6 @@ def fullSplit1D_engine(pos not None,
             else:
                 bin0_min = max(0, bin0_min)
                 bin0_max = min(bins, bin0_max + 1)
-                area_pixel = fabs(area4(a0, a1, b0, b1, c0, c1, d0, d1))
-                inv_area = 1.0 / area_pixel
 
                 _integrate1d(buffer, a0, a1, b0, b1)  # A-B
                 _integrate1d(buffer, b0, b1, c0, c1)  # B-C
@@ -449,18 +432,12 @@ def fullSplit1D_engine(pos not None,
 
                 # Distribute pixel area
                 sum_area = 0.0
-                for i in range(bin0_min, bin0_max):
-                    sub_area = fabs(buffer[i])
-                    sum_area += sub_area
-                    sub_area *= inv_area
-                    update_1d_accumulator(out_data, i, value, sub_area)
-
-                # Check the total area:
-                if fabs(sum_area - area_pixel) / area_pixel > 1e-2 and bin0_min != 0 and bin0_max != bins:
-                    nwarn -=1
-                    if nwarn>0:
-                        with gil:
-                            logger.debug("area_pixel=%s area_sum=%s, Error= %s", area_pixel, sum_area, (area_pixel - sum_area) / area_pixel)
+                for bin in range(bin0_min, bin0_max):
+                    sum_area += buffer[bin]
+                if sum_area != 0.0:
+                    inv_area = 1.0 / sum_area
+                    for bin in range(bin0_min, bin0_max):    
+                        update_1d_accumulator(out_data, bin, value, buffer[bin]*inv_area)
                 buffer[bin0_min:bin0_max] = 0.0
         for i in range(bins):
             norm = out_data[i, 2]
@@ -473,9 +450,6 @@ def fullSplit1D_engine(pos not None,
                 out_intensity[i] = empty
                 if do_variance:
                     out_error[i] = empty
-
-    if nwarn<NUM_WARNING:
-        logger.info("fullSplit1D_engine: Total number of spurious pixels: %s / %s total", NUM_WARNING - nwarn, size)
         
     bin_centers = numpy.linspace(pos0_min + 0.5 * dpos,
                                  pos0_max - 0.5 * dpos,
@@ -1205,12 +1179,13 @@ def fullSplit2D_engine(pos not None,
         Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
         acc_t norm
         preproc_t value
-        Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15, nwarn=NUM_WARNING
+        Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15
         buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
         buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
         double foffset0, foffset1, sum_area, loc_area
     
     pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    print("fullSplit2D_engine", pos0_min, pos0_maxin, pos1_min, pos1_maxin)
     if not allow_pos0_neg:
         pos0_min = max(0.0, pos0_min)
         pos0_maxin = max(0.0, pos0_maxin)
@@ -1219,7 +1194,7 @@ def fullSplit2D_engine(pos not None,
 
     delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
     delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
-
+    print(delta0, delta1)
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
         cdummy = <data_t> float(dummy)
@@ -1353,25 +1328,19 @@ def fullSplit2D_engine(pos not None,
             _integrate2d(buffer, c0, c1, d0, d1)
             _integrate2d(buffer, d0, d1, a0, a1)
 
-            area = 0.5 * ((c1 - a1) * (d0 - b0) - (c0 - a0) * (d1 - b1))
-            if area == 0.0:
-                continue
-            inv_area = 1.0 / area
+            
             sum_area = 0.0
             for i in range(w0):
                 for j in range(w1):
-                    loc_area = buffer[i, j]
-                    sum_area += loc_area
+                    sum_area += buffer[i, j]
+            inv_area = 1.0 / sum_area        
+            for i in range(w0):
+                for j in range(w1):
                     update_2d_accumulator(out_data,
                                           ioffset0 + i,
                                           ioffset1 + j,
                                           value,
-                                          weight=loc_area * inv_area)
-            if fabs(area - sum_area)*inv_area > 1e-3:
-                nwarn -=1
-                if nwarn>0:
-                    with gil:            
-                        logger.info(f"Invstigate idx {idx}, area {area} {sum_area}, {numpy.asarray(v8)}, {w0}, {w1}")
+                                          weight=buffer[i, j] * inv_area)
                                
         for i in range(bins0):
             for j in range(bins1):
@@ -1385,9 +1354,6 @@ def fullSplit2D_engine(pos not None,
                     out_intensity[i, j] = empty
                     if do_variance:
                         out_error[i, j] = empty
-    if nwarn<0:
-        logger.info(f"Total number of spurious pixels: {NUM_WARNING - nwarn} / { weights.size} total"%())
-
     
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)

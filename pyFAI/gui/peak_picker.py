@@ -233,8 +233,11 @@ class PeakPicker(object):
         """
         self.points.reset()
         if self.widget is not None:
-            self.widget.reset()
-        
+            try:
+                self.widget.reset()
+            except Exception as err:
+                print(f"{type(err)}: {err} in peak_picker.reset()")
+
     def gui(self, log=False, maximize=False, pick=True):
         """
         :param log: show z in log scale
@@ -303,7 +306,7 @@ class PeakPicker(object):
             """
             if points:
                 if not gpt and self.widget:
-                    gpt = self.points.append(points, ring=self.widget.get_ring_value())
+                    gpt = self.points.append(points, ring=self.widget.spinbox.value())
                 self.widget.add_grp(gpt.label, points)
             return gpt
 
@@ -318,7 +321,7 @@ class PeakPicker(object):
                                             None, self.massif_contour)
             if points:
                 gpt = common_creation(points)
-                #annontate(points[0], [ypix, xpix], gpt=gpt)
+                # annontate(points[0], [ypix, xpix], gpt=gpt)
                 logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
             else:
                 logger.warning("No peak found !!!")
@@ -329,7 +332,7 @@ class PeakPicker(object):
             newpeak = self.massif.nearest_peak([ypix, xpix])
             if newpeak:
                 gpt = common_creation([newpeak])
-                #annontate(newpeak, [ypix, xpix], gpt=gpt)
+                # annontate(newpeak, [ypix, xpix], gpt=gpt)
                 logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f", gpt.label, newpeak[1], newpeak[0])
             else:
                 logger.warning("No peak found !!!")
@@ -356,11 +359,11 @@ class PeakPicker(object):
 
         def append_1_point(event):
             " * Right-click + Shift (click+v): add one point to current group"
-            gpt = self.points.get(self.widget.get_ring_value())
+            gpt = self.points.get(self.widget.spinbox.value())
             if not gpt:
                 new_grp(event)
                 return
-            self.widget.remove_grp(gpt.label, update=False)            
+            self.widget.remove_grp(gpt.label, update=False)
             # matplotlib coord to pixel coord, avoinding use of banker's round
             ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
             newpeak = self.massif.nearest_peak([ypix, xpix])
@@ -373,13 +376,13 @@ class PeakPicker(object):
 
         def erase_grp(event):
             " * Center-click or (click+d):     erase current group"
-            ring = self.widget.get_ring_value()
+            ring = self.widget.spinbox.value()
             gpt = self.points.pop(ring)
             if not gpt:
                 logger.warning("No group of points for ring %s", ring)
                 return
             # print("Remove group from ring %s label %s" % (ring, gpt.label))
-            self.widget.remove_grp(gpt.label, update=True)            
+            self.widget.remove_grp(gpt.label, update=True)
             if len(gpt) > 0:
                 logger.info("Removing group #%2s containing %i points", gpt.label, len(gpt))
             else:
@@ -387,12 +390,12 @@ class PeakPicker(object):
 
         def erase_1_point(event):
             " * Center-click + 1 or (click+1): erase closest point from current group"
-            ring = self.widget.get_ring_value()
+            ring = self.widget.spinbox.value()
             gpt = self.points.get(ring)
             if not gpt:
                 logger.warning("No group of points for ring %s", ring)
                 return
-            self.widget.remove_grp(gpt.label, update=True)            
+            self.widget.remove_grp(gpt.label, update=True)
             if len(gpt) > 1:
                 # delete single closest point from current group
                 # matplotlib coord to pixel coord, avoinding use of banker's round
@@ -404,7 +407,7 @@ class PeakPicker(object):
                 logger.info("x=%5.1f, y=%5.1f removed from group #%2s (%i points left)", removedPt[1], removedPt[0], gpt.label, len(gpt))
                 # annotate (new?) 1st point and add remaining points back
                 common_creation(gpt.points, gpt)
-                
+
             elif len(gpt) == 1:
                 logger.info("Removing group #%2s containing 1 point", gpt.label)
                 gpt = self.points.pop(ring)
@@ -482,7 +485,7 @@ class PeakPicker(object):
             else:
                 angles = None
             self.widget.contour(data, angles, cmap, linewidths, linestyles, update=True)
-            
+
     def massif_contour(self, data):
         """
         Overlays a mask over a diffraction image
@@ -494,7 +497,7 @@ class PeakPicker(object):
             logging.error("No diffraction image available => not showing the contour")
         else:
             self.widget.shadow(data)
-            
+
     def closeGUI(self):
         if self.widget is not None:
             self.widget.close()

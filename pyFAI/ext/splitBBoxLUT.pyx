@@ -4,7 +4,7 @@
 ## This is for developping
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
-#    Project: Fast Azimuthal integration
+#    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
@@ -427,9 +427,18 @@ class HistoBBox2d(LutIntegrator):
         cdef:
             int32_t size, bin0, bin1
         self.size = pos0.size
-        assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
         assert pos1.size == self.size, "pos1 size"
-        assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
+        
+        # Declare a few variables
+        self.pos0_min = self.pos0_maxin = self.pos0_max = self.delta0 = None
+        self.pos1_min = self.pos1_maxin = self.pos1_max = self.delta1 = None
+
+        if "size" not in dir(delta_pos0) or delta_pos0.size != self.size or\
+                "size" not in dir(delta_pos1) or delta_pos1.size != self.size:
+            logger.warning("Pixel splitting deactivated !")
+            delta_pos0 = None
+            delta_pos1 = None
+        
         self.chiDiscAtPi = 1 if chiDiscAtPi else 0
         self.allow_pos0_neg = allow_pos0_neg
 
@@ -450,18 +459,26 @@ class HistoBBox2d(LutIntegrator):
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
             self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)            
 
-        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
-        self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
-        self.cpos0_sup = numpy.empty_like(self.cpos0)
-        self.cpos0_inf = numpy.empty_like(self.cpos0)
         self.pos0_range = pos0_range
         self.pos1_range = pos1_range
-
+                
+        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         self.cpos1 = numpy.ascontiguousarray((pos1).ravel(), dtype=position_d)
-        self.dpos1 = numpy.ascontiguousarray((delta_pos1).ravel(), dtype=position_d)
-        self.cpos1_sup = numpy.empty_like(self.cpos1)
-        self.cpos1_inf = numpy.empty_like(self.cpos1)
+        
+        if delta_pos0 is not None:
+            self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
+            self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
+            self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
+            self.dpos1 = numpy.ascontiguousarray((delta_pos1).ravel(), dtype=position_d)
+            self.cpos1_sup = numpy.empty_like(self.cpos1)  # self.cpos1 + self.dpos1
+            self.cpos1_inf = numpy.empty_like(self.cpos1)  # self.cpos1 - self.dpos1
+        else:
+            self.cpos1_sup = self.cpos1_inf = self.cpos1
+            self.cpos0_sup = self.cpos0_inf = self.cpos0
         self.calc_boundaries(pos0_range, pos1_range)
+        #lse:
+            #elf.calc_boundaries_nosplit(pos0_range, pos1_range)
+
         self.delta0 = (self.pos0_max - self.pos0_min) / float(bins0)
         self.delta1 = (self.pos1_max - self.pos1_min) / float(bins1)
         self.lut_max_idx = None
