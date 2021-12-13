@@ -55,7 +55,7 @@ import numpy
 cimport numpy
 from libc.math cimport fabs, floor, sqrt
 from libc.stdlib cimport abs
-from libc.stdio cimport printf, fflush, stdout
+from libc.stdio cimport stdout
 
 from ..utils import crc32
 from ..utils.decorators import deprecated
@@ -164,6 +164,9 @@ class HistoLUT2dFullSplit(LutIntegrator, FullSplitIntegrator):
                                            self.bins[1])
         
         lut = self.calc_lut_2d().to_lut()
+        print(lut.dtype, lut.shape, lut.strides)
+        print(lut)
+        print(self.calc_lut_2d().to_csr())
         #Call the constructor of the parent class
         LutIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)    
         
