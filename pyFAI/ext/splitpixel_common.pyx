@@ -350,7 +350,7 @@ class FullSplitIntegrator:
                 if (w0>bw0) or (w1>bw1):
                     if (w0+1)*(w1+1)>linbuffer.shape[0]:
                         with gil:
-                            linbuffer = numpy.empty((w0+1)*(w1+1), dtype=buffer_d)
+                            linbuffer = numpy.zeros((w0+1)*(w1+1), dtype=buffer_d)
                             buffer = numpy.asarray(linbuffer).reshape((w0+1,w1+1))
                             logger.debug("malloc  %s->%s and %s->%s", w0, bw0, w1, bw1) 
                     else:
@@ -359,7 +359,6 @@ class FullSplitIntegrator:
                             logger.debug("reshape %s->%s and %s->%s", w0, bw0, w1, bw1)
                     bw0 = w0
                     bw1 = w1
-                    buffer[:, :] = 0.0
                 
                 a0 -= foffset0
                 a1 -= foffset1
@@ -385,7 +384,7 @@ class FullSplitIntegrator:
                 for i in range(w0):
                     for j in range(w1):
                         builder.cinsert((ioffset0 + i)*bins1 + ioffset1 + j, idx, buffer[i, j] * inv_area)
-                linbuffer[:] = 0.0
+                linbuffer[:] = 0.0 # reset full buffer since it is likely faster than memsetting 2d view
         return builder
 
     
