@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/12/2021"
+__date__ = "13/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -178,6 +178,8 @@ class FullSplitIntegrator:
             pos0_maxin = max(pos0_maxin, 0.0)
         self.pos0_min = pos0_min
         self.pos1_min = pos1_min
+        self.pos0_maxin = pos0_maxin
+        self.pos1_maxin = pos1_maxin
         self.pos0_max = calc_upper_bound(pos0_maxin)
         self.pos1_max = calc_upper_bound(pos1_maxin)
 
@@ -189,18 +191,19 @@ class FullSplitIntegrator:
             position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
             buffer_t[::1] buffer = numpy.zeros(self.bins, dtype=buffer_d)
             mask_t[::1] cmask = None
-            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0
+            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0, pos1_maxin=0.0
             position_t areaPixel = 0, delta = 0, areaPixel2 = 0
             position_t a0, b0, c0, d0, a1, b1, c1, d1
             position_t inv_area, area_pixel, sub_area, sum_area
             position_t min0, max0, min1, max1
-            Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, k = 0, size = 0, pos=0, nwarn=0
+            Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, size = 0
             bint check_pos1=self.pos1_range is not None, check_mask = False, chiDiscAtPi=self.chiDiscAtPi
             SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
 
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
         pos1_max = self.pos1_max
+        pos1_maxin = self.pos1_maxin
         
         delta = self.delta
 
@@ -234,7 +237,7 @@ class FullSplitIntegrator:
                 if check_pos1:
                     min1 = min(a1, b1, c1, d1)
                     max1 = max(a1, b1, c1, d1)
-                    if (max1 < pos1_min) or (min1 >= pos1_max):
+                    if (max1 < pos1_min) or (min1 > pos1_maxin):
                         continue
 
                 bin0_min = < Py_ssize_t > floor(min0)
@@ -273,26 +276,25 @@ class FullSplitIntegrator:
             position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
             position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
             mask_t[:] cmask = self.cmask
-            bint check_mask = False, allow_pos0_neg = self.allow_pos0_neg, chiDiscAtPi = self.chiDiscAtPi
+            bint check_mask = False, chiDiscAtPi = self.chiDiscAtPi
             position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
-            position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
-            position_t fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
+            position_t pos0_min = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
             position_t a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
-            position_t center0 = 0.0, center1 = 0.0, area, width, height,   
-            position_t delta0, delta1, new_width, new_height, new_min0, new_max0, new_min1, new_max1
-            Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
-            Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15, nwarn=NUM_WARNING
+            position_t delta0, delta1
+            position_t foffset0, foffset1, sum_area, area
+            Py_ssize_t i = 0, j = 0, idx = 0
+            Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15
             buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
             buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
-            double foffset0, foffset1, sum_area, loc_area
             SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=size)
             
         if self.cmask is not None:
             check_mask = True
             cmask = self.cmask
 
-        pos0_max = self.pos0_max
         pos0_min = self.pos0_min
+        pos0_maxin = self.pos0_maxin
+        pos1_maxin = self.pos1_maxin
         pos1_max = self.pos1_max
         pos1_min = self.pos1_min
         delta0 = self.delta0  
@@ -306,7 +308,7 @@ class FullSplitIntegrator:
                     
                 # Play with coordinates ...
                 v8[:, :] = cpos[idx, :, :]
-                area = _recenter(v8, chiDiscAtPi)
+                area = _recenter(v8, chiDiscAtPi) # this is an unprecise measurement of the surface of the pixels
                 a0 = v8[0, 0]
                 a1 = v8[0, 1]
                 b0 = v8[1, 0]
@@ -357,7 +359,7 @@ class FullSplitIntegrator:
                             logger.debug("reshape %s->%s and %s->%s", w0, bw0, w1, bw1)
                     bw0 = w0
                     bw1 = w1
-                buffer[:, :] = 0.0
+                    buffer[:, :] = 0.0
                 
                 a0 -= foffset0
                 a1 -= foffset1
@@ -373,26 +375,17 @@ class FullSplitIntegrator:
                 _integrate2d(buffer, b0, b1, c0, c1)
                 _integrate2d(buffer, c0, c1, d0, d1)
                 _integrate2d(buffer, d0, d1, a0, a1)
-    
-                area = 0.5 * ((c1 - a1) * (d0 - b0) - (c0 - a0) * (d1 - b1))
-                if area == 0.0:
-                    continue
-                inv_area = 1.0 / area
+                
                 sum_area = 0.0
                 for i in range(w0):
                     for j in range(w1):
-                        loc_area = buffer[i, j]
-                        sum_area += loc_area
-                        builder.cinsert((ioffset0 + i)*bins1 + ioffset1 + j, idx, loc_area * inv_area)
-
-                if fabs(area - sum_area)*inv_area > 1e-3:
-                    nwarn -=1
-                    if nwarn>0:
-                        with gil:            
-                            logger.info(f"Invstigate idx {idx}, area {area} {sum_area}, {numpy.asarray(v8)}, {w0}, {w1}")
-        if nwarn<NUM_WARNING:
-            logger.info(f"Total number of spurious pixels: {NUM_WARNING - nwarn} / {size} total")
-      
+                        sum_area += buffer[i, j]
+                inv_area = 1.0 / sum_area
+                
+                for i in range(w0):
+                    for j in range(w1):
+                        builder.cinsert((ioffset0 + i)*bins1 + ioffset1 + j, idx, buffer[i, j] * inv_area)
+                linbuffer[:] = 0.0
         return builder
 
     

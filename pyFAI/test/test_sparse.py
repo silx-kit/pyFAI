@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2021"
+__date__ = "13/12/2021"
 
 import unittest
 import numpy
@@ -193,18 +193,14 @@ class TestSparseIntegrate2d(unittest.TestCase):
             obt = self.integrate(method=("full", m, "cython"))
             print(obt.compute_engine)
             self.assertLess(abs(ref.radial - obt.radial).max(), 1e-3, f"radial matches {m}")
-
-            # print("ref", ref.azimuthal)
-            # print("obt", obt.azimuthal)
             self.assertLess(abs(ref.azimuthal - obt.azimuthal).max(), 1e-3, f"azimuthal matches {m}")
             res = self.cost(ref, obt)
             if res > 1:
                 logger.error("Numerical values are odd (R=%s)... please refine this test!", res)
+                unittest.SkipTest("Fix this test")
             else:
                 logger.info("R on global result: %s for method %s", res, m)
                 self.assertTrue(numpy.allclose(obt[0], ref[0]))
-
-        raise unittest.SkipTest("Fix this test")
 
 
 class TestSparseUtils(unittest.TestCase):

@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2021"
+__date__ = "13/12/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -400,7 +400,6 @@ class AzimuthalIntegrator(Geometry):
             mask_checksum = None
         else:
             assert mask.shape == shape
-        print("403", split)
         if split == "full":
             if int2d:
                 return splitPixelFullLUT.HistoLUT2dFullSplit(pos,

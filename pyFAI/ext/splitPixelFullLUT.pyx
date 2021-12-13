@@ -35,7 +35,7 @@ Sparse matrix represented using the LUT representation.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/12/2021"
+__date__ = "13/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -164,9 +164,6 @@ class HistoLUT2dFullSplit(LutIntegrator, FullSplitIntegrator):
                                            self.bins[1])
         
         lut = self.calc_lut_2d().to_lut()
-        print(lut.dtype, lut.shape, lut.strides)
-        print(lut)
-        print(self.calc_lut_2d().to_csr())
         #Call the constructor of the parent class
         LutIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)    
         
