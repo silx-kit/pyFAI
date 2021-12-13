@@ -197,7 +197,7 @@ class TestSparseIntegrate2d(unittest.TestCase):
             res = self.cost(ref, obt)
             if res > 1:
                 logger.error("Numerical values are odd (R=%s)... please refine this test!", res)
-                unittest.SkipTest("Fix this test")
+                raise unittest.SkipTest("Fix this test")
             else:
                 logger.info("R on global result: %s for method %s", res, m)
                 self.assertTrue(numpy.allclose(obt[0], ref[0]))
