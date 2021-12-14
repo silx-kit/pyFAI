@@ -1641,31 +1641,48 @@ class AzimuthalIntegrator(Geometry):
         :rtype: Integrate1dResult
         """
         unit = units.to_unit(unit, type_=units.AZIMUTHAL_UNITS)
-        res = self.integrate2d(data, npt_rad, npt,
-                               correctSolidAngle=correctSolidAngle,
-                               mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                               polarization_factor=polarization_factor,
-                               dark=dark, flat=flat, method=method,
-                               normalization_factor=normalization_factor,
-                               radial_range=radial_range,
-                               azimuth_range=azimuth_range,
-                               unit=radial_unit)
+        res = self.integrate2d_ng(data, npt_rad, npt,
+                                  correctSolidAngle=correctSolidAngle,
+                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                  polarization_factor=polarization_factor,
+                                  dark=dark, flat=flat, method=method,
+                                  normalization_factor=normalization_factor,
+                                  radial_range=radial_range,
+                                  azimuth_range=azimuth_range,
+                                  unit=radial_unit)
 
         azim_scale = unit.scale / units.CHI_DEG.scale
-        sum_ = res.sum.sum(axis=-1)
+
+        sum_signal = res.sum_signal.sum(axis=-1)
         count = res.count.sum(axis=-1)
-        intensity = sum_ / count
-        empty = dummy if dummy is not None else self.empty
-        intensity[count == 0] = empty
-        result = Integrate1dResult(res.azimuthal * azim_scale, intensity, None)
+        sum_normalization = res._sum_normalization.sum(axis=-1)
+
+        mask = numpy.where(count == 0)
+        empty = dummy if dummy is not None else self._empty
+        intensity = sum_signal / sum_normalization
+        intensity[mask] = empty
+
+        if res.sigma is not None:
+            sum_variance = res.sum_variance.sum(axis=-1)
+            sigma = numpy.sqrt(sum_variance) / sum_normalization
+            sigma[mask] = empty
+        else:
+            sum_variance = None
+            sigma = None
+        result = Integrate1dResult(res.azimuthal * azim_scale, intensity, sigma)
         result._set_method_called("integrate_radial")
         result._set_unit(unit)
-        result._set_sum(sum_)
+        result._set_sum_normalization(sum_normalization)
         result._set_count(count)
+        result._set_sum_signal(sum_signal)
+        result._set_sum_variance(sum_variance)
         result._set_has_dark_correction(dark is not None)
         result._set_has_flat_correction(flat is not None)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
+        result._set_method = res.method
+        result._set_compute_engine = res.compute_engine
+
         return result
 
     @deprecated(since_version="0.21", only_once=True, deprecated_since="0.21.0")
