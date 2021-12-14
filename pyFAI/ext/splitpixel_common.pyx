@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/12/2021"
+__date__ = "14/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -172,7 +172,6 @@ class FullSplitIntegrator:
         cdef:
             position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
         pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
-        print("FullSplitIntegrator", pos0_min, pos0_maxin, pos1_min, pos1_maxin)
         if (not allow_pos0_neg):
             pos0_min = max(0.0, pos0_min)
             pos0_maxin = max(pos0_maxin, 0.0)

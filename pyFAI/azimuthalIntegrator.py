@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2021"
+__date__ = "14/12/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2266,7 +2266,6 @@ class AzimuthalIntegrator(Geometry):
                                                            mask_checksum=mask_crc,
                                                            unit=unit, split=split,
                                                            scale=False)
-                        print("Freshly built integrator", cython_integr, self.engines.keys())
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         cython_integr = None
