@@ -409,7 +409,8 @@ class AzimuthalIntegrator(Geometry):
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
                                                 unit=unit,
-                                                chiDiscAtPi=self.chiDiscAtPi)
+                                                chiDiscAtPi=self.chiDiscAtPi,
+                                                empty=self._empty)
             else:
                 return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
                                                              bins=npt,
@@ -418,7 +419,8 @@ class AzimuthalIntegrator(Geometry):
                                                              mask=mask,
                                                              mask_checksum=mask_checksum,
                                                              allow_pos0_neg=False,
-                                                             unit=unit)
+                                                             unit=unit,
+                                                             empty=self._empty)
         else:
             if int2d:
                 return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
@@ -428,7 +430,8 @@ class AzimuthalIntegrator(Geometry):
                                                 mask=mask,
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
-                                                unit=unit)
+                                                unit=unit,
+                                                empty=self._empty)
             else:
                 return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                 bins=npt,
@@ -437,7 +440,8 @@ class AzimuthalIntegrator(Geometry):
                                                 mask=mask,
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
-                                                unit=unit)
+                                                unit=unit,
+                                                empty=self._empty)
 
     def setup_CSR(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
@@ -533,7 +537,8 @@ class AzimuthalIntegrator(Geometry):
                                                          mask_checksum=mask_checksum,
                                                          allow_pos0_neg=False,
                                                          unit=unit,
-                                                         chiDiscAtPi=self.chiDiscAtPi)
+                                                         chiDiscAtPi=self.chiDiscAtPi,
+                                                         empty=self._empty)
             else:
                 return splitPixelFullCSR.FullSplitCSR_1d(pos,
                                                          bins=npt,
@@ -542,7 +547,8 @@ class AzimuthalIntegrator(Geometry):
                                                          mask=mask,
                                                          mask_checksum=mask_checksum,
                                                          allow_pos0_neg=False,
-                                                         unit=unit)
+                                                         unit=unit,
+                                                         empty=self._empty)
         else:
             if int2d:
                 return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
@@ -552,7 +558,8 @@ class AzimuthalIntegrator(Geometry):
                                                 mask=mask,
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
-                                                unit=unit)
+                                                unit=unit,
+                                                empty=self._empty)
             else:
                 return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                 bins=npt,
@@ -562,7 +569,7 @@ class AzimuthalIntegrator(Geometry):
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
                                                 unit=unit,
-                                                )
+                                                empty=self._empty)
 
     @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
     def integrate1d_legacy(self, data, npt, filename=None,
@@ -2221,6 +2228,7 @@ class AzimuthalIntegrator(Geometry):
             with cython_engine.lock:
                 cython_integr = cython_engine.engine
                 cython_reset = None
+
                 if cython_integr is None:
                     cython_reset = "of first initialization"
                 if (not cython_reset) and safe:
@@ -2230,7 +2238,7 @@ class AzimuthalIntegrator(Geometry):
                         cython_reset = "number of points changed"
                     if cython_integr.size != data.size:
                         cython_reset = "input image size changed"
-                    if cython_integr.empty != empty:
+                    if cython_integr.empty != self._empty:
                         cython_reset = "empty value changed"
                     if (mask is not None) and (not cython_integr.check_mask):
                         cython_reset = f"mask but {method.algo_lower.upper()} was without mask"

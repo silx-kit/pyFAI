@@ -145,7 +145,7 @@ class TestSparseIntegrate2d(unittest.TestCase):
 
     def integrate(self, method):
         # Manually purge engine cache to free some memory
-        self.ai.engines = {}
+        self.ai.reset_engines()
         return self.ai.integrate2d_ng(self.data, self.N, unit=self.unit, method=method,
                                       correctSolidAngle=False, dummy=-2, delta_dummy=1)
 
