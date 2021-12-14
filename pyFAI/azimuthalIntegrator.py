@@ -523,7 +523,6 @@ class AzimuthalIntegrator(Geometry):
             mask_checksum = None
         else:
             assert mask.shape == shape
-        print(split)
         if split == "full":
 
             if int2d:
