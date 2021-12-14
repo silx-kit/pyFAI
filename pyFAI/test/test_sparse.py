@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2021"
+__date__ = "14/12/2021"
 
 import unittest
 import numpy
@@ -144,6 +144,8 @@ class TestSparseIntegrate2d(unittest.TestCase):
         cls.data = None
 
     def integrate(self, method):
+        # Manually purge engine cache to free some memory
+        self.ai._engines = {}
         return self.ai.integrate2d_ng(self.data,
                                       self.N,
                                       correctSolidAngle=False,
