@@ -2545,6 +2545,7 @@ class AzimuthalIntegrator(Geometry):
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
         result._set_method_called("integrate2d")
         result._set_compute_engine(str(method))
+        result._set_method(method)
         result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum_)
