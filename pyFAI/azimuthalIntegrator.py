@@ -157,7 +157,6 @@ class AzimuthalIntegrator(Geometry):
         Geometry.__init__(self, dist, poni1, poni2,
                           rot1, rot2, rot3,
                           pixel1, pixel2, splineFile, detector, wavelength)
-        self._nbPixCache = {}  # key=shape, value: array
 
         # mask, maskfile, darkcurrent and flatfield are properties pointing to
         # self.detector now (16/06/2017)
