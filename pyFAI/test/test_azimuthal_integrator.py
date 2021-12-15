@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2021"
+__date__ = "15/12/2021"
 
 import unittest
 import os
@@ -305,7 +305,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         gc.collect()
 
     def test_radial(self):
-
+        "Non regression for #1602"
         res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
                                        radial_range=(3.6, 3.9), radial_unit="2th_deg")
         self.assertLess(res[0].min(), -179, "chi min at -180")
@@ -317,6 +317,16 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                        radial_range=(3.6, 3.9), radial_unit="2th_deg", unit="chi_rad")
         self.assertLess(res[0].min(), -3, "chi min at -3rad")
         self.assertGreater(res[0].max(), 0, "chi max at +3rad")
+        self.assertGreater(res[1].min(), 120, "intensity min in ok")
+        self.assertLess(res[1].max(), 10000, "intensity max in ok")
+
+        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
+                                       radial_range=(3.6, 3.9), radial_unit="2th_deg",
+                                       method=("full", "CSR", "opencl"))
+        self.assertLess(res[0].min(), -179, "chi min at -180")
+        self.assertGreater(res[0].max(), 179, "chi max at +180")
+        self.assertGreater(res[1].min(), 120, "intensity min in ok")
+        self.assertLess(res[1].max(), 10000, "intensity max in ok")
 
 
 class TestFlatimage(unittest.TestCase):
