@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2021"
+__date__ = "14/12/2021"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -63,8 +63,8 @@ else:
                       class_funct_legacy=(None, histogram.histogram),
                       class_funct_ng=(None, histogram.histogram1d_engine))
     IntegrationMethod(2, "no", "histogram", "cython", old_method="cython",
-                      class_funct_legacy=(None, histogram.histogram2d),)
-    # TODO: class_funct_ng=(None, histogram.histogram2d_engine)) is missing !
+                      class_funct_legacy=(None, histogram.histogram2d),
+                      class_funct_ng=(None, histogram.histogram2d_engine))
 
 try:
     from .ext import splitBBox  # IGNORE:F0401

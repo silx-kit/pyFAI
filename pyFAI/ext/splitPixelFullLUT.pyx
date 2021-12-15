@@ -35,7 +35,7 @@ Sparse matrix represented using the LUT representation.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/12/2021"
+__date__ = "13/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -55,7 +55,7 @@ import numpy
 cimport numpy
 from libc.math cimport fabs, floor, sqrt
 from libc.stdlib cimport abs
-from libc.stdio cimport printf, fflush, stdout
+from libc.stdio cimport stdout
 
 from ..utils import crc32
 from ..utils.decorators import deprecated

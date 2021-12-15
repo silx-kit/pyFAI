@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2021"
+__date__ = "14/12/2021"
 
 import unittest
 import numpy
@@ -122,9 +122,9 @@ class TestSparseIntegrate1d(unittest.TestCase):
 
 class TestSparseIntegrate2d(unittest.TestCase):
     """Test azimuthal integration based sparse matrix multiplication methods
-    * No splitting 
-    * Bounding box pixel splitting
-    * Full pixel splitting #TODO: check the numerical results!
+    * No splitting                   # TODO: fix numerical results  
+    * Bounding box pixel splitting   # TODO: fix numerical results
+    * Full pixel splitting
     """
 
     @classmethod
@@ -144,67 +144,43 @@ class TestSparseIntegrate2d(unittest.TestCase):
         cls.data = None
 
     def integrate(self, method):
-        return self.ai.integrate2d_ng(self.data,
-                                      self.N,
-                                      correctSolidAngle=False,
-                                      unit=self.unit,
-                                      method=method,
-                                      dummy=-2,
-                                      delta_dummy=1)
+        # Manually purge engine cache to free some memory
+        self.ai.reset_engines()
+        return self.ai.integrate2d_ng(self.data, self.N, unit=self.unit, method=method,
+                                      correctSolidAngle=False, dummy=-2, delta_dummy=1)
 
     @staticmethod
     def cost(ref, res):
         return (abs(res[0] - ref[0]) / numpy.maximum(1, ref[0])).max()
 
-    def test_sparse_nosplit(self):
-        ref = self.integrate(method=("no", "histogram", "cython"))
-
-        method = ("no", "csr", "cython")
-        obt = self.integrate(method)
-        logger.info("delta on global result: %s for method %s", self.cost(ref, obt), method)
-        # self.assertTrue(numpy.allclose(obt[0], ref[0]))
-
-        raise unittest.SkipTest("Fix this test")
-        # This is known to be broken !!!
-        method = ("no", "lut", "cython")
-        obt = self.integrate(method=method)
-        logger.info("delta on global result: %s for method %s", self.cost(ref, obt), method)
-        # self.assertTrue(numpy.allclose(obt[0], ref[0]))
-        # TODO: fix this test
-
-    def test_sparse_bbox(self):
-        ref = self.integrate(method=("bbox", "histogram", "cython"))
-
-        method = ("bbox", "lut", "cython")
-        obt = self.integrate(method)
-        logger.info("delta on global result: %s for method %s", self.cost(ref, obt), method)
-        # self.assertTrue(numpy.allclose(obt[0], ref[0]))
-
-        method = ("bbox", "csr", "cython")
-        obt = self.integrate(method)
-        logger.debug("delta on global result: %s for method %s", self.cost(ref, obt), method)
-        # self.assertTrue(numpy.allclose(obt[0], ref[0]))
-        raise unittest.SkipTest("Fix this test")
-
-    def test_sparse_fullsplit(self):
-        ref = self.integrate(method=("full", "histogram", "cython"))
+    def single_check(self, split="no"):
+        method = [split, "histogram", "cython"]
+        ref = self.integrate(method=method)
         for m in "CSR", "LUT":
-            print(m)
-            obt = self.integrate(method=("full", m, "cython"))
-            print(obt.compute_engine)
-            self.assertLess(abs(ref.radial - obt.radial).max(), 1e-3, f"radial matches {m}")
-
-            # print("ref", ref.azimuthal)
-            # print("obt", obt.azimuthal)
-            self.assertLess(abs(ref.azimuthal - obt.azimuthal).max(), 1e-3, f"azimuthal matches {m}")
+            method[1] = m
+            obt = self.integrate(method)
+            self.assertLess(abs(ref.radial - obt.radial).max(), 1e-3, f"radial matches for {m} with {split} split")
+            self.assertLess(abs(ref.azimuthal - obt.azimuthal).max(), 1e-3, f"azimuthal matches for {m} with {split} split")
             res = self.cost(ref, obt)
             if res > 1:
-                logger.error("Numerical values are odd (R=%s)... please refine this test!", res)
+                logger.error("Numerical values are odd (R=%s)... please refine this test for %s  split!", res, method)
+                raise unittest.SkipTest("Fix this test")
             else:
-                logger.info("R on global result: %s for method %s", res, m)
-                self.assertTrue(numpy.allclose(obt[0], ref[0]))
+                logger.info("R on global result: %s for method %s with %s split", res, m, split)
+                if not numpy.allclose(obt[0], ref[0]):
+                    logger.error(f"Numerical results are not exactly the same between {m} and histogram with {split} split")
+                    raise unittest.SkipTest("Fix this test")
+                    # TODO: fix this test
+                self.assertTrue(numpy.allclose(obt[0], ref[0]), f"Intensities matches for {m} with {split} split")
 
-        raise unittest.SkipTest("Fix this test")
+    def test_sparse_nosplit(self):
+        self.single_check(split="no")
+
+    def test_sparse_bbox(self):
+        self.single_check(split="bbox")
+
+    def test_sparse_fullsplit(self):
+        self.single_check(split="full")
 
 
 class TestSparseUtils(unittest.TestCase):

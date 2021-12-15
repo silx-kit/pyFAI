@@ -38,7 +38,7 @@ Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jerome Kieffer"
-__date__ = "14/09/2021"
+__date__ = "14/12/2021"
 __license__ = "MIT"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -563,9 +563,8 @@ def histogram2d_engine(pos0,
         pos1_maxin = pos1.max()
     pos1_max = calc_upper_bound(pos1_maxin)
 
-    delta0 = (pos0_max - pos0_min) / (<acc_t> (bins0))
-    delta1 = (pos1_max - pos1_min) / (<acc_t> (bins1))
-
+    delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
+    delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
 
     if nchan >= 3:
         out_error = numpy.zeros((bins0, bins1), dtype=data_d)
