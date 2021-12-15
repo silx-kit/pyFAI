@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2021"
+__date__ = "15/12/2021"
 
 import unittest
 import os
@@ -148,6 +148,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             self.__class__.ai.reset()
         except Exception as e:
             logger.error(e)
+        gc.collect()
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_numpy_vs_fit2d(self):
@@ -260,9 +261,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
         logger.info("Histogram Cython/Numpy Rwp = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
-            fig = pylab.figure()
+            fig,sp = pylab.subplots()
             fig.suptitle('Numpy Histogram vs Cython: Rwp=%.3f' % rwp)
-            sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-y", label='fit2d')
             sp.plot(tth_np, I_np, "-b", label='numpy')
             sp.plot(tth_cy, I_cy, "-r", label="cython")
@@ -302,10 +302,9 @@ class TestAzimHalfFrelon(unittest.TestCase):
         logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
         self.assertLess(rwp, 3, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
         ref = ocl = rwp = None
-        gc.collect()
 
     def test_radial(self):
-
+        "Non regression for #1602"
         res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
                                        radial_range=(3.6, 3.9), radial_unit="2th_deg")
         self.assertLess(res[0].min(), -179, "chi min at -180")
@@ -317,6 +316,16 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                        radial_range=(3.6, 3.9), radial_unit="2th_deg", unit="chi_rad")
         self.assertLess(res[0].min(), -3, "chi min at -3rad")
         self.assertGreater(res[0].max(), 0, "chi max at +3rad")
+        self.assertGreater(res[1].min(), 120, "intensity min in ok")
+        self.assertLess(res[1].max(), 10000, "intensity max in ok")
+
+        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
+                                       radial_range=(3.6, 3.9), radial_unit="2th_deg",
+                                       method=("full", "CSR", "opencl"))
+        self.assertLess(res[0].min(), -179, "chi min at -180")
+        self.assertGreater(res[0].max(), 179, "chi max at +180")
+        self.assertGreater(res[1].min(), 120, "intensity min in ok")
+        self.assertLess(res[1].max(), 10000, "intensity max in ok")
 
 
 class TestFlatimage(unittest.TestCase):
