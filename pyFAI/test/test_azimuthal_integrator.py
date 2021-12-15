@@ -148,6 +148,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             self.__class__.ai.reset()
         except Exception as e:
             logger.error(e)
+        gc.collect()
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_numpy_vs_fit2d(self):
@@ -260,9 +261,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
         logger.info("Histogram Cython/Numpy Rwp = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
-            fig = pylab.figure()
+            fig,sp = pylab.subplots()
             fig.suptitle('Numpy Histogram vs Cython: Rwp=%.3f' % rwp)
-            sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-y", label='fit2d')
             sp.plot(tth_np, I_np, "-b", label='numpy')
             sp.plot(tth_cy, I_cy, "-r", label="cython")
@@ -302,7 +302,6 @@ class TestAzimHalfFrelon(unittest.TestCase):
         logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
         self.assertLess(rwp, 3, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
         ref = ocl = rwp = None
-        gc.collect()
 
     def test_radial(self):
         "Non regression for #1602"
