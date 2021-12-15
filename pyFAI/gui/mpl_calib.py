@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2021"
+__date__ = "15/12/2021"
 __status__ = "development"
 
 
@@ -244,7 +244,7 @@ class MplCalibWidget:
             logging.warning("No diffraction image available => not showing the contour")
             return
         #clean previous contour plots:
-        self.ax.collections = []
+        self.ax.collections.clear()
         if data is not None:
             try:
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
@@ -270,9 +270,9 @@ class MplCalibWidget:
         if self.fig:
             # empty annotate and plots
             if len(self.ax.texts) > 0:
-                self.ax.texts = []
+                self.ax.texts.clear()
             if len(self.ax.lines) > 0:
-                self.ax.lines = []
+                self.ax.lines.clear()
             # Redraw the image
             if update:
                 if not gui_utils.main_loop:
