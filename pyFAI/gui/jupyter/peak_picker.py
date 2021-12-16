@@ -31,7 +31,7 @@ __authors__ = ["Philipp Hans", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2021"
+__date__ = "16/12/2021"
 __status__ = "production"
 
 import logging
@@ -45,6 +45,29 @@ try:
 except ModuleNotFoundError:
     logger.error("`ipywidgets` and `IPython` are needed to perform the calibration in Jupyter")
     
+
+# TODO....
+class JupyPeakPicker(_PeakPicker):
+    def gui(self, log=False, maximize=False, pick=True):
+        """
+        :param log: show z in log scale
+        """
+        data_disp, bounds = preprocess_image(self.data, False, 1e-3)
+        if self.widget is None:
+            self.widget = JupyCalibWidget(click_cb=self.onclick,
+                                         refine_cb=None,
+                                         option_cb=None,)
+            self.widget.init(image=data_disp, bounds=bounds)
+        else:
+            self.widget.imshow(data_disp, bounds=bounds, log=True, update=False)
+        if self.detector:
+            self.widget.set_detector(self.detector, update=False)
+        if maximize:
+            self.widget.maximize()
+        else:
+            display(self.widget)#.update()
+    def onclick(self, *args):
+        _PeakPicker.onclick(self,  *args)
 
 class PeakPicker(_PeakPicker):
     """Peak picker optimized for the Jupyter environment with
