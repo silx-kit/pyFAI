@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "17/12/2021"
 
 import numpy
 import time
@@ -34,7 +34,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-from silx.utils import html
+import html
 from silx.gui import qt
 from silx.gui.plot3d.items import mesh
 from silx.gui.plot3d.SceneWindow import SceneWindow
