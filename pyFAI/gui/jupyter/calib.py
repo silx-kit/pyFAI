@@ -4,6 +4,10 @@ from ..mpl_calib import MplCalibWidget
 from matplotlib import pyplot
 from matplotlib.colors import LogNorm
 import ipywidgets as widgets
+try:
+    from IPython.core.display import display
+except:
+    from ...utils.callback import dangling_callback as display
 
 
 class JupyCalibWidget(MplCalibWidget):
