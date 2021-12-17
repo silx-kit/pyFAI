@@ -40,6 +40,8 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "17/12/2021"
 __status__ = "development"
 
+import logging
+logger = logging.getLogger(__name__)
 try:
     from silx.gui import qt
 except ImportError:
