@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/12/2021"
+__date__ = "17/12/2021"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -169,7 +169,6 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
                                            self.pos1_max - 0.5 * self.delta1, 
                                            self.bins[1])
 
-        print(self.pos1_max, self.pos1_min, self.delta0, self.delta1)
         lut = self.calc_lut_2d().to_csr()
         #Call the constructor of the parent class
         CsrIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)    
