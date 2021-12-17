@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2021"
+__date__ = "17/12/2021"
 __status__ = "production"
 
 import os
@@ -61,6 +61,7 @@ from ..blob_detection import BlobDetection
 from ..massif import Massif
 from ..ext.reconstruct import reconstruct
 from ..ext.watershed import InverseWatershed
+from ..utils.callback import dangling_callback
 
 
 def preprocess_image(data, log=False, clip=0.001):
@@ -123,7 +124,7 @@ class PeakPicker(object):
 
         self.shape = self.data.shape
         self.points = ControlPoints(pointfile, calibrant=calibrant, wavelength=wavelength)
-        self.widget = None  # contains a MplCalibWidget
+        self.widget = None
         self.spinbox = None
         self.refine_btn = None
         self.ref_action = None
@@ -134,12 +135,12 @@ class PeakPicker(object):
         self.massif = None  # used for massif detection
         self.blob = None  # used for blob   detection
         self.watershed = None  # used for inverse watershed
-        self._sem = threading.Semaphore()
+
         self.mpl_connectId = None
         self.defaultNbPoints = 100
         self._init_thread = None
         self.point_filename = None
-        self.callback = None
+        self.cb_refine = dangling_callback  # Method to be called when clicked on refine
         self.method = None
         if method not in self.VALID_METHODS:
             logger.error("Not a valid peak-picker method: %s should be part of %s", method, self.VALID_METHODS)
@@ -238,14 +239,28 @@ class PeakPicker(object):
             except Exception as err:
                 print(f"{type(err)}: {err} in peak_picker.reset()")
 
-    def gui(self, log=False, maximize=False, pick=True):
+    def gui(self, log=False, maximize=False, pick=True, widget_klass=None):
         """
+        Display the GUI
+        
         :param log: show z in log scale
+        :param maximize: set to true to maximize window
+        :param pick: activate pixel picking
+        :param widget_klass: provide the MplCalibWidget (either Qt or Jupyter) to instanciate the widget
+        :return: None
         """
+
         if self.widget is None:
-            self.widget = MplCalibWidget(click_cb=self.onclick,
-                                         refine_cb=None,
-                                         option_cb=None,)
+            if widget_klass:
+                assert issubclass(widget_klass, MplCalibWidget)
+            self.widget = widget_klass(new_grp_cb=self.onclick_new_grp,
+                                       append_single_cb=self.onclick_append_1_point,
+                                       single_point_cb=self.onclick_single_point,
+                                       append_more_cb=self.onclick_append_more_points,
+                                       erase_pt_cb=self.onclick_erase_1_point,
+                                       erase_grp_cb=self.onclick_erase_grp,
+                                       refine_cb=self.onclick_refine,
+                                       option_cb=self.onclick_option,)
             self.widget.init(update=False)
         data_disp, bounds = preprocess_image(self.data, False, 1e-3)
         self.widget.imshow(data_disp, bounds=bounds, log=log, update=False)
@@ -292,62 +307,51 @@ class PeakPicker(object):
             print(gpt.annotate)
             self.widget.remove_grp(gpt.label, update=True)
 
-    def onclick(self, event):
+    def _common_creation(self, points, gpt=None, ring=None):
         """
-        Called when a mouse is clicked
+        plot new set of points on the widget
+
+        :param points: list of points
+        :param gpt: group of point, instance of PointGroup, the one to
+        :param ring: ring number  
+        :return: gpt
         """
+        if points:
+            if not gpt and self.widget:
+                gpt = self.points.append(points, ring=ring)
+            self.widget.add_grp(gpt.label, points)
+        return gpt
 
-        def common_creation(points, gpt=None):
-            """
-            plot new set of points
+    def onclick_new_grp(self, yx, ring):
+        " * new_grp Right-click (click+n):         try an auto find for a ring"
+        # ydata is a float, and matplotlib display pixels centered.
+        # we use floor (int cast) instead of round to avoid use of
+        # banker's rounding
+        points = self.massif.find_peaks(yx,
+                                        self.defaultNbPoints,
+                                        None, self.massif_contour)
+        if points:
+            gpt = self._common_creation(points, ring=ring)
+            logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
+        else:
+            logger.warning("No peak found !!!")
 
-            :param points: list of points
-            :param gpt: : group of point, instance of PointGroup
-            """
-            if points:
-                if not gpt and self.widget:
-                    gpt = self.points.append(points, ring=self.widget.spinbox.value())
-                self.widget.add_grp(gpt.label, points)
-            return gpt
+    def onclick_single_point(self, yx, ring):
+        " * Right-click + Ctrl (click+b):  create new group with one single point"
+        newpeak = self.massif.nearest_peak(yx)
+        if newpeak:
+            gpt = self._common_creation([newpeak], ring=ring)
+            logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f", gpt.label, newpeak[1], newpeak[0])
+        else:
+            logger.warning("No peak found !!!")
 
-        def new_grp(event):
-            " * new_grp Right-click (click+n):         try an auto find for a ring"
-            # ydata is a float, and matplotlib display pixels centered.
-            # we use floor (int cast) instead of round to avoid use of
-            # banker's rounding
-            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
-            points = self.massif.find_peaks([ypix, xpix],
-                                            self.defaultNbPoints,
-                                            None, self.massif_contour)
-            if points:
-                gpt = common_creation(points)
-                # annontate(points[0], [ypix, xpix], gpt=gpt)
-                logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
-            else:
-                logger.warning("No peak found !!!")
-
-        def single_point(event):
-            " * Right-click + Ctrl (click+b):  create new group with one single point"
-            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
-            newpeak = self.massif.nearest_peak([ypix, xpix])
-            if newpeak:
-                gpt = common_creation([newpeak])
-                # annontate(newpeak, [ypix, xpix], gpt=gpt)
-                logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f", gpt.label, newpeak[1], newpeak[0])
-            else:
-                logger.warning("No peak found !!!")
-
-        def append_more_points(event):
-            " * Right-click + m (click+m):     find more points for current group"
-            gpt = self.points.get(self.spinbox.value())
-            if not gpt:
-                new_grp(event)
-                return
+    def onclick_append_more_points(self, yx, ring):
+        " * Right-click + m (click+m):     find more points for current group"
+        gpt = self.points.get(ring)
+        if gpt:
             self.widget.remove_grp(gpt.label, update=False)
-            # matplotlib coord to pixel coord, avoinding use of banker's round
-            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
             # need to annotate only if a new group:
-            listpeak = self.massif.find_peaks([ypix, xpix],
+            listpeak = self.massif.find_peaks(yx,
                                               self.defaultNbPoints, None,
                                               self.massif_contour)
             if listpeak:
@@ -355,116 +359,101 @@ class PeakPicker(object):
                 logger.info("Added %i points to group #%2s (now %i points)", len(listpeak), len(gpt.label), len(gpt))
             else:
                 logger.warning("No peak found !!!")
-            common_creation(gpt.points, gpt)
+            self._common_creation(gpt.points, gpt, ring=ring)
+        else:
+            self.onclick_new_grp(yx, ring)
 
-        def append_1_point(event):
-            " * Right-click + Shift (click+v): add one point to current group"
-            gpt = self.points.get(self.widget.spinbox.value())
-            if not gpt:
-                new_grp(event)
-                return
+    def onclick_append_1_point(self, yx, ring=None):
+        """ * Right-click + Shift (click+v): add one point to current group
+        :param xy: 2tuple of coordinates
+        """
+        gpt = self.points.get(ring)
+        if gpt:
             self.widget.remove_grp(gpt.label, update=False)
             # matplotlib coord to pixel coord, avoinding use of banker's round
-            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
-            newpeak = self.massif.nearest_peak([ypix, xpix])
+            newpeak = self.massif.nearest_peak(yx)
             if newpeak:
                 gpt.points.append(newpeak)
                 logger.info("x=%5.1f, y=%5.1f added to group #%2s", newpeak[1], newpeak[0], gpt.label)
             else:
                 logger.warning("No peak found !!!")
-            common_creation(gpt.points, gpt)
+            self._common_creation(gpt.points, gpt)
+        else:
+            self.onclick_new_grp(yx, ring)
 
-        def erase_grp(event):
-            " * Center-click or (click+d):     erase current group"
-            ring = self.widget.spinbox.value()
-            gpt = self.points.pop(ring)
-            if not gpt:
-                logger.warning("No group of points for ring %s", ring)
-                return
-            # print("Remove group from ring %s label %s" % (ring, gpt.label))
+    def onclick_erase_grp(self, yx, ring):
+        " * Center-click or (click+d):     erase current group"
+        gpt = self.points.pop(ring)
+        if gpt:
             self.widget.remove_grp(gpt.label, update=True)
             if len(gpt) > 0:
                 logger.info("Removing group #%2s containing %i points", gpt.label, len(gpt))
             else:
                 logger.info("No groups to remove")
+        else:
+            logger.warning("No group of points for ring %s", ring)
 
-        def erase_1_point(event):
-            " * Center-click + 1 or (click+1): erase closest point from current group"
-            ring = self.widget.spinbox.value()
-            gpt = self.points.get(ring)
-            if not gpt:
-                logger.warning("No group of points for ring %s", ring)
-                return
+    def onclick_erase_1_point(self, yx, ring):
+        " * Center-click + 1 or (click+1): erase closest point from current group"
+        gpt = self.points.get(ring)
+        if not gpt:
             self.widget.remove_grp(gpt.label, update=True)
             if len(gpt) > 1:
                 # delete single closest point from current group
                 # matplotlib coord to pixel coord, avoinding use of banker's round
-                y0, x0 = int(event.ydata + 0.5), int(event.xdata + 0.5)
+                y0, x0 = yx
                 distsq = [((p[1] - x0) ** 2 + (p[0] - y0) ** 2) for p in gpt.points]
                 # index and distance of smallest distance:
                 indexMin = min(enumerate(distsq), key=operator.itemgetter(1))
                 removedPt = gpt.points.pop(indexMin[0])
                 logger.info("x=%5.1f, y=%5.1f removed from group #%2s (%i points left)", removedPt[1], removedPt[0], gpt.label, len(gpt))
                 # annotate (new?) 1st point and add remaining points back
-                common_creation(gpt.points, gpt)
+                self._common_creation(gpt.points, gpt, ring=ring)
 
             elif len(gpt) == 1:
                 logger.info("Removing group #%2s containing 1 point", gpt.label)
                 gpt = self.points.pop(ring)
             else:
                 logger.info("No groups to remove")
-
-        with self._sem:
-            logger.debug("Button: %i, Key modifier: %s", event.button, event.key)
-
-            if ((event.button == 3) and (event.key == 'shift')) or \
-               ((event.button == 1) and (event.key == 'v')):
-                # if 'shift' pressed add nearest maximum to the current group
-                append_1_point(event)
-            elif ((event.button == 3) and (event.key == 'control')) or\
-                 ((event.button == 1) and (event.key == 'b')):
-                # if 'control' pressed add nearest maximum to a new group
-                single_point(event)
-            elif (event.button in [1, 3]) and (event.key == 'm'):
-                append_more_points(event)
-            elif (event.button == 3) or ((event.button == 1) and (event.key == 'n')):
-                # create new group
-                new_grp(event)
-
-            elif (event.key == "1") and (event.button in [1, 2]):
-                erase_1_point(event)
-            elif (event.button == 2) or (event.button == 1 and event.key == "d"):
-                erase_grp(event)
-            else:
-                logger.info("Unknown combination: Button: %i, Key modifier: %s", event.button, event.key)
+        else:
+            logger.warning("No group of points for ring %s", ring)
 
     def finish(self, filename=None, callback=None):
         """
         Ask the ring number for the given points
 
         :param filename: file with the point coordinates saved
+        :param callback:
+        :return: list of control points
         """
         logging.info(os.linesep.join(self.help))
-        if not callback:
+        if callback:
+            self.point_filename = filename
+            # self.cb_refine = callback
+            gui_utils.main_loop = True
+            # MAIN LOOP
+            pylab.show()
+            cpt = self.points.getWeightedList(self.data)
+            if callable(callback):
+                callback(cpt)
+        else:
             if not self.points.calibrant.dSpacing:
                 logger.error("Calibrant has no line ! check input parameters please, especially the '-c' option")
                 print(CALIBRANT_FACTORY)
                 raise RuntimeError("Invalid calibrant")
             input("Please press enter when you are happy with your selection" + os.linesep)
+
             # need to disconnect 'button_press_event':
             if self.widget:
-                self.widget.on_refine_clicked()
+                self.widget.onclick_refine()
+
             print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
             self.points.readRingNrFromKeyboard()
             if filename is not None:
                 self.points.save(filename)
-            return self.points.getWeightedList(self.data)
-        else:
-            self.point_filename = filename
-            self.callback = callback
-            gui_utils.main_loop = True
-            # MAIN LOOP
-            pylab.show()
+            cpt = self.points.getWeightedList(self.data)
+            self.cb_refine(cpt)
+        return cpt
 
     def contour(self, data, cmap="autumn", linewidths=2, linestyles="dashed"):
         """
@@ -520,24 +509,18 @@ class PeakPicker(object):
         self.append_mode = False
         print(self.append_mode)
 
-    def on_option_clicked(self, *args):
+    def onclick_option(self, *args):
         """
         callback function
         """
         print("Option!")
 
-    def on_refine_clicked(self, *args):
+    def onclick_refine(self, *args):
         """
         callback function
         """
         print("refine, now!")
-        self.sb_action.setDisabled(True)
-        self.ref_action.setDisabled(True)
-        self.spinbox.setEnabled(False)
-        self.mpl_connectId = None
-        self.fig.canvas.mpl_disconnect(self.mpl_connectId)
-        pylab.ion()
         if self.point_filename:
             self.points.save(self.point_filename)
-        if self.callback:
-            self.callback(self.points.getWeightedList(self.data))
+        if self.cb_refine:
+            self.cb_refine(self.points.getWeightedList(self.data))

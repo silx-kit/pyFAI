@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/12/2021"
+__date__ = "17/12/2021"
 __status__ = "production"
 
 import os
@@ -70,7 +70,8 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..units import hc
 from .. import version as PyFAI_VERSION
 from .. import date as PyFAI_DATE
-from ..calibrant import Calibrant, CALIBRANT_FACTORY
+from ..calibrant import Calibrant, CALIBRANT_FACTORY, get_calibrant
+from .mpl_calib_qt import QtMplCalibWidget
 try:
     from ..ext._convolution import gaussian_filter
 except ImportError:
@@ -197,7 +198,7 @@ class AbstractCalibration(object):
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
             elif calibrant in CALIBRANT_FACTORY:
-                self.calibrant = CALIBRANT_FACTORY(calibrant)
+                self.calibrant = get_calibrant(calibrant)
             elif os.path.isfile(calibrant) and os.path.isfile(calibrant):
                 self.calibrant = Calibrant(calibrant)
             else:
@@ -417,7 +418,7 @@ class AbstractCalibration(object):
         self.pointfile = options.npt
         if options.spacing:
             if options.spacing in CALIBRANT_FACTORY:
-                self.calibrant = CALIBRANT_FACTORY(options.spacing)
+                self.calibrant = get_calibrant(options.spacing)
             elif os.path.isfile(options.spacing):
                 self.calibrant = Calibrant(options.spacing)
             else:
@@ -545,7 +546,7 @@ class AbstractCalibration(object):
                 ans = input("Please enter the calibrant name or the file"
                             " containing the d-spacing:\t").strip()
                 if ans in CALIBRANT_FACTORY:
-                    self.calibrant = CALIBRANT_FACTORY(ans)
+                    self.calibrant = get_calibrant(ans)
                     valid = True
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(ans)
@@ -1485,23 +1486,17 @@ decrease the value if arcs are mixed together.""", default=None)
         else:
             self.peakPicker.massif.init_valley_size()
         if self.gui:
-            self.peakPicker.gui(log=True, maximize=True, pick=True)
-            # self.peakPicker.widget.update()
+            self.peakPicker.gui(log=True, maximize=True, pick=True,
+                                widget_klass=QtMplCalibWidget)
 
     def gui_peakPicker(self):
         if self.peakPicker is None:
             self.preprocess()
-#        self.peakPicker.gui(True)
         if os.path.isfile(self.pointfile):
             self.peakPicker.load(self.pointfile)
         if self.gui:
             self.peakPicker.widget.update()
-#        self.peakPicker.finish(self.pointfile, callback=self.set_data)
         self.set_data(self.peakPicker.finish(self.pointfile))
-#        input("Please press enter when you are happy with your selection" + os.linesep)
-#        while self.data is None:
-#            self.peakPicker.widget.update()
-#            time.sleep(0.1)
 
     def initgeoRef(self):
         """
@@ -1691,8 +1686,8 @@ and a new option which lets you choose between the original `massif` algorithm a
         AbstractCalibration.preprocess(self)
 
         if self.gui:
-            self.peakPicker.gui(log=True, maximize=True, pick=False)
-            # self.peakPicker.widget.update()
+            self.peakPicker.gui(log=True, maximize=True, pick=False,
+                                widget_klass=QtMplCalibWidget)
 
     def refine(self):
         """
@@ -2025,7 +2020,7 @@ class MultiCalib(object):
     def read_dSpacingFile(self):
         """Read the name of the calibrant or the file with d-spacing"""
         if self.calibrant in CALIBRANT_FACTORY:
-            self.calibrant = CALIBRANT_FACTORY(self.calibrant)
+            self.calibrant = get_calibrant(self.calibrant)
         elif os.path.isfile(self.calibrant):
             self.calibrant = Calibrant(filename=self.calibrant)
         else:
@@ -2043,7 +2038,7 @@ class MultiCalib(object):
                 ans = input("Please enter the name of the calibrant"
                             " or the file containing the d-spacing:\t").strip()
                 if ans in CALIBRANT_FACTORY:
-                    self.calibrant = CALIBRANT_FACTORY(ans)
+                    self.calibrant = get_calibrant(ans)
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(filename=ans)
 
@@ -2384,7 +2379,8 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
         c.peakPicker.massif.initValleySize()
 
     if interactive:
-        c.peakPicker.gui(log=True, maximize=True, pick=True)
+        c.peakPicker.gui(log=True, maximize=True, pick=True,
+                         widget_klass=QtMplCalibWidget)
         update_fig(c.peakPicker.fig)
     c.gui_peakPicker()
     c.ai.setPyFAI(**c.geoRef.getPyFAI())
