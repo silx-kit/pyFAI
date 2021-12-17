@@ -423,28 +423,37 @@ class PeakPicker(object):
         Ask the ring number for the given points
 
         :param filename: file with the point coordinates saved
+        :param callback:
+        :return: list of control points
         """
         logging.info(os.linesep.join(self.help))
-        if not callback:
+        if callback:
+            self.point_filename = filename
+            # self.cb_refine = callback
+            gui_utils.main_loop = True
+            # MAIN LOOP
+            pylab.show()
+            cpt = self.points.getWeightedList(self.data)
+            if callable(callback):
+                callback(cpt)
+        else:
             if not self.points.calibrant.dSpacing:
                 logger.error("Calibrant has no line ! check input parameters please, especially the '-c' option")
                 print(CALIBRANT_FACTORY)
                 raise RuntimeError("Invalid calibrant")
             input("Please press enter when you are happy with your selection" + os.linesep)
+
             # need to disconnect 'button_press_event':
             if self.widget:
                 self.widget.onclick_refine()
+
             print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
             self.points.readRingNrFromKeyboard()
             if filename is not None:
                 self.points.save(filename)
-            return self.points.getWeightedList(self.data)
-        else:
-            self.point_filename = filename
-            self.callback = callback
-            gui_utils.main_loop = True
-            # MAIN LOOP
-            pylab.show()
+            cpt = self.points.getWeightedList(self.data)
+            self.cb_refine(cpt)
+        return cpt
 
     def contour(self, data, cmap="autumn", linewidths=2, linestyles="dashed"):
         """
