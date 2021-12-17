@@ -31,7 +31,7 @@ __authors__ = ["Philipp Hans", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/12/2021"
+__date__ = "17/12/2021"
 __status__ = "production"
 
 import logging
@@ -39,15 +39,17 @@ logger = logging.getLogger(__name__)
 import numpy
 from matplotlib.pyplot import subplots
 from ..peak_picker import PeakPicker as _PeakPicker, preprocess_image
+from .calib import JupyCalibWidget
 try:
     import ipywidgets as widgets
     from IPython.display import display
 except ModuleNotFoundError:
     logger.error("`ipywidgets` and `IPython` are needed to perform the calibration in Jupyter")
-    
+
 
 # TODO....
 class JupyPeakPicker(_PeakPicker):
+
     def gui(self, log=False, maximize=False, pick=True):
         """
         :param log: show z in log scale
@@ -65,39 +67,41 @@ class JupyPeakPicker(_PeakPicker):
         if maximize:
             self.widget.maximize()
         else:
-            display(self.widget)#.update()
+            display(self.widget)  # .update()
+
     def onclick(self, *args):
-        _PeakPicker.onclick(self,  *args)
+        _PeakPicker.onclick(self, *args)
+
 
 class PeakPicker(_PeakPicker):
     """Peak picker optimized for the Jupyter environment with
     * Matplotlib
     * Ipywidgets
     """
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.image = self.data
         self.figsize = (10, 8)
         self.ringintwidget = None
-        
+
     @property
     def ring_value(self):
         if self.ringintwidget:
             return self.ringintwidget.value
 
-    
     def gui(self, log=False, maximize=False, pick=True):
         """
         :param log: show z in log scale
         """
-        ### Several nested functions:
+
+        # ## Several nested functions:
         def undo_on_click(*kargs, **kwargs):
             with self._sem:
                 lbls = self.points.get_labels()
                 if lbls:
                     self.remove_grp(lbls[-1])
-       
+
         def reset_picking_on_click(*kargs, **kwargs):
             with self._sem:
                 self.reset()
@@ -109,37 +113,37 @@ class PeakPicker(_PeakPicker):
                 for key in work.keys():
                     self.points.append(work[key][0], key)
                 self.points.save(filename)
-       
+
         self.fig, self.ax = subplots(figsize=self.figsize)
 
         self.ringintwidget = widgets.IntText(description="Ring #", continuous_update=True)
 
         button_undo = widgets.Button(description='undo')
         button_undo.on_click(undo_on_click)
-                
+
         button_reset = widgets.Button(description='reset')
         button_reset.on_click(reset_picking_on_click)
-        
+
         text_field_output_name = widgets.Text(
             value='./controlpoint_file.npt',
-            #placeholder='Type something',
+            # placeholder='Type something',
             description='filename:',
             disabled=False
-        )        
+        )
         button_save_ctrl_pts = widgets.Button(description='Save control-points')
         button_save_ctrl_pts.on_click(save_ctrl_pts_on_click)
-        
+
         layout = widgets.VBox([
-                                widgets.HBox([self.ringintwidget, button_undo, button_reset]), 
+                                widgets.HBox([self.ringintwidget, button_undo, button_reset]),
                                 widgets.HBox([text_field_output_name, button_save_ctrl_pts])])
         _ = display(layout)
-                
+
         disp_image, bounds = preprocess_image(self.data, log)
-        show_min, show_max = bounds 
-        self.im = self.ax.imshow(disp_image, 
-                                  cmap='magma', 
+        show_min, show_max = bounds
+        self.im = self.ax.imshow(disp_image,
+                                  cmap='magma',
                                   origin="lower",
-                                  vmin=show_min, 
+                                  vmin=show_min,
                                   vmax=show_max,
                                   )
         self.ax.set_ylabel('y in pixels')
@@ -149,7 +153,7 @@ class PeakPicker(_PeakPicker):
         self.cid = self.fig.canvas.mpl_connect("pick_event", self.onclick)
 
     def onclick(self, event):
-        
+
         def annontate(x, x0=None, idx=None, gpt=None):
             """
             Call back method to annotate the figure while calculation are going on ...
@@ -172,7 +176,7 @@ class PeakPicker(_PeakPicker):
                                              arrowprops=dict(facecolor='white', edgecolor='white'),)
 #                 self.draw()
             return annot
-        
+
         def create_gpt(points, gpt=None):
             """
             plot new set of points
@@ -203,7 +207,6 @@ class PeakPicker(_PeakPicker):
 #                 self.draw()
             return gpt
 
-
         def new_grp(event):
             " * new_grp Right-click (click+n):         try an auto find for a ring"
             # ydata is a float, and matplotlib display pixels centered.
@@ -221,7 +224,7 @@ class PeakPicker(_PeakPicker):
             else:
                 print("No peak found !!!")
 
-        ## Core part of the function
+        # # Core part of the function
         with self._sem:
             event = event.mouseevent
             logger.debug("Button: %i, Key modifier: %s", event.button, event.key)
@@ -243,7 +246,6 @@ class PeakPicker(_PeakPicker):
                         self.ax.lines.remove(plot)
             self.draw()
 
-
     def reset(self):
         """
         Reset control point and graph (if needed)
@@ -257,7 +259,7 @@ class PeakPicker(_PeakPicker):
                 self.ax.lines = []
             # Redraw the image
             self.draw()
-            
+
     def draw(self):
         """Update plot"""
         if self.fig is not None:
