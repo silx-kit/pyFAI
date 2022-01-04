@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/12/2021"
+__date__ = "04/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -116,7 +116,7 @@ def calc_boundaries(position_t[:, :, ::1] cpos,
         pos1_min = min(pos1_range)
         pos1_max = max(pos1_range)
 
-    return (pos0_min, pos0_max, pos1_min, pos1_max)
+    return Boundaries(pos0_min, pos0_max, pos1_min, pos1_max)
 
 
 class FullSplitIntegrator:
