@@ -67,11 +67,11 @@ def calc_boundaries(position_t[::1] pos0,
     :return: (pos0_min, pos0_max, pos1_min, pos1_max)
     """
     cdef:
-        Py_ssize_t idx, size = pos.shape[0]
+        Py_ssize_t idx, size = pos0.shape[0]
         bint check_mask = False, check_pos1 = True, do_split=True
         position_t pos0_min, pos1_min, pos0_max, pos1_max
         position_t c0, c1=0.0, d0, d1=0.0
-        position_t min0, min1=None, max0, max1=None
+        position_t min0, min1, max0, max1
           
     if cmask is not None:
         check_mask = True
@@ -218,6 +218,7 @@ class SplitBBoxIntegrator:
             position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0, pos1_maxin=0.0
             position_t delta, inv_area=0.0
             position_t c0, d0=0.0, c1, d1=0.0, min0, max0
+            position_t fbin0_min, fbin0_max, delta_left, delta_right
             Py_ssize_t bins, idx=0, bin=0, bin0=0, bin0_max=0, bin0_min=0, size
             bint check_pos1=self.pos1_range, check_mask=False, chiDiscAtPi, do_split=True
             SparseBuilder builder 
@@ -256,7 +257,7 @@ class SplitBBoxIntegrator:
                     c1 = cpos1[idx]
                     if do_split:
                         d1 = dpos1[idx]
-                    if (c1+d1 < pos1_min) or (c1 - d1 > pos1_max)):
+                    if (c1+d1 < pos1_min) or (c1 - d1 > pos1_max):
                         continue
 
                 fbin0_min = get_bin_number(min0, pos0_min, delta)
@@ -284,7 +285,7 @@ class SplitBBoxIntegrator:
                     if bin0_min + 1 < bin0_max:
                         for bin in range(bin0_min + 1, bin0_max):
                             builder.cinsert(bin, idx, inv_area)
-            return builder
+        return builder
 
     def calc_lut_2d(self):
         """Calculate the LUT and return the LUT-builder object
@@ -297,9 +298,10 @@ class SplitBBoxIntegrator:
             position_t c0, c1, d0, d1, min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
             position_t pos0_min = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
             position_t delta0, delta1, delta_down, delta_up, delta_left, delta_right
+            position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max
             position_t foffset0, foffset1
             Py_ssize_t i = 0, j = 0, idx = 0
-            Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15
+            Py_ssize_t bin0_min, bin0_max, bin1_min, bin1_max
             SparseBuilder builder
         
         bins0=self.bins[0]
