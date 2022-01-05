@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3, binding=True
-# cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2021-2021 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2021-2022 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/01/2022"
+__date__ = "05/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -211,209 +211,202 @@ class SplitBBoxIntegrator:
 
     def calc_lut_1d(self):
         """Calculate the LUT and return the LUT-builder object
-        #TODO
         """
         cdef:
-            position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
-            position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
-            buffer_t[::1] buffer = numpy.zeros(self.bins, dtype=buffer_d)
-            mask_t[::1] cmask = None
+            position_t[::1] cpos0, cpos1, dpos0, dpos1  
+            mask_t[::1] cmask
             position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0, pos1_maxin=0.0
-            position_t areaPixel = 0, delta = 0, areaPixel2 = 0
-            position_t a0, b0, c0, d0, a1, b1, c1, d1
-            position_t inv_area, area_pixel, sub_area, sum_area
-            position_t min0, max0, min1, max1
-            Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, size = 0
-            bint check_pos1=self.pos1_range is not None, check_mask = False, chiDiscAtPi=self.chiDiscAtPi
-            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
-
+            position_t delta, inv_area=0.0
+            position_t c0, d0=0.0, c1, d1=0.0, min0, max0
+            Py_ssize_t bins, idx=0, bin=0, bin0=0, bin0_max=0, bin0_min=0, size
+            bint check_pos1=self.pos1_range, check_mask=False, chiDiscAtPi, do_split=True
+            SparseBuilder builder 
+        
+        check_pos1=self.pos1_range is not None
+        chiDiscAtPi=self.chiDiscAtPi #Unused ?        
+        cpos0 = self.cpos0
+        cpos1 = self.cpos1
+        dpos0 = self.dpos0
+        dpos1 = self.dpos1 
+        if self.dpos0 is None:
+            do_split = False
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
         pos1_max = self.pos1_max
         pos1_maxin = self.pos1_maxin
-        
         delta = self.delta
-
+        bins=self.bins
         size = self.size
         check_mask = self.check_mask
-        if check_mask:
-            cmask = self.cmask
-
+        cmask = self.cmask
+        #heap size is larger than the size of the image and a multiple of 1024 which can be divided by 32
+        builder = SparseBuilder(bins, block_size=32, heap_size=(size+1023)&~(1023)) 
+            
         with nogil:
             for idx in range(size):
-
                 if (check_mask) and (cmask[idx]):
                     continue
-                # Play with coordinates ...
-                v8[:, :] = cpos[idx, :, :]
-                area_pixel = - _recenter(v8, chiDiscAtPi) / delta
-                a0 = get_bin_number(v8[0, 0], pos0_min, delta)
-                a1 = v8[0, 1]
-                b0 = get_bin_number(v8[1, 0], pos0_min, delta)
-                b1 = v8[1, 1]
-                c0 = get_bin_number(v8[2, 0], pos0_min, delta)
-                c1 = v8[2, 1]
-                d0 = get_bin_number(v8[3, 0], pos0_min, delta)
-                d1 = v8[3, 1]
+                c0 = cpos0[idx]
+                if do_split:
+                    d0 = dpos0[idx]
+                min0 = c0 - d0
+                max0 = c0 + d0
 
-                min0 = min(a0, b0, c0, d0)
-                max0 = max(a0, b0, c0, d0)
-
-                if (max0 < 0) or (min0 >= bins):
-                    continue
                 if check_pos1:
-                    min1 = min(a1, b1, c1, d1)
-                    max1 = max(a1, b1, c1, d1)
-                    if (max1 < pos1_min) or (min1 > pos1_maxin):
+                    c1 = cpos1[idx]
+                    if do_split:
+                        d1 = dpos1[idx]
+                    if (c1+d1 < pos1_min) or (c1 - d1 > pos1_max)):
                         continue
 
-                bin0_min = < Py_ssize_t > floor(min0)
-                bin0_max = < Py_ssize_t > floor(max0)
+                fbin0_min = get_bin_number(min0, pos0_min, delta)
+                fbin0_max = get_bin_number(max0, pos0_min, delta)
+                bin0_min = <Py_ssize_t> fbin0_min
+                bin0_max = <Py_ssize_t> fbin0_max
+
+                if (bin0_max < 0) or (bin0_min >= bins):
+                    continue
+                bin0_max = min(bin0_max, bins - 1)
+                bin0_min = max(bin0_min, 0)
 
                 if bin0_min == bin0_max:
                     # All pixel is within a single bin
                     builder.cinsert(bin0_min, idx, 1.0)
-                else:
-                    # else we have pixel spliting.
-                    # offseting the min bin of the pixel to be zero to avoid percision problems
-                    bin0_min = max(0, bin0_min)
-                    bin0_max = min(bins, bin0_max + 1)
+                else:  # we have pixel splitting.
+                    inv_area = 1.0 / (fbin0_max - fbin0_min)
 
-                    _integrate1d(buffer, a0, a1, b0, b1)  # A-B
-                    _integrate1d(buffer, b0, b1, c0, c1)  # B-C
-                    _integrate1d(buffer, c0, c1, d0, d1)  # C-D
-                    _integrate1d(buffer, d0, d1, a0, a1)  # D-A
+                    delta_left = <position_t> (bin0_min + 1) - fbin0_min
+                    builder.cinsert(bin0_min, idx, inv_area * delta_left)
 
-                    sum_area = 0.0
-                    for bin in range(bin0_min, bin0_max):
-                        sum_area += buffer[bin]
-                    inv_area = 1.0 / sum_area
-                    for bin in range(bin0_min, bin0_max):
-                        builder.cinsert(bin, idx, buffer[bin]*inv_area)
-                    # Check the total area:
-                    buffer[bin0_min:bin0_max] = 0.0
+                    delta_right = fbin0_max - <position_t> (bin0_max)
+                    builder.cinsert(bin0_max, idx, inv_area * delta_right)
 
-        return builder
+                    if bin0_min + 1 < bin0_max:
+                        for bin in range(bin0_min + 1, bin0_max):
+                            builder.cinsert(bin, idx, inv_area)
+            return builder
 
     def calc_lut_2d(self):
         """Calculate the LUT and return the LUT-builder object
-        #TODO
         """
         cdef:
-            Py_ssize_t bins0=self.bins[0], bins1=self.bins[1], size = self.size
-            position_t[:, :, ::1] cpos = numpy.ascontiguousarray(self.pos, dtype=position_d)
-            position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
-            mask_t[:] cmask = self.cmask
-            bint check_mask = False, chiDiscAtPi = self.chiDiscAtPi
-            position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
+            Py_ssize_t bins0, bins1, size
+            position_t[::1] cpos0, cpos1, dpos0, dpos1  
+            mask_t[::1] cmask
+            bint check_mask=False, chiDiscAtPi, do_plit=True
+            position_t c0, c1, d0, d1, min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
             position_t pos0_min = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
-            position_t a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
-            position_t delta0, delta1
-            position_t foffset0, foffset1, sum_area, area
+            position_t delta0, delta1, delta_down, delta_up, delta_left, delta_right
+            position_t foffset0, foffset1
             Py_ssize_t i = 0, j = 0, idx = 0
             Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15
-            buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
-            buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
-            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=size)
-            
-        if self.cmask is not None:
-            check_mask = True
-            cmask = self.cmask
-
+            SparseBuilder builder
+        
+        bins0=self.bins[0]
+        bins1=self.bins[1]
+        size = self.size
+        check_pos1=self.pos1_range is not None
+        chiDiscAtPi=self.chiDiscAtPi #Unused ?        
+        cpos0 = self.cpos0
+        cpos1 = self.cpos1
+        dpos0 = self.dpos0
+        dpos1 = self.dpos1 
+        if self.dpos0 is None:
+            do_split = False
         pos0_min = self.pos0_min
-        pos0_maxin = self.pos0_maxin
-        pos1_maxin = self.pos1_maxin
-        pos1_max = self.pos1_max
         pos1_min = self.pos1_min
+        pos1_max = self.pos1_max
+        pos1_maxin = self.pos1_maxin
+        size = self.size
+        check_mask = self.check_mask
+        cmask = self.cmask
         delta0 = self.delta0  
         delta1 = self.delta1  
-    
+
+        #heap size is larger than the size of the image and a multiple of 1024 which can be divided by 8
+        builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=(size+1023)&~(1023)) 
+        
         with nogil:
             for idx in range(size):
-    
-                if (check_mask) and (cmask[idx]):
+                if (check_mask) and cmask[idx]:
                     continue
-                    
-                # Play with coordinates ...
-                v8[:, :] = cpos[idx, :, :]
-                area = _recenter(v8, chiDiscAtPi) # this is an unprecise measurement of the surface of the pixels
-                a0 = v8[0, 0]
-                a1 = v8[0, 1]
-                b0 = v8[1, 0]
-                b1 = v8[1, 1]
-                c0 = v8[2, 0]
-                c1 = v8[2, 1]
-                d0 = v8[3, 0]
-                d1 = v8[3, 1]
-    
-                min0 = min(a0, b0, c0, d0)
-                max0 = max(a0, b0, c0, d0)
-                min1 = min(a1, b1, c1, d1)
-                max1 = max(a1, b1, c1, d1)
-                
-                if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 >= pos1_max):
-                        continue
-    
-                # Swith to bin space.
-                a0 = get_bin_number(_clip(a0, pos0_min, pos0_maxin), pos0_min, delta0)
-                a1 = get_bin_number(_clip(a1, pos1_min, pos1_maxin), pos1_min, delta1)
-                b0 = get_bin_number(_clip(b0, pos0_min, pos0_maxin), pos0_min, delta0)
-                b1 = get_bin_number(_clip(b1, pos1_min, pos1_maxin), pos1_min, delta1)
-                c0 = get_bin_number(_clip(c0, pos0_min, pos0_maxin), pos0_min, delta0)
-                c1 = get_bin_number(_clip(c1, pos1_min, pos1_maxin), pos1_min, delta1)
-                d0 = get_bin_number(_clip(d0, pos0_min, pos0_maxin), pos0_min, delta0)
-                d1 = get_bin_number(_clip(d1, pos1_min, pos1_maxin), pos1_min, delta1)
-                
-                # Recalculate here min0, max0, min1, max1 based on the actual area of ABCD and the width/height ratio
-                min0 = min(a0, b0, c0, d0)
-                max0 = max(a0, b0, c0, d0)
-                min1 = min(a1, b1, c1, d1)
-                max1 = max(a1, b1, c1, d1)
-                foffset0 = floor(min0)
-                foffset1 = floor(min1)
-                ioffset0 = <Py_ssize_t> foffset0
-                ioffset1 = <Py_ssize_t> foffset1
-                w0 = <Py_ssize_t>(ceil(max0) - foffset0)
-                w1 = <Py_ssize_t>(ceil(max1) - foffset1)
-                if (w0>bw0) or (w1>bw1):
-                    if (w0+1)*(w1+1)>linbuffer.shape[0]:
-                        with gil:
-                            linbuffer = numpy.zeros((w0+1)*(w1+1), dtype=buffer_d)
-                            buffer = numpy.asarray(linbuffer).reshape((w0+1,w1+1))
-                            logger.debug("malloc  %s->%s and %s->%s", w0, bw0, w1, bw1) 
-                    else:
-                        with gil:
-                            buffer = numpy.asarray(linbuffer[:(w0+1)*(w1+1)]).reshape((w0+1,w1+1))
-                            logger.debug("reshape %s->%s and %s->%s", w0, bw0, w1, bw1)
-                    bw0 = w0
-                    bw1 = w1
-                
-                a0 -= foffset0
-                a1 -= foffset1
-                b0 -= foffset0
-                b1 -= foffset1
-                c0 -= foffset0
-                c1 -= foffset1            
-                d0 -= foffset0
-                d1 -= foffset1
-                
-                # ABCD is anti-trigonometric order: order input position accordingly
-                _integrate2d(buffer, a0, a1, b0, b1)
-                _integrate2d(buffer, b0, b1, c0, c1)
-                _integrate2d(buffer, c0, c1, d0, d1)
-                _integrate2d(buffer, d0, d1, a0, a1)
-                
-                sum_area = 0.0
-                for i in range(w0):
-                    for j in range(w1):
-                        sum_area += buffer[i, j]
-                inv_area = 1.0 / sum_area
-                
-                for i in range(w0):
-                    for j in range(w1):
-                        builder.cinsert((ioffset0 + i)*bins1 + ioffset1 + j, idx, buffer[i, j] * inv_area)
-                linbuffer[:] = 0.0 # reset full buffer since it is likely faster than memsetting 2d view
-        return builder
+                c0 = cpos0[idx]
+                c1 = cpos1[idx]
+                if do_split:
+                    d0 = dpos0[idx]
+                    d1 = dpos1[idx]
+                min0 = c0 - d0
+                max0 = c0 + d0
+                min1 = c1 - d1
+                max1 = c1 + d1
 
-    
-    
+                fbin0_min = get_bin_number(min0, pos0_min, delta0)
+                fbin0_max = get_bin_number(max0, pos0_min, delta0)
+                fbin1_min = get_bin_number(min1, pos1_min, delta1)
+                fbin1_max = get_bin_number(max1, pos1_min, delta1)
+
+                bin0_min = < Py_ssize_t > fbin0_min
+                bin0_max = < Py_ssize_t > fbin0_max
+                bin1_min = < Py_ssize_t > fbin1_min
+                bin1_max = < Py_ssize_t > fbin1_max
+
+                if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
+                    continue
+                
+                #clip values
+                bin0_max = min(bin0_max, bins0 - 1)
+                bin0_min = max(bin0_min, 0)
+                bin1_max = min(bin1_max, bins1 - 1)
+                bin1_min = max(bin1_min, 0)
+
+                if bin0_min == bin0_max:
+                    if bin1_min == bin1_max:
+                        # All pixel is within a single bin
+                        builder.cinsert(bin0_min * bins1 + bin1_min, idx, 1.0)
+                    else:
+                        # spread on more than 2 bins in dim1
+                        delta_down = (<position_t> (bin1_min + 1)) - fbin1_min
+                        delta_up = fbin1_max - bin1_max
+                        inv_area = 1.0 / (fbin1_max - fbin1_min)
+
+                        builder.cinsert(bin0_min * bins1 + bin1_min, idx, inv_area * delta_down)
+                        builder.cinsert(bin0_min * bins1 + bin1_max, idx, inv_area * delta_up)
+
+                        for j in range(bin1_min + 1, bin1_max):
+                            builder.cinsert(bin0_min * bins1 + j, idx, inv_area)
+
+                else:  # spread on more than 2 bins in dim 0
+                    if bin1_min == bin1_max:
+                        # All pixel fall on 1 bins in dim 1
+                        inv_area = 1.0 / (fbin0_max - fbin0_min)
+                        delta_left = (<position_t> (bin0_min + 1)) - fbin0_min
+                        builder.cinsert(bin0_min * bins1 + bin1_min, idx, inv_area * delta_left)
+                        
+                        delta_right = fbin0_max - (<position_t> bin0_max)
+                        builder.cinsert(bin0_max * bins1 + bin1_min, idx, inv_area * delta_right)
+
+                        for i in range(bin0_min + 1, bin0_max):
+                            builder.cinsert(i * bins1 + bin1_min, idx, inv_area)
+
+                    else:
+                        # spread on n pix in dim0 and m pixel in dim1:
+                        delta_left = (<position_t> (bin0_min + 1)) - fbin0_min
+                        delta_right = fbin0_max - (<position_t> bin0_max)
+                        delta_down = (<position_t> (bin1_min + 1)) - fbin1_min
+                        delta_up = fbin1_max - (<position_t> bin1_max)
+                        inv_area = 1.0 / ((fbin0_max - fbin0_min) * (fbin1_max - fbin1_min))
+
+                        builder.cinsert(bin0_min * bins1 + bin1_min, idx, inv_area * delta_left * delta_down)
+                        builder.cinsert(bin0_min * bins1 + bin1_max, idx, inv_area * delta_left * delta_up)
+                        builder.cinsert(bin0_max * bins1 + bin1_min, idx, inv_area * delta_right * delta_down)
+                        builder.cinsert(bin0_max * bins1 + bin1_max, idx, inv_area * delta_right * delta_up)
+                        
+                        for i in range(bin0_min + 1, bin0_max):
+                            builder.cinsert(i * bins1 + bin1_min, idx, inv_area * delta_down)
+                            for j in range(bin1_min + 1, bin1_max):
+                                builder.cinsert(i * bins1 + j, idx, inv_area)
+                            builder.cinsert(i * bins1 + bin1_max, idx, inv_area * delta_up)
+                        for j in range(bin1_min + 1, bin1_max):
+                            builder.cinsert(bin0_min * bins1 + j, idx, inv_area * delta_left)
+                            builder.cinsert(bin0_max * bins1 + j, idx, inv_area * delta_right)
+        return builder
