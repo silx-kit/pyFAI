@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2021"
+__date__ = "05/01/2022"
 __status__ = "production"
 
 import os
@@ -1085,7 +1085,7 @@ class AbstractCalibration(object):
             self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
             self.ax_chiplot.set_xlim(-180, 180)
             self.ax_chiplot.set_xticks(numpy.linspace(-180, 180, 9))
-            self.ax_chiplot.set_xlabel("Azimuthal angle $\chi$ ($^o$)")
+            self.ax_chiplot.set_xlabel(r"Azimuthal angle $\chi$ ($^o$)")
             self.ax_chiplot.set_ylabel(r"Error in Radial angle $\Delta$ 2$\theta$/2$\theta$*10$^4$")
             self.ax_chiplot.set_title("Chi plot")
 
@@ -1115,10 +1115,10 @@ class AbstractCalibration(object):
             amp = err4.std() * sqrt2
             phase = 0.0
             param = numpy.array([mean, amp, phase])
-            print(" guessed err4 = %.3f + %.3f *sin($\chi$+ %.3f )" % (mean, amp, phase))
+            print(r" guessed err4 = %.3f + %.3f *sin($\chi$+ %.3f )" % (mean, amp, phase))
             res = leastsq(error, param, (chi, err4), jacob, col_deriv=True)
             popt = res[0]
-            str_res = "%.3f + %.3f *sin($\chi$+ %.3f )" % tuple(popt)
+            str_res = r"%.3f + %.3f *sin($\chi$+ %.3f )" % tuple(popt)
             print(" fitted err4 = " + str_res)
             chi = numpy.rad2deg(chi)
             if self.ax_chiplot:
@@ -1303,7 +1303,7 @@ class AbstractCalibration(object):
             self.ax_center = self.fig_center.add_subplot(1, 1, 1)
             self.ax_center.set_xlim(-180, 180)
             self.ax_center.set_xticks(numpy.linspace(-180, 180, 9))
-            self.ax_center.set_xlabel("Azimuthal angle $\chi$ ($^o$)")
+            self.ax_center.set_xlabel(r"Azimuthal angle $\chi$ ($^o$)")
             self.ax_center.set_ylabel(r"Error of the center position along radius ($\mu$m)")
             self.ax_center.set_title("Center plot")
             self.ax_center.plot(chi, center, label="From pattern cross-correlation")
