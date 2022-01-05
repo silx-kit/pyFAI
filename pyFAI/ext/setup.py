@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/11/2021"
+__date__ = "05/01/2022"
 
 from numpy.distutils.misc_util import Configuration
 import platform
@@ -74,6 +74,7 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('histogram', can_use_openmp=True),
         create_extension_config("_geometry", can_use_openmp=True),
         create_extension_config("reconstruct", can_use_openmp=True),
+        create_extension_config("splitBBox_common", language='c++'),
         create_extension_config("splitpixel_common", language='c++'),
         create_extension_config('splitBBox'),
         create_extension_config('splitPixel'),
