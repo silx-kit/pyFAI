@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/12/2021"
+__date__ = "06/01/2022"
 __status__ = "stable"
 
 import io
@@ -998,11 +998,11 @@ def get_project_configuration(dry_run):
         "scipy",
         "numexpr",
         # for the use of pkg_resources on script launcher
-        "setuptools",
+        "setuptools< 60.0.0",
         "silx>=0.15.2"]
 
     setup_requires = [
-        "setuptools",
+        "setuptools< 60.0.0",
         "numpy"]
 
     package_data = {
@@ -1046,7 +1046,7 @@ def get_project_configuration(dry_run):
         'pyFAI-saxs = pyFAI.app.saxs:main',
         'pyFAI-waxs = pyFAI.app.waxs:main',
         'sparsify-Bragg = pyFAI.app.sparsify:main',
-        'peakfinder = pyFAI.app.peakfinder:main',   
+        'peakfinder = pyFAI.app.peakfinder:main',
     ]
 
     entry_points = {

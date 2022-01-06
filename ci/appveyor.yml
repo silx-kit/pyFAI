@@ -55,7 +55,7 @@ install:
     - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
 
     # Upgrade/install distribution modules
-    - "pip install --upgrade setuptools"
+    - "pip install --upgrade setuptools < 60.0.0"
     - "python -m pip install --upgrade pip"
 
     # Install virtualenv
@@ -107,9 +107,8 @@ test_script:
 
     # Upgrade distribution modules
     - "python -m pip install --upgrade pip"
-    - "pip install --upgrade setuptools wheel"
-    # Fix issue on setuptools ("python setup.py --name" used py run_tests.py)
-    #- "pip install cython numpy scipy --upgrade --pre" 
+    - "pip install --upgrade setuptools<60.0.0"
+    - "pip install --upgrade wheel"
     # Install other build dependencies
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
     # Install the generated wheel package to test it
