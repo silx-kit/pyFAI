@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2021"
+__date__ = "06/01/2022"
 
 import unittest
 import numpy
@@ -85,11 +85,11 @@ class TestSparseIntegrate1d(unittest.TestCase):
         ref = self.integrate(method=("no", "histogram", "cython"))
 
         obt = self.integrate(method=("no", "lut", "cython"))
-        logger.debug("delta on global result: %s", (abs(obt[1] - ref[1]) / ref[1]).max())
+        logger.debug("LUT delta on global result: %s", numpy.nanmax(abs(obt[1] - ref[1]) / ref[1]))
         self.assertTrue(numpy.allclose(obt[1], ref[1]))
 
         obt = self.integrate(method=("no", "csr", "cython"))
-        logger.debug("delta on global result: %s", (abs(obt[1] - ref[1]) / ref[1]).max())
+        logger.debug("CSR delta on global result: %s", numpy.nanmax(abs(obt[1] - ref[1]) / ref[1]))
         self.assertTrue(numpy.allclose(obt[1], ref[1]))
 
     def test_sparse_bbox(self):

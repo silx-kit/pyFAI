@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3, binding=True
-## cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+# cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -69,23 +69,21 @@ def calc_boundaries(position_t[::1] pos0,
     cdef:
         Py_ssize_t idx, size = pos0.shape[0]
         bint check_mask = False, check_pos1 = True, do_split=True
-        position_t pos0_min, pos1_min, pos0_max, pos1_max
-        position_t c0, c1=0.0, d0, d1=0.0
-        position_t min0, min1, max0, max1
+        position_t pos0_min, pos0_max, pos1_min=-numpy.inf, pos1_max=numpy.inf
+        position_t c0, c1=0.0, d0=0.0, d1=0.0
           
     if cmask is not None:
         check_mask = True
         assert cmask.size == size, "mask size"
     if pos1 is None:
         check_pos1 = False
-         
     if delta_pos0 is None:
         do_split = False
 
     if (pos0_range is None or pos1_range is None):
         with nogil:
             for idx in range(size):
-                if (check_mask) and (cmask[idx]):
+                if not (check_mask and cmask[idx]):
                     pos0_max = pos0_min = pos0[idx]
                     if check_pos1:
                         pos1_max = pos1_min = pos1[idx]
@@ -97,22 +95,16 @@ def calc_boundaries(position_t[::1] pos0,
                 if do_split:
                     d0 = delta_pos0[idx]
                     
-                min0 = c0 - d0
-                max0 = c0 + d0
-                if max0 > pos0_max:
-                    pos0_max = max0
-                if min0 < pos0_min:
-                    pos0_min = min0
+                pos0_max = max(pos0_max, c0 + d0)
+                pos0_min = min(pos0_min, c0 - d0)
+
                 if check_pos1:
                     c1 = pos1[idx]
                     if do_split:    
                         d1 = delta_pos1[idx]
-                    min1 = c1 - d1
-                    max1 = c1 + d1                    
-                    if max1 > pos1_max:
-                        pos1_max = max1
-                    if min1 < pos1_min:
-                        pos1_min = min1
+
+                    pos1_max = max(pos1_max, c1 + d1)
+                    pos1_min = min(pos1_min, c1 - d1)
 
     if pos0_range is not None and len(pos0_range) > 1:
         pos0_min = min(pos0_range)
@@ -121,7 +113,7 @@ def calc_boundaries(position_t[::1] pos0,
     if pos1_range is not None and len(pos1_range) > 1:
         pos1_min = min(pos1_range)
         pos1_max = max(pos1_range)
-
+        
     return Boundaries(pos0_min, pos0_max, pos1_min, pos1_max)
 
 

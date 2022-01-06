@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/11/2021"
+__date__ = "06/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -149,7 +149,6 @@ class HistoBBox1d(LutIntegrator):
             self.pos1_max = None
 
         self.delta = (self.pos0_max - self.pos0_min) / (<position_t> bins)
-
         self.lut_max_idx = None
         self._lut_checksum = None
         if delta_pos0 is not None:
@@ -247,10 +246,8 @@ class HistoBBox1d(LutIntegrator):
                     if not allow_pos0_neg and c < 0:
                         c = 0
                     if not (check_mask and cmask[idx]):
-                        if c > pos0_max:
-                            pos0_max = c
-                        if c < pos0_min:
-                            pos0_min = c
+                        pos0_max = max(pos0_max, c)
+                        pos0_min = min(pos0_min, c)
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
 
