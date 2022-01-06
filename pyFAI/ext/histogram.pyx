@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
@@ -8,7 +8,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -38,9 +38,9 @@ Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jerome Kieffer"
-__date__ = "14/12/2021"
+__date__ = "06/01/2022"
 __license__ = "MIT"
-__copyright__ = "2011-2020, ESRF"
+__copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 
@@ -346,7 +346,7 @@ def histogram_preproc(pos,
     nchan = weights.shape[ndim - 1]
     assert pos.size == weights.size // nchan
     cdef:
-        int  size = pos.size
+        Py_ssize_t  size = pos.size, bin = 0, i, j
         position_t[::1] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=position_d)
         data_t[:, ::1] cdata = numpy.ascontiguousarray(weights, dtype=data_d).reshape(-1, nchan)
         acc_t[:, ::1] out_prop = numpy.zeros((bins, 4), dtype=acc_d)
@@ -354,7 +354,6 @@ def histogram_preproc(pos,
         position_t a = 0.0
         position_t fbin = 0.0
         position_t epsilon = 1e-10
-        int bin = 0, i, j
 
     if bin_range is not None:
         min0 = min(bin_range)
@@ -373,13 +372,13 @@ def histogram_preproc(pos,
         for i in range(size):
             a = cpos[i]
             fbin = get_bin_number(a, min0, delta)
-            bin = < int > fbin
+            bin = < Py_ssize_t > fbin
             if bin < 0 or bin >= bins:
                 continue
             for j in range(nchan):
                 out_prop[bin, j] += cdata[i, j]
-            if nchan < 4:
-                out_prop[bin, 4] += 1.0
+            for j in range(nchan, 4):
+                out_prop[bin, j] += 1.0
     return (numpy.asarray(out_prop),
             numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins))
 

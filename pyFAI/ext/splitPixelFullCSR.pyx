@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/12/2021"
+__date__ = "06/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -49,15 +49,11 @@ import logging
 logger = logging.getLogger(__name__)
 from cython.parallel import prange
 import numpy
-cimport numpy
-from libc.math cimport fabs, floor, sqrt
-from libc.stdlib cimport abs
-from libc.stdio cimport printf, fflush, stdout
 
 from ..utils import crc32
 from ..utils.decorators import deprecated
 from .splitpixel_common cimport NUM_WARNING
-from .splitpixel_common import calc_boundaries, FullSplitIntegrator
+from .splitpixel_common import FullSplitIntegrator
 from .sparse_builder cimport SparseBuilder
 
 
@@ -71,9 +67,8 @@ class FullSplitCSR_1d(CsrIntegrator, FullSplitIntegrator):
 
     Nota: nnz = indptr[-1]
     """
-    @cython.boundscheck(False)
     def __init__(self,
-                 numpy.ndarray pos not None,
+                 pos,
                  int bins=100,
                  pos0_range=None,
                  pos1_range=None,
@@ -136,7 +131,7 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
     Nota: nnz = indptr[-1]
     """
     def __init__(self,
-                 numpy.ndarray pos not None,
+                 pos,
                  bins=(100, 36),
                  pos0_range=None,
                  pos1_range=None,

@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/12/2021"
+__date__ = "05/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -116,7 +116,7 @@ def calc_boundaries(position_t[:, :, ::1] cpos,
         pos1_min = min(pos1_range)
         pos1_max = max(pos1_range)
 
-    return (pos0_min, pos0_max, pos1_min, pos1_max)
+    return Boundaries(pos0_min, pos0_max, pos1_min, pos1_max)
 
 
 class FullSplitIntegrator:
@@ -197,7 +197,7 @@ class FullSplitIntegrator:
             position_t min0, max0, min1, max1
             Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, size = 0
             bint check_pos1=self.pos1_range is not None, check_mask = False, chiDiscAtPi=self.chiDiscAtPi
-            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
+            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=(size+1023)&~(1023))
 
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
@@ -285,7 +285,7 @@ class FullSplitIntegrator:
             Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15
             buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
             buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
-            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=size)
+            SparseBuilder builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=(size+1023)&~(1023))
             
         if self.cmask is not None:
             check_mask = True

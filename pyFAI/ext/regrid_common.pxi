@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/12/2021"
+__date__ = "04/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -149,6 +149,7 @@ cdef:
 from collections import namedtuple
 from ..containers import Integrate1dtpl, Integrate2dtpl
 
+Boundaries = namedtuple("Boundaries", "min0 max0 min1 max1")
 
 @cython.cdivision(True)
 cdef floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil:
