@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -57,6 +57,7 @@ cimport numpy
 from ..utils import crc32
 from ..utils.decorators import deprecated
 from .sparse_builder cimport SparseBuilder
+from .splitBBox_common import SplitBBoxIntegrator
 
 if LUT_ITEMSIZE == lut_d.itemsize == 8:
     logger.debug("LUT sizes C:%s \t Numpy: %s", lut_d.itemsize, LUT_ITEMSIZE)
@@ -73,7 +74,7 @@ def int0(a):
     return res
 
 
-class HistoBBox1d(LutIntegrator):
+class HistoBBox1d(LutIntegrator, SplitBBoxIntegrator):
     """
     1D histogramming with pixel splitting based on a Look-up table
 
@@ -94,7 +95,8 @@ class HistoBBox1d(LutIntegrator):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 empty=0.0):
+                 empty=0.0,
+                 bint chiDiscAtPi=True):
         """
         :param pos0: 1D array with pos0: tth or q_vect or r ...
         :param delta_pos0: 1D array with delta pos0: max center-corner distance
@@ -107,269 +109,27 @@ class HistoBBox1d(LutIntegrator):
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param unit: can be 2th_deg or r_nm^-1 ...
         :param empty: value for bins without contributing pixels
+        :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
         """
-
-        self.size = pos0.size
-        if "size" not in dir(delta_pos0) or delta_pos0.size != self.size:
-            logger.warning("Pixel splitting desactivated !")
-            delta_pos0 = None
-        self.bins = bins
-        #self.lut_size = 0
-        self.allow_pos0_neg = allow_pos0_neg
-        #self.empty = empty
-        if mask is None:
-            self.cmask = None
-            self.mask_checksum = None
-        else:
-            assert mask.size == self.size, "mask size"
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
-            self.mask_checksum = mask_checksum if mask_checksum else crc32(mask)
-
-        self.pos0_range = pos0_range
-        self.pos1_range = pos1_range
-        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
-        if delta_pos0 is None:
-            self.calc_boundaries_nosplit(pos0_range)
-        else:
-            self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
-            self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
-            self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
-            self.calc_boundaries(pos0_range)
-        if pos1_range is not None:
-            assert pos1.size == self.size, "pos1 size"
-            assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
-            self.check_pos1 = True
-            self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=position_d)
-            self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=position_d)
-            self.pos1_min, pos1_maxin = pos1_range
-            self.pos1_max = calc_upper_bound(<position_t> pos1_maxin)
-        else:
-            self.check_pos1 = False
-            self.cpos1_min = None
-            self.pos1_max = None
-
-        self.delta = (self.pos0_max - self.pos0_min) / (<position_t> bins)
-        self.lut_max_idx = None
-        self._lut_checksum = None
-        if delta_pos0 is not None:
-            lut = self.calc_lut()
-        else:
-            lut = self.calc_lut_nosplit()
-
-        #Call the constructor of the parent class
-        super().__init__(lut, pos0.size, empty)
-
-        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
-                                          self.pos0_max - 0.5 * self.delta,
+        self.unit = unit
+        SplitBBoxIntegrator.__init__(self, pos0, delta_pos0, pos1, delta_pos1,
+                                     bins, pos0_range, pos1_range, 
+                                     mask, mask_checksum, 
+                                     allow_pos0_neg, chiDiscAtPi)
+        
+        
+        self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins))
+        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta, 
+                                          self.pos0_max - 0.5 * self.delta, 
                                           self.bins)
 
-        self.unit = unit
-        self.lut_nbytes = lut.nbytes
-        self.lut_checksum = crc32(numpy.asarray(lut))
+        lut = self.calc_lut_1d().to_lut()
 
-    def calc_boundaries(self, pos0_range):
-        """
-        Called by constructor to calculate the boundaries and the bin position
-        """
-        cdef:
-            int idx, size = self.cpos0.size
-            bint check_mask = self.cmask is not None
-            mask_t[::1] cmask
-            position_t[::1] cpos0, dpos0, cpos0_sup, cpos0_inf,
-            position_t upper, lower, pos0_max, pos0_min, c, d
-            bint allow_pos0_neg = self.allow_pos0_neg
+        #Call the constructor of the parent class
+        LutIntegrator.__init__(self, lut, self.size, empty or 0.0)    
 
-        cpos0_sup = self.cpos0_sup
-        cpos0_inf = self.cpos0_inf
-        cpos0 = self.cpos0
-        dpos0 = self.dpos0
-        pos0_min = pos0_max = cpos0[0]
-        if not allow_pos0_neg and pos0_min < 0:
-                    pos0_min = pos0_max = 0
-        if check_mask:
-            cmask = self.cmask
-        with nogil:
-            for idx in range(size):
-                c = cpos0[idx]
-                d = dpos0[idx]
-                lower = c - d
-                upper = c + d
-                cpos0_sup[idx] = upper
-                cpos0_inf[idx] = lower
-                if not allow_pos0_neg and lower < 0:
-                    lower = 0
-                if not (check_mask and cmask[idx]):
-                    if upper > pos0_max:
-                        pos0_max = upper
-                    if lower < pos0_min:
-                        pos0_min = lower
-
-        if pos0_range is not None:
-            self.pos0_min, self.pos0_maxin = pos0_range
-        else:
-            self.pos0_min = pos0_min
-            self.pos0_maxin = pos0_max
-        if (not allow_pos0_neg) and self.pos0_min < 0:
-            self.pos0_min = 0
-        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
-
-    def calc_boundaries_nosplit(self, pos0_range):
-        """
-        Calculate self.pos0_min and self.pos0_max when no splitting is requested
-
-        :param pos0_range: 2-tuple containing the requested range
-        """
-        cdef:
-            int size = self.cpos0.size
-            bint check_mask = self.cmask is not None
-            mask_t[::1] cmask
-            position_t[::1] cpos0
-            position_t pos0_max, pos0_min, c
-            bint allow_pos0_neg = self.allow_pos0_neg
-            int idx
-
-        if pos0_range is not None:
-            self.pos0_min, self.pos0_maxin = pos0_range
-        else:
-            cpos0 = self.cpos0
-            pos0_min = pos0_max = cpos0[0]
-
-            if not allow_pos0_neg and pos0_min < 0:
-                pos0_min = pos0_max = 0
-
-            if check_mask:
-                cmask = self.cmask
-
-            with nogil:
-                for idx in range(size):
-                    c = cpos0[idx]
-                    if not allow_pos0_neg and c < 0:
-                        c = 0
-                    if not (check_mask and cmask[idx]):
-                        pos0_max = max(pos0_max, c)
-                        pos0_min = min(pos0_min, c)
-            self.pos0_min = pos0_min
-            self.pos0_maxin = pos0_max
-
-        if (not allow_pos0_neg) and self.pos0_min < 0:
-            self.pos0_min = 0
-        self.pos0_max = calc_upper_bound(<position_t> self.pos0_maxin)
-
-    def calc_lut(self):
-        """Use BoundingBox splitting to calculate the content of the LUT
-
-        :return: Look-up table (2D array of lut_d) 
-        """
-        cdef:
-            position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max
-            acc_t delta_left, delta_right, inv_area
-            int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size = self.size
-            bint check_mask=self.cmask is not None, check_pos1
-            position_t[::1] cpos0_sup = self.cpos0_sup
-            position_t[::1] cpos0_inf = self.cpos0_inf
-            position_t[::1] cpos1_min, cpos1_max
-            mask_t[::1] cmask
-            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
-
-        
-        if check_mask:
-            cmask = self.cmask
-
-        if self.check_pos1:
-            check_pos1 = True
-            cpos1_min = self.cpos1_min
-            cpos1_max = self.cpos1_max
-            pos1_max = self.pos1_max
-            pos1_min = self.pos1_min
-        else:
-            check_pos1 = False
-        
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-
-                min0 = cpos0_inf[idx]
-                max0 = cpos0_sup[idx]
-
-                if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
-                    continue
-
-                fbin0_min = get_bin_number(min0, pos0_min, delta)
-                fbin0_max = get_bin_number(max0, pos0_min, delta)
-                bin0_min = <int> fbin0_min
-                bin0_max = <int> fbin0_max
-
-                if (bin0_max < 0) or (bin0_min >= bins):
-                    continue
-                if bin0_max >= bins:
-                    bin0_max = bins - 1
-                if bin0_min < 0:
-                    bin0_min = 0
-
-                if bin0_min == bin0_max:
-                    # All pixel is within a single bin
-                    builder.cinsert(bin0_min, idx, 1.0)
-                else:
-                    # we have pixel splitting.
-                    inv_area = 1.0 / (fbin0_max - fbin0_min)
-
-                    delta_left = <acc_t>(bin0_min + 1) - fbin0_min
-                    delta_right = fbin0_max - (<acc_t> bin0_max)
-
-                    builder.cinsert(bin0_min, idx, inv_area * delta_left)
-                    builder.cinsert(bin0_max, idx,  inv_area * delta_right)
-
-                    if bin0_min + 1 < bin0_max:
-                        for i in range(bin0_min + 1, bin0_max):
-                            builder.cinsert(i, idx,  inv_area)
-                            
-        return builder.to_lut()
-
-    def calc_lut_nosplit(self):
-        """Calculate the content of the LUT without pixel splitting
-
-        :return: Look-up table (2D array of lut_d) 
-        """
-
-        cdef:
-            position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, pos0
-            int32_t k, idx, bin0, bins = self.bins, nnz, size = self.size
-            bint check_mask=self.cmask is not None, check_pos1
-            position_t[::1] cpos0 = self.cpos0, cpos1_min, cpos1_max,
-            mask_t[::1] cmask
-            SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=size)
-
-        if check_mask:
-            cmask = self.cmask
-
-        if self.check_pos1:
-            check_pos1 = True
-            cpos1_min = self.cpos1_min
-            cpos1_max = self.cpos1_max
-            pos1_max = self.pos1_max
-            pos1_min = self.pos1_min
-        else:
-            check_pos1 = False
-
-        
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-
-                pos0 = cpos0[idx]
-
-                if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
-                    continue
-
-                fbin0 = get_bin_number(pos0, pos0_min, delta)
-                bin0 = < int > fbin0
-
-                if (bin0 < 0) or (bin0 >= bins):
-                    continue
-                builder.cinsert(bin0, idx, onef)
-        return builder.to_lut()
+        self.lut_checksum = crc32(self.lut)
+        self.lut_nbytes = self.lut.nbytes
 
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
