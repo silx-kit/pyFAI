@@ -160,9 +160,9 @@ class TestSparseIntegrate2d(unittest.TestCase):
             method[1] = m
             obt = self.integrate(method)
             self.assertLess(abs(ref.radial - obt.radial).max(), 1e-3, f"radial matches for {m} with {split} split")
-            print("ref:", ref.azimuthal)
-            print("obt:", obt.azimuthal)
-            print("delta",)
+            # print("ref:", ref.azimuthal)
+            # print("obt:", obt.azimuthal)
+            # print("delta",)
             self.assertLess(abs(ref.azimuthal - obt.azimuthal).max(), 1e-3, f"azimuthal matches for {m} with {split} split")
             res = self.cost(ref, obt)
             if res > 1:
