@@ -1,13 +1,13 @@
 # coding: utf-8
 # cython: embedsignature=True, language_level=3, binding=True
-# cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,10 +35,9 @@ Sparse matrix represented using the LUT representation.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/12/2021"
+__date__ = "06/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
-
 
 include "regrid_common.pxi"
 include "LUT_common.pxi"
@@ -48,19 +47,10 @@ import os
 import sys
 import logging
 logger = logging.getLogger(__name__)
-from cython.parallel import prange
-from libc.string cimport memset
-from cython cimport view
 import numpy
-cimport numpy
-from libc.math cimport fabs, floor, sqrt
-from libc.stdlib cimport abs
-from libc.stdio cimport stdout
-
 from ..utils import crc32
 from ..utils.decorators import deprecated
-from .splitpixel_common import calc_boundaries, FullSplitIntegrator
-from .sparse_builder cimport SparseBuilder
+from .splitpixel_common import FullSplitIntegrator
 
 
 class HistoLUT1dFullSplit(LutIntegrator, FullSplitIntegrator):
@@ -69,7 +59,7 @@ class HistoLUT1dFullSplit(LutIntegrator, FullSplitIntegrator):
     """
     @cython.boundscheck(False)
     def __init__(self,
-                 numpy.ndarray pos not None,
+                 pos,
                  int bins=100,
                  pos0_range=None,
                  pos1_range=None,
@@ -130,7 +120,7 @@ class HistoLUT2dFullSplit(LutIntegrator, FullSplitIntegrator):
     Nota: nnz = indptr[-1]
     """
     def __init__(self,
-                 numpy.ndarray pos not None,
+                 pos,
                  bins=(100, 36),
                  pos0_range=None,
                  pos1_range=None,

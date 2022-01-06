@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping

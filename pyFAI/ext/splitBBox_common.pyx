@@ -133,7 +133,8 @@ class SplitBBoxIntegrator:
                  mask=None,
                  mask_checksum=None,
                  bint allow_pos0_neg=False,
-                 bint chiDiscAtPi=True):
+                 bint chiDiscAtPi=True,
+                 bint clip_pos1=True):
         """Constructor of the class:
         
         :param pos0: 1D array with pos0: tth or q_vect
@@ -146,7 +147,8 @@ class SplitBBoxIntegrator:
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param mask_checksum: int with the checksum of the mask
         :param allow_pos0_neg: enforce the q<0 is usually not possible
-        :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
+        :param chiDiscAtPi: tell if azimuthal discontinuity is at 0 (0° when False) or π (180° when True)
+        :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π] depending on chiDiscAtPi), set to False to deactivate behavior
         """
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         self.size = pos0.size
@@ -193,7 +195,10 @@ class SplitBBoxIntegrator:
                                                                      pos1_range)
         if (not allow_pos0_neg):
             pos0_min = max(0.0, pos0_min)
-            pos0_maxin = max(pos0_maxin, 0.0)
+            pos0_maxin = max(0.0, pos0_maxin)
+        if clip_pos1:
+                pos1_maxin = min(pos1_maxin, (2 - chiDiscAtPi) * pi)
+                pos1_min = max(pos1_min, -chiDiscAtPi * pi)
         self.pos0_min = pos0_min
         self.pos1_min = pos1_min
         self.pos0_maxin = pos0_maxin

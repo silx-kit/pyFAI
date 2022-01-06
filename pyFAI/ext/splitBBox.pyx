@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/11/2021"
+__date__ = "06/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -163,10 +163,8 @@ def histoBBox1d(weights,
             max0 = cpos0[idx] + dpos0[idx]
             cpos0_upper[idx] = max0
             cpos0_lower[idx] = min0
-            if max0 > pos0_max:
-                pos0_max = max0
-            if min0 < pos0_min:
-                pos0_min = min0
+            pos0_max = max(pos0_max, max0)
+            pos0_min = min(pos0_min, min0)
 
     if pos0_range is not None:
         pos0_min, pos0_maxin = pos0_range
@@ -647,10 +645,8 @@ def histoBBox2d(weights,
                 if max0 < 0.0:
                     max0 = 0.0
             if clip_pos1:
-                if max1 > (2 - chiDiscAtPi) * pi:
-                    max1 = (2 - chiDiscAtPi) * pi
-                if min1 < (-chiDiscAtPi) * pi:
-                    min1 = (-chiDiscAtPi) * pi
+                max1 = min(max1, (2 - chiDiscAtPi) * pi)
+                min1 = max(min1, (-chiDiscAtPi) * pi)
             cpos0_upper[idx] = max0
             cpos0_lower[idx] = min0
             cpos1_upper[idx] = max1
@@ -835,7 +831,7 @@ def histoBBox2d_engine(weights,
                        bint chiDiscAtPi=1,
                        data_t empty=0.0,
                        double normalization_factor=1.0,
-                       bint clip_pos1=1
+                       bint clip_pos1=True
                        ):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
@@ -862,7 +858,7 @@ def histoBBox2d_engine(weights,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
-    :param clip_pos1: clip the azimuthal range to -pi/pi (or 0-2pi), set to False to deactivate behavior
+    :param clip_pos1: clip the azimuthal range to [-pi pi] (or [0 2pi]), set to False to deactivate behavior
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
 
@@ -899,7 +895,6 @@ def histoBBox2d_engine(weights,
         data_t[:, ::1] out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
         data_t[:, ::1] out_error
         mask_t[::1] cmask
-
         position_t c0, c1, d0, d1
         position_t min0, max0, min1, max1, delta0, delta1
         position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
@@ -969,10 +964,8 @@ def histoBBox2d_engine(weights,
             min1 = c1 - d1
             max1 = c1 + d1
             if not allow_pos0_neg:
-                if min0 < 0.0:
-                    min0 = 0.0
-                if max0 < 0.0:
-                    max0 = 0.0
+                min0 = max(0.0, min0)
+                max0 = max(0.0, max0)
             if clip_pos1:
                 if max1 > (2 - chiDiscAtPi) * pi:
                     max1 = (2 - chiDiscAtPi) * pi
