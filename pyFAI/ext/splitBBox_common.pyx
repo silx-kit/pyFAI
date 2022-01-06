@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "05/01/2022"
+__date__ = "06/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -215,16 +215,15 @@ class SplitBBoxIntegrator:
         cdef:
             position_t[::1] cpos0, cpos1, dpos0, dpos1  
             mask_t[::1] cmask
-            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0, pos1_maxin=0.0
+            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_maxin=0.0
             position_t delta, inv_area=0.0
             position_t c0, d0=0.0, c1, d1=0.0, min0, max0
             position_t fbin0_min, fbin0_max, delta_left, delta_right
-            Py_ssize_t bins, idx=0, bin=0, bin0=0, bin0_max=0, bin0_min=0, size
-            bint check_pos1=self.pos1_range, check_mask=False, chiDiscAtPi, do_split=True
+            Py_ssize_t bins, idx=0, bin=0, bin0_max=0, bin0_min=0, size
+            bint check_pos1=self.pos1_range, check_mask=False, do_split=True
             SparseBuilder builder 
         
-        check_pos1=self.pos1_range is not None
-        chiDiscAtPi=self.chiDiscAtPi #Unused ?        
+        check_pos1=self.pos1_range is not None        
         cpos0 = self.cpos0
         cpos1 = self.cpos1
         dpos0 = self.dpos0
@@ -233,7 +232,6 @@ class SplitBBoxIntegrator:
             do_split = False
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
-        pos1_max = self.pos1_max
         pos1_maxin = self.pos1_maxin
         delta = self.delta
         bins=self.bins
@@ -257,7 +255,7 @@ class SplitBBoxIntegrator:
                     c1 = cpos1[idx]
                     if do_split:
                         d1 = dpos1[idx]
-                    if (c1+d1 < pos1_min) or (c1 - d1 > pos1_max):
+                    if (c1+d1 < pos1_min) or (c1 - d1 > pos1_maxin):
                         continue
 
                 fbin0_min = get_bin_number(min0, pos0_min, delta)
@@ -294,12 +292,11 @@ class SplitBBoxIntegrator:
             Py_ssize_t bins0, bins1, size
             position_t[::1] cpos0, cpos1, dpos0, dpos1  
             mask_t[::1] cmask
-            bint check_mask=False, chiDiscAtPi, do_plit=True
+            bint check_mask=False, do_split=True
             position_t c0, c1, d0, d1, min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
-            position_t pos0_min = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
+            position_t pos0_min = 0, pos1_min = 0
             position_t delta0, delta1, delta_down, delta_up, delta_left, delta_right
             position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max
-            position_t foffset0, foffset1
             Py_ssize_t i = 0, j = 0, idx = 0
             Py_ssize_t bin0_min, bin0_max, bin1_min, bin1_max
             SparseBuilder builder
@@ -307,8 +304,6 @@ class SplitBBoxIntegrator:
         bins0=self.bins[0]
         bins1=self.bins[1]
         size = self.size
-        check_pos1=self.pos1_range is not None
-        chiDiscAtPi=self.chiDiscAtPi #Unused ?        
         cpos0 = self.cpos0
         cpos1 = self.cpos1
         dpos0 = self.dpos0
@@ -317,8 +312,6 @@ class SplitBBoxIntegrator:
             do_split = False
         pos0_min = self.pos0_min
         pos1_min = self.pos1_min
-        pos1_max = self.pos1_max
-        pos1_maxin = self.pos1_maxin
         size = self.size
         check_mask = self.check_mask
         cmask = self.cmask
