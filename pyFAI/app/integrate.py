@@ -658,7 +658,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
             entry_path = None
         if os.path.isdir(output):
             writer = MultiFileWriter(output, mode=write_mode)
-        elif output.endswith(".h5") or output.endswith(".hdf5") or format in ("h5", "hdf5"):
+        elif output.endswith(".h5") or output.endswith(".hdf5") or format_ in ("h5", "hdf5"):
             writer = HDF5Writer(output, hpath=entry_path, append_frames=True, mode=write_mode)
         else:
             output_path = os.path.abspath(output)
