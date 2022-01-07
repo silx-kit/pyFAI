@@ -35,7 +35,7 @@ https://github.com/silx-kit/pyFAI/issues
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
-__copyright__ = "2015-2021 European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "06/01/2022"
 
 import sys

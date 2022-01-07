@@ -1,9 +1,4 @@
 # coding: utf-8 
-#cython: embedsignature=True, language_level=3, binding=True
-# cython: initializedcheck=False 
-##boundscheck=False, wraparound=False, cdivision=True,
-## This is for developping
-## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
