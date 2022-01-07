@@ -75,6 +75,8 @@ build_script:
     #    }
 
     # Install build dependencies
+    - "python -m pip install --upgrade pip"
+    - "pip install --upgrade setuptools<60.0.0"
     - "pip install --upgrade wheel"
     - "pip install numpy cython --upgrade"
     - "pip install scipy --upgrade --pre"
