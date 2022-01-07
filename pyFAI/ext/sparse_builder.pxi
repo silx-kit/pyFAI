@@ -1,12 +1,15 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8 
+#cython: embedsignature=True, language_level=3, binding=True
+# cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2018-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2018-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#    Principal author:       Valentin Valls
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +31,7 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "14/01/2021"
+__date__ = "06/01/2022"
 __copyright__ = "2018-2021, ESRF"
 
 
