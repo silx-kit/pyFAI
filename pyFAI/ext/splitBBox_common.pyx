@@ -341,10 +341,10 @@ class SplitBBoxIntegrator:
                 fbin1_min = get_bin_number(min1, pos1_min, delta1)
                 fbin1_max = get_bin_number(max1, pos1_min, delta1)
 
-                bin0_min = < Py_ssize_t > fbin0_min
-                bin0_max = < Py_ssize_t > fbin0_max
-                bin1_min = < Py_ssize_t > fbin1_min
-                bin1_max = < Py_ssize_t > fbin1_max
+                bin0_min = <Py_ssize_t> fbin0_min
+                bin0_max = <Py_ssize_t> fbin0_max
+                bin1_min = <Py_ssize_t> fbin1_min
+                bin1_max = <Py_ssize_t> fbin1_max
 
                 if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     continue
