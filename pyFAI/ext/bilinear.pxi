@@ -1,4 +1,9 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8 
+#cython: embedsignature=True, language_level=3, binding=True
+# cython: initializedcheck=False 
+##boundscheck=False, wraparound=False, cdivision=True,
+## This is for developping
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -39,10 +44,10 @@ cdef class Bilinear:
     cdef:
         readonly float[:, ::1] data
         readonly float maxi, mini
-        readonly size_t width, height
+        readonly Py_ssize_t width, height
 
-    cpdef size_t cp_local_maxi(self, size_t)
-    cdef size_t c_local_maxi(self, size_t) nogil
+    cpdef Py_ssize_t cp_local_maxi(self, Py_ssize_t)
+    cdef Py_ssize_t c_local_maxi(self, Py_ssize_t) nogil
 
     def __cinit__(self, data not None):
         assert data.ndim == 2
@@ -87,8 +92,6 @@ cdef class Bilinear:
             float d1 = x[1]
         return self._f_cy(d0, d1)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     cdef float _f_cy(self, cython.floating d0, cython.floating d1) nogil:
         """
         Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates
@@ -129,9 +132,6 @@ cdef class Bilinear:
                 + (self.data[i1, j1] * (d0 - x0) * (d1 - y0))
         return res
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.cdivision(True)
     def local_maxi(self, x):
         """
         Return the local maximum with sub-pixel refinement.
@@ -194,13 +194,13 @@ cdef class Bilinear:
 
         return (float(current0), float(current1))
 
-    cpdef size_t cp_local_maxi(self, size_t x):
+    cpdef Py_ssize_t cp_local_maxi(self, Py_ssize_t x):
         return self.c_local_maxi(x)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    cdef size_t c_local_maxi(self, size_t x) nogil:
+    cdef Py_ssize_t c_local_maxi(self, Py_ssize_t x) nogil:
         """
         Return the local maximum ... without sub-pixel refinement
 

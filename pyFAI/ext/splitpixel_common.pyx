@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8 
 #cython: embedsignature=True, language_level=3, binding=True
 # cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
@@ -35,13 +35,14 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "05/01/2022"
+__date__ = "07/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
 from ..utils import crc32
 from .sparse_builder cimport SparseBuilder
+from libc.math cimport INFINITY
 import logging
 logger = logging.getLogger(__name__)
 
@@ -57,19 +58,25 @@ else:
 def calc_boundaries(position_t[:, :, ::1] cpos,
                     mask_t[::1] cmask=None,
                     pos0_range=None,
-                    pos1_range=None
-                    ):
+                    pos1_range=None,
+                    bint allow_pos0_neg=False,
+                    bint chiDiscAtPi=True,
+                    bint clip_pos1=False):
     """Calculate the boundaries in radial/azimuthal space in fullsplit mode.
     
     :param cpos: 3D array of position, shape: (size, 4 (corners), 2 (rad/azim)) 
     :param cmask: 1d array with mask
-     
-    :return: (pos0_min, pos0_max, pos1_min, pos1_max)
+    :param pos0_range: minimum and maximum of the radial range (2th, q, ...)
+    :param pos1_range: minimum and maximum of the azimuthal range (chi)
+    :param allow_pos0_neg: set to allow the radial range to start below 0 (usful for log_q radial range)
+    :param chiDiscAtPi: tell if azimuthal discontinuity is at 0 (0° when False) or π (180° when True)
+    :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π] depending on chiDiscAtPi), set to False to deactivate behavior
+    :return: Boundaries(pos0_min, pos0_max, pos1_min, pos1_max)
     """
     cdef:
         Py_ssize_t idx, size= cpos.shape[0]
         bint check_mask = False
-        position_t pos0_min, pos1_min, pos0_max, pos1_max
+        position_t pos0_min, pos0_max, pos1_min=-INFINITY, pos1_max=INFINITY
         position_t a0, a1, b0, b1, c0, c1, d0, d1
         position_t min0, min1, max0, max1
           
@@ -80,12 +87,12 @@ def calc_boundaries(position_t[:, :, ::1] cpos,
     if (pos0_range is None or pos1_range is None):
         with nogil:
             for idx in range(size):
-                if (check_mask) and (cmask[idx]):
+                if not (check_mask and cmask[idx]):
                     pos0_max = pos0_min = cpos[idx, 0, 0]
                     pos1_max = pos1_min = cpos[idx, 0, 1]
                     break
             for idx in range(size):
-                if (check_mask) and (cmask[idx]):
+                if check_mask and cmask[idx]:
                     continue
                 a0 = cpos[idx, 0, 0]
                 a1 = cpos[idx, 0, 1]
@@ -97,16 +104,20 @@ def calc_boundaries(position_t[:, :, ::1] cpos,
                 d1 = cpos[idx, 3, 1]
                 min0 = min(a0, b0, c0, d0)
                 max0 = max(a0, b0, c0, d0)
-                if max0 > pos0_max:
-                    pos0_max = max0
-                if min0 < pos0_min:
-                    pos0_min = min0
+                pos0_max = max(pos0_max, max0)
+                pos0_min = min(pos0_min, min0)
                 min1 = min(a1, b1, c1, d1)
                 max1 = max(a1, b1, c1, d1)
-                if max1 > pos1_max:
-                    pos1_max = max1
-                if min1 < pos1_min:
-                    pos1_min = min1
+                pos1_max = max(pos1_max, max1)
+                pos1_min = min(pos1_min, min1)
+
+    if (not allow_pos0_neg):
+        pos0_min = max(0.0, pos0_min)
+        pos0_max = max(0.0, pos0_max)
+    if clip_pos1:
+        chiDiscAtPi = 1 if chiDiscAtPi else 0
+        pos1_max = min(pos1_max, (2 - chiDiscAtPi) * pi)
+        pos1_min = max(pos1_min, -chiDiscAtPi * pi)
 
     if pos0_range is not None and len(pos0_range) > 1:
         pos0_min = min(pos0_range)
@@ -132,7 +143,8 @@ class FullSplitIntegrator:
                  mask=None,
                  mask_checksum=None,
                  bint allow_pos0_neg=False,
-                 bint chiDiscAtPi=True):
+                 bint chiDiscAtPi=True,
+                 bint clip_pos1=True):
         """Constructor of the class:
         
         :param pos: 3D or 4D array with the coordinates of each pixel point
@@ -142,7 +154,8 @@ class FullSplitIntegrator:
         :param mask: array (of int8) with masked pixels with 1 (0=not masked)
         :param mask_checksum: int with the checksum of the mask
         :param allow_pos0_neg: enforce the q<0 is usually not possible
-        :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
+        :param chiDiscAtPi: tell if azimuthal discontinuity is at 0 (0° when False) or π (180° when True)
+        :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π] depending on chiDiscAtPi), set to False to deactivate behavior
         """
         if pos.ndim > 3:  # create a view
             pos = pos.reshape((-1, 4, 2))
@@ -171,10 +184,9 @@ class FullSplitIntegrator:
         self.pos1_range = pos1_range
         cdef:
             position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
-        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, pos0_range, pos1_range)
-        if (not allow_pos0_neg):
-            pos0_min = max(0.0, pos0_min)
-            pos0_maxin = max(pos0_maxin, 0.0)
+        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask, 
+                                                                     pos0_range, pos1_range,
+                                                                     allow_pos0_neg, chiDiscAtPi, clip_pos1)
         self.pos0_min = pos0_min
         self.pos1_min = pos1_min
         self.pos0_maxin = pos0_maxin
