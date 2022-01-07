@@ -35,13 +35,14 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "06/01/2022"
+__date__ = "07/01/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
 from ..utils import crc32
 from .sparse_builder cimport SparseBuilder
+from libc.math cimport INFINITY
 import logging
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,9 @@ def calc_boundaries(position_t[::1] pos0,
                     mask_t[::1] cmask=None,
                     pos0_range=None,
                     pos1_range=None,
-                    ):
+                    bint allow_pos0_neg=False,
+                    bint chiDiscAtPi=True,
+                    bint clip_pos1=False):
     """Calculate the boundaries in radial/azimuthal space in bounding-box mode.
 
     :param pos0: 1D array with pos0: tth or q_vect
@@ -61,15 +64,17 @@ def calc_boundaries(position_t[::1] pos0,
     :param pos1: 1D array with pos1: chi
     :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
     :param cmask: 1d array with mask
-    :param pos0_range: minimum and maximum  of the 2th range
-    :param pos1_range: minimum and maximum  of the chi range 
-     
-    :return: (pos0_min, pos0_max, pos1_min, pos1_max)
+    :param pos0_range: minimum and maximum of the radial range (2th, q, ...)
+    :param pos1_range: minimum and maximum of the azimuthal range (chi)
+    :param allow_pos0_neg: set to allow the radial range to start below 0 (usful for log_q radial range)
+    :param chiDiscAtPi: tell if azimuthal discontinuity is at 0 (0° when False) or π (180° when True)
+    :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π] depending on chiDiscAtPi), set to False to deactivate behavior
+    :return: Boundaries(pos0_min, pos0_max, pos1_min, pos1_max)
     """
     cdef:
         Py_ssize_t idx, size = pos0.shape[0]
         bint check_mask = False, check_pos1 = True, do_split=True
-        position_t pos0_min, pos0_max, pos1_min=-numpy.inf, pos1_max=numpy.inf
+        position_t pos0_min, pos0_max, pos1_min=-INFINITY, pos1_max=INFINITY
         position_t c0, c1=0.0, d0=0.0, d1=0.0
           
     if cmask is not None:
@@ -105,6 +110,14 @@ def calc_boundaries(position_t[::1] pos0,
 
                     pos1_max = max(pos1_max, c1 + d1)
                     pos1_min = min(pos1_min, c1 - d1)
+
+    if (not allow_pos0_neg):
+        pos0_min = max(0.0, pos0_min)
+        pos0_max = max(0.0, pos0_max)
+    if clip_pos1:
+        chiDiscAtPi = 1 if chiDiscAtPi else 0
+        pos1_max = min(pos1_max, (2 - chiDiscAtPi) * pi)
+        pos1_min = max(pos1_min, -chiDiscAtPi * pi)
 
     if pos0_range is not None and len(pos0_range) > 1:
         pos0_min = min(pos0_range)
@@ -186,19 +199,10 @@ class SplitBBoxIntegrator:
         self.pos1_range = pos1_range
         cdef:
             position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
-        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.cpos0,
-                                                                     self.dpos0,
-                                                                     self.cpos1,
-                                                                     self.dpos1, 
-                                                                     self.cmask, 
-                                                                     pos0_range, 
-                                                                     pos1_range)
-        if (not allow_pos0_neg):
-            pos0_min = max(0.0, pos0_min)
-            pos0_maxin = max(0.0, pos0_maxin)
-        if clip_pos1:
-                pos1_maxin = min(pos1_maxin, (2 - chiDiscAtPi) * pi)
-                pos1_min = max(pos1_min, -chiDiscAtPi * pi)
+        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.cpos0, self.dpos0, 
+                                                                     self.cpos1, self.dpos1, 
+                                                                     self.cmask, pos0_range, pos1_range,
+                                                                     allow_pos0_neg, chiDiscAtPi, clip_pos1)
         self.pos0_min = pos0_min
         self.pos1_min = pos1_min
         self.pos0_maxin = pos0_maxin
@@ -337,10 +341,10 @@ class SplitBBoxIntegrator:
                 fbin1_min = get_bin_number(min1, pos1_min, delta1)
                 fbin1_max = get_bin_number(max1, pos1_min, delta1)
 
-                bin0_min = < Py_ssize_t > fbin0_min
-                bin0_max = < Py_ssize_t > fbin0_max
-                bin1_min = < Py_ssize_t > fbin1_min
-                bin1_max = < Py_ssize_t > fbin1_max
+                bin0_min = <Py_ssize_t> fbin0_min
+                bin0_max = <Py_ssize_t> fbin0_max
+                bin1_min = <Py_ssize_t> fbin1_min
+                bin1_max = <Py_ssize_t> fbin1_max
 
                 if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     continue

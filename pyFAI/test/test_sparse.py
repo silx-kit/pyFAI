@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2022"
+__date__ = "07/01/2022"
 
 import unittest
 import numpy
@@ -122,8 +122,8 @@ class TestSparseIntegrate1d(unittest.TestCase):
 
 class TestSparseIntegrate2d(unittest.TestCase):
     """Test azimuthal integration based sparse matrix multiplication methods
-    * No splitting                   # TODO: fix numerical results  
-    * Bounding box pixel splitting   # TODO: fix numerical results
+    * No splitting                     
+    * Bounding box pixel splitting
     * Full pixel splitting
     """
 
@@ -156,13 +156,10 @@ class TestSparseIntegrate2d(unittest.TestCase):
     def single_check(self, split="no"):
         method = [split, "histogram", "cython"]
         ref = self.integrate(method=method)
-        for m in "CSR", "LUT":
+        for m in ("CSR", "LUT"):
             method[1] = m
             obt = self.integrate(method)
             self.assertLess(abs(ref.radial - obt.radial).max(), 1e-3, f"radial matches for {m} with {split} split")
-            print("ref:", ref.azimuthal)
-            print("obt:", obt.azimuthal)
-            print("delta",)
             self.assertLess(abs(ref.azimuthal - obt.azimuthal).max(), 1e-3, f"azimuthal matches for {m} with {split} split")
             res = self.cost(ref, obt)
             if res > 1:
@@ -173,7 +170,6 @@ class TestSparseIntegrate2d(unittest.TestCase):
                 if not numpy.allclose(obt[0], ref[0]):
                     logger.error(f"Numerical results are not exactly the same between {m} and histogram with {split} split")
                     raise unittest.SkipTest("Fix this test")
-                    # TODO: fix this test
                 self.assertTrue(numpy.allclose(obt[0], ref[0]), f"Intensities matches for {m} with {split} split")
 
     def test_sparse_nosplit(self):
