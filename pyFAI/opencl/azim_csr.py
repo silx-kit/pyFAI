@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "24/11/2021"
+__date__ = "07/01/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -41,10 +41,9 @@ if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-from ..containers import Integrate1dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl
 from . import processing
 from . import get_x87_volatile_option
-from . import kernel_workgroup_size
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
@@ -87,7 +86,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                }
 
     def __init__(self, lut, image_size, checksum=None,
-                 empty=None, unit=None, bin_centers=None,
+                 empty=None, unit=None, bin_centers=None, azim_centers=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False, extra_buffers=None):
         """
@@ -100,6 +99,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param empty: value to be assigned to bins without contribution from any pixel
         :param unit: Storage for the unit related to the LUT
         :param bin_centers: the radial position of the bin_center, place_holder
+        :param azim_centers: the radial position of the bin_center, place_holder
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
@@ -124,6 +124,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.empty = empty or 0
         self.unit = unit
         self.bin_centers = bin_centers
+        self.azim_centers = azim_centers
         # a few place-folders
         self.pos0_range = self.pos1_range = self.check_mask = None
 
@@ -136,7 +137,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "solidangle": None,
                           "absorption": None,
                           "dark_variance": None}
-        
+
         block_size = self.guess_workgroup_size(block_size)
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
@@ -233,7 +234,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if "nvidia" in  platform:
                 try:
                     block_size = device.warp_size_nv
-                except:    
+                except:
                     block_size = 32
             elif "amd" in  platform:
                 try:
@@ -251,7 +252,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.force_workgroup_size = True
             block_size = int(block_size)
         return block_size
-    
+
     def compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
@@ -759,12 +760,26 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if stderr is not None:
                 ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderr"])
                 events.append(EventDescription("copy D->H stderr", ev))
-            if merged is None:
-                res = Integrate1dtpl(self.bin_centers, avgint, stderr, None, None, None, None)
-            else:
-                ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
-                events.append(EventDescription("copy D->H merged8", ev))
-                res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
+            if self.azim_centers is None:
+                if merged is None:
+                    res = Integrate1dtpl(self.bin_centers, avgint, stderr, None, None, None, None)
+                else:
+                    ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+                    events.append(EventDescription("copy D->H merged8", ev))
+                    res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
+            else:  # 2D case
+                outshape = self.bin_centers.size, self.azim_centers.size
+                if merged is None:  # "radial azimuthal intensity sigma"
+                    res = Integrate2dtpl(self.bin_centers, self.azim_centers,
+                                         avgint.reshape(outshape).T, stderr.reshape(outshape).T,
+                                         None, None, None, None)
+                else:
+                    ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+                    events.append(EventDescription("copy D->H merged8", ev))
+                    res = Integrate2dtpl(self.bin_centers, self.azim_centers,
+                                         avgint.reshape(outshape).T, stderr.reshape(outshape).T,
+                                         merged[:, 0].reshape(outshape).T, merged[:, 2].reshape(outshape).T, merged[:, 4].reshape(outshape).T, merged[:, 6].reshape(outshape).T)
+
         if self.profile:
             self.events += events
         return res
