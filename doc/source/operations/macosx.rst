@@ -50,8 +50,9 @@ Get the sources from Github:
    unzip master.zip
    cd pyFAI-master
    pip install -r requirements.txt
-   python setup.py build bdist_wheel
-   pip install --find-links=dist --pre --no-index --upgrade pyFAI
+   python setup.py build
+   python run_tests.py
+   pip install . --upgrade
 
 
 About OpenMP

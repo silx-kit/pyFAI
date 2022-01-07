@@ -126,20 +126,15 @@ As most of the Python projects:
 
 .. code-block:: shell
 
-    python setup.py build bdist_wheel
-    pip install dist/pyFAI-0.14.0*.whl --upgrade
+    pip install --upgrade .
 
 
 There are few specific options to setup.py:
-
-* --no-cython: do not use cython (even if present) and use the C source code
-  provided by the development team
-* --force-cython: enforce the regeneration of all C-files from cython sources
-* --no-openmp: if you compiler lacks OpenMP support, like Xcode on MacOS.
-* --openmp: enforce the use of OpenMP.
-* --with-testimages: build the source distribution including all test images.
-  Downloads 200MB of test images to create a self consistent tar-ball.
-
+* ``-J 16``: Build the code using 16 compilers instances.
+* ``--no-cython``: do not use cython (even if present) and use the C source code provided by the development team
+* ``--force-cython``: enforce the regeneration of all C-files from cython sources
+* ``--no-openmp``: if you compiler lacks OpenMP support, like Xcode on MacOS.
+* ``--openmp``: enforce the use of OpenMP.
 
 Test suites
 -----------
@@ -170,9 +165,6 @@ Setting the environment variable http_proxy can be necessary (depending on your 
 
    export http_proxy=http://proxy.site.org:3128
 
-Especially at ESRF, the configuration of the network proxy can be obtained
-by asking at the helpdesk: helpdesk@esrf.fr
-
 To test the development version (built but not yet installed):
 
 .. code-block:: shell
@@ -184,10 +176,10 @@ or
 .. code-block:: shell
 
     python setup.py build
-    python run_test.py -i
+    python run_test.py
 
 
-PyFAI comes with 40 test-suites (338 tests in total) representing a coverage of 60%.
+PyFAI comes with 63 test-suites (418 tests in total) representing a coverage of 54%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
 Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.
@@ -231,15 +223,15 @@ Linux
 .....
 
 
-`Travis provides continuous integration on Linux <https://travis-ci.org/silx-kit/pyFAI>`_,
-64 bits computer with Python 3.6 to 3.9. Github workflows are ment to replace Travis once the service is discontinued.
+`Github workflows provides continuous integration on Linux <https://github.com/silx-kit/pyFAI/actions>`_,
+64 bits computer with Python 3.6 to 3.10. Travis.org is now dead since the service was discontinued.
 
 `Gitlab runners <https://gitlab.esrf.fr/silx/bob/pyfai/-/pipelines>`_ are periodically triggered to build the project and provide *wheels* for all kind of systems.
 
 AppVeyor
 ........
 
-`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 3.6 to 3.9.
+`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 3.6 to 3.10.
 Successful builds provide installers for pyFAI as *wheels* and *msi*, they are anonymously available as *artifacts*.
 Due to the limitation of AppVeyor's build system, those installers have openMP disabled.
 
@@ -256,8 +248,8 @@ As of 01/2021:
  * Frédéric-Emmanuel Picca (Soleil)
  * Aurore Deschildre (ESRF)
  * Giannis Ashiotis (ESRF)
- * Dimitrios Karkoulis (ESRF)
  * Thomas Vincent (ESRF)
+ * Dimitrios Karkoulis (ESRF)
  * Alexandre Marie (Soleil)
  * Jon Wright (ESRF)
  * Ronald Pandolfi (LBNL)
