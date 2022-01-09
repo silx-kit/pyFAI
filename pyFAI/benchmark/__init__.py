@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "28/01/2021"
+__date__ = "09/01/2022"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -348,11 +348,9 @@ class Bench(object):
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
-#             print(method)
             method = IntegrationMethod.select_method(dim=1, split=method.split_lower,
                                                       algo=method.algo_lower, impl=method.impl_lower,
                                                       target=(opencl["platformid"], opencl["deviceid"]))[0]
-#             print(method)
             print(f"function: {function} \t method: {method}")
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:

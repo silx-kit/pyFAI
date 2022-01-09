@@ -2391,7 +2391,6 @@ class AzimuthalIntegrator(Geometry):
                                                    solidangle=solidangle,
                                                    polarization=polarization,
                                                    normalization_factor=normalization_factor)
-            print(method)
             I = intpl.intensity
             bins_rad = intpl.radial
             bins_azim = intpl.azimuthal

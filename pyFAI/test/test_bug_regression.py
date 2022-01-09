@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2022"
+__date__ = "09/01/2022"
 
 import sys
 import os
@@ -384,7 +384,6 @@ class TestBugRegression(unittest.TestCase):
                        ("no", "histogram", "cython"),
                        ("no", "csr", "cython"),
                        ("no", "lut", "cython")]:
-#             print(method)
             for angle in angles:
                 res0 = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method)
                 # try:
