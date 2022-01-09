@@ -136,12 +136,12 @@ class GeometryRefinement(AzimuthalIntegrator):
             else:
                 self.guess_poni()
 
-        self._dist_min = 0
-        self._dist_max = 10
-        self._poni1_min = -10000 * self.pixel1
-        self._poni1_max = 15000 * self.pixel1
-        self._poni2_min = -10000 * self.pixel2
-        self._poni2_max = 15000 * self.pixel2
+        self._dist_min = 0.0
+        self._dist_max = 35.0
+        self._poni1_min = -10000.0 * self.pixel1
+        self._poni1_max = 15000.0 * self.pixel1
+        self._poni2_min = -10000.0 * self.pixel2
+        self._poni2_max = 15000.0 * self.pixel2
         self._rot1_min = -pi
         self._rot1_max = pi
         self._rot2_min = -pi
