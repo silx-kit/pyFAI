@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2021"
+__date__ = "09/01/2022"
 __status__ = "development"
 
 import logging
@@ -117,15 +117,15 @@ def histogram1d_engine(radial, npt,
     if radial_range is None:
         radial_range = (radial.min(), radial.max() * EPS32)
 
-    histo_signal, position = numpy.histogram(radial, npt, weights=prep[:, 0], range=radial_range)
+    histo_signal, _ = numpy.histogram(radial, npt, weights=prep[:, 0], range=radial_range)
     if variance is not None or poissonian:
-        histo_variance, position = numpy.histogram(radial, npt, weights=prep[:, 1], range=radial_range)
+        histo_variance, _ = numpy.histogram(radial, npt, weights=prep[:, 1], range=radial_range)
     else:
         histo_variance = None
-    histo_normalization, position = numpy.histogram(radial, npt, weights=prep[:, 2], range=radial_range)
+    histo_normalization, _ = numpy.histogram(radial, npt, weights=prep[:, 2], range=radial_range)
     histo_count, position = numpy.histogram(radial, npt, weights=prep[:, 3], range=radial_range)
     positions = (position[1:] + position[:-1]) / 2.0
-    with numpy.errstate(divide='ignore'):
+    with numpy.errstate(divide='ignore', invalid='ignore'):
         intensity = histo_signal / histo_normalization
         if histo_variance is None:
             error = None
@@ -163,7 +163,7 @@ def histogram2d_engine(radial, azimuthal, npt,
     
     :param radial: radial position 2D array (same shape as raw)
     :param azimuthal: azimuthal position 2D array (same shape as raw)
-    :param npt: number of points to integrate over in (azimuthal, radial) dimension
+    :param npt: number of points to integrate over in (radial, azimuthal) dimensions
     :param raw: 2D array with the raw signal
     :param dark: array containing the value of the dark noise, to be subtracted
     :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
@@ -209,21 +209,29 @@ def histogram2d_engine(radial, azimuthal, npt,
                    empty=0
                    )
     radial = radial.ravel()
-    azimuthal = radial.ravel()
+    azimuthal = azimuthal.ravel()
     prep.shape = -1, 4
     assert prep.shape[0] == radial.size
     assert prep.shape[0] == azimuthal.size
-    histo_signal, position_azim, position_rad = numpy.histogram2d(azimuthal, radial, npt, weights=prep[:, 0], range=[azimuth_range, radial_range])
+    npt = tuple(max(1, i) for i in npt)
+    rng = [radial_range, azimuth_range]
+    histo_signal, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 0], range=rng)
+    histo_normalization, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 2], range=rng)
+    histo_count, position_rad, position_azim = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 3], range=rng)
+
+    histo_signal = histo_signal.T
+    histo_normalization = histo_normalization.T
+    histo_count = histo_count.T
     if variance is not None or poissonian:
-        histo_variance, position_azim, position_rad = numpy.histogram2d(azimuthal, radial, npt, weights=prep[:, 1], range=[azimuth_range, radial_range])
+        histo_variance, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 1], range=rng)
+        histo_variance = histo_variance.T
     else:
         histo_variance = None
-    histo_normalization, position_azim, position_rad = numpy.histogram2d(azimuthal, radial, npt, weights=prep[:, 2], range=[azimuth_range, radial_range])
-    histo_count, position_azim, position_rad = numpy.histogram2d(azimuthal, radial, npt, weights=prep[:, 3], range=[azimuth_range, radial_range])
 
-    bins_azim = (position_azim[1:] + position_azim[:-1]) / 2.0
-    bins_rad = (position_rad[1:] + position_rad[:-1]) / 2.0
-    with numpy.errstate(divide='ignore'):
+    bins_azim = 0.5 * (position_azim[1:] + position_azim[:-1])
+    bins_rad = 0.5 * (position_rad[1:] + position_rad[:-1])
+
+    with numpy.errstate(divide='ignore', invalid='ignore'):
         intensity = histo_signal / histo_normalization
         if histo_variance is None:
             error = None
@@ -235,4 +243,5 @@ def histogram2d_engine(radial, azimuthal, npt,
     intensity[mask_empty] = empty
     if error is not None:
         error[mask_empty] = empty
+        error = error
     return Integrate2dtpl(bins_rad, bins_azim, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)

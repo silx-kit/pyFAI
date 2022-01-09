@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "09/01/2022"
 
 import tempfile
 import contextlib
@@ -182,7 +182,7 @@ class TestIntegrate2D(unittest.TestCase):
         cls.data = fabio.open(cls.img).data
         cls.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
         cls.ai.wavelength = 1e-10
-        cls.Rmax = 20
+        cls.Rmax = 30
         cls.delta_pos_azim_max = 0.28
 
     @classmethod

@@ -161,6 +161,7 @@ class TestSparseIntegrate2d(unittest.TestCase):
             obt = self.integrate(method)
             self.assertLess(abs(ref.radial - obt.radial).max(), 1e-3, f"radial matches for {m} with {split} split")
             self.assertLess(abs(ref.azimuthal - obt.azimuthal).max(), 1e-3, f"azimuthal matches for {m} with {split} split")
+            print(method, ref.intensity.shape, obt.intensity.shape)
             res = self.cost(ref, obt)
             if res > 1:
                 logger.error("Numerical values are odd (R=%s)... please refine this test for %s  split!", res, method)

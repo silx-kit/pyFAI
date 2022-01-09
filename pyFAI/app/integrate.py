@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "07/01/2022"
 __satus__ = "production"
 
 import sys
@@ -108,6 +108,7 @@ def integrate_gui(options, args):
             builder.addImageFormat("NumPy binary files", "npy")
             builder.addImageFormat("CBF files", "cbf")
             builder.addImageFormat("MarCCD image files", "mccd")
+            builder.addImageFormat("HDF5 image stack", "h5 hdf5 nxs")
             dialog.setNameFilters(builder.getFilters())
 
             dialog.setFileMode(qt.QFileDialog.ExistingFiles)
@@ -129,7 +130,7 @@ def integrate_gui(options, args):
 
             def run(self):
                 observer = dialog.createObserver(qtSafe=True)
-                process(input_data, window.output_path, config, options.monitor_key, observer, options.write_mode)
+                process(input_data, window.output_path, config, options.monitor_key, observer, options.write_mode, format_=options.format.lower())
 
         qtProcess = QtProcess()
         qtProcess.start()
@@ -582,7 +583,7 @@ class Statistics(object):
         return self._execution
 
 
-def process(input_data, output, config, monitor_name, observer, write_mode=HDF5Writer.MODE_ERROR):
+def process(input_data, output, config, monitor_name, observer, write_mode=HDF5Writer.MODE_ERROR, format_=None):
     """
     Integrate a set of data.
 
@@ -591,6 +592,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     :param dict config: Dictionary to configure `pyFAI.worker.Worker`
     :param IntegrationObserver observer: Observer of the processing
     :param str write_mode: Specify options to deal with IO errors
+    :param format_: output format
     """
     statistics = Statistics()
     statistics.execution_started()
@@ -656,7 +658,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
             entry_path = None
         if os.path.isdir(output):
             writer = MultiFileWriter(output, mode=write_mode)
-        elif output.endswith(".h5") or output.endswith(".hdf5"):
+        elif output.endswith(".h5") or output.endswith(".hdf5") or format_ in ("h5", "hdf5"):
             writer = HDF5Writer(output, hpath=entry_path, append_frames=True, mode=write_mode)
         else:
             output_path = os.path.abspath(output)
@@ -785,8 +787,8 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                         dest="output", default=None,
                         help="Directory or file where to store the output data")
     parser.add_argument("-f", "--format",
-                        dest="format", default=None,
-                        help="output data format (can be HDF5)")
+                        dest="format", default="None",
+                        help="output data format (can be used to enforce HDF5 in combination with --output)")
     parser.add_argument("-s", "--slow-motor",
                         dest="slow", default=None,
                         help="Dimension of the scan on the slow direction (makes sense only with HDF5)")

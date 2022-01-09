@@ -38,7 +38,7 @@ Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jerome Kieffer"
-__date__ = "06/01/2022"
+__date__ = "07/01/2022"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -608,8 +608,8 @@ def histogram2d_engine(pos0,
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
                     
     return Integrate2dtpl(bin_centers0, bin_centers1,
-                          numpy.asarray(out_signal),
+                          numpy.asarray(out_signal).T,
                           numpy.asarray(out_error) if nchan >= 3 else None,
-                          numpy.asarray(out_data[...,0]), numpy.asarray(out_data[...,1]), numpy.asarray(out_data[...,2]), numpy.asarray(out_data[...,3]))
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
 
 histogram2d_preproc = histogram2d_engine 
