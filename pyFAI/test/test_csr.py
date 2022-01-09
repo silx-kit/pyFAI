@@ -39,6 +39,7 @@ from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
 from ..engines.CSR_engine import CsrIntegrator2d, CsrIntegrator1d
+from ..method_registry import IntegrationMethod
 from .. import azimuthalIntegrator
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
@@ -163,7 +164,8 @@ class TestCSR(utilstest.ParametricTestCase):
         self.assertLess(error.std(), 3, "img are almost the same")
 
         # Validate the scipy integrator ....
-        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        method = IntegrationMethod.select_method(2, split="bbox", algo="CSR", impl="cython")[0]
+        engine = self.ai.engines[method].engine
         scipy_engine = CsrIntegrator2d(self.data.size,
                                        lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,
@@ -182,7 +184,10 @@ class TestCSR(utilstest.ParametricTestCase):
     def test_2d_nosplit(self):
         self.ai.reset()
         result_histo = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="histogram")
+        print(result_histo[0].shape, result_histo.method)
         result_nosplit = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="nosplit_csr")
+        print(result_nosplit[0].shape, result_nosplit.method)
+        print(result_histo.radial, result_nosplit.radial)
         self.assertTrue(numpy.allclose(result_histo.radial, result_nosplit.radial), " 2Th are the same")
         self.assertTrue(numpy.allclose(result_histo.azimuthal, result_nosplit.azimuthal, atol=1e-5), " Chi are the same")
         error = (result_histo.intensity - result_nosplit.intensity)
@@ -192,7 +197,9 @@ class TestCSR(utilstest.ParametricTestCase):
         self.assertLess(error.std(), 3, "img are almost the same")
 
         # Validate the scipy integrator ....
-        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        method = IntegrationMethod.select_method(2, split="no", algo="CSR", impl="cython")[0]
+
+        engine = self.ai.engines[method].engine
         scipy_engine = CsrIntegrator2d(self.data.size,
                                        lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,

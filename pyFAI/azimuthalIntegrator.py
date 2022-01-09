@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2021"
+__date__ = "09/01/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -796,7 +796,7 @@ class AzimuthalIntegrator(Geometry):
                                                                               delta_dummy=delta_dummy,
                                                                               normalization_factor=1.0,
                                                                               coef_power=2)
-                                    with numpy.errstate(divide='ignore'):
+                                    with numpy.errstate(divide='ignore', invalid='ignore'):
                                         sigma = numpy.sqrt(a) / (b * normalization_factor)
                                     sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
@@ -816,7 +816,7 @@ class AzimuthalIntegrator(Geometry):
                                                                      delta_dummy=delta_dummy,
                                                                      coef_power=2,
                                                                      normalization_factor=1.0)
-                            with numpy.errstate(divide='ignore'):
+                            with numpy.errstate(divide='ignore', invalid='ignore'):
                                 sigma = numpy.sqrt(a) / (b * normalization_factor)
                             sigma[b == 0] = dummy if dummy is not None else self._empty
 
@@ -904,7 +904,7 @@ class AzimuthalIntegrator(Geometry):
                                                                    solidangle=None,
                                                                    dummy=dummy,
                                                                    delta_dummy=delta_dummy)
-                                with numpy.errstate(divide='ignore'):
+                                with numpy.errstate(divide='ignore', invalid='ignore'):
                                     sigma = numpy.sqrt(a) / (b * normalization_factor)
                                 sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
@@ -923,7 +923,7 @@ class AzimuthalIntegrator(Geometry):
                                                                      dummy=dummy,
                                                                      delta_dummy=delta_dummy,
                                                                      normalization_factor=1.0)
-                            with numpy.errstate(divide='ignore'):
+                            with numpy.errstate(divide='ignore', invalid='ignore'):
                                 sigma = numpy.sqrt(a) / (b * normalization_factor)
                             sigma[b == 0] = dummy if dummy is not None else self._empty
 
@@ -957,7 +957,7 @@ class AzimuthalIntegrator(Geometry):
                                                         mask=mask,
                                                         normalization_factor=1.0
                                                         )
-                with numpy.errstate(divide='ignore'):
+                with numpy.errstate(divide='ignore', invalid='ignore'):
                     sigma = numpy.sqrt(a) / (b * normalization_factor)
                 sigma[b == 0] = dummy if dummy is not None else self._empty
 
@@ -1002,7 +1002,7 @@ class AzimuthalIntegrator(Geometry):
                                                        delta_dummy=delta_dummy,
                                                        mask=mask,
                                                        )
-                with numpy.errstate(divide='ignore'):
+                with numpy.errstate(divide='ignore', invalid='ignore'):
                     sigma = numpy.sqrt(a) / (b * normalization_factor)
                 sigma[b == 0] = dummy if dummy is not None else self._empty
 
@@ -1048,7 +1048,7 @@ class AzimuthalIntegrator(Geometry):
                                                          bin_range=radial_range,
                                                          pixelSize_in_Pos=1,
                                                          empty=dummy if dummy is not None else self._empty)
-                    with numpy.errstate(divide='ignore'):
+                    with numpy.errstate(divide='ignore', invalid='ignore'):
                         sigma = numpy.sqrt(a) / (b * normalization_factor)
                     sigma[b == 0] = dummy if dummy is not None else self._empty
             elif method.impl_lower == "python":
@@ -1056,14 +1056,14 @@ class AzimuthalIntegrator(Geometry):
                 count, b = numpy.histogram(pos0, npt, range=radial_range)
                 qAxis = (b[1:] + b[:-1]) / 2.0
                 sum_, b = numpy.histogram(pos0, npt, weights=data, range=radial_range)
-                with numpy.errstate(divide='ignore'):
+                with numpy.errstate(divide='ignore', invalid='ignore'):
                     if error_model == "azimuthal":
                         variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)[mask]) ** 2
                     if variance is not None:
                         var1d, b = numpy.histogram(pos0, npt, weights=variance, range=radial_range)
                         sigma = numpy.sqrt(var1d) / (count * normalization_factor)
                         sigma[count == 0] = dummy if dummy is not None else self._empty
-                    with numpy.errstate(divide='ignore'):
+                    with numpy.errstate(divide='ignore', invalid='ignore'):
                         I = sum_ / count / normalization_factor
                     I[count == 0] = dummy if dummy is not None else self._empty
 
@@ -2105,7 +2105,7 @@ class AzimuthalIntegrator(Geometry):
 
         return result
 
-    integrate2d = _integrate2d_legacy = integrate2d_legacy
+    _integrate2d_legacy = integrate2d_legacy
 
     def integrate2d_ng(self, data, npt_rad, npt_azim=360,
                         filename=None, correctSolidAngle=True, variance=None,
@@ -2363,20 +2363,22 @@ class AzimuthalIntegrator(Geometry):
                             if (ocl_integr is None) or (ocl_integr.on_device["data"] != integr.lut_checksum):
                                 ocl_integr = ocl_azim_csr.OCL_CSR_Integrator(integr.lut,
                                                                              integr.size,
+                                                                             bin_centers=integr.bin_centers0,
+                                                                             azim_centers=integr.bin_centers1,
                                                                              platformid=platformid,
                                                                              deviceid=deviceid,
                                                                              checksum=integr.lut_checksum)
                                 ocl_engine.set_engine(ocl_integr)
                         if (not error) and (ocl_integr is not None):
-                                res = ocl_integr.integrate_ng(data, dark=dark, flat=flat,
-                                                                         solidangle=solidangle,
-                                                                         solidangle_checksum=self._dssa_crc,
-                                                                         dummy=dummy,
-                                                                         delta_dummy=delta_dummy,
-                                                                         polarization=polarization,
-                                                                         polarization_checksum=polarization_crc,
-                                                                         safe=safe,
-                                                                         normalization_factor=normalization_factor)
+                                intpl = ocl_integr.integrate_ng(data, dark=dark, flat=flat,
+                                                                 solidangle=solidangle,
+                                                                 solidangle_checksum=self._dssa_crc,
+                                                                 dummy=dummy,
+                                                                 delta_dummy=delta_dummy,
+                                                                 polarization=polarization,
+                                                                 polarization_checksum=polarization_crc,
+                                                                 safe=safe,
+                                                                 normalization_factor=normalization_factor)
             if intpl is None:  # fallback if OpenCL failed or default cython
                 # The integrator has already been initialized previously
                 intpl = cython_integr.integrate_ng(data,
@@ -2389,16 +2391,16 @@ class AzimuthalIntegrator(Geometry):
                                                    solidangle=solidangle,
                                                    polarization=polarization,
                                                    normalization_factor=normalization_factor)
-
-                I = intpl.intensity
-                bins_rad = intpl.radial
-                bins_azim = intpl.azimuthal
-                signal2d = intpl.signal
-                norm2d = intpl.normalization
-                count = intpl.count
-                if variance is not None:
-                    sigma = intpl.sigma
-                    var2d = intpl.variance
+            print(method)
+            I = intpl.intensity
+            bins_rad = intpl.radial
+            bins_azim = intpl.azimuthal
+            signal2d = intpl.signal
+            norm2d = intpl.normalization
+            count = intpl.count
+            if variance is not None:
+                sigma = intpl.sigma
+                var2d = intpl.variance
 
         elif method.algo_lower == "histogram":
             if method.split_lower in ("pseudo", "full"):
@@ -2421,15 +2423,6 @@ class AzimuthalIntegrator(Geometry):
                                  chiDiscAtPi=self.chiDiscAtPi,
                                  empty=empty,
                                  variance=variance)
-                I = res.intensity
-                bins_rad = res.radial
-                bins_azim = res.azimuthal
-                signal2d = res.signal
-                norm2d = res.normalization
-                count = res.count
-                if variance is not None:
-                    sigma = res.sigma
-                    var2d = res.variance
 
             elif method.split_lower == "bbox":
                 logger.debug("integrate2d uses BBox implementation")
@@ -2456,16 +2449,6 @@ class AzimuthalIntegrator(Geometry):
                                                chiDiscAtPi=self.chiDiscAtPi,
                                                empty=empty,
                                                variance=variance)
-                I = res.intensity
-                bins_rad = res.radial
-                bins_azim = res.azimuthal
-                signal2d = res.signal
-                norm2d = res.normalization
-                count = res.count
-                if variance is not None:
-                    sigma = res.sigma
-                    var2d = res.variance
-
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
                     raise NotImplementedError(("2D histogram OpenCL"))
@@ -2498,15 +2481,7 @@ class AzimuthalIntegrator(Geometry):
                                                        split=False,
                                                        empty=empty,
                                                        )
-                    I = res.intensity.T
-                    bins_azim = res.azimuthal
-                    bins_rad = res.radial
-                    signal2d = res.signal.T
-                    norm2d = res.normalization.T
-                    count = res.count.T
-                    if variance is not None:
-                        sigma = res.sigma.T
-                        var2d = res.variance.T
+
                 else:  # Python implementation:
                     logger.debug("integrate2d uses python implementation")
                     data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
@@ -2523,7 +2498,7 @@ class AzimuthalIntegrator(Geometry):
                     if azimuth_range is None:
                         azimuth_range = [pos1.min(), pos1.max()]
 
-                    if method.method[1:4] == ("no", "histogram", "cython"):
+                    if method.method[1:4] == ("no", "histogram", "python"):
                         logger.debug("integrate2d uses Numpy implementation")
                         res = histogram_engine.histogram2d_engine(radial=pos0,
                                                                   azimuthal=pos1,
@@ -2545,19 +2520,19 @@ class AzimuthalIntegrator(Geometry):
                                                                   poissonian=False,
                                                                   radial_range=radial_range,
                                                                   azimuth_range=azimuth_range)
-                        I = res.intensity
-                        bins_azim = res.azimuthal
-                        bins_rad = res.radial
-                        signal2d = res.signal
-                        norm2d = res.normalization
-                        count = res.count
-                        if variance is not None:
-                            sigma = res.sigma
-                            var2d = res.variance
+            I = res.intensity
+            bins_azim = res.azimuthal
+            bins_rad = res.radial
+            signal2d = res.signal
+            norm2d = res.normalization
+            count = res.count
+            if variance is not None:
+                sigma = res.sigma
+                var2d = res.variance
 
         # Duplicate arrays on purpose ....
         bins_rad = bins_rad * pos0_scale
-        bins_azim = bins_azim * 180.0 / pi
+        bins_azim = bins_azim * (180.0 / pi)
 
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
         result._set_method_called("integrate2d")
@@ -2583,7 +2558,7 @@ class AzimuthalIntegrator(Geometry):
 
         return result
 
-    _integrate2d_ng = integrate2d_ng
+    integrate2d = _integrate2d_ng = integrate2d_ng
 
     @deprecated(since_version="0.14", reason="Use the class DefaultAiWriter")
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
