@@ -184,10 +184,7 @@ class TestCSR(utilstest.ParametricTestCase):
     def test_2d_nosplit(self):
         self.ai.reset()
         result_histo = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="histogram")
-        print(result_histo[0].shape, result_histo.method)
         result_nosplit = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="nosplit_csr")
-        print(result_nosplit[0].shape, result_nosplit.method)
-        print(result_histo.radial, result_nosplit.radial)
         self.assertTrue(numpy.allclose(result_histo.radial, result_nosplit.radial), " 2Th are the same")
         self.assertTrue(numpy.allclose(result_histo.azimuthal, result_nosplit.azimuthal, atol=1e-5), " Chi are the same")
         error = (result_histo.intensity - result_nosplit.intensity)
