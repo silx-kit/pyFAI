@@ -69,7 +69,8 @@ All files are unpacked into the directory pyFAI-master::
 
 Build it & test it::
 
-    python3 setup.py build test
+    python3 setup.py build 
+    python3 run_tests.py
 
 For its tests, pyFAI downloads test images from the internet.
 Depending on your network connection and your local network configuration,
@@ -80,26 +81,20 @@ you may have to setup a proxy configuration like this (no more needed at ESRF)::
 Finally, install pyFAI in the virtualenv after testing it::
 
     python3 setup.py bdist_wheel
-    pip install pyFAI --pre --find-links dist --no-index --upgrade
-
-If you prefer a local installation (only you will have access to the
-installed version), use in addition the --user option::
-
-    pip install pyFAI --pre --find-links dist --no-index --upgrade --user
+    pip install --upgrade .
 
 The newest development version can also be obtained by checking out from the git
 repository::
 
     git clone https://github.com/silx-kit/pyFAI.git
     cd pyFAI
-    python3 setup.py build bdist_wheel
-    pip install pyFAI --pre --find-links dist --no-index --upgrade
+    pip install --upgrade .
     
 If you want pyFAI to make use of your graphic card, please install
 `pyopencl <http://mathema.tician.de/software/pyopencl>`_
 
 If you are using MS Windows you can also download a binary version packaged as executable
-installation files (Chose the one corresponding to your python version).
+installation files (choose the one corresponding to your python version).
 
 For MacOSX users with MacOS version>10.7, the default compiler switched from gcc
 to clang and dropped the OpenMP support. Please refer to the installation documentation ...
@@ -115,7 +110,7 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 3.6, ... 3.9 are well tested and officially supported.
+Python 3.6, ... 3.10 are well tested and officially supported.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
