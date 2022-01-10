@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2021"
+__date__ = "10/01/2022"
 
 import unittest
 import os
@@ -41,7 +41,6 @@ import logging
 import time
 import copy
 import fabio
-import tempfile
 import gc
 import shutil
 from .utilstest import UtilsTest
@@ -261,7 +260,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         logger.info("Histogram Cython/Numpy Rwp = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
-            fig,sp = pylab.subplots()
+            fig, sp = pylab.subplots()
             fig.suptitle('Numpy Histogram vs Cython: Rwp=%.3f' % rwp)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-y", label='fit2d')
             sp.plot(tth_np, I_np, "-b", label='numpy')
@@ -508,20 +507,12 @@ class TestSetter(unittest.TestCase):
         self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
         self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
 
-        tmp_dir = os.path.join(UtilsTest.tempdir, self.id())
-        if not os.path.isdir(tmp_dir):
-            os.mkdir(tmp_dir)
-        self.tmp_dir = tmp_dir
-
-        fd, self.edf1 = tempfile.mkstemp(".edf", "testAI1", tmp_dir)
+        fd, self.edf1 = UtilsTest.tempfile(".edf", "testAI1", dir=__class__.__name__)
         os.close(fd)
-        fd, self.edf2 = tempfile.mkstemp(".edf", "testAI2", tmp_dir)
+        fd, self.edf2 = UtilsTest.tempfile(".edf", "testAI2", dir=__class__.__name__)
         os.close(fd)
         fabio.edfimage.edfimage(data=self.rnd1).write(self.edf1)
         fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
-
-    def tearDown(self):
-        shutil.rmtree(self.tmp_dir)
 
     def test_flat(self):
         self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")

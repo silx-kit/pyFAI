@@ -33,10 +33,9 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "10/01/2022"
 
 import os
-import tempfile
 import shutil
 import unittest
 import numpy
@@ -164,13 +163,13 @@ class TestDetector(unittest.TestCase):
         self.assertAlmostEqual(last[:, 2].max(), 1030 * 75e-6, places=7, msg="width match")
 
     def test_nexus_detector(self):
-        tmpdir = tempfile.mkdtemp()
-        known_fail = []
         if io.h5py is None:
             logger.warning("H5py not present, skipping test_detector.TestDetector.test_nexus_detector")
-            return
+            raise unittest.SkipTest("H5py not present, skipping test_detector.TestDetector.test_nexus_detector")
+        tmpdir = os.path.join(UtilsTest.tempdir, "test_nexus_detector")
+        os.makedirs(tmpdir)
+        known_fail = []
         for det_name in ALL_DETECTORS:
-
             fname = os.path.join(tmpdir, det_name + ".h5")
             if os.path.exists(fname):  # already tested with another alias
                 continue

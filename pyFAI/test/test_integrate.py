@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,9 +31,8 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2022"
+__date__ = "10/01/2022"
 
-import tempfile
 import contextlib
 import os
 import unittest
@@ -52,17 +51,28 @@ from ..method_registry import IntegrationMethod
 
 @contextlib.contextmanager
 def resulttempfile():
-    fd, path = tempfile.mkstemp(prefix="pyfai_", suffix=".out")
+    fd, path = UtilsTest.tempfile(prefix="pyfai_", suffix=".out", dir=__name__)
     os.close(fd)
     os.remove(path)
     yield path
     os.remove(path)
 
 
+def cleantempdir():
+    tempdir = os.path.join(UtilsTest.tempdir, __name__)
+    if os.path.isdir(tempdir) and not os.listdir(tempdir):
+        os.rmdir(tempdir)
+
+
 class TestIntegrate1D(unittest.TestCase):
 
-    def setUp(self):
-        unittest.TestCase.setUp(self)
+    @classmethod
+    def tearDownClass(self):
+        self.npt = self.img = self.data = self.ai = self.Rmax = None
+        cleantempdir()
+
+    @classmethod
+    def setUpClass(self):
         self.npt = 1000
         self.img = UtilsTest.getimage("Pilatus1M.edf")
         self.data = fabio.open(self.img).data
@@ -72,10 +82,6 @@ class TestIntegrate1D(unittest.TestCase):
         self.methods = ["numpy", "cython", "BBox", "splitpixel", "lut"]
         if UtilsTest.opencl:
             self.methods.append("lut_ocl")
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.npt = self.img = self.data = self.ai = self.Rmax = None
 
     def testQ(self):
         res = {}
@@ -193,6 +199,7 @@ class TestIntegrate2D(unittest.TestCase):
         cls.ai = None
         cls.Rmax = None
         cls.delta_pos_azim_max = None
+        cleantempdir()
 
     def testQ(self):
         res = {}
