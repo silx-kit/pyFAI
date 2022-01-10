@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "10/01/2022"
 
 import sys
 import os
@@ -73,4 +73,5 @@ def run_tests():
         return 1
     else:
         print("Test suite succeeded")
+        utilstest.UtilsTest.clean_up()
         return 0
