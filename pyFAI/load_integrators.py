@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2021"
+__date__ = "10/01/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -44,6 +44,7 @@ from collections import OrderedDict
 import numpy
 
 from .method_registry import IntegrationMethod
+from .engines import CSR_engine as py_CSR_engine
 # Register numpy integrators which are fail-safe
 from .engines import histogram_engine
 IntegrationMethod(1, "no", "histogram", "python", old_method="numpy",
@@ -117,20 +118,15 @@ else:
                       class_funct_ng=(splitBBoxCSR.HistoBBox1d, splitBBoxCSR.HistoBBox1d.integrate_ng))
     IntegrationMethod(2, "bbox", "CSR", "cython", old_method="csr",
                       class_funct_legacy=(splitBBoxCSR.HistoBBox2d, splitBBoxCSR.HistoBBox2d.integrate))
-    from .engines import CSR_engine as py_CSR_engine
+
     IntegrationMethod(1, "no", "CSR", "python",
                       class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
     IntegrationMethod(2, "no", "CSR", "python",
                       class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
-    # error propagation does not work properly with pixel splitting for now
     IntegrationMethod(1, "bbox", "CSR", "python",
                       class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
-    IntegrationMethod(1, "full", "CSR", "python",
-                      class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
-#     IntegrationMethod(1, "bbox", "CSR", "python",
-#                       class_funct=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
-#     IntegrationMethod(2, "bbox", "CSR", "python",
-#                       class_funct=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+    IntegrationMethod(2, "bbox", "CSR", "python",
+                      class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
 
 try:
     from .ext import splitBBoxLUT
@@ -183,6 +179,10 @@ else:
     IntegrationMethod(2, "full", "CSR", "cython", old_method="full_csr",
                       class_funct_legacy=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate),
                       class_funct_ng=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate_ng))
+    IntegrationMethod(1, "full", "CSR", "python",
+                      class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+    IntegrationMethod(2, "full", "CSR", "python",
+                      class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
 
 try:
     from .opencl import ocl
