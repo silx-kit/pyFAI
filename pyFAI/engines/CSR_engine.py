@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/11/2021"
+__date__ = "10/01/2022"
 __status__ = "development"
 
 import logging
@@ -43,7 +43,7 @@ except ImportError as err:
     preproc = preproc_np
 else:
     preproc = preproc_cy
-
+from ..utils import calc_checksum
 from ..containers import Integrate1dtpl, Integrate2dtpl
 
 
@@ -336,7 +336,7 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
                 msk = (norm == 0)
                 delta2 = (prep_flat[:, 0] / norm - avg_ext) ** 2
                 delta2[msk] = 0
-            res[:, 1] = self._csr.dot(delta2 )#* norm) / self._csr.dot(norm)
+            res[:, 1] = self._csr.dot(delta2)  # * norm) / self._csr.dot(norm)
         else:
             res[:, 1] = self._csr2.dot(prep_flat[:, 1])
 
@@ -399,7 +399,8 @@ class CsrIntegrator2d(CSRIntegrator):
                  lut=None,
                  empty=0.0,
                  bin_centers0=None,
-                 bin_centers1=None):
+                 bin_centers1=None,
+                 checksum=None):
         """Constructor of the abstract class for 2D integration
         
         :param size: input image size
@@ -413,6 +414,10 @@ class CsrIntegrator2d(CSRIntegrator):
         """
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
+        if not checksum:
+            self.checksum = calc_checksum(lut[0])
+        else:
+            self.checksum = checksum
         CSRIntegrator.__init__(self, image_size, lut, empty)
 
     def set_matrix(self, data, indices, indptr):
@@ -480,3 +485,4 @@ class CsrIntegrator2d(CSRIntegrator):
                               intensity, error,
                               signal, variance, normalization, count)
 
+    integrate_ng = integrate

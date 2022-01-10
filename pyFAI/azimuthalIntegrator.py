@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2022"
+__date__ = "10/01/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2336,49 +2336,63 @@ class AzimuthalIntegrator(Geometry):
                         logger.info("AI.integrate2d: Resetting integrator because %s", reset)
                         split = method.split_lower
                         try:
-                            integr = self.setup_CSR(shape, npt, mask,
-                                                    radial_range, azimuth_range,
-                                                    mask_checksum=mask_crc,
-                                                    unit=unit, split=split,
-                                                    scale=False)
+                            if method.algo_lower == "csr":
+                                cython_integr = self.setup_CSR(shape, npt, mask,
+                                                               radial_range, azimuth_range,
+                                                               mask_checksum=mask_crc,
+                                                               unit=unit, split=split,
+                                                               scale=False)
+                            else:
+                                cython_integr = self.setup_LUT(shape, npt, mask,
+                                                               radial_range, azimuth_range,
+                                                               mask_checksum=mask_crc,
+                                                               unit=unit, split=split,
+                                                               scale=False)
                         except MemoryError:
-                            logger.warning("MemoryError: falling back on default forward implementation")
-                            integr = None
+                            logger.warning("MemoryError: falling back on default implementation")
+                            cython_integr = None
                             self.reset_engines()
                             method = self.DEFAULT_METHOD_2D
                             error = True
                         else:
                             error = False
-                            engine.set_engine(integr)
+                            cython_engine.set_engine(cython_integr)
                 if not error:
-                    if (method.impl_lower == "opencl"):
-                        if OCL_CSR_ENGINE in self.engines:
-                            ocl_engine = self.engines[OCL_CSR_ENGINE]
-                        else:
-                            ocl_engine = self.engines[OCL_CSR_ENGINE] = Engine()
-                        with ocl_engine.lock:
-                            if method.target is not None:
-                                platformid, deviceid = method.target
-                            ocl_integr = ocl_engine.engine
-                            if (ocl_integr is None) or (ocl_integr.on_device["data"] != integr.lut_checksum):
-                                ocl_integr = ocl_azim_csr.OCL_CSR_Integrator(integr.lut,
-                                                                             integr.size,
-                                                                             bin_centers=integr.bin_centers0,
-                                                                             azim_centers=integr.bin_centers1,
-                                                                             platformid=platformid,
-                                                                             deviceid=deviceid,
-                                                                             checksum=integr.lut_checksum)
-                                ocl_engine.set_engine(ocl_integr)
-                        if (not error) and (ocl_integr is not None):
-                                intpl = ocl_integr.integrate_ng(data, dark=dark, flat=flat,
-                                                                 solidangle=solidangle,
-                                                                 solidangle_checksum=self._dssa_crc,
-                                                                 dummy=dummy,
-                                                                 delta_dummy=delta_dummy,
-                                                                 polarization=polarization,
-                                                                 polarization_checksum=polarization_crc,
-                                                                 safe=safe,
-                                                                 normalization_factor=normalization_factor)
+                    if method in self.engines:
+                        ocl_py_engine = self.engines[method]
+                    else:
+                        ocl_py_engine = self.engines[method] = Engine()
+                    integr = ocl_py_engine.engine
+                    if integr is None or integr.checksum != cython_integr.lut_checksum:
+                        if (method.impl_lower == "opencl"):
+                            with ocl_py_engine.lock:
+                                print(method)
+                                integr = method.class_funct_ng.klass(cython_integr.lut,
+                                                                     cython_integr.size,
+                                                                     bin_centers=cython_integr.bin_centers0,
+                                                                     azim_centers=cython_integr.bin_centers1,
+                                                                     platformid=method.target[0],
+                                                                     deviceid=method.target[1],
+                                                                     checksum=cython_integr.lut_checksum)
+                        elif (method.impl_lower == "python"):
+                            with ocl_py_engine.lock:
+                                integr = method.class_funct_ng.klass(cython_integr.lut,
+                                                                     cython_integr.size,
+                                                                     bin_centers=cython_integr.bin_centers0,
+                                                                     azim_centers=cython_integr.bin_centers1,
+                                                                     checksum=cython_integr.lut_checksum)
+                        ocl_py_engine.set_engine(integr)
+
+                    if (integr is not None):
+                            intpl = integr.integrate_ng(data, dark=dark, flat=flat,
+                                                         solidangle=solidangle,
+                                                         solidangle_checksum=self._dssa_crc,
+                                                         dummy=dummy,
+                                                         delta_dummy=delta_dummy,
+                                                         polarization=polarization,
+                                                         polarization_checksum=polarization_crc,
+                                                         safe=safe,
+                                                         normalization_factor=normalization_factor)
             if intpl is None:  # fallback if OpenCL failed or default cython
                 # The integrator has already been initialized previously
                 intpl = cython_integr.integrate_ng(data,
@@ -2406,7 +2420,7 @@ class AzimuthalIntegrator(Geometry):
                 logger.debug("integrate2d uses (full, histogram, cython) implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 integrator = method.class_funct_ng.function
-                res = integrator(pos=pos,
+                intpl = integrator(pos=pos,
                                  weights=data,
                                  bins=(npt_rad, npt_azim),
                                  pos0_range=radial_range,
@@ -2429,7 +2443,7 @@ class AzimuthalIntegrator(Geometry):
                 dchi = self.deltaChi(shape)
                 pos0 = self.array_from_unit(shape, "center", unit, scale=False)
                 dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
-                res = splitBBox.histoBBox2d_ng(weights=data,
+                intpl = splitBBox.histoBBox2d_ng(weights=data,
                                                pos0=pos0,
                                                delta_pos0=dpos0,
                                                pos1=chi,
@@ -2450,7 +2464,76 @@ class AzimuthalIntegrator(Geometry):
                                                variance=variance)
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
-                    raise NotImplementedError(("2D histogram OpenCL"))
+                    logger.debug("integrate2d uses OpenCL histogram implementation")
+                    if method not in self.engines:
+                    # instanciated the engine
+                        engine = self.engines[method] = Engine()
+                    else:
+                        engine = self.engines[method]
+                    with engine.lock:
+                        # Validate that the engine used is the proper one #TODO!!!!
+                        integr = engine.engine
+                        reset = None
+                        if integr is None:
+                            reset = "init"
+                        if (not reset) and safe:
+                            if integr.unit != unit:
+                                reset = "unit changed"
+                            if (integr.bins_radial, integr.bins_azimuthal) != npt:
+                                reset = "number of points changed"
+                            if integr.size != data.size:
+                                reset = "input image size changed"
+                            if (mask is not None) and (not integr.check_mask):
+                                reset = "mask but CSR was without mask"
+                            elif (mask is None) and (integr.check_mask):
+                                reset = "no mask but CSR has mask"
+                            elif (mask is not None) and (integr.on_device.get("mask") != mask_crc):
+                                reset = "mask changed"
+                            if self._cached_array[unit.name.split("_")[0] + "_crc"] != integr.on_device.get("radial"):
+                                reset = "radial array changed"
+                            if self._cached_array["chi_crc"] != integr.on_device.get("azimuthal"):
+                                reset = "azimuthal array changed"
+                            # Nota: Ranges are enforced at runtime, not initialization
+                        error = False
+                        if reset:
+                            logger.info("AI.integrate2d: Resetting OCL_Histogram2d integrator because %s", reset)
+                            rad = self.array_from_unit(shape, typ="center", unit=unit, scale=False)
+                            rad_crc = self._cached_array[unit.name.split("_")[0] + "_crc"] = crc32(rad)
+                            azi = self.chiArray(shape)
+                            azi_crc = self._cached_array["chi_crc"] = crc32(azi)
+                            try:
+                                integr = method.class_funct_ng.klass(rad,
+                                                                     azi,
+                                                                     *npt,
+                                                                     radial_checksum=rad_crc,
+                                                                     azimuthal_checksum=azi_crc,
+                                                                     empty=empty, unit=unit,
+                                                                     mask=mask, mask_checksum=mask_crc,
+                                                                     platformid=method.target[0],
+                                                                     deviceid=method.target[1]
+                                                                     )
+                            except MemoryError:
+                                logger.warning("MemoryError: falling back on default forward implementation")
+                                integr = None
+                                self.reset_engines()
+                                method = self.DEFAULT_METHOD_2D
+                                error = True
+                            else:
+                                error = False
+                                engine.set_engine(integr)
+                    if not error:
+                        intpl = integr.integrate(data, dark=dark, flat=flat,
+                                                 solidangle=solidangle,
+                                                 solidangle_checksum=self._dssa_crc,
+                                                 dummy=dummy,
+                                                 delta_dummy=delta_dummy,
+                                                 polarization=polarization,
+                                                 polarization_checksum=polarization_crc,
+                                                 safe=safe,
+                                                 normalization_factor=normalization_factor,
+                                                 radial_range=radial_range,
+                                                 azimuthal_range=azimuth_range)
+###################3
                 elif method.impl_lower == "cython":
                     logger.debug("integrate2d uses Cython histogram implementation")
                     prep = preproc(data,
@@ -2471,7 +2554,7 @@ class AzimuthalIntegrator(Geometry):
                                    dtype=numpy.float32)
                     pos0 = self.array_from_unit(shape, "center", unit, scale=False)
                     chi = self.chiArray(shape)
-                    res = histogram.histogram2d_engine(pos0=pos0,
+                    intpl = histogram.histogram2d_engine(pos0=pos0,
                                                        pos1=chi,
                                                        weights=prep,
                                                        bins=(npt_rad, npt_azim),
@@ -2499,35 +2582,35 @@ class AzimuthalIntegrator(Geometry):
 
                     if method.method[1:4] == ("no", "histogram", "python"):
                         logger.debug("integrate2d uses Numpy implementation")
-                        res = histogram_engine.histogram2d_engine(radial=pos0,
-                                                                  azimuthal=pos1,
-                                                                  npt=(npt_rad, npt_azim),
-                                                                  raw=data,
-                                                                  dark=dark,
-                                                                  flat=flat,
-                                                                  solidangle=solidangle,
-                                                                  polarization=polarization,
-                                                                  absorption=None,
-                                                                  mask=mask,
-                                                                  dummy=dummy,
-                                                                  delta_dummy=delta_dummy,
-                                                                  normalization_factor=normalization_factor,
-                                                                  empty=self._empty,
-                                                                  split_result=False,
-                                                                  variance=variance,
-                                                                  dark_variance=None,
-                                                                  poissonian=False,
-                                                                  radial_range=radial_range,
-                                                                  azimuth_range=azimuth_range)
-            I = res.intensity
-            bins_azim = res.azimuthal
-            bins_rad = res.radial
-            signal2d = res.signal
-            norm2d = res.normalization
-            count = res.count
+                        intpl = histogram_engine.histogram2d_engine(radial=pos0,
+                                                                    azimuthal=pos1,
+                                                                    npt=(npt_rad, npt_azim),
+                                                                    raw=data,
+                                                                    dark=dark,
+                                                                    flat=flat,
+                                                                    solidangle=solidangle,
+                                                                    polarization=polarization,
+                                                                    absorption=None,
+                                                                    mask=mask,
+                                                                    dummy=dummy,
+                                                                    delta_dummy=delta_dummy,
+                                                                    normalization_factor=normalization_factor,
+                                                                    empty=self._empty,
+                                                                    split_result=False,
+                                                                    variance=variance,
+                                                                    dark_variance=None,
+                                                                    poissonian=False,
+                                                                    radial_range=radial_range,
+                                                                    azimuth_range=azimuth_range)
+            I = intpl.intensity
+            bins_azim = intpl.azimuthal
+            bins_rad = intpl.radial
+            signal2d = intpl.signal
+            norm2d = intpl.normalization
+            count = intpl.count
             if variance is not None:
-                sigma = res.sigma
-                var2d = res.variance
+                sigma = intpl.sigma
+                var2d = intpl.variance
 
         # Duplicate arrays on purpose ....
         bins_rad = bins_rad * pos0_scale

@@ -34,7 +34,7 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2021"
+__date__ = "10/01/2022"
 
 import logging
 import numpy
@@ -133,6 +133,8 @@ class TestOclHistogram(unittest.TestCase):
         tests the 2D histogram kernel
         """
         from ..azim_hist import OCL_Histogram2d
+        from ...engines.histogram_engine import histogram2d_engine
+
         data = numpy.ones(self.ai.detector.shape)
         tth = self.ai.array_from_unit(unit="2th_deg")
         chi = numpy.degrees(self.ai.chiArray())
@@ -142,10 +144,29 @@ class TestOclHistogram(unittest.TestCase):
         maxi_rad = numpy.float32(tth.max() * (1.0 + numpy.finfo(numpy.float32).eps))
         mini_azim = numpy.float32(chi.min())
         maxi_azim = numpy.float32(chi.max() * (1.0 + numpy.finfo(numpy.float32).eps))
-        range_ = [[mini_rad, maxi_rad], [mini_azim, maxi_azim]]
 
         npt = (300, 36)
-        ref = self.ai._integrate2d_legacy(data, *npt, unit="2th_deg", method="numpy", dummy=dummy)
+
+        ref = histogram2d_engine(tth, chi, npt,
+                                 data,
+                                 dark=None,
+                                 flat=None,
+                                 solidangle=solidangle,
+                                 polarization=None,
+                                 absorption=None,
+                                 mask=None,
+                                 dummy=dummy,
+                                 delta_dummy=None,
+                                 normalization_factor=1.0,
+                                 empty=None,
+                                 split_result=False,
+                                 variance=None,
+                                 dark_variance=None,
+                                 poissonian=False,
+                                 radial_range=[mini_rad, maxi_rad],
+                                 azimuth_range=[mini_azim, maxi_azim])
+
+        # ref = self.ai._integrate2d_legacy(data, *npt, unit="2th_deg", method="numpy", dummy=dummy)
         integrator = OCL_Histogram2d(tth, chi, *npt, empty=dummy, profile=1)
         res = integrator(data, solidangle=solidangle)
 
@@ -154,25 +175,21 @@ class TestOclHistogram(unittest.TestCase):
         self.assertTrue(numpy.allclose(res.azimuthal, ref.azimuthal), "azimuthal position are the same")
         # A bit harder: the count of pixels
 
-        delta = ref.count - res.count.T
+        delta = ref.count - res.count
         self.assertLessEqual(delta.max(), 2, "counts are almost the same")
         self.assertLessEqual(delta.sum(), 1, "as much + and -")
         lost = max(abs(delta).sum(), 1.1)
         # Intensities are not that different:
-        delta = ref.intensity - res.intensity.T
+        delta = ref.intensity - res.intensity
         self.assertLessEqual(delta.max(), 1e-3, "intensity is almost the same")
 
         # histogram of normalization
-        ref = numpy.histogram2d(tth.ravel(), chi.ravel(), npt, range=range_, weights=solidangle.ravel())[0]
-        sig = res.normalization.sum(axis=-1, dtype="float64")
-        err = abs((sig - ref).sum())
+        err = abs((res.normalization - ref.normalization).sum())
         allowed = lost * solidangle.max()
         self.assertLessEqual(err, allowed, "normalization content is the same: %s<=%s" % (err, allowed))
 
         # histogram of signal
-        ref = numpy.histogram2d(tth.ravel(), chi.ravel(), npt, range=range_, weights=data.ravel())[0]
-        sig = res.signal.sum(axis=-1, dtype="float64")
-        err = abs((sig - ref).sum())
+        err = abs((res.signal - ref.signal).sum())
         allowed = lost * data.max()
         self.assertLessEqual(err, allowed, "signal content is the same: %s<=%s " % (err, allowed))
 

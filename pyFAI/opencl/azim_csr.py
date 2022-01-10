@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "07/01/2022"
+__date__ = "10/01/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -177,6 +177,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.send_buffer(self._indptr, "indptr")
         if "amd" in  self.ctx.devices[0].platform.name.lower():
             self.workgroup_size["csr_integrate4_single"] = (1, 1)  # Very bad performances on AMD GPU for diverging threads!
+
+    @property
+    def checksum(self):
+        return self.on_device.get("data")
 
     def __copy__(self):
         """Shallow copy of the object
