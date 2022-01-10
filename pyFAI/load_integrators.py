@@ -180,9 +180,12 @@ else:
                       class_funct_legacy=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate),
                       class_funct_ng=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate_ng))
     IntegrationMethod(1, "full", "CSR", "python",
+                      class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate),
                       class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+
     IntegrationMethod(2, "full", "CSR", "python",
-                      class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+                      class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate),
+                      class_funct_ng=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
 
 try:
     from .opencl import ocl
@@ -202,7 +205,7 @@ if ocl:
 
     for idx in (len(perf) - 1 - numpy.argsort(perf)):
         device = devices_list[idx]
-        devices[device] = ("%s / %s" % (ocl.platforms[device[0]].name, ocl.platforms[device[0]].devices[device[1]].name),
+        devices[device] = (f"{ocl.platforms[device[0]].name} / {ocl.platforms[device[0]].devices[device[1]].name}",
                            devtype_list[idx])
 
     try:
@@ -248,9 +251,10 @@ if ocl:
                                   class_funct_legacy=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
                                   class_funct_ng=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate_ng),
                                   target=ids, target_name=name[0], target_type=name[1])
-                # IntegrationMethod(2, "full", "CSR", "OpenCL", TODO: implement full-csr-cython !
-                #                   class_funct=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
-                #                   target=ids, target_name=name[0], target_type=name[1])
+                IntegrationMethod(2, "full", "CSR", "OpenCL",
+                                  class_funct_legacy=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate),
+                                  class_funct_ng=(ocl_azim_csr.OCL_CSR_Integrator, ocl_azim_csr.OCL_CSR_Integrator.integrate_ng),
+                                  target=ids, target_name=name[0], target_type=name[1])
 
     try:
         from .opencl import azim_lut as ocl_azim_lut  # IGNORE:F0401

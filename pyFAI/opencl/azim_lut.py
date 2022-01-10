@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/01/2022"
+__date__ = "10/01/2022"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -153,6 +153,10 @@ class OCL_LUT_Integrator(OpenclProcessing):
             ev = pyopencl.enqueue_copy(self.queue, self.cl_mem["lut"], lut.T.copy())
         if self.profile:
             self.events.append(EventDescription("copy LUT", ev))
+
+    @property
+    def checksum(self):
+        return self.on_device.get("data")
 
     def __copy__(self):
         """Shallow copy of the object
@@ -632,17 +636,20 @@ class OCL_LUT_Integrator(OpenclProcessing):
                     events.append(EventDescription("copy D->H merged8", ev))
                     res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
             else:  # 2D case
+                outshape = self.bin_centers.size, self.azim_centers.size
                 if merged is None:  # "radial azimuthal intensity sigma"
-                    outshape = self.bin_centers.size, self.azim_centers.size
                     res = Integrate2dtpl(self.bin_centers, self.azim_centers,
                                          avgint.reshape(outshape).T, stderr.reshape(outshape).T,
                                          None, None, None, None)
                 else:
                     ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
                     events.append(EventDescription("copy D->H merged8", ev))
-                    res = Integrate2dtpl(self.bin_centers,
+                    res = Integrate2dtpl(self.bin_centers, self.azim_centers,
                                          avgint.reshape(outshape).T, stderr.reshape(outshape).T,
-                                         merged[:, 0].reshape(outshape).T, merged[:, 2].reshape(outshape).T, merged[:, 4].reshape(outshape).T, merged[:, 6].reshape(outshape).T)
+                                         merged[:, 0].reshape(outshape).T,
+                                         merged[:, 2].reshape(outshape).T,
+                                         merged[:, 4].reshape(outshape).T,
+                                         merged[:, 6].reshape(outshape).T)
         if self.profile:
             self.events += events
         return res
