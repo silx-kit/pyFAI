@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "09/01/2022"
+__date__ = "13/01/2022"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -46,11 +46,16 @@ from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod, Method
 from ..utils import mathutil
-from ..test import utilstest
+from ..test.utilstest import UtilsTest
 from ..opencl import pyopencl, ocl
 try:
     from ..gui.matplotlib import pyplot, pylab
-    from ..gui.utils import update_fig
+    from ..gui.utils import update_fig as _update_fig
+
+    def update_fig(*args, **kwargs):
+        pyplot.pause(0.1)
+        _update_fig(*args, **kwargs)
+
 except ImportError:
     pylab = None
 
@@ -58,9 +63,10 @@ except ImportError:
         pass
 
 ds_list = ["Pilatus1M.poni",
-           "halfccd.poni",
-           "Frelon2k.poni",
+           "Pilatus2M.poni",
+           "Eiger4M.poni",
            "Pilatus6M.poni",
+           "Eiger9M.poni",
            "Mar3450.poni",
            "Fairchild.poni"]
 
@@ -69,17 +75,13 @@ datasets = {"Fairchild.poni": "Fairchild.edf",
             "Frelon2k.poni": "Frelon2k.edf",
             "Pilatus6M.poni": "Pilatus6M.cbf",
             "Pilatus1M.poni": "Pilatus1M.edf",
-            "Mar3450.poni": "LaB6_260210.mar3450"
+            "Mar3450.poni": "LaB6_260210.mar3450",
+            "Pilatus2M.poni":"Pilatus2M.cbf",
+            "Eiger4M.poni":"Eiger4M.edf",
+            "Eiger9M.poni":"Eiger9M.h5"
             }
 
-PONIS = {
-    "Pilatus6M.poni": {'dist': 0.3, 'poni2': 0.2115772, 'poni1': 0.225406, 'detector': 'Pilatus6M'},
-    "Fairchild.poni": {'dist': 0.0882065396596, 'poni2': 0.0449457803015, 'rot1':-0.506766875792, 'rot3':-1.13774685128e-05, 'rot2': 0.0167069809441, 'poni1': 0.0302286347503, 'detector': 'Fairchild'},
-    "halfccd.poni": {'dist': 0.0994744403007, 'poni2': 0.0481217639198, 'rot1':-0.000125830018938, 'rot3': 1.57079531561, 'rot2':-0.0160719674782, 'poni1': 0.026453455358, 'pixel2': 4.684483e-05, 'pixel1': 4.8422519999999994e-05},
-    "Pilatus1M.poni": {'dist': 1.58323111834, 'poni2': 0.0412277798782, 'rot1': 0.00648735642526, 'rot3': 4.12987220385e-08, 'rot2': 0.00755810191106, 'poni1': 0.0334170169115, 'detector': 'Pilatus1M'},
-    "Mar3450.poni": {'dist': 0.222549826201, 'poni2': 0.172625538874, 'rot1': 0.00164880041469, 'rot3':-1.43412739468e-08, 'rot2': 0.0438631777747, 'wavelength': 3.738e-11, 'splineFile': None, 'poni1': 0.161137340974, 'detector': 'Mar345'},
-    "Frelon2k.poni": {'dist': 0.1057363, 'poni2': 0.05660461, 'rot1': 0.027767, 'rot3':-1.8e-05, 'rot2': 0.016991, 'poni1': 0.05301968, 'pixel2': 4.722437999999999e-05, 'pixel1': 4.6831519999999995e-05}
-}
+PONIS = { i: UtilsTest.getimage(i) for i in ds_list}
 
 # Handle to the Bench instance: allows debugging from outside if needed
 bench = None
@@ -131,10 +133,10 @@ class BenchTest(object):
 class BenchTest1D(BenchTest):
     """Test 1d integration"""
 
-    def __init__(self, azimuthal_params, file_name, unit, method, function=None,
+    def __init__(self, poni, file_name, unit, method, function=None,
                  error_model=None):
         BenchTest.__init__(self)
-        self.azimuthal_params = azimuthal_params
+        self.poni = poni
         self.file_name = file_name
         self.unit = unit
         self.method = method
@@ -144,7 +146,7 @@ class BenchTest1D(BenchTest):
         self.function = None
 
     def setup(self):
-        self.ai = AzimuthalIntegrator(**self.azimuthal_params)
+        self.ai = AzimuthalIntegrator.sload(self.poni)
         self.data = fabio.open(self.file_name).data
         self.N = min(self.data.shape)
         self.function = self.ai.__getattribute__(self.function_name)
@@ -161,16 +163,16 @@ class BenchTest1D(BenchTest):
 class BenchTest2D(BenchTest):
     """Test 2d integration"""
 
-    def __init__(self, azimuthal_params, file_name, unit, method, output_size):
+    def __init__(self, poni, file_name, unit, method, output_size):
         BenchTest.__init__(self)
-        self.azimuthal_params = azimuthal_params
+        self.poni = poni
         self.file_name = file_name
         self.unit = unit
         self.method = method
         self.output_size = output_size
 
     def setup(self):
-        self.ai = AzimuthalIntegrator(**self.azimuthal_params)
+        self.ai = AzimuthalIntegrator.sload(self.poni)
         self.data = fabio.open(self.file_name).data
         self.N = self.output_size
 
@@ -307,7 +309,7 @@ class Bench(object):
 
     def get_ref(self, param):
         if param not in self.reference_1d:
-            file_name = utilstest.UtilsTest.getimage(datasets[param])
+            file_name = UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
             bench_test = BenchTest1D(poni, file_name, self.unit, ("bbox", "histogram", "cython"), function="integrate1d_ng")
             bench_test.setup()
@@ -361,7 +363,7 @@ class Bench(object):
         first = True
         for param in ds_list:
             self.update_mp()
-            file_name = utilstest.UtilsTest.getimage(datasets[param])
+            file_name = UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
             bench_test = BenchTest1D(poni, file_name, self.unit, method, function=function)
             bench_test.setup()
@@ -470,7 +472,7 @@ class Bench(object):
         first = True
         for param in ds_list:
             self.update_mp()
-            file_name = utilstest.UtilsTest.getimage(datasets[param])
+            file_name = UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
             bench_test = BenchTest2D(poni, file_name, self.unit, method, self.out_2d)
             bench_test.setup()
@@ -540,7 +542,7 @@ class Bench(object):
         first = True
         for param in ds_list:
             self.update_mp()
-            file_name = utilstest.UtilsTest.getimage(datasets[param])
+            file_name = UtilsTest.getimage(datasets[param])
             ai = load(param)
             data = fabio.open(file_name).data
             size = data.size
