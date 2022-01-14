@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2021"
+__date__ = "14/01/2022"
 __status__ = "development"
 
 import logging
@@ -66,7 +66,8 @@ class QtMplCalibWidget(MplCalibWidget):
     - shade out some part of the image
     - annotate rings
     """
-    def init(self, pick=True, update=True):
+
+    def init(self, pick=True):
         if self.fig is None:
             self.fig, (self.ax, self.axc) = pyplot.subplots(1, 2, gridspec_kw={"width_ratios": (10, 1)})
             self.ax.set_ylabel('y in pixels')
@@ -87,11 +88,7 @@ class QtMplCalibWidget(MplCalibWidget):
                 a.setToolTip('switch to refinement mode')
                 self.ref_action = a
                 self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
-            # if update:
-            self.fig.show()
-        elif update:
-            self.update()
-            
+
     def update(self):
         if self.fig:
             update_fig(self.fig)

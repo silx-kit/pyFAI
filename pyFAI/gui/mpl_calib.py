@@ -37,11 +37,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2021"
+__date__ = "14/01/2022"
 __status__ = "development"
 
 import logging
 import threading
+import contextlib
 import gc
 from collections import namedtuple
 logger = logging.getLogger(__name__)
@@ -91,6 +92,10 @@ class MplCalibWidget:
         self.cb_erase_grp = erase_grp_cb
         self.cb_refine = refine_cb
         self.cb_option = option_cb
+
+        # This is a dummy context-manager, used in Jupyter environment only
+        self.mplw = contextlib.suppress()
+        self.mpl_connectId = None  # Callback id from matplotlib is stored here
 
         self.shape = None
         self.fig = None
@@ -157,7 +162,10 @@ class MplCalibWidget:
         :param update: update ime
         """
         if self.fig is None:
-            self.init()
+            self.init(pick=True)
+            init = True
+        else:
+            init = False
 
         if bounds:
             show_min, show_max = bounds
@@ -173,26 +181,30 @@ class MplCalibWidget:
         else:
             norm = colors.Normalize(show_min, show_max)
             txt = 'Linear colour scale (skipping lowest/highest per mille)'
-
-        self.background = self.ax.imshow(img, norm=norm,
-                                         origin="lower",
-                                         interpolation="nearest")
-        s1, s2 = self.shape = img.shape
-        mask = numpy.zeros(self.shape + (4,), "uint8")
-        self.overlay = self.ax.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
-        self.foreground = self.ax.imshow(img, norm=norm,
-                                         origin="lower",
-                                         interpolation="nearest", alpha=1)
-        pyplot.colorbar(self.background, cax=self.axc)  # , label=txt)
-        self.axc.yaxis.set_label_position('left')
-        self.axc.set_ylabel(txt)
-        s1 -= 1
-        s2 -= 1
-        self.ax.set_xlim(0, s2)
-        self.ax.set_ylim(0, s1)
+        with self.mplw:
+            with pyplot.ioff():
+                self.background = self.ax.imshow(img, norm=norm,
+                                                 origin="lower",
+                                                 interpolation="nearest")
+                s1, s2 = self.shape = img.shape
+                mask = numpy.zeros(self.shape + (4,), "uint8")
+                self.overlay = self.ax.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
+                self.foreground = self.ax.imshow(img, norm=norm,
+                                                 origin="lower",
+                                                 interpolation="nearest", alpha=1)
+                pyplot.colorbar(self.background, cax=self.axc)  # , label=txt)
+                self.axc.yaxis.set_label_position('left')
+                self.axc.set_ylabel(txt)
+                s1 -= 1
+                s2 -= 1
+                self.ax.set_xlim(0, s2)
+                self.ax.set_ylim(0, s1)
 
         if update:
-            self.update()
+            if init:
+                self.show()
+            else:
+                self.update()
 
     def shadow(self, mask=None, update=True):
         """Apply som shadowing overlay on top of background image
@@ -356,9 +368,7 @@ class MplCalibWidget:
         self.sb_action.setDisabled(True)
         self.ref_action.setDisabled(True)
         self.spinbox.setEnabled(False)
-        self.mpl_connectId = None
-        self.fig.canvas.mpl_disconnect(self.mpl_connectId)
-        pyplot.ion()
+        self.finish()
         self.cb_refine(*args)
 
     def close(self):
@@ -366,6 +376,17 @@ class MplCalibWidget:
             self.fig.clear()
             self.fig = None
             gc.collect()
+
+    def finish(self):
+        """Stop managing interaction with display"""
+        if (self.fig is not None) and (self.mpl_connectId is not None):
+            self.fig.canvas.mpl_disconnect(self.mpl_connectId)
+            self.mpl_connectId = None
+
+    def show(self):
+        """Show the widget"""
+        if self.fig is not None:
+            self.fig.show()
 
     # Those methods need to be spacialized:
     def init(self, pick=True, update=True):
