@@ -191,7 +191,7 @@ class MplCalibWidget:
                 self.overlay = self.ax.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
                 self.foreground = self.ax.imshow(img, norm=norm,
                                                  origin="lower",
-                                                 interpolation="nearest", alpha=1)
+                                                 interpolation="nearest", alpha=0)
                 pyplot.colorbar(self.background, cax=self.axc)  # , label=txt)
                 self.axc.yaxis.set_label_position('left')
                 self.axc.set_ylabel(txt)
