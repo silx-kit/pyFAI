@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "17/01/2022"
 __status__ = "development"
 
 import os
@@ -340,7 +340,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         "Preform the calculation of $sum_(2\theta_e-2\theta_i)²$"
         param7 = self.calc_param7(param, free, const)
         delta_theta = self.tth(d1, d2, param7[:6]) - self.calc_2th(rings, param7[6])
-        if weights:
+        if weights is not None:
             delta_theta *= weights
         return numpy.dot(delta_theta, delta_theta)
 
