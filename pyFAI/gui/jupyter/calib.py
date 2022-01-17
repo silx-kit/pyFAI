@@ -64,7 +64,7 @@ class JupyCalibWidget(MplCalibWidget):
 
     def onclick_refine(self, *args):
         """
-        callback function # TODO
+        callback function
         """
         self.finish()
         self.cb_refine(*args)
