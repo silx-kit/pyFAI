@@ -416,6 +416,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                                bounds=bounds,
                                acc=1.0e-12,
                                iprint=(logger.getEffectiveLevel() <= logging.INFO))
+        # new_param7 = self.calc_param7(new_param, free, const)
 
         new_delta_theta2 = self.residu3(new_param, free, const, pos0, pos1, ring, weight) / npt
 
