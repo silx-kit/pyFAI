@@ -707,13 +707,6 @@ class AbstractCalibration(object):
         else:
             self.data = self.peakPicker.points.getList()
 
-    def refine_points(self, points):
-        '''Function intended to be a callback to start the refinement of points 
-        '''
-        self.interactive = False
-        self.data = numpy.array(points)
-        self.refine()
-
     def refine(self):
         """
         Contains the common geometry refinement part
@@ -721,6 +714,8 @@ class AbstractCalibration(object):
         if win32 and self.peakPicker is not None:
             logging.info(self.win_error)
             self.peakPicker.closeGUI()
+        if self.geoRef is None:
+            self.geoRef = self.initgeoRef()
         print("Before refinement, the geometry is:")
         print(self.geoRef)
         previous = sys.maxsize
@@ -747,7 +742,8 @@ class AbstractCalibration(object):
                     print(self.geoRef)
                     count += 1
                 self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
-            self.geoRef.save(self.basename + ".poni")
+            if self.basename:
+                self.geoRef.save(self.basename + ".poni")
             self.geoRef.del_ttha()
             self.geoRef.del_dssa()
             self.geoRef.del_chia()
@@ -1319,13 +1315,17 @@ class AbstractCalibration(object):
             update_fig(self.fig_center)
 
     def set_data(self, data):
+        """call-back function for the peak-picker
+        
+        :param data: list of point with ring index 
+        :return: associated azimuthal integrator
         """
-        call-back function for the peak-picker
-        """
-        self.data = data
-        if not self.weighted:
-            self.data = numpy.array(self.data)[:,:-1]
+        if self.weighted:
+            self.data = numpy.array(data)
+        else:
+            self.data = numpy.array(data)[:,:3]
         self.refine()
+        return self.geoRef
 
     def reset_geometry(self, how="center", refine=False):
         """
@@ -1395,6 +1395,30 @@ class AbstractCalibration(object):
             self.geoRef.set_rot3_max(math.pi)
             self.geoRef.set_rot3(self.ai.rot3)
 
+    def initgeoRef(self):
+        """
+        Tries to initialise the GeometryRefinement (dist, poni, rot)
+        Returns a dictionary of key value pairs
+        """
+        defaults = {"dist": 0.1, "poni1": 0.0, "poni2": 0.0,
+                    "rot1": 0.0, "rot2": 0.0, "rot3": 0.0}
+        if self.detector:
+            try:
+                p1, p2, _p3 = self.detector.calc_cartesian_positions()
+                defaults["poni1"] = p1.max() / 2.
+                defaults["poni2"] = p2.max() / 2.
+            except Exception as err:
+                logger.warning(err)
+        if self.ai:
+            for key in defaults.keys():  # not PARAMETERS which holds wavelength
+                val = getattr(self.ai, key, None)
+                if val is not None:
+                    defaults[key] = val
+        return GeometryRefinement(self.data,
+                                 detector=self.detector,
+                                 wavelength=self.wavelength,
+                                 calibrant=self.calibrant,
+                                 **defaults)
 ################################################################################
 # Calibration
 ################################################################################
@@ -1506,39 +1530,13 @@ decrease the value if arcs are mixed together.""", default=None)
             self.peakPicker.widget.update()
         self.set_data(self.peakPicker.finish(self.pointfile))
 
-    def initgeoRef(self):
-        """
-        Tries to initialise the GeometryRefinement (dist, poni, rot)
-        Returns a dictionary of key value pairs
-        """
-        defaults = {"dist": 0.1, "poni1": 0.0, "poni2": 0.0,
-                    "rot1": 0.0, "rot2": 0.0, "rot3": 0.0}
-        if self.detector:
-            try:
-                p1, p2, _p3 = self.detector.calc_cartesian_positions()
-                defaults["poni1"] = p1.max() / 2.
-                defaults["poni2"] = p2.max() / 2.
-            except Exception as err:
-                logger.warning(err)
-        if self.ai:
-            for key in defaults.keys():  # not PARAMETERS which holds wavelength
-                val = getattr(self.ai, key, None)
-                if val is not None:
-                    defaults[key] = val
-        return defaults
-
     def refine(self):
         """
         Contains the geometry refinement part specific to Calibration
         Sets up the initial guess when starting pyFAI-calib
         """
         # First attempt
-        defaults = self.initgeoRef()
-        self.geoRef = GeometryRefinement(self.data,
-                                         detector=self.detector,
-                                         wavelength=self.wavelength,
-                                         calibrant=self.calibrant,
-                                         **defaults)
+        self.geoRef = self.initgeoRef()
         self.geoRef.refine2(1000000, fix=self.fixed)
         scor = self.geoRef.chi2()
         pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
@@ -1546,12 +1544,7 @@ decrease the value if arcs are mixed together.""", default=None)
         scores = [(scor, pars), ]
 
         # Second attempt
-        defaults = self.initgeoRef()
-        self.geoRef = GeometryRefinement(self.data,
-                                         detector=self.detector,
-                                         wavelength=self.wavelength,
-                                         calibrant=self.calibrant,
-                                         **defaults)
+        self.geoRef = self.initgeoRef()
         self.geoRef.guess_poni()
         self.geoRef.refine2(1000000, fix=self.fixed)
         scor = self.geoRef.chi2()

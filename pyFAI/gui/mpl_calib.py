@@ -114,6 +114,7 @@ class MplCalibWidget:
         self.foreground = None
         self.points = {}  # key: label, value (
         self._sem = threading.Semaphore()
+        self.msg = []
 
     def set_title(self, text):
         self.ax.set_title(text)
@@ -317,13 +318,16 @@ class MplCalibWidget:
         Called when a mouse is clicked: distribute the call to different functions
         """
         with self._sem:
-            logger.info("Button: %i, Key modifier: %s", event.button, event.key)
-            if (event.xdata or event.ydata) is None:  # no coordinates
-                return
-            yx = int(event.ydata + 0.5), int(event.xdata + 0.5)
+            logger.info(f"Button: {event.button}, Key modifier: {event.key}")
             button = event.button
             key = event.key
             ring = self.get_ring_value()
+
+            if (event.xdata and event.ydata) is None:  # no coordinates
+                logger.info("invalid coodinates")
+                return
+            yx = int(event.ydata + 0.5), int(event.xdata + 0.5)
+
             if ((button == 3) and (key == 'shift')) or \
                ((button == 1) and (key == 'v')):
                 # if 'shift' pressed add nearest maximum to the current group
@@ -337,7 +341,6 @@ class MplCalibWidget:
             elif (event.button == 3) or ((event.button == 1) and (event.key == 'n')):
                 # create new group
                 self.cb_new_grp(yx, ring)
-
             elif (event.key == "1") and (event.button in [1, 2]):
                 self.cb_erase_1_point(yx, ring)
             elif (event.button == 2) or (event.button == 1 and event.key == "d"):

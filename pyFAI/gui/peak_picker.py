@@ -261,7 +261,7 @@ class PeakPicker(object):
                                        erase_grp_cb=self.onclick_erase_grp,
                                        refine_cb=self.onclick_refine,
                                        option_cb=self.onclick_option,)
-            self.widget.init()
+            self.widget.init(pick=pick)
             self.widget.show()
         data_disp, bounds = preprocess_image(self.data, False, 1e-3)
         self.widget.imshow(data_disp, bounds=bounds, log=log, update=False)
@@ -520,8 +520,9 @@ class PeakPicker(object):
         """
         callback function
         """
-        print("refine, now!")
+        logger.info("refine, now!")
         if self.point_filename:
             self.points.save(self.point_filename)
         if self.cb_refine:
-            self.cb_refine(self.points.getWeightedList(self.data))
+            data = self.points.getWeightedList(self.data)
+            self.cb_refine(data)
