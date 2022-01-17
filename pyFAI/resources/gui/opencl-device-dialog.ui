@@ -79,6 +79,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>_anyDeviceButton</tabstop>
+  <tabstop>_anyCpuButton</tabstop>
+  <tabstop>_anyGpuButton</tabstop>
+  <tabstop>_availableButton</tabstop>
+  <tabstop>_deviceView</tabstop>
+  <tabstop>_customButton</tabstop>
+  <tabstop>_platformId</tabstop>
+  <tabstop>_deviceId</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

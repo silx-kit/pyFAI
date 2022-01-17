@@ -451,6 +451,17 @@
    <header>pyFAI.gui.widgets.ElidedLabel</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>_energy</tabstop>
+  <tabstop>_wavelength</tabstop>
+  <tabstop>_calibrant</tabstop>
+  <tabstop>_customDetector</tabstop>
+  <tabstop>_image</tabstop>
+  <tabstop>_imageLoader</tabstop>
+  <tabstop>_mask</tabstop>
+  <tabstop>_maskLoader</tabstop>
+  <tabstop>_nextStep</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

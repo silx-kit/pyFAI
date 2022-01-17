@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            D. Karkoulis (dimitris.karkoulis@gmail.com)
@@ -32,8 +32,8 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "31/05/2021"
-__copyright__ = "2012, ESRF, Grenoble"
+__date__ = "10/01/2022"
+__copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -127,13 +127,14 @@ class OCL_Histogram1d(OpenclProcessing):
         self.empty = numpy.float32(empty) if empty is not None else numpy.float32(0.0)
         self.radial_mini = numpy.float32(numpy.min(radial))
         self.radial_maxi = numpy.float32(numpy.max(radial) * (1.0 + numpy.finfo(numpy.float32).eps))
-
+        self.degraded = False
         if not radial_checksum:
             radial_checksum = calc_checksum(radial)
         self.radial = radial
         self.mask_checksum = None
         self.check_azim = numpy.int8(0)
         self.azim_mini = self.azim_maxi = numpy.float32(0.0)
+        self.check_mask = False
         self.on_device = {"radial": radial_checksum,
                           "azimuthal": None,
                           "dark": None,
@@ -180,6 +181,7 @@ class OCL_Histogram1d(OpenclProcessing):
         else:
             self.azimuthal = None
         if mask is not None:
+            self.check_mask = True
             if mask_checksum is None:
                 mask_checksum = calc_checksum(mask)
             self.send_buffer(numpy.ascontiguousarray(mask, dtype=numpy.int8), "mask", mask_checksum)
@@ -263,6 +265,7 @@ class OCL_Histogram1d(OpenclProcessing):
                 # Maybe this extension actually does not existe!
                 OpenclProcessing.compile_kernels(self, ["pyfai:openCL/deactivate_atomic64.cl"] + kernels, compile_options)
                 logger.warning("Your OpenCL compiler wrongly claims it support 64-bit atomics. Degrading to 32 bits atomics!")
+                self.degraded = True
             else:
                 logger.error("Failed to compile kernel ! Check the compiler. %s", error)
 
@@ -684,7 +687,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
                               checksum_radial=self.on_device.get("radial"),
                               checksum_azimuthal=self.on_device.get("azimuthal"),
                               empty=self.empty,
-                              mask=mask, mask_cjecksum=self.on_device.get("mask"),
+                              mask=mask, mask_checksum=self.on_device.get("mask"),
                               ctx=self.ctx,
                               block_size=self.block_size,
                               profile=self.profile)
@@ -709,7 +712,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
                                  checksum_radial=self.on_device.get("radial"),
                                  checksum_azimuthal=self.on_device.get("azimuthal"),
                                  empty=self.empty,
-                                 mask=mask, mask_cjecksum=self.on_device.get("mask"),
+                                 mask=mask, mask_checksum=self.on_device.get("mask"),
                                  ctx=self.ctx,
                                  block_size=self.block_size,
                                  profile=self.profile)
@@ -957,8 +960,11 @@ class OCL_Histogram2d(OCL_Histogram1d):
             ev.wait()
         if self.profile:
             self.events += events
-
-        return Integrate2dtpl(pos_radial, pos_azim, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)
+        return Integrate2dtpl(pos_radial, pos_azim, intensity.T, error.T,
+                              histo_signal[:,:, 0].T,
+                              histo_variance[:,:, 0].T,
+                              histo_normalization[:,:, 0].T,
+                              histo_count.T)
 
     # Name of the default "process" method
     __call__ = integrate

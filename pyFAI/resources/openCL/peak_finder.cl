@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 15/03/2021
+ *   Last revision: 23/09/2021
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,6 +96,7 @@ kernel void find_peaks(       global  float4 *preproc4, // both input and output
             	value.s2 = average1d[index];
 				value.s3 = std1d[index];
             }//Upper most bin: no interpolation
+            value.s3 = fast_length((float2)(value.s3, noise)); //add quadratically noise to std 
             if ((value.s1 - value.s2) > max(noise, cutoff*value.s3)){
                 local_highidx[atomic_inc(local_counter)] = gid;
             }//pixel is considered of high intensity: registering it. 

@@ -182,6 +182,12 @@
    <header>pyFAI.gui.widgets.GeometryHistoryComboBox</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>_geometryHistoryCombo</tabstop>
+  <tabstop>_resetButton</tabstop>
+  <tabstop>_fitButton</tabstop>
+  <tabstop>_nextStep</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

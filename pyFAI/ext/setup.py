@@ -1,6 +1,6 @@
 # coding: utf-8
 # /*##########################################################################
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2021 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/11/2020"
+__date__ = "05/01/2022"
 
 from numpy.distutils.misc_util import Configuration
 import platform
@@ -32,10 +32,15 @@ import os
 import numpy
 
 
-def create_extension_config(name, extra_sources=None, can_use_openmp=False):
+def create_extension_config(name,
+                            extra_sources=None,
+                            can_use_openmp=False,
+                            language="c"):
     """
     Util function to create numpy extension from the current pyFAI project.
+    
     Prefer using numpy add_extension without it.
+    
     """
     include_dirs = ['src', numpy.get_include()]
 
@@ -54,7 +59,7 @@ def create_extension_config(name, extra_sources=None, can_use_openmp=False):
         name=name,
         sources=sources,
         include_dirs=include_dirs,
-        language='c',
+        language=language,
         extra_link_args=extra_link_args,
         extra_compile_args=extra_compile_args
     )
@@ -69,16 +74,16 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('histogram', can_use_openmp=True),
         create_extension_config("_geometry", can_use_openmp=True),
         create_extension_config("reconstruct", can_use_openmp=True),
-        create_extension_config('splitPixel'),
-        create_extension_config('splitPixelFull'),
-        create_extension_config('splitPixelFullLUT'),
+        create_extension_config("splitBBox_common", language='c++'),
+        create_extension_config("splitpixel_common", language='c++'),
         create_extension_config('splitBBox'),
-        create_extension_config('splitBBoxLUT', can_use_openmp=True),
-        create_extension_config('splitBBoxCSR', can_use_openmp=True),
-        create_extension_config('splitPixelFullCSR', can_use_openmp=True),
+        create_extension_config('splitPixel'),
+        create_extension_config('splitBBoxCSR', can_use_openmp=True, language='c++'),
+        create_extension_config('splitPixelFullCSR', can_use_openmp=True, language='c++'),
+        create_extension_config('splitBBoxLUT', can_use_openmp=True, language='c++'),
+        create_extension_config('splitPixelFullLUT', can_use_openmp=True, language='c++'),
         create_extension_config('relabel'),
         create_extension_config("bilinear", can_use_openmp=True),
-        # create_extension_config('_distortionCSR', can_use_openmp=True),
         create_extension_config('_bispev', can_use_openmp=True),
         create_extension_config('_convolution', can_use_openmp=True),
         create_extension_config('_blob'),
@@ -89,7 +94,9 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('preproc', can_use_openmp=True),
         create_extension_config('inpainting'),
         create_extension_config('invert_geometry'),
-        create_extension_config('dynamic_rectangle')
+        create_extension_config('dynamic_rectangle'),
+        create_extension_config('sparse_builder', can_use_openmp=True, language='c++'),
+        create_extension_config('_distortion', can_use_openmp=True, language='c++'),
     ]
     if (os.name == "posix") and ("x86" in platform.machine()):
         extra_sources = [os.path.join("src", "crc32.c")]
@@ -99,19 +106,6 @@ def configuration(parent_package='', top_path=None):
     for ext_config in ext_modules:
         config.add_extension(**ext_config)
 
-    config.add_extension('sparse_builder',
-                         sources=['sparse_builder.pyx'],
-                         include_dirs=[numpy.get_include()],
-                         language='c++',
-                         extra_link_args=['-fopenmp'],
-                         extra_compile_args=['-fopenmp'])
-
-    config.add_extension('_distortion',
-                         sources=['_distortion.pyx'],
-                         include_dirs=[numpy.get_include()],
-                         language='c++',
-                         extra_link_args=['-fopenmp'],
-                         extra_compile_args=['-fopenmp'])
     return config
 
 

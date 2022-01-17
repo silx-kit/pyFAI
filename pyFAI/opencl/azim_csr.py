@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "02/09/2021"
+__date__ = "10/01/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -41,10 +41,9 @@ if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-from ..containers import Integrate1dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl
 from . import processing
 from . import get_x87_volatile_option
-from . import kernel_workgroup_size
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
@@ -87,7 +86,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                }
 
     def __init__(self, lut, image_size, checksum=None,
-                 empty=None, unit=None, bin_centers=None,
+                 empty=None, unit=None, bin_centers=None, azim_centers=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False, extra_buffers=None):
         """
@@ -100,6 +99,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param empty: value to be assigned to bins without contribution from any pixel
         :param unit: Storage for the unit related to the LUT
         :param bin_centers: the radial position of the bin_center, place_holder
+        :param azim_centers: the radial position of the bin_center, place_holder
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
@@ -124,6 +124,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.empty = empty or 0
         self.unit = unit
         self.bin_centers = bin_centers
+        self.azim_centers = azim_centers
         # a few place-folders
         self.pos0_range = self.pos1_range = self.check_mask = None
 
@@ -136,21 +137,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "solidangle": None,
                           "absorption": None,
                           "dark_variance": None}
-        platform = self.ctx.devices[0].platform.name.lower()
-        if block_size is None:
-            if "nvidia" in  platform:
-                block_size = 32
-            elif "amd" in  platform:
-                block_size = 64
-            elif "intel" in  platform:
-                block_size = 128
-            else:
-                block_size = self.BLOCK_SIZE
-            self.force_workgroup_size = False
-        else:
-            block_size = int(block_size)
-            self.force_workgroup_size = True
 
+        block_size = self.guess_workgroup_size(block_size)
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
 
@@ -187,8 +175,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.send_buffer(self._data, "data")
         self.send_buffer(self._indices, "indices")
         self.send_buffer(self._indptr, "indptr")
-        if "amd" in  platform:
+        if "amd" in  self.ctx.devices[0].platform.name.lower():
             self.workgroup_size["csr_integrate4_single"] = (1, 1)  # Very bad performances on AMD GPU for diverging threads!
+
+    @property
+    def checksum(self):
+        return self.on_device.get("data")
 
     def __copy__(self):
         """Shallow copy of the object
@@ -222,6 +214,48 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                  profile=self.profile)
         memo[id(self)] = new_obj
         return new_obj
+
+    def guess_workgroup_size(self, block_size=None):
+        """Determines the optimal workgroup size.
+        
+        For azimuthal integration, especially the 2D variant, the 
+        smallest possible is the size of a warp/wavefront.
+        
+        The method can be overwritten by derived classes to select larger workgoup 
+        
+        :param block_size: Input workgroup size (block is the cuda name)
+        :return: the optimal workgoup size as integer  
+        """
+        device = self.ctx.devices[0]
+        platform = device.platform.name.lower()
+        try:
+            devtype = pyopencl.device_type.to_string(device.type).upper()
+        except ValueError:
+            # pocl does not describe itself as a CPU !
+            devtype = "CPU"
+
+        if block_size is None:
+            if "nvidia" in  platform:
+                try:
+                    block_size = device.warp_size_nv
+                except:
+                    block_size = 32
+            elif "amd" in  platform:
+                try:
+                    block_size = device.wavefront_width_amd
+                except:
+                    block_size = 64
+            elif "intel" in  platform:
+                block_size = 128
+            elif "portable" in platform and "CPU" in devtype:
+                block_size = 8
+            else:
+                block_size = min(device.max_work_group_size, self.BLOCK_SIZE)
+            self.force_workgroup_size = False
+        else:
+            self.force_workgroup_size = True
+            block_size = int(block_size)
+        return block_size
 
     def compile_kernels(self, kernel_file=None):
         """
@@ -730,12 +764,26 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if stderr is not None:
                 ev = pyopencl.enqueue_copy(self.queue, stderr, self.cl_mem["stderr"])
                 events.append(EventDescription("copy D->H stderr", ev))
-            if merged is None:
-                res = Integrate1dtpl(self.bin_centers, avgint, stderr, None, None, None, None)
-            else:
-                ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
-                events.append(EventDescription("copy D->H merged8", ev))
-                res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
+            if self.azim_centers is None:
+                if merged is None:
+                    res = Integrate1dtpl(self.bin_centers, avgint, stderr, None, None, None, None)
+                else:
+                    ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+                    events.append(EventDescription("copy D->H merged8", ev))
+                    res = Integrate1dtpl(self.bin_centers, avgint, stderr, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6])
+            else:  # 2D case
+                outshape = self.bin_centers.size, self.azim_centers.size
+                if merged is None:  # "radial azimuthal intensity sigma"
+                    res = Integrate2dtpl(self.bin_centers, self.azim_centers,
+                                         avgint.reshape(outshape).T, stderr.reshape(outshape).T,
+                                         None, None, None, None)
+                else:
+                    ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+                    events.append(EventDescription("copy D->H merged8", ev))
+                    res = Integrate2dtpl(self.bin_centers, self.azim_centers,
+                                         avgint.reshape(outshape).T, stderr.reshape(outshape).T,
+                                         merged[:, 0].reshape(outshape).T, merged[:, 2].reshape(outshape).T, merged[:, 4].reshape(outshape).T, merged[:, 6].reshape(outshape).T)
+
         if self.profile:
             self.events += events
         return res
@@ -896,14 +944,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
 
-            if wg_max == 1:
-                raise RuntimeError("csr_sigma_clip4 is not yet available in single threaded OpenCL !")
-                # integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-                # events.append(EventDescription("integrate4_single", integrate))
-            else:
-                wdim_bins = (self.bins * wg_min),
-                integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-                events.append(EventDescription("csr_sigma_clip4", integrate))
+            wdim_bins = (self.bins * wg_min),
+            integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
+            events.append(EventDescription("csr_sigma_clip4", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)

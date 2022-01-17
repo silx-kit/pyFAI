@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/08/2021"
+__date__ = "07/09/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -798,7 +798,9 @@ class Geometry(object):
 
         res = self._cached_array[key]
         if scale and unit:
-            return res * unit.scale
+            tmp = res.copy()
+            tmp[..., 0] *= unit.scale
+            return tmp
         else:
             return res
 
@@ -878,7 +880,9 @@ class Geometry(object):
 
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
-                return ary * unit.scale
+                tmp = ary.copy()
+                tmp[..., 0] *= unit.scale 
+                return tmp
             else:
                 return ary
 
@@ -889,7 +893,9 @@ class Geometry(object):
         ary = unit.equation(x, y, z, self.wavelength)
         self._cached_array[key] = ary
         if scale and unit:
-            return ary * unit.scale
+                tmp = ary.copy()
+                tmp[..., 0] *= unit.scale 
+                return tmp
         else:
             return ary
 
@@ -920,7 +926,9 @@ class Geometry(object):
 
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
-                return ary * unit.scale
+                tmp = ary.copy()
+                tmp[..., 0] *= unit.scale 
+                return tmp
             else:
                 return ary
         center = self.center_array(shape, unit=unit, scale=False)
@@ -929,7 +937,10 @@ class Geometry(object):
         ary = delta.max(axis=-1)
         self._cached_array[space] = ary
         if scale and unit:
-            return ary * unit.scale
+            tmp = ary.copy()
+            tmp[..., 0] *= unit.scale 
+            return tmp
+
         else:
             return ary
 

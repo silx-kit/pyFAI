@@ -75,7 +75,7 @@ class TestIntegrateApp(unittest.TestCase):
         if isinstance(data, list):
             image = fabio.edfimage.EdfImage(data=data[0], header=header)
             for d in data[1:]:
-                image.appendFrame(data=d, header=header)
+                image.append_frame(data=d, header=header)
         else:
             image = fabio.edfimage.EdfImage(data=data, header=header)
         image.save(path)
@@ -383,7 +383,7 @@ class TestProcess(unittest.TestCase):
 
     def test_process_numpy_2d(self):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected_result = [[5.6, 4.5], [41.8, 9.3]]
+        expected_result = [[7.5, 5.3], [50.1, 12.6]]
         expected_radial = [2.0, 2.0]
         expected_azimuthal = [-124.5, -124.2]
         params = {"do_2D": True,
@@ -402,7 +402,7 @@ class TestProcess(unittest.TestCase):
 
     def test_process_numpy_3d(self):
         data = numpy.array([[[0, 0], [0, 100], [0, 0]], [[0, 0], [0, 200], [0, 0]]])
-        expected_result = [[5.6, 4.5], [41.8, 9.3]]
+        expected_result = [[7.5, 5.3], [50.1, 12.6]]
         expected_radial = [2.0, 2.0]
         expected_azimuthal = [-124.5, -124.2]
         params = {"do_2D": True,
@@ -440,9 +440,9 @@ class TestProcess(unittest.TestCase):
         data1 = numpy.array([[0, 0], [0, 100], [0, 0]])
         data2 = numpy.array([[0, 0], [0, 200], [0, 0]])
         data = fabio.edfimage.EdfImage(data=data1)
-        data.appendFrame(data=data2)
+        data.append_frame(data=data2)
 
-        expected_result = [[5.6, 4.5], [41.8, 9.3]]
+        expected_result = [[7.5, 5.3], [50.1, 12.6]]
         expected_radial = [2.0, 2.0]
         expected_azimuthal = [-124.5, -124.2]
         params = {"do_2D": True,

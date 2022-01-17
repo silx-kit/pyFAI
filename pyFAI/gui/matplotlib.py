@@ -33,7 +33,7 @@ to the used backend.
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "15/10/2021"
 
 import sys
 import logging
@@ -75,3 +75,4 @@ elif qt.BINDING == 'PyQt5':
 
 from matplotlib import pyplot  # noqa
 from matplotlib import pylab  # noqa
+from matplotlib import colors

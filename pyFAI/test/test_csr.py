@@ -39,6 +39,7 @@ from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
 from ..engines.CSR_engine import CsrIntegrator2d, CsrIntegrator1d
+from ..method_registry import IntegrationMethod
 from .. import azimuthalIntegrator
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
@@ -163,7 +164,8 @@ class TestCSR(utilstest.ParametricTestCase):
         self.assertLess(error.std(), 3, "img are almost the same")
 
         # Validate the scipy integrator ....
-        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        method = IntegrationMethod.select_method(2, split="bbox", algo="CSR", impl="cython")[0]
+        engine = self.ai.engines[method].engine
         scipy_engine = CsrIntegrator2d(self.data.size,
                                        lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,
@@ -192,7 +194,9 @@ class TestCSR(utilstest.ParametricTestCase):
         self.assertLess(error.std(), 3, "img are almost the same")
 
         # Validate the scipy integrator ....
-        engine = self.ai.engines[azimuthalIntegrator.EXT_CSR_ENGINE].engine
+        method = IntegrationMethod.select_method(2, split="no", algo="CSR", impl="cython")[0]
+
+        engine = self.ai.engines[method].engine
         scipy_engine = CsrIntegrator2d(self.data.size,
                                        lut=(engine.data, engine.indices, engine.indptr),
                                        empty=0.0,

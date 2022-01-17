@@ -35,8 +35,8 @@ https://github.com/silx-kit/pyFAI/issues
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
-__copyright__ = "2015-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/08/2021"
+__copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "09/01/2022"
 
 import sys
 import os
@@ -48,7 +48,7 @@ from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 import fabio
 from .. import load
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..azimuthalIntegrator import AzimuthalIntegrator, logger as ai_logger
 from .. import detectors
 from .. import units
 from math import pi
@@ -310,10 +310,10 @@ class TestBugRegression(unittest.TestCase):
             chi_pi_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1,:, 1]
             logger.debug("disc @pi corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_corner.min(), chi_pi_corner.max())
 
-            self.assertAlmostEquals(chi_pi_center.min(), chi_range[0][0], msg="chi_pi_center.min", delta=0.1)
-            self.assertAlmostEquals(chi_pi_corner.min(), chi_range[0][0], msg="chi_pi_corner.min", delta=0.1)
-            self.assertAlmostEquals(chi_pi_center.max(), chi_range[0][1], msg="chi_pi_center.max", delta=0.1)
-            self.assertAlmostEquals(chi_pi_corner.max(), chi_range[0][1], msg="chi_pi_corner.max", delta=0.1)
+            self.assertAlmostEqual(chi_pi_center.min(), chi_range[0][0], msg="chi_pi_center.min", delta=0.1)
+            self.assertAlmostEqual(chi_pi_corner.min(), chi_range[0][0], msg="chi_pi_corner.min", delta=0.1)
+            self.assertAlmostEqual(chi_pi_center.max(), chi_range[0][1], msg="chi_pi_center.max", delta=0.1)
+            self.assertAlmostEqual(chi_pi_corner.max(), chi_range[0][1], msg="chi_pi_corner.max", delta=0.1)
 
             ai.reset()
             ai.setChiDiscAtZero()
@@ -326,10 +326,10 @@ class TestBugRegression(unittest.TestCase):
 
             dmin = lambda v: v - chi_range[1][0]
             dmax = lambda v: v - chi_range[1][1]
-            self.assertAlmostEquals(dmin(chi_0_center.min()), 0, msg="chi_0_center.min", delta=0.1)
-            self.assertAlmostEquals(dmin(chi_0_corner.min()), 0, msg="chi_0_corner.min", delta=0.1)
-            self.assertAlmostEquals(dmax(chi_0_center.max()), 0, msg="chi_0_center.max", delta=0.1)
-            self.assertAlmostEquals(dmax(chi_0_corner.max()), 0, msg="chi_0_corner.max", delta=0.1)
+            self.assertAlmostEqual(dmin(chi_0_center.min()), 0, msg="chi_0_center.min", delta=0.1)
+            self.assertAlmostEqual(dmin(chi_0_corner.min()), 0, msg="chi_0_corner.min", delta=0.1)
+            self.assertAlmostEqual(dmax(chi_0_center.max()), 0, msg="chi_0_center.max", delta=0.1)
+            self.assertAlmostEqual(dmax(chi_0_corner.max()), 0, msg="chi_0_corner.max", delta=0.1)
 
     def test_bug_924(self):
         "Regression on spline calculation for single pixel coordinate"
@@ -350,30 +350,33 @@ class TestBugRegression(unittest.TestCase):
         shape = (128, 128)
         detector = detectors.Detector(100e-4, 100e-4, max_shape=shape)
         ai = AzimuthalIntegrator(detector=detector, wavelength=1e-10)
+        # ai_logger.setLevel(logging.ERROR)
         ai.setFit2D(1000, shape[1] / 2, shape[0] / 2)
         data = numpy.ones(shape)
         nb_pix = ai.integrate1d_ng(data, 100).count.sum()
         self.assertAlmostEqual(nb_pix, numpy.prod(shape), msg="All pixels are counted", delta=0.01)
 
         delta = 45
-        target = numpy.prod(shape) / 360 * 2 * delta
+        target = numpy.prod(shape) / 180 * delta
         ai.setChiDiscAtPi()
         angles = numpy.arange(-180, 400, 90)
-
+        print(angles)
         for method in [("no", "histogram", "python"),
                        ("no", "histogram", "cython"),
                        ("no", "csr", "cython"),
                        ("no", "lut", "cython")]:
-#             print(method)
             for angle in angles:
-                res = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method)
-                # print(res.compute_engine, res.count)
-                res = res.count.sum()
+                res0 = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method)
+                # try:
+                #     print(ai.engines[res0.method].engine.pos1_range, ai.engines[res0.method].engine.pos1_min, ai.engines[res0.method].engine.pos1_maxin, ai.engines[res0.method].engine.pos1_max)
+                # except:
+                #     pass
+                res = res0.count.sum()
                 if angle in (-180, 180):
                     # We expect only half of the pixel
-                    self.assertLess(abs(res / target - 0.5), 0.1, "ChiDiscAtPi we expect half the pixels to be missing %s %s %s=%s/2" % (method, angle, res, target))
+                    self.assertLess(abs(res / target - 0.5), 0.1, f"ChiDiscAtPi with {method} at {angle} expect half of the pixels ({target}/2), got {res}")
                 else:
-                    self.assertLess(abs(res / target - 1), 0.1, "ChiDiscAtPi we expect the pixel to be present %s %s %s=%s" % (method, angle, res, target))
+                    self.assertLess(abs(res / target - 1), 0.1, f"ChiDiscAtPi with {method} at {angle} expect all pixels ({target}) and got {res}")
 
         # Now with the azimuthal integrator set with the chi discontinuity at 0
         ai.setChiDiscAtZero()
@@ -381,14 +384,17 @@ class TestBugRegression(unittest.TestCase):
                        ("no", "histogram", "cython"),
                        ("no", "csr", "cython"),
                        ("no", "lut", "cython")]:
-#             print(method)
             for angle in angles:
-                res = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method).count.sum()
+                res0 = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method)
+                # try:
+                #     print(ai.engines[res0.method].engine.pos1_range, ai.engines[res0.method].engine.pos1_min, ai.engines[res0.method].engine.pos1_maxin, ai.engines[res0.method].engine.pos1_max)
+                # except: pass
+                res = res0.count.sum()
                 if angle in (0, 360):
                     # We expect only half of the pixel
-                    self.assertLess(abs(res / target - 0.5), 0.1, "ChiDiscAtZero we expect half the pixels to be missing %s %s %s=%s/2" % (method, angle, res, target))
+                    self.assertLess(abs(res / target - 0.5), 0.1, f"ChiDiscAtZero with {method} at {angle} expect half of the pixels ({target}/2), got {res}")
                 else:
-                    self.assertLess(abs(res / target - 1), 0.1, "ChiDiscAtZero we expect the pixel to be present method:%s angle:%s expected:%s=%s" % (method, angle, target, res))
+                    self.assertLess(abs(res / target - 1), 0.1, f"ChiDiscAtZero with {method} at {angle} expect all pixel ({target}), got {res}")
 
     def test_bug_1421(self):
         """This bug is about geometry refinement not working with SAXS-constrains in certain conditions
@@ -474,16 +480,19 @@ class TestBugRegression(unittest.TestCase):
         npt = 10
         sector_size = 20
         out = numpy.empty((180 // sector_size, npt))
-        for method in [("full", "csr", "cython"),
-                       ("full", "lut", "cython")]:
+        for method in [("full", "histogram", "cython"),
+                       ("full", "lut", "cython"),
+                       ("full", "csr", "cython"),
+                       ]:
             idx = 0
             for start in range(-90, 90, sector_size):
                 end = start + sector_size
                 res = ai.integrate1d(img, npt, method=method, azimuth_range=[start, end])
                 out[idx] = res.intensity
                 idx += 1
+            # print(out)
             std = out.std(axis=0)
-            self.assertGreater(std.min(), 0, "output are not all the same with " + str(method))
+            self.assertGreater(std.min(), 0, f"output are not all the same with {method}")
 
     def test_bug_1510(self):
         """
@@ -518,11 +527,11 @@ class TestBugRegression(unittest.TestCase):
         print(ref.get_config())
         obt = AzimuthalIntegrator()
         obt.setPyFAI(**geo)
-        
+
         print(obt)
         self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
-        
-        
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()

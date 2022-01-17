@@ -78,6 +78,7 @@ build_directory=${project_directory}/build/${target_system}
 if [ -d /usr/lib/ccache ];
 then
    export PATH=/usr/lib/ccache:$PATH
+   export CCACHE_DIR=${HOME}/.ccache
 fi
 
 usage="usage: $(basename "$0") [options]

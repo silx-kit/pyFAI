@@ -112,7 +112,7 @@ class TestAddition(unittest.TestCase):
                 good = numpy.allclose(res, self.data - 5)
                 if good and wg > self.max_valid_wg:
                     self.__class__.max_valid_wg = wg
-                self.assert_(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_measurement(self):

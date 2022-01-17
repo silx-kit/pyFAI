@@ -28,7 +28,7 @@
 """Test for OpenCL sorting on GPU"""
 
 __license__ = "MIT"
-__date__ = "20/01/2021"
+__date__ = "10/01/2022"
 __copyright__ = "2015-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -227,4 +227,6 @@ def suite():
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    UtilsTest.clean_up()
+    if runner.run(suite()).wasSuccessful():
+        UtilsTest.clean_up()
+

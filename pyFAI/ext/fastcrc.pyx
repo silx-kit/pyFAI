@@ -31,7 +31,7 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "26/06/2020"
+__date__ = "18/11/2021"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -43,8 +43,8 @@ from .crc32 cimport pyFAI_crc32
 
 
 def crc32(numpy.ndarray data not None):
-    """
-    Calculate the CRC32 checksum of a numpy array
+    """Calculate the CRC32 checksum of a numpy array
+    
     :param data: a numpy array
     :return: unsigned integer
     """

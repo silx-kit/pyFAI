@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2021"
+__date__ = "06/01/2022"
 __status__ = "stable"
 
 import io
@@ -923,10 +923,10 @@ class sdist_debian(sdist):
         self.archive_files = [debian_arch]
         print("Building debian .orig.tar.gz in %s" % self.archive_files[0])
 
-
 #################
 # PyFAI specific
 #################
+
 
 class TestData(Command):
     """
@@ -942,23 +942,23 @@ class TestData(Command):
 
     def download_images(self):
         """
-        Download all test images and
+        Download all test images and build a tarball from them
         """
-        root_dir = os.path.dirname(os.path.abspath(__file__))
-        test_dir = os.path.join(root_dir, PROJECT, "test")
-        sys.path.insert(0, test_dir)
-        from utilstest import UtilsTest
-        image_home = os.path.join(root_dir, "testimages")
-        testimages = os.path.join(image_home, "all_testimages.json")
-        UtilsTest.image_home = image_home
-        UtilsTest.testimages = testimages
-        if os.path.exists(testimages):
-            import json
-            with open(testimages) as f:
-                all_files = set(json.load(f))
-        else:
+        from silx.utils.ExternalResources import ExternalResources
+        # sorry for duplicating this code ....
+        testimages = "pyFAI_testdata" 
+        if "PYFAI_TESTIMAGES" in os.environ:
+            testimages = os.environ.get("PYFAI_TESTIMAGES")
+        url_base = "http://ftp.edna-site.org/pyFAI/testimages"
+        resources = ExternalResources("pyFAI",
+                                           timeout=60,
+                                           env_key=testimages,
+                                           url_base=url_base)
+
+        all_files = resources.download_all()
+        if not all_files:
             raise(RuntimeError("Please run 'python setup.py build test' to download all images"))
-        return list(all_files)
+        return all_files
 
     def run(self):
         datafiles = self.download_images()
@@ -972,7 +972,7 @@ class TestData(Command):
         import tarfile
         with tarfile.open(name=arch, mode='w:gz') as tarball:
             for afile in datafiles:
-                tarball.add(os.path.join("testimages", afile), afile)
+                tarball.add(afile, os.path.basename(afile))
 
 # ##### #
 # setup #
@@ -984,29 +984,25 @@ def get_project_configuration(dry_run):
     # Use installed numpy version as minimal required version
     # This is useful for wheels to advertise the numpy version they were built with
     if dry_run:
-        numpy_requested_version = ""
+        numpy_requested_version = "numpy"
     else:
         from numpy.version import version as numpy_version
-        numpy_requested_version = ">=%s" % numpy_version
+        numpy_requested_version = "numpy>=%s" % numpy_version
         logger.info("Install requires: numpy %s", numpy_requested_version)
 
     install_requires = [
-        "numpy%s" % numpy_requested_version,
-        # h5py was removed from dependencies cause it creates an issue with
-        # Debian 8. Pip is not aware that h5py is installed and pkg_resources
-        # check dependencies and in this case raise an exception
-        # FIXME we still have to investigate
-        # "h5py",
+        numpy_requested_version,
+        "h5py",
         "fabio>=0.5",
         "matplotlib",
         "scipy",
         "numexpr",
         # for the use of pkg_resources on script launcher
-        "setuptools",
-        "silx>=0.10"]
+        "setuptools< 60.0.0",
+        "silx>=0.15.2"]
 
     setup_requires = [
-        "setuptools",
+        "setuptools< 60.0.0",
         "numpy"]
 
     package_data = {
@@ -1050,6 +1046,7 @@ def get_project_configuration(dry_run):
         'pyFAI-saxs = pyFAI.app.saxs:main',
         'pyFAI-waxs = pyFAI.app.waxs:main',
         'sparsify-Bragg = pyFAI.app.sparsify:main',
+        'peakfinder = pyFAI.app.peakfinder:main',
     ]
 
     entry_points = {

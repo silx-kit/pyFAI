@@ -1,10 +1,9 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,11 +28,11 @@
 """Module used to perform the geometric refinement of the model
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/09/2021"
+__date__ = "10/01/2022"
 __status__ = "development"
 
 import os
@@ -47,6 +46,7 @@ from math import pi
 from . import azimuthalIntegrator
 from .calibrant import Calibrant, CALIBRANT_FACTORY
 from .utils.ellipse import fit_ellipse
+from .utils.decorators import deprecated
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 from scipy.optimize import fmin, leastsq, fmin_slsqp
 
@@ -136,12 +136,12 @@ class GeometryRefinement(AzimuthalIntegrator):
             else:
                 self.guess_poni()
 
-        self._dist_min = 0
-        self._dist_max = 10
-        self._poni1_min = -10000 * self.pixel1
-        self._poni1_max = 15000 * self.pixel1
-        self._poni2_min = -10000 * self.pixel2
-        self._poni2_max = 15000 * self.pixel2
+        self._dist_min = 0.0
+        self._dist_max = 35.0
+        self._poni1_min = -10000.0 * self.pixel1
+        self._poni1_max = 15000.0 * self.pixel1
+        self._poni2_min = -10000.0 * self.pixel2
+        self._poni2_max = 15000.0 * self.pixel2
         self._rot1_min = -pi
         self._rot1_max = pi
         self._rot2_min = -pi
@@ -646,6 +646,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         print("Convidence as sqrt of the error function /  hessian:\n%s" % confidence)
         return error, confidence
 
+    @deprecated
     def roca(self):
         """
         run roca to optimise the parameter set

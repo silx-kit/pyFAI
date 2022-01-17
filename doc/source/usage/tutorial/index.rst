@@ -24,6 +24,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Calibrant/index
    Recalib/Recalib_notebook
    Ellipse/ellipse
+   PixelSplitting
    LogScale/Guinier
    multi-geometry
    Goniometer/index
@@ -31,5 +32,4 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    ThickDetector/index
    Variance/Variance
    Separation/index
-   Ellipse/ellipse
    Soleil/index

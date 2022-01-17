@@ -25,12 +25,12 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "17/12/2021"
 
 import logging
 
 from silx.gui import qt
-from silx.utils import html
+import html
 
 import pyFAI.detectors
 

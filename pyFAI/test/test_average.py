@@ -201,12 +201,12 @@ class TestAverageAlgorithmFactory(unittest.TestCase):
     def test_median(self):
         alrorithm = average.create_algorithm("median")
         self.assertTrue(isinstance(alrorithm, average.AverageDarkFilter))
-        self.assertEquals(alrorithm.name, "median")
+        self.assertEqual(alrorithm.name, "median")
 
     def test_sum_cutoff(self):
         alrorithm = average.create_algorithm("sum", cut_off=0.5)
         self.assertTrue(isinstance(alrorithm, average.AverageDarkFilter))
-        self.assertEquals(alrorithm.name, "sum")
+        self.assertEqual(alrorithm.name, "sum")
 
     def test_quantiles_no_params(self):
         self.assertRaises(average.AlgorithmCreationError, average.create_algorithm, "quantiles")

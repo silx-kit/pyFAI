@@ -120,8 +120,9 @@ To upgrade the C-code in pyFAI, one needs in addition Cython:
 .. code-block:: shell
 
    pip install -r requirements.txt --upgrade
-   python setup.py bdist_wheel
-   pip install --upgrade --pre --no-index --find-links dist/ pyFAI 
+   python setup.py build
+   python run_tests.py
+   pip install . --upgrade
 
 Troubleshooting
 ---------------

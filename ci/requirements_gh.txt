@@ -4,7 +4,6 @@
 --find-links http://www.edna-site.org/pub/wheelhouse
 --trusted-host www.edna-site.org
 
-setuptools
 wheel
 numpy <1.19 ; python_version <= '3.5'
 numpy <1.20 ; python_version <= '3.6'

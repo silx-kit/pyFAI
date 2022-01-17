@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2021"
+__date__ = "13/01/2022"
 __status__ = "development"
 
 import logging
@@ -80,8 +80,8 @@ def main():
                         dest="size", default=1000,
                         help="Limit the size of the dataset to X Mpixel images (for computer with limited memory)")
     parser.add_argument("-n", "--number",
-                        dest="number", default=10, type=int,
-                        help="Number of repetition of the test (or time used for each test), by default 10")
+                        dest="number", default=10, type=float,
+                        help="Perform the test for this amount of time, by default 10s/measurment")
     parser.add_argument("-2d", "--2dimention",
                         action="store_true", dest="twodim", default=False,
                         help="Benchmark also algorithm for 2D-regrouping")
@@ -94,7 +94,7 @@ def main():
                         help="Perfrom memory profiling (Linux only)")
     parser.add_argument("-r", "--repeat",
                         dest="repeat", default=1, type=int,
-                        help="Repeat each benchmark x times to take the best")
+                        help="Repeat each measurement x times to take the best")
 
     options = parser.parse_args()
     if options.debug:

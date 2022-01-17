@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2021"
+__date__ = "05/01/2022"
 __status__ = "production"
 
 import os
@@ -70,7 +70,8 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..units import hc
 from .. import version as PyFAI_VERSION
 from .. import date as PyFAI_DATE
-from ..calibrant import Calibrant, CALIBRANT_FACTORY
+from ..calibrant import Calibrant, CALIBRANT_FACTORY, get_calibrant
+from .mpl_calib_qt import QtMplCalibWidget
 try:
     from ..ext._convolution import gaussian_filter
 except ImportError:
@@ -197,7 +198,7 @@ class AbstractCalibration(object):
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
             elif calibrant in CALIBRANT_FACTORY:
-                self.calibrant = CALIBRANT_FACTORY(calibrant)
+                self.calibrant = get_calibrant(calibrant)
             elif os.path.isfile(calibrant) and os.path.isfile(calibrant):
                 self.calibrant = Calibrant(calibrant)
             else:
@@ -417,7 +418,7 @@ class AbstractCalibration(object):
         self.pointfile = options.npt
         if options.spacing:
             if options.spacing in CALIBRANT_FACTORY:
-                self.calibrant = CALIBRANT_FACTORY(options.spacing)
+                self.calibrant = get_calibrant(options.spacing)
             elif os.path.isfile(options.spacing):
                 self.calibrant = Calibrant(options.spacing)
             else:
@@ -545,7 +546,7 @@ class AbstractCalibration(object):
                 ans = input("Please enter the calibrant name or the file"
                             " containing the d-spacing:\t").strip()
                 if ans in CALIBRANT_FACTORY:
-                    self.calibrant = CALIBRANT_FACTORY(ans)
+                    self.calibrant = get_calibrant(ans)
                     valid = True
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(ans)
@@ -670,8 +671,8 @@ class AbstractCalibration(object):
             if (size > 0):
                 rings += 1
                 self.peakPicker.massif_contour(mask)
-                if self.gui:
-                    update_fig(self.peakPicker.fig)
+                # if self.gui:
+                #     self.peakPicker.widget.update()
                 sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
@@ -1084,7 +1085,7 @@ class AbstractCalibration(object):
             self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
             self.ax_chiplot.set_xlim(-180, 180)
             self.ax_chiplot.set_xticks(numpy.linspace(-180, 180, 9))
-            self.ax_chiplot.set_xlabel("Azimuthal angle $\chi$ ($^o$)")
+            self.ax_chiplot.set_xlabel(r"Azimuthal angle $\chi$ ($^o$)")
             self.ax_chiplot.set_ylabel(r"Error in Radial angle $\Delta$ 2$\theta$/2$\theta$*10$^4$")
             self.ax_chiplot.set_title("Chi plot")
 
@@ -1114,10 +1115,10 @@ class AbstractCalibration(object):
             amp = err4.std() * sqrt2
             phase = 0.0
             param = numpy.array([mean, amp, phase])
-            print(" guessed err4 = %.3f + %.3f *sin($\chi$+ %.3f )" % (mean, amp, phase))
+            print(r" guessed err4 = %.3f + %.3f *sin($\chi$+ %.3f )" % (mean, amp, phase))
             res = leastsq(error, param, (chi, err4), jacob, col_deriv=True)
             popt = res[0]
-            str_res = "%.3f + %.3f *sin($\chi$+ %.3f )" % tuple(popt)
+            str_res = r"%.3f + %.3f *sin($\chi$+ %.3f )" % tuple(popt)
             print(" fitted err4 = " + str_res)
             chi = numpy.rad2deg(chi)
             if self.ax_chiplot:
@@ -1302,7 +1303,7 @@ class AbstractCalibration(object):
             self.ax_center = self.fig_center.add_subplot(1, 1, 1)
             self.ax_center.set_xlim(-180, 180)
             self.ax_center.set_xticks(numpy.linspace(-180, 180, 9))
-            self.ax_center.set_xlabel("Azimuthal angle $\chi$ ($^o$)")
+            self.ax_center.set_xlabel(r"Azimuthal angle $\chi$ ($^o$)")
             self.ax_center.set_ylabel(r"Error of the center position along radius ($\mu$m)")
             self.ax_center.set_title("Center plot")
             self.ax_center.plot(chi, center, label="From pattern cross-correlation")
@@ -1485,23 +1486,17 @@ decrease the value if arcs are mixed together.""", default=None)
         else:
             self.peakPicker.massif.init_valley_size()
         if self.gui:
-            self.peakPicker.gui(log=True, maximize=True, pick=True)
-            update_fig(self.peakPicker.fig)
+            self.peakPicker.gui(log=True, maximize=True, pick=True,
+                                widget_klass=QtMplCalibWidget)
 
     def gui_peakPicker(self):
         if self.peakPicker is None:
             self.preprocess()
-#        self.peakPicker.gui(True)
         if os.path.isfile(self.pointfile):
             self.peakPicker.load(self.pointfile)
         if self.gui:
-            update_fig(self.peakPicker.fig)
-#        self.peakPicker.finish(self.pointfile, callback=self.set_data)
+            self.peakPicker.widget.update()
         self.set_data(self.peakPicker.finish(self.pointfile))
-#        input("Please press enter when you are happy with your selection" + os.linesep)
-#        while self.data is None:
-#            update_fig(self.peakPicker.fig)
-#            time.sleep(0.1)
 
     def initgeoRef(self):
         """
@@ -1691,8 +1686,8 @@ and a new option which lets you choose between the original `massif` algorithm a
         AbstractCalibration.preprocess(self)
 
         if self.gui:
-            self.peakPicker.gui(log=True, maximize=True, pick=False)
-            update_fig(self.peakPicker.fig)
+            self.peakPicker.gui(log=True, maximize=True, pick=False,
+                                widget_klass=QtMplCalibWidget)
 
     def refine(self):
         """
@@ -2025,7 +2020,7 @@ class MultiCalib(object):
     def read_dSpacingFile(self):
         """Read the name of the calibrant or the file with d-spacing"""
         if self.calibrant in CALIBRANT_FACTORY:
-            self.calibrant = CALIBRANT_FACTORY(self.calibrant)
+            self.calibrant = get_calibrant(self.calibrant)
         elif os.path.isfile(self.calibrant):
             self.calibrant = Calibrant(filename=self.calibrant)
         else:
@@ -2043,7 +2038,7 @@ class MultiCalib(object):
                 ans = input("Please enter the name of the calibrant"
                             " or the file containing the d-spacing:\t").strip()
                 if ans in CALIBRANT_FACTORY:
-                    self.calibrant = CALIBRANT_FACTORY(ans)
+                    self.calibrant = get_calibrant(ans)
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(filename=ans)
 
@@ -2197,7 +2192,7 @@ class CheckCalib(object):
     def parse(self):
         logger.debug("in parse")
         usage = "check_calib [options] -p param.poni image.edf"
-        description = """Check_calib is a research tool aiming at validating both the geometric
+        description = """Check_calib is a deprecated tool aiming at validating both the geometric
 calibration and everything else like flat-field correction, distortion
 correction, at a sub-pixel level.
 
@@ -2384,7 +2379,8 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
         c.peakPicker.massif.initValleySize()
 
     if interactive:
-        c.peakPicker.gui(log=True, maximize=True, pick=True)
+        c.peakPicker.gui(log=True, maximize=True, pick=True,
+                         widget_klass=QtMplCalibWidget)
         update_fig(c.peakPicker.fig)
     c.gui_peakPicker()
     c.ai.setPyFAI(**c.geoRef.getPyFAI())
