@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2022"
+__date__ = "17/01/2022"
 
 import unittest
 import os
@@ -320,6 +320,11 @@ class TestKahan(unittest.TestCase):
 
         cls.ctx = ocl.create_context()
         cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+
+        if (platform.machine().startswith("ppc") and
+            cls.ctx.devices[0].platform.name.startswith("Portable")
+            and cls.ctx.devices[0].type == pyopencl.device_type.GPU):
+            raise unittest.SkipTest("Skip test on Power9 GPU with PoCL driver")
 
         # this is running 32 bits OpenCL with POCL
         if (platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4) and

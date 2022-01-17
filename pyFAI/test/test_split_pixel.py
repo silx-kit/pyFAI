@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2022"
+__date__ = "17/01/2022"
 
 import unittest
 import platform
@@ -90,7 +90,7 @@ class TestRecenter(unittest.TestCase):
 
         ref = splitPixel._sp_area4(*pos)
         trp = splitPixel._sp_area4(*pos.reshape((-1, 2))[:, -1::-1].ravel())
-        self.assertEqual(ref, trp, "Check transposed order")
+        self.assertAlmostEqual(ref, trp, msg="Check transposed order")
 
         b = numpy.concatenate((pos, pos))
         buf = numpy.zeros(int(max(pos) + 3), numpy.float32)
