@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/01/2022"
+__date__ = "17/01/2022"
 __status__ = "development"
 
 import logging
@@ -317,7 +317,9 @@ class MplCalibWidget:
         Called when a mouse is clicked: distribute the call to different functions
         """
         with self._sem:
-            logger.debug("Button: %i, Key modifier: %s", event.button, event.key)
+            logger.info("Button: %i, Key modifier: %s", event.button, event.key)
+            if (event.xdata or event.ydata) is None:  # no coordinates
+                return
             yx = int(event.ydata + 0.5), int(event.xdata + 0.5)
             button = event.button
             key = event.key

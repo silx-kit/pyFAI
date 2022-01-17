@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2022"
+__date__ = "17/01/2022"
 __status__ = "production"
 
 import os
@@ -601,6 +601,7 @@ class AbstractCalibration(object):
         self.peakPicker = PeakPicker(data, reconst=self.reconstruct, mask=self.mask,
                                      pointfile=self.pointfile, calibrant=self.calibrant,
                                      wavelength=self.ai.wavelength, detector=self.detector)
+        self.peakPicker.cb_refine = self.refine_points
         if not self.keep:
             self.peakPicker.points.reset()
             if not self.peakPicker.points.calibrant.wavelength:
@@ -705,6 +706,13 @@ class AbstractCalibration(object):
             self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
         else:
             self.data = self.peakPicker.points.getList()
+
+    def refine_points(self, points):
+        '''Function intended to be a callback to start the refinement of points 
+        '''
+        self.interactive = False
+        self.data = numpy.array(points)
+        self.refine()
 
     def refine(self):
         """
