@@ -601,7 +601,8 @@ class AbstractCalibration(object):
         self.peakPicker = PeakPicker(data, reconst=self.reconstruct, mask=self.mask,
                                      pointfile=self.pointfile, calibrant=self.calibrant,
                                      wavelength=self.ai.wavelength, detector=self.detector)
-        self.peakPicker.cb_refine = self.refine_points
+        # disable the callback mechanism !
+        self.peakPicker.cb_refine = lambda x:None
         if not self.keep:
             self.peakPicker.points.reset()
             if not self.peakPicker.points.calibrant.wavelength:
