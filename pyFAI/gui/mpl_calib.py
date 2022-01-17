@@ -185,6 +185,7 @@ class MplCalibWidget:
         with self.mplw:
             with pyplot.ioff():
                 self.background = self.ax.imshow(img, norm=norm,
+                                                 cmap="inferno",
                                                  origin="lower",
                                                  interpolation="nearest")
                 s1, s2 = self.shape = img.shape
