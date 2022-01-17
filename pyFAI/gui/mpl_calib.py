@@ -37,26 +37,18 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2021"
+__date__ = "17/12/2021"
 __status__ = "development"
 
-
 import logging
+import threading
 import gc
 from collections import namedtuple
 logger = logging.getLogger(__name__)
 import numpy
-try:
-    from silx.gui import qt
-except ImportError:
-    logger.debug("Backtrace", exc_info=True)
-    qt = None
-
-if qt is not None:
-    from .utils import update_fig, maximize_fig
-    from .matplotlib import matplotlib, pyplot, colors
-    from . import utils as gui_utils
-
+import matplotlib
+from matplotlib import pyplot, colors
+from ..utils.callback import dangling_callback
 GroupOfPoints = namedtuple("GroupOfPoints", "annotate plot")
 
 
@@ -68,68 +60,59 @@ class MplCalibWidget:
     - shade out some part of the image
     - annotate rings
     """
-    def __init__(self, 
-                 click_cb=None,
-                 refine_cb=None,
-                 option_cb=None,
+
+    def __init__(self,
+                 new_grp_cb=dangling_callback,
+                 append_single_cb=dangling_callback,
+                 single_point_cb=dangling_callback,
+                 append_more_cb=dangling_callback,
+                 erase_pt_cb=dangling_callback,
+                 erase_grp_cb=dangling_callback,
+                 refine_cb=dangling_callback,
+                 option_cb=dangling_callback,
                  ):
         """
         
-        :param click_cb: function to be called when clicking on the plot
-        :param refine_cb: function to be called when clicking of the refine button 
-        :param: option_cb: function to be called when clicking on the option button 
+        :param new_grp_cb: function to be called when new group of point needs to be added
+        :param append_single_cb: function to be called when one point is added to the current group
+        :param single_point_cb: function to be called to create a new group with a single point
+        :param append_more_cb: function to be called to append more points to a group 
+        :param erase_pt_cb: function to be called to delete one point 
+        :param erase_grp_cb: function to be called to delete one group
+        :param refine_cb: function to be called when clicking of the refine button
+        :param option_cb:   function to be called when clicking of the option button
         """
-        #store the various callbacks
-        self.click_cb = click_cb
-        self.option_cb = option_cb
-        self.refine_cb = refine_cb
-        
+        # store the various callbacks
+        self.cb_new_grp = new_grp_cb
+        self.cb_append_1_point = append_single_cb
+        self.cb_single_point = single_point_cb
+        self.cb_append_more_points = append_more_cb
+        self.cb_erase_1_point = erase_pt_cb
+        self.cb_erase_grp = erase_grp_cb
+        self.cb_refine = refine_cb
+        self.cb_option = option_cb
+
         self.shape = None
         self.fig = None
         self.ax = None  # axe for the plot
-        self.axc = None # axe for the colorbar
-        self.axd = None # axe for the detector coordinate
-        
+        self.axc = None  # axe for the colorbar
+        self.axd = None  # axe for the detector coordinate
+
         self.spinbox = None
         self.sb_action = None
         self.ref_action = None
         self.mpl_connectId = None
         self.append_mode = None
-        #This is for tracking the different types of plots  
+        # This is for tracking the different types of plots
         self.background = None
         self.overlay = None
         self.foreground = None
-        self.points = {} #key: label, value (
-                
-    def init(self, pick=True, update=True):
-        if self.fig is None:
-            self.fig, (self.ax, self.axc) = pyplot.subplots(1, 2, gridspec_kw={"width_ratios": (10,1)})
-            self.ax.set_ylabel('y in pixels')
-            self.ax.set_xlabel('x in pixels')
-            # self.axc.yaxis.set_label_position('left')
-            # self.axc.set_ylabel("Colorbar")
-            toolbar = self.fig.canvas.toolbar
-            toolbar.addSeparator()
-            a = toolbar.addAction('Opts', self.on_option_clicked)
-            a.setToolTip('open options window')
-            if pick:
-                label = qt.QLabel("Ring #", toolbar)
-                toolbar.addWidget(label)
-                self.spinbox = qt.QSpinBox(toolbar)
-                self.spinbox.setMinimum(0)
-                self.sb_action = toolbar.addWidget(self.spinbox)
-                a = toolbar.addAction('Refine', self.on_refine_clicked)
-                a.setToolTip('switch to refinement mode')
-                self.ref_action = a
-                self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
-            # if update:
-            self.fig.show()
-        elif update:
-            self.update()
-    
+        self.points = {}  # key: label, value (
+        self._sem = threading.Semaphore()
+
     def set_title(self, text):
         self.ax.set_title(text)
-        
+
     def set_detector(self, detector=None, update=True):
         """Add a second axis to have the distances in meter on the detector
         """
@@ -149,7 +132,7 @@ class MplCalibWidget:
             p1, p2, _ = detector.calc_cartesian_positions(d1=d1, d2=d2)
             self.axd = self.fig.add_subplot(1, 2, 1,
                                           xbound=False,
-                                          ybound=False,  
+                                          ybound=False,
                                           xlim=(p2.min(), p2.max()),
                                           ylim=(p1.min(), p1.max()),
                                           aspect='equal',
@@ -164,7 +147,7 @@ class MplCalibWidget:
             self.axd.set_ylabel(r'dim1 ($\approx m$)')
             if update:
                 self.update()
-    
+
     def imshow(self, img, bounds=None, log=False, update=True):
         """Display a 2Dscattering image
         
@@ -181,26 +164,26 @@ class MplCalibWidget:
         else:
             show_min = numpy.nanmin(img)
             show_max = numpy.nanmax(img)
-        
+
         if log:
-            if show_min<=0:
-                show_min = img[numpy.where(img>0)].min()
+            if show_min <= 0:
+                show_min = img[numpy.where(img > 0)].min()
             norm = colors.LogNorm(show_min, show_max)
             txt = 'Log colour scale (skipping lowest/highest per mille)'
         else:
             norm = colors.Normalize(show_min, show_max)
             txt = 'Linear colour scale (skipping lowest/highest per mille)'
-        
+
         self.background = self.ax.imshow(img, norm=norm,
-                                         origin="lower", 
+                                         origin="lower",
                                          interpolation="nearest")
-        s1, s2 = self.shape = img.shape        
-        mask = numpy.zeros(self.shape+(4,), "uint8")
+        s1, s2 = self.shape = img.shape
+        mask = numpy.zeros(self.shape + (4,), "uint8")
         self.overlay = self.ax.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
         self.foreground = self.ax.imshow(img, norm=norm,
-                                         origin="lower", 
+                                         origin="lower",
                                          interpolation="nearest", alpha=1)
-        pyplot.colorbar(self.background, cax=self.axc)#, label=txt)
+        pyplot.colorbar(self.background, cax=self.axc)  # , label=txt)
         self.axc.yaxis.set_label_position('left')
         self.axc.set_ylabel(txt)
         s1 -= 1
@@ -220,16 +203,16 @@ class MplCalibWidget:
         if self.shape is None:
             logger.warning("No background image defined !")
             return
-        
-        shape = self.shape+ (4,)
-        
+
+        shape = self.shape + (4,)
+
         if mask is not None:
             assert mask.shape == self.shape
-            mask4 = numpy.outer(numpy.logical_not(mask), 100*numpy.ones(4)).astype(numpy.uint8).reshape(shape)
+            mask4 = numpy.outer(numpy.logical_not(mask), 100 * numpy.ones(4)).astype(numpy.uint8).reshape(shape)
         else:
             mask4 = numpy.zeros(shape, dtype=numpy.uint8)
         self.overlay.set_data(mask4)
-        if update: 
+        if update:
             self.update()
 
     def contour(self, data, values=None, cmap="autumn", linewidths=2, linestyles="dashed", update=True):
@@ -243,14 +226,14 @@ class MplCalibWidget:
         if self.fig is None:
             logging.warning("No diffraction image available => not showing the contour")
             return
-        #clean previous contour plots:
-        self.ax.collections = []
+        # clean previous contour plots:
+        self.ax.collections.clear()
         if data is not None:
             try:
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
-                if not isinstance(cmap, matplotlib.colors.Colormap):
+                if not isinstance(cmap, colors.Colormap):
                     cmap = matplotlib.cm.get_cmap(cmap)
-                
+
                 self.ax.contour(data, levels=values, cmap=cmap, linewidths=linewidths, linestyles=linestyles)
                 self.ax.set_xlim(xlim)
                 self.ax.set_ylim(ylim)
@@ -270,13 +253,14 @@ class MplCalibWidget:
         if self.fig:
             # empty annotate and plots
             if len(self.ax.texts) > 0:
-                self.ax.texts = []
+                self.ax.texts.clear()
             if len(self.ax.lines) > 0:
-                self.ax.lines = []
+                self.ax.lines.clear()
             # Redraw the image
             if update:
-                if not gui_utils.main_loop:
-                    self.fig.show()
+                # TODO: fix this
+                # if not gui_utils.main_loop:
+                #     self.fig.show()
                 self.update()
 
     def add_grp(self, label, points, update=True):
@@ -298,7 +282,6 @@ class MplCalibWidget:
                 self.points[label] = GroupOfPoints(annotate, plot)
             if update:
                 self.update()
-                
 
     def remove_grp(self, label, update=True):
         """
@@ -317,14 +300,37 @@ class MplCalibWidget:
             if update:
                 self.update()
 
+    def onclick(self, event):
+        """
+        Called when a mouse is clicked: distribute the call to different functions
+        """
+        with self._sem:
+            logger.debug("Button: %i, Key modifier: %s", event.button, event.key)
+            yx = int(event.ydata + 0.5), int(event.xdata + 0.5)
+            button = event.button
+            key = event.key
+            ring = self.get_ring_value()
+            if ((button == 3) and (key == 'shift')) or \
+               ((button == 1) and (key == 'v')):
+                # if 'shift' pressed add nearest maximum to the current group
+                self.cb_append_1_point(yx, ring)
+            elif ((event.button == 3) and (event.key == 'control')) or\
+                 ((event.button == 1) and (event.key == 'b')):
+                # if 'control' pressed add nearest maximum to a new group
+                self.cb_single_point(yx, ring)
+            elif (event.button in [1, 3]) and (event.key == 'm'):
+                self.cb_append_more_points(yx, ring)
+            elif (event.button == 3) or ((event.button == 1) and (event.key == 'n')):
+                # create new group
+                self.cb_new_grp(yx, ring)
 
-    def onclick(self, *args):
-        """
-        Called when a mouse is clicked
-        """
-        if self.click_cb:
-            self.click_cb(*args)
-    
+            elif (event.key == "1") and (event.button in [1, 2]):
+                self.cb_erase_1_point(yx, ring)
+            elif (event.button == 2) or (event.button == 1 and event.key == "d"):
+                self.cb_erase_grp(yx, ring)
+            else:
+                logger.warning(f"Unknown combination: Button: {button}, Key modifier: {key} at x:{yx[1]} y:{yx[0]}")
+
     def on_plus_pts_clicked(self, *args):
         """
         callback function
@@ -337,14 +343,13 @@ class MplCalibWidget:
         """
         self.append_mode = False
 
-    def on_option_clicked(self, *args):
+    def onclick_option(self, *args):
         """
         callback function
         """
-        if self.option_cb:
-            self.option_cb(*args) 
+        self.cb_option(*args)
 
-    def on_refine_clicked(self, *args):
+    def onclick_refine(self, *args):
         """
         callback function
         """
@@ -354,21 +359,27 @@ class MplCalibWidget:
         self.mpl_connectId = None
         self.fig.canvas.mpl_disconnect(self.mpl_connectId)
         pyplot.ion()
-        if self.refine_cb:
-            self.refine_cb(*args)
-    
-    def update(self):
-        if self.fig:
-            update_fig(self.fig)
-            
-    def maximize(self, update=True):
-        if self.fig:
-            maximize_fig(self.fig)
-            if update:
-                self.update()
-    
+        self.cb_refine(*args)
+
     def close(self):
         if self.fig is not None:
             self.fig.clear()
             self.fig = None
             gc.collect()
+
+    # Those methods need to be spacialized:
+    def init(self, pick=True, update=True):
+        import inspect
+        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+
+    def update(self):
+        import inspect
+        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+
+    def maximize(self, update=True):
+        import inspect
+        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+
+    def get_ring_value(self):
+        import inspect
+        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")

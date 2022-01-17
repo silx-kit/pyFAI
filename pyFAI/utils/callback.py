@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,43 +27,21 @@
 #  THE SOFTWARE.
 
 """
-
-Contains the directory name where data are:
- * gui directory with graphical user interface files
- * openCL directory with OpenCL kernels
- * calibrants directory with d-spacing files describing calibrants
- * testimages: if does not exist: create it.
-
-This file is very short and simple in such a way to be mangled by installers
-It is used by pyFAI.utils._get_data_path
-
-See bug #144 for discussion about implementation
-https://github.com/silx-kit/pyFAI/issues/144
+callback utility to warn about dangling callbacks
 """
-
-__author__ = "Jérôme Kieffer"
+__author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
-__status__ = "development"
+__date__ = "17/12/2021"
+__status__ = "production"
 
-import os
 import logging
+import traceback
 logger = logging.getLogger(__name__)
 
-PYFAI_DATA = "/usr/share/pyFAI"
 
-# testimage contains the directory name where
-data_dir = ""
-if "PYFAI_DATA" in os.environ:
-    data_dir = os.environ.get("PYFAI_DATA")
-    if not os.path.exists(data_dir):
-        logger.warning("data directory %s does not exist", data_dir)
-elif os.path.isdir(PYFAI_DATA):
-    data_dir = PYFAI_DATA
-
-# testimages contains the directory name where test images are located
-testimages = "pyFAI_testdata"
-if "PYFAI_TESTIMAGES" in os.environ:
-    testimages = os.environ.get("PYFAI_TESTIMAGES")
+def dangling_callback(*args, **kwargs):
+    tb = traceback.format_list(traceback.extract_stack(limit=5))
+    tb.insert(0, f"Dangling callback function called with {args}, {kwargs} coming from:")
+    logger.warning('\n'.join(tb))

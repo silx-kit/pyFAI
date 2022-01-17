@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 07/01/2021
+:Date: 07/01/2022
 :Keywords: Installation procedure
 :Target: System administrators
 
@@ -63,6 +63,7 @@ Building procedure
 
 There are few specific options to ``setup.py build``:
 
+* ``-J 16``: Build the code using 16 compilers instances.
 * ``--no-cython``: Prevent Cython (even if present) to re-generate the C source code. Use the one provided by the development team.
 * ``--force-cython``: Force the re-cythonization of all binary extensions.
 * ``--no-openmp``: Recompiles the Cython code without OpenMP support (default under MacOSX).
@@ -90,7 +91,13 @@ PyFAI comes with a test suite to ensure all core functionalities are working as 
     python3 setup.py build
     python3 run_tests.py
 
-**Nota:** to run the test, an internet connection is needed as 200MB of test images need to be download.
+There are few specific options to run_tests.py:
+
+* ``-x``: Disable the needing the GUI (faster)
+* ``-c``: Estimates the test-coverage for the project
+
+
+**Nota:** to run the test, an internet connection is needed as 20MB of test images need to be download.
 You may have to set the environment variable *http_proxy* and *https_proxy*
 according to the networking environment you are in.
 This is no more needed at the ESRF.

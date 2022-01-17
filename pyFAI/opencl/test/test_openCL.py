@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2021"
+__date__ = "09/01/2022"
 
 import unittest
 import os
@@ -144,16 +144,13 @@ class TestMask(unittest.TestCase):
     def test_OpenCL_sigma_clip(self):
         logger.info("Testing OpenCL sigma-clipping")
         ids = ocl.select_device("ALL", best=True, memory=1e8)
-#         print(ids)
         to_test = [v for k, v in IntegrationMethod._registry.items() if k.target == ids and k.split == "no" and k.algo == "csr" and k.dim == 1]
         N = 100
-#         print(to_test)
         for ds in self.datasets:
             ai = load(ds["poni"])
             data = fabio.open(ds["img"]).data
             ref = ai.integrate1d_ng(data, N, method=("no", "histogram", "cython"), unit="2th_deg")
             for method  in  to_test:
-#                 print(method)
                 try:
                     res = ai.sigma_clip_ng(data, N, method=method, unit="2th_deg")
                 except (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError) as error:
@@ -163,7 +160,6 @@ class TestMask(unittest.TestCase):
                     # This is not really a precise test.
                     r = mathutil.rwp(ref, res)
                     logger.info("OpenCL sigma clipping has R= %.3f for dataset %s", r, ds)
-#                     print(r)
                     self.assertLess(r, 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
 
 

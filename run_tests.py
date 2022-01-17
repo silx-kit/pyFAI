@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "11/01/2021"
+__date__ = "10/01/2022"
 __license__ = "MIT"
 
 import sys
@@ -42,6 +42,7 @@ import os
 import subprocess
 import time
 import unittest
+import tempfile
 import collections
 from argparse import ArgumentParser
 
@@ -240,7 +241,6 @@ def report_uncovered_files(cov, build_dir, inject_xml=None):
     existing_files = filter(lambda x: "/third_party/" not in x, existing_files)
 
     if inject_xml is None:
-        import tempfile
         fd, fn = tempfile.mkstemp(suffix=".xml")
         os.close(fd)
         cov.xml_report(outfile=fn)
@@ -282,7 +282,6 @@ def report_rst(cov, package, version="0.0.0", base="", inject_xml=None):
     :return: RST string
     """
     if inject_xml is None:
-        import tempfile
         fd, fn = tempfile.mkstemp(suffix=".xml")
         os.close(fd)
         cov.xml_report(outfile=fn)
@@ -542,6 +541,8 @@ result = runner.run(test_suite)
 
 if result.wasSuccessful():
     exit_status = 0
+    import pyFAI.test.utilstest
+    pyFAI.test.utilstest.UtilsTest.clean_up()
 else:
     exit_status = 1
 

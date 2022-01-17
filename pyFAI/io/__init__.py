@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2021"
+__date__ = "07/01/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -204,7 +204,6 @@ class HDF5Writer(Writer):
         self.config_grp = None
         self.radial_ds = None
         self.azimuthal_ds = None
-        self.error_ds = None
         self.has_radial_values = False
         self.has_azimuthal_values = False
         self.has_error_values = False

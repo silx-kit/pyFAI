@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2021"
+__date__ = "10/01/2022"
 
 import unittest
 import os
@@ -41,7 +41,6 @@ import logging
 import time
 import copy
 import fabio
-import tempfile
 import gc
 import shutil
 from .utilstest import UtilsTest
@@ -148,6 +147,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             self.__class__.ai.reset()
         except Exception as e:
             logger.error(e)
+        gc.collect()
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_numpy_vs_fit2d(self):
@@ -260,9 +260,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
         logger.info("Histogram Cython/Numpy Rwp = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
-            fig = pylab.figure()
+            fig, sp = pylab.subplots()
             fig.suptitle('Numpy Histogram vs Cython: Rwp=%.3f' % rwp)
-            sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-y", label='fit2d')
             sp.plot(tth_np, I_np, "-b", label='numpy')
             sp.plot(tth_cy, I_cy, "-r", label="cython")
@@ -302,10 +301,9 @@ class TestAzimHalfFrelon(unittest.TestCase):
         logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
         self.assertLess(rwp, 3, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
         ref = ocl = rwp = None
-        gc.collect()
 
     def test_radial(self):
-
+        "Non regression for #1602"
         res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
                                        radial_range=(3.6, 3.9), radial_unit="2th_deg")
         self.assertLess(res[0].min(), -179, "chi min at -180")
@@ -317,6 +315,16 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                        radial_range=(3.6, 3.9), radial_unit="2th_deg", unit="chi_rad")
         self.assertLess(res[0].min(), -3, "chi min at -3rad")
         self.assertGreater(res[0].max(), 0, "chi max at +3rad")
+        self.assertGreater(res[1].min(), 120, "intensity min in ok")
+        self.assertLess(res[1].max(), 10000, "intensity max in ok")
+
+        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
+                                       radial_range=(3.6, 3.9), radial_unit="2th_deg",
+                                       method=("full", "CSR", "opencl"))
+        self.assertLess(res[0].min(), -179, "chi min at -180")
+        self.assertGreater(res[0].max(), 179, "chi max at +180")
+        self.assertGreater(res[1].min(), 120, "intensity min in ok")
+        self.assertLess(res[1].max(), 10000, "intensity max in ok")
 
 
 class TestFlatimage(unittest.TestCase):
@@ -499,20 +507,12 @@ class TestSetter(unittest.TestCase):
         self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
         self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
 
-        tmp_dir = os.path.join(UtilsTest.tempdir, self.id())
-        if not os.path.isdir(tmp_dir):
-            os.mkdir(tmp_dir)
-        self.tmp_dir = tmp_dir
-
-        fd, self.edf1 = tempfile.mkstemp(".edf", "testAI1", tmp_dir)
+        fd, self.edf1 = UtilsTest.tempfile(".edf", "testAI1", dir=__class__.__name__)
         os.close(fd)
-        fd, self.edf2 = tempfile.mkstemp(".edf", "testAI2", tmp_dir)
+        fd, self.edf2 = UtilsTest.tempfile(".edf", "testAI2", dir=__class__.__name__)
         os.close(fd)
         fabio.edfimage.edfimage(data=self.rnd1).write(self.edf1)
         fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
-
-    def tearDown(self):
-        shutil.rmtree(self.tmp_dir)
 
     def test_flat(self):
         self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")

@@ -257,11 +257,12 @@ While the sample is well diffracting and well known, the wavelength has been gue
 One should refine the wavelength when the peaks extracted are correct
 
 
-All those images are part of the test-suite of pyFAI. To download them from internet, run
+All those images are part of the benchmark suite of pyFAI. 
+To download them from internet, run the benchmark:
 
 ::
 
-	python setup.py build test
+	pyFAI-benchmark
 
-Downloaded test images  are located in tests/testimages
+Downloaded test images  are located in /tmp/pyFAI_testdata_${USER}
 
