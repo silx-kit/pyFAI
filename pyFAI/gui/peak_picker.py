@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2022"
+__date__ = "19/01/2022"
 __status__ = "production"
 
 import os
@@ -523,6 +523,8 @@ class PeakPicker(object):
         logger.info("refine, now!")
         if self.point_filename:
             self.points.save(self.point_filename)
+        # remove the shadow of the plot, if any
+        self.widget.shadow(numpy.ones(self.data.shape, dtype=numpy.int8))
         if self.cb_refine:
             data = self.points.getWeightedList(self.data)
             self.cb_refine(data)
