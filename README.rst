@@ -36,10 +36,11 @@ As most Python packages, pyFAI is available via PIP::
 
    pip install pyFAI[gui]
 
-Provide the *--user* to perform an installation local to your user.
+It is advised to run this in a vitural environment.
+Provide the *--user* to perform an installation local to your user (not recommended).
 Under UNIX, you may have to run the command via *sudo* to gain root access an
-perform a system wide installation. 
-The best solution remaining to install the software into a vituralenv.
+perform a system wide installation (neither recommended). 
+
 
 With conda
 ..........
@@ -69,7 +70,7 @@ All files are unpacked into the directory pyFAI-master::
 
 Build it & test it::
 
-    python3 setup.py build 
+    python3 setup.py build -j 4
     python3 run_tests.py
 
 For its tests, pyFAI downloads test images from the internet.
@@ -184,11 +185,11 @@ Maintainers
 -----------
 
 * Jérôme Kieffer (ESRF)
-* Valentin Valls (ESRF)
 
 Contributors
 ------------
 
+* Valentin Valls (ESRF)
 * Frédéric-Emmanuel Picca (Soleil)
 * Thomas Vincent (ESRF)
 * Dimitris Karkoulis (ESRF)

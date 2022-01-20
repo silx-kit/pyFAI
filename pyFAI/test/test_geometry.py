@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2021"
+__date__ = "20/08/2021"
 
 import unittest
 import random
@@ -118,12 +118,14 @@ class TestSolidAngle(unittest.TestCase):
         aarhus = detector_factory("Aarhus")
         aarhus.binning = (10, 10)
         ai = AzimuthalIntegrator(aarhus.radius, detector=aarhus)
-        cosa = numpy.fromfunction(ai.cos_incidence,
-                                  aarhus.shape, dtype=numpy.float32)
-        maxi = cosa.max()
-        mini = cosa.min()
-        self.assertLessEqual(maxi , 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assertTrue(mini > 0.99, 'Cos solid angle is %s >0.99' % mini)
+        for path in ("cython", "numexpr", "numpy"):
+            cosa = numpy.fromfunction(ai.cos_incidence,
+                                      aarhus.shape, dtype=numpy.float32,
+                                      path=path)
+            maxi = cosa.max()
+            mini = cosa.min()
+            self.assertLessEqual(maxi, 1.0, f'path:{path} Cos incidence is {maxi} <=1.0')
+            self.assertTrue(mini > 0.99, f'path:{path} Cos incidence is {mini} >0.99')
 
     def test_nonflat_outside(self):
         """
@@ -134,13 +136,15 @@ class TestSolidAngle(unittest.TestCase):
         aarhus = detector_factory("Aarhus")
         aarhus.binning = (10, 10)
         ai = AzimuthalIntegrator(aarhus.radius * 1.5, detector=aarhus)
-        cosa = numpy.fromfunction(ai.cos_incidence,
-                                  aarhus.shape, dtype=numpy.float32)
-        maxi = cosa.max()
-        mini = cosa.min()
-        self.assertLessEqual(maxi, 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assertGreater(maxi, 0.99, 'Cos incidence max is %s >0.99' % maxi)
-        self.assertLess(mini, 0.92, 'Cos solid angle min is %s <0.92' % mini)
+        for path in ("cython", "numexpr", "numpy"):
+            cosa = numpy.fromfunction(ai.cos_incidence,
+                                      aarhus.shape, dtype=numpy.float32,
+                                      path=path)
+            maxi = cosa.max()
+            mini = cosa.min()
+            self.assertLessEqual(maxi, 1.0, f'path: {path} Cos incidence is {maxi} <=1.0')
+            self.assertGreater(maxi, 0.99, f'path: {path} Cos incidence max is {maxi} >0.99')
+            self.assertLess(mini, 0.92, f'path: {path} Cos incidence min is {mini} <0.92')
 
     def test_nonflat_inside(self):
         """
@@ -151,14 +155,31 @@ class TestSolidAngle(unittest.TestCase):
         aarhus = detector_factory("Aarhus")
         aarhus.binning = (10, 10)
         ai = AzimuthalIntegrator(aarhus.radius * 0.5, detector=aarhus)
-        cosa = numpy.fromfunction(ai.cos_incidence,
-                                  aarhus.shape, dtype=numpy.float32)
-        maxi = cosa.max()
-        mini = cosa.min()
-        self.assertLessEqual(maxi, 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assertGreater(maxi, 0.99, 'Cos incidence max is %s >0.99' % maxi)
-        self.assertLess(mini, 0.87, 'Cos solid angle min is %s <0.86' % mini)
+        for path in ("cython", "numexpr", "numpy"):
+            cosa = numpy.fromfunction(ai.cos_incidence,
+                                      aarhus.shape, dtype=numpy.float32,
+                                      path=path)
+            maxi = cosa.max()
+            mini = cosa.min()
+            self.assertLessEqual(maxi, 1.0, f'path: {path} Cos incidence is {maxi} <=1.0')
+            self.assertGreater(maxi, 0.99, f'path: {path} Cos incidence max is {maxi} >0.99')
+            self.assertLess(mini, 0.87, f'path: {path} Cos incidence min is {mini} <0.86')
 
+    def test_flat(self):
+        """test sine and cosine for the incidence angle
+        """
+        pilatus = detector_factory("Pilatus100k")
+        ai = AzimuthalIntegrator(0.1, detector=pilatus)
+        for path in ("cython", "numexpr", "numpy"):
+            cosa = numpy.fromfunction(ai.cos_incidence,
+                                      pilatus.shape, dtype=numpy.float64,
+                                      path=path)
+            sina = numpy.fromfunction(ai.sin_incidence,
+                                      pilatus.shape, dtype=numpy.float64,
+                                      path=path)
+            one = cosa*cosa + sina*sina
+            self.assertLessEqual(one.max()-1.0, 1e-10, f"path: {path} cos2+sin2<=1")
+            self.assertGreater(one.min()-1.0, -1e-10, f"path: {path} cos2+sin2>0.99")
 
 class TestBug88SolidAngle(unittest.TestCase):
     """

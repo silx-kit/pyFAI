@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2021"
+__date__ = "19/01/2022"
 __status__ = "production"
 
 import os
@@ -261,7 +261,8 @@ class PeakPicker(object):
                                        erase_grp_cb=self.onclick_erase_grp,
                                        refine_cb=self.onclick_refine,
                                        option_cb=self.onclick_option,)
-            self.widget.init(update=False)
+            self.widget.init(pick=pick)
+            self.widget.show()
         data_disp, bounds = preprocess_image(self.data, False, 1e-3)
         self.widget.imshow(data_disp, bounds=bounds, log=log, update=False)
         if self.detector:
@@ -519,8 +520,11 @@ class PeakPicker(object):
         """
         callback function
         """
-        print("refine, now!")
+        logger.info("refine, now!")
         if self.point_filename:
             self.points.save(self.point_filename)
+        # remove the shadow of the plot, if any
+        self.widget.shadow(numpy.ones(self.data.shape, dtype=numpy.int8))
         if self.cb_refine:
-            self.cb_refine(self.points.getWeightedList(self.data))
+            data = self.points.getWeightedList(self.data)
+            self.cb_refine(data)
