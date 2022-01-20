@@ -1,9 +1,34 @@
 :Author: Jérôme Kieffer
-:Date: 11/01/2021
+:Date: 20/01/2022
 :Keywords: changelog
 
 Change-log of versions
 ======================
+
+0.21.0 20/01/2022
+-----------------
+* One year of development: 523 commits, close to 100 pull-requests. +53000 lines of code and 20000 suppressed.
+* Sigma-clipping allows separation of Bragg/amorphous signal:
+    - Implementation in Python, Cython and OpenCL with poissonian and azimuthal error-model
+    - Sparsification, compression of single crystal data
+	- Application to peak-picking and quality assessement of SSX data
+	- Analysis of grid-scan to find single crystal 
+	- Single pass variance propagation in azimuthal bin
+	- Integration of the Jungfrau detector  (ID29)
+* 2D integration:
+	- New integrators with error propagation by default
+	- Full pixel splitting in addition to BBox and no splitting
+* Refactor of all LUT and CSR to share the same code base, makes tests more robust. 
+* Calibration of experimental setup using Jupyter notebooks
+	- User interaction with plots in matplotlib (thanks Phil Hans)
+	- Factorize code between `pyFAI-calib` and jupyter calibration
+	- Tutorial as notebook and video recording 	
+* Parallax correction for thick detector (still experimental, thanks to Vadim)
+* Improved tutorial on detector geometry calibration (based on Kabsch alignment)
+* Better performances on HPC nodes by limiting simple OpenMP to fewer cores
+* Many improvement in test, typos fixed, doc ...
+* Deprecate all legacy integrators since the new version sees its matrix complete.
+* Supports Python 3.6 ... 3.10 under Windows, MacOS and Linux.
 
 0.20.0 22/01/2021
 -----------------
