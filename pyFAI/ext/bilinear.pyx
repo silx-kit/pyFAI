@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ to bilinear interpolations.
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __date__ = "25/01/2022"
-__copyright__ = "2011-2021, ESRF"
+__copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -66,8 +66,8 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
     :return: 3-tuple of position.
     """
     cdef:
-        int64_t i, p1, p2, dim1, dim2, size = d1.size
-        float32_t delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2
+        Py_ssize_t i, p1, p2, dim1, dim2, size = d1.size
+        double delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2, v1, v2
         float32_t[::1] out1 = numpy.zeros(size, dtype=numpy.float32)
         float32_t[::1] out2 = numpy.zeros(size, dtype=numpy.float32)
         float32_t[::1] out3
@@ -78,42 +78,44 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
     assert size == d2.size, "d2.size == size"
 
     for i in prange(size, nogil=True, schedule="static"):
-        f1 = floor(d1[i])
-        f2 = floor(d2[i])
+        v1 = d1[i]
+        v2 = d2[i]
+        f1 = floor(v1)
+        f2 = floor(v2)
 
         p1 = <int> f1
         p2 = <int> f2
 
-        delta1 = d1[i] - f1
-        delta2 = d2[i] - f2
+        delta1 = v1 - f1
+        delta2 = v2 - f2
 
         if p1 < 0:
             with gil:
                 logger.warning("Negative index along dim1: f1= %s", f1)
             p1 = 0
             f1 = 0.0
-            delta1 = d1[i]
+            delta1 = v1
 
         if p2 < 0:
             with gil:
                 logger.warning("Negative index along dim2: f2= %s", f2)
             p2 = 0
             f2 = 0.0
-            delta2 = d2[i]
+            delta2 = v2
 
         if p1 >= dim1:
             if p1 > dim1:
                 with gil:
-                    logger.warning("Overflow on dim1: d1= %s, f1=%s, p1=%s, delta1=%s", d1[i], f1, p1, delta1)
+                    logger.warning("Overflow on dim1: d1= %s, f1=%s, p1=%s, delta1=%s", v1, f1, p1, delta1)
             p1 = dim1 - 1
-            delta1 = d1[i] - p1
+            delta1 = v1 - p1
 
         if p2 >= dim2:
             if p2 > dim2:
                 with gil:
-                    logger.warning("Overflow on dim2: d2= %s, f2=%s, p2=%s, delta2=%s", d2[i], f2, p2, delta2)
+                    logger.warning("Overflow on dim2: d2= %s, f2=%s, p2=%s, delta2=%s", v2, f2, p2, delta2)
             p2 = dim2 - 1
-            delta2 = d2[i] - p2
+            delta2 = v2 - p2
 
         A1 = pos[p1, p2, 0, 1]
         A2 = pos[p1, p2, 0, 2]
@@ -129,21 +131,21 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
             C0 = pos[p1, p2, 2, 0]
             D0 = pos[p1, p2, 3, 0]
             out3[i] += A0 * (1.0 - delta1) * (1.0 - delta2) \
-                + B0 * delta1 * (1.0 - delta2) \
-                + C0 * delta1 * delta2 \
-                + D0 * (1.0 - delta1) * delta2
+                     + B0 * delta1 * (1.0 - delta2) \
+                     + C0 * delta1 * delta2 \
+                     + D0 * (1.0 - delta1) * delta2
 
         # A and D are on the same:  dim1 (Y)
         # A and B are on the same:  dim2 (X)
         # nota: += is needed as well as numpy.zero because of prange: avoid reduction
         out1[i] += A1 * (1.0 - delta1) * (1.0 - delta2) \
-            + B1 * delta1 * (1.0 - delta2) \
-            + C1 * delta1 * delta2 \
-            + D1 * (1.0 - delta1) * delta2
+                 + B1 * delta1 * (1.0 - delta2) \
+                 + C1 * delta1 * delta2 \
+                 + D1 * (1.0 - delta1) * delta2
         out2[i] += A2 * (1.0 - delta1) * (1.0 - delta2) \
-            + B2 * delta1 * (1.0 - delta2) \
-            + C2 * delta1 * delta2 \
-            + D2 * (1.0 - delta1) * delta2
+                 + B2 * delta1 * (1.0 - delta2) \
+                 + C2 * delta1 * delta2 \
+                 + D2 * (1.0 - delta1) * delta2
     if is_flat:
         return numpy.asarray(out1), numpy.asarray(out2), None
     else:
