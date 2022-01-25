@@ -35,7 +35,7 @@ to bilinear interpolations.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "14/01/2021"
+__date__ = "25/01/2022"
 __copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -150,7 +150,7 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
         return numpy.asarray(out1), numpy.asarray(out2), numpy.asarray(out3)
 
 
-def convert_corner_2D_to_4D(int ndim,
+def convert_corner_2D_to_4D(Py_ssize_t ndim,
                             floating[:, ::1] d1 not None,
                             floating[:, ::1] d2 not None,
                             floating[:, ::1] d3=None):
@@ -163,7 +163,7 @@ def convert_corner_2D_to_4D(int ndim,
     :param d3: 2D position in dim3 (z) (shape +1)
     :return: pos 4D array with position of pixels corners
     """
-    cdef int64_t shape0, shape1, i, j
+    cdef Py_ssize_t shape0, shape1, i, j
     #  edges position are n+1 compared to number of pixels
     shape0 = d1.shape[0] - 1
     shape1 = d2.shape[1] - 1
