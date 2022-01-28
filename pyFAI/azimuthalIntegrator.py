@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "28/01/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2384,15 +2384,17 @@ class AzimuthalIntegrator(Geometry):
                         ocl_py_engine.set_engine(integr)
 
                     if (integr is not None):
-                            intpl = integr.integrate_ng(data, dark=dark, flat=flat,
-                                                         solidangle=solidangle,
-                                                         solidangle_checksum=self._dssa_crc,
-                                                         dummy=dummy,
-                                                         delta_dummy=delta_dummy,
-                                                         polarization=polarization,
-                                                         polarization_checksum=polarization_crc,
-                                                         safe=safe,
-                                                         normalization_factor=normalization_factor)
+                            intpl = integr.integrate_ng(data,
+                                                       variance=variance,
+                                                       dark=dark, flat=flat,
+                                                       solidangle=solidangle,
+                                                       solidangle_checksum=self._dssa_crc,
+                                                       dummy=dummy,
+                                                       delta_dummy=delta_dummy,
+                                                       polarization=polarization,
+                                                       polarization_checksum=polarization_crc,
+                                                       safe=safe,
+                                                       normalization_factor=normalization_factor)
             if intpl is None:  # fallback if OpenCL failed or default cython
                 # The integrator has already been initialized previously
                 intpl = cython_integr.integrate_ng(data,
