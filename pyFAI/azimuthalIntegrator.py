@@ -2258,7 +2258,7 @@ class AzimuthalIntegrator(Geometry):
                         cython_reset = "number of points changed"
                     if cython_integr.size != data.size:
                         cython_reset = "input image size changed"
-                    if cython_integr.empty != self._empty:
+                    if cython_integr.empty != empty:
                         cython_reset = "empty value changed"
                     if (mask is not None) and (not cython_integr.check_mask):
                         cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
@@ -2285,13 +2285,13 @@ class AzimuthalIntegrator(Geometry):
                                                            radial_range, azimuth_range,
                                                            mask_checksum=mask_crc,
                                                            unit=unit, split=split,
-                                                           scale=False)
+                                                           empty=empty, scale=False)
                         else:
                             cython_integr = self.setup_LUT(shape, npt, mask,
                                                            radial_range, azimuth_range,
                                                            mask_checksum=mask_crc,
                                                            unit=unit, split=split,
-                                                           scale=False)
+                                                           empty=empty, scale=False)
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         cython_integr = None
