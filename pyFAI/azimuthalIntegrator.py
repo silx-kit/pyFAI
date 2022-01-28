@@ -2313,7 +2313,7 @@ class AzimuthalIntegrator(Geometry):
                     if (not reset) and safe:
                         if integr.unit != unit:
                             reset = "unit changed"
-                        if integr.bins != npt:
+                        if integr.bins != numpy.prod(npt):
                             reset = "number of points changed"
                         if integr.size != data.size:
                             reset = "input image size changed"
@@ -2366,14 +2366,15 @@ class AzimuthalIntegrator(Geometry):
                     if integr is None or integr.checksum != cython_integr.lut_checksum:
                         if (method.impl_lower == "opencl"):
                             with ocl_py_engine.lock:
-                                print(method)
+                                # print(method)
                                 integr = method.class_funct_ng.klass(cython_integr.lut,
                                                                      cython_integr.size,
                                                                      bin_centers=cython_integr.bin_centers0,
                                                                      azim_centers=cython_integr.bin_centers1,
                                                                      platformid=method.target[0],
                                                                      deviceid=method.target[1],
-                                                                     checksum=cython_integr.lut_checksum)
+                                                                     checksum=cython_integr.lut_checksum,
+                                                                     unit=unit)
                                 integr.check_mask = (mask is not None)
                                 integr.mask_checksum = mask_crc
                         elif (method.impl_lower == "python"):
@@ -2382,7 +2383,8 @@ class AzimuthalIntegrator(Geometry):
                                                                      cython_integr.size,
                                                                      bin_centers=cython_integr.bin_centers0,
                                                                      azim_centers=cython_integr.bin_centers1,
-                                                                     checksum=cython_integr.lut_checksum)
+                                                                     checksum=cython_integr.lut_checksum,
+                                                                     unit=unit)
                                 integr.check_mask = (mask is not None)
                                 integr.mask_checksum = mask_crc
                         ocl_py_engine.set_engine(integr)
