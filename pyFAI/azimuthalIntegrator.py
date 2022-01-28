@@ -3318,12 +3318,11 @@ class AzimuthalIntegrator(Geometry):
                                                              image_size=data.size,
                                                              empty=self._empty,
                                                              unit=unit,
+                                                             mask_checksum=csr_integr.mask_checksum,
                                                              bin_centers=csr_integr.bin_centers)
                         # Copy some properties from the cython integrator
-                        integr.check_mask = csr_integr.check_mask
                         integr.pos0_range = csr_integr.pos0_range
                         integr.pos1_range = csr_integr.pos1_range
-                        integr.mask_checksum = csr_integr.mask_checksum
                         engine.set_engine(integr)
                     else:
                         logger.error(f"Implementation {method.impl_lower} not supported")
