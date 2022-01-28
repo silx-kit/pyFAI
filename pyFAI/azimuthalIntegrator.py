@@ -312,7 +312,7 @@ class AzimuthalIntegrator(Geometry):
     def setup_LUT(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
                   mask_checksum=None, unit=units.TTH,
-                  split="bbox", scale=True):
+                  split="bbox", empty=None, scale=True):
         """
         Prepare a look-up-table
 
@@ -331,6 +331,7 @@ class AzimuthalIntegrator(Geometry):
         :param unit: use to propagate the LUT object for further checkings
         :type unit: pyFAI.units.Unit
         :param split: Splitting scheme: valid options are "no", "bbox", "full"
+        :param empty: override the default empty value
         :param scale: set to False for working in S.I. units for pos0_range
                       which is faster. By default assumes pos0_range has `units`
                       Note that pos1_range, the chi-angle, is expected in radians
@@ -366,7 +367,7 @@ class AzimuthalIntegrator(Geometry):
             unit = units.to_unit(unit)
             pos0_scale = unit.scale
             pos0_range = tuple(pos0_range[i] / pos0_scale for i in (0, -1))
-
+        empty = self._empty if empty is None else empty
         if "__len__" in dir(npt) and len(npt) == 2:
             int2d = True
         else:
@@ -410,7 +411,7 @@ class AzimuthalIntegrator(Geometry):
                                                 allow_pos0_neg=False,
                                                 unit=unit,
                                                 chiDiscAtPi=self.chiDiscAtPi,
-                                                empty=self._empty)
+                                                empty=empty)
             else:
                 return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
                                                              bins=npt,
@@ -420,7 +421,7 @@ class AzimuthalIntegrator(Geometry):
                                                              mask_checksum=mask_checksum,
                                                              allow_pos0_neg=False,
                                                              unit=unit,
-                                                             empty=self._empty)
+                                                             empty=empty)
         else:
             if int2d:
                 return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
@@ -431,7 +432,7 @@ class AzimuthalIntegrator(Geometry):
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
                                                 unit=unit,
-                                                empty=self._empty)
+                                                empty=empty)
             else:
                 return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                 bins=npt,
@@ -441,12 +442,12 @@ class AzimuthalIntegrator(Geometry):
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
                                                 unit=unit,
-                                                empty=self._empty)
+                                                empty=empty)
 
     def setup_CSR(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
                   mask_checksum=None, unit=units.TTH,
-                  split="bbox", scale=True):
+                  split="bbox", empty=None, scale=True):
         """
         Prepare a look-up-table
 
@@ -465,6 +466,7 @@ class AzimuthalIntegrator(Geometry):
         :param unit: use to propagate the LUT object for further checkings
         :type unit: pyFAI.units.Unit
         :param split: Splitting scheme: valid options are "no", "bbox", "full"
+        :param empty: Override the empty value
         :param scale: set to False for working in S.I. units for pos0_range
                       which is faster. By default assumes pos0_range has `units`
                       Note that pos1_range, the chi-angle, is expected in radians
@@ -500,7 +502,7 @@ class AzimuthalIntegrator(Geometry):
             unit = units.to_unit(unit)
             pos0_scale = unit.scale
             pos0_range = tuple(pos0_range[i] / pos0_scale for i in (0, -1))
-
+        empty = self._empty if empty is None else empty
         if "__len__" in dir(npt) and len(npt) == 2:
             int2d = True
         else:
@@ -538,7 +540,7 @@ class AzimuthalIntegrator(Geometry):
                                                          allow_pos0_neg=False,
                                                          unit=unit,
                                                          chiDiscAtPi=self.chiDiscAtPi,
-                                                         empty=self._empty)
+                                                         empty=empty)
             else:
                 return splitPixelFullCSR.FullSplitCSR_1d(pos,
                                                          bins=npt,
@@ -548,7 +550,7 @@ class AzimuthalIntegrator(Geometry):
                                                          mask_checksum=mask_checksum,
                                                          allow_pos0_neg=False,
                                                          unit=unit,
-                                                         empty=self._empty)
+                                                         empty=empty)
         else:
             if int2d:
                 return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
@@ -559,7 +561,7 @@ class AzimuthalIntegrator(Geometry):
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
                                                 unit=unit,
-                                                empty=self._empty)
+                                                empty=empty)
             else:
                 return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                 bins=npt,
@@ -569,7 +571,7 @@ class AzimuthalIntegrator(Geometry):
                                                 mask_checksum=mask_checksum,
                                                 allow_pos0_neg=False,
                                                 unit=unit,
-                                                empty=self._empty)
+                                                empty=empty)
 
     @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
     def integrate1d_legacy(self, data, npt, filename=None,
