@@ -1332,10 +1332,9 @@ class AzimuthalIntegrator(Geometry):
                                                                      unit=unit,
                                                                      bin_centers=csr_integr.bin_centers,
                                                                      platformid=method.target[0],
-                                                                     deviceid=method.target[1])
+                                                                     deviceid=method.target[1],
+                                                                     mask_checksum=csr_integr.mask_checksum)
                                 # Copy some properties from the cython integrator
-                                integr.check_mask = csr_integr.check_mask
-                                integr.mask_checksum = csr_integr.mask_checksum
                                 integr.pos0_range = csr_integr.pos0_range
                                 integr.pos1_range = csr_integr.pos1_range
                             except MemoryError:
@@ -1349,10 +1348,9 @@ class AzimuthalIntegrator(Geometry):
                                                                  lut=csr_integr.lut,
                                                                  empty=empty,
                                                                  unit=unit,
-                                                                 bin_centers=csr_integr.bin_centers)
+                                                                 bin_centers=csr_integr.bin_centers,
+                                                                 mask_checksum=csr_integr.mask_checksum)
                             # Copy some properties from the cython integrator
-                            integr.check_mask = csr_integr.check_mask
-                            integr.mask_checksum = csr_integr.mask_checksum
                             integr.pos0_range = csr_integr.pos0_range
                             integr.pos1_range = csr_integr.pos1_range
                             engine.set_engine(integr)
@@ -2320,6 +2318,8 @@ class AzimuthalIntegrator(Geometry):
                             reset = "number of points changed"
                         if integr.size != data.size:
                             reset = "input image size changed"
+                        if integr.empty != empty:
+                            reset = "empty value changed"
                         if (mask is not None) and (not integr.check_mask):
                             reset = "mask but CSR was without mask"
                         elif (mask is None) and (integr.check_mask):
@@ -2344,13 +2344,13 @@ class AzimuthalIntegrator(Geometry):
                                                                radial_range, azimuth_range,
                                                                mask_checksum=mask_crc,
                                                                unit=unit, split=split,
-                                                               scale=False)
+                                                               empty=empty, scale=False)
                             else:
                                 cython_integr = self.setup_LUT(shape, npt, mask,
                                                                radial_range, azimuth_range,
                                                                mask_checksum=mask_crc,
                                                                unit=unit, split=split,
-                                                               scale=False)
+                                                               empty=empty, scale=False)
                         except MemoryError:
                             logger.warning("MemoryError: falling back on default implementation")
                             cython_integr = None
@@ -2377,9 +2377,10 @@ class AzimuthalIntegrator(Geometry):
                                                                      platformid=method.target[0],
                                                                      deviceid=method.target[1],
                                                                      checksum=cython_integr.lut_checksum,
-                                                                     unit=unit)
-                                integr.check_mask = (mask is not None)
-                                integr.mask_checksum = mask_crc
+                                                                     unit=unit, empty=empty,
+                                                                     mask_checksum=mask_crc
+                                                                     )
+
                         elif (method.impl_lower == "python"):
                             with ocl_py_engine.lock:
                                 integr = method.class_funct_ng.klass(cython_integr.lut,
@@ -2387,9 +2388,8 @@ class AzimuthalIntegrator(Geometry):
                                                                      bin_centers=cython_integr.bin_centers0,
                                                                      azim_centers=cython_integr.bin_centers1,
                                                                      checksum=cython_integr.lut_checksum,
-                                                                     unit=unit)
-                                integr.check_mask = (mask is not None)
-                                integr.mask_checksum = mask_crc
+                                                                     unit=unit, empty=empty,
+                                                                     mask_checksum=mask_crc)
                         ocl_py_engine.set_engine(integr)
 
                     if (integr is not None):
@@ -3300,6 +3300,7 @@ class AzimuthalIntegrator(Geometry):
                                                                  checksum=csr_integr.lut_checksum,
                                                                  empty=self._empty,
                                                                  unit=unit,
+                                                                 mask_checksum=csr_integr.mask_checksum,
                                                                  bin_centers=csr_integr.bin_centers,
                                                                  platformid=method.target[0],
                                                                  deviceid=method.target[1])
@@ -3309,8 +3310,6 @@ class AzimuthalIntegrator(Geometry):
                             method = self.DEFAULT_METHOD_1D
                         else:
                             # Copy some properties from the cython integrator
-                            integr.check_mask = csr_integr.check_mask
-                            integr.mask_checksum = csr_integr.mask_checksum
                             integr.pos0_range = csr_integr.pos0_range
                             integr.pos1_range = csr_integr.pos1_range
                             engine.set_engine(integr)
