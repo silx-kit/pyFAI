@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "28/01/2022"
 __status__ = "development"
 
 import logging
@@ -160,6 +160,7 @@ class CsrIntegrator1d(CSRIntegrator):
                  empty=0.0,
                  unit=None,
                  bin_centers=None,
+                 mask_checksum=None
                  ):
         """Constructor of the abstract class for 1D integration
         
@@ -168,25 +169,14 @@ class CsrIntegrator1d(CSRIntegrator):
         :param empty: value for empty pixels
         :param unit: the kind of radial units
         :param bin_center: position of the bin center
-        
-        Nota: bins are deduced from bin_centers 
-
-
-        TODO: 
-        ~/workspace-400/pyFAI/build/lib.linux-x86_64-3.7/pyFAI/azimuthalIntegrator.py in sigma_clip_ng(self, data, npt, correctSolidAngle, polarization_factor, variance, error_model, dark, flat, method, unit, thres, max_iter, dummy, delta_dummy, mask, normalization_factor, metadata, safe, **kwargs)
-   3508                         elif (mask is None) and (integr.check_mask):
-   3509                             reset = "no mask but CSR has mask"
--> 3510                         elif (mask is not None) and (integr.mask_checksum != mask_crc):
-   3511                             reset = "mask changed"
-   3512 #                         if (radial_range is None) and (integr.pos0_range is not None):
-
-AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
-
+        :param mask_checksum: just a place-holder to track which mask was used
+        Nota: bins value is deduced from the dimentionality of bin_centers 
         """
         self.bin_centers = bin_centers
         CSRIntegrator.__init__(self, image_size, lut, empty)
         self.pos0_range = self.pos1_range = None
         self.unit = unit
+        self.mask_checksum = mask_checksum
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
@@ -391,6 +381,10 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
 
         return Integrate1dtpl(self.bin_centers, avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
 
+    @property
+    def check_mask(self):
+        return self.mask_checksum is not None
+
 
 class CsrIntegrator2d(CSRIntegrator):
 
@@ -400,7 +394,8 @@ class CsrIntegrator2d(CSRIntegrator):
                  empty=0.0,
                  bin_centers0=None,
                  bin_centers1=None,
-                 checksum=None):
+                 checksum=None,
+                 mask_checksum=None):
         """Constructor of the abstract class for 2D integration
         
         :param size: input image size
@@ -408,6 +403,8 @@ class CsrIntegrator2d(CSRIntegrator):
                      index of the start of line in the CSR matrix
         :param empty: value for empty pixels
         :param bin_center: position of the bin center
+        :param checksum: checksum for the LUT, if not provided, recalculated
+        :param mask_checksum: just a place-holder to track which mask was used
 
         Nota: bins are deduced from bin_centers0, bin_centers1 
     
@@ -486,3 +483,7 @@ class CsrIntegrator2d(CSRIntegrator):
                               signal, variance, normalization, count)
 
     integrate_ng = integrate
+
+    @property
+    def check_mask(self):
+        return self.mask_checksum is not None
