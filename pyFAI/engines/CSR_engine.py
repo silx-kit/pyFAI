@@ -170,14 +170,13 @@ class CsrIntegrator1d(CSRIntegrator):
         :param unit: the kind of radial units
         :param bin_center: position of the bin center
         :param mask_checksum: just a place-holder to track which mask was used
-        Nota: bins are deduced from bin_centers 
-
+        Nota: bins value is deduced from the dimentionality of bin_centers 
         """
         self.bin_centers = bin_centers
         CSRIntegrator.__init__(self, image_size, lut, empty)
         self.pos0_range = self.pos1_range = None
         self.unit = unit
-        mask_checksum = mask_checksum
+        self.mask_checksum = mask_checksum
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
