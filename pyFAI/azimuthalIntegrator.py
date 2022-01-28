@@ -749,7 +749,8 @@ class AzimuthalIntegrator(Geometry):
                         integr = self.setup_LUT(shape, npt, mask,
                                                 radial_range, azimuth_range,
                                                 mask_checksum=mask_crc,
-                                                unit=unit, split=split, scale=False)
+                                                unit=unit, split=split,
+                                                scale=False)
 
                     except MemoryError:
                         # LUT method is hungry...
@@ -1255,13 +1256,13 @@ class AzimuthalIntegrator(Geometry):
                                                            radial_range, azimuth_range,
                                                            mask_checksum=mask_crc,
                                                            unit=unit, split=split,
-                                                           scale=False)
+                                                           empty=empty, scale=False)
                         else:
                             cython_integr = self.setup_LUT(shape, npt, mask,
                                                            radial_range, azimuth_range,
                                                            mask_checksum=mask_crc,
                                                            unit=unit, split=split,
-                                                           scale=False)
+                                                           empty=empty, scale=False)
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         cython_integr = None
@@ -3241,6 +3242,7 @@ class AzimuthalIntegrator(Geometry):
                                                        unit=unit, split=split,
                                                        pos0_range=radial_range,
                                                        pos1_range=azimuth_range,
+                                                       empty=self._empty,
                                                        scale=False)
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
