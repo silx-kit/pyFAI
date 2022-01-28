@@ -2374,6 +2374,8 @@ class AzimuthalIntegrator(Geometry):
                                                                      platformid=method.target[0],
                                                                      deviceid=method.target[1],
                                                                      checksum=cython_integr.lut_checksum)
+                                integr.check_mask = (mask is not None)
+                                integr.mask_checksum = mask_crc
                         elif (method.impl_lower == "python"):
                             with ocl_py_engine.lock:
                                 integr = method.class_funct_ng.klass(cython_integr.lut,
@@ -2381,6 +2383,8 @@ class AzimuthalIntegrator(Geometry):
                                                                      bin_centers=cython_integr.bin_centers0,
                                                                      azim_centers=cython_integr.bin_centers1,
                                                                      checksum=cython_integr.lut_checksum)
+                                integr.check_mask = (mask is not None)
+                                integr.mask_checksum = mask_crc
                         ocl_py_engine.set_engine(integr)
 
                     if (integr is not None):
