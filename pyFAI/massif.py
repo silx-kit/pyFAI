@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "31/01/2022"
 __status__ = "production"
 
 import sys
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 import numpy
 import fabio
 from scipy.ndimage import label, distance_transform_edt
-from scipy.ndimage.filters import median_filter
+from silx.math import medfilt as median_filter
 from .utils.decorators import deprecated
 from .ext.bilinear import Bilinear
 from .utils import gaussian_filter, binning, unbinning, is_far_from_group
