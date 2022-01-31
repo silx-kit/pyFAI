@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "10/01/2022"
+__date__ = "28/01/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -86,7 +86,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                }
 
     def __init__(self, lut, image_size, checksum=None,
-                 empty=None, unit=None, bin_centers=None, azim_centers=None,
+                 empty=None, unit=None, bin_centers=None, azim_centers=None, mask_checksum=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False, extra_buffers=None):
         """
@@ -100,6 +100,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param unit: Storage for the unit related to the LUT
         :param bin_centers: the radial position of the bin_center, place_holder
         :param azim_centers: the radial position of the bin_center, place_holder
+        :param mask_checksum: placeholder for the checksum of the mask
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
@@ -126,7 +127,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.bin_centers = bin_centers
         self.azim_centers = azim_centers
         # a few place-folders
-        self.pos0_range = self.pos1_range = self.check_mask = None
+        self.mask_checksum = mask_checksum
+        self.pos0_range = self.pos1_range = self.mask_checksum = None
 
         if not checksum:
             checksum = calc_checksum(self._data)
@@ -181,6 +183,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
     @property
     def checksum(self):
         return self.on_device.get("data")
+
+    @property
+    def check_mask(self):
+        return self.mask_checksum is not None
 
     def __copy__(self):
         """Shallow copy of the object

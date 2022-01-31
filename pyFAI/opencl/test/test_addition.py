@@ -33,11 +33,11 @@ __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "17/01/2022"
 
 import logging
 import numpy
-
+import platform
 import unittest
 from .. import ocl, get_opencl_code
 if ocl:
@@ -55,6 +55,7 @@ class TestAddition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(TestAddition, cls).setUpClass()
+
         if ocl:
             cls.ctx = ocl.create_context()
             if logger.getEffectiveLevel() <= logging.INFO:
@@ -65,6 +66,10 @@ class TestAddition(unittest.TestCase):
                 cls.PROFILE = False
                 cls.queue = pyopencl.CommandQueue(cls.ctx)
             cls.max_valid_wg = 0
+            if (platform.machine().startswith("ppc") and
+                cls.ctx.devices[0].platform.name.startswith("Portable")
+                and cls.ctx.devices[0].type == pyopencl.device_type.GPU):
+                raise unittest.SkipTest("Skip test on Power9 GPU with PoCL driver")
 
     @classmethod
     def tearDownClass(cls):
