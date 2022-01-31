@@ -29,7 +29,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "31/01/2022"
 __status__ = "production"
 
 import logging
@@ -38,8 +38,8 @@ import fabio
 import weakref
 from scipy import ndimage
 from scipy.interpolate import interp1d
-from scipy.optimize.optimize import fmin
-from scipy.optimize.optimize import fminbound
+from scipy.optimize import fmin
+from scipy.optimize import fminbound
 
 from .utils import stringutil
 from .utils import header_utils

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2021"
+__date__ = "31/01/2022"
 
 import unittest
 import time
@@ -40,6 +40,7 @@ import numpy
 import logging
 from numpy import cos
 logger = logging.getLogger(__name__)
+from .utilstest import UtilsTest
 from ..ext.histogram import histogram, histogram2d, histogram2d_preproc
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
 from ..utils import mathutil
@@ -323,6 +324,7 @@ class TestHistogram2d(unittest.TestCase):
         self.assertTrue(delta == 0, msg="check all pixels were counted")
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
+    @unittest.skipIf(UtilsTest.low_mem, "test unreliable on 32bits processor")
     def test_count_csr(self):
         """
         Test that the pixel count and the total intensity is conserved
@@ -337,6 +339,7 @@ class TestHistogram2d(unittest.TestCase):
         self.assertTrue(delta == 0, msg="check all pixels were counted")
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
+    @unittest.skipIf(UtilsTest.low_mem, "test unreliable on 32bits processor")
     def test_numpy_vs_cython_vs_csr_2d(self):
         """
         Compare numpy histogram with cython simple implementation
