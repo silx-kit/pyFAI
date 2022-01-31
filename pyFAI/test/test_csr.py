@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,6 +35,7 @@ import numpy
 import logging
 from . import utilstest
 logger = logging.getLogger(__name__)
+from .utilstest import UtilsTest
 from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
@@ -181,6 +182,7 @@ class TestCSR(utilstest.ParametricTestCase):
         self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy.normalization), "count is same as normalization")
         self.assertTrue(numpy.allclose(res_csr[3].T, res_scipy.signal), "sum_data is almost the same")
 
+    @unittest.skipIf(UtilsTest.low_mem, "test unreliable on 32bits processor")
     def test_2d_nosplit(self):
         self.ai.reset()
         result_histo = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="histogram")
