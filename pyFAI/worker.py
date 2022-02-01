@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -78,11 +78,11 @@ Here are the valid keys:
 - "method"
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2021"
+__date__ = "01/02/2022"
 __status__ = "development"
 
 import threading
@@ -533,8 +533,8 @@ class Worker(object):
         value = config.pop("do_solid_angle", True)
         self.correct_solid_angle = bool(value)
 
-        self.dummy = config.pop("delta_dummy", None)
-        self.delta_dummy = config.pop("val_dummy", None)
+        self.dummy = config.pop("val_dummy", None)
+        self.delta_dummy = config.pop("delta_dummy", None)
         apply_values = config.pop("do_dummy", True)
         if not apply_values:
             self.dummy, self.delta_dummy = None, None
