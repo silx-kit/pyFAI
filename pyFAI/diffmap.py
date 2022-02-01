@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -27,20 +27,20 @@
 
 """Module with GUI for diffraction mapping experiments"""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "01/02/2022"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import os
 import time
-import posixpath
-import sys
 import collections
 import glob
+from argparse import ArgumentParser
+from urllib.parse import urlparse
 import logging
 logger = logging.getLogger(__name__)
 import numpy
@@ -48,12 +48,10 @@ import fabio
 import json
 import __main__ as main
 from .opencl import ocl
-from .units import to_unit
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime, h5py
 from .worker import Worker, _reduce_images
-from argparse import ArgumentParser
-from urllib.parse import urlparse
+from .containers import Integrate1dResult, Integrate2dResult
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index, rot, trans')
@@ -75,6 +73,7 @@ class DiffMap(object):
         self.npt_fast = npt_fast
         self.npt_slow = npt_slow
         self.npt_rad = npt_rad
+        self.npt_azim = npt_azim
         self.slow_motor_name = "slow"
         self.fast_motor_name = "fast"
         self.offset = 0
@@ -88,6 +87,7 @@ class DiffMap(object):
         self.hdf5 = None
         self.nxdata_grp = None
         self.dataset = None
+        self.dataset_error = None
         self.inputfiles = []
         self.timing = []
         self.stats = False
@@ -171,6 +171,9 @@ If the number of files is too large, use double quotes like "*.edf" """
                             help="number of points for slow motion. Mandatory without GUI", default=None)
         parser.add_argument("-c", "--npt", dest="npt_rad",
                             help="number of points in diffraction powder pattern. Mandatory without GUI",
+                            default=None)
+        parser.add_argument( "--npt-azim", dest="npt_azim",
+                            help="number of points in azimuthal direction, 1 for 1D integration",
                             default=None)
         parser.add_argument("-d", "--dark", dest="dark", metavar="FILE",
                             help="list of dark images to average and subtract (comma separated list)",
@@ -270,8 +273,11 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.npt_slow = int(options.slow)
             config["slow_motor_points"] = self.npt_slow
         if options.npt_rad is not None:
-            self.npt_rad = int(options.npt_rad)
-            config["ai"]["nbpt_rad"] = self.npt_rad,
+            config["ai"]["nbpt_rad"] = self.npt_rad = int(options.npt_rad)
+            # Why was config["ai"]["nbpt_rad"] a tuple ?
+        if options.npt_azim is not None:
+            config["ai"]["nbpt_azim"] = self.npt_azim = int(options.npt_azim)
+
         if options.offset is not None:
             self.offset = int(options.offset)
             config["offset"] = self.offset,
@@ -337,20 +343,36 @@ If the number of files is too large, use double quotes like "*.edf" """
         process_grp["dim2"].attrs["axis"] = "diffraction"
         config = nxs.new_class(process_grp, "configuration", "NXnote")
         config["type"] = "text/json"
-        config["data"] = json.dumps(self.worker.get_config(), indent=2, separators=(",\r\n", ": "))
+        worker_config = self.worker.get_config()
+        config["data"] = json.dumps(worker_config, indent=2, separators=(",\r\n", ": "))
+        print(worker_config)
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
         entry_grp.attrs["default"] = self.nxdata_grp.name.split("/", 2)[2]
+        
+        if self.worker.do_2D():
+            self.dataset = self.nxdata_grp.create_dataset(
+                            name="intensity",
+                            shape=(self.npt_slow, self.npt_fast, self.npt_azim, self.npt_rad),
+                            dtype="float32",
+                            chunks=(1, 1, self.npt_azim, self.npt_rad),
+                            maxshape=(None, None, self.npt_azim, self.npt_rad),
+                            fillvalue=numpy.NaN)
+            self.dataset.attrs["interpretation"] = "image"
+            self.nxdata_grp.attrs["axes"] = [".", ".", "azimuthal", str(self.unit).split("_")[0]]
+        else:
+            self.dataset = self.nxdata_grp.create_dataset(
+                            name="intensity",
+                            shape=(self.npt_slow, self.npt_fast, self.npt_rad),
+                            dtype="float32",
+                            chunks=(1, self.npt_fast, self.npt_rad),
+                            maxshape=(None, None, self.npt_rad),
+                            fillvalue=numpy.NaN)
+            self.dataset.attrs["interpretation"] = "spectrum"
+            self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]    
 
-        self.dataset = self.nxdata_grp.create_dataset(
-                        name="intensity",
-                        shape=(self.npt_slow, self.npt_fast, self.npt_rad),
-                        dtype="float32",
-                        chunks=(1, self.npt_fast, self.npt_rad),
-                        maxshape=(None, None, self.npt_rad))
-        self.dataset.attrs["interpretation"] = "spectrum"
         self.nxdata_grp.attrs["signal"] = self.dataset.name.split("/")[-1]
-        self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]
+        
         self.dataset.attrs["title"] = str(self)
         self.nxs = nxs
 
@@ -372,7 +394,7 @@ If the number of files is too large, use double quotes like "*.edf" """
     def init_ai(self):
         """Force initialization of azimuthal intgrator
 
-        :return: radial position array
+        :return: radial and azimuthal position arrays
         """
         if not self.ai:
             self.setup_ai()
@@ -387,13 +409,21 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.worker.shape = shape
         self.worker.output = "raw"
         data = numpy.empty(shape, dtype=numpy.float32)
-        print("Initialization of the Azimuthal Integrator using method %s" % (self.method,))
+        print(f"Initialization of the Azimuthal Integrator using method {self.method}")
         # enforce initialization of azimuthal integrator
         print(self.ai)
         res = self.worker.process(data)
         tth = res.radial
         if self.dataset is None:
             self.makeHDF5()
+
+        if res.sigma is not None:
+            self.dataset_error = self.nxdata_grp.create_dataset("errors",
+                                                                shape=self.dataset.shape,
+                                                                dtype="float32",
+                                                                chunks=(1,) + self.dataset.shape[1:],
+                                                                maxshape=(None,) + self.dataset.shape[1:])
+            self.dataset_error.attrs["interpretation"] = "image" if self.dataset.ndim==4 else "spectrum"
         space, unit = str(self.unit).split("_")
         if space not in self.nxdata_grp:
             self.nxdata_grp[space] = tth
@@ -401,7 +431,14 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.nxdata_grp[space].attrs["unit"] = unit
             self.nxdata_grp[space].attrs["long_name"] = self.unit.label
             self.nxdata_grp[space].attrs["interpretation"] = "scalar"
-        return tth
+        if self.worker.do_2D():
+            self.nxdata_grp["azimuthal"] = res.azimuthal
+            self.nxdata_grp["azimuthal"].attrs["unit"] = "deg"
+            self.nxdata_grp["azimuthal"].attrs["interpretation"] = "scalar"
+            azim = res.azimuthal
+        else:
+            azim = None
+        return tth, azim
 
     def show_stats(self):
         if not self.stats:
@@ -496,14 +533,16 @@ If the number of files is too large, use double quotes like "*.edf" """
         pos = self.get_pos(None, self._idx)
         shape = self.dataset.shape
         if pos.rot + 1 > shape[0]:
-            self.dataset.resize((pos.rot + 1, shape[1], shape[2]))
+            self.dataset.resize((pos.rot + 1,)+ shape[1:])
+            if self.dataset_error is not None:
+                self.dataset_error.resize((pos.rot + 1,)+ shape[1:])
         elif pos.index < 0 or pos.rot < 0 or pos.trans < 0:
             return
 
         res = self.worker.process(frame)
-#        _tth, I = self.ai.integrate1d(frame, self.npt_rad, safe=False,
-#                                      method=self.method, unit=self.unit)
-        self.dataset[pos.rot, pos.trans,:] = res.intensity
+        self.dataset[pos.rot, pos.trans, ...] = res.intensity
+        if res.sigma is not None:
+            self.dataset_error[pos.rot, pos.trans, ...] = res.sigma    
 
     def process(self):
         if self.dataset is None:
