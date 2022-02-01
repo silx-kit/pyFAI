@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "28/01/2022"
+__date__ = "01/02/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -128,7 +128,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.azim_centers = azim_centers
         # a few place-folders
         self.mask_checksum = mask_checksum
-        self.pos0_range = self.pos1_range = self.mask_checksum = None
+        self.pos0_range = self.pos1_range = None
 
         if not checksum:
             checksum = calc_checksum(self._data)
