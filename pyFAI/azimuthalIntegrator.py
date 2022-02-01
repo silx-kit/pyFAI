@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2022"
+__date__ = "01/02/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1337,6 +1337,7 @@ class AzimuthalIntegrator(Geometry):
                                 # Copy some properties from the cython integrator
                                 integr.pos0_range = csr_integr.pos0_range
                                 integr.pos1_range = csr_integr.pos1_range
+                                # print(csr_integr.mask_checksum, integr.mask_checksum)
                             except MemoryError:
                                 logger.warning("MemoryError: falling back on default forward implementation")
                                 self.reset_engines()
