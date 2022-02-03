@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "24/11/2021"
+__date__ = "03/02/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -743,8 +743,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
         wdim_data = (data.shape[0] + wg0 - 1) & ~(wg0 - 1), (data.shape[1] + wg1 - 1) & ~(wg1 - 1)
         # allocate local memory: we store 4 bytes but at most 1 pixel out of 4 can be a peak
-        
-        buffer_size = int(math.ceil(wg * 4 / ((1+hw)*min(wg0, 1+hw))))
+
+        buffer_size = int(math.ceil(wg * 4 / ((1 + hw) * min(wg0, 1 + hw))))
         kw_proj["local_highidx"] = pyopencl.LocalMemory(1 * buffer_size)
         kw_proj["local_peaks"] = pyopencl.LocalMemory(4 * buffer_size)
         kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
@@ -814,15 +814,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             count = self._count8(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
                                 dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
                                 safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range, patch_size, connected)
-
             index = numpy.zeros(count, dtype=numpy.int32)
             peaks = numpy.zeros((count, 4), dtype=numpy.float32)
-            idx = pyopencl.enqueue_copy(self.queue, index, self.cl_mem["peak_position"])
-            events = [EventDescription("copy D->H index", idx)]
-            idx = pyopencl.enqueue_copy(self.queue, peaks, self.cl_mem["peak_descriptor"])
-            events.append(EventDescription("copy D->H peaks", idx))
-            if self.profile:
-                self.events += events
+            if count:
+                idx = pyopencl.enqueue_copy(self.queue, index, self.cl_mem["peak_position"])
+                events = [EventDescription("copy D->H index", idx)]
+                idx = pyopencl.enqueue_copy(self.queue, peaks, self.cl_mem["peak_descriptor"])
+                events.append(EventDescription("copy D->H peaks", idx))
+                if self.profile:
+                    self.events += events
         output = numpy.empty(count, dtype=[("index", numpy.int32), ("intensity", numpy.float32), ("sigma", numpy.float32),
                                            ("pos0", numpy.float32), ("pos1", numpy.float32)])
         output["index"] = index

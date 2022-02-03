@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #
@@ -27,7 +27,7 @@
 #  THE SOFTWARE.
 #
 
-"""peakfinder: Count the number of Bragg-peaks on an image
+"""peakfinder: Count the number of Bragg-peaks on an image.
 
 Bragg peaks are local maxima of the background subtracted signal. 
 Peaks are integrated and variance propagated. The centroids are reported.
@@ -38,19 +38,18 @@ The number of iteration, the clipping value and the number of radial bins could 
 This program requires OpenCL. The device needs be properly selected.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/12/2021"
-__status__ = "status"
+__date__ = "03/02/2022"
+__status__ = "production"
 
 import os
 import sys
 import argparse
 import time
 from collections import OrderedDict
-import numpy
 import numexpr
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -98,7 +97,7 @@ def expand_args(args):
 
 def parse():
     epilog = "Current status of the program: " + __status__
-    parser = argparse.ArgumentParser(prog="spasify-Bragg",
+    parser = argparse.ArgumentParser(prog="peakfinder",
                                      description=__doc__,
                                      epilog=epilog)
     parser.add_argument("IMAGE", nargs="*",
@@ -106,24 +105,24 @@ def parse():
     parser.add_argument("-V", "--version", action='version', version=version,
                         help="output version and exit")
     parser.add_argument("-v", "--verbose", action='store_true', dest="verbose", default=False,
-                        help="show information for each frame")
+                        help="Show information for each frame")
     parser.add_argument("--debug", action='store_true', dest="debug", default=False,
-                        help="show debug information")
+                        help="Show debug information")
     parser.add_argument("--profile", action='store_true', dest="profile", default=False,
-                        help="show profiling information")
+                        help="Show profiling information")
     group = parser.add_argument_group("main arguments")
 #     group.add_argument("-l", "--list", action="store_true", dest="list", default=None,
 #                        help="show the list of available formats and exit")
     group.add_argument("-o", "--output", default='spots.h5', type=str,
                        help="Output filename")
     group.add_argument("--save-source", action='store_true', dest="save_source", default=False,
-                       help="save the path for all source files")
-    
+                       help="Save the path for all source files")
+
     group = parser.add_argument_group("Scan options")
     group.add_argument("--grid-size", nargs=2, type=int, dest="grid_size", default=None,
-                       help="Grid along which the data was acquired")
+                       help="Grid along which the data was acquired, disabled by default")
     group.add_argument("--zig-zag", action='store_true', dest="zig_zag", default=False,
-                       help="The scan was performed with a zig-zag pattern")
+                       help="Build the 2D image considering the scan was performed with a zig-zag pattern")
 # TODO: implement those
 #     group = parser.add_argument_group("optional behaviour arguments")
 #     group.add_argument("-f", "--force", dest="force", action="store_true", default=False,
@@ -150,39 +149,39 @@ def parse():
     group.add_argument("-b", "--beamline", type=str, default="beamline",
                        help="Name of the instument (for the HDF5 NXinstrument)")
     group.add_argument("-p", "--poni", type=str, default=None,
-                       help="geometry description file")
+                       help="Geometry description file: Mandatory")
     group.add_argument("-m", "--mask", type=str, default=None,
-                       help="mask to be used for invalid pixels")
+                       help="Mask to be used for invalid pixels")
     group.add_argument("--dummy", type=float, default=None,
-                       help="value of dynamically masked pixels")
+                       help="Value of dynamically masked pixels (disabled by default)")
     group.add_argument("--delta-dummy", type=float, default=None,
-                       help="precision for dummy value")
+                       help="Precision for dummy value")
     group.add_argument("--radial-range", dest="radial_range", nargs=2, type=float, default=None,
-                       help="radial range as a 2-tuple of number of pixels, by default all available range")
+                       help="radial range as a 2-tuple of number of pixels (all available range by default)")
     group.add_argument("-P", "--polarization", type=float, default=None,
-                       help="Polarization factor of the incident beam [-1:1], by default disabled, 0.99 is a good guess")
+                       help="Polarization factor of the incident beam [-1:1] (off by default, 0.99 is a good guess on synchrotrons")
     group.add_argument("-A", "--solidangle", action='store_true', default=None,
                        help="Correct for solid-angle correction (important if the detector is not mounted normally to the incident beam, off by default")
     group = parser.add_argument_group("Sigma-clipping options")
-    group.add_argument("--bins", type=int, default=1000,
-                       help="Number of radial bins to consider")
+    group.add_argument("--bins", type=int, default=800,
+                       help="Number of radial bins to consider (800 by default)")
     group.add_argument("--unit", type=str, default="r_m",
-                       help="radial unit to perform the calculation")
+                       help="radial unit to perform the calculation (r_m by default)")
     group.add_argument("--cycle", type=int, default=5,
-                       help="precision for dummy value")
+                       help="Number of cycles for the sigma-clipping (5 by default)")
     group.add_argument("--cutoff-clip", dest="cutoff_clip", type=float, default=0.0,
-                       help="SNR threshold for considering a pixel outlier when performing the sigma-clipping")
+                       help="SNR threshold for considering a pixel outlier when performing the sigma-clipping (0 by default: fallback on Chauvenet criterion)")
     group.add_argument("--error-model", dest="error_model", type=str, default="poisson",
                        help="Statistical model for the signal error, may be `poisson`(default) or `azimuthal` (slower) or even a simple formula like '5*I+8'")
     group = parser.add_argument_group("Peak finding options")
     group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=3.0,
-                       help="SNR threshold for considering a pixel high when searching for peaks")
+                       help="SNR threshold for considering a pixel high when searching for peaks (3 by default)")
     group.add_argument("--noise", type=float, default=1.0,
-                       help="Quadratically added noise to the background")
+                       help="Noise added quadratically to the background (1 by default")
     group.add_argument("--patch-size", type=int, default=5,
-                       help="size of the neighborhood for integration")
+                       help="Size of the neighborhood patch for integration (5 by default)")
     group.add_argument("--connected", type=int, default=3,
-                       help="Number of high pixels in neighborhood to be considered as a peak")
+                       help="Number of high pixels in neighborhood to be considered as a peak (3 by default)")
     group = parser.add_argument_group("Opencl setup options")
     group.add_argument("--workgroup", type=int, default=None,
                        help="Enforce the workgroup size for OpenCL kernel. Impacts only on the execution speed, not on the result.")
@@ -295,7 +294,7 @@ def process(options):
                               ("noise", options.noise),
                               ("cutoff_pick", options.cutoff_pick),
                               ("radial_range", rrange),
-                              ('patch_size', options.patch_size), 
+                              ('patch_size', options.patch_size),
                               ("connected", options.connected)])
     if options.solidangle:
         parameters["solidangle"], parameters["solidangle_checksum"] = ai.solidAngleArray(with_checksum=True)
@@ -335,14 +334,14 @@ def process(options):
         parameters["correctSolidAngle"] = True
     if options.mask is not None:
         parameters["mask"] = True
-        
+
     save_spots(options.output,
                 frames,
                 beamline=options.beamline,
                 ai=ai,
                 source=options.images if options.save_source else None,
                 extra=parameters,
-                grid = (options.grid_size, options.zig_zag))
+                grid=(options.grid_size, options.zig_zag))
 
     if options.profile:
         try:
@@ -351,7 +350,7 @@ def process(options):
             pf.log_profile()
     if pb:
         pb.clear()
-    logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1-t0, cnt/(t1-t0))
+    logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1 - t0, cnt / (t1 - t0))
 
     return EXIT_SUCCESS
 

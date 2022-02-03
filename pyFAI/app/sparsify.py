@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #
@@ -27,10 +27,10 @@
 #  THE SOFTWARE.
 #
 
-"""Sparsify 2D single crystall diffraction images by separating Bragg peaks from background signal.
+"""Sparsify 2D single crystal diffraction images by separating Bragg peaks from background signal.
 
 Positive outlier pixels (i.e. Bragg peaks) are all recorded as they are without destruction. 
-Peaks are not integrated.
+Peaks are not integrated: see the `peakfinder` to perform peak integration.
 
 Background is calculated by an iterative sigma-clipping in the polar space. 
 The number of iteration, the clipping value and the number of radial bins could be adjusted.
@@ -38,19 +38,18 @@ The number of iteration, the clipping value and the number of radial bins could 
 This program requires OpenCL. The device needs be properly selected.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/12/2021"
-__status__ = "status"
+__date__ = "03/02/2022"
+__status__ = "production"
 
 import os
 import sys
 import argparse
 import time
 from collections import OrderedDict
-import numpy
 import numexpr
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -143,36 +142,36 @@ def parse():
 
     group = parser.add_argument_group("Experimental setup options")
     group.add_argument("-b", "--beamline", type=str, default="beamline",
-                       help="Name of the instument (for the HDF5 NXinstrument)")
+                       help="Name of the instument (for the HDF5 NXinstrument, beamline by default)")
     group.add_argument("-p", "--poni", type=str, default=None,
-                       help="geometry description file")
+                       help="geometry description file (mandatory)")
     group.add_argument("-m", "--mask", type=str, default=None,
                        help="mask to be used for invalid pixels")
     group.add_argument("--dummy", type=float, default=None,
-                       help="value of dynamically masked pixels")
+                       help="value of dynamically masked pixels (disabled by default)")
     group.add_argument("--delta-dummy", type=float, default=None,
                        help="precision for dummy value")
     group.add_argument("--radial-range", dest="radial_range", nargs=2, type=float, default=None,
                        help="radial range as a 2-tuple of number of pixels, by default all available range")
     group.add_argument("-P", "--polarization", type=float, default=None,
-                       help="Polarization factor of the incident beam [-1:1], by default disabled, 0.99 is a good guess")
+                       help="Polarization factor of the incident beam [-1:1], by default disabled, 0.99 is a good guess on synchrotrons")
     group.add_argument("-A", "--solidangle", action='store_true', default=None,
                        help="Correct for solid-angle correction (important if the detector is not mounted normally to the incident beam, off by default")
     group = parser.add_argument_group("Sigma-clipping options")
-    group.add_argument("--bins", type=int, default=80,
-                       help="Number of radial bins to consider")
+    group.add_argument("--bins", type=int, default=800,
+                       help="Number of radial bins to consider (800 by default)")
     group.add_argument("--unit", type=str, default="r_m",
-                       help="radial unit to perform the calculation")
+                       help="radial unit to perform the calculation (r_m by default)")
     group.add_argument("--cycle", type=int, default=5,
-                       help="precision for dummy value")
-    group.add_argument("--cutoff-clip", dest="cutoff_clip", type=float, default=5.0,
-                       help="Threshold to be used when performing the sigma-clipping")
+                       help="Number of cycles of clipping (5 by default)")
+    group.add_argument("--cutoff-clip", dest="cutoff_clip", type=float, default=0.0,
+                       help="Threshold to be used when performing the sigma-clipping (0 by default: use Chauvenet criterion")
     group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=3.0,
-                       help="Threshold to be used when picking the pixels to be saved")
+                       help="Threshold to be used when picking the pixels to be saved (3 by default)")
     group.add_argument("--error-model", dest="error_model", type=str, default="poisson",
                        help="Statistical model for the signal error, may be `poisson`(default) or `azimuthal` (slower) or even a simple formula like '5*I+8'")
-    group.add_argument("--noise", type=float, default=0.5,
-                       help="Noise level: quadratically added to the background uncertainty")
+    group.add_argument("--noise", type=float, default=1,
+                       help="Noise level: quadratically added to the background uncertainty (default 1)")
 
     group = parser.add_argument_group("Opencl setup options")
     group.add_argument("--workgroup", type=int, default=None,
@@ -336,7 +335,7 @@ def process(options):
             pf.log_profile()
     if pb:
         pb.clear()
-    logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1-t0, cnt/(t1-t0))
+    logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1 - t0, cnt / (t1 - t0))
 
     return EXIT_SUCCESS
 
