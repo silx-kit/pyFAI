@@ -42,6 +42,8 @@ __license__ = "MIT"
 
 include "regrid_common.pxi"
 import logging
+import warnings
+
 logger = logging.getLogger(__name__)
 from .splitBBox_common import calc_boundaries
 
@@ -63,7 +65,8 @@ def histoBBox1d(weights,
                 polarization=None,
                 empty=None,
                 double normalization_factor=1.0,
-                int coef_power=1):
+                int coef_power=1,
+                **back_compat_kwargs):
 
     """
     Calculates histogram of pos0 (tth) weighted by weights
@@ -91,6 +94,17 @@ def histoBBox1d(weights,
 
     :return: 2theta, I, weighted histogram, unweighted histogram
     """
+    if 'pos0Range' in back_compat_kwargs:
+        if pos0_range is not None:
+            raise ValueError(f"Can not pass both pos0_range and pos0Range")
+        pos0_range = back_compat_kwargs.popn('pos0Range')
+        warnings.warn("The keyword 'pos0Range' is deprecated in favor of 'pos0_range'")
+    if 'pos1Range' in back_compat_kwargs:
+        if pos1_range is not None:
+            raise ValueError(f"Can not pass both pos1_range and pos1Range")
+        pos1_range = back_compat_kwargs.popn('pos1Range')
+        warnings.warn("The keyword 'pos1Range' is deprecated in favor of 'pos1_range'")
+    assert len(back_compat_kwargs) == 0
     cdef Py_ssize_t  size = weights.size
     assert pos0.size == size, "pos0.size == size"
     assert delta_pos0.size == size, "delta_pos0.size == size"
@@ -484,7 +498,8 @@ def histoBBox2d(weights,
                 empty=0.0,
                 double normalization_factor=1.0,
                 int coef_power=1,
-                bint clip_pos1=1):
+                bint clip_pos1=1,
+                **back_compat_kwargs):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
@@ -515,7 +530,17 @@ def histoBBox2d(weights,
 
     :return: I, bin_centers0, bin_centers1, weighted histogram(2D), unweighted histogram (2D)
     """
-
+    if 'pos0Range' in back_compat_kwargs:
+        if pos0_range is not None:
+            raise ValueError(f"Can not pass both pos0_range and pos0Range")
+        pos0_range = back_compat_kwargs.popn('pos0Range')
+        warnings.warn("The keyword 'pos0Range' is deprecated in favor of 'pos0_range'")
+    if 'pos1Range' in back_compat_kwargs:
+        if pos1_range is not None:
+            raise ValueError(f"Can not pass both pos1_range and pos1Range")
+        pos1_range = back_compat_kwargs.popn('pos1Range')
+        warnings.warn("The keyword 'pos1Range' is deprecated in favor of 'pos1_range'")
+    assert len(back_compat_kwargs) == 0
     cdef Py_ssize_t bins0, bins1, i, j, idx
     cdef Py_ssize_t size = weights.size
     assert pos0.size == size, "pos0.size == size"
