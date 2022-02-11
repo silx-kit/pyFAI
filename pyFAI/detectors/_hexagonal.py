@@ -84,11 +84,20 @@ class HexDetector(Detector):
         ary[1::2, ... , 2] += 0.5
         return ary*pitch
      
-    def __init__(self, pitch, max_shape=None, module_size=None):
-        self.pitch = float(pitch)
-        h = self.pitch*numpy.sqrt(3.0)/2.0
-        Detector.__init__(self, h, pixel2=self.pitch, max_shape=max_shape)
+    def __init__(self, pitch=None, pixel1=None, pixel2=None, max_shape=None):
+        if pitch:
+            pitch = float(pitch)
+            h = pitch*numpy.sqrt(3.0)/2.0
+        else: #fallback on standard signature
+            pitch = pixel2
+            h = pixel1
+        Detector.__init__(self, pixel1=h, pixel2=pitch, max_shape=max_shape)
         self.set_pixel_corners(self.build_pixel_coordinates(self.max_shape, self.pitch))        
+
+    @property
+    def pitch(self):
+        "This is the distance between 2 pixel in the hexagonal pattern"
+        return self.pixel2
 
     def __repr__(self):
         return f"Hexagonal-pixel detector {self.name}\t Pitch= {self.pitch:.3e} m"
@@ -98,29 +107,29 @@ class Pixirad1(HexDetector):
     MAX_SHAPE = (476, 512)  # max size of the detector
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-1"]
-    def __init__(self, pitch=60e-6):
-        HexDetector.__init__(self, pitch=pitch)
+    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None):
+        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
 
 class Pixirad2(HexDetector):
     MAX_SHAPE = (476, 1024)  # max size of the detector
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-2"]
-    def __init__(self, pitch=60e-6):
-        HexDetector.__init__(self, pitch=pitch)
+    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None):
+        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
 
 class Pixirad4(HexDetector):
     MAX_SHAPE = (476, 2048)  # max size of the detector
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-4"]
-    def __init__(self, pitch=60e-6):
-        HexDetector.__init__(self, pitch=pitch)
+    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None):
+        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
 
 class Pixirad8(HexDetector):
     MAX_SHAPE = (476, 4096)  # max size of the detector
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-8"]
-    def __init__(self, pitch=60e-6):
-        HexDetector.__init__(self, pitch=pitch)
+    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None):
+        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)

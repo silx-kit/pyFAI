@@ -364,8 +364,8 @@ class TestDetector(unittest.TestCase):
         try:
             ai.integrate1d(img, 500, method=("full", "histogram", "cython"))        
             ai.integrate2d(img, 500, method=("full", "histogram", "cython"))
-        except Exception:
-            self.skipTest("SplitPixel does not work (yet) with hexagonal pixels")
+        except Exception as err:
+            self.skipTest(f"SplitPixel does not work (yet) with hexagonal pixels: {err}")
         
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
