@@ -87,7 +87,7 @@ class TestIntegrateApp(unittest.TestCase):
 
     def create_json(self, ponipath=None, nbpt_azim=1):
         if ponipath is None:
-            ponipath = UtilsTest.getimage("Pilatus1M.poni")
+            ponipath = UtilsTest.getimage("dummy.poni")
         data = {"poni": ponipath}
         integration_config.normalize(data, inplace=True)
         data["wavelength"] = 1
@@ -346,7 +346,7 @@ class TestProcess(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config = {"poni": UtilsTest.getimage("Pilatus1M.poni")}
+        config = {"poni": UtilsTest.getimage("dummy.poni")}
         integration_config.normalize(config, inplace=True)
         cls.base_config = config
 
