@@ -79,7 +79,9 @@ class OCL_LUT_Integrator(OpenclProcessing):
                numpy.int16: "s16_to_float",
                numpy.uint16: "u16_to_float",
                numpy.uint32: "u32_to_float",
-               numpy.int32: "s32_to_float"
+               numpy.uintc: "u32_to_float",
+               numpy.int32: "s32_to_float",
+               numpy.intc: "s32_to_float"
                }
 
     def __init__(self, lut, image_size, checksum=None,
