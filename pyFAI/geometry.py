@@ -1836,7 +1836,7 @@ class Geometry(object):
         shape = self.get_shape(shape)
         if shape is None:
             raise RuntimeError(("You should provide a shape if the"
-                                " geometry is not yet initiallized"))
+                                " geometry is not yet initialized"))
         if factor is None:
             if with_checksum:
                 one = numpy.ones(shape, dtype=numpy.float32)
