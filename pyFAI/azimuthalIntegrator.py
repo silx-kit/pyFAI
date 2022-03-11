@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2022"
+__date__ = "11/03/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3340,6 +3340,7 @@ class AzimuthalIntegrator(Geometry):
             raise RuntimeError("Not yet implemented. Sorry")
         result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity, intpl.sigma)
         result._set_method_called("sigma_clip_ng")
+        result._set_method(method)
         result._set_compute_engine(str(method))
         result._set_percentile(thres)
         result._set_unit(unit)
