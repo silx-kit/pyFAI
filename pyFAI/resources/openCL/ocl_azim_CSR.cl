@@ -537,6 +537,7 @@ csr_integrate(  const   global  float   *weights,
                 const   global  float   *coefs,
                 const   global  int     *indices,
                 const   global  int     *indptr,
+                const           int      nbins,
                 const           char     do_dummy,
                 const           float    dummy,
                 const           int      coef_power,
@@ -549,84 +550,88 @@ csr_integrate(  const   global  float   *weights,
     int bin_num = get_group_id(0);
     int thread_id_loc = get_local_id(0);
     int active_threads = get_local_size(0);
-    int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
-    int bin_size = bin_bounds.y - bin_bounds.x;
-    // we use _K suffix to highlight it is float2 used for Kahan summation
-    float2 sum_data_K = (float2)(0.0f, 0.0f);
-    float2 sum_count_K = (float2)(0.0f, 0.0f);
-    float coef, coefp, data;
-    int idx, k, j;
-//    if (WORKGROUP_SIZE<active_threads){
-//        if ((bin_num == 0) &&  (thread_id_loc == 0))
-//            printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
-//                    WORKGROUP_SIZE, active_threads);
-//    }
-
-    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
-        k = j+thread_id_loc;
-        if (k < bin_bounds.y) {
-               coef = (coefs == NULL)?1.0f:coefs[k];;
-               idx = indices[k];
-               data = weights[idx];
-               if  (! isfinite(data))
-                   continue;
-
-               if( (!do_dummy) || (data!=dummy) )
-               {
-                   //sum_data +=  coef * data;
-                   //sum_count += coef;
-                   //Kahan summation allows single precision arithmetics with error compensation
-                   //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-                   // defined in kahan.cl
-                   sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
-                   sum_count_K = dw_plus_fp(sum_count_K, coef);
-               };//end if dummy
-       } //end if k < bin_bounds.y
-    }//for j
-
-    // parallel reduction
 
     // REMEMBER TO PASS WORKGROUP_SIZE AS A COMPILE TIME CONSTANT (-DWORKGROUP_SIZE=32)
     local float2 super_sum_data[WORKGROUP_SIZE];
     local float2 super_sum_count[WORKGROUP_SIZE];
 
-    int index;
+    if (bin_num<nbins){
+        int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
+        int bin_size = bin_bounds.y - bin_bounds.x;
+        // we use _K suffix to highlight it is float2 used for Kahan summation
+        float2 sum_data_K = (float2)(0.0f, 0.0f);
+        float2 sum_count_K = (float2)(0.0f, 0.0f);
+        float coef, coefp, data;
+        int idx, k, j;
+    //    if (WORKGROUP_SIZE<active_threads){
+    //        if ((bin_num == 0) &&  (thread_id_loc == 0))
+    //            printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
+    //                    WORKGROUP_SIZE, active_threads);
+    //    }
 
-    if (bin_size < active_threads) {
-        if (thread_id_loc < bin_size) {
+        for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
+            k = j+thread_id_loc;
+            if (k < bin_bounds.y) {
+                   coef = (coefs == NULL)?1.0f:coefs[k];;
+                   idx = indices[k];
+                   data = weights[idx];
+                   if  (! isfinite(data))
+                       continue;
+
+                   if( (!do_dummy) || (data!=dummy) )
+                   {
+                       //sum_data +=  coef * data;
+                       //sum_count += coef;
+                       //Kahan summation allows single precision arithmetics with error compensation
+                       //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+                       // defined in kahan.cl
+                       sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
+                       sum_count_K = dw_plus_fp(sum_count_K, coef);
+                   };//end if dummy
+           } //end if k < bin_bounds.y
+        }//for j
+
+        // parallel reduction
+
+        int index;
+
+        if (bin_size < active_threads) {
+            if (thread_id_loc < bin_size) {
+                super_sum_data[thread_id_loc] = sum_data_K;
+                super_sum_count[thread_id_loc] = sum_count_K;
+            }
+            else {
+                super_sum_data[thread_id_loc] = (float2)(0.0f, 0.0f);
+                super_sum_count[thread_id_loc] = (float2)(0.0f, 0.0f);
+            }
+        }
+        else {
             super_sum_data[thread_id_loc] = sum_data_K;
             super_sum_count[thread_id_loc] = sum_count_K;
         }
-        else {
-            super_sum_data[thread_id_loc] = (float2)(0.0f, 0.0f);
-            super_sum_count[thread_id_loc] = (float2)(0.0f, 0.0f);
-        }
-    }
-    else {
-        super_sum_data[thread_id_loc] = sum_data_K;
-        super_sum_count[thread_id_loc] = sum_count_K;
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    while (active_threads > 1) {
-        active_threads /= 2 ;
-        if (thread_id_loc < active_threads) {
-            index = thread_id_loc + active_threads;
-            super_sum_data[thread_id_loc] = dw_plus_dw(super_sum_data[thread_id_loc], super_sum_data[index]);
-            super_sum_count[thread_id_loc] = dw_plus_dw(super_sum_count[thread_id_loc], super_sum_count[index]);
-        }
         barrier(CLK_LOCAL_MEM_FENCE);
-    }
 
-    if (thread_id_loc == 0) { 
-        //Only thread 0 works 
-        sum_data[bin_num] = super_sum_data[0].s0;
-        sum_count[bin_num] = super_sum_count[0].s0;
-        if (sum_count[bin_num] > 0.0f)
-            merged[bin_num] =  sum_data[bin_num] / sum_count[bin_num];
-        else
-            merged[bin_num] = dummy;
-    } //end thread 0
+        while (active_threads > 1) {
+            active_threads /= 2 ;
+            if (thread_id_loc < active_threads) {
+                index = thread_id_loc + active_threads;
+                super_sum_data[thread_id_loc] = dw_plus_dw(super_sum_data[thread_id_loc], super_sum_data[index]);
+                super_sum_count[thread_id_loc] = dw_plus_dw(super_sum_count[thread_id_loc], super_sum_count[index]);
+            }
+            barrier(CLK_LOCAL_MEM_FENCE);
+        }
+
+        if (thread_id_loc == 0) { 
+            //Only thread 0 works 
+            sum_data[bin_num] = super_sum_data[0].s0;
+            sum_count[bin_num] = super_sum_count[0].s0;
+            if (sum_count[bin_num] > 0.0f)
+                merged[bin_num] =  sum_data[bin_num] / sum_count[bin_num];
+            else
+                merged[bin_num] = dummy;
+        } //end thread 0
+        
+    } // valid bin
 }//end kernel
 
 
@@ -650,6 +655,7 @@ csr_integrate_single(  const   global  float   *weights,
                        const   global  float   *coefs,
                        const   global  int     *indices,
                        const   global  int     *indptr,
+                       const           int      nbins,
                        const           char     do_dummy,
                        const           float    dummy,
                        const           int      coef_power,
@@ -659,34 +665,36 @@ csr_integrate_single(  const   global  float   *weights,
 {
     // each workgroup of size=warp is assinged to 1 bin
     int bin_num = get_global_id(0);
-    // we use _K suffix to highlight it is float2 used for Kahan summation
-    float2 sum_data_K = (float2)(0.0f, 0.0f);
-    float2 sum_count_K = (float2)(0.0f, 0.0f);
-    const float epsilon = 1e-10f;
-    float coef, data;
-    int idx, j;
+    if (bin_num<nbins){
+        // we use _K suffix to highlight it is float2 used for Kahan summation
+        float2 sum_data_K = (float2)(0.0f, 0.0f);
+        float2 sum_count_K = (float2)(0.0f, 0.0f);
+        const float epsilon = 1e-10f;
+        float coef, data;
+        int idx, j;
 
-    for (j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-        coef = (coefs == NULL)?1.0f:coefs[j];
-        idx = indices[j];
-        data = weights[idx];
+        for (j=indptr[bin_num];j<indptr[bin_num+1];j++) {
+            coef = (coefs == NULL)?1.0f:coefs[j];
+            idx = indices[j];
+            data = weights[idx];
 
-        if( isfinite(data) && ((!do_dummy) || (data!=dummy))) {
-            //sum_data +=  coef * data;
-            //sum_count += coef;
-            //Kahan summation allows single precision arithmetics with error compensation
-            //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-            // defined in kahan.cl
-            sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
-            sum_count_K = dw_plus_fp(sum_count_K, coef);
-        }//end if dummy
-    }//for j
-    sum_data[bin_num] = sum_data_K.s0;
-    sum_count[bin_num] = sum_count_K.s0;
-    if (sum_count_K.s0 > epsilon)
-        merged[bin_num] =  sum_data_K.s0 / sum_count_K.s0;
-    else
-        merged[bin_num] = dummy;
+            if( isfinite(data) && ((!do_dummy) || (data!=dummy))) {
+                //sum_data +=  coef * data;
+                //sum_count += coef;
+                //Kahan summation allows single precision arithmetics with error compensation
+                //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+                // defined in kahan.cl
+                sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
+                sum_count_K = dw_plus_fp(sum_count_K, coef);
+            }//end if dummy
+        }//for j
+        sum_data[bin_num] = sum_data_K.s0;
+        sum_count[bin_num] = sum_count_K.s0;
+        if (sum_count_K.s0 > epsilon)
+            merged[bin_num] =  sum_data_K.s0 / sum_count_K.s0;
+        else
+            merged[bin_num] = dummy;        
+    } // if valid bin
 }//end kernel
 
 
@@ -707,30 +715,32 @@ csr_integrate_single(  const   global  float   *weights,
  */
 kernel void
 csr_integrate4(  const   global  float4  *weights,
-                  const   global  float   *coefs,
-                  const   global  int     *indices,
-                  const   global  int     *indptr,
-                  const           float    empty,
-                  const           char      azimuthal_variance,      
+                 const   global  float   *coefs,
+                 const   global  int     *indices,
+                 const   global  int     *indptr,
+                 const           int      nbins,
+                 const           float    empty,
+                 const           char      azimuthal_variance,      
                          global  float8   *summed,
                          global  float    *averint,
                          global  float    *stderr)
 {
     int bin_num = get_group_id(0);
-     
     local float8 shared[WORKGROUP_SIZE];
-    float8 result = CSRxVec4(weights, coefs, indices, indptr, azimuthal_variance, shared);
-    if (get_local_id(0)==0) {
-        summed[bin_num] = result;
-        if (result.s4 > 0.0f) {
-            averint[bin_num] =  result.s0 / result.s4;
-            stderr[bin_num] = sqrt(result.s2) / result.s4;
-        }
-        else {
-            averint[bin_num] = empty;
-            stderr[bin_num] = empty;
-        } //end else
-    } // end if thread0 
+    if (bin_num<nbins){
+        float8 result = CSRxVec4(weights, coefs, indices, indptr, azimuthal_variance, shared);
+        if (get_local_id(0)==0) {
+            summed[bin_num] = result;
+            if (result.s4 > 0.0f) {
+                averint[bin_num] =  result.s0 / result.s4;
+                stderr[bin_num] = sqrt(result.s2) / result.s4;
+            }
+            else {
+                averint[bin_num] = empty;
+                stderr[bin_num] = empty;
+            } //end else
+        } // end if thread0         
+    } // if valid bin
 };//end kernel
 
 
@@ -753,6 +763,7 @@ csr_integrate4_single(  const   global  float4  *weights,
                         const   global  float   *coefs,
                         const   global  int     *indices,
                         const   global  int     *indptr,
+                        const           int      nbins,
                         const           float    empty,
                         const           char     azimuthal,
                                 global  float8  *summed,
@@ -761,16 +772,18 @@ csr_integrate4_single(  const   global  float4  *weights,
 {
     // each workgroup of size==1 is assinged to 1 bin
     int bin_num = get_global_id(0);
-    float8 accum8 = CSRxVec4_single(weights, coefs, indices, indptr, azimuthal);
-    summed[bin_num] = accum8;
-    if (accum8.s6 > 0.0f) {
-        averint[bin_num] = accum8.s0 / accum8.s4;
-        stderr[bin_num] = sqrt(accum8.s2) / accum8.s4;
-    }
-    else {
-        averint[bin_num] = empty;
-        stderr[bin_num] = empty;
-    }
+    if (bin_num<nbins){
+        float8 accum8 = CSRxVec4_single(weights, coefs, indices, indptr, azimuthal);
+        summed[bin_num] = accum8;
+        if (accum8.s6 > 0.0f) {
+            averint[bin_num] = accum8.s0 / accum8.s4;
+            stderr[bin_num] = sqrt(accum8.s2) / accum8.s4;
+        }
+        else {
+            averint[bin_num] = empty;
+            stderr[bin_num] = empty;
+        }        
+    } // if validd bin
 }//end kernel
 
 /**
