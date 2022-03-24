@@ -1,9 +1,30 @@
 :Author: Jérôme Kieffer
-:Date: 20/01/2022
+:Date: 24/03/2022
 :Keywords: changelog
 
 Change-log of versions
 ======================
+
+0.21.3 24/03/2022
+-----------------
+- Support hexagonal pixels in splitbbox and nosplit mode (collaboration with EuXFEL)
+- Support extra dtype in OpenCL (contribution from Desy)
+- Fix version of setuptools (enables to build pyFAI -> python 3.12)
+- Support some of the Lambda detectors from XSpectrum (collaboration with Xmass)
+- Restore back compatibility in histoBBox1d and histoBBox2d (contribution from NSLS-II)
+- Several other bugs fixed
+
+0.21.2 03/02/2022
+-----------------
+Fix documentation of peakfinder and sparsify applications
+
+0.21.1 02/02/2022
+-----------------
+Bug-fix rease with:
+- issue in propagated error not reported with certain engines
+- diff_map tool can now perform 2D integration
+- issue with dummy/dela_dummy in certain engines
+- fix improper reset of the integrator
 
 0.21.0 20/01/2022
 -----------------
