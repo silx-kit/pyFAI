@@ -10,21 +10,25 @@ Change-log of versions
 - Support hexagonal pixels in splitbbox and nosplit mode (collaboration with EuXFEL)
 - Support extra dtype in OpenCL (contribution from Desy)
 - Fix version of setuptools (enables to build pyFAI -> python 3.12)
-- Support some of the Lambda detectors from XSpectrum (collaboration with Xmass)
+- Support some of the Lambda detectors from XSpectrum (collaboration with Xmas)
 - Restore back compatibility in histoBBox1d and histoBBox2d (contribution from NSLS-II)
+- Fix bug in OpenCL distortion correction (collaboration with Soleil)
 - Several other bugs fixed
 
 0.21.2 03/02/2022
 -----------------
-Fix documentation of peakfinder and sparsify applications
+Fix documentation of *sparsify-Bragg* and *peakfinder* CLI tools
 
 0.21.1 02/02/2022
 -----------------
-Bug-fix rease with:
+Bug-fix release with:
 - issue in propagated error not reported with certain engines
 - diff_map tool can now perform 2D integration
-- issue with dummy/dela_dummy in certain engines
-- fix improper reset of the integrator
+- issue with dummy/dela_dummy in *Worker*
+- fix improper reset of the integrator due to cabling issue inside AzimuthalIntegrator
+- Remove deprecation warning about scipy
+- Use *silx* for median-filter which is faster than scipy
+- skip 3 tests which are known to be fragile on 32-bit platforms (spotted by debian on i386 and armel)
 
 0.21.0 20/01/2022
 -----------------
