@@ -1423,7 +1423,6 @@ class AbstractCalibration(object):
                                     wavelength=self.wavelength,
                                     calibrant=self.calibrant,
                                     **defaults)
-        georef.guess_poni()
         return  georef
 ################################################################################
 # Calibration
