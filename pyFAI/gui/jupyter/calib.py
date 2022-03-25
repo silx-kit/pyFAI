@@ -108,5 +108,36 @@ class JupyCalibration(AbstractCalibration):
             self.peakPicker.gui(log=True, maximize=False, pick=True,
                                 widget_klass=JupyCalibWidget)
 
+    def refine(self):
+        """
+        Contains the geometry refinement part specific to Calibration from Jupyter
+        Sets up the initial guess
+        """
+        if self.geoRef is None:
+            # First attempt
+            self.geoRef = self.initgeoRef()
+            self.geoRef.refine2(1000000, fix=self.fixed)
+            scor = self.geoRef.chi2()
+            pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
+    
+            scores = [(scor, pars), ]
+    
+            # Second attempt, from guess_poni
+            self.geoRef = self.initgeoRef()
+            self.geoRef.guess_poni(fixed=self.fixed)
+            self.geoRef.refine2(1000000, fix=self.fixed)
+            scor = self.geoRef.chi2()
+            pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
+            scores.append((scor, pars))
+    
+            # Choose the best scoring method: At this point we might also ask
+            # a user to just type the numbers in?
+            scores.sort()
+            scor, pars = scores[0]
+            for parval, parname in zip(pars, self.PARAMETERS):
+                setattr(self.geoRef, parname, parval)
+
+        # Now continue as before
+        AbstractCalibration.refine(self)
 
 Calibration = JupyCalibration

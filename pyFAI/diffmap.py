@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2022"
+__date__ = "25/03/2022"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -51,7 +51,6 @@ from .opencl import ocl
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime, h5py
 from .worker import Worker, _reduce_images
-from .containers import Integrate1dResult, Integrate2dResult
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index, rot, trans')

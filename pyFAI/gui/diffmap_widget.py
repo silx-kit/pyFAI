@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2022"
+__date__ = "25/03/2022"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -54,6 +54,7 @@ from .utils.tree import ListDataSet, DataSet
 
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
+    
     
 class IntegrateDialog(qt.QDialog):
 
@@ -548,14 +549,18 @@ class DiffMapWidget(qt.QWidget):
             else:
                 if data.ndim == 4:
                     img = numpy.nanmean(data[..., self.slice], axis=(2,3))
-                    img[img<lognorm.vmin] = numpy.NaN
+                    img[img<=lognorm.vmin] = numpy.NaN
                     self.plot.set_data(intensity)
                 else:
                     img = data[:, :, self.slice].mean(axis=2)
                     self.plot.set_ydata(intensity)
                 self.img.set_data(img)
             self.last_idx = idx_img
-            self.fig.canvas.draw()
+            try:
+                self.fig.canvas.draw()
+            except Exception as err:
+                logger.error(f"{type(err)}: {err} intercepted in matplotlib drawing")
+             
             qt.QCoreApplication.processEvents()
             time.sleep(0.1)
 
