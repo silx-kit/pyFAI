@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "01/02/2022"
+__date__ = "24/03/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -322,6 +322,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("data", self.cl_mem["data"]),
                                                             ("indices", self.cl_mem["indices"]),
                                                             ("indptr", self.cl_mem["indptr"]),
+                                                            ("nbins",  numpy.int32(self.bins)),
                                                             ("do_dummy", numpy.int8(0)),
                                                             ("dummy", numpy.float32(0)),
                                                             ("coef_power", numpy.int32(1)),
@@ -355,6 +356,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("data", self.cl_mem["data"]),
                                                             ("indices", self.cl_mem["indices"]),
                                                             ("indptr", self.cl_mem["indptr"]),
+                                                            ("nbins",  numpy.int32(self.bins)),
                                                             ("empty", numpy.float32(self.empty)),
                                                             ("azimuthal", numpy.int8(1)),
                                                             ("merged8", self.cl_mem["merged8"]),
