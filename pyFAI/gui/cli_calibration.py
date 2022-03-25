@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2022"
+__date__ = "25/03/2022"
 __status__ = "production"
 
 import os
@@ -702,7 +702,8 @@ class AbstractCalibration(object):
                             (i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min))
                 _res = self.peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
 
-        self.peakPicker.points.save(self.basename + ".npt")
+        if self.basename:
+            self.peakPicker.points.save(self.basename + ".npt")
         if self.weighted:
             self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
         else:
@@ -717,6 +718,7 @@ class AbstractCalibration(object):
             self.peakPicker.closeGUI()
         if self.geoRef is None:
             self.geoRef = self.initgeoRef()
+            
         print("Before refinement, the geometry is:")
         print(self.geoRef)
         previous = sys.maxsize
@@ -1415,11 +1417,14 @@ class AbstractCalibration(object):
                 val = getattr(self.ai, key, None)
                 if val is not None:
                     defaults[key] = val
-        return GeometryRefinement(self.data,
-                                 detector=self.detector,
-                                 wavelength=self.wavelength,
-                                 calibrant=self.calibrant,
-                                 **defaults)
+        
+        georef = GeometryRefinement(self.data,
+                                    detector=self.detector,
+                                    wavelength=self.wavelength,
+                                    calibrant=self.calibrant,
+                                    **defaults)
+        georef.guess_poni()
+        return  georef
 ################################################################################
 # Calibration
 ################################################################################
