@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "25/03/2022"
 __status__ = "production"
 
 import os
@@ -253,6 +253,14 @@ class Eiger16M(Eiger):
 class Eiger2(Eiger):
     MODULE_SIZE = (512, 1028)
     MODULE_GAP = (38, 12)
+
+
+class Eiger2_250k(Eiger2):
+    """
+    Eiger2 250k detector
+    """
+    MAX_SHAPE = (512, 512)
+    aliases = ["Eiger2 250k"]
 
 
 class Eiger2_500k(Eiger2):
