@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2022"
+__date__ = "28/03/2022"
 __status__ = "production"
 
 import os
@@ -305,7 +305,6 @@ class PeakPicker(object):
         """
         gpt = self.points.pop(lbl=lbl)
         if gpt and self.widget:
-            print(gpt.annotate)
             self.widget.remove_grp(gpt.label, update=True)
 
     def _common_creation(self, points, gpt=None, ring=None):

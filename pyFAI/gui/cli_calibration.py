@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/03/2022"
+__date__ = "28/03/2022"
 __status__ = "production"
 
 import os
@@ -708,7 +708,9 @@ class AbstractCalibration(object):
             self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
         else:
             self.data = self.peakPicker.points.getList()
-
+        if self.geoRef:
+            self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
+              
     def refine(self):
         """
         Contains the common geometry refinement part
