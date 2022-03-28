@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/08/2021"
+__date__ = "28/03/2022"
 
 import unittest
 import random
@@ -491,6 +491,11 @@ class TestGeometry(utilstest.ParametricTestCase):
         geom.load(ponifile)
         self.assertEqual(geom.detector.get_config(), config)
 
+    def test_energy(self):
+        g = geometry.Geometry()
+        g.energy = 12.4
+        self.assertAlmostEqual(g.wavelength, 1e-10, msg="energy conversion works", delta=1e-13)
+        self.assertAlmostEqual(g.energy, 12.4, 10, msg="energy conversion is stable")
 
 class TestCalcFrom(unittest.TestCase):
     """
