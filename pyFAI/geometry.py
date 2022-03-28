@@ -2248,6 +2248,7 @@ class Geometry(object):
     rot3 = property(get_rot3, set_rot3)
 
     def set_wavelength(self, value):
+        "Set the wavelength in meter!"
         old_wl = self._wavelength
         if isinstance(value, float):
             self._wavelength = value
@@ -2280,6 +2281,7 @@ class Geometry(object):
             return 1e-10*CONST_hc/self._wavelength
         
     def set_energy(self, energy):
+        "Set the energy in keV"
         wavlength = 1e-10*CONST_hc/energy
         self.set_wavelength(wavlength)
         
