@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2021"
+__date__ = "28/03/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -58,7 +58,7 @@ from .utils.decorators import deprecated
 from .utils import crc32, deg2rad
 from . import utils
 from .io import ponifile, integration_config
-
+from .units import CONST_hc
 logger = logging.getLogger(__name__)
 
 try:
@@ -2248,6 +2248,7 @@ class Geometry(object):
     rot3 = property(get_rot3, set_rot3)
 
     def set_wavelength(self, value):
+        "Set the wavelength in meter!"
         old_wl = self._wavelength
         if isinstance(value, float):
             self._wavelength = value
@@ -2275,6 +2276,17 @@ class Geometry(object):
 
     wavelength = property(get_wavelength, set_wavelength)
 
+    def get_energy(self):
+        if self._wavelength:
+            return 1e-10*CONST_hc/self._wavelength
+        
+    def set_energy(self, energy):
+        "Set the energy in keV"
+        wavlength = 1e-10*CONST_hc/energy
+        self.set_wavelength(wavlength)
+        
+    energy = property(get_energy, set_energy)
+    
     def get_ttha(self):
         return self._cached_array.get("2th_center")
 

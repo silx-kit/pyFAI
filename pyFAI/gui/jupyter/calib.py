@@ -108,7 +108,7 @@ class JupyCalibration(AbstractCalibration):
             self.peakPicker.gui(log=True, maximize=False, pick=True,
                                 widget_klass=JupyCalibWidget)
 
-    def refine(self):
+    def refine(self, fixed=None):
         """
         Contains the geometry refinement part specific to Calibration from Jupyter
         Sets up the initial guess
@@ -116,7 +116,8 @@ class JupyCalibration(AbstractCalibration):
         if self.geoRef is None:
             # First attempt
             self.geoRef = self.initgeoRef()
-            self.geoRef.refine2(1000000, fix=self.fixed)
+            fixed = self.fixed if fixed is None else fixed
+            self.geoRef.refine2(1000000, fix=fixed)
             scor = self.geoRef.chi2()
             pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
     
@@ -124,8 +125,8 @@ class JupyCalibration(AbstractCalibration):
     
             # Second attempt, from guess_poni
             self.geoRef = self.initgeoRef()
-            self.geoRef.guess_poni(fixed=self.fixed)
-            self.geoRef.refine2(1000000, fix=self.fixed)
+            self.geoRef.guess_poni(fixed=fixed)
+            self.geoRef.refine2(1000000, fix=fixed)
             scor = self.geoRef.chi2()
             pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
             scores.append((scor, pars))
@@ -139,5 +140,19 @@ class JupyCalibration(AbstractCalibration):
 
         # Now continue as before
         AbstractCalibration.refine(self)
+
+    def remove_grp(self, lbl):
+        """
+        Remove a group of points
+        
+        :param lbl: label of the given group
+        """
+        self.peakPicker.remove_grp(lbl)
+        if self.weighted:
+            self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
+        else:
+            self.data = self.peakPicker.points.getList()
+        if self.geoRef:
+            self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
 
 Calibration = JupyCalibration

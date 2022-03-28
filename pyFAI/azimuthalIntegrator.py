@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/03/2022"
+__date__ = "28/03/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3505,6 +3505,37 @@ class AzimuthalIntegrator(Geometry):
         else:
             res = cart_inpatined
         return res
+
+    def guess_max_bins(self, redundancy=1, search_range=None, unit="q_nm^-1", radial_range=None, azimuth_range=None):
+        """
+        Guess the maximum number of bins, considering the excpected minimum redundancy:
+        
+        :param redundancy: minimum number of pixel per bin
+        :param search_range: the minimum and maximun number of bins to be considered
+        :param unit: the unit to be considered like "2th_deg" or "q_nm^-1"
+        :param radial_range: radial range to be considered, depends on unit !
+        :param azimuth_range: azimuthal range to be considered
+        :return: the minimum bin number providing the provided redundancy
+        """
+        img = numpy.empty(self.detector.shape, dtype=numpy.float32)
+        dia = int(numpy.sqrt(img.shape[0]**2+img.shape[1]**2))
+        method = self._normalize_method(("no", "histogram", "cython"), dim=1, default=self.DEFAULT_METHOD_1D)
+        unit = units.to_unit(unit)
+        if search_range is None:
+            ref = self.integrate1d(img, dia, method=method, unit=unit, 
+                                   azimuth_range=azimuth_range, radial_range=radial_range).count.min()
+            if ref>=redundancy:
+                search_range = (dia, 4*dia)
+            else:
+                search_range = (2, dia)
+            
+        for i in range(*search_range):
+            mini = self.integrate1d(img, i, method=method, unit=unit,
+                                  azimuth_range=azimuth_range, radial_range=radial_range).count.min()
+            if mini < redundancy:
+                return i-1
+
+
 
 ################################################################################
 # Some properties

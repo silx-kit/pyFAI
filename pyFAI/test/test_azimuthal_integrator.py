@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "28/03/2022"
 
 import unittest
 import os
@@ -371,8 +371,13 @@ class TestFlatimage(unittest.TestCase):
         I[I == -1.0] = 1.0
         assert abs(I.min() - 1.0) < self.epsilon
         assert abs(I.max() - 1.0) < self.epsilon
-
-
+    
+    def test_guess_bins(self):
+        "This test can be rather noisy on 32bits platforms !!!"
+        res = self.ai.guess_max_bins(unit="2th_deg")
+        self.assertEqual(res, 240, "the number of bins found is correct (240)")
+        
+        
 class TestSaxs(unittest.TestCase):
     saxsPilatus = "bsa_013_01.edf"
     maskFile = "Pcon_01Apr_msk.edf"

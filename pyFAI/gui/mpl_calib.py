@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2022"
+__date__ = "28/03/2022"
 __status__ = "development"
 
 import logging
@@ -115,6 +115,7 @@ class MplCalibWidget:
         self.points = {}  # key: label, value (
         self._sem = threading.Semaphore()
         self.msg = []
+        self.weighted = False
 
     def set_title(self, text):
         self.ax.set_title(text)
