@@ -83,7 +83,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
             tth = cp.calibrant.get_2th()
             ttha = ai.twoThetaArray()
             ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
-        legend()
+        ax.legend()
     return ax
 
 
