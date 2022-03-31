@@ -33,12 +33,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2022"
+__date__ = "31/03/2022"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
 import numpy
-from pylab import subplots, legend
+from pylab import subplots
 from matplotlib import lines
 from matplotlib.colors import SymLogNorm
 
@@ -83,7 +83,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
             tth = cp.calibrant.get_2th()
             ttha = ai.twoThetaArray()
             ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
-        legend()
+        ax.legend()
     return ax
 
 
