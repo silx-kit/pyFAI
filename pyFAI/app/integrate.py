@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2022"
+__date__ = "31/03/2022"
 __satus__ = "production"
 
 import sys
@@ -92,12 +92,20 @@ def integrate_gui(options, args):
         corner = center - half
         window.move(corner)
 
-    def processData():
+    def validateConfig():
+        config = window.get_config()
+        if config is None:
+            "Invalid configuration"
+            return
+        else:
+            processData(config)
+
+    def processData(config=None):
         center = window.geometry().center()
         window.setVisible(False)
         window.deleteLater()
         input_data = window.input_data
-        if input_data is None or len(input_data) == 0:
+        while input_data is None or len(input_data) == 0:
             dialog = qt.QFileDialog(directory=os.getcwd())
             dialog.setWindowTitle("Select images to integrate")
 
@@ -120,7 +128,8 @@ def integrate_gui(options, args):
             center = dialog.geometry().center()
             dialog.close()
 
-        config = window.get_config()
+        if config is None:
+            config = window.get_config()
 
         dialog = IntegrationProcess(None)
         dialog.adjustSize()
@@ -147,7 +156,7 @@ def integrate_gui(options, args):
         dialog.deleteLater()
 
     window = IntegrationDialog(args, options.output, json_file=options.json, context=context)
-    window.batchProcessRequested.connect(processData)
+    window.batchProcessRequested.connect(validateConfig)
     window.show()
 
     result = app.exec_()
