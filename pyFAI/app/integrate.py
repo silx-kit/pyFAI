@@ -103,8 +103,6 @@ def integrate_gui(options, args):
 
     def processData(config=None):
         center = window.geometry().center()
-        window.setVisible(False)
-        window.deleteLater()
         input_data = window.input_data
         while input_data is None or len(input_data) == 0:
             dialog = qt.QFileDialog(directory=os.getcwd())
@@ -128,6 +126,9 @@ def integrate_gui(options, args):
             input_data = [str(i) for i in dialog.selectedFiles()]
             center = dialog.geometry().center()
             dialog.close()
+
+        window.setVisible(False)
+        window.deleteLater()
 
         if config is None:
             config = window.get_config()
