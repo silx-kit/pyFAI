@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2021"
+__date__ = "01/04/2022"
 __status__ = "development"
 
 import logging
@@ -258,9 +258,11 @@ class WorkerConfigurator(qt.QWidget):
         value = self.__getRadialNbpt()
         if value is not None:
             config["nbpt_rad"] = value
+
         value = self.__getAzimuthalNbpt()
         if value is not None:
             config["nbpt_azim"] = value
+
         config["unit"] = str(self.radial_unit.model().value())
         config["do_radial_range"] = bool(self.do_radial_range.isChecked())
         config["radial_range_min"] = self._float("radial_range_min", None)
