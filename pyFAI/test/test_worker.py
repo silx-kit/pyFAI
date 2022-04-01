@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2021"
+__date__ = "01/04/2022"
 
 import unittest
 import logging
@@ -334,6 +334,7 @@ class TestWorkerConfig(unittest.TestCase):
                   "do_solid_angle": False,
                   "method": "splitbbox"}
         worker = Worker()
+        worker.validate_config(config)
         worker.set_config(config)
         data = numpy.ones(shape=self.shape)
         worker.process(data=data)
