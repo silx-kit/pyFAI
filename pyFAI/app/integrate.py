@@ -5,7 +5,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2022"
+__date__ = "01/04/2022"
 __satus__ = "production"
 
 import sys
@@ -94,11 +94,12 @@ def integrate_gui(options, args):
 
     def validateConfig():
         config = window.get_config()
-        if config is None:
-            "Invalid configuration"
-            return
-        else:
+        reason = pyFAI.worker.Worker.validate_config(config, raise_exception=None)
+        if reason is None:
             processData(config)
+        else:
+            "Invalid configuration"
+            qt.QMessageBox.warning(window, "Inconsistent configuration", reason)
 
     def processData(config=None):
         center = window.geometry().center()

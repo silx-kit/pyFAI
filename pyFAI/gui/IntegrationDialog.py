@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2022"
+__date__ = "01/04/2022"
 __status__ = "development"
 
 import logging
@@ -58,7 +58,6 @@ from ..utils import get_ui_file
 from ..app import integrate
 from .. import containers
 from pyFAI.gui.utils.eventutils import QtProxifier
-from .dialog import MessageBox
 
 
 class _ThreadSafeIntegrationProcess(QtProxifier):
@@ -297,13 +296,9 @@ class IntegrationDialog(qt.QWidget):
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary
 
-        :return: dict with all information. None if impossible configuration
+        :return: dict with all informations
         """
-        try:
-            config = self.__workerConfigurator.getConfig()
-        except RuntimeError as err:
-            MessageBox.exception(self, "Unconsistent worker", err, logger)
-            config = None
+        config = self.__workerConfigurator.getConfig()
         return config
 
     def dump(self, filename=None):

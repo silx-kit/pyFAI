@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2022"
+__date__ = "01/04/2022"
 __status__ = "development"
 
 import logging
@@ -256,16 +256,11 @@ class WorkerConfigurator(qt.QWidget):
         # integration
         config["do_2D"] = bool(self.do_2D.isChecked())
         value = self.__getRadialNbpt()
-        if value is None:
-            raise RuntimeError("Cannot perform integration without `nbpt_rad` defined")
-        else:
+        if value is not None:
             config["nbpt_rad"] = value
 
         value = self.__getAzimuthalNbpt()
-        if value is None:
-            if config["do_2D"]:
-                raise RuntimeError("Cannot perform 2d integration without `nbpt_azim` defined")
-        else:
+        if value is not None:
             config["nbpt_azim"] = value
 
         config["unit"] = str(self.radial_unit.model().value())
