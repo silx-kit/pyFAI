@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2022"
+__date__ = "01/04/2022"
 __status__ = "development"
 
 import threading
@@ -672,6 +672,41 @@ class Worker(object):
 
     __call__ = process
 
+    @staticmethod
+    def validate_config(config, raise_exception=RuntimeError):
+        """
+        Validates a configuration for any inconsitencies
+        
+        :param config: dict contraining the configuration
+        :param raise_exception: Exception class to raise when configuration is not consistant
+        :return: None or reason as a string when raise_exception is None, else raise the given exception   
+        """
+        reason = None
+        if not config.get("dist"):
+            reason = "Detector distance is undefined"
+        elif config.get("poni1") is None:
+            reason = "Distance `poni1` is undefined"
+        elif config.get("poni2") is None:
+            reason = "Distance `poni2` is undefined"
+        elif config.get("rot1") is None:
+            reason = "Rotation `rot1` is undefined"
+        elif config.get("rot2") is None:
+            reason = "Rotation `rot2` is undefined"
+        elif config.get("rot3") is None:
+            reason = "Rotation `rot3` is undefined"
+        elif not config.get("nbpt_rad"):
+            reason = "Number of radial bins is is undefined"
+        elif config.get("do_2D") and not config.get("nbpt_rad"):
+            reason = "Number of azimuthal bins is is undefined while 2D integration requested"
+        elif config.get("wavelength") is None:
+            unit = config.get("unit", "_").split("_")[0]
+            if "q" in unit:
+                reason = "Wavelength undefined but integration in q-space"
+            elif "d" in unit:
+                reason = "Wavelength undefined but integration in d*-space"
+        if reason and isinstance(raise_exception, Exception):
+            raise_exception(reason)
+        return reason
 
 class PixelwiseWorker(object):
     """
