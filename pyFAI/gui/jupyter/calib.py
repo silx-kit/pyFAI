@@ -81,12 +81,11 @@ class JupyCalibration(AbstractCalibration):
         :param wavelengh: wavelength in A as a float
         :param calibrant: instance of calibrant 
         """
-        AbstractCalibration.__init__(self, detector=detector,
+        AbstractCalibration.__init__(self, img,
+                                     mask=mask,
+                                     detector=detector,
                                      wavelength=wavelength,
                                      calibrant=calibrant)
-        self.img = img
-        self.mask = mask
-        self.gaussianWidth = None
         self.preprocess()
         self.interactive = False
         self.fixed = ["wavelength", "rot3"]
@@ -96,14 +95,7 @@ class JupyCalibration(AbstractCalibration):
         """
         do dark, flat correction thresholding, ...
         """
-        self.peakPicker = PeakPicker(self.img, reconst=self.reconstruct, mask=self.mask,
-                                     pointfile=self.pointfile, calibrant=self.calibrant,
-                                     wavelength=self.ai.wavelength, detector=self.detector)
-
-        if self.gaussianWidth is not None:
-            self.peakPicker.massif.valley_size = self.gaussianWidth
-        else:
-            self.peakPicker.massif.init_valley_size()
+        AbstractCalibration.preprocess(self)
         if self.gui:
             self.peakPicker.gui(log=True, maximize=False, pick=True,
                                 widget_klass=JupyCalibWidget)
