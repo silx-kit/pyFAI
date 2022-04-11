@@ -1866,6 +1866,9 @@ class MultiCalib(object):
             description = """
         Calibrate automatically a set of frames taken at various sample-detector distance.
         Return the linear regression of the fit in funtion of the sample-setector distance.
+        
+        Nota: this tool is deprecated in favor of the jupyter notebook found in the documentation 
+        (with the same name).
         """
             epilog = """This tool has been developed for ESRF MX-beamlines where an acceptable calibration is
         usually present is the header of the image. PyFAI reads it and does a "recalib" on
