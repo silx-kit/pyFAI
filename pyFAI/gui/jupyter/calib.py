@@ -81,12 +81,11 @@ class JupyCalibration(AbstractCalibration):
         :param wavelengh: wavelength in A as a float
         :param calibrant: instance of calibrant 
         """
-        AbstractCalibration.__init__(self, detector=detector,
+        AbstractCalibration.__init__(self, img,
+                                     mask=mask,
+                                     detector=detector,
                                      wavelength=wavelength,
                                      calibrant=calibrant)
-        self.img = img
-        self.mask = mask
-        self.gaussianWidth = None
         self.preprocess()
         self.interactive = False
         self.fixed = ["wavelength", "rot3"]
@@ -96,41 +95,38 @@ class JupyCalibration(AbstractCalibration):
         """
         do dark, flat correction thresholding, ...
         """
-        self.peakPicker = PeakPicker(self.img, reconst=self.reconstruct, mask=self.mask,
-                                     pointfile=self.pointfile, calibrant=self.calibrant,
-                                     wavelength=self.ai.wavelength, detector=self.detector)
-
-        if self.gaussianWidth is not None:
-            self.peakPicker.massif.valley_size = self.gaussianWidth
-        else:
-            self.peakPicker.massif.init_valley_size()
+        AbstractCalibration.preprocess(self)
         if self.gui:
             self.peakPicker.gui(log=True, maximize=False, pick=True,
                                 widget_klass=JupyCalibWidget)
 
-    def refine(self, fixed=None):
+    def refine(self, maxiter=1000000, fixed=None):
         """
         Contains the geometry refinement part specific to Calibration from Jupyter
-        Sets up the initial guess
+        Sets up the initial guess.
+        
+        :param maxiter: number of iteration to run for in the minimizer
+        :param fixed: a list of parameters for maintain fixed during the refinement. self.fixed by default.
+        :return: nothing, object updated in place
         """
         if self.geoRef is None:
             # First attempt
             self.geoRef = self.initgeoRef()
             fixed = self.fixed if fixed is None else fixed
-            self.geoRef.refine2(1000000, fix=fixed)
+            self.geoRef.refine2(maxiter, fix=fixed)
             scor = self.geoRef.chi2()
             pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
-    
+
             scores = [(scor, pars), ]
-    
+
             # Second attempt, from guess_poni
             self.geoRef = self.initgeoRef()
             self.geoRef.guess_poni(fixed=fixed)
-            self.geoRef.refine2(1000000, fix=fixed)
+            self.geoRef.refine2(maxiter, fix=fixed)
             scor = self.geoRef.chi2()
             pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
             scores.append((scor, pars))
-    
+
             # Choose the best scoring method: At this point we might also ask
             # a user to just type the numbers in?
             scores.sort()
@@ -139,7 +135,7 @@ class JupyCalibration(AbstractCalibration):
                 setattr(self.geoRef, parname, parval)
 
         # Now continue as before
-        AbstractCalibration.refine(self)
+        AbstractCalibration.refine(self, maxiter=maxiter, fixed=fixed)
 
     def remove_grp(self, lbl):
         """
@@ -154,5 +150,6 @@ class JupyCalibration(AbstractCalibration):
             self.data = self.peakPicker.points.getList()
         if self.geoRef:
             self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
+
 
 Calibration = JupyCalibration

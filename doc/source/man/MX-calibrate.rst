@@ -16,6 +16,8 @@ containing the spacing of Miller plans in Angstrom (in decreasing order).
 Most crystal powders used for calibration are available in the American Mineralogist
 database [AMD]_ or in the [COD]_.
 
+Nota: this tool is deprecated in favor of the jupyter notebook found in the documentation 
+(with the same name).
 
 Usage:
 ------

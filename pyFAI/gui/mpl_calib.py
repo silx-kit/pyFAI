@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/03/2022"
+__date__ = "11/04/2022"
 __status__ = "development"
 
 import logging
@@ -239,7 +239,7 @@ class MplCalibWidget:
         :param update: finally update the plot 
         """
         if self.fig is None:
-            logging.warning("No diffraction image available => not showing the contour")
+            logger.warning("No diffraction image available => not showing the contour")
             return
         # clean previous contour plots:
         self.ax.collections.clear()
