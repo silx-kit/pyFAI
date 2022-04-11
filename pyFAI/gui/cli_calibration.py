@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/03/2022"
+__date__ = "11/04/2022"
 __status__ = "production"
 
 import os
@@ -710,17 +710,24 @@ class AbstractCalibration(object):
             self.data = self.peakPicker.points.getList()
         if self.geoRef:
             self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
-              
-    def refine(self):
+
+    def refine(self, maxiter=1000000, fixed=None):
         """
         Contains the common geometry refinement part
+        
+        :param maxiter: number of iteration to run for in the minimizer
+        :param fixed: a list of parameters for maintain fixed during the refinement. self.fixed by default.
+        :return: nothing, object updated in place 
         """
+
+        fixed = self.fixed if fixed is None else fixed
+
         if win32 and self.peakPicker is not None:
             logging.info(self.win_error)
             self.peakPicker.closeGUI()
         if self.geoRef is None:
             self.geoRef = self.initgeoRef()
-            
+
         print("Before refinement, the geometry is:")
         print(self.geoRef)
         previous = sys.maxsize
@@ -728,13 +735,13 @@ class AbstractCalibration(object):
         fig2 = None
         while not finished:
             count = 0
-            if "wavelength" in self.fixed:
+            if "wavelength" in fixed:
                 while (previous > self.geoRef.chi2()) and (count < self.max_iter):
                     if (count == 0):
                         previous = sys.maxsize
                     else:
                         previous = self.geoRef.chi2()
-                    self.geoRef.refine2(1000000, fix=self.fixed)
+                    self.geoRef.refine2(maxiter, fix=fixed)
                     print(self.geoRef)
                     count += 1
             else:
@@ -743,7 +750,7 @@ class AbstractCalibration(object):
                         previous = sys.maxsize
                     else:
                         previous = self.geoRef.chi2_wavelength()
-                    self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
+                    self.geoRef.refine2_wavelength(maxiter, fix=fixed)
                     print(self.geoRef)
                     count += 1
                 self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
@@ -1419,7 +1426,7 @@ class AbstractCalibration(object):
                 val = getattr(self.ai, key, None)
                 if val is not None:
                     defaults[key] = val
-        
+
         georef = GeometryRefinement(self.data,
                                     detector=self.detector,
                                     wavelength=self.wavelength,

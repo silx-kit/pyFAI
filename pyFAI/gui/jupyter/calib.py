@@ -108,29 +108,33 @@ class JupyCalibration(AbstractCalibration):
             self.peakPicker.gui(log=True, maximize=False, pick=True,
                                 widget_klass=JupyCalibWidget)
 
-    def refine(self, fixed=None):
+    def refine(self, maxiter=1000000, fixed=None):
         """
         Contains the geometry refinement part specific to Calibration from Jupyter
-        Sets up the initial guess
+        Sets up the initial guess.
+        
+        :param maxiter: number of iteration to run for in the minimizer
+        :param fixed: a list of parameters for maintain fixed during the refinement. self.fixed by default.
+        :return: nothing, object updated in place
         """
         if self.geoRef is None:
             # First attempt
             self.geoRef = self.initgeoRef()
             fixed = self.fixed if fixed is None else fixed
-            self.geoRef.refine2(1000000, fix=fixed)
+            self.geoRef.refine2(maxiter, fix=fixed)
             scor = self.geoRef.chi2()
             pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
-    
+
             scores = [(scor, pars), ]
-    
+
             # Second attempt, from guess_poni
             self.geoRef = self.initgeoRef()
             self.geoRef.guess_poni(fixed=fixed)
-            self.geoRef.refine2(1000000, fix=fixed)
+            self.geoRef.refine2(maxiter, fix=fixed)
             scor = self.geoRef.chi2()
             pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
             scores.append((scor, pars))
-    
+
             # Choose the best scoring method: At this point we might also ask
             # a user to just type the numbers in?
             scores.sort()
@@ -139,7 +143,7 @@ class JupyCalibration(AbstractCalibration):
                 setattr(self.geoRef, parname, parval)
 
         # Now continue as before
-        AbstractCalibration.refine(self)
+        AbstractCalibration.refine(self, maxiter=maxiter, fixed=fixed)
 
     def remove_grp(self, lbl):
         """
@@ -154,5 +158,6 @@ class JupyCalibration(AbstractCalibration):
             self.data = self.peakPicker.points.getList()
         if self.geoRef:
             self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
+
 
 Calibration = JupyCalibration
