@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/03/2022"
+__date__ = "12/04/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1337,7 +1337,6 @@ class AzimuthalIntegrator(Geometry):
                                 # Copy some properties from the cython integrator
                                 integr.pos0_range = csr_integr.pos0_range
                                 integr.pos1_range = csr_integr.pos1_range
-                                # print(csr_integr.mask_checksum, integr.mask_checksum)
                             except MemoryError:
                                 logger.warning("MemoryError: falling back on default forward implementation")
                                 self.reset_engines()
@@ -2370,7 +2369,6 @@ class AzimuthalIntegrator(Geometry):
                     if integr is None or integr.checksum != cython_integr.lut_checksum:
                         if (method.impl_lower == "opencl"):
                             with ocl_py_engine.lock:
-                                # print(method)
                                 integr = method.class_funct_ng.klass(cython_integr.lut,
                                                                      cython_integr.size,
                                                                      bin_centers=cython_integr.bin_centers0,
@@ -2856,17 +2854,7 @@ class AzimuthalIntegrator(Geometry):
                                  normalization_factor=normalization_factor)
         integ2d = res2d.intensity
         if (method.impl_lower == "opencl"):
-            if (method.algo_lower == "csr") and \
-                    (OCL_CSR_ENGINE in self.engines) and \
-                    (self.engines[OCL_CSR_ENGINE].engine is not None):
-                ctx = self.engines[OCL_CSR_ENGINE].engine.ctx
-            elif (method.algo_lower == "lut") and \
-                    (OCL_LUT_ENGINE in self.engines) and \
-                    (self.engines[OCL_LUT_ENGINE].engine is not None):
-                ctx = self.engines[OCL_LUT_ENGINE].engine.ctx
-            else:
-                ctx = None
-
+            ctx = self.engines[res2d.method].engine.ctx
             if numpy.isfortran(integ2d) and integ2d.dtype == numpy.float32:
                 rdata = integ2d.T
                 horizontal = True
