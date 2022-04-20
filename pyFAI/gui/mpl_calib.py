@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2022"
+__date__ = "20/04/2022"
 __status__ = "development"
 
 import logging
@@ -148,8 +148,11 @@ class MplCalibWidget:
             self.axd.yaxis.set_label_position('right')
             self.axd.yaxis.label.set_color('blue')
             self.axd.xaxis.label.set_color('blue')
-            self.axd.tick_params(colors="blue", labelbottom='off', labeltop='on',
-                                 labelleft='off', labelright='on')
+            self.axd.tick_params(colors="blue", 
+                                 labelbottom=False, labeltop=True,
+                                 labelleft=False, labelright=True,
+                                 bottom=False, top=True, 
+                                 left=False, right=True)
             self.axd.set_xlabel(r'dim2 ($\approx m$)')
             self.axd.set_ylabel(r'dim1 ($\approx m$)')
             if update:
