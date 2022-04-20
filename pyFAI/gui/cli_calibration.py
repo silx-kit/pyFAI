@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2022"
+__date__ = "20/04/2022"
 __status__ = "production"
 
 import os
@@ -229,19 +229,7 @@ class AbstractCalibration(object):
         self.error_model = ""
 
     def __repr__(self):
-        lst = ["Calibration object:"]
-        if self.dataFiles:
-            lst.append("data= " + ", ".join(self.dataFiles))
-        else:
-            lst.append("data= None")
-        if self.darkFiles:
-            lst.append("dark= " + ", ".join(self.darkFiles))
-        else:
-            lst.append("dark= None")
-        if self.flatFiles:
-            lst.append("flat= " + ", ".join(self.flatFiles))
-        else:
-            lst.append("flat= None")
+        lst = [f"{self.__class__.__name__} object:"]
         if self.fixed:
             lst.append("fixed=" + ", ".join(self.fixed))
         else:
@@ -1443,6 +1431,22 @@ class CliCalibration(AbstractCalibration):
         self.fig_chiplot = self.ax_chiplot = None
         self.fig_center = self.ax_center = None
 
+    def __repr__(self):
+        lst = []
+        if self.dataFiles:
+            lst.append("data= " + ", ".join(self.dataFiles))
+        else:
+            lst.append("data= None")
+        if self.darkFiles:
+            lst.append("dark= " + ", ".join(self.darkFiles))
+        else:
+            lst.append("dark= None")
+        if self.flatFiles:
+            lst.append("flat= " + ", ".join(self.flatFiles))
+        else:
+            lst.append("flat= None")
+        return AbstractCalibration.__repr__(self) + os.linesep + os.linesep.join(lst)
+
     def preprocess(self):
         """
         Common part:
@@ -1845,12 +1849,11 @@ class MultiCalib(object):
         self.rot3 = 0.0
 
     def __repr__(self):
-        lst = ["Multi-Calibration object:",
+        lst = [f"{self.__class__.__name__} object:",
                "data= " + ", ".join(self.dataFiles),
                "dark= " + ", ".join(self.darkFiles),
                "flat= " + ", ".join(self.flatFiles)]
         lst.append(self.detector.__repr__())
-#        lst.append("gaussian= %s" % self.gaussianWidth)
         return os.linesep.join(lst)
 
     def parse(self, exe=None, description=None, epilog=None):
@@ -2283,8 +2286,10 @@ class CheckCalib(object):
         self.fig = None
 
     def __repr__(self, *args, **kwargs):
+        res = [f"{self.__class__.__name__} object with:"]
         if self.ai:
-            return self.ai.__repr__()
+            res.append("ai: " + self.ai.__repr__())
+        return os.linesep.join(res)
 
     def parse(self):
         logger.debug("in parse")
