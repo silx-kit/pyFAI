@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/02/2022"
+__date__ = "22/04/2022"
 __status__ = "production"
 
 import os
@@ -71,7 +71,7 @@ if ocl is None:
 else:
     from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
-from ..io.spots import save_spots
+from ..io.spots import save_spots_nexus
 # Define few constants:
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
@@ -335,13 +335,13 @@ def process(options):
     if options.mask is not None:
         parameters["mask"] = True
 
-    save_spots(options.output,
-                frames,
-                beamline=options.beamline,
-                ai=ai,
-                source=options.images if options.save_source else None,
-                extra=parameters,
-                grid=(options.grid_size, options.zig_zag))
+    save_spots_nexus(options.output,
+                     frames,
+                     beamline=options.beamline,
+                     ai=ai,
+                     source=options.images if options.save_source else None,
+                     extra=parameters,
+                     grid=(options.grid_size, options.zig_zag))
 
     if options.profile:
         try:
