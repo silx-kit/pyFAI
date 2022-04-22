@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2022"
+__date__ = "22/04/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -852,25 +852,46 @@ class FabioWriter(Writer):
     """
     Image file writer based on FabIO
 
-    TODO !!!
     """
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, extension=None, directory="", prefix=None, index_format="_%04d", start_index=0, fabio_class=None):
         """
-
+        :param filename:
+        :param extension:
+        :param prefix: basename of the file
+        :param index_format: "_%04s" gives "_0001" for example
+        :param start_index: often 0 or 1
+        :param  
         """
-        Writer.__init__(self, filename)
-        self.header = None
-        self.directory = None
-        self.prefix = None
-        self.index_format = "%04i"
-        self.start_index = 0
-        self.fabio_class = None
+        Writer.__init__(self, filename, extension)
+        self.header = {}
+        self.directory = directory
+        self.prefix = prefix
+        self.index_format = index_format
+        self.start_index = start_index
+        self.index = self.start_index
         if fabio is None:
             raise RuntimeError("FabIO module is needed to save images")
 
+        if fabio_class is None and self.extension:
+            if self.extension[0] == ".":
+                extension = self.extension[1:]
+            else:
+                extension = self.extension
+                self.extension = "." + extension
+            classes = fabio.fabioformats.get_classes_from_extension(extension)
+            if classes:
+                self.fabio_class = classes[0]
+            else:
+                raise RuntimeError(f"Unable to determine FabioClass from extrension {extension}")
+        else:
+            self.fabio_class = fabio_class
+
+        if  self.fabio_class is None:
+            raise RuntimeError("Unable to define the FabIO class to save images")
+
     def __repr__(self):
-        return "Image writer on file %s" % (self.filename)
+        return f"{self.fabio_class.__name__} writer on file {self.directory}/{self.prefix}{self.index_format}{self.extension}"
 
     def init(self, fai_cfg=None, lima_cfg=None, directory="pyFAI"):
         """
@@ -923,6 +944,7 @@ class FabioWriter(Writer):
             self.directory = self.subdir
         else:
             self.directory = os.path.join(directory, self.subdir)
+        self.directory = fai_cfg.get("directory", self.directory)
         if not os.path.exists(self.directory):
             logger.warning("Output directory: %s does not exist,creating it", self.directory)
             try:
@@ -930,10 +952,31 @@ class FabioWriter(Writer):
             except Exception as error:
                 logger.info("Problem while creating directory %s: %s", self.directory, error)
 
-    def write(self, data, index=0):
-        filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
+    def write(self, data, index=None, header=None):
+        """
+        :param data: 2d array to save
+        :param index: index of the file
+        :param header:  
+        """
+        if index is None:
+            index = self.index_format % (self.start_index + self.index)
+            self.index += 1
+        else:
+            index = self.index_format % index
+        filename = self.prefix + index + self.extension
+        if self.directory:
+            filename = os.path.join(self.directory, filename)
+        if header is None:
+            header = self.header
+        else:
+            _header = self.header.copy()
+            _header.update(header)
+            header = _header
         if filename:
-            with open(filename, "w") as f:
-                f.write("# Processing time: %s%s" % (get_isotime(), self.header))
-                numpy.savetxt(f, data)
+            fimg = self.fabio_class(data=data, header=header)
+            fimg.write(filename)
+            fimg.close()
+        return filename
 
+    def close(self):
+        pass

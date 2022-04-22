@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "22/04/2022"
 
 import unittest
 import os
@@ -85,7 +85,7 @@ class TestNexus(unittest.TestCase):
         # os.system("h5ls -r -a %s" % fname)
 
 
-class testHDF5Writer(unittest.TestCase):
+class TestHDF5Writer(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -120,8 +120,8 @@ class testHDF5Writer(unittest.TestCase):
         self.assertTrue(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
 
 
-class testFabIOWriter(unittest.TestCase):
-    """the tested class is not yet finished ... JK07/2017"""
+class TestFabIOWriter(unittest.TestCase):
+    """TODO finish !"""
 
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -135,24 +135,40 @@ class testFabIOWriter(unittest.TestCase):
         self.tmpdir = None
 
     def test_writer(self):
-        # self.skipTest("Untested")
 
-        h5file = os.path.join(self.tmpdir)
-        shape = 1024, 1024
-        n = 100
-        m = 10  # number of frames in memory
+        shape = 100, 128
+        n = 10
+        m = 3  # number of frames in memory
         data = numpy.random.random((m, shape[0], shape[1])).astype(numpy.float32)
         nmbytes = data.nbytes / 1e6 * n / m
         t0 = time.perf_counter()
-        writer = io.FabioWriter(filename=h5file)
-        writer.init({"nbpt_azim": shape[0], "nbpt_rad": shape[1], "prefix": "test"})
+        writer = io.FabioWriter(extension=".edf")
+        logger.info(writer.__repr__())
+        writer.init({"nbpt_azim": shape[0],
+                     "nbpt_rad": shape[1],
+                     "prefix": "toto",
+                     "index_format": "_%04d",
+                     "start_index": 1,
+                     "directory": self.tmpdir})
+        logger.info(writer.__repr__())
+
         for i in range(n):
-            writer.write(data[i % m], i)
+            writer.write(data[i % m])
         writer.close()
         t = time.perf_counter() - t0
-        logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
-        statinfo = os.stat(h5file)
-        self.assertTrue(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
+        logger.info("Writing of Fabio of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
+        self.assertEqual(len(os.listdir(self.tmpdir)), n)
+
+
+class TestSpotWriter(unittest.TestCase):
+
+    def test_nexus(self):
+        pass
+        # TODO
+
+    def test_cxi(self):
+        pass
+        # TODO
 
 
 def suite():
@@ -160,8 +176,9 @@ def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestIsoTime))
     testsuite.addTest(loader(TestNexus))
-    testsuite.addTest(loader(testHDF5Writer))
-    # testsuite.addTest(loader(testFabIOWriter))
+    testsuite.addTest(loader(TestHDF5Writer))
+    testsuite.addTest(loader(TestFabIOWriter))
+    testsuite.addTest(loader(TestSpotWriter))
     return testsuite
 
 
