@@ -13,206 +13,202 @@
   <property name="windowTitle">
    <string>Cake &amp; integration</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
-   <property name="margin">
-    <number>0</number>
-   </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="IntegrationPlot" name="_plot">
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
-     </property>
-     <property name="lineWidth">
-      <number>1</number>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QWidget" name="widget" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,1,0">
-      <property name="margin">
-       <number>0</number>
+     <widget class="IntegrationPlot" name="_plot">
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
       </property>
-      <item>
-       <widget class="QGroupBox" name="groupBox_14">
-        <property name="title">
-         <string>Integration parameters</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_10">
-         <item row="7" column="1" colspan="3">
-          <widget class="ThreadPoolPushButton" name="_integrateButton">
-           <property name="text">
-            <string>Integrate</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLabel" name="label_8">
-           <property name="text">
-            <string>Azimuthal points:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="3">
-          <widget class="QToolButton" name="_customMethodButton">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2">
-          <widget class="MethodLabel" name="_methodLabel">
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="UnitSelector" name="_radialUnit">
-           <property name="sizeAdjustPolicy">
-            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2">
-          <widget class="QuantityEdit" name="_polarizationFactor">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Pixel splitting:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QuantityEdit" name="_radialPoints">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QCheckBox" name="_polarizationFactorCheck">
-           <property name="text">
-            <string>Polarization factor:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="2">
-          <widget class="QuantityEdit" name="_azimuthalPoints">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1" colspan="2">
-          <widget class="QCheckBox" name="_displayMask">
-           <property name="text">
-            <string>Display mask overlay</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>Radial points:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Radial unit:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="1" colspan="3">
-          <widget class="QLabel" name="_warning">
-           <property name="styleSheet">
-            <string notr="true">color:red;</string>
-           </property>
-           <property name="text">
-            <string>Message</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="title">
-         <string>Geometry</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QPushButton" name="_savePoniButton">
-           <property name="toolTip">
-            <string>A PONI file contains the geometry, the wavelength and the detector information.</string>
-           </property>
-           <property name="text">
-            <string>Save as PONI file...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="_nextStep">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Next &gt;</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+     </widget>
+     <widget class="QWidget" name="widget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,1,0">
+       <property name="margin" stdset="0">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QGroupBox" name="groupBox_14">
+         <property name="title">
+          <string>Integration parameters</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_10">
+          <item row="7" column="1" colspan="3">
+           <widget class="ThreadPoolPushButton" name="_integrateButton">
+            <property name="text">
+             <string>Integrate</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Azimuthal points:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3">
+           <widget class="QToolButton" name="_customMethodButton">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="MethodLabel" name="_methodLabel">
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="UnitSelector" name="_radialUnit"/>
+          </item>
+          <item row="3" column="2">
+           <widget class="QuantityEdit" name="_polarizationFactor">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Pixel splitting:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QuantityEdit" name="_radialPoints">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QCheckBox" name="_polarizationFactorCheck">
+            <property name="text">
+             <string>Polarization factor:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QuantityEdit" name="_azimuthalPoints">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1" colspan="2">
+           <widget class="QCheckBox" name="_displayMask">
+            <property name="text">
+             <string>Display mask overlay</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Radial points:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Radial unit:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1" colspan="3">
+           <widget class="QLabel" name="_warning">
+            <property name="styleSheet">
+             <string notr="true">color:red;</string>
+            </property>
+            <property name="text">
+             <string>Message</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Geometry</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QPushButton" name="_savePoniButton">
+            <property name="toolTip">
+             <string>A PONI file contains the geometry, the wavelength and the detector information.</string>
+            </property>
+            <property name="text">
+             <string>Save as PONI file...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_nextStep">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Next &gt;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
@@ -229,6 +225,11 @@
    <header>pyFAI.gui.widgets.UnitSelector</header>
   </customwidget>
   <customwidget>
+   <class>MethodLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.MethodLabel</header>
+  </customwidget>
+  <customwidget>
    <class>ThreadPoolPushButton</class>
    <extends>QPushButton</extends>
    <header>silx.gui.widgets.ThreadPoolPushButton</header>
@@ -238,11 +239,6 @@
    <extends>QFrame</extends>
    <header>pyFAI.gui.tasks.IntegrationTask</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>MethodLabel</class>
-   <extends>QLabel</extends>
-   <header>pyFAI.gui.widgets.MethodLabel</header>
   </customwidget>
  </customwidgets>
  <tabstops>
