@@ -1731,7 +1731,6 @@ class Geometry(object):
                 self.dist = translation[2]
                 self.poni1 = -translation[1]
                 self.poni2 = -translation[0]
-                print(translation)
             orientation = geo.get("orientation", [])
             if len(orientation) == 6:
                 rot = numpy.zeros((3, 3))
@@ -1743,11 +1742,14 @@ class Geometry(object):
                 rot[0, 2] = orientation[5]  # y′ · z
                 rot[2] = numpy.cross(rot[0], rot[1])
                 rot = numpy.linalg.inv(rot)
+                rot4 = numpy.identity(4)
+                rot4[:3,:3] = rot
                 from .third_party.transformations import euler_from_matrix
-                euler = euler_from_matrix(rot, axes='sxyz')
+                euler = euler_from_matrix(rot4, axes='sxyz')
                 self._rot1 = -euler[0]
                 self._rot2 = -euler[1]
                 self._rot3 = euler[2]
+        self.reset()
 
     def set_param(self, param):
         """set the geometry from a 6-tuple with dist, poni1, poni2, rot1, rot2,
