@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "22/04/2022"
 
 import unittest
 import numpy
@@ -67,7 +67,6 @@ class TestPolarization(unittest.TestCase):
     def testCircularPol(self):
         "Circular polarization should decay in (1+(cos2θ)^2)/2"
         pol = ((1.0 + numpy.cos(self.tth) ** 2) / 2.0).astype("float32")
-        # print([abs(self.ai.polarization(factor=0, axis_offset=i) - pol).max() for i in range(6)])
         self.assertTrue(abs(self.ai.polarization(factor=0) - pol).max() == 0, "with circular polarization correction is independent of chi")
         self.assertTrue(abs(self.ai.polarization(factor=0, axis_offset=1) - pol).max() == 0, "with circular polarization correction is independent of chi, 1")
         self.assertTrue(abs(self.ai.polarization(factor=0, axis_offset=2) - pol).max() == 0, "with circular polarization correction is independent of chi, 2")
@@ -87,6 +86,15 @@ class TestPolarization(unittest.TestCase):
         "test for the rotation of the polarization axis"
         self.assertTrue(abs(self.ai.polarization(factor=1, axis_offset=numpy.pi / 2)[6] - numpy.ones(13)).max() == 0, "No correction in the horizontal plane")
         self.assertTrue(abs(self.ai.polarization(factor=1, axis_offset=numpy.pi / 2)[:, 6] - (numpy.cos((2 * self.rotX)) + 1) / 2).max() < self.epsilon, "cos(2th)^2 like in the verical plane")
+
+    def testNumExpr(self):
+        for _ in range(10):
+            p = 2.0 * numpy.random.random() - 1.0
+            offset = 10.0 * numpy.random.random() - 3.0
+            self.assertTrue(abs(
+                self.ai.polarization(factor=p, axis_offset=offset, path="numpy") -
+                self.ai.polarization(factor=p, axis_offset=offset, path="numexpr")).max() == 0,
+                f"Numexpr validation with p={p}, offset={offset}")
 
 
 def suite():

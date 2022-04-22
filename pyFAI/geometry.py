@@ -1844,7 +1844,7 @@ class Geometry(object):
                 new[i::self._oversampling, j::self._oversampling] = myarray
         return new
 
-    def polarization(self, shape=None, factor=None, axis_offset=0, with_checksum=False):
+    def polarization(self, shape=None, factor=None, axis_offset=0, with_checksum=False, path="numexpr"):
         """
         Calculate the polarization correction accoding to the
         polarization factor:
@@ -1862,12 +1862,17 @@ class Geometry(object):
         The axis_offset parameter allows correction for the misalignement of
         the polarization plane (or ellipse main axis) and the the detector's X axis.
 
+        :param shape: the shape of the array, 
+                    can be guessed most of the time from the detector definition
         :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization)
                     and 1 (where division by 0 could occure at 2th=90, chi=0)
         :param axis_offset: Angle between the polarization main axis and
                             detector's X direction (in radians !!!)
-        :return: 2D array with polarization correction array
-                        (intensity/polarisation)
+        :param with_checksum: calculate also the checksum (used with OpenCL integration)
+        :param path: set to numpy to enforce the use of numpy, else uses numexpr (mutithreaded)
+        :return: 2D array with polarization correction (normalization) array 
+                 or namedtuple if with_checksum
+
 
         """
 
@@ -1895,7 +1900,7 @@ class Geometry(object):
             chi = self.chiArray(shape)
             with self._sem:
                 if pol is None or (pol.array.shape != shape):
-                    if numexpr is not None:
+                    if path == "numexpr" and numexpr:
                         pola = numexpr.evaluate(
     "0.5 * (1.0 + cos(tth)**2 - factor * cos(2.0 * (chi + axis_offset)) * (1.0 - cos(tth)**2))")
                     else:
