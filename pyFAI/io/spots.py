@@ -136,3 +136,45 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
                 wl_ds = monochromator_grp.create_dataset("wavelength", data=numpy.float32(ai.wavelength * 1e10))
                 wl_ds.attrs["units"] = "Å"
 
+
+def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None):
+    """Write the list of spots per frame into a HDF5 file with the CXI convention
+    https://raw.githubusercontent.com/cxidb/CXI/master/cxi_file_format.pdf
+    
+    :param filename: name of the file
+    :param spots: list of spots per frame (as built by peakfinder)
+    :param beamline: name of the beamline as text
+    :param ai: Instance of geometry or azimuthal integrator
+    :param source: list of input files
+    :param extra: dict with extra metadata
+    :param grid: unused
+    :return: None
+    """
+    assert len(spots)
+    spots_per_frame = numpy.array([len(s) for s in spots], dtype=numpy.int32)
+    nframes = len(spots)
+    max_spots = spots_per_frame.max()
+    cxi = ai.getCXI() if ai else {}
+
+    with h5py.File(filename, mode="w") as h5:
+        h5["cxi_version"] = cxi.get("cxi_version", 100)
+        entry = h5.create_group("entry_1")
+        result = entry.create_group("result_1")
+        result.create_dataset("nPeaks", data=spots_per_frame)
+        total_int = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+        xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+        ypos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+        snr = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+        for i, s in enumerate(spots):
+            l = len(s)
+            total_int[i,:l] = s["intensity"]
+            xpos[i,:l] = s["pos1"]
+            ypos[i,:l] = s["pos0"]
+            snr[i,:l] = s["intensity"] / s["sigma"]
+        result.create_dataset("peakTotalIntensity", data=total_int, **cmp)
+        result.create_dataset("peakXPosRaw", data=xpos, **cmp)
+        result.create_dataset("peakYPosRaw", data=ypos, **cmp)
+        result.create_dataset("peakSNR", data=snr, **cmp)
+        # if ai:
+        #     detector = result.create_group("detector_1")
+            # TODO: past data from ai, beamline, source, ...

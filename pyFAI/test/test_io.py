@@ -185,8 +185,10 @@ class TestSpotWriter(unittest.TestCase):
         self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
     def test_cxi(self):
-        pass
-        # TODO
+        tmpfile = os.path.join(UtilsTest.tempdir, "io_FabIOwriter_spots.nxs")
+        io.spots.save_spots_cxi(tmpfile, self.spots, beamline="beamline", ai=self.ai)
+        size = os.stat(tmpfile)
+        self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
 
 def suite():
