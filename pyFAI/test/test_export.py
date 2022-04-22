@@ -135,10 +135,7 @@ class TestExport(unittest.TestCase):
     def test_CXI(self):
         ref = AzimuthalIntegrator.sload(self.poniFile)
         obt = AzimuthalIntegrator()
-        print(ref, ref.rot1, ref.rot2, ref.rot3)
-
         cxi = ref.getCXI()
-        print(cxi)
         obt.setCXI(cxi)
         for key in ["dist", "poni1", "poni2", "rot3", "pixel1", "pixel2", "splineFile"]:
             refv = ref.__getattribute__(key)
