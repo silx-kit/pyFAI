@@ -1670,7 +1670,7 @@ class Geometry(object):
         self.reset()
         return self
 
-    def get_CXI(self):
+    def getCXI(self):
         """Export the geometry in the CXI format as defined in 
         https://raw.githubusercontent.com/cxidb/CXI/master/cxi_file_format.pdf
         
@@ -1702,11 +1702,52 @@ class Geometry(object):
         cxi["detector_1"] = detector
         return cxi
 
-    def set_CXI(self, dico):
+    def setCXI(self, dico):
         """Set the geometry of the azimuthal integrator from a CXI data structure (as dict)
-        TODO
+        
+        :param dico: dictionary with CXI information 
         """
-        raise NotImplementedError("Please convert CXI geometry into azimuthal integrator")
+        detector = dico.get("detector_1", {})
+        det = detectors.detector_factory(detector.get("description", "Detector"))
+        if "x_pixel_size" in detector:
+            det.pixel2 = float(detector["x_pixel_size"])
+        if "y_pixel_size" in detector:
+            det.pixel1 = float(detector["y_pixel_size"])
+        if "mask" in detector:
+            det.mask = detector["mask"]
+        self.detector = det
+        if "distance" in detector:
+            self.dist = float(detector["distance"])
+        if "beam" in dico:
+            beam = dico["beam"]
+            if "incident_energy" in beam:
+                self.energy = float(beam["incident_energy"])
+            if "incident_wavelength" in beam:
+                self.wavelength = float(beam["incident_wavelength"])
+        if "geometry_1" in detector:
+            geo = detector["geometry_1"]
+            translation = geo.get("translation", [])
+            if len(translation) == 3:
+                self.dist = translation[2]
+                self.poni1 = -translation[1]
+                self.poni2 = -translation[0]
+                print(translation)
+            orientation = geo.get("orientation", [])
+            if len(orientation) == 6:
+                rot = numpy.zeros((3, 3))
+                rot[1, 1] = orientation[0]  # x′ · x,
+                rot[1, 0] = orientation[1]  # x′ · y,
+                rot[1, 2] = orientation[2]  # x′ · z,
+                rot[0, 1] = orientation[3]  # y′ · x,
+                rot[0, 0] = orientation[4]  # y′ · y,
+                rot[0, 2] = orientation[5]  # y′ · z
+                rot[2] = numpy.cross(rot[0], rot[1])
+                rot = numpy.linalg.inv(rot)
+                from .third_party.transformations import euler_from_matrix
+                euler = euler_from_matrix(rot, axes='sxyz')
+                self._rot1 = -euler[0]
+                self._rot2 = -euler[1]
+                self._rot3 = euler[2]
 
     def set_param(self, param):
         """set the geometry from a 6-tuple with dist, poni1, poni2, rot1, rot2,
@@ -1731,7 +1772,7 @@ class Geometry(object):
         :param w: Real part of the quaternion (correspond to cos alpha/2)
         :param x: Imaginary part of the quaternion, correspond to u1*sin(alpha/2)
         :param y: Imaginary part of the quaternion, correspond to u2*sin(alpha/2)
-        :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/21)
+        :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/2)
         """
         from .third_party.transformations import euler_from_quaternion
 
