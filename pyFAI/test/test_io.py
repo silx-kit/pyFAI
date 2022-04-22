@@ -46,6 +46,8 @@ from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
+import pyFAI.azimuthalIntegrator
+import pyFAI.io.spots
 
 
 class TestIsoTime(unittest.TestCase):
@@ -162,9 +164,25 @@ class TestFabIOWriter(unittest.TestCase):
 
 class TestSpotWriter(unittest.TestCase):
 
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+
+        detector = pyFAI.detector_factory("pilatus300k")
+        self.ai = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector=detector)
+        nframes = 100
+        nspots = numpy.random.randint(1, nframes, size=nframes)
+        self.spots = [numpy.empty(count, dtype=[("index", numpy.int32),
+                                                ("intensity", numpy.float32),
+                                                ("sigma", numpy.float32),
+                                                ("pos0", numpy.float32),
+                                                ("pos1", numpy.float32)])
+                       for count in nspots]
+
     def test_nexus(self):
-        pass
-        # TODO
+        tmpfile = os.path.join(UtilsTest.tempdir, "io_FabIOwriter_spots.nxs")
+        io.spots.save_spots_nexus(tmpfile, self.spots, beamline="beamline", ai=self.ai)
+        size = os.stat(tmpfile)
+        self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
     def test_cxi(self):
         pass

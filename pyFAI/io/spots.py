@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/12/2021"
+__date__ = "22/04/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -55,12 +55,11 @@ else:
     cmp = hdf5plugin.Bitshuffle()
 
 
-
-def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None):
-    """Write the list of spots per frame into a HDF5 file
+def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None):
+    """Write the list of spots per frame into a HDF5 file with the Nexus convention
     
     :param filename: name of the file
-    :param frames: list of spots per frame (as built by peakfinder)
+    :param spots: list of spots per frame (as built by peakfinder)
     :param beamline: name of the beamline as text
     :param ai: Instance of geometry or azimuthal integrator
     :param source: list of input files
@@ -71,16 +70,16 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
     assert len(spots)
     spots_per_frame = numpy.array([len(s) for s in spots], dtype=numpy.int32)
     with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
-        
+
         instrument = nexus.new_instrument(instrument_name=beamline)
         entry = instrument.parent
         peaks_grp = nexus.new_class(entry, "peaks", class_type="NXdata")
         entry.attrs["default"] = peaks_grp.name
-        if grid and grid[0] and len(grid[0])>1:
+        if grid and grid[0] and len(grid[0]) > 1:
             img = spots_per_frame.reshape(grid[0])
             if grid[1]:
-                img[1::2,:] = img[1::2,-1::-1] # flip one line out of 2 
-            spot_ds = peaks_grp.create_dataset("spots", data=img)    
+                img[1::2,:] = img[1::2, -1::-1]  # flip one line out of 2
+            spot_ds = peaks_grp.create_dataset("spots", data=img)
             spot_ds.attrs["interpretation"] = "image"
         else:
             spot_ds = peaks_grp.create_dataset("spots", data=spots_per_frame)
@@ -90,27 +89,26 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
         peaks_grp["frame_ptr"] = numpy.concatenate(([0], numpy.cumsum(spots_per_frame))).astype(dtype=numpy.int32)
         index = numpy.concatenate([i["index"] for i in spots])
         peaks_grp.create_dataset("index", data=index, **cmp)
-        
+
         intensity = numpy.concatenate([i["intensity"] for i in spots])
         peaks_grp.create_dataset("intensity", data=intensity, **cmp)
-        
+
         sigma = numpy.concatenate([i["sigma"] for i in spots])
         peaks_grp.create_dataset("sigma", data=sigma, **cmp)
 
-        #to have pos1 and pos2 along same dim as poni1 and poni2
+        # to have pos1 and pos2 along same dim as poni1 and poni2
         pos0 = numpy.concatenate([i["pos0"] for i in spots])
         peaks_grp.create_dataset("pos1", data=pos0, **cmp).attrs["dir"] = "y"
 
         pos1 = numpy.concatenate([i["pos1"] for i in spots])
         peaks_grp.create_dataset("pos2", data=pos1, **cmp).attrs["dir"] = "x"
 
-
         sparsify_grp = nexus.new_class(entry, "peakfinder", class_type="NXprocess")
         sparsify_grp["program"] = "pyFAI"
         sparsify_grp["sequence_index"] = 1
         sparsify_grp["version"] = version
         sparsify_grp["date"] = get_isotime()
-        sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, h5py.string_dtype("utf8"))).attrs["help"] = "Command line arguments" 
+        sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, h5py.string_dtype("utf8"))).attrs["help"] = "Command line arguments"
         sparsify_grp.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
         if source is not None:
             sparsify_grp.create_dataset("source", data=numpy.array(source, h5py.string_dtype("utf8")))
@@ -137,3 +135,4 @@ def save_spots(filename, spots, beamline="beamline", ai=None, source=None, extra
                 monochromator_grp = nexus.new_class(instrument, "monchromator", "NXmonochromator")
                 wl_ds = monochromator_grp.create_dataset("wavelength", data=numpy.float32(ai.wavelength * 1e10))
                 wl_ds.attrs["units"] = "Å"
+
