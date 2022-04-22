@@ -1895,10 +1895,13 @@ class Geometry(object):
             chi = self.chiArray(shape)
             with self._sem:
                 if pol is None or (pol.array.shape != shape):
-                    # TODO: use numexpr for evaluation
-                    cos2_tth = numpy.cos(tth) ** 2
-                    pola = 0.5 * (1.0 + cos2_tth -
-                                  factor * numpy.cos(2.0 * (chi + axis_offset)) * (1.0 - cos2_tth))
+                    if numexpr is not None:
+                        pola = numexpr.evaluate(
+    "0.5 * (1.0 + cos(tth)**2 - factor * cos(2.0 * (chi + axis_offset)) * (1.0 - cos(tth)**2))")
+                    else:
+                        cos2_tth = numpy.cos(tth) ** 2
+                        pola = 0.5 * (1.0 + cos2_tth -
+                                      factor * numpy.cos(2.0 * (chi + axis_offset)) * (1.0 - cos2_tth))
                     pola = pola.astype(numpy.float32)
                     polc = crc32(pola)
                     pol = PolarizationArray(pola, polc)
