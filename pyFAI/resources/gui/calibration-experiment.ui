@@ -13,402 +13,402 @@
   <property name="windowTitle">
    <string>Experiment settings</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
-   <property name="margin">
-    <number>0</number>
-   </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="QFrame" name="_imageHolder">
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
-     </property>
-     <property name="lineWidth">
-      <number>1</number>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QWidget" name="widget" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <property name="margin">
-       <number>0</number>
+     <widget class="QFrame" name="_imageHolder">
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
       </property>
-      <item>
-       <widget class="QGroupBox" name="groupBox_8">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Help</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_12">
-         <item>
-          <widget class="QLabel" name="label_40">
-           <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Define parameters of your experiment.&lt;/p&gt;&lt;p&gt;Calibrant, wavelength, detector, and an image are expected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="title">
-         <string>Experiment settings</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="5" column="0">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Calibrant:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3">
-          <widget class="QLabel" name="_wavelengthUnit">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Å</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Wavelength:</string>
-           </property>
-           <property name="buddy">
-            <cstring>_wavelength</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1" colspan="2">
-          <widget class="QuantityEdit" name="_wavelength">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3">
-          <widget class="QLabel" name="_energyUnit">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>keV</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1" colspan="2">
-          <widget class="CalibrantSelector" name="_calibrant"/>
-         </item>
-         <item row="0" column="1" colspan="2">
-          <widget class="QuantityEdit" name="_energy">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>Energy:</string>
-           </property>
-           <property name="buddy">
-            <cstring>_energy</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="1" colspan="2">
-          <widget class="CalibrantPreview" name="_calibrantPreview" native="true"/>
-         </item>
-        </layout>
-        <zorder>_energy</zorder>
-        <zorder>label_3</zorder>
-        <zorder>_wavelengthUnit</zorder>
-        <zorder>_energyUnit</zorder>
-        <zorder>_wavelength</zorder>
-        <zorder>label_7</zorder>
-        <zorder>label_6</zorder>
-        <zorder>_calibrant</zorder>
-        <zorder>_calibrantPreview</zorder>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_3">
-        <property name="title">
-         <string>Detector</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0">
-         <item row="1" column="0">
-          <widget class="QLabel" name="_detectorFileDescriptionTitle">
-           <property name="toolTip">
-            <string>File describing this detector</string>
-           </property>
-           <property name="text">
-            <string>File:</string>
-           </property>
-           <property name="buddy">
-            <cstring>_image</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>Name:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="DetectorLabel" name="_detectorLabel">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="textInteractionFlags">
-            <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QToolButton" name="_customDetector">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="ElidedLabel" name="_detectorFileDescription">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="_detectorSizeLabel">
-           <property name="toolTip">
-            <string>Detector size without binning</string>
-           </property>
-           <property name="text">
-            <string>Size (h×w):</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLabel" name="_detectorSize">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="2">
-          <widget class="QLabel" name="_detectorSizeUnit">
-           <property name="text">
-            <string>px</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="_detectorPixelSizeLabel">
-           <property name="toolTip">
-            <string>Detector pixel size without binning</string>
-           </property>
-           <property name="text">
-            <string>Pixel size (h×w):</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2">
-          <widget class="QLabel" name="_detectorPixelSizeUnit">
-           <property name="text">
-            <string>µm</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QLabel" name="_detectorPixelSize">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="title">
-         <string>Acquisition</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0">
-         <item row="3" column="1">
-          <widget class="QLabel" name="_error">
-           <property name="styleSheet">
-            <string notr="true">QLabel {color:red}</string>
-           </property>
-           <property name="text">
-            <string>dsdfsddsf</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="LoadImageToolButton" name="_imageLoader">
-           <property name="toolTip">
-            <string>Load an image to calibrate</string>
-           </property>
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Image file:</string>
-           </property>
-           <property name="buddy">
-            <cstring>_image</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="FileEdit" name="_mask">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLabel" name="_imageSizeUnit">
-           <property name="text">
-            <string>px</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_78">
-           <property name="text">
-            <string>Mask file:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2">
-          <widget class="LoadImageToolButton" name="_maskLoader">
-           <property name="toolTip">
-            <string>Load a mask file</string>
-           </property>
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="FileEdit" name="_image">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="_imageSizeLabel">
-           <property name="text">
-            <string>Image size:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="_imageSize">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="_binningLabel">
-           <property name="text">
-            <string>Binning:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLabel" name="_binning">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="_nextStep">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Next &gt;</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+     </widget>
+     <widget class="QWidget" name="widget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="margin" stdset="0">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QGroupBox" name="groupBox_8">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Help</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <item>
+           <widget class="QLabel" name="label_40">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Define parameters of your experiment.&lt;/p&gt;&lt;p&gt;Calibrant, wavelength, detector, and an image are expected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Experiment settings</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Calibrant:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLabel" name="_wavelengthUnit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Å</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Wavelength:</string>
+            </property>
+            <property name="buddy">
+             <cstring>_wavelength</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="2">
+           <widget class="QuantityEdit" name="_wavelength">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLabel" name="_energyUnit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>keV</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1" colspan="2">
+           <widget class="CalibrantSelector" name="_calibrant"/>
+          </item>
+          <item row="0" column="1" colspan="2">
+           <widget class="QuantityEdit" name="_energy">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Energy:</string>
+            </property>
+            <property name="buddy">
+             <cstring>_energy</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1" colspan="2">
+           <widget class="CalibrantPreview" name="_calibrantPreview" native="true"/>
+          </item>
+         </layout>
+         <zorder>_energy</zorder>
+         <zorder>label_3</zorder>
+         <zorder>_wavelengthUnit</zorder>
+         <zorder>_energyUnit</zorder>
+         <zorder>_wavelength</zorder>
+         <zorder>label_7</zorder>
+         <zorder>label_6</zorder>
+         <zorder>_calibrant</zorder>
+         <zorder>_calibrantPreview</zorder>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Detector</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0">
+          <item row="1" column="0">
+           <widget class="QLabel" name="_detectorFileDescriptionTitle">
+            <property name="toolTip">
+             <string>File describing this detector</string>
+            </property>
+            <property name="text">
+             <string>File:</string>
+            </property>
+            <property name="buddy">
+             <cstring>_image</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="DetectorLabel" name="_detectorLabel">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QToolButton" name="_customDetector">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="ElidedLabel" name="_detectorFileDescription">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="_detectorSizeLabel">
+            <property name="toolTip">
+             <string>Detector size without binning</string>
+            </property>
+            <property name="text">
+             <string>Size (h×w):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="_detectorSize">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="_detectorSizeUnit">
+            <property name="text">
+             <string>px</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="_detectorPixelSizeLabel">
+            <property name="toolTip">
+             <string>Detector pixel size without binning</string>
+            </property>
+            <property name="text">
+             <string>Pixel size (h×w):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLabel" name="_detectorPixelSizeUnit">
+            <property name="text">
+             <string>µm</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLabel" name="_detectorPixelSize">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Acquisition</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0">
+          <item row="3" column="1">
+           <widget class="QLabel" name="_error">
+            <property name="styleSheet">
+             <string notr="true">QLabel {color:red}</string>
+            </property>
+            <property name="text">
+             <string>dsdfsddsf</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="LoadImageToolButton" name="_imageLoader">
+            <property name="toolTip">
+             <string>Load an image to calibrate</string>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Image file:</string>
+            </property>
+            <property name="buddy">
+             <cstring>_image</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="FileEdit" name="_mask">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="_imageSizeUnit">
+            <property name="text">
+             <string>px</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_78">
+            <property name="text">
+             <string>Mask file:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="LoadImageToolButton" name="_maskLoader">
+            <property name="toolTip">
+             <string>Load a mask file</string>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="FileEdit" name="_image">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="_imageSizeLabel">
+            <property name="text">
+             <string>Image size:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="_imageSize">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="_binningLabel">
+            <property name="text">
+             <string>Binning:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="_binning">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_nextStep">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Next &gt;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
