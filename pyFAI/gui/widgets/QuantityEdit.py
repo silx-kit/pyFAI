@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "02/05/2022"
 
 import logging
 from silx.gui import qt
@@ -74,6 +74,14 @@ class QuantityEdit(qt.QLineEdit):
                 # None of the available events capture this special copy-paste.
                 self.__wasModified = True
         return qt.QLineEdit.event(self, event)
+
+    def __updateMinimumSizeHint(self, text=None):
+        if text is None:
+            text = self.text()
+        font = self.font()
+        metrics = qt.QFontMetrics(font)
+        width = metrics.width(text + " ") # Extra splace to ensure the full text is visible
+        self.setMinimumWidth(width)
 
     def focusInEvent(self, event):
         self.__previousText = self.text()
@@ -229,6 +237,7 @@ class QuantityEdit(qt.QLineEdit):
             text = validator.toText(value)
         old = self.blockSignals(True)
         self.setText(text)
+        self.__updateMinimumSizeHint(text)
         # For very big numbers, make the begining visible
         self.setCursorPosition(0)
         # Avoid sending further signals
