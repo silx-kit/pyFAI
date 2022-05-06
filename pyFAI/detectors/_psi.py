@@ -34,12 +34,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2021"
+__date__ = "06/05/2022"
 __status__ = "production"
 
 import numpy
 import logging
 from ._common import Detector
+from ._dectris import _Dectris
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
 
@@ -194,6 +195,27 @@ class Jungfrau(Detector):
             p1 = numpy.interp(d1, numpy.arange(self.max_shape[0] + 1), edges1, edges1[0], edges1[-1])
             p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
+
+class Jungfrau4M(_Dectris):
+    """
+    Jungfrau 4M module without sub-module pixel expension applied.
+    """
+    MANUFACTURER = "PSI"
+    MODULE_SIZE = (514, 1030)  # number of pixels per module (y, x)
+    MAX_SHAPE = (2164, 2068)  # max size of the detector
+    MODULE_GAP = (36, 8)
+    PIXEL_SIZE = (75e-6, 75e-6)
+    force_pixel = True
+    aliases = ["Jungfrau 4M"]
+    uniform_pixel = True
+    
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
+            self.module_size = tuple(self.MODULE_SIZE)
+        else:
+            self.module_size = module_size
+        self.offset1 = self.offset2 = None
 
 
 class Jungfrau_16M_cor(Jungfrau):

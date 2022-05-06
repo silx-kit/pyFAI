@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2022"
+__date__ = "06/05/2022"
 __status__ = "production"
 
 import sys
@@ -57,7 +57,7 @@ class Massif(object):
     """
     TARGET_SIZE = 1024
 
-    def __init__(self, data=None, mask=None):
+    def __init__(self, data=None, mask=None, median_prefilter=True):
         """Constructor of the class...
 
         :param data: 2D array or filename (discouraged)
@@ -74,7 +74,16 @@ class Massif(object):
                 logger.error("Unable to understand this type of data %s: %s", data, error)
         self.log_info = True
         """If true, more information is displayed in the logger relative to picking."""
-        self.mask = mask
+        data_mask = numpy.logical_not(numpy.isfinite(self.data))
+        if (data_mask.any() is False):
+            self.mask = mask
+        else:
+            if mask is None:
+                self.mask = data_mask
+            else:
+                self.mask = numpy.logical_or(data_mask, mask)
+
+        self.median_prefilter = median_prefilter
         self._cleaned_data = None
         self._bilin = Bilinear(self.data)
         self._blurred_data = None
@@ -250,6 +259,11 @@ class Massif(object):
 
     @property
     def cleaned_data(self):
+        if self.median_prefilter:
+            data = median_filter(self.data, 3)
+        else:
+            data = self.data
+
         if self.mask is None:
             return self.data
         else:
@@ -257,7 +271,7 @@ class Massif(object):
                 idx = distance_transform_edt(self.mask,
                                              return_distances=False,
                                              return_indices=True)
-                self._cleaned_data = self.data[tuple(idx)]
+                self._cleaned_data = data[tuple(idx)]
             return self._cleaned_data
 
     def get_binned_data(self):
@@ -332,23 +346,3 @@ class Massif(object):
                     self._labeled_massif = unbinning(relabeled, self.binning, False)
                     logger.info("Labeling found %s massifs.", self._number_massif)
         return self._labeled_massif
-
-    @deprecated(reason="switch to pep8 style", replacement="init_valley_size", since_version="0.16.0")
-    def initValleySize(self):
-        self.init_valley_size()
-
-    @deprecated(reason="switch to PEP8 style", replacement="get_median_data", since_version="0.16.0")
-    def getMedianData(self):
-        return self.get_median_data()
-
-    @deprecated(reason="switch to PEP8 style", replacement="get_binned_data", since_version="0.16.0")
-    def getBinnedData(self):
-        return self.get_binned_data()
-
-    @deprecated(reason="switch to PEP8 style", replacement="get_blurred_data", since_version="0.16.0")
-    def getBluredData(self):
-        return self.get_blurred_data()
-
-    @deprecated(reason="switch to PEP8 style", replacement="get_labeled_massif", since_version="0.16.0")
-    def getLabeledMassif(self, pattern=None):
-        return self.get_labeled_massif(pattern)
