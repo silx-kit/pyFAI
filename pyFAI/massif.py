@@ -259,20 +259,24 @@ class Massif(object):
 
     @property
     def cleaned_data(self):
-        if self.median_prefilter:
-            data = median_filter(self.data, 3)
-        else:
-            data = self.data
-
         if self.mask is None:
             return self.data
-        else:
-            if self._cleaned_data is None:
-                idx = distance_transform_edt(self.mask,
-                                             return_distances=False,
-                                             return_indices=True)
-                self._cleaned_data = data[tuple(idx)]
-            return self._cleaned_data
+        if self._cleaned_data is None:
+            data = self.data.copy()
+            if self.median_prefilter:
+                "First stage of cleaning, localy 3x3"
+                data[numpy.where(self.mask)] = numpy.NaN 
+                data = median_filter(data, 3)
+                mask = numpy.logical_not(numpy.isfinite(data))
+            else:
+                mask = self.mask
+                
+            "Second stage of cleaning, further away"
+            idx = distance_transform_edt(mask,
+                                         return_distances=False,
+                                         return_indices=True)
+            self._cleaned_data = data[tuple(idx)]
+        return self._cleaned_data
 
     def get_binned_data(self):
         """
