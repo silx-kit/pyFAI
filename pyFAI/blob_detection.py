@@ -31,14 +31,16 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "06/05/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
+from math import sqrt
 import logging
-logger = logging.getLogger(__name__)
+
 import numpy
+logger = logging.getLogger(__name__)
 try:
     from .ext._convolution import gaussian_filter
 except ImportError:
@@ -60,7 +62,6 @@ except ImportError:
 
 from .ext.bilinear import Bilinear
 
-from math import sqrt
 
 from .utils import binning, is_far_from_group
 
