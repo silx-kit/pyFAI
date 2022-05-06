@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/01/2021"
+__date__ = "05/05/2022"
 
 import logging
 import numpy
@@ -154,8 +154,11 @@ class _PeakSelectionTableView(qt.QTableView):
 
     def sizeHint(self):
         """Size hint while grow according to the content of the view"""
-        rowCount = self.model().rowCount()
         size = qt.QTableView.sizeHint(self)
+        model = self.model()
+        if model is None:
+            return size
+        rowCount = model.rowCount()
         if rowCount <= 0:
             return size
         height = self.horizontalHeader().size().height()
@@ -1103,6 +1106,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         action.triggered.connect(lambda: self.__ringSelection.toggleNewRing())
         action.setShortcut(qt.QKeySequence(qt.Qt.Key_Equal))
         self.addAction(action)
+        
+        super()._initGui()
 
     def __onPlotModeChanged(self, owner):
         # TODO: This condition should not be reached like that

@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/01/2021"
+__date__ = "05/05/2022"
 
 import logging
 import numpy
@@ -926,6 +926,8 @@ class IntegrationTask(AbstractCalibrationTask):
         self._customMethodButton.clicked.connect(self.__customIntegrationMethod)
 
         self._savePoniButton.clicked.connect(self.__saveAsPoni)
+
+        super()._initGui()
 
     def __customIntegrationMethod(self):
         dialog = IntegrationMethodDialog(self)

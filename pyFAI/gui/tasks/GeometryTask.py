@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/08/2021"
+__date__ = "05/05/2022"
 
 import logging
 import numpy
@@ -647,6 +647,7 @@ class GeometryTask(AbstractCalibrationTask):
 
         self.__calibrationState.changed.connect(self.__updateResidual)
         self.__updateResidual()
+        super()._initGui()
 
     def __setDefaultConstraints(self):
         """Apply default contraints imposed by the refinment process"""
