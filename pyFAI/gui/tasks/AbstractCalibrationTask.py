@@ -25,10 +25,12 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "06/05/2022"
 
+import logging  
 from silx.gui import qt
 from silx.gui import icons
+logger = logging.getLogger(__name__)
 
 
 class AbstractCalibrationTask(qt.QWidget):
@@ -51,8 +53,20 @@ class AbstractCalibrationTask(qt.QWidget):
 
     def _initGui(self):
         """Inherite this method to custom the widget"""
-        pass
-
+        self.setupSplitter()
+        
+    def setupSplitter(self):
+        try:
+            splitter = self.splitter
+        except Exception as err:
+            logger.error(f"No splitter in {self.__class__.__name__}: {type(err)} {err}")
+            return
+        full_width = self.size().width() 
+        panel_width = splitter.widget(1).minimumSizeHint().width() 
+        splitter.setSizes([full_width-panel_width, panel_width])
+        splitter.setStretchFactor(1, 0)
+        splitter.setStretchFactor(0, 1)
+        
     def initNextStep(self):
         if hasattr(self, "_nextStep"):
             self._nextStep.clicked.connect(self.nextTask)

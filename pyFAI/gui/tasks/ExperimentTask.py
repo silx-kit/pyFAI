@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/01/2021"
+__date__ = "05/05/2022"
 
 import numpy
 import logging
@@ -91,6 +91,7 @@ class ExperimentTask(AbstractCalibrationTask):
         validator.setAllowEmpty(True)
         self._energy.setValidator(validator)
         self._wavelength.setValidator(validator)
+        super()._initGui()
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
