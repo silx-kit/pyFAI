@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/04/2022"
+__date__ = "10/05/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -42,7 +42,9 @@ from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
 import numpy
+import fabio
 from .. import version
+from ..units import to_unit 
 from .nexus import Nexus, get_isotime, h5py
 
 try:
@@ -54,8 +56,18 @@ except ImportError:
 else:
     cmp = hdf5plugin.Bitshuffle()
 
+def _stack_frames(fimg):
+    """return a stack of images from a single or multiframe fabio object
+    :param fimg: opened fabio image
+    :return: 3d array 
+    """
+    shape = (fimg.nframes,) + fimg.shape
+    stack = numpy.empty(shape, dtype=fimg.dtype)
+    for i, f in enumerate(fimg):
+        stack[i] = f.data
+    return stack
 
-def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None):
+def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None, powder=False):
     """Write the list of spots per frame into a HDF5 file with the Nexus convention
     
     :param filename: name of the file
@@ -65,6 +77,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
     :param source: list of input files
     :param extra: dict with extra metadata
     :param grid: 2-tuple with grid shape and if it was acquired in zigzag mode
+    :param powder: unused 
     :return: None
     """
     assert len(spots)
@@ -137,7 +150,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
                 wl_ds.attrs["units"] = "Å"
 
 
-def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None):
+def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None, powder=None):
     """Write the list of spots per frame into a HDF5 file with the CXI convention
     https://raw.githubusercontent.com/cxidb/CXI/master/cxi_file_format.pdf
     
@@ -148,6 +161,7 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
     :param source: list of input files
     :param extra: dict with extra metadata
     :param grid: unused
+    :param powder: provide the position in radial range to activate the calculation/saving of the pseudo-powder pattern
     :return: None
     """
     assert len(spots)
@@ -155,16 +169,24 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
     nframes = len(spots)
     max_spots = spots_per_frame.max()
     cxi = ai.getCXI() if ai else {}
-
+    detector = None
     with h5py.File(filename, mode="w") as h5:
         h5["cxi_version"] = cxi.get("cxi_version", 100)
+        
         entry = h5.create_group("entry_1")
+        entry.attrs["NX_class"] = "NXentry"
+        h5.attrs["default"] = entry.name
         result = entry.create_group("result_1")
-        result.create_dataset("nPeaks", data=spots_per_frame)
+        result.attrs["NX_class"] = "NXdata"
+        result.attrs["signal"] = "nPeaks"
+        result.create_dataset("nPeaks", data=spots_per_frame).attrs["interpretation"] = "spectrum"
+        
         total_int = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
         xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
         ypos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
         snr = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+        entry.attrs["default"] = result.name
+        
         for i, s in enumerate(spots):
             l = len(s)
             total_int[i,:l] = s["intensity"]
@@ -175,6 +197,83 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
         result.create_dataset("peakXPosRaw", data=xpos, **cmp)
         result.create_dataset("peakYPosRaw", data=ypos, **cmp)
         result.create_dataset("peakSNR", data=snr, **cmp)
-        # if ai:
-        #     detector = result.create_group("detector_1")
-            # TODO: past data from ai, beamline, source, ...
+        process = result.create_group("process_1")
+        process.attrs["NX_class"] = "NXprocess"
+        if extra:
+            process["metadata"] = json.dumps(extra, indent=2)
+            process["metadata"].attrs["type"] = "text/json"
+        process.create_dataset("command", 
+                               data=numpy.array(sys.argv, dtype=h5py.special_dtype(vlen=str)),
+                               ).attrs["hint"] = "argv"
+        process["date"] = get_isotime()
+        process["program"] = "pyFAI"
+        process["version"] = version
+        
+        if powder is not None:
+            unit = to_unit(extra.get("unit", "r_mm"))
+            r1d = powder
+            dr = (r1d[1:] - r1d[:-1]).mean()
+            rng = [r1d[0]-dr*0.5, r1d[-1]+dr*0.5]
+            
+            r2d = ai.array_from_unit(typ="center", unit=unit, scale=True)
+            from ..ext.bilinear import Bilinear
+            bl = Bilinear(r2d)
+            histo = None
+            for s in spots:
+                r = bl.many((s["pos0"],s["pos1"]))
+                res = numpy.histogram(r, bins=len(r1d), range=rng, weights=s["intensity"])
+                if histo is None:
+                    histo = res[0]
+                else:
+                    histo += res[0]
+            
+            powder = entry.create_group("powder_1")
+            powder.attrs["signal"] = "I"
+            powder.attrs["axes"] = unit.name
+            powder.attrs["NX_class"] = "NXdata"
+            powder[unit.name] = r1d
+            powder[unit.name].attrs["long_name"] = unit.label
+            powder['I'] = histo
+        
+        if beamline:
+            instrument = entry.create_group("instrument_1")
+            instrument.attrs["NX_class"] = "NXinstrument"
+            instrument["name"] = beamline
+            if ai:
+                detector = instrument.create_group("detector_1")
+                detector.attrs["NX_class"] = "NXdetector"
+                detector["description"] = str(ai.detector.aliases[0] if ai.detector.aliases else ai.detector.__class__.__name__)
+                detector["distance"] = ai.dist
+                detector["distance"].attrs["units"] = "m"
+                detector.create_dataset("mask", data=ai.detector.mask, **cmp)
+                detector["x_pixel_size"] = ai.detector.pixel2
+                detector["y_pixel_size"] = ai.detector.pixel1
+                detector["x_pixel_size"].attrs["units"] = "m"
+                detector["y_pixel_size"].attrs["units"] = "m"
+                detector.create_dataset("corner_position", 
+                                        data=ai.position_array(corners=True, dtype=numpy.float32, use_cython=True, do_parallax=False)[:,:,0,:],
+                                        **cmp).attrs["order"] = "zyx"#                                                                    ^ only first pixel !
+                if ai.wavelength is not None:
+                    beam = instrument.create_group("beam_1")
+                    beam.attrs["NX_class"] = "NXbeam"
+                    beam["incident_wavelength"] = ai.wavelength
+                    beam["incident_wavelength"].attrs["units"] = "m"  
+        if source:
+            for idx, file_src in enumerate(source):
+                datagrp = entry.create_group(f"data_{idx+1}")
+                datagrp.attrs["NX_class"] = "NXdata"
+                datagrp.attrs["signal"] = "data"
+                fimg = fabio.open(file_src)
+                try: 
+                    lst_ds = fimg.dataset
+                except Exception as err:
+                    logger.error(f"file {file_src} of type {type(fimg)} has not dataset attribute, skipping ({type(err)}: {err})")
+                    datagrp.create_dataset("data", data=_stack_frames(fimg), **cmp).attrs["interpretation"] = "image"
+                else:                    
+                    if len(lst_ds) == 1:
+                        datagrp["data"] = h5py.ExternalLink(file_src, lst_ds[0].name)
+                        # datagrp[f"data"].attrs["interpretation"] = "image"
+                    else:
+                        for j, ds in enumerate(fimg.dataset):
+                            datagrp[f"data_{j+1}"] = h5py.ExternalLink(file_src, ds.name)
+                            # datagrp[f"data_{j+1}"].attrs["interpretation"] = "image"

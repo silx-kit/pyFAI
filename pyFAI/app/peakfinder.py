@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/04/2022"
+__date__ = "10/05/2022"
 __status__ = "production"
 
 import os
@@ -71,7 +71,7 @@ if ocl is None:
 else:
     from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
-from ..io.spots import save_spots_nexus
+from ..io.spots import save_spots_nexus, save_spots_cxi
 # Define few constants:
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
@@ -115,9 +115,12 @@ def parse():
 #                        help="show the list of available formats and exit")
     group.add_argument("-o", "--output", default='spots.h5', type=str,
                        help="Output filename")
+    group.add_argument("--format", default='cxi', type=str,
+                       help="Output file format, can be `nexus` (former default) or `cxi` (current default)")
     group.add_argument("--save-source", action='store_true', dest="save_source", default=False,
                        help="Save the path for all source files")
-
+    group.add_argument("--save-powder", action='store_true', dest="save_powder", default=False,
+                       help="Save the pseudo powder diffraction pattern generated from all source files (only peaks)")
     group = parser.add_argument_group("Scan options")
     group.add_argument("--grid-size", nargs=2, type=int, dest="grid_size", default=None,
                        help="Grid along which the data was acquired, disabled by default")
@@ -165,8 +168,8 @@ def parse():
     group = parser.add_argument_group("Sigma-clipping options")
     group.add_argument("--bins", type=int, default=800,
                        help="Number of radial bins to consider (800 by default)")
-    group.add_argument("--unit", type=str, default="r_m",
-                       help="radial unit to perform the calculation (r_m by default)")
+    group.add_argument("--unit", type=str, default="q_A^-1",
+                       help="radial unit to perform the calculation (q_Å^1 by default)")
     group.add_argument("--cycle", type=int, default=5,
                        help="Number of cycles for the sigma-clipping (5 by default)")
     group.add_argument("--cutoff-clip", dest="cutoff_clip", type=float, default=0.0,
@@ -268,7 +271,7 @@ def process(options):
                         empty=options.dummy,
                         unit=unit,
                         bin_centers=integrator.bin_centers,
-                        radius=ai._cached_array[unit.name.split("_")[0] + "_center"],
+                        radius=ai.array_from_unit(typ="center", unit=unit, scale=False),
                         mask=mask,
                         ctx=ctx,
                         profile=options.profile,
@@ -309,9 +312,9 @@ def process(options):
                                      **parameters)
             frames.append(current)
             if pb:
-                pb.update(cnt, message="%s: %i pixels" % (os.path.basename(fabioimage.filename), len(current)))
+                pb.update(cnt, message=f"{os.path.basename(fabioimage.filename)}: {len(current)} peaks")
             else:
-                print("%s frame #%d, found %d intense pixels" % (fabioimage.filename, fabioimage.currentframe, len(current)))
+                print(f"{fabioimage.filename} frame #{fabioimage.currentframe}, found {len(current)} peaks")
             cnt += 1
     t1 = time.perf_counter()
     if pb:
@@ -321,7 +324,7 @@ def process(options):
         print("Saving: " + options.output)
     logger.debug("Save data")
 
-    parameters["unit"] = unit.name.split("_")[0]
+    parameters["unit"] = unit.name
     parameters["error_model"] = options.error_model
 
     if options.polarization is not None:
@@ -334,14 +337,18 @@ def process(options):
         parameters["correctSolidAngle"] = True
     if options.mask is not None:
         parameters["mask"] = True
-
-    save_spots_nexus(options.output,
-                     frames,
-                     beamline=options.beamline,
-                     ai=ai,
-                     source=options.images if options.save_source else None,
-                     extra=parameters,
-                     grid=(options.grid_size, options.zig_zag))
+    if options.format.lower() == "nexus":
+        save_spots = save_spots_nexus
+    else:
+        save_spots = save_spots_cxi
+    save_spots(options.output,
+              frames,
+              beamline=options.beamline,
+              ai=ai,
+              source=options.images if options.save_source else None,
+              extra=parameters,
+              grid=(options.grid_size, options.zig_zag),
+              powder=integrator.bin_centers*unit.scale if options.save_powder else None)
 
     if options.profile:
         try:
