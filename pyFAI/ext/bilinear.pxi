@@ -80,6 +80,25 @@ cdef class Bilinear:
             res = self._f_cy(d0, d1)
         return -res
 
+    def many(self, x):
+        """Call the bilinear interpolator on many points...
+        
+        :param x: array of points of shape (2, n)
+        :return: array of shape n
+        """
+        assert len(x) >= 2, "x has size 2 (at least)"
+        cdef:
+            float[:] x0 = numpy.ascontiguousarray(x[0], numpy.float32)
+            float[:] x1 = numpy.ascontiguousarray(x[1], numpy.float32)
+            int i, size
+            float[:] res             
+        size = min(x0.shape[0], x1.shape[0])
+        res = numpy.empty(size, dtype=numpy.float32)
+        with nogil:
+            for i in range(size):
+                res[i] = self._f_cy(x0[i], x1[i])
+        return res
+
     def __call__(self, x):
         "Function f((y,x)) where f is a continuous function "
         cdef:

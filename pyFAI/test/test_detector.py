@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/02/2022"
+__date__ = "22/04/2022"
 
 import os
 import shutil
@@ -216,7 +216,7 @@ class TestDetector(unittest.TestCase):
 
         # check Pilatus with displacement maps
         # check spline
-        # check SPD sisplacement
+        # check SPD displacement
 
         shutil.rmtree(tmpdir)
 
@@ -353,20 +353,21 @@ class TestDetector(unittest.TestCase):
         from ..calibrant import ALL_CALIBRANTS
         from ..azimuthalIntegrator import AzimuthalIntegrator
         AgBh = ALL_CALIBRANTS("AgBh")
-        AgBh.wavelength=1e-10
+        AgBh.wavelength = 1e-10
         ai = AzimuthalIntegrator(detector=pix, wavelength=wl)
         img = AgBh.fake_calibration_image(ai, Imax=10000, W=0.00001)
-        
+
         ai.integrate1d(img, 500, method=("no", "histogram", "cython"))
         ai.integrate2d(img, 500, method=("no", "histogram", "cython"))
-        ai.integrate1d(img, 500, method=("bbox", "histogram", "cython"))        
+        ai.integrate1d(img, 500, method=("bbox", "histogram", "cython"))
         ai.integrate2d(img, 500, method=("bbox", "histogram", "cython"))
         try:
-            ai.integrate1d(img, 500, method=("full", "histogram", "cython"))        
+            ai.integrate1d(img, 500, method=("full", "histogram", "cython"))
             ai.integrate2d(img, 500, method=("full", "histogram", "cython"))
         except Exception as err:
             self.skipTest(f"SplitPixel does not work (yet) with hexagonal pixels: {err}")
-        
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
