@@ -240,9 +240,11 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
             instrument.attrs["NX_class"] = "NXinstrument"
             instrument["name"] = beamline
             if ai:
+                
                 detector = instrument.create_group("detector_1")
                 detector.attrs["NX_class"] = "NXdetector"
                 detector["description"] = str(ai.detector.aliases[0] if ai.detector.aliases else ai.detector.__class__.__name__)
+                
                 detector["distance"] = ai.dist
                 detector["distance"].attrs["units"] = "m"
                 detector.create_dataset("mask", data=ai.detector.mask, **cmp)
@@ -250,9 +252,16 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
                 detector["y_pixel_size"] = ai.detector.pixel1
                 detector["x_pixel_size"].attrs["units"] = "m"
                 detector["y_pixel_size"].attrs["units"] = "m"
-                detector.create_dataset("corner_position", 
-                                        data=ai.position_array(corners=True, dtype=numpy.float32, use_cython=True, do_parallax=False)[:,:,0,:],
-                                        **cmp).attrs["order"] = "zyx"#                                                                    ^ only first pixel !
+                #Probably useless: wastes disk space for nothing. 
+                # detector.create_dataset("corner_position", 
+                #                         data=ai.position_array(corners=True, dtype=numpy.float32, use_cython=True, do_parallax=False)[:,:,0,:],
+                #                         **cmp).attrs["order"] = "zyx"#                                                                    ^ only first corner !
+                ai_cxi = ai.getCXI()
+                geo_cxi = ai_cxi["detector_1"]["geometry_1"] 
+                geo = detector.create_group("geometry_1")
+                geo.attrs["NX_class"] = "NXgeometry"
+                geo["translation"] = geo_cxi["translation"] 
+                geo["orientation"] = geo_cxi["orientation"]
                 if ai.wavelength is not None:
                     beam = instrument.create_group("beam_1")
                     beam.attrs["NX_class"] = "NXbeam"
