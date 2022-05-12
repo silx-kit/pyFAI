@@ -83,7 +83,7 @@ cdef class Bilinear:
     def many(self, x):
         """Call the bilinear interpolator on many points...
         
-        :param x: array of points of shape (2, n)
+        :param x: array of points of shape (2, n), like (array_of_y, array_of_x)
         :return: array of shape n
         """
         assert len(x) >= 2, "x has size 2 (at least)"
@@ -97,7 +97,7 @@ cdef class Bilinear:
         with nogil:
             for i in range(size):
                 res[i] = self._f_cy(x0[i], x1[i])
-        return res
+        return numpy.asarray(res)
 
     def __call__(self, x):
         "Function f((y,x)) where f is a continuous function "
