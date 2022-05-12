@@ -24,11 +24,10 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
-
+__date__ = "12/05/2022"
 
 import numpy
-import collections
+import collections.abc
 
 from pyFAI import units
 
@@ -41,7 +40,7 @@ def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
     """
     if isinstance(twoTheta, numpy.ndarray):
         pass
-    elif isinstance(twoTheta, collections.Iterable):
+    elif isinstance(twoTheta, collections.abc.Iterable):
         twoTheta = numpy.array(twoTheta)
 
     if unit == units.TTH_RAD:
@@ -73,7 +72,7 @@ def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
 def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
     if isinstance(twoTheta, numpy.ndarray):
         pass
-    elif isinstance(twoTheta, collections.Iterable):
+    elif isinstance(twoTheta, collections.abc.Iterable):
         twoTheta = numpy.array(twoTheta)
 
     if unit == units.TTH_DEG:
