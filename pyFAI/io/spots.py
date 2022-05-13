@@ -123,10 +123,10 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
         sparsify_grp["sequence_index"] = 1
         sparsify_grp["version"] = version
         sparsify_grp["date"] = get_isotime()
-        sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, h5py.string_dtype("utf8"))).attrs["help"] = "Command line arguments"
+        sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, dtype=h5py.special_dtype(vlen=str))).attrs["help"] = "Command line arguments"
         sparsify_grp.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
         if source is not None:
-            sparsify_grp.create_dataset("source", data=numpy.array(source, h5py.string_dtype("utf8")))
+            sparsify_grp.create_dataset("source", data=numpy.array(source, dtype=h5py.special_dtype(vlen=str)))
         if ai is not None:
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")
             config_grp["type"] = "text/json"
