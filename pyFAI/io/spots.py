@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2022"
+__date__ = "13/05/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -233,6 +233,11 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
             powder.attrs["signal"] = "I"
             powder.attrs["NX_class"] = "NXdata"
             powder['I'] = histo
+
+            powder.attrs["axes"] = unit.name
+            powder[unit.name] = r1d
+            powder[unit.name].attrs["long_name"] = unit.label
+
             if unit.name.startswith("q"):
                 name = unit.name.replace("q", "d").replace("^-1", "")
                 r1d = numpy.pi * 2.0 / r1d
@@ -240,12 +245,8 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
                 if unit == "A":
                     unit = "$\\AA$"
                 label = f"$d$-spacing ({unit})"
-            else:
-                name = unit.name
-                label = unit.label
-            powder.attrs["axes"] = name
-            powder[name] = r1d
-            powder[name].attrs["long_name"] = label
+                powder[name] = r1d
+                powder[name].attrs["long_name"] = label
 
         if beamline:
             instrument = entry.create_group("instrument_1")
