@@ -37,7 +37,7 @@ coordinate.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "30/04/2020"
+__date__ = "16/05/2022"
 __copyright__ = "2018-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -103,50 +103,93 @@ cdef class InvertGeometry:
         self.radius = None
         self.angle = None
 
+    cdef bint _call(self, position_t rad, position_t ang, bint refined, position_t[::1] result) nogil:
+        """Calculate the pixel coordinate leading to the value (rad, angle)
+
+        :param rad: radial value
+        :param ang: angular value
+        :param refined: if True: use linear interpolation, else provide nearest pixel
+        :param result: [p0, p1]: pixel coordinates, output parameter
+        :return 0 if properly interpolated, 1 if failed 
+        """
+        cdef:
+            int id0, id1, best0, best1, 
+            bint err_code=0
+            position_t cost, min_cost, gr0, ga0, gr1, ga1, cor0, cor1, target_ang, target_rad, det
+
+        best0 = 0
+        best1 = 0
+        cor0 = 0.0 
+        cor1 = 0.0
+        cost = self.ang_scale * (self.angle[0, 0] - ang) ** 2 \
+             + self.rad_scale * (self.radius[0, 0] - rad) ** 2
+        min_cost = cost
+        for id0 in range(self.dim0):
+            for id1 in range(self.dim1):
+                cost = self.ang_scale * (self.angle[id0, id1] - ang) ** 2 \
+                     + self.rad_scale * (self.radius[id0, id1] - rad) ** 2
+                if cost < min_cost:
+                    min_cost = cost
+                    best0 = id0
+                    best1 = id1
+        if refined and \
+                (best0 > 0) and (best0 < self.dim0 - 1) and\
+                (best1 > 0) and (best1 < self.dim1 - 1):
+
+            # First order Taylor expansion
+            gr0 = 0.5 * (self.radius[best0 + 1, best1] - self.radius[best0 - 1, best1])
+            ga0 = 0.5 * (self.angle[best0 + 1, best1] - self.angle[best0 - 1, best1])
+
+            gr1 = 0.5 * (self.radius[best0, best1 + 1] - self.radius[best0, best1 - 1])
+            ga1 = 0.5 * (self.angle[best0, best1 + 1] - self.angle[best0, best1 - 1])
+            target_ang = ang - self.angle[best0, best1]
+            target_rad = rad - self.radius[best0, best1]
+
+            # inversion of the matrix
+            det = ga1 * gr0 - ga0 * gr1
+            if det == 0.0:
+                errcode = 1
+                with gil:
+                    logger.info("Impossible to invert the matrix")
+            else:
+                cor0 = (target_rad * ga1 - target_ang * gr1) / det
+                cor1 = (-target_rad * ga0 + target_ang * gr0) / det
+        result[0] = best0 + cor0
+        result[1] = best1 + cor1
+
     def __call__(self, position_t rad, position_t ang, bint refined=True):
         """Calculate the pixel coordinate leading to the value (rad, angle)
 
         :param rad: radial value
         :param ang: angular value
         :param refined: if True: use linear interpolation, else provide nearest pixel
-        :return p0, p1: pixel coordinates
+        :return: [p0, p1]: pixel coordinates(yx order)
         """
+
         cdef:
-            int id0, id1, best0, best1
-            position_t cost, min_cost, gr0, ga0, gr1, ga1, cor0, cor1, target_ang, target_rad, det
+            position_t[::1] res = numpy.empty(2, dtype=position_d)
         with nogil:
-            best0 = best1 = 0
-            cor0 = cor1 = 0.0
-            cost = self.ang_scale * (self.angle[0, 0] - ang) ** 2 \
-                 + self.rad_scale * (self.radius[0, 0] - rad) ** 2
-            min_cost = cost
-            for id0 in range(self.dim0):
-                for id1 in range(self.dim1):
-                    cost = self.ang_scale * (self.angle[id0, id1] - ang) ** 2 \
-                         + self.rad_scale * (self.radius[id0, id1] - rad) ** 2
-                    if cost < min_cost:
-                        min_cost = cost
-                        best0 = id0
-                        best1 = id1
-            if refined and \
-                    (best0 > 0) and (best0 < self.dim0 - 1) and\
-                    (best1 > 0) and (best1 < self.dim1 - 1):
-
-                # First order Taylor expansion
-                gr0 = 0.5 * (self.radius[best0 + 1, best1] - self.radius[best0 - 1, best1])
-                ga0 = 0.5 * (self.angle[best0 + 1, best1] - self.angle[best0 - 1, best1])
-
-                gr1 = 0.5 * (self.radius[best0, best1 + 1] - self.radius[best0, best1 - 1])
-                ga1 = 0.5 * (self.angle[best0, best1 + 1] - self.angle[best0, best1 - 1])
-                target_ang = ang - self.angle[best0, best1]
-                target_rad = rad - self.radius[best0, best1]
-
-                # inversion of the matrix
-                det = ga1 * gr0 - ga0 * gr1
-                if det == 0.0:
-                    with gil:
-                        logger.info("Impossible to invert the matrix")
-                else:
-                    cor0 = (target_rad * ga1 - target_ang * gr1) / det
-                    cor1 = (-target_rad * ga0 + target_ang * gr0) / det
-        return (best0 + cor0, best1 + cor1)
+            self._call(rad, ang, refined, res)
+        return res[0], res[1]
+    
+    
+    def many(self, radial, azimuthal, bint refined=True):
+        """Interpolate many points for the ...
+        
+        :param radial: array of radial positions
+        :param azimuthal: array of azimuthal positions, same shape as radial
+        :param refined: if True: use linear interpolation, else provide nearest pixel
+        :return: array of shape (n,2) with coordinated (y, x)
+        """
+        assert radial.shape == azimuthal.shape, "shape matches"
+        cdef:
+            position_t[::1] rad = numpy.ascontiguousarray(radial, position_d).ravel()
+            position_t[::1] azim = numpy.ascontiguousarray(azimuthal, position_d).ravel()
+            int i, size = radial.size 
+            position_t[:, ::1] res             
+        size = min(rad.shape[0], azim.shape[0])
+        res = numpy.empty((size, 2), dtype=position_d)
+        with nogil:
+            for i in range(size):
+                self._call(rad[i], azim[i], refined, res[i])
+        return numpy.asarray(res).reshape(radial.shape+(2,))
