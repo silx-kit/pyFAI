@@ -88,6 +88,7 @@ class JupyCalibration(AbstractCalibration):
                                      calibrant=calibrant)
         self.preprocess()
         self.interactive = False
+        self.max_iter = 10 # 10 outer loop iteration
         self.fixed = ["wavelength", "rot3"]
         self.peakPicker.cb_refine = self.set_data
 
