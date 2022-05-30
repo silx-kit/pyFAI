@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "16/05/2022"
 
 import unittest
 import numpy
@@ -74,6 +74,12 @@ class TestInvertGeometry(unittest.TestCase):
         self.assertEqual(ig(r, chi, False), (t0, t1), "without precision")
         self.assertLess(abs(numpy.array(ig(r, chi, True)) - [t0, t1 + eps]).max(),
                         1e-3, "Approximate with precision")
+        # rest several points
+        r = numpy.linspace(self.r[t0, t1], self.r[t0 + 1, t1], 10)
+        chi = numpy.linspace(self.chi[t0, t1], self.chi[t0 + 1, t1], 10)
+        res = ig.many(r, chi, True)
+        self.assertEqual(tuple(res[0]), (t0, t1), "start point")
+        self.assertEqual(tuple(res[-1]), (t0 + 1, t1), "end point")
 
 
 def suite():
