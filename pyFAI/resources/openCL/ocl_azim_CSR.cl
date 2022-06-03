@@ -429,7 +429,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
- * @param error_model   set to 1 to estimate the variance from the azimuthal sector, or 0 to use a Poisson-like model        
+ * @param error_model 0 for Poisson like, 1 variance from the azimuthal sector, (2 for hybrid?)        
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
  *
@@ -728,7 +728,7 @@ csr_integrate4(  const   global  float4  *weights,
     int bin_num = get_group_id(0);
     local float8 shared[WORKGROUP_SIZE];
     if (bin_num<nbins){
-        float8 result = CSRxVec4(weights, coefs, indices, indptr, azimuthal_variance, shared);
+        float8 result = CSRxVec4(weights, coefs, indices, indptr, error_model, shared);
         if (get_local_id(0)==0) {
             summed[bin_num] = result;
             if (result.s4 > 0.0f) {
@@ -821,6 +821,7 @@ csr_sigma_clip4(          global  float4  *data4,
     int wg = get_local_size(0);
     float aver, std, sem;
     int cnt, nbpix;
+    char curr_error_model;
     volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
 
@@ -829,10 +830,18 @@ csr_sigma_clip4(          global  float4  *data4,
     // 3 is the smallest integer above sqrt(2pi) -> math domain error  
     nbpix = max(3, indptr[bin_num + 1] - indptr[bin_num]);
     
+    // special case: no cycle and hybrid mode, should be best handled at host side
+    if ((cycle==0) && (error_model==2)){
+        curr_error_model = 0;
+    }
+    else{
+        curr_error_model = error_model;
+    }
+    
     // first calculation of azimuthal integration to initialize aver & std
     
-    float8 result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, error_model):
-                            CSRxVec4(data4, coefs, indices, indptr, error_model, shared8));
+    float8 result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
+                            CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
 
     if (result.s4 > 0.0f){
         aver = result.s0 / result.s4;
@@ -856,9 +865,11 @@ csr_sigma_clip4(          global  float4  *data4,
             break;
 
         nbpix = max(3, nbpix - cnt);
-        
-        result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, error_model):
-                         CSRxVec4(data4, coefs, indices, indptr, error_model, shared8));
+        if ((cycle==i+1) && (error_model==2)){
+                curr_error_model = 0;
+        }
+        result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
+                         CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
 
         if (result.s4 > 0.0f) {
             aver = result.s0 / result.s4;
