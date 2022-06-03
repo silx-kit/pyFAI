@@ -318,20 +318,30 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             do_absorption = numpy.int8(0)
         kw_corr["do_absorption"] = do_absorption
 
+        kw_int = self.cl_kernel_args["csr_sigma_clip4"]
         if error_model.startswith("poisson"):
             kw_corr["poissonian"] = numpy.int8(1)
+            kw_int["error_model"] = numpy.int8(0)
+        elif error_model.startswith("azim"):
+            kw_corr["poissonian"] = numpy.int8(0)
+            kw_int["error_model"] = numpy.int8(1)
+        elif error_model.startswith("hybrid"):
+            kw_corr["poissonian"] = numpy.int8(1)
+            kw_int["error_model"] = numpy.int8(2)
+        elif variance is None:
+            logger.error("Unsupported error model and no variance provided: expect garbage as output!")
         else:
             kw_corr["poissonian"] = numpy.int8(0)
+            kw_int["error_model"] = numpy.int8(0)
+
         wg = max(self.workgroup_size["corrections4"])
         wdim_data = (self.size + wg - 1) & ~(wg - 1),
         ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
         events.append(EventDescription("corrections", ev))
 
         # Prepare sigma-clipping
-        kw_int = self.cl_kernel_args["csr_sigma_clip4"]
         kw_int["cutoff"] = numpy.float32(cutoff_clip)
         kw_int["cycle"] = numpy.int32(cycle)
-        kw_int["error_model"] = numpy.int8(error_model.startswith("azim"))
 
         wg_min = min(self.workgroup_size["csr_sigma_clip4"])
         wdim_bins = (self.bins * wg_min),
@@ -342,7 +352,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset2))
 
-        # Prepare picking
+        # Prepare peak-picking
         kw_proj = self.cl_kernel_args["find_peaks"]
         kw_proj["cutoff"] = numpy.float32(cutoff_pick)
         kw_proj["noise"] = numpy.float32(noise)
@@ -366,60 +376,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             self.events += events
         return cnt[0]
 
-    def count(self, data, dark=None, dummy=None, delta_dummy=None,
-               variance=None, dark_variance=None,
-               flat=None, solidangle=None, polarization=None, absorption=None,
-               dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-               polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-               safe=True, error_model=None,
-               normalization_factor=1.0,
-               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
-               radial_range=None):
-        """
-        Count the number of peaks by:
-        * sigma_clipping within a radial bin to measure the mean and the deviation of the background
-        * reconstruct the background in 2D
-        * count the number of peaks above mean + cutoff*sigma
-
-        :param data: 2D array with the signal
-        :param dark: array of same shape as data for pre-processing
-        :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
-        :param variance: array of same shape as data for pre-processing
-        :param dark_variance: array of same shape as data for pre-processing
-        :param flat: array of same shape as data for pre-processing
-        :param solidangle: array of same shape as data for pre-processing
-        :param polarization: array of same shape as data for pre-processing
-        :param dark_checksum: CRC32 checksum of the given array
-        :param flat_checksum: CRC32 checksum of the given array
-        :param solidangle_checksum: CRC32 checksum of the given array
-        :param polarization_checksum: CRC32 checksum of the given array
-        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
-        :param normalization_factor: divide raw signal by this value
-        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping.
-                   Values of 4-5 are quite common.
-                   The minimum value is obtained from Chauvenet criterion: sqrt(2ln(n/sqrt(2pi)))
-                   where n is the number of pixel in the bin, usally around 2 to 3.
-        :param cycle: perform at maximum this number of cycles. 5 is common.
-        :param noise: minimum meaningful signal. Fixed threshold for picking
-        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
-        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
-        :return: number of pixel of high intensity found
-        """
-        if isinstance(error_model, str):
-            error_model = error_model.lower()
-        else:
-            if variance is None:
-                logger.warning("Nor variance, nor error-model is provided ... expect garbage-out")
-            error_model = ""
-        with self.sem:
-            count = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
-                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
-                                safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
-        return count
-
-    def _peak_finder(self, data, dark=None, dummy=None, delta_dummy=None,
+    def _sparsify(self, data, dark=None, dummy=None, delta_dummy=None,
                      variance=None, dark_variance=None,
                      flat=None, solidangle=None, polarization=None, absorption=None,
                      dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
@@ -461,111 +418,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                 EventDescription("copy D->H peak_intensity", ev2)]
         return indexes, signal
 
-    def sparsify(self, data, dark=None, dummy=None, delta_dummy=None,
-                 variance=None, dark_variance=None,
-                 flat=None, solidangle=None, polarization=None, absorption=None,
-                 dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-                 polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-                 safe=True, error_model=None,
-                 normalization_factor=1.0,
-                 cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
-                 radial_range=None):
-        """
-        Perform a sigma-clipping iterative filter within each along each row.
-        see the doc of scipy.stats.sigmaclip for more descriptions.
-
-        If the error model is "azimuthal": the variance is the variance within a bin,
-        which is refined at each iteration, can be costly !
-
-        Else, the error is propagated according to:
-
-        .. math::
-
-            signal = (raw - dark)
-            variance = variance + dark_variance
-            normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
-            count = number of pixel contributing
-
-        Integration is performed using the CSR representation of the look-up table on all
-        arrays: signal, variance, normalization and count
-
-        :param dark: array of same shape as data for pre-processing
-        :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
-        :param variance: array of same shape as data for pre-processing
-        :param dark_variance: array of same shape as data for pre-processing
-        :param flat: array of same shape as data for pre-processing
-        :param solidangle: array of same shape as data for pre-processing
-        :param polarization: array of same shape as data for pre-processing
-        :param dark_checksum: CRC32 checksum of the given array
-        :param flat_checksum: CRC32 checksum of the given array
-        :param solidangle_checksum: CRC32 checksum of the given array
-        :param polarization_checksum: CRC32 checksum of the given array
-        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
-        :param normalization_factor: divide raw signal by this value
-        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
-        :param cycle: perform at maximum this number of cycles. 5 is common.
-        :param noise: minimum meaningful signal. Fixed threshold for picking
-        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
-        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
-        :return: SparseFrame object, see `intensity`, `x` and `y` properties
-
-        """
-        if isinstance(error_model, str):
-            error_model = error_model.lower()
-        else:
-            if variance is None:
-                logger.warning("Nor variance, nor error-model is provided ... expect garbage-out")
-            error_model = ""
-        with self.sem:
-            indexes, values = self._peak_finder(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
-                                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
-                                                safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
-            background_avg = numpy.zeros(self.bins, dtype=numpy.float32)
-            background_std = numpy.zeros(self.bins, dtype=numpy.float32)
-            ev1 = pyopencl.enqueue_copy(self.queue, background_avg, self.cl_mem["averint"])
-            ev2 = pyopencl.enqueue_copy(self.queue, background_std, self.cl_mem["stderr"])
-        if self.profile:
-            self.events += [EventDescription("copy D->H background_avg", ev1),
-                            EventDescription("copy D->H background_std", ev2)]
-
-        result = SparseFrame(indexes, values)
-        result._shape = data.shape
-        result._dtype = data.dtype
-        result._compute_engine = self.__class__.__name__
-        result._mask = self.radius2d
-        result._cutoff = cutoff_pick
-        result._noise = noise
-        result._radius = self.bin_centers
-        result._background_avg = background_avg
-        result._background_std = background_std
-        result._unit = self.unit
-        result._has_dark_correction = dark is not None
-        result._has_flat_correction = flat is not None
-        result._normalization_factor = normalization_factor
-        result._has_polarization_correction = polarization is not None
-        result._has_solidangle_correction = solidangle is not None
-        result._has_absorption_correction = absorption is not None
-        result._metadata = None
-        result._method = "sparsify"
-        result._method_called = None
-        result._background_cycle = cycle
-        result._radial_range = radial_range
-        result._dummy = dummy
-        # result.delta_dummy = delta_dummy
-
-        return result
-
-    def _count8(self, data, dark=None, dummy=None, delta_dummy=None,
-               variance=None, dark_variance=None,
-               flat=None, solidangle=None, polarization=None, absorption=None,
-               dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-               polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-               safe=True, error_model=None,
-               normalization_factor=1.0,
-               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
-               radial_range=None, patch_size=3, connected=3):
+    def _count_peak(self, data, dark=None, dummy=None, delta_dummy=None,
+                    variance=None, dark_variance=None,
+                    flat=None, solidangle=None, polarization=None, absorption=None,
+                    dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                    polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+                    safe=True, error_model=None,
+                    normalization_factor=1.0,
+                    cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_peak=3.0,
+                    radial_range=None, patch_size=3, connected=3):
         """
         Count the number of peaks by:
         * sigma_clipping within a radial bin to measure the mean and the deviation of the background
@@ -593,7 +454,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param noise: minimum meaningful signal. Fixed threshold for picking
-        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param cutoff_peak: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
         :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 
         :param connected: number of pixels above threshold in local patch
@@ -601,7 +462,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         """
         events = []
         self.send_buffer(data, "image")
-        hw = patch_size // 2  # Half width of the patch
+
         wg = max(self.workgroup_size["memset_ng"])
         wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
         memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
@@ -723,13 +584,28 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         # now perform the calc_from_1d on the device and count the number of pixels
         memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset2))
+        if self.profile:
+            self.events += events
+        return self._peak_picking(data, noise, cutoff_peak, radial_range, patch_size, connected)
 
-        # Prepare picking
+    def _peak_picking(self, data, noise, cutoff_peak, radial_range=None, patch_size=3, connected=3):
+        """This calls only the peak-picking kernel, unlocked
+
+        :param data: input 2d image 
+        :param noise: minimum meaningful signal. Fixed threshold for picking
+        :param cutoff_peak: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
+        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 
+        :param connected: number of pixels above threshold in local patch
+        :return: number of pixel of high intensity found
+        """
+        events = []
+        # Prepare for picking peaks
         kw_proj = self.cl_kernel_args["peakfinder8"]
         kw_proj["height"] = numpy.int32(data.shape[0])
         kw_proj["width"] = numpy.int32(data.shape[1])
         kw_proj["connected"] = numpy.int32(connected)
-        kw_proj["cutoff"] = numpy.float32(cutoff_pick)
+        kw_proj["cutoff"] = numpy.float32(cutoff_peak)
         kw_proj["noise"] = numpy.float32(noise)
         if radial_range is not None:
             kw_proj["radius_min"] = numpy.float32(min(radial_range))
@@ -755,6 +631,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         wdim_data = (data.shape[0] + wg0 - 1) & ~(wg0 - 1), (data.shape[1] + wg1 - 1) & ~(wg1 - 1)
         # allocate local memory: we store 4 bytes but at most 1 pixel out of 4 can be a peak
 
+        hw = patch_size // 2  # Half width of the patch
         buffer_size = int(math.ceil(wg * 4 / ((1 + hw) * min(wg0, 1 + hw))))
         kw_proj["local_highidx"] = pyopencl.LocalMemory(1 * buffer_size)
         kw_proj["local_peaks"] = pyopencl.LocalMemory(4 * buffer_size)
@@ -771,6 +648,160 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         if self.profile:
             self.events += events
         return cnt[0]
+
+#==================================================
+#                Start of the public API:
+#==================================================
+
+    def count(self, data, dark=None, dummy=None, delta_dummy=None,
+               variance=None, dark_variance=None,
+               flat=None, solidangle=None, polarization=None, absorption=None,
+               dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+               polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+               safe=True, error_model=None,
+               normalization_factor=1.0,
+               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
+               radial_range=None):
+        """
+        Count the number of peaks by:
+        * sigma_clipping within a radial bin to measure the mean and the deviation of the background
+        * reconstruct the background in 2D
+        * count the number of peaks above mean + cutoff*sigma
+
+        :param data: 2D array with the signal
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidangle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
+        :param normalization_factor: divide raw signal by this value
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping.
+                   Values of 4-5 are quite common.
+                   The minimum value is obtained from Chauvenet criterion: sqrt(2ln(n/sqrt(2pi)))
+                   where n is the number of pixel in the bin, usally around 2 to 3.
+        :param cycle: perform at maximum this number of cycles. 5 is common.
+        :param noise: minimum meaningful signal. Fixed threshold for picking
+        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
+        :return: number of pixel of high intensity found
+        """
+        if isinstance(error_model, str):
+            error_model = error_model.lower()
+        else:
+            if variance is None:
+                logger.warning("Nor variance, nor error-model is provided ... expect garbage-out")
+            error_model = ""
+        with self.sem:
+            count = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
+                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
+                                safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
+        return count
+
+    def sparsify(self, data, dark=None, dummy=None, delta_dummy=None,
+                 variance=None, dark_variance=None,
+                 flat=None, solidangle=None, polarization=None, absorption=None,
+                 dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                 polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+                 safe=True, error_model=None,
+                 normalization_factor=1.0,
+                 cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
+                 radial_range=None):
+        """
+        Perform a sigma-clipping iterative filter within each along each row.
+        see the doc of scipy.stats.sigmaclip for more descriptions.
+
+        If the error model is "azimuthal": the variance is the variance within a bin,
+        which is refined at each iteration, can be costly !
+
+        Else, the error is propagated according to:
+
+        .. math::
+
+            signal = (raw - dark)
+            variance = variance + dark_variance
+            normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
+            count = number of pixel contributing
+
+        Integration is performed using the CSR representation of the look-up table on all
+        arrays: signal, variance, normalization and count
+
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidangle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
+        :param normalization_factor: divide raw signal by this value
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
+        :param cycle: perform at maximum this number of cycles. 5 is common.
+        :param noise: minimum meaningful signal. Fixed threshold for picking
+        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
+        :return: SparseFrame object, see `intensity`, `x` and `y` properties
+
+        """
+        if isinstance(error_model, str):
+            error_model = error_model.lower()
+        else:
+            if variance is None:
+                logger.warning("Nor variance, nor error-model is provided ... expect garbage-out")
+            error_model = ""
+        with self.sem:
+            indexes, values = self._sparsify(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
+                                             dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
+                                             safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range)
+            background_avg = numpy.zeros(self.bins, dtype=numpy.float32)
+            background_std = numpy.zeros(self.bins, dtype=numpy.float32)
+            ev1 = pyopencl.enqueue_copy(self.queue, background_avg, self.cl_mem["averint"])
+            ev2 = pyopencl.enqueue_copy(self.queue, background_std, self.cl_mem["stderr"])
+        if self.profile:
+            self.events += [EventDescription("copy D->H background_avg", ev1),
+                            EventDescription("copy D->H background_std", ev2)]
+
+        result = SparseFrame(indexes, values)
+        result._shape = data.shape
+        result._dtype = data.dtype
+        result._compute_engine = self.__class__.__name__
+        result._mask = self.radius2d
+        result._cutoff_clip = cutoff_clip
+        result._cutoff_pick = cutoff_pick
+        result._noise = noise
+        result._radius = self.bin_centers
+        result._background_avg = background_avg
+        result._background_std = background_std
+        result._unit = self.unit
+        result._has_dark_correction = dark is not None
+        result._has_flat_correction = flat is not None
+        result._normalization_factor = normalization_factor
+        result._has_polarization_correction = polarization is not None
+        result._has_solidangle_correction = solidangle is not None
+        result._has_absorption_correction = absorption is not None
+        result._metadata = None
+        result._method = "sparsify"
+        result._method_called = None
+        result._background_cycle = cycle
+        result._radial_range = radial_range
+        result._dummy = dummy
+        # result.delta_dummy = delta_dummy
+
+        return result
 
     def peakfinder8(self, data, dark=None, dummy=None, delta_dummy=None,
                variance=None, dark_variance=None,
@@ -822,9 +853,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 logger.warning("Nor variance nor error-model is provided ... expect garbage-out")
             error_model = ""
         with self.sem:
-            count = self._count8(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
-                                dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
-                                safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range, patch_size, connected)
+            count = self._count_peak(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
+                                     dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
+                                     safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range, patch_size, connected)
             index = numpy.zeros(count, dtype=numpy.int32)
             peaks = numpy.zeros((count, 4), dtype=numpy.float32)
             if count:
@@ -1163,7 +1194,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         result._shape = self.shape
         result._compute_engine = self.__class__.__name__
         result._mask = self.on_device["mask"]
-        result._cutoff = cutoff
+        result._clip_cutoff = cutoff
         result._noise = noise
         result._radius = radius
         return result

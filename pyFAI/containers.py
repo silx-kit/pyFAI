@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/03/2021"
+__date__ = "03/06/2022"
 __status__ = "development"
 
 from collections import namedtuple
@@ -743,10 +743,13 @@ class SparseFrame(tuple):
         self._method = None
         self._method_called = None
         self._compute_engine = None
-        self._cutoff = None
+        self._cutoff_clip = None
+        self._cutoff_pick = None
         self._background_cycle = None
         self._noise = None
         self._radial_range = None
+        self._error_model = None
+        self._peaks = None
 
     @property
     def index(self):
@@ -790,10 +793,6 @@ class SparseFrame(tuple):
             return self[0] // self._shape[-1]
 
     @property
-    def cutoff(self):
-        return self._cutoff
-
-    @property
     def noise(self):
         return self._noise
 
@@ -820,3 +819,21 @@ class SparseFrame(tuple):
     @property
     def dummy(self):
         return self._dummy
+
+    @property
+    def peaks(self):
+        return self._peaks
+
+    @property
+    def cutoff_clip(self):
+        return self._cutoff
+
+    @property
+    def cutoff_pick(self):
+        return self._pick_cutoff
+
+    cutoff = cutoff_pick
+
+    @property
+    def error_model(self):
+        return self._error_model
