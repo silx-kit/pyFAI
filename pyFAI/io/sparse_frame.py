@@ -31,17 +31,19 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2021"
+__date__ = "03/06/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import os
+import sys
 import json
 from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
 import numpy
 from .. import version
-from .nexus import Nexus, get_isotime
+from .nexus import Nexus, get_isotime, h5py
 
 try:
     import hdf5plugin
@@ -150,6 +152,8 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             sparsify_grp["sequence_index"] = 1
             sparsify_grp["version"] = version
             sparsify_grp["date"] = get_isotime()
+            sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, h5py.string_dtype("utf8"))).attrs["help"] = "Command line arguments"
+            sparsify_grp.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
             if source is not None:
                 sparsify_grp["source"] = source
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")
