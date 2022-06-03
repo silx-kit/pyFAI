@@ -191,21 +191,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                           ("local_peaks", None),
                                                           ("local_buffer", None)))
 
-    def _count(self, data, dark=None, dummy=None, delta_dummy=None,
+    def _sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,
                variance=None, dark_variance=None,
                flat=None, solidangle=None, polarization=None, absorption=None,
                dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                safe=True, error_model=None,
                normalization_factor=1.0,
-               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
-               radial_range=None):
-        """
-        Count the number of peaks by:
-        * sigma_clipping within a radial bin to measure the mean and the deviation of the background
-        * reconstruct the background in 2D
-        * count the number of peaks above mean + cutoff*sigma
-
+               cutoff_clip=5.0, cycle=5):
+        """Performs the sigma-clipping which is common to all processing        
         Note: this function does not lock the OpenCL context!
 
         :param data: 2D array with the signal
@@ -222,13 +216,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
-        :param noise: minimum meaningful signal. Fixed threshold for picking
-        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
-        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
-        :return: number of pixel of high intensity found
+
         """
         events = []
         self.send_buffer(data, "image")
@@ -347,7 +339,58 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         wdim_bins = (self.bins * wg_min),
         integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
         events.append(EventDescription("csr_sigma_clip4", integrate))
+        if self.profile:
+            self.events += events
 
+    def _count(self, data, dark=None, dummy=None, delta_dummy=None,
+               variance=None, dark_variance=None,
+               flat=None, solidangle=None, polarization=None, absorption=None,
+               dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+               polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+               safe=True, error_model=None,
+               normalization_factor=1.0,
+               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
+               radial_range=None):
+        """
+        Count the number of peaks by:
+        * sigma_clipping within a radial bin to measure the mean and the deviation of the background
+        * reconstruct the background in 2D
+        * count the number of peaks above mean + cutoff*sigma
+
+        Note: this function does not lock the OpenCL context!
+
+        :param data: 2D array with the signal
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidangle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
+        :param normalization_factor: divide raw signal by this value
+        :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
+        :param cycle: perform at maximum this number of cycles. 5 is common.
+        :param noise: minimum meaningful signal. Fixed threshold for picking
+        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
+        :return: number of pixel of high intensity found
+        """
+        self._sigma_clip(data, dark, dummy, delta_dummy,
+               variance, dark_variance,
+               flat, solidangle, polarization, absorption,
+               dark_checksum, flat_checksum, solidangle_checksum,
+               polarization_checksum, absorption_checksum, dark_variance_checksum,
+               safe, error_model,
+               normalization_factor,
+               cutoff_clip, cycle)
+        events = []
         # now perform the calc_from_1d on the device and count the number of pixels
         memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset2))
@@ -460,127 +503,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param connected: number of pixels above threshold in local patch
         :return: number of pixel of high intensity found
         """
+        self._sigma_clip(data, dark, dummy, delta_dummy,
+               variance, dark_variance,
+               flat, solidangle, polarization, absorption,
+               dark_checksum, flat_checksum, solidangle_checksum,
+               polarization_checksum, absorption_checksum, dark_variance_checksum,
+               safe, error_model,
+               normalization_factor,
+               cutoff_clip, cycle)
         events = []
-        self.send_buffer(data, "image")
-
-        wg = max(self.workgroup_size["memset_ng"])
-        wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
-        memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
-        events.append(EventDescription("memset_ng", memset))
-
-        # Prepare preprocessing
-        kw_corr = self.cl_kernel_args["corrections4"]
-        if dummy is not None:
-            do_dummy = numpy.int8(1)
-            dummy = numpy.float32(dummy)
-            if delta_dummy is None:
-                delta_dummy = numpy.float32(0.0)
-            else:
-                delta_dummy = numpy.float32(abs(delta_dummy))
-        else:
-            do_dummy = numpy.int8(0)
-            dummy = numpy.float32(self.empty)
-            delta_dummy = numpy.float32(0.0)
-
-        kw_corr["do_dummy"] = do_dummy
-        kw_corr["dummy"] = dummy
-        kw_corr["delta_dummy"] = delta_dummy
-        kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
-
-        if variance is not None:
-            self.send_buffer(variance, "variance")
-        if dark_variance is not None:
-            if not dark_variance_checksum:
-                dark_variance_checksum = calc_checksum(dark_variance, safe)
-            if dark_variance_checksum != self.on_device["dark_variance"]:
-                self.send_buffer(dark_variance, "dark_variance", dark_variance_checksum)
-        else:
-            do_dark = numpy.int8(0)
-        kw_corr["do_dark"] = do_dark
-
-        if dark is not None:
-            do_dark = numpy.int8(1)
-            # TODO: what is do_checksum=False and image not on device ...
-            if not dark_checksum:
-                dark_checksum = calc_checksum(dark, safe)
-            if dark_checksum != self.on_device["dark"]:
-                self.send_buffer(dark, "dark", dark_checksum)
-        else:
-            do_dark = numpy.int8(0)
-        kw_corr["do_dark"] = do_dark
-
-        if flat is not None:
-            do_flat = numpy.int8(1)
-            if not flat_checksum:
-                flat_checksum = calc_checksum(flat, safe)
-            if self.on_device["flat"] != flat_checksum:
-                self.send_buffer(flat, "flat", flat_checksum)
-        else:
-            do_flat = numpy.int8(0)
-        kw_corr["do_flat"] = do_flat
-
-        if solidangle is not None:
-            do_solidangle = numpy.int8(1)
-            if not solidangle_checksum:
-                solidangle_checksum = calc_checksum(solidangle, safe)
-            if solidangle_checksum != self.on_device["solidangle"]:
-                self.send_buffer(solidangle, "solidangle", solidangle_checksum)
-        else:
-            do_solidangle = numpy.int8(0)
-        kw_corr["do_solidangle"] = do_solidangle
-
-        if polarization is not None:
-            do_polarization = numpy.int8(1)
-            if not polarization_checksum:
-                polarization_checksum = calc_checksum(polarization, safe)
-            if polarization_checksum != self.on_device["polarization"]:
-                self.send_buffer(polarization, "polarization", polarization_checksum)
-        else:
-            do_polarization = numpy.int8(0)
-        kw_corr["do_polarization"] = do_polarization
-
-        if absorption is not None:
-            do_absorption = numpy.int8(1)
-            if not absorption_checksum:
-                absorption_checksum = calc_checksum(absorption, safe)
-            if absorption_checksum != self.on_device["absorption"]:
-                self.send_buffer(absorption, "absorption", absorption_checksum)
-        else:
-            do_absorption = numpy.int8(0)
-        kw_corr["do_absorption"] = do_absorption
-
-        kw_int = self.cl_kernel_args["csr_sigma_clip4"]
-        if error_model.startswith("poisson"):
-            kw_corr["poissonian"] = numpy.int8(1)
-            kw_int["error_model"] = numpy.int8(0)
-        elif error_model.startswith("azim"):
-            kw_corr["poissonian"] = numpy.int8(0)
-            kw_int["error_model"] = numpy.int8(1)
-        elif error_model.startswith("hybrid"):
-            kw_corr["poissonian"] = numpy.int8(1)
-            kw_int["error_model"] = numpy.int8(2)
-        elif variance is None:
-            logger.error("Unsupported error model and no variance provided: expect garbage as output!")
-        else:
-            kw_corr["poissonian"] = numpy.int8(0)
-            kw_int["error_model"] = numpy.int8(0)
-
-        if self.mask is not None:
-            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
-        wg = max(self.workgroup_size["corrections4"])
-        wdim_data = (self.size + wg - 1) & ~(wg - 1),
-        ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
-        events.append(EventDescription("corrections", ev))
-
-        # Prepare sigma-clipping
-        kw_int["cutoff"] = numpy.float32(cutoff_clip)
-        kw_int["cycle"] = numpy.int32(cycle)
-
-        wg_min = min(self.workgroup_size["csr_sigma_clip4"])
-        wdim_bins = (self.bins * wg_min),
-        integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-        events.append(EventDescription("csr_sigma_clip4", integrate))
-
         # now perform the calc_from_1d on the device and count the number of pixels
         memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset2))
