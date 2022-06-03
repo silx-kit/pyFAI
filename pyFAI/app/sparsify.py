@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/02/2022"
+__date__ = "03/06/2022"
 __status__ = "production"
 
 import os
@@ -168,8 +168,10 @@ def parse():
                        help="Threshold to be used when performing the sigma-clipping (0 by default: use Chauvenet criterion")
     group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=3.0,
                        help="Threshold to be used when picking the pixels to be saved (3 by default)")
+    group.add_argument("--cutoff-peak", dest="cutoff_peak", type=float, default=None,
+                       help="Activate the peak-picking in addition of the sparsification, threshold to descide if a pixel is part of a peak (deactivated by default, 3-5 is by adviced)")
     group.add_argument("--error-model", dest="error_model", type=str, default="poisson",
-                       help="Statistical model for the signal error, may be `poisson`(default) or `azimuthal` (slower) or even a simple formula like '5*I+8'")
+                       help="Statistical model for the signal error, may be `poisson`(default), `azimuthal` (slower), `hybrid` or even a simple formula like `5*I+8`")
     group.add_argument("--noise", type=float, default=1,
                        help="Noise level: quadratically added to the background uncertainty (default 1)")
 

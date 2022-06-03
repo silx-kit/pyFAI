@@ -352,10 +352,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
                radial_range=None):
         """
-        Count the number of peaks by:
+        Count the number of high-pixel by:
         * sigma_clipping within a radial bin to measure the mean and the deviation of the background
         * reconstruct the background in 2D
-        * count the number of peaks above mean + cutoff*sigma
+        * count the number of pixel above mean + cutoff*sigma
 
         Note: this function does not lock the OpenCL context!
 
@@ -511,12 +511,6 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                safe, error_model,
                normalization_factor,
                cutoff_clip, cycle)
-        events = []
-        # now perform the calc_from_1d on the device and count the number of pixels
-        memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
-        events.append(EventDescription("memset counter", memset2))
-        if self.profile:
-            self.events += events
         return self._peak_picking(data, noise, cutoff_peak, radial_range, patch_size, connected)
 
     def _peak_picking(self, data, noise, cutoff_peak, radial_range=None, patch_size=3, connected=3):
@@ -531,6 +525,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :return: number of pixel of high intensity found
         """
         events = []
+        # reset the count of the number of pixels
+        memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
+        events.append(EventDescription("memset counter", memset2))
         # Prepare for picking peaks
         kw_proj = self.cl_kernel_args["peakfinder8"]
         kw_proj["height"] = numpy.int32(data.shape[0])
@@ -644,8 +641,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                  polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                  safe=True, error_model=None,
                  normalization_factor=1.0,
-                 cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
-                 radial_range=None):
+                 cutoff_clip=5.0, cycle=5, noise=1.0,
+                 cutoff_pick=3.0, cutoff_peak=None,
+                 radial_range=None, patch_size=3, connected=3):
         """
         Perform a sigma-clipping iterative filter within each along each row.
         see the doc of scipy.stats.sigmaclip for more descriptions.
@@ -684,7 +682,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param cutoff_peak: cut-off to consider a pixel as part of a peak (activate peak-picking) 
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
+        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 when peak-picking. Depends on `cutoff_peak`  
+        :param connected: number of pixels above threshold in local patch ot be considered as a peak. Depends on `cutoff_peak`
+
         :return: SparseFrame object, see `intensity`, `x` and `y` properties
 
         """
@@ -694,6 +696,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             if variance is None:
                 logger.warning("Nor variance, nor error-model is provided ... expect garbage-out")
             error_model = ""
+
         with self.sem:
             indexes, values = self._sparsify(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
                                              dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
@@ -702,9 +705,23 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             background_std = numpy.zeros(self.bins, dtype=numpy.float32)
             ev1 = pyopencl.enqueue_copy(self.queue, background_avg, self.cl_mem["averint"])
             ev2 = pyopencl.enqueue_copy(self.queue, background_std, self.cl_mem["stderr"])
-        if self.profile:
-            self.events += [EventDescription("copy D->H background_avg", ev1),
-                            EventDescription("copy D->H background_std", ev2)]
+            if self.profile:
+                self.events += [EventDescription("copy D->H background_avg", ev1),
+                                EventDescription("copy D->H background_std", ev2)]
+            if cutoff_peak:
+                count = self._peak_picking(data, noise, cutoff_peak, radial_range, patch_size, connected)
+                index = numpy.zeros(count, dtype=numpy.int32)
+                peak4 = numpy.zeros((count, 4), dtype=numpy.float32)
+                if count:
+                    ev_idx = pyopencl.enqueue_copy(self.queue, index, self.cl_mem["peak_position"])
+                    ev_pks = pyopencl.enqueue_copy(self.queue, peak4, self.cl_mem["peak_descriptor"])
+                    if self.profile:
+                        self.events += [ EventDescription("copy D->H index", ev_idx),
+                                         EventDescription("copy D->H peaks", ev_pks)]
+                peaks = numpy.empty(count, dtype=[("index", numpy.int32), ("intensity", numpy.float32), ("sigma", numpy.float32),
+                                                   ("pos0", numpy.float32), ("pos1", numpy.float32)])
+                peaks["index"] = index
+                peaks["pos0"], peaks["pos1"], peaks["intensity"], peaks["sigma"] = peak4.T
 
         result = SparseFrame(indexes, values)
         result._shape = data.shape
@@ -730,8 +747,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         result._background_cycle = cycle
         result._radial_range = radial_range
         result._dummy = dummy
-        # result.delta_dummy = delta_dummy
-
+        result._error_model = error_model
+        if cutoff_peak:
+            result._peaks = peaks
+            result._cutoff_peak = cutoff_peak
+            result._peak_patch_size = patch_size
+            result._peak_connected = connected
         return result
 
     def peakfinder8(self, data, dark=None, dummy=None, delta_dummy=None,
@@ -741,7 +762,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                safe=True, error_model=None,
                normalization_factor=1.0,
-               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_pick=3.0,
+               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_peak=3.0,
                radial_range=None, patch_size=3, connected=2):
         """
         Count the number of peaks by:
@@ -771,7 +792,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                    where n is the number of pixel in the bin, usally around 2 to 3.
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param noise: minimum meaningful signal. Fixed threshold for picking
-        :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
+        :param cutoff_peak: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
         :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 
         :param connected: number of pixels above threshold in 3x3 region
@@ -786,7 +807,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         with self.sem:
             count = self._count_peak(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
                                      dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
-                                     safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_pick, radial_range, patch_size, connected)
+                                     safe, error_model, normalization_factor, cutoff_clip, cycle, noise, cutoff_peak, radial_range, patch_size, connected)
             index = numpy.zeros(count, dtype=numpy.int32)
             peaks = numpy.zeros((count, 4), dtype=numpy.float32)
             if count:

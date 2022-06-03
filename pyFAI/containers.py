@@ -745,11 +745,14 @@ class SparseFrame(tuple):
         self._compute_engine = None
         self._cutoff_clip = None
         self._cutoff_pick = None
+        self._cutoff_peak = None
         self._background_cycle = None
         self._noise = None
         self._radial_range = None
         self._error_model = None
         self._peaks = None
+        self._peak_patch_size = None
+        self._peak_connected = None
 
     @property
     def index(self):
@@ -826,14 +829,26 @@ class SparseFrame(tuple):
 
     @property
     def cutoff_clip(self):
-        return self._cutoff
+        return self._cutoff_clip
 
     @property
     def cutoff_pick(self):
-        return self._pick_cutoff
+        return self._cutoff_pick
 
     cutoff = cutoff_pick
 
     @property
+    def cutoff_peak(self):
+        return self._cutoff_peak
+
+    @property
     def error_model(self):
         return self._error_model
+
+    @property
+    def peak_patch_size(self):
+        return self._peak_patch_size
+
+    @property
+    def peak_connected(self):
+        return self._peak_connected
