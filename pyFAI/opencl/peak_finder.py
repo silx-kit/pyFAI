@@ -710,16 +710,18 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                 EventDescription("copy D->H background_std", ev2)]
             if cutoff_peak:
                 count = self._peak_picking(data, noise, cutoff_peak, radial_range, patch_size, connected)
+                print(count)
+                print()
                 index = numpy.zeros(count, dtype=numpy.int32)
                 peak4 = numpy.zeros((count, 4), dtype=numpy.float32)
+                peaks = numpy.empty(count, dtype=[("index", numpy.int32), ("intensity", numpy.float32), ("sigma", numpy.float32),
+                                                   ("pos0", numpy.float32), ("pos1", numpy.float32)])
                 if count:
                     ev_idx = pyopencl.enqueue_copy(self.queue, index, self.cl_mem["peak_position"])
                     ev_pks = pyopencl.enqueue_copy(self.queue, peak4, self.cl_mem["peak_descriptor"])
                     if self.profile:
                         self.events += [ EventDescription("copy D->H index", ev_idx),
                                          EventDescription("copy D->H peaks", ev_pks)]
-                peaks = numpy.empty(count, dtype=[("index", numpy.int32), ("intensity", numpy.float32), ("sigma", numpy.float32),
-                                                   ("pos0", numpy.float32), ("pos1", numpy.float32)])
                 peaks["index"] = index
                 peaks["pos0"], peaks["pos1"], peaks["intensity"], peaks["sigma"] = peak4.T
 
@@ -755,15 +757,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             result._peak_connected = connected
         return result
 
-    def peakfinder8(self, data, dark=None, dummy=None, delta_dummy=None,
-               variance=None, dark_variance=None,
-               flat=None, solidangle=None, polarization=None, absorption=None,
-               dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
-               polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-               safe=True, error_model=None,
-               normalization_factor=1.0,
-               cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_peak=3.0,
-               radial_range=None, patch_size=3, connected=2):
+    def peakfinder(self, data, dark=None, dummy=None, delta_dummy=None,
+                   variance=None, dark_variance=None,
+                   flat=None, solidangle=None, polarization=None, absorption=None,
+                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                   polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+                   safe=True, error_model=None,
+                   normalization_factor=1.0,
+                   cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_peak=3.0,
+                   radial_range=None, patch_size=3, connected=2):
         """
         Count the number of peaks by:
         * sigma_clipping within a radial bin to measure the mean and the deviation of the background
@@ -823,6 +825,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         output["pos0"], output["pos1"], output["intensity"], output["sigma"] = peaks.T
         return output
 
+    peakfinder8 = peakfinder
     # Name of the default "process" method
     __call__ = sparsify
 

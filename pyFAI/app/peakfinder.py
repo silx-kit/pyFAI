@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2022"
+__date__ = "03/06/2022"
 __status__ = "production"
 
 import os
@@ -177,7 +177,7 @@ def parse():
     group.add_argument("--error-model", dest="error_model", type=str, default="poisson",
                        help="Statistical model for the signal error, may be `poisson`(default) or `azimuthal` (slower) or even a simple formula like '5*I+8'")
     group = parser.add_argument_group("Peak finding options")
-    group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=3.0,
+    group.add_argument("--cutoff-peak", dest="cutoff_peak", type=float, default=3.0,
                        help="SNR threshold for considering a pixel high when searching for peaks (3 by default)")
     group.add_argument("--noise", type=float, default=1.0,
                        help="Noise added quadratically to the background (1 by default")
@@ -295,7 +295,7 @@ def process(options):
                               ("cutoff_clip", options.cutoff_clip),
                               ("cycle", options.cycle),
                               ("noise", options.noise),
-                              ("cutoff_pick", options.cutoff_pick),
+                              ("cutoff_peak", options.cutoff_peak),
                               ("radial_range", rrange),
                               ('patch_size', options.patch_size),
                               ("connected", options.connected)])
@@ -307,9 +307,9 @@ def process(options):
     for fabioimage in dense:
         for frame in fabioimage:
             intensity = frame.data
-            current = pf.peakfinder8(intensity,
-                                     variance=None if variance is None else variance(intensity),
-                                     **parameters)
+            current = pf.peakfinder(intensity,
+                                    variance=None if variance is None else variance(intensity),
+                                    **parameters)
             frames.append(current)
             if pb:
                 pb.update(cnt, message=f"{os.path.basename(fabioimage.filename)}: {len(current)} peaks")
@@ -348,7 +348,7 @@ def process(options):
               source=options.images if options.save_source else None,
               extra=parameters,
               grid=(options.grid_size, options.zig_zag),
-              powder=integrator.bin_centers*unit.scale if options.save_powder else None)
+              powder=integrator.bin_centers * unit.scale if options.save_powder else None)
 
     if options.profile:
         try:

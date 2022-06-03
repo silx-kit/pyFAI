@@ -132,6 +132,35 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
         except TypeError:
             logger.error("Please upgrade your installation of h5py !!!")
 
+        if frames[0].peaks is not None:
+            print(frames[0].peaks)
+            peaks = [f.peaks for f in frames]
+            spots_per_frame = numpy.array([len(s) for s in peaks], dtype=numpy.int32)
+            nframes = len(frames)
+            max_spots = spots_per_frame.max()
+
+            peak_grp = nexus.new_class(entry, "peaks", class_type="NXdata")
+            peak_grp.attrs["NX_class"] = "NXdata"
+            peak_grp.attrs["signal"] = "nPeaks"
+            peak_grp.create_dataset("nPeaks", data=spots_per_frame).attrs["interpretation"] = "spectrum"
+
+            total_int = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            ypos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            snr = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            entry.attrs["default"] = peak_grp.name
+
+            for i, s in enumerate(peaks):
+                l = len(s)
+                total_int[i,:l] = s["intensity"]
+                xpos[i,:l] = s["pos1"]
+                ypos[i,:l] = s["pos0"]
+                snr[i,:l] = s["intensity"] / s["sigma"]
+            peak_grp.create_dataset("peakTotalIntensity", data=total_int, **cmp)
+            peak_grp.create_dataset("peakXPosRaw", data=xpos, **cmp)
+            peak_grp.create_dataset("peakYPosRaw", data=ypos, **cmp)
+            peak_grp.create_dataset("peakSNR", data=snr, **cmp)
+
         if ai is not None:
             if extra.get("correctSolidAngle") or (extra.get("polarization_factor") is not None):
                 if extra.get("correctSolidAngle"):
