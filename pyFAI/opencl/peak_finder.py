@@ -395,7 +395,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
+        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping.
                    Values of 4-5 are quite common.
@@ -411,7 +411,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             error_model = error_model.lower()
         else:
             if variance is None:
-                logger.warning("Nor variance not error-model is provided ...")
+                logger.warning("Nor variance, nor error-model is provided ... expect garbage-out")
             error_model = ""
         with self.sem:
             count = self._count(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
@@ -502,7 +502,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
+        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
@@ -516,7 +516,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             error_model = error_model.lower()
         else:
             if variance is None:
-                logger.warning("Nor variance not error-model is provided ...")
+                logger.warning("Nor variance, nor error-model is provided ... expect garbage-out")
             error_model = ""
         with self.sem:
             indexes, values = self._peak_finder(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
@@ -588,6 +588,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
@@ -687,10 +688,22 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             do_absorption = numpy.int8(0)
         kw_corr["do_absorption"] = do_absorption
 
+        kw_int = self.cl_kernel_args["csr_sigma_clip4"]
         if error_model.startswith("poisson"):
             kw_corr["poissonian"] = numpy.int8(1)
+            kw_int["error_model"] = numpy.int8(0)
+        elif error_model.startswith("azim"):
+            kw_corr["poissonian"] = numpy.int8(0)
+            kw_int["error_model"] = numpy.int8(1)
+        elif error_model.startswith("hybrid"):
+            kw_corr["poissonian"] = numpy.int8(1)
+            kw_int["error_model"] = numpy.int8(2)
+        elif variance is None:
+            logger.error("Unsupported error model and no variance provided: expect garbage as output!")
         else:
             kw_corr["poissonian"] = numpy.int8(0)
+            kw_int["error_model"] = numpy.int8(0)
+
         if self.mask is not None:
             self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
         wg = max(self.workgroup_size["corrections4"])
@@ -699,10 +712,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         events.append(EventDescription("corrections", ev))
 
         # Prepare sigma-clipping
-        kw_int = self.cl_kernel_args["csr_sigma_clip4"]
         kw_int["cutoff"] = numpy.float32(cutoff_clip)
         kw_int["cycle"] = numpy.int32(cycle)
-        kw_int["error_model"] = numpy.int8(error_model.startswith("azim"))
 
         wg_min = min(self.workgroup_size["csr_sigma_clip4"])
         wdim_bins = (self.bins * wg_min),
@@ -790,7 +801,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
+        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping.
                    Values of 4-5 are quite common.
@@ -808,7 +819,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             error_model = error_model.lower()
         else:
             if variance is None:
-                logger.warning("Nor variance not error-model is provided ...")
+                logger.warning("Nor variance nor error-model is provided ... expect garbage-out")
             error_model = ""
         with self.sem:
             count = self._count8(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
