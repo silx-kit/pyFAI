@@ -40,7 +40,7 @@
  * 
  * For every pixel in the preproc array, the value for the background level 
  * and the std are interpolated.
- * Pixel with (Icor-Bg)>   cutoff*sqrt(std**2 + noise**2) are marked as intense-pixel, 
+ * Pixel with (Icor-Bg)> max(cutoff*std, noise) are marked as intense-pixel, 
  * counted and their index registered in highidx
  * 
  * The kernel uses local memory for keeping track of peak count and positions 
