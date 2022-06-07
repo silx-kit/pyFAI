@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "03/06/2022"
+__date__ = "07/06/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -68,8 +68,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_CSR.cl",
-                    "pyfai:openCL/peak_finder.cl",
-                    "pyfai:openCL/peakfinder8.cl",
+                    "pyfai:openCL/sparsify.cl",
+                    "pyfai:openCL/peakfinder.cl",
                     ]
 
     def __init__(self, lut, image_size, checksum=None,
@@ -154,7 +154,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
     def set_kernel_arguments(self):
         OCL_CSR_Integrator.set_kernel_arguments(self)
-        self.cl_kernel_args["find_peaks"] = OrderedDict((("output4", self.cl_mem["output4"]),
+        self.cl_kernel_args["find_intense"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                           ("radius2d", self.cl_mem["radius2d"]),
                                                           ("radius1d", self.cl_mem["radius1d"]),
                                                           ("averint", self.cl_mem["averint"]),
@@ -165,11 +165,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                           ("noise", numpy.float32(1.0)),
                                                           ("counter", self.cl_mem["counter"]),
                                                           ("peak_position", self.cl_mem["peak_position"])))
-        self.cl_kernel_args["copy_peak"] = OrderedDict((("peak_position", self.cl_mem["peak_position"]),
+        self.cl_kernel_args["copy_intense"] = OrderedDict((("peak_position", self.cl_mem["peak_position"]),
                                                         ("counter", self.cl_mem["counter"]),
                                                         ("output4", self.cl_mem["output4"]),
                                                         ("peak_descriptor", self.cl_mem["peak_descriptor"])))
-        self.cl_kernel_args["peakfinder8"] = OrderedDict((("output4", self.cl_mem["output4"]),
+        self.cl_kernel_args["peakfinder"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                           ("radius2d", self.cl_mem["radius2d"]),
                                                           ("radius1d", self.cl_mem["radius1d"]),
                                                           ("averint", self.cl_mem["averint"]),
@@ -396,7 +396,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         events.append(EventDescription("memset counter", memset2))
 
         # Prepare peak-picking
-        kw_proj = self.cl_kernel_args["find_peaks"]
+        kw_proj = self.cl_kernel_args["find_intense"]
         kw_proj["cutoff"] = numpy.float32(cutoff_pick)
         kw_proj["noise"] = numpy.float32(noise)
         if radial_range is not None:
@@ -406,10 +406,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_min"] = numpy.float32(0.0)
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
-        wg = max(self.workgroup_size["find_peaks"])
+        wg = max(self.workgroup_size["find_intense"])
         wdim_data = (self.size + wg - 1) & ~(wg - 1),
-        peak_search = self.program.find_peaks(self.queue, wdim_data, (wg,), *list(kw_proj.values()))
-        events.append(EventDescription("peak_search", peak_search))
+        peak_search = self.program.find_intense(self.queue, wdim_data, (wg,), *list(kw_proj.values()))
+        events.append(EventDescription("find_intense", peak_search))
 
         # Return the number of peaks
         cnt = numpy.empty(1, dtype=numpy.int32)
@@ -439,15 +439,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         dtype = data.dtype
         if dtype.kind == 'f':
             dtype = numpy.float32
-            kernel = self.program.copy_peak
+            kernel = self.program.copy_intense
         elif dtype.kind in "iu":
             if dtype.itemsize > 4:
                 dtype = numpy.dtype("uint32") if dtype.kind == "u" else numpy.dtype("int32")
-            kernel = self.program.__getattr__("copy_peak_" + dtype.name)
+            kernel = self.program.__getattr__("copy_intense_" + dtype.name)
         signal = numpy.empty(cnt, dtype)
         if cnt > 0:
             # Call kernel to copy intensities
-            kw = self.cl_kernel_args["copy_peak"]
+            kw = self.cl_kernel_args["copy_intense"]
             size = (cnt + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1)
             ev0 = kernel(self.queue, (size,), (self.BLOCK_SIZE,),
                                      *list(kw.values()))
@@ -456,7 +456,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             ev2 = pyopencl.enqueue_copy(self.queue, signal, self.cl_mem["peak_descriptor"])
 
             if self.profile:
-                self.events += [EventDescription(f"copy D->D + cast {numpy.dtype(dtype).name} intenity", ev0),
+                self.events += [EventDescription(f"copy D->D + cast {numpy.dtype(dtype).name} intensity", ev0),
                                 EventDescription("copy D->H peak_position", ev1),
                                 EventDescription("copy D->H peak_intensity", ev2)]
         return indexes, signal
@@ -529,7 +529,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         memset2 = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset2))
         # Prepare for picking peaks
-        kw_proj = self.cl_kernel_args["peakfinder8"]
+        kw_proj = self.cl_kernel_args["peakfinder"]
         kw_proj["height"] = numpy.int32(data.shape[0])
         kw_proj["width"] = numpy.int32(data.shape[1])
         kw_proj["connected"] = numpy.int32(connected)
@@ -542,7 +542,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_min"] = numpy.float32(0.0)
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
-        wg = max(self.workgroup_size["peakfinder8"])
+        wg = max(self.workgroup_size["peakfinder"])
         if wg > 32:
             wg1 = 32
             wg0 = wg // 32
@@ -565,9 +565,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         kw_proj["local_peaks"] = pyopencl.LocalMemory(4 * buffer_size)
         kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
         kw_proj["half_patch"] = numpy.int32(hw)
-        peak_search = self.program.peakfinder8(self.queue, wdim_data, (wg0, wg1), *list(kw_proj.values()))
+        peak_search = self.program.peakfinder(self.queue, wdim_data, (wg0, wg1), *list(kw_proj.values()))
 
-        events.append(EventDescription("peakfinder8", peak_search))
+        events.append(EventDescription("peakfinder", peak_search))
 
         # Return the number of peaks
         cnt = numpy.empty(1, dtype=numpy.int32)
@@ -643,7 +643,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                  normalization_factor=1.0,
                  cutoff_clip=5.0, cycle=5, noise=1.0,
                  cutoff_pick=3.0, cutoff_peak=None,
-                 radial_range=None, patch_size=3, connected=3):
+                 radial_range=None, patch_size=3, connected=2):
         """
         Perform a sigma-clipping iterative filter within each along each row.
         see the doc of scipy.stats.sigmaclip for more descriptions.
@@ -1006,7 +1006,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                                                                  ("output_size", numpy.int32(numpy.prod(self.shape))),
                                                                  ("local_high", pyopencl.LocalMemory(self.BLOCK_SIZE * 4)),
                                                                  ("local_size", numpy.int32(self.BLOCK_SIZE))])
-        self.cl_kernel_args["copy_peak"] = OrderedDict((("peak_position", self.cl_mem["output"]),
+        self.cl_kernel_args["copy_intense"] = OrderedDict((("peak_position", self.cl_mem["output"]),
                                                         ("count", self.cl_mem["count"]),
                                                         ("image", self.cl_mem["image"]),
                                                         ("peak_intensity", self.cl_mem["peak_intensity"])))
@@ -1129,10 +1129,10 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         assert image.shape == self.shape
         with self.sem:
             count = self._count(image, window, cutoff, radius, noise)
-            kw = self.cl_kernel_args["copy_peak"]
+            kw = self.cl_kernel_args["copy_intense"]
             size = (count + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1)
 
-            copy_peak = self.program.copy_peak(self.queue, (size,), (self.BLOCK_SIZE,),
+            copy_intense = self.program.copy_intense(self.queue, (size,), (self.BLOCK_SIZE,),
                                            *list(kw.values()))
 
             indexes = numpy.empty(count, dtype=numpy.int32)
@@ -1141,7 +1141,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
             copy_index = pyopencl.enqueue_copy(self.queue, indexes, self.cl_mem["output"])
             copy_value = pyopencl.enqueue_copy(self.queue, values, self.cl_mem["peak_intensity"])
         if self.profile:
-            self.events += [EventDescription("copy D->D values", copy_peak),
+            self.events += [EventDescription("copy D->D values", copy_intense),
                           EventDescription("copy D->H index", copy_index),
                           EventDescription("copy D->H values", copy_value)
                           ]

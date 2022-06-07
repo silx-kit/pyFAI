@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 23/09/2021
+ *   Last revision: 07/06/2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,7 +113,7 @@ inline float2 get_shared2(local float2* buffer, int dim0, int dim1, int half_pat
     return buffer[pf8_calc_buffer2(dim0, dim1, half_patch)];
 }
 
-/*peakfinder8: kernel that pick peaks in an image after the sigma-clipping
+/*peakfinder: kernel that pick peaks in an image after the sigma-clipping
  * 
  * In this kernel, each thread works on one pixel and uses data from the neighborhood of radius `half_patch` size
  * The sigma-clipping step preceeding provides the mean signal and the associated uncertainty.
@@ -149,7 +149,7 @@ inline float2 get_shared2(local float2* buffer, int dim0, int dim1, int half_pat
  *  - highidx: index of the most intense pixel of each peak
  *  - peaks: array of struct containing the centroid0, centroid1, sum of intensity and associated uncertainty calculated over all intensi pixels in the patch
  */
-kernel void peakfinder8(  const global  float4 *preproc4, // Pixel wise array of (signal, variance, norm, cnt) 
+kernel void peakfinder(  const global  float4 *preproc4, // Pixel wise array of (signal, variance, norm, cnt) 
                           const global  float  *radius2d, // Contains the distance to the center for each pixel
                           const global  float  *radius1d, // Radial bin postion 
                           const global  float  *average1d,// average intensity in the bin
@@ -306,4 +306,4 @@ kernel void peakfinder8(  const global  float4 *preproc4, // Pixel wise array of
             peaks[write_pos] = local_peaks[tid];
         } //Thread is active for copying
     } // end update global memory
-} // end kernel peakfinder8
+} // end kernel peakfinder

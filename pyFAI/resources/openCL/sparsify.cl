@@ -1,5 +1,5 @@
 /*
- *   Project: 2D Diffraction images peak finding and integrating.
+ *   Project: 2D Diffraction images sparsification.
  *            OpenCL Kernels  
  *
  *
@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 23/09/2021
+ *   Last revision: 07/06/2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,22 +40,22 @@
  * 
  * For every pixel in the preproc array, the value for the background level 
  * and the std are interpolated.
- * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are marked as peak-pixel, 
+ * Pixel with (Icor-Bg)>   cutoff*sqrt(std**2 + noise**2) are marked as intense-pixel, 
  * counted and their index registered in highidx
  * 
  * The kernel uses local memory for keeping track of peak count and positions 
  */
-kernel void find_peaks(       global  float4 *preproc4, // both input and output, pixel wise array of (signal, variance, norm, cnt) 
-                        const global  float  *radius2d, // contains the distance to the center for each pixel
-                        const global  float  *radius1d, // Radial bin postion 
-                        const global  float  *average1d,// average intensity in the bin
-                        const global  float  *std1d,    // associated deviation
-                        const         float   radius_min,// minimum radius
-                        const         float   radius_max,// maximum radius 
-                        const         float   cutoff,    // pick pixel with I>avg+min(cutoff*std, noise)
-                        const         float   noise,     // Noise level of the measurement
-                              global  int    *counter,   // Counter of the number of peaks found
-                              global  int    *highidx){  // indexes of the pixels of high intensity
+kernel void find_intense(       global  float4 *preproc4, // both input and output, pixel wise array of (signal, variance, norm, cnt) 
+                         const global  float  *radius2d,  // contains the distance to the center for each pixel
+                         const global  float  *radius1d,  // Radial bin postion 
+                         const global  float  *average1d, // average intensity in the bin
+                         const global  float  *std1d,     // associated deviation
+                         const         float   radius_min,// minimum radius
+                         const         float   radius_max,// maximum radius 
+                         const         float   cutoff,    // pick pixel with I>avg+min(cutoff*std, noise)
+                         const         float   noise,     // Noise level of the measurement
+                               global  int    *counter,   // Counter of the number of peaks found
+                               global  int    *highidx){  // indexes of the pixels of high intensity
     int tid = get_local_id(0);
     int gid = get_global_id(0);
     int wg = get_local_size(0);
@@ -114,7 +114,7 @@ kernel void find_peaks(       global  float4 *preproc4, // both input and output
             highidx[tid +local_counter[1]] = local_highidx[tid];
     } // end update global memory
 
-} //end kernel find_peaks
+} //end kernel find_intense
 
 // function returning the diffraction signal intensity i.e. (Icorrected - Ibackground)
 static float _calc_intensity(float4 value){
@@ -123,7 +123,7 @@ static float _calc_intensity(float4 value){
 
 // A simple kernel to copy the intensities of the peak
 
-kernel void copy_peak(global int *peak_position,
+kernel void copy_intense(global int *peak_position,
                       global int *counter,
                       global float4 *preprocessed,
                       global float *peak_intensity){
@@ -135,7 +135,7 @@ kernel void copy_peak(global int *peak_position,
     }
 }
 
-kernel void copy_peak_uint8(global int *peak_position,
+kernel void copy_intense_uint8(global int *peak_position,
                       global int *counter,
                       global float4 *preprocessed,
                       global unsigned char *peak_intensity){
@@ -147,7 +147,7 @@ kernel void copy_peak_uint8(global int *peak_position,
     }
 }
 
-kernel void copy_peak_int8(global int *peak_position,
+kernel void copy_intense_int8(global int *peak_position,
                       global int *counter,
                       global float4 *preprocessed,
                       global char *peak_intensity){
@@ -159,7 +159,7 @@ kernel void copy_peak_int8(global int *peak_position,
     }
 }
 
-kernel void copy_peak_uint16(global int *peak_position,
+kernel void copy_intense_uint16(global int *peak_position,
                       global int *counter,
                       global float4 *preprocessed,
                       global unsigned short *peak_intensity){
@@ -171,7 +171,7 @@ kernel void copy_peak_uint16(global int *peak_position,
     }
 }
 
-kernel void copy_peak_int16(global int *peak_position,
+kernel void copy_intense_int16(global int *peak_position,
                       global int *counter,
                       global float4 *preprocessed,
                       global short *peak_intensity){
@@ -183,7 +183,7 @@ kernel void copy_peak_int16(global int *peak_position,
     }
 }
 
-kernel void copy_peak_uint32(global int *peak_position,
+kernel void copy_intense_uint32(global int *peak_position,
                       global int *counter,
                       global float4 *preprocessed,
                       global unsigned int *peak_intensity){
@@ -195,7 +195,7 @@ kernel void copy_peak_uint32(global int *peak_position,
     }
 }
 
-kernel void copy_peak_int32(global int *peak_position,
+kernel void copy_intense_int32(global int *peak_position,
                       global int *counter,
                       global float4 *preprocessed,
                       global int *peak_intensity){
