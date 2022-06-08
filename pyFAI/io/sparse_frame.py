@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2022"
+__date__ = "08/06/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -133,7 +133,6 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             logger.error("Please upgrade your installation of h5py !!!")
 
         if frames[0].peaks is not None:
-            print(frames[0].peaks)
             peaks = [f.peaks for f in frames]
             spots_per_frame = numpy.array([len(s) for s in peaks], dtype=numpy.int32)
             nframes = len(frames)

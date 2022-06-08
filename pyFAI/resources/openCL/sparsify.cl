@@ -124,85 +124,72 @@ static float _calc_intensity(float4 value){
 // A simple kernel to copy the intensities of the peak
 
 kernel void copy_intense(global int *peak_position,
-                      global int *counter,
-                      global float4 *preprocessed,
-                      global float *peak_intensity){
-    int cnt, tid;
-    tid = get_global_id(0);    
-    cnt = counter[0];
-    if (tid<cnt){
+                         const  int counter,
+                         global float4 *preprocessed,
+                         global float *peak_intensity){
+    int tid = get_global_id(0);    
+    if (tid<counter){
         peak_intensity[tid] = preprocessed[peak_position[tid]].s0;
     }
 }
 
 kernel void copy_intense_uint8(global int *peak_position,
-                      global int *counter,
+                      const  int counter,
                       global float4 *preprocessed,
                       global unsigned char *peak_intensity){
-    int cnt, tid;
-    tid = get_global_id(0);    
-    cnt = counter[0];
-    if (tid<cnt){
+    int tid = get_global_id(0);    
+    if (tid<counter){
         peak_intensity[tid] = (unsigned char)(preprocessed[peak_position[tid]].s0+0.5f);
     }
 }
 
 kernel void copy_intense_int8(global int *peak_position,
-                      global int *counter,
+                      const  int counter,
                       global float4 *preprocessed,
                       global char *peak_intensity){
-    int cnt, tid;
-    tid = get_global_id(0);    
-    cnt = counter[0];
-    if (tid<cnt){
+    int tid = get_global_id(0);    
+    if (tid<counter){
         peak_intensity[tid] = (char)(preprocessed[peak_position[tid]].s0+0.5f);
     }
 }
 
 kernel void copy_intense_uint16(global int *peak_position,
-                      global int *counter,
+                      const  int counter,
                       global float4 *preprocessed,
                       global unsigned short *peak_intensity){
-    int cnt, tid;
-    tid = get_global_id(0);    
-    cnt = counter[0];
-    if (tid<cnt){
+    int tid = get_global_id(0);    
+    if (tid<counter){
         peak_intensity[tid] = (unsigned short)(preprocessed[peak_position[tid]].s0+0.5f);
     }
 }
 
 kernel void copy_intense_int16(global int *peak_position,
-                      global int *counter,
+                      const  int counter,
                       global float4 *preprocessed,
-                      global short *peak_intensity){
-    int cnt, tid;
-    tid = get_global_id(0);    
-    cnt = counter[0];
-    if (tid<cnt){
+                      global short *peak_intensity)
+{
+    int tid = get_global_id(0);    
+    if (tid<counter){
         peak_intensity[tid] = (short)(preprocessed[peak_position[tid]].s0+0.5f);
     }
 }
 
 kernel void copy_intense_uint32(global int *peak_position,
-                      global int *counter,
+                      const  int counter,
                       global float4 *preprocessed,
                       global unsigned int *peak_intensity){
-    int cnt, tid;
-    tid = get_global_id(0);    
-    cnt = counter[0];
-    if (tid<cnt){
+    int tid = get_global_id(0);    
+    if (tid<counter){
         peak_intensity[tid] = (unsigned int)(preprocessed[peak_position[tid]].s0+0.5f);
     }
 }
 
 kernel void copy_intense_int32(global int *peak_position,
-                      global int *counter,
+                      const  int counter,
                       global float4 *preprocessed,
                       global int *peak_intensity){
-    int cnt, tid;
-    tid = get_global_id(0);    
-    cnt = counter[0];
-    if (tid<cnt){
+    int tid = get_global_id(0);    
+    if (tid<counter){
         peak_intensity[tid] = (int)(preprocessed[peak_position[tid]].s0+0.5f);
     }
 }

@@ -88,7 +88,7 @@ inline float2 correct_pixel2(
             }//Upper most bin: no interpolation
         }// this pixel is between radius_min and max
         float4 raw = preproc4[gid];
-        value = (float2)((raw.s2>0.0) ? raw.s0 / raw.s2 - background : 0.0f,  fast_length((float2)(uncert, noise)));
+        value = (float2)((raw.s2>0.0) ? raw.s0 / raw.s2 - background : 0.0f, fast_length((float2)(uncert, noise)));
     }// this pixel is valid
     return value;
 }
@@ -149,7 +149,7 @@ inline float2 get_shared2(local float2* buffer, int dim0, int dim1, int half_pat
  *  - highidx: index of the most intense pixel of each peak
  *  - peaks: array of struct containing the centroid0, centroid1, sum of intensity and associated uncertainty calculated over all intensi pixels in the patch
  */
-kernel void peakfinder(  const global  float4 *preproc4, // Pixel wise array of (signal, variance, norm, cnt) 
+kernel void peakfinder(   const global  float4 *preproc4, // Pixel wise array of (signal, variance, norm, cnt) 
                           const global  float  *radius2d, // Contains the distance to the center for each pixel
                           const global  float  *radius1d, // Radial bin postion 
                           const global  float  *average1d,// average intensity in the bin

@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2022"
+__date__ = "08/06/2022"
 __status__ = "production"
 
 import os
@@ -177,7 +177,7 @@ def parse():
                        help="Activate the peak-picking in addition of the sparsification, threshold to descide if a pixel is part of a peak (deactivated by default, 3-5 is by adviced)")
     group.add_argument("--peak-patch-size", dest="patch_size", type=int, default=3,
                        help="size of the local patch for searching for a peak, typically 3(default) or 5. Used only with `--cutoff-peak`")
-    group.add_argument("--peak-connected", dest="connected", default=3, type=int,
+    group.add_argument("--peak-connected", dest="connected", default=2, type=int,
                        help="number of high pixels in the patch to be considered as a peak. efault: 3. Used only with `--cutoff-peak`")
     group = parser.add_argument_group("Opencl setup options")
     group.add_argument("--workgroup", type=int, default=None,
@@ -308,9 +308,12 @@ def process(options):
                                   **parameters)
             frames.append(current)
             if pb:
-                pb.update(cnt, message="%s: %i pixels" % (os.path.basename(fabioimage.filename), current.intensity.size))
+                if  options.cutoff_peak:
+                    pb.update(cnt, message=f"{os.path.basename(fabioimage.filename)}: {current.intensity.size:6d} pixels/ {len(current.peaks):4} peaks")
+                else:
+                    pb.update(cnt, message=f"{os.path.basename(fabioimage.filename)}: {current.intensity.size:6d} pixels")
             else:
-                print("%s frame #%d, found %d intense pixels" % (fabioimage.filename, fabioimage.currentframe, current.intensity.size))
+                print(f"{os.path.basename(fabioimage.filename)} frame #{fabioimage.currentframe:04d}, found {current.intensity.size:6d} intense pixels")
             cnt += 1
     t1 = time.perf_counter()
     if pb:
