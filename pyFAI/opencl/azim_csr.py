@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "24/03/2022"
+__date__ = "03/06/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -322,7 +322,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("data", self.cl_mem["data"]),
                                                             ("indices", self.cl_mem["indices"]),
                                                             ("indptr", self.cl_mem["indptr"]),
-                                                            ("nbins",  numpy.int32(self.bins)),
+                                                            ("nbins", numpy.int32(self.bins)),
                                                             ("do_dummy", numpy.int8(0)),
                                                             ("dummy", numpy.float32(0)),
                                                             ("coef_power", numpy.int32(1)),
@@ -356,9 +356,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("data", self.cl_mem["data"]),
                                                             ("indices", self.cl_mem["indices"]),
                                                             ("indptr", self.cl_mem["indptr"]),
-                                                            ("nbins",  numpy.int32(self.bins)),
+                                                            ("nbins", numpy.int32(self.bins)),
                                                             ("empty", numpy.float32(self.empty)),
-                                                            ("azimuthal", numpy.int8(1)),
+                                                            ("error_model", numpy.int8(1)),
                                                             ("merged8", self.cl_mem["merged8"]),
                                                             ("averint", self.cl_mem["averint"]),
                                                             ("stderr", self.cl_mem["stderr"]),
@@ -370,7 +370,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("indptr", self.cl_mem["indptr"]),
                                                               ("cutoff", numpy.float32(5)),
                                                               ("cycle", numpy.int32(5)),
-                                                              ("azimuthal", numpy.int8(1)),
+                                                              ("error_model", numpy.int8(1)),
                                                               ("empty", numpy.float32(self.empty)),
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
@@ -669,7 +669,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
             kw_corr["poissonian"] = numpy.int8(1 if poissonian else 0)
-            kw_int["azimuthal"] = numpy.int8(poissonian is False)
+            kw_int["error_model"] = numpy.int8(poissonian is False)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:
@@ -950,7 +950,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             kw_int["cutoff"] = numpy.float32(cutoff)
             kw_int["cycle"] = numpy.int32(cycle)
-            kw_int["azimuthal"] = numpy.int8(error_model.startswith("azim"))
+            kw_int["error_model"] = numpy.int8(error_model.startswith("azim"))
 
             wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
 

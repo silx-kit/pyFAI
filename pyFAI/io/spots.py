@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2022"
+__date__ = "03/06/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -123,6 +123,10 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
         sparsify_grp["sequence_index"] = 1
         sparsify_grp["version"] = version
         sparsify_grp["date"] = get_isotime()
+        # sparsify_grp.create_dataset("command",
+        #                        data=numpy.array(sys.argv, dtype=h5py.special_dtype(vlen=str)),
+        #                        ).attrs["hint"] = "argv"
+
         sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, dtype=h5py.special_dtype(vlen=str))).attrs["help"] = "Command line arguments"
         sparsify_grp.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
         if source is not None:

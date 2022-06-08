@@ -31,17 +31,19 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2021"
+__date__ = "08/06/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import os
+import sys
 import json
 from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
 import numpy
 from .. import version
-from .nexus import Nexus, get_isotime
+from .nexus import Nexus, get_isotime, h5py
 
 try:
     import hdf5plugin
@@ -130,6 +132,34 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
         except TypeError:
             logger.error("Please upgrade your installation of h5py !!!")
 
+        if frames[0].peaks is not None:
+            peaks = [f.peaks for f in frames]
+            spots_per_frame = numpy.array([len(s) for s in peaks], dtype=numpy.int32)
+            nframes = len(frames)
+            max_spots = spots_per_frame.max()
+
+            peak_grp = nexus.new_class(entry, "peaks", class_type="NXdata")
+            peak_grp.attrs["NX_class"] = "NXdata"
+            peak_grp.attrs["signal"] = "nPeaks"
+            peak_grp.create_dataset("nPeaks", data=spots_per_frame).attrs["interpretation"] = "spectrum"
+
+            total_int = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            ypos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            snr = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            entry.attrs["default"] = peak_grp.name
+
+            for i, s in enumerate(peaks):
+                l = len(s)
+                total_int[i,:l] = s["intensity"]
+                xpos[i,:l] = s["pos1"]
+                ypos[i,:l] = s["pos0"]
+                snr[i,:l] = s["intensity"] / s["sigma"]
+            peak_grp.create_dataset("peakTotalIntensity", data=total_int, **cmp)
+            peak_grp.create_dataset("peakXPosRaw", data=xpos, **cmp)
+            peak_grp.create_dataset("peakYPosRaw", data=ypos, **cmp)
+            peak_grp.create_dataset("peakSNR", data=snr, **cmp)
+
         if ai is not None:
             if extra.get("correctSolidAngle") or (extra.get("polarization_factor") is not None):
                 if extra.get("correctSolidAngle"):
@@ -150,6 +180,8 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             sparsify_grp["sequence_index"] = 1
             sparsify_grp["version"] = version
             sparsify_grp["date"] = get_isotime()
+            sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, h5py.string_dtype("utf8"))).attrs["help"] = "Command line arguments"
+            sparsify_grp.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
             if source is not None:
                 sparsify_grp["source"] = source
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")

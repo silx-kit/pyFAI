@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/03/2021"
+__date__ = "03/06/2022"
 __status__ = "development"
 
 from collections import namedtuple
@@ -743,10 +743,16 @@ class SparseFrame(tuple):
         self._method = None
         self._method_called = None
         self._compute_engine = None
-        self._cutoff = None
+        self._cutoff_clip = None
+        self._cutoff_pick = None
+        self._cutoff_peak = None
         self._background_cycle = None
         self._noise = None
         self._radial_range = None
+        self._error_model = None
+        self._peaks = None
+        self._peak_patch_size = None
+        self._peak_connected = None
 
     @property
     def index(self):
@@ -790,10 +796,6 @@ class SparseFrame(tuple):
             return self[0] // self._shape[-1]
 
     @property
-    def cutoff(self):
-        return self._cutoff
-
-    @property
     def noise(self):
         return self._noise
 
@@ -820,3 +822,33 @@ class SparseFrame(tuple):
     @property
     def dummy(self):
         return self._dummy
+
+    @property
+    def peaks(self):
+        return self._peaks
+
+    @property
+    def cutoff_clip(self):
+        return self._cutoff_clip
+
+    @property
+    def cutoff_pick(self):
+        return self._cutoff_pick
+
+    cutoff = cutoff_pick
+
+    @property
+    def cutoff_peak(self):
+        return self._cutoff_peak
+
+    @property
+    def error_model(self):
+        return self._error_model
+
+    @property
+    def peak_patch_size(self):
+        return self._peak_patch_size
+
+    @property
+    def peak_connected(self):
+        return self._peak_connected

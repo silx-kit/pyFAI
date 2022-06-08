@@ -357,7 +357,7 @@ static inline float8 _merge_azimuthal(float8 here,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
- * @param azimuthal   set to 1 to estimate the variance from the azimuthal sector, or 0 to use a Poisson-like model        
+ * @param error_model   set to 1 to estimate the variance from the azimuthal sector, or 0 to use a Poisson-like model        
  * @param super_sum   Local array of float8 of size WORKGROUP_SIZE: mandatory as a static function !
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
@@ -367,7 +367,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
                               const   global  float    *coefs,
                               const   global  int      *indices,
                               const   global  int      *indptr,
-                              const           char     azimuthal,
+                              const           char     error_model,
                               volatile local  float8   *super_sum)
 {
     // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
@@ -387,7 +387,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
                coef = (coefs == NULL)?1.0f: coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
-               if (azimuthal){
+               if (error_model){
                    accum8 = _accumulate_azimuthal(accum8, quatret, coef);
                }
                else{
@@ -404,7 +404,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     while (active_threads > 1) {
         active_threads /= 2;
         if (thread_id_loc < active_threads) {
-            if (azimuthal){
+            if (error_model){
                 super_sum[thread_id_loc] = _merge_azimuthal(super_sum[thread_id_loc], 
                                                             super_sum[thread_id_loc + active_threads]);
             }//if azimuthal
@@ -429,7 +429,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
- * @param azimuthal   set to 1 to estimate the variance from the azimuthal sector, or 0 to use a Poisson-like model        
+ * @param error_model 0 for Poisson like, 1 variance from the azimuthal sector, (2 for hybrid?)        
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
  *
@@ -438,7 +438,7 @@ static inline float8 CSRxVec4_single(const   global  float4   *data,
                                      const   global  float    *coefs,
                                      const   global  int      *indices,
                                      const   global  int      *indptr,
-                                     const           char     azimuthal)
+                                     const           char     error_model)
 {
     // each workgroup (size== 1) is assigned to 1 bin
     int bin_num = get_global_id(0);
@@ -448,7 +448,7 @@ static inline float8 CSRxVec4_single(const   global  float4   *data,
         float coef = (coefs == NULL)?1.0f:coefs[j];
         int idx = indices[j];
         float4 quatret = data[idx];
-        if (azimuthal){
+        if (error_model){
             accum8 = _accumulate_azimuthal(accum8, quatret, coef);
         }
         else{
@@ -707,7 +707,7 @@ csr_integrate_single(  const   global  float   *weights,
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param empty       Float: value for bad pixels, NaN is a good guess
- * @param azimuthal_variance int: set to True to calculate the variance on the aximuthal bin instead of propagated from poisson law 
+ * @param error_model char: set to True to calculate the variance on the aximuthal bin instead of propagated from poisson law 
  * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
  * @param averint     Float pointer to the output 1D array with the averaged signal
  * @param stderr      Float pointer to the output 1D array with the propagated error
@@ -720,15 +720,15 @@ csr_integrate4(  const   global  float4  *weights,
                  const   global  int     *indptr,
                  const           int      nbins,
                  const           float    empty,
-                 const           char      azimuthal_variance,      
-                         global  float8   *summed,
-                         global  float    *averint,
-                         global  float    *stderr)
+                 const           char     error_model,      
+                         global  float8  *summed,
+                         global  float   *averint,
+                         global  float   *stderr)
 {
     int bin_num = get_group_id(0);
     local float8 shared[WORKGROUP_SIZE];
     if (bin_num<nbins){
-        float8 result = CSRxVec4(weights, coefs, indices, indptr, azimuthal_variance, shared);
+        float8 result = CSRxVec4(weights, coefs, indices, indptr, error_model, shared);
         if (get_local_id(0)==0) {
             summed[bin_num] = result;
             if (result.s4 > 0.0f) {
@@ -753,6 +753,7 @@ csr_integrate4(  const   global  float4  *weights,
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param empty       Float: value for bad pixels, NaN is a good guess
+ * @param error_model char: 0 for Poisson-like, 1 for azimuthal (2 for hybrid) 
  * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
  * @param averint     Float pointer to the output 1D array with the averaged signal
  * @param stderr      Float pointer to the output 1D array with the propagated error
@@ -765,7 +766,7 @@ csr_integrate4_single(  const   global  float4  *weights,
                         const   global  int     *indptr,
                         const           int      nbins,
                         const           float    empty,
-                        const           char     azimuthal,
+                        const           char     error_model,
                                 global  float8  *summed,
                                 global  float   *averint,
                                 global  float   *stderr)
@@ -773,7 +774,7 @@ csr_integrate4_single(  const   global  float4  *weights,
     // each workgroup of size==1 is assinged to 1 bin
     int bin_num = get_global_id(0);
     if (bin_num<nbins){
-        float8 accum8 = CSRxVec4_single(weights, coefs, indices, indptr, azimuthal);
+        float8 accum8 = CSRxVec4_single(weights, coefs, indices, indptr, error_model);
         summed[bin_num] = accum8;
         if (accum8.s6 > 0.0f) {
             averint[bin_num] = accum8.s0 / accum8.s4;
@@ -795,7 +796,7 @@ csr_integrate4_single(  const   global  float4  *weights,
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param cutoff      Discard any value with |value - mean| > cutoff*sigma
  * @param cycle       number of cycle 
- * @param azimuthal   set to 1 to calculate the variance from the difference to the average in the bin, left to 0 to propagate as usual 
+ * @param error_model 0 for Poisson-like, 1 to calculate the variance from the difference to the average in the bin 
  * @param summed      contains all the data
  * @param averint     Average signal
  * @param stdevpix    Standard deviation of the pixel
@@ -810,7 +811,7 @@ csr_sigma_clip4(          global  float4  *data4,
                   const   global  int     *indptr,
                   const           float    cutoff,
                   const           int      cycle,
-                  const           char     azimuthal,
+                  const           char     error_model,
                   const           float    empty,
                           global  float8  *summed,
                           global  float   *averint,
@@ -820,6 +821,7 @@ csr_sigma_clip4(          global  float4  *data4,
     int wg = get_local_size(0);
     float aver, std, sem;
     int cnt, nbpix;
+    char curr_error_model;
     volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
 
@@ -828,10 +830,18 @@ csr_sigma_clip4(          global  float4  *data4,
     // 3 is the smallest integer above sqrt(2pi) -> math domain error  
     nbpix = max(3, indptr[bin_num + 1] - indptr[bin_num]);
     
+    // special case: no cycle and hybrid mode, should be best handled at host side
+    if ((cycle==0) && (error_model==2)){
+        curr_error_model = 0;
+    }
+    else{
+        curr_error_model = error_model;
+    }
+    
     // first calculation of azimuthal integration to initialize aver & std
     
-    float8 result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, azimuthal):
-                            CSRxVec4(data4, coefs, indices, indptr, azimuthal, shared8));
+    float8 result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
+                            CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
 
     if (result.s4 > 0.0f){
         aver = result.s0 / result.s4;
@@ -855,9 +865,11 @@ csr_sigma_clip4(          global  float4  *data4,
             break;
 
         nbpix = max(3, nbpix - cnt);
-        
-        result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, azimuthal):
-                         CSRxVec4(data4, coefs, indices, indptr, azimuthal, shared8));
+        if ((cycle==i+1) && (error_model==2)){
+                curr_error_model = 0;
+        }
+        result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
+                         CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
 
         if (result.s4 > 0.0f) {
             aver = result.s0 / result.s4;
