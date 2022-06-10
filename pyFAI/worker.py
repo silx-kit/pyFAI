@@ -62,7 +62,7 @@ Here are the valid keys:
 - "nbpt_rad"
 - "do_solid_angle"
 - "do_radial_range"
-- "do_poisson"
+- "error_model"
 - "delta_dummy"
 - "nbpt_azim"
 - "flat_field"
@@ -103,6 +103,7 @@ from . import units
 from .io import integration_config
 import pyFAI.io.image
 from .engines.preproc import preproc as preproc_numpy
+from .utils.decorators import deprecated_warning
 try:
     import numexpr
 except ImportError as err:
@@ -252,8 +253,7 @@ class Worker(object):
         self.mask_image = None
         self.subdir = ""
         self.extension = None
-        self.do_poisson = None
-        self.do_azimuthal_error = None
+        self.error_model = None
         self.needs_reset = True
         self.output = "numpy"  # exports as numpy array by default
         self.shape = shapeIn
@@ -351,10 +351,8 @@ class Worker(object):
         kwarg["safe"] = self.safe
         kwarg["variance"] = variance
 
-        if self.do_poisson:
-            kwarg["error_model"] = "poisson"
-        elif self.do_azimuthal_error:
-            kwarg["error_model"] = "azimuth"
+        if self.error_model:
+            kwarg["error_model"] = self.error_model
 
         if metadata is not None:
             kwarg["metadata"] = metadata
@@ -367,7 +365,6 @@ class Worker(object):
             kwarg["npt_azim"] = self.nbpt_azim
         else:
             kwarg["npt"] = self.nbpt_rad
-        kwarg["error_model"] = self.error_model
 
         if self.radial_range is not None:
             kwarg["radial_range"] = self.radial_range
@@ -508,8 +505,28 @@ class Worker(object):
         value = config.pop("unit", units.TTH_DEG)
         self.unit = units.to_unit(value)
 
-        value = config.pop("do_poisson", False)
-        self.do_poisson = bool(value)
+        value = config.pop("do_poisson", None)
+        if value is not None:
+            deprecated_warning(
+                __name__,
+                name="do_poisson",
+                reason='do_poisson=True is replaced by error_model="poisson"'
+            )
+            self.do_poisson = value
+
+        value = config.pop("do_azimuthal_error", None)
+        if value is not None:
+            deprecated_warning(
+                __name__,
+                name="do_azimuthal_error",
+                reason='do_azimuthal_error=True is replaced by error_model="azimuthal"'
+            )
+            self.do_azimuthal_error = value
+
+        value = config.pop("error_model", None)
+        if value:
+            value = value.lower()
+        self.error_model = value
 
         value = config.pop("polarization_factor", None)
         apply_value = config.pop("do_polarization", True)
@@ -556,21 +573,6 @@ class Worker(object):
 
     unit = property(get_unit, set_unit)
 
-    def set_error_model(self, value):
-        if value == "poisson":
-            self.do_poisson = True
-        elif value is None or value == "":
-            self.do_poisson = False
-        else:
-            raise RuntimeError("Unsupported error model '%s'" % value)
-
-    def get_error_model(self):
-        if self.do_poisson:
-            return "poisson"
-        return None
-
-    error_model = property(get_error_model, set_error_model)
-
     def get_config(self):
         """Returns the configuration as a dictionary.
 
@@ -585,7 +587,7 @@ class Worker(object):
                 pass
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "dummy", "delta_dummy",
                     "correct_solid_angle", "dark_current_image", "flat_field_image",
-                    "mask_image", "do_poisson", "shape", "method"]:
+                    "mask_image", "error_model", "shape", "method"]:
             try:
                 config[key] = self.__getattribute__(key)
             except Exception:

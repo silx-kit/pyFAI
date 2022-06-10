@@ -161,7 +161,7 @@ class Processor(object):
         if config.get("nbpt_rad"):
             self.nbpt_rad = int(config.get("nbpt_rad"))
         self.unit = units.to_unit(config.get("unit", units.TTH_DEG))
-        self.do_poisson = config.get("do_poisson")
+        self.error_model = config.get("error_model")
         if config.get("do_polarization"):
             self.polarization = config.get("polarization")
         else:
@@ -204,7 +204,7 @@ class Processor(object):
                     "do_solid_angle": bool(self.do_solid_angle.isChecked()),
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
                     "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
-                    "do_poisson": bool(self.do_poisson.isChecked()),
+                    "error_model": self.error_model.currentData(),
                     "radial_range_min":float_(self.radial_range_min.text()),
                     "radial_range_max":float_(self.radial_range_max.text()),
                     "azimuth_range_min":float_(self.azimuth_range_min.text()),

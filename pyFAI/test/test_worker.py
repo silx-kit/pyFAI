@@ -232,16 +232,20 @@ class TestWorker(unittest.TestCase):
         except Exception:
             pass
 
-    def test_process_poisson(self):
+    def test_process_error_model(self):
         ai_result = Integrate1dResult(numpy.array([0]), numpy.array([1]))
         ai = AzimuthalIntegratorMocked(result=ai_result)
         worker = Worker(ai, shapeOut=(1, 10))
         data = numpy.array([0])
         # worker.nbpt_azim = 1
-        worker.do_poisson = True
-        worker.process(data)
-        self.assertIn("error_model", ai._integrate1d_kargs)
-        self.assertEqual(ai._integrate1d_kargs["error_model"], "poisson")
+        for error_model in ["poisson", "azimuthal", None]:
+            worker.error_model = error_model
+            worker.process(data)
+            if error_model:
+                self.assertIn("error_model", ai._integrate1d_kargs)
+                self.assertEqual(ai._integrate1d_kargs["error_model"], error_model)
+            else:
+                self.assertNotIn("error_model", ai._integrate1d_kargs)
 
     def test_process_no_output(self):
         ai_result = Integrate1dResult(numpy.array([0]), numpy.array([1]))

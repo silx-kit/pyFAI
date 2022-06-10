@@ -61,7 +61,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
         self.mask_image = None
         self.subdir = ""
         self.extension = None
-        self.do_poisson = None
+        self.error_model = None
 #        self.do
         try:
             self.shapeIn = (camera.getFrameDim.getHeight(), camera.getFrameDim.getWidth())
@@ -168,10 +168,8 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
                 kwarg["filename"] += self.extension
             else:
                 kwarg["filename"] += ".xy"
-        if self.do_poisson:
-            kwarg["error_model"] = "poisson"
-        else:
-            kwarg["error_model"] = "None"
+        if self.error_model:
+            kwarg["error_model"] = self.error_model
 
         try:
             if self.do_2D():
@@ -274,7 +272,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
         if config.get("rad_pt"):
             self.nbpt_rad = int(config.get("rad_pt"))
         self.unit = pyFAI.units.to_unit(config.get("unit", pyFAI.units.TTH_DEG))
-        self.do_poisson = config.get("do_poisson")
+        self.error_model = config.get("error_model")
         if config.get("do_polarization"):
             self.polarization = config.get("polarization")
         else:
