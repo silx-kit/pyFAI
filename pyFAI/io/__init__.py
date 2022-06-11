@@ -818,7 +818,7 @@ class AsciiWriter(Writer):
             if "polarization_factor" in self.fai_cfg:
                 header_lst.append("Polarization factor: %s" % self.fai_cfg["polarization_factor"])
             header_lst.append("")
-            if "do_poisson" in self.fai_cfg:
+            if "error_model" in self.fai_cfg:
                 header_lst.append("%14s %14s %s" % (self.fai_cfg["unit"], "I", "sigma"))
             else:
                 header_lst.append("%14s %14s" % (self.fai_cfg["unit"], "I"))
