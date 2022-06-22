@@ -5,6 +5,10 @@
 Change-log of versions
 ======================
 
+0.22
+----
+- Drop Python 3.6 (default parameters in namedtuple)
+
 0.21.3 24/03/2022
 -----------------
 - Support hexagonal pixels in splitbbox and nosplit mode (collaboration with EuXFEL)
