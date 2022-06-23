@@ -30,12 +30,12 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2022"
+__date__ = "22/06/2022"
 __status__ = "development"
 
 from collections import namedtuple
-Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count")
-Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count")
+Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,)*3)
+Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,)*3)
 
 
 class IntegrateResult(tuple):
