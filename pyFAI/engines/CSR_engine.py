@@ -135,22 +135,23 @@ class CSRIntegrator(object):
                        variance=variance,
                        dtype=numpy.float32,
                        poissonian=error_model.startswith("pois"))
-        prep.shape = numpy.prod(shape), -1
-        # logger.warning("prep.shape %s lut_size %s, image_size %s, bins %s", prep.shape, self.lut_size, self.size, self.bins)
+        prep.shape = numpy.prod(shape), 4
+        flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
         res = numpy.empty((numpy.prod(self.bins), 5), dtype=numpy.float32)
-        # logger.warning(self._csr.shape)
-        res[:, 0] = self._csr.dot(prep[:, 0])  # Σ c·x
-        res[:, 2] = self._csr.dot(prep[:, 2])  # Σ c·ω
-        res[:, 3] = self._csr.dot(prep[:, 3])  # Σ c·1
+        res[:, 0] = self._csr.dot(flat_sig)  # Σ c·x
+        res[:, 2] = self._csr.dot(flat_nrm)  # Σ c·ω
+        res[:, 3] = self._csr.dot(flat_cnt)  # Σ c·1
         if variance is not None or error_model.startswith("pois"):
-            res[:, 1] = self._csr2.dot(prep[:, 1])  # Σ c²·σ²
-            res[:, 4] = self._csr2.dot(prep[:, 2] ** 2)  # Σ c²·ω²
+            res[:, 1] = self._csr2.dot(flat_var)  # Σ c²·σ²
+            res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
         elif error_model.startswith("azim"):
             avg = res[:, 0] / res[:, 2]
             avg2d = self._csr.T.dot(avg)  # tranform 1D average into 2D (works only if splitting is disabled)
-            delta = (prep[:, 0] / prep[:, 2] - avg2d)
-            res[:, 1] = self._csr2.dot((delta * prep[:, 2]) ** 2)  # Σ c²·ω²·(x-x̄ )²
-            res[:, 4] = self._csr2.dot(prep[:, 2] ** 2)  # Σ c²·ω²
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                delta = (flat_sig / flat_nrm - avg2d)
+            res[:, 1] = self._csr2.dot((delta * flat_nrm) ** 2)  # Σ c²·ω²·(x-x̄ )²
+            res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
         return res
 
 
@@ -240,13 +241,6 @@ class CsrIntegrator1d(CSRIntegrator):
                 sum_nrm2 = trans[:, 4]
                 std = numpy.sqrt(variance / sum_nrm2)
                 sem = numpy.sqrt(variance) / normalization
-
-                # if error_model.startswith("azim"):
-                #     std = numpy.sqrt(variance / sum_nrm2)
-                #     sem = numpy.sqrt(variance) / normalization
-                # else:  # Poisson
-                #     std = numpy.sqrt(variance / sum_nrm2)
-                #     sem = numpy.sqrt(variance) / normalization
                 std[mask] = self.empty
                 sem[mask] = self.empty
             else:
@@ -325,58 +319,58 @@ class CsrIntegrator1d(CSRIntegrator):
         prep_flat = prep.reshape((numpy.prod(shape), 4))
 
         # First azimuthal integration:
-        sum_sig = self._csr.dot(prep_flat[:, 0])
-        sum_nrm = self._csr.dot(prep_flat[:, 2])
-        cnt = self._csr.dot(prep_flat[:, 3])
-        sum_nrm2 = self._csr2.dot(prep_flat[:, 2] ** 2)
+        flat_sig, flat_var, flat_nrm, flat_cnt = prep_flat.T  # should create views!
+        sum_sig = self._csr.dot(flat_sig)
+        sum_nrm = self._csr.dot(flat_nrm)
+        sum_nrm2 = self._csr2.dot(flat_nrm ** 2)
+        cnt = self._csr.dot(flat_cnt)
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             avg = sum_sig / sum_nrm
             interp_filter(avg, avg)
             if azimuthal:
                 avg2d = self._csr.T.dot(avg)  # backproject the average value to the image
-                norm = prep_flat[:, 2]
-                msk = (norm == 0)
-                delta2 = (prep_flat[:, 0] / norm - avg2d) ** 2
-                delta2[msk] = 0
-                sum_var = self._csr.dot(delta2)
-                std = numpy.sqrt(sum_var / sum_nrm)
+                msk = (flat_nrm == 0)
+                delta = (flat_sig / flat_nrm - avg2d)
+                delta[msk] = 0
+                sum_var = self._csr2.dot((delta * flat_nrm) ** 2)
             else:
-                sum_var = self._csr2.dot(prep_flat[:, 1])
-                std = numpy.sqrt(sum_var / sum_nrm2)
-
+                sum_var = self._csr2.dot(flat_var)
+            std = numpy.sqrt(sum_var / sum_nrm2)
+            interp_filter(std, std)
             for _ in range(cycle):
-                # Interpolate in 2D:
+                # Interpolate in 2D: TODO: can be skipped in the case of azimuthal...
                 avg2d = self._csr.T.dot(avg)
-                std2d = self._csr.T.dot(interp_filter(std, std))
+                std2d = self._csr.T.dot(std)
                 cnt2d = numpy.maximum(self._csr.T.dot(cnt), 3)  # Needed for Chauvenet criterion
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    delta = abs(prep_flat[..., 0] / prep_flat[..., 2] - avg2d)
+                delta = abs(flat_sig / flat_nrm - avg2d)
                 chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0 * numpy.log(cnt2d / numpy.sqrt(2.0 * numpy.pi))))
-                # chauvenet = cutoff * std2d
-                msk2d = numpy.where(numpy.logical_not(delta <= chauvenet * std2d))
-                # print(len(msk2d[0]))
+                msk2d = numpy.where(numpy.logical_not(abs(delta) <= chauvenet * std2d))
+                # discard outlier pixel here:
                 prep_flat[msk2d] = 0
                 # subsequent integrations:
-                sum_sig = self._csr.dot(prep_flat[:, 0])
-                sum_nrm = self._csr.dot(prep_flat[:, 2])
-                sum_nrm2 = self._csr2.dot(prep_flat[:, 2] ** 2)
-                cnt = self._csr.dot(prep_flat[:, 3])
+                sum_sig = self._csr.dot(flat_sig)
+                sum_nrm = self._csr.dot(flat_nrm)
+                sum_nrm2 = self._csr2.dot(flat_nrm ** 2)
+                cnt = self._csr.dot(flat_cnt)
                 avg = sum_sig / sum_nrm
+                interp_filter(avg, avg)
                 if azimuthal:
-                    avg_ext = self._csr.T.dot(avg)  # backproject the average value to the image
-                    msk = prep_flat[:, 2] == 0
-                    delta2 = (prep_flat[:, 0] / prep_flat[:, 2] - avg_ext) ** 2
-                    delta2[msk] = 0
-                    sum_var = self._csr.dot(delta2)
-                    std = numpy.sqrt(sum_var / sum_nrm)
+                    avg2d = self._csr.T.dot(avg)  # backproject the average value to the image
+                    msk = (flat_nrm == 0)
+                    delta = (flat_sig / flat_nrm - avg2d)
+                    delta[msk] = 0
+                    sum_var = self._csr2.dot((delta * flat_nrm) ** 2)
                 else:
-                    sum_var = self._csr2.dot(prep_flat[:, 1])
-                    std = numpy.sqrt(sum_var / sum_nrm2)
+                    sum_var = self._csr2.dot(flat_var)
+                std = numpy.sqrt(sum_var / sum_nrm2)
+                interp_filter(std, std)
+            # Finally calculate the sem in addition to the std
 
-            msk = sum_nrm <= 0
             sem = std * numpy.sqrt(sum_nrm2) / sum_nrm
+        # mask out remaining NaNs
+        msk = sum_nrm <= 0
         avg[msk] = self.empty
         std[msk] = self.empty
         sem[msk] = self.empty

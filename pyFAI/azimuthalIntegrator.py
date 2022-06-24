@@ -3345,13 +3345,19 @@ class AzimuthalIntegrator(Geometry):
         result._set_metadata(metadata)
         result._set_sum_signal(intpl.signal)
         result._set_sum_normalization(intpl.normalization)
+        result._set_sum_normalization2(intpl.norm_sq)
+        result._set_std(intpl.std)
+        result._set_sem(intpl.sem)
         result._set_sum_variance(intpl.variance)
         result._set_count(intpl.count)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         return result
 
-    sigma_clip = _sigma_clip_legacy
+    @deprecated(reason="will be replaced by `sigma_clip_ng` in version 0.23.0. Please use either `_sigma_clip_legacy` for full compatibility or upgrade your code to accomodate the new API",
+                replacement="sigma_clip_ng", since_version="0.21.0", only_once=True, skip_backtrace_count=1, deprecated_since="2022/01/01")
+    def sigma_clip(self, *args, **kwargs):
+        return self._sigma_clip_legacy(*args, **kwargs)
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
