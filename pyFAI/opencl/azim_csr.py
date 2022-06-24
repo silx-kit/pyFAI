@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "03/06/2022"
+__date__ = "24/06/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -41,7 +41,7 @@ if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from . import processing
 from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
@@ -600,7 +600,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     integrate = integrate_legacy
 
     def integrate_ng(self, data, dark=None, dummy=None, delta_dummy=None,
-                     poissonian=None, variance=None, dark_variance=None,
+                     error_model=ErrorModel.NO, variance=None, dark_variance=None,
                      flat=None, solidangle=None, polarization=None, absorption=None,
                      dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                      polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
@@ -623,7 +623,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
-        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model
+        :param error_model: enum ErrorModel
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -668,8 +668,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
-            kw_corr["poissonian"] = numpy.int8(1 if poissonian else 0)
-            kw_int["error_model"] = numpy.int8(poissonian is False)
+            kw_corr["poissonian"] = numpy.int8(1 if error_model.poissonian else 0)
+            kw_int["error_model"] = numpy.int8(error_model.value)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:
@@ -803,7 +803,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                    flat=None, solidangle=None, polarization=None, absorption=None,
                    dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                    polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-                   safe=True, error_model=None,
+                   safe=True, error_model=ErrorModel.NO,
                    normalization_factor=1.0,
                    cutoff=4.0, cycle=5,
                    out_avgint=None, out_stderr=None, out_merged=None):
@@ -840,6 +840,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
+        :param error_model: enum ErrorModel
         :param normalization_factor: divide raw signal by this value
         :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
@@ -849,10 +850,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :return: namedtuple with "position intensity error signal variance normalization count"
         """
         events = []
-        if isinstance(error_model, str):
-            error_model = error_model.lower()
-        else:
-            error_model = ""
         with self.sem:
             self.send_buffer(data, "image")
             wg = max(self.workgroup_size["memset_ng"])
@@ -879,7 +876,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
-            if error_model.startswith("poisson"):
+            if error_model.poissonian:
                 variance = numpy.maximum(data, 1)
             if variance is not None:
                 self.send_buffer(variance, "variance")
@@ -950,7 +947,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             kw_int["cutoff"] = numpy.float32(cutoff)
             kw_int["cycle"] = numpy.int32(cycle)
-            kw_int["error_model"] = numpy.int8(error_model.startswith("azim"))
+            kw_int["error_model"] = numpy.int8(error_model.value)
 
             wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
 

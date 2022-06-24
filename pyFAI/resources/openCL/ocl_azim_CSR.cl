@@ -357,7 +357,7 @@ static inline float8 _merge_azimuthal(float8 here,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
- * @param error_model   set to 1 to estimate the variance from the azimuthal sector, or 0 to use a Poisson-like model        
+ * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid        
  * @param super_sum   Local array of float8 of size WORKGROUP_SIZE: mandatory as a static function !
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
@@ -387,7 +387,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
                coef = (coefs == NULL)?1.0f: coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
-               if (error_model){
+               if (error_model==3){
                    accum8 = _accumulate_azimuthal(accum8, quatret, coef);
                }
                else{
@@ -404,7 +404,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     while (active_threads > 1) {
         active_threads /= 2;
         if (thread_id_loc < active_threads) {
-            if (error_model){
+            if (error_model==3){
                 super_sum[thread_id_loc] = _merge_azimuthal(super_sum[thread_id_loc], 
                                                             super_sum[thread_id_loc + active_threads]);
             }//if azimuthal
@@ -429,7 +429,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
- * @param error_model 0 for Poisson like, 1 variance from the azimuthal sector, (2 for hybrid?)        
+ * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid        
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
  *
@@ -448,7 +448,7 @@ static inline float8 CSRxVec4_single(const   global  float4   *data,
         float coef = (coefs == NULL)?1.0f:coefs[j];
         int idx = indices[j];
         float4 quatret = data[idx];
-        if (error_model){
+        if (error_model==3){
             accum8 = _accumulate_azimuthal(accum8, quatret, coef);
         }
         else{
@@ -707,7 +707,7 @@ csr_integrate_single(  const   global  float   *weights,
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param empty       Float: value for bad pixels, NaN is a good guess
- * @param error_model char: set to True to calculate the variance on the aximuthal bin instead of propagated from poisson law 
+ * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid 
  * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
  * @param averint     Float pointer to the output 1D array with the averaged signal
  * @param stderr      Float pointer to the output 1D array with the propagated error
@@ -753,7 +753,7 @@ csr_integrate4(  const   global  float4  *weights,
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param empty       Float: value for bad pixels, NaN is a good guess
- * @param error_model char: 0 for Poisson-like, 1 for azimuthal (2 for hybrid) 
+ * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid
  * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
  * @param averint     Float pointer to the output 1D array with the averaged signal
  * @param stderr      Float pointer to the output 1D array with the propagated error
@@ -796,7 +796,7 @@ csr_integrate4_single(  const   global  float4  *weights,
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param cutoff      Discard any value with |value - mean| > cutoff*sigma
  * @param cycle       number of cycle 
- * @param error_model 0 for Poisson-like, 1 to calculate the variance from the difference to the average in the bin 
+ * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal, 4:hybrid 
  * @param summed      contains all the data
  * @param averint     Average signal
  * @param stdevpix    Standard deviation of the pixel
@@ -831,11 +831,11 @@ csr_sigma_clip4(          global  float4  *data4,
     nbpix = max(3, indptr[bin_num + 1] - indptr[bin_num]);
     
     // special case: no cycle and hybrid mode, should be best handled at host side
-    if ((cycle==0) && (error_model==2)){
-        curr_error_model = 0;
+    if ((cycle==0) && (error_model==4)){
+        curr_error_model = 2; //Poisson
     }
     else{
-        curr_error_model = error_model;
+        curr_error_model = 3; //Azimuthal
     }
     
     // first calculation of azimuthal integration to initialize aver & std
@@ -865,8 +865,8 @@ csr_sigma_clip4(          global  float4  *data4,
             break;
 
         nbpix = max(3, nbpix - cnt);
-        if ((cycle==i+1) && (error_model==2)){
-                curr_error_model = 0;
+        if ((cycle==i+1) && (error_model==4)){
+                curr_error_model = 2; //Poisson
         }
         result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
                          CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
