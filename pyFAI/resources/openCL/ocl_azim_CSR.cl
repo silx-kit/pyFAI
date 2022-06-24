@@ -38,6 +38,7 @@
 
 #include "for_eclipse.h"
 #define NULL 0
+enum ErrorModel { NO = 0, VARIANCE=1, POISSON=2, AZIMUTHAL=3, HYBRID=4 };
 /**
  * \brief OpenCL workgroup function for sparse matrix-dense vector multiplication
  *
@@ -387,7 +388,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
                coef = (coefs == NULL)?1.0f: coefs[k];
                idx = indices[k];
                float4 quatret = data[idx];
-               if (error_model==3){
+               if (error_model==AZIMUTHAL){
                    accum8 = _accumulate_azimuthal(accum8, quatret, coef);
                }
                else{
@@ -404,7 +405,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     while (active_threads > 1) {
         active_threads /= 2;
         if (thread_id_loc < active_threads) {
-            if (error_model==3){
+            if (error_model==AZIMUTHAL){
                 super_sum[thread_id_loc] = _merge_azimuthal(super_sum[thread_id_loc], 
                                                             super_sum[thread_id_loc + active_threads]);
             }//if azimuthal
@@ -448,7 +449,7 @@ static inline float8 CSRxVec4_single(const   global  float4   *data,
         float coef = (coefs == NULL)?1.0f:coefs[j];
         int idx = indices[j];
         float4 quatret = data[idx];
-        if (error_model==3){
+        if (error_model==AZIMUTHAL){
             accum8 = _accumulate_azimuthal(accum8, quatret, coef);
         }
         else{
@@ -831,11 +832,11 @@ csr_sigma_clip4(          global  float4  *data4,
     nbpix = max(3, indptr[bin_num + 1] - indptr[bin_num]);
     
     // special case: no cycle and hybrid mode, should be best handled at host side
-    if ((cycle==0) && (error_model==4)){
-        curr_error_model = 2; //Poisson
+    if ((cycle==0) && (error_model==HYBRID)){
+        curr_error_model = POISSON;
     }
     else{
-        curr_error_model = 3; //Azimuthal
+        curr_error_model = AZIMUTHAL;
     }
     
     // first calculation of azimuthal integration to initialize aver & std
@@ -865,8 +866,8 @@ csr_sigma_clip4(          global  float4  *data4,
             break;
 
         nbpix = max(3, nbpix - cnt);
-        if ((cycle==i+1) && (error_model==4)){
-                curr_error_model = 2; //Poisson
+        if ((cycle==i+1) && (error_model==HYBRID)){
+                curr_error_model = POISSON;
         }
         result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
                          CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
