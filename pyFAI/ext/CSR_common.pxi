@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/01/2022"
+__date__ = "24/06/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -39,7 +39,7 @@ from cython.parallel import prange
 import numpy
 
 from .preproc import preproc
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 
 cdef class CsrIntegrator(object):
@@ -257,7 +257,7 @@ cdef class CsrIntegrator(object):
     def integrate_ng(self,
                      weights,
                      variance=None,
-                     poissonian=None,
+                     error_model=ErrorModel.NO,
                      dummy=None,
                      delta_dummy=None,
                      dark=None,
@@ -276,7 +276,7 @@ cdef class CsrIntegrator(object):
         :type weights: ndarray
         :param variance: the variance associate to the image
         :type variance: ndarray
-        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model. 
+        :param error_model: enum ErrorModel 
         :param dummy: value for dead pixels (optional)
         :type dummy: float
         :param delta_dummy: precision for dead-pixel value in dynamic masking
@@ -308,7 +308,7 @@ cdef class CsrIntegrator(object):
             data_t[::1] merged = numpy.empty(self.output_size, dtype=data_d)
             data_t[::1] error = numpy.empty(self.output_size, dtype=data_d)
             data_t[:, ::1] preproc4
-            bint do_azimuthal_variance = poissonian is False
+            bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
         assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
@@ -326,7 +326,7 @@ cdef class CsrIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           poissonian= poissonian is True)
+                           poissonian=ErrorModel.poissonian)
 
         for i in prange(self.output_size, nogil=True, schedule="guided"):
             acc_sig = 0.0

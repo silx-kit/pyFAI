@@ -849,6 +849,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param out_merged: destination array or pyopencl array for averaged data (float8!)
         :return: namedtuple with "position intensity error signal variance normalization count"
         """
+        error_model = ErrorModel.parse(error_model)
         events = []
         with self.sem:
             self.send_buffer(data, "image")

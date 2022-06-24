@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "28/01/2022"
+__date__ = "24/06/2022"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -40,7 +40,7 @@ if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from . import processing
 from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
@@ -474,7 +474,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
     integrate = integrate_legacy
 
     def integrate_ng(self, data, dark=None, dummy=None, delta_dummy=None,
-                     poissonian=None, variance=None, dark_variance=None,
+                     error_model=ErrorModel.NO, variance=None, dark_variance=None,
                      flat=None, solidangle=None, polarization=None, absorption=None,
                      dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                      polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
@@ -542,7 +542,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
-            kw_corr["poissonian"] = numpy.int8(1 if poissonian else 0)
+            kw_corr["poissonian"] = numpy.int8(1 if error_model.poissonian else 0)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:

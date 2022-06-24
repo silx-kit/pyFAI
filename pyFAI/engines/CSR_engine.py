@@ -208,7 +208,7 @@ class CsrIntegrator1d(CSRIntegrator):
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
-        :param error_model: set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model.
+        :param error_model: Enum or str, set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model.
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal

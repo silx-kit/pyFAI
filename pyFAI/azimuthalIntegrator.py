@@ -1268,7 +1268,7 @@ class AzimuthalIntegrator(Geometry):
                 integr = self.engines[method].engine
                 intpl = integr.integrate_ng(data,
                                             variance=variance,
-                                            poissonian=error_model.poissonian,
+                                            error_model=error_model,
                                             dummy=dummy,
                                             delta_dummy=delta_dummy,
                                             dark=dark,
@@ -1351,21 +1351,12 @@ class AzimuthalIntegrator(Geometry):
 
                     else:
                         integr = self.engines[method].engine
-                if method.impl_lower == "python":
-                    kwargs = {"error_model": error_model,
-                              "variance": variance}
 
-                else:  # if method.impl_lower == "opencl":
-                    kwargs = {"poissonian": None,
-                              "variance": variance}
+                kwargs = {"error_model": error_model,
+                          "variance": variance}
+                if method.impl_lower == "opencl":
                     kwargs["polarization_checksum"] = polarization_crc
                     kwargs["solidangle_checksum"] = solidangle_crc
-                    if error_model.poissonian:
-                            kwargs["poissonian"] = True
-                            kwargs["variance"] = None
-                    elif error_model is ErrorModel.AZIMUTHAL:
-                            kwargs["poissonian"] = False
-                            kwargs["variance"] = None
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
                                             flat=flat, solidangle=solidangle,
