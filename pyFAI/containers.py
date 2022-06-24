@@ -51,7 +51,9 @@ class ErrorModel(IntEnum):
     def parse(cls, value):
         if value is None:
             return cls.NO
-        if isinstance(value, str):
+        if isinstance(value, cls):
+            return value
+        elif isinstance(value, str):
             for k, v in cls.__members__.items():
                 if k.startswith(value.upper()):
                     return v

@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "24/06/2022"
 
 import contextlib
 import os
@@ -158,7 +158,7 @@ class TestIntegrate1D(unittest.TestCase):
                         logger.info(os.linesep.join(err_msg))
                     self.assertLess(R, self.Rmax, err_msg)
                     R = mathutil.rwp(res[a][::2], res[b][::2])
-                    mesg = "test_ng_nosplit: %s vs %s measured Std R=%s<%s" % (a, b, R, self.Rmax)
+                    mesg = "test_ng_nosplit: %s vs %s measured dev R=%s<%s" % (a, b, R, self.Rmax)
                     if R > self.Rmax:
                         logger.error(mesg)
                     else:

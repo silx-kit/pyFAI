@@ -46,7 +46,7 @@ from .geometry import Geometry
 from . import units
 from .utils import EPS32, deg2rad, crc32
 from .utils.decorators import deprecated, deprecated_warning
-from .containers import Integrate1dResult, Integrate2dResult, SeparateResult
+from .containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
 from .io import DefaultAiWriter
 error = None
 from .method_registry import IntegrationMethod
@@ -1189,25 +1189,17 @@ class AzimuthalIntegrator(Geometry):
         else:
             has_flat = "provided"
 
-        poissonian = None
+        error_model = ErrorModel.parse(error_model)
         if variance is not None:
             assert variance.size == data.size
-            do_variance = True
-        elif error_model:
-            error_model = error_model.lower()
-            do_variance = True
-            if error_model.startswith("poisson"):
-                if method.manage_variance:
-                    poissonian = True
-                else:
-                    if dark is None:
-                        variance = numpy.maximum(data, 1.0).astype(numpy.float32)
-                    else:
-                        variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
-            elif error_model.startswith("azim") and method.manage_variance:
-                poissonian = False
-        else:
-            do_variance = False
+            error_model = ErrorModel.VARIANCE
+        if error_model.poissonian and not method.manage_variance:
+            error_model = ErrorModel.VARIANCE
+            if dark is None:
+                variance = numpy.maximum(data, 1.0).astype(numpy.float32)
+            else:
+                variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
+
         # Prepare LUT if needed!
         if method.algo_lower in ("csr", "lut"):
             # initialize the CSR/LUT integrator in Cython as it may be needed later on.
@@ -1276,7 +1268,7 @@ class AzimuthalIntegrator(Geometry):
                 integr = self.engines[method].engine
                 intpl = integr.integrate_ng(data,
                                             variance=variance,
-                                            poissonian=poissonian,
+                                            poissonian=error_model.poissonian,
                                             dummy=dummy,
                                             delta_dummy=delta_dummy,
                                             dark=dark,
@@ -1368,11 +1360,10 @@ class AzimuthalIntegrator(Geometry):
                               "variance": variance}
                     kwargs["polarization_checksum"] = polarization_crc
                     kwargs["solidangle_checksum"] = solidangle_crc
-                    if error_model:
-                        if error_model.startswith("poisson"):
+                    if error_model.poissonian:
                             kwargs["poissonian"] = True
                             kwargs["variance"] = None
-                        elif error_model.startswith("azim"):
+                    elif error_model is ErrorModel.AZIMUTHAL:
                             kwargs["poissonian"] = False
                             kwargs["variance"] = None
                 intpl = integr.integrate_ng(data, dark=dark,
@@ -1382,7 +1373,7 @@ class AzimuthalIntegrator(Geometry):
                                             normalization_factor=normalization_factor,
                                             **kwargs)
             # This section is common to all 3 CSR implementations...
-            if do_variance:
+            if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.sigma)
@@ -1422,9 +1413,9 @@ class AzimuthalIntegrator(Geometry):
                            normalization_factor=normalization_factor,
                            mask=mask,
                            radial_range=radial_range,
-                           poissonian=poissonian)
+                           poissonian=error_model.poissonian)
 
-            if do_variance:
+            if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.sigma)
@@ -1488,9 +1479,9 @@ class AzimuthalIntegrator(Geometry):
                                normalization_factor=normalization_factor,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range,
-                               poissonian=poissonian)
+                               poissonian=error_model.poissonian)
 
-            if do_variance:
+            if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.sigma)
@@ -1539,7 +1530,7 @@ class AzimuthalIntegrator(Geometry):
                                pos1_range=azimuth_range)
             else:
                 raise RuntimeError("Should not arrive here")
-            if do_variance:
+            if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.sigma)
