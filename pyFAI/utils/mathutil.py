@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2021"
+__date__ = "24/06/2022"
 __status__ = "production"
 
 import logging
@@ -733,7 +733,7 @@ def is_far_from_group(pt, lst_pts, d2):
     return True
 
 
-def rwp(obt, ref):
+def rwp(obt, ref, scale=1.0):
     """Compute :math:`\\sqrt{\\sum \\frac{4\\cdot(obt-ref)^2}{(obt + ref)^2}}`.
 
     This is done for symmetry reason between obt and ref
@@ -742,10 +742,12 @@ def rwp(obt, ref):
     :type obt: 2-list of array of the same size
     :param obt: reference data
     :type obt: 2-list of array of the same size
+    :param scale: scale obt intensity  
     :return:  Rwp value, lineary interpolated
     """
     ref0, ref1 = ref[:2]
     obt0, obt1 = obt[:2]
+    obt1 = obt1 * scale
     big0 = numpy.concatenate((obt0, ref0))
     big0.sort()
     big0 = numpy.unique(big0)

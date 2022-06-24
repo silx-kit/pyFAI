@@ -30,12 +30,12 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2022"
+__date__ = "24/06/2022"
 __status__ = "development"
 
 from collections import namedtuple
-Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count")
-Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count")
+Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
+Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
 
 
 class IntegrateResult(tuple):
@@ -47,6 +47,7 @@ class IntegrateResult(tuple):
         self._sum_signal = None  # sum of signal
         self._sum_variance = None  # sum of variance
         self._sum_normalization = None  # sum of all normalization SA, pol, ...
+        self._sum_normalization2 = None  # sum of all normalization squared
         self._count = None  # sum of counts, from signal/norm
         self._count2 = None  # sum of counts squared, from variance
         self._unit = None
@@ -61,6 +62,8 @@ class IntegrateResult(tuple):
         self._method = None
         self._method_called = None
         self._compute_engine = None
+        self._std = None  # standard deviation (error for a pixel)
+        self._sem = None  # standard error of the mean (error for the mean)
 
     @property
     def method(self):
@@ -147,6 +150,21 @@ class IntegrateResult(tuple):
         :type count: numpy.ndarray
         """
         self._sum_normalization = sum_
+
+    @property
+    def sum_normalization2(self):
+        """Sum of all normalization squared information
+
+        :rtype: numpy.ndarray
+        """
+        return self._sum_normalization2
+
+    def _set_sum_normalization2(self, sum_):
+        """Set the sum of all normalization information
+
+        :type count: numpy.ndarray
+        """
+        self._sum_normalization2 = sum_
 
     @property
     def count(self):
@@ -283,6 +301,20 @@ class IntegrateResult(tuple):
 
     def _set_npt_azim(self, value):
         self._npt_azim = value
+
+    def _set_std(self, value):
+        self._std = value
+
+    @property
+    def std(self):
+        return self._std
+
+    def _set_sem(self, value):
+        self._sem = value
+
+    @property
+    def sem(self):
+        return self._sem
 
 
 class Integrate1dResult(IntegrateResult):
