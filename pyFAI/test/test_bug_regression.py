@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2022"
+__date__ = "24/06/2022"
 
 import sys
 import os
@@ -44,8 +44,9 @@ import unittest
 import numpy
 import subprocess
 import logging
-from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
+from .utilstest import UtilsTest
+from ..utils import mathutil
 import fabio
 from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator, logger as ai_logger
@@ -532,12 +533,86 @@ class TestBugRegression(unittest.TestCase):
         self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
 
 
+class TestBug1703(unittest.TestCase):
+    """
+    Check the normalization affect propely the propagated errors/intensity 
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        pix = 100e-6
+        shape = (1024, 1024)
+        npt = 1000
+        wl = 1e-10
+        I0 = 1e2
+        unit = "q_nm^-1"
+        cls.kwargs = {"npt":npt,
+         "correctSolidAngle":False,
+         "polarization_factor":None,
+         "safe":False,
+         "unit": unit
+         }
+        cls.methods = [("no", "csr", "python"),  # Those methods should be passing this test
+                       # ("no", "csr", "cython"),  # Known broken
+                       # ("no", "csr", "opencl"),  # Known broken
+                       ]
+        detector = detectors.Detector(pix, pix)
+        detector.shape = detector.max_shape = shape
+
+        ai_init = {"dist":1.0,
+           "poni1":0.0,
+           "poni2":0.0,
+           "rot1":-0.05,
+           "rot2":+0.05,
+           "rot3":0.0,
+           "detector":detector,
+           "wavelength":wl}
+        cls.ai = AzimuthalIntegrator(**ai_init)
+
+        cls.q = numpy.linspace(0, cls.ai.array_from_unit(unit=unit).max(), npt)
+        cls.I = I0 / (1 + cls.q ** 2)
+        img_theo = cls.ai.calcfrom1d(cls.q, cls.I, dim1_unit=unit,
+                         correctSolidAngle=True,
+                         polarization_factor=None)
+        cls.img = numpy.random.poisson(img_theo)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.kwargs = cls.img = cls.methods = None
+        cls.q = cls.I = None
+
+    def test_integration(self):
+        factor = 1e-4
+        for method in self.methods:
+            k = self.kwargs.copy()
+            k["method"] = method
+            ka = k.copy()
+            ka["error_model"] = "azimuthal"
+            kp = k.copy()
+            kp["error_model"] = "poisson"
+            res_azim_1 = self.ai.integrate1d(self.img, **ka)
+            res_azim_f = self.ai.integrate1d(self.img, normalization_factor=factor, **ka)
+            res_pois_f = self.ai.integrate1d(self.img, normalization_factor=factor, **kp)
+            res_pois_1 = self.ai.integrate1d(self.img, **kp)
+            # Check the intensity
+            self.assertLess(mathutil.rwp(res_pois_1, (self.q, self.I), scale=1), 5, f"intensity Poisson, unscaled, {method}")
+            self.assertLess(mathutil.rwp(res_pois_f, (self.q, self.I), scale=factor), 5, f"intensity Poisson, scaled, {method}")
+            self.assertLess(mathutil.rwp(res_azim_1, (self.q, self.I), scale=1), 5, f"intensity Azimuthal, unscaled, {method}")
+            self.assertLess(mathutil.rwp(res_azim_f, (self.q, self.I), scale=factor), 5, f"intensity Azimuthal, unscaled, {method}")
+
+            self.assertLess(mathutil.rwp((res_pois_1[0], res_pois_1[2]), (res_pois_1[0], res_pois_1[2]), scale=1), 5, f"sigma Poisson, unscaled, {method}")
+            self.assertLess(mathutil.rwp((res_pois_f[0], res_pois_f[2]), (res_pois_1[0], res_pois_1[2]), scale=factor), 5, f"sigma Poisson, scaled, {method}")
+            self.assertLess(mathutil.rwp((res_azim_1[0], res_azim_1[2]), (res_pois_1[0], res_pois_1[2]), scale=1), 5, f"sigma Azimuthal, unscaled, {method}")
+            self.assertLess(mathutil.rwp((res_azim_f[0], res_azim_f[2]), (res_pois_1[0], res_pois_1[2]), scale=factor), 5, f"sigma Azimuthal, unscaled, {method}")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestBug170))
     testsuite.addTest(loader(TestBug211))
     testsuite.addTest(loader(TestBugRegression))
+    testsuite.addTest(loader(TestBug1703))
     return testsuite
 
 

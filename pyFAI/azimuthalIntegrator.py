@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/04/2022"
+__date__ = "24/06/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1359,18 +1359,22 @@ class AzimuthalIntegrator(Geometry):
 
                     else:
                         integr = self.engines[method].engine
-                kwargs = {"poissonian": None,
-                          "variance": variance}
-                if method.impl_lower == "opencl":
+                if method.impl_lower == "python":
+                    kwargs = {"error_model": error_model,
+                              "variance": variance}
+
+                else:  # if method.impl_lower == "opencl":
+                    kwargs = {"poissonian": None,
+                              "variance": variance}
                     kwargs["polarization_checksum"] = polarization_crc
                     kwargs["solidangle_checksum"] = solidangle_crc
-                if error_model:
-                    if error_model.startswith("poisson"):
-                        kwargs["poissonian"] = True
-                        kwargs["variance"] = None
-                    elif error_model.startswith("azim"):
-                        kwargs["poissonian"] = False
-                        kwargs["variance"] = None
+                    if error_model:
+                        if error_model.startswith("poisson"):
+                            kwargs["poissonian"] = True
+                            kwargs["variance"] = None
+                        elif error_model.startswith("azim"):
+                            kwargs["poissonian"] = False
+                            kwargs["variance"] = None
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
                                             flat=flat, solidangle=solidangle,
@@ -1390,7 +1394,11 @@ class AzimuthalIntegrator(Geometry):
             result._set_unit(integr.unit)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
+            result._set_sum_normalization2(intpl.norm_sq)
             result._set_count(intpl.count)
+            result._set_sem(intpl.sem)
+            result._set_std(intpl.std)
+
         # END of CSR/LUT common implementations
         elif (method.method[1:3] == ("no", "histogram") and
               method.method[3] in ("python", "cython")):
@@ -1598,6 +1606,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         result._set_method_called("integrate1d_ng")
         result._set_metadata(metadata)
+
         if filename is not None:
             writer = DefaultAiWriter(filename, self)
             writer.write(result)
@@ -3506,24 +3515,22 @@ class AzimuthalIntegrator(Geometry):
         :return: the minimum bin number providing the provided redundancy
         """
         img = numpy.empty(self.detector.shape, dtype=numpy.float32)
-        dia = int(numpy.sqrt(img.shape[0]**2+img.shape[1]**2))
+        dia = int(numpy.sqrt(img.shape[0] ** 2 + img.shape[1] ** 2))
         method = self._normalize_method(("no", "histogram", "cython"), dim=1, default=self.DEFAULT_METHOD_1D)
         unit = units.to_unit(unit)
         if search_range is None:
-            ref = self.integrate1d(img, dia, method=method, unit=unit, 
+            ref = self.integrate1d(img, dia, method=method, unit=unit,
                                    azimuth_range=azimuth_range, radial_range=radial_range).count.min()
-            if ref>=redundancy:
-                search_range = (dia, 4*dia)
+            if ref >= redundancy:
+                search_range = (dia, 4 * dia)
             else:
                 search_range = (2, dia)
-            
+
         for i in range(*search_range):
             mini = self.integrate1d(img, i, method=method, unit=unit,
                                   azimuth_range=azimuth_range, radial_range=radial_range).count.min()
             if mini < redundancy:
-                return i-1
-
-
+                return i - 1
 
 ################################################################################
 # Some properties

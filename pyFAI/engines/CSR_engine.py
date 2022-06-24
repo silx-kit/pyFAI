@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2022"
+__date__ = "24/06/2022"
 __status__ = "development"
 
 import logging
@@ -139,18 +139,18 @@ class CSRIntegrator(object):
         # logger.warning("prep.shape %s lut_size %s, image_size %s, bins %s", prep.shape, self.lut_size, self.size, self.bins)
         res = numpy.empty((numpy.prod(self.bins), 5), dtype=numpy.float32)
         # logger.warning(self._csr.shape)
-        res[:, 0] = self._csr.dot(prep[:, 0])         # Σ c·x
-        res[:, 2] = self._csr.dot(prep[:, 2])         # Σ c·ω
-        res[:, 3] = self._csr.dot(prep[:, 3])         # Σ c·1
+        res[:, 0] = self._csr.dot(prep[:, 0])  # Σ c·x
+        res[:, 2] = self._csr.dot(prep[:, 2])  # Σ c·ω
+        res[:, 3] = self._csr.dot(prep[:, 3])  # Σ c·1
         if variance is not None or error_model.startswith("pois"):
-            res[:, 1] = self._csr2.dot(prep[:, 1])    # Σ c²·σ²
-            res[:, 4] = self._csr2.dot(prep[:, 2]**2) # Σ c²·ω²
+            res[:, 1] = self._csr2.dot(prep[:, 1])  # Σ c²·σ²
+            res[:, 4] = self._csr2.dot(prep[:, 2] ** 2)  # Σ c²·ω²
         elif error_model.startswith("azim"):
             avg = res[:, 0] / res[:, 2]
-            avg2d = self._csr.T.dot(avg) # tranform 1D average into 2D (works only if splitting is disabled)
-            delta2 = (prep[:, 0] / prep[:, 2] - avg2d) ** 2
-            res[:, 1] = self._csr.dot(delta2)
-            res[:, 4] = self._csr2.dot(prep[:, 2]**2)
+            avg2d = self._csr.T.dot(avg)  # tranform 1D average into 2D (works only if splitting is disabled)
+            delta = (prep[:, 0] / prep[:, 2] - avg2d)
+            res[:, 1] = self._csr2.dot((delta * prep[:, 2]) ** 2)  # Σ c²·ω²·(x-x̄ )²
+            res[:, 4] = self._csr2.dot(prep[:, 2] ** 2)  # Σ c²·ω²
         return res
 
 
@@ -230,7 +230,7 @@ class CsrIntegrator1d(CSRIntegrator):
         signal = trans[:, 0]
         variance = trans[:, 1]
         normalization = trans[:, 2]
-        count = trans[:, 3] 
+        count = trans[:, 3]
         mask = (normalization == 0)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -238,12 +238,15 @@ class CsrIntegrator1d(CSRIntegrator):
             intensity[mask] = self.empty
             if do_variance:
                 sum_nrm2 = trans[:, 4]
-                if error_model.startswith("azim"):
-                    std = numpy.sqrt(variance / normalization)
-                    sem = std * numpy.sqrt(sum_nrm2) / normalization 
-                else:
-                    std = numpy.sqrt(variance / sum_nrm2)
-                    sem = numpy.sqrt(variance) / normalization
+                std = numpy.sqrt(variance / sum_nrm2)
+                sem = numpy.sqrt(variance) / normalization
+
+                # if error_model.startswith("azim"):
+                #     std = numpy.sqrt(variance / sum_nrm2)
+                #     sem = numpy.sqrt(variance) / normalization
+                # else:  # Poisson
+                #     std = numpy.sqrt(variance / sum_nrm2)
+                #     sem = numpy.sqrt(variance) / normalization
                 std[mask] = self.empty
                 sem[mask] = self.empty
             else:
@@ -325,7 +328,7 @@ class CsrIntegrator1d(CSRIntegrator):
         sum_sig = self._csr.dot(prep_flat[:, 0])
         sum_nrm = self._csr.dot(prep_flat[:, 2])
         cnt = self._csr.dot(prep_flat[:, 3])
-        sum_nrm2 = self._csr2.dot(prep_flat[:, 2]**2)
+        sum_nrm2 = self._csr2.dot(prep_flat[:, 2] ** 2)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             avg = sum_sig / sum_nrm
@@ -339,9 +342,9 @@ class CsrIntegrator1d(CSRIntegrator):
                 sum_var = self._csr.dot(delta2)
                 std = numpy.sqrt(sum_var / sum_nrm)
             else:
-                sum_var = self._csr2.dot(prep_flat[:, 1])            
+                sum_var = self._csr2.dot(prep_flat[:, 1])
                 std = numpy.sqrt(sum_var / sum_nrm2)
-    
+
             for _ in range(cycle):
                 # Interpolate in 2D:
                 avg2d = self._csr.T.dot(avg)
@@ -350,7 +353,7 @@ class CsrIntegrator1d(CSRIntegrator):
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
                     delta = abs(prep_flat[..., 0] / prep_flat[..., 2] - avg2d)
-                chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0 * numpy.log(cnt2d / numpy.sqrt(2.0 * numpy.pi)))) 
+                chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0 * numpy.log(cnt2d / numpy.sqrt(2.0 * numpy.pi))))
                 # chauvenet = cutoff * std2d
                 msk2d = numpy.where(numpy.logical_not(delta <= chauvenet * std2d))
                 # print(len(msk2d[0]))
@@ -358,7 +361,7 @@ class CsrIntegrator1d(CSRIntegrator):
                 # subsequent integrations:
                 sum_sig = self._csr.dot(prep_flat[:, 0])
                 sum_nrm = self._csr.dot(prep_flat[:, 2])
-                sum_nrm2= self._csr2.dot(prep_flat[:, 2]**2)
+                sum_nrm2 = self._csr2.dot(prep_flat[:, 2] ** 2)
                 cnt = self._csr.dot(prep_flat[:, 3])
                 avg = sum_sig / sum_nrm
                 if azimuthal:
@@ -371,13 +374,13 @@ class CsrIntegrator1d(CSRIntegrator):
                 else:
                     sum_var = self._csr2.dot(prep_flat[:, 1])
                     std = numpy.sqrt(sum_var / sum_nrm2)
-    
+
             msk = sum_nrm <= 0
-            sem = std * numpy.sqrt(sum_nrm2) / sum_nrm 
+            sem = std * numpy.sqrt(sum_nrm2) / sum_nrm
         avg[msk] = self.empty
         std[msk] = self.empty
         sem[msk] = self.empty
-        
+
         # Here we return the standard deviation and not the standard error of the mean !
         return Integrate1dtpl(self.bin_centers, avg, std, sum_sig, sum_var, sum_nrm, cnt, std, sem, sum_nrm2)
 
@@ -468,8 +471,8 @@ class CsrIntegrator2d(CSRIntegrator):
         signal = trans[..., 0]
         variance = trans[..., 1]
         normalization = trans[..., 2]
-        count = trans[..., 3]  
-        
+        count = trans[..., 3]
+
         mask = (normalization == 0)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
