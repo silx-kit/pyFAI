@@ -2,28 +2,10 @@ os: linux
 dist: xenial
 language: python
 python:
-  - "3.6"
   - "3.7"
   - "3.8"
   - "3.9"
 
-#addons:
-#  apt:
-#    packages:
-#      - libhdf5-dev
-#      - gfortran
-#      - libatlas-base-dev
-#For OpenCL:
-#      - ocl-icd-libopencl1
-#      - opencl-headers
-#      - libnuma1
-#      - ocl-icd-dev
-#      - ocl-icd-opencl-dev
-# command to install dependencies
-
-#before_install:
-#  - "if [ ${TRAVIS_OS_NAME:-'linux'} = 'linux' ]; then . ./ci/before_install-linux.sh; fi"
-#  - "if [ ${TRAVIS_OS_NAME:-'linux'} = 'osx' ]; then . ./ci/travis/before_install-osx.sh; fi"
 
 install:
   - "python ci/info_platform.py"
