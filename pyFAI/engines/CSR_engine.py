@@ -299,6 +299,9 @@ class CsrIntegrator1d(CSRIntegrator):
             logger.error("No variance propagation is incompatible with sigma-clipping. Using `azimuthal` model !")
             error_model = ErrorModel.AZIMUTHAL
 
+#        poissonian = error_model.startswith("pois")
+#        azimuthal = (not poissonian) and (variance is None)
+
         prep = preproc(data,
                        dark=dark,
                        flat=flat,
