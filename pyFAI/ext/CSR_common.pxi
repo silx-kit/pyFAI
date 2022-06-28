@@ -654,7 +654,7 @@ cdef class CsrIntegrator(object):
                 sum_count[i] = acc_count
                 if (acc_count > 0.0) and (acc_norm != 0.0):
                     merged[i] = acc_sig / acc_norm
-                    stda[i] = sqrt(acc_var / acc_norm_sq)
+                    stda[i] = std #sqrt(acc_var / acc_norm_sq)
                     sema[i] = sqrt(acc_var) / acc_norm
                 else:
                     merged[i] = empty
