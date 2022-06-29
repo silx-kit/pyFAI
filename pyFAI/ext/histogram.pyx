@@ -38,7 +38,7 @@ Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jerome Kieffer"
-__date__ = "07/01/2022"
+__date__ = "29/06/2022"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 
 from .preproc import preproc
 
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 _COMPILED_WITH_OPENMP = _openmp.COMPILED_WITH_OPENMP
 
@@ -349,7 +349,7 @@ def histogram_preproc(pos,
         Py_ssize_t  size = pos.size, bin = 0, i, j
         position_t[::1] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=position_d)
         data_t[:, ::1] cdata = numpy.ascontiguousarray(weights, dtype=data_d).reshape(-1, nchan)
-        acc_t[:, ::1] out_prop = numpy.zeros((bins, 4), dtype=acc_d)
+        acc_t[:, ::1] out_prop = numpy.zeros((bins, 5), dtype=acc_d)
         position_t delta, min0, max0, maxin0
         position_t a = 0.0
         position_t fbin = 0.0
@@ -375,10 +375,13 @@ def histogram_preproc(pos,
             bin = < Py_ssize_t > fbin
             if bin < 0 or bin >= bins:
                 continue
-            for j in range(nchan):
-                out_prop[bin, j] += cdata[i, j]
-            for j in range(nchan, 4):
-                out_prop[bin, j] += 1.0
+            out_prop[bin, 0] += cdata[i, 0]
+            out_prop[bin, 1] += cdata[i, 1]
+            if nchan>2:
+                out_prop[bin, 2] += cdata[i, 2]
+                out_prop[bin, 3] += cdata[i, 2]**2
+            if nchan>3:
+                out_prop[bin, 4] += cdata[i, 3]
     return (numpy.asarray(out_prop),
             numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins))
 
@@ -398,7 +401,7 @@ def histogram1d_engine(radial, int npt,
                        split_result=False,
                        variance=None,
                        dark_variance=None,
-                       poissonian=False,
+                       error_model=ErrorModel.NO,
                        radial_range=None
                        ):
     """Implementation of rebinning engine (without splitting) using pure cython histograms
@@ -418,7 +421,7 @@ def histogram1d_engine(radial, int npt,
     :param empty: value to be given for empty bins
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
-    :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
+    :param error_model: One of the several ErrorModel, only variance and Poisson are implemented.
 
 
     NaN are always considered as invalid values
@@ -437,9 +440,11 @@ def histogram1d_engine(radial, int npt,
         acc_t[:, ::1] res
         float32_t[:, ::1] prep
         position_t[::1] position
-        data_t[::1] histo_normalization, histo_signal, histo_variance, histo_count, intensity, error
-        data_t norm, sig, var, cnt
+        data_t[::1] histo_normalization, histo_signal, histo_variance, histo_count, intensity, std, sem, histo_normalization2
+        data_t norm, sig, var, cnt, norm2
         int i
+        bint do_variance=error_model
+    
     prep = preproc(raw,
                    dark=dark,
                    flat=flat,
@@ -453,7 +458,7 @@ def histogram1d_engine(radial, int npt,
                    split_result=4,
                    variance=variance,
                    dark_variance=dark_variance,
-                   poissonian=poissonian,
+                   poissonian=error_model.poissonian,
                    ).reshape(-1, 4)
     res, position = histogram_preproc(radial.ravel(),
                                       prep,
@@ -463,9 +468,11 @@ def histogram1d_engine(radial, int npt,
     histo_signal = numpy.empty(npt, dtype=data_d)
     histo_variance = numpy.empty(npt, dtype=data_d)
     histo_normalization = numpy.empty(npt, dtype=data_d)
+    histo_normalization2 = numpy.empty(npt, dtype=data_d)
     histo_count = numpy.empty(npt, dtype=data_d)
     intensity = numpy.empty(npt, dtype=data_d)
-    error = numpy.empty(npt, dtype=data_d)
+    std = numpy.empty(npt, dtype=data_d)
+    sem = numpy.empty(npt, dtype=data_d)
     if dummy is not None:
         empty = dummy
     with nogil:
@@ -473,23 +480,31 @@ def histogram1d_engine(radial, int npt,
             sig = histo_signal[i] = res[i, 0]
             var = histo_variance[i] = res[i, 1]
             norm = histo_normalization[i] = res[i, 2]
-            cnt = histo_count[i] = res[i, 3]
-            if norm != 0.0:
+            norm2 = histo_normalization2[i] = res[i, 3]
+            cnt = histo_count[i] = res[i, 4]
+            if norm2 > 0.0:
                 intensity[i] = sig / norm
-                if var != 0.0:
-                    error[i] = sqrt(var) / norm
+                if do_variance:
+                    std[i] = sqrt(var / norm2)
+                    sem[i] = sqrt(var) / norm
                 else:
-                    error[i] = empty
+                    std[i] = empty
+                    sem[i] = empty
             else:
                 intensity[i] = empty
-                error[i] = empty
+                std[i] = empty
+                sem[i] = empty
     return Integrate1dtpl(numpy.asarray(position),
                           numpy.asarray(intensity),
-                          numpy.asarray(error),
+                          numpy.asarray(sem),
                           numpy.asarray(histo_signal),
                           numpy.asarray(histo_variance),
                           numpy.asarray(histo_normalization),
-                          numpy.asarray(histo_count))
+                          numpy.asarray(histo_count),
+                          numpy.asarray(std),
+                          numpy.asarray(sem),
+                          numpy.asarray(histo_normalization2)
+                          )
 
 
 def histogram2d_engine(pos0,
