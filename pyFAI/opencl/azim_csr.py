@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "28/06/2022"
+__date__ = "29/06/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -669,7 +669,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["dummy"] = dummy
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
-
             kw_corr["poissonian"] = numpy.int8(1 if error_model.poissonian else 0)
             kw_int["error_model"] = numpy.int8(error_model.value)
             if variance is not None:
