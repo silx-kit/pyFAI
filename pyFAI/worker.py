@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2022"
+__date__ = "29/06/2022"
 __status__ = "development"
 
 import threading
@@ -97,7 +97,8 @@ logger = logging.getLogger(__name__)
 from . import average
 from . import method_registry
 from .azimuthalIntegrator import AzimuthalIntegrator
-from pyFAI.method_registry import IntegrationMethod
+from .containers import ErrorModel
+from .method_registry import IntegrationMethod
 from .distortion import Distortion
 from . import units
 from .io import integration_config
@@ -784,7 +785,7 @@ class PixelwiseWorker(object):
                            delta_dummy=self.delta_dummy,
                            normalization_factor=normalization_factor,
                            empty=self.empty,
-                           poissonian=0,
+                           error_model=ErrorModel.NO,
                            dtype=self.dtype)
         if propagate_error:
             proc_data = temp_data[..., 0]

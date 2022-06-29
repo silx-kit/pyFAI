@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2019-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2022"
+__date__ = "29/06/2022"
 __status__ = "development"
 
 import logging
@@ -42,7 +42,7 @@ except ImportError as err:
 else:
     preproc = preproc_cy
 
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 
 def histogram1d_engine(radial, npt,
@@ -60,7 +60,7 @@ def histogram1d_engine(radial, npt,
                        split_result=False,
                        variance=None,
                        dark_variance=None,
-                       poissonian=False,
+                       error_model=ErrorModel.NO, 
                        radial_range=None
                        ):
     """Implementation of rebinning engine using pure numpy histograms
@@ -80,7 +80,7 @@ def histogram1d_engine(radial, npt,
     :param empty: value to be given for empty bins
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
-    :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
+    :param error_model: Use the provided ErrorModel, only "poisson" and "variance" is valid 
 
 
     NaN are always considered as invalid values
@@ -108,7 +108,7 @@ def histogram1d_engine(radial, npt,
                    split_result=4,
                    variance=variance,
                    dark_variance=dark_variance,
-                   poissonian=poissonian,
+                   error_model=error_model,
                    empty=0
                    )
     radial = radial.ravel()
@@ -118,26 +118,33 @@ def histogram1d_engine(radial, npt,
         radial_range = (radial.min(), radial.max() * EPS32)
 
     histo_signal, _ = numpy.histogram(radial, npt, weights=prep[:, 0], range=radial_range)
-    if variance is not None or poissonian:
+    if error_model == ErrorModel.AZIMUTHAL:
+        raise NotImplementedError("Numpy histogram are not able to assess variance in azimuthal bins")
+    elif error_model: #Variance, Poisson and Hybrid
         histo_variance, _ = numpy.histogram(radial, npt, weights=prep[:, 1], range=radial_range)
-    else:
+        histo_normalization2, _ = numpy.histogram(radial, npt, weights=prep[:, 2]**2, range=radial_range)
+    else: # No error propagated
         histo_variance = None
+        histo_normalization2 = None
     histo_normalization, _ = numpy.histogram(radial, npt, weights=prep[:, 2], range=radial_range)
     histo_count, position = numpy.histogram(radial, npt, weights=prep[:, 3], range=radial_range)
     positions = (position[1:] + position[:-1]) / 2.0
-    with numpy.errstate(divide='ignore', invalid='ignore'):
-        intensity = histo_signal / histo_normalization
-        if histo_variance is None:
-            error = None
-        else:
-            error = numpy.sqrt(histo_variance) / histo_normalization
+
     mask_empty = histo_count == 0
     if dummy is not None:
         empty = dummy
-    intensity[mask_empty] = empty
-    if error is not None:
-        error[mask_empty] = empty
-    return Integrate1dtpl(positions, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)
+    with numpy.errstate(divide='ignore', invalid='ignore'):
+        intensity = histo_signal / histo_normalization
+        intensity[mask_empty] = empty
+        if histo_variance is None:
+            std = sem = None
+        else:
+            std = numpy.sqrt(histo_variance / histo_normalization2)
+            sem = numpy.sqrt(histo_variance) / histo_normalization
+            std[mask_empty] = empty
+            sem[mask_empty] = empty
+    return Integrate1dtpl(positions, intensity, sem, histo_signal, histo_variance, histo_normalization, histo_count,
+                          std, sem, histo_normalization2)
 
 
 def histogram2d_engine(radial, azimuthal, npt,
@@ -155,7 +162,7 @@ def histogram2d_engine(radial, azimuthal, npt,
                        split_result=False,
                        variance=None,
                        dark_variance=None,
-                       poissonian=False,
+                       error_model=ErrorModel.NO,
                        radial_range=None,
                        azimuth_range=None
                        ):
@@ -177,7 +184,7 @@ def histogram2d_engine(radial, azimuthal, npt,
     :param empty: value to be given for empty bins
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
-    :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
+    :param error_model: set to "poisson" for assuming the detector is poissonian and variance = raw + dark
 
 
     NaN are always considered as invalid values
@@ -205,7 +212,7 @@ def histogram2d_engine(radial, azimuthal, npt,
                    split_result=4,
                    variance=variance,
                    dark_variance=dark_variance,
-                   poissonian=poissonian,
+                   error_model=error_model,
                    empty=0
                    )
     radial = radial.ravel()
@@ -222,7 +229,7 @@ def histogram2d_engine(radial, azimuthal, npt,
     histo_signal = histo_signal.T
     histo_normalization = histo_normalization.T
     histo_count = histo_count.T
-    if variance is not None or poissonian:
+    if error_model:
         histo_variance, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 1], range=rng)
         histo_variance = histo_variance.T
     else:

@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2022"
+__date__ = "29/06/2022"
 __status__ = "development"
 
 import logging
@@ -44,7 +44,7 @@ except ImportError as err:
 else:
     preproc = preproc_cy
 from ..utils import calc_checksum
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 
 class CSRIntegrator(object):
@@ -104,7 +104,7 @@ class CSRIntegrator(object):
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
-        :param error_model: set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model. 
+        :param error_model: Enum or string, set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model. 
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -118,7 +118,7 @@ class CSRIntegrator(object):
 
         Nota: all normalizations are grouped in the preprocessing step.
         """
-        error_model = error_model.lower() if error_model else ""
+        error_model = ErrorModel.parse(error_model)
         shape = signal.shape
         prep = preproc(signal,
                        dark=dark,
@@ -134,23 +134,23 @@ class CSRIntegrator(object):
                        split_result=4,
                        variance=variance,
                        dtype=numpy.float32,
-                       poissonian=error_model.startswith("pois"))
+                       error_model=error_model)
         prep.shape = numpy.prod(shape), 4
         flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
         res = numpy.empty((numpy.prod(self.bins), 5), dtype=numpy.float32)
         res[:, 0] = self._csr.dot(flat_sig)  # Σ c·x
         res[:, 2] = self._csr.dot(flat_nrm)  # Σ c·ω
         res[:, 3] = self._csr.dot(flat_cnt)  # Σ c·1
-        if variance is not None or error_model.startswith("pois"):
-            res[:, 1] = self._csr2.dot(flat_var)  # Σ c²·σ²
-            res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
-        elif error_model.startswith("azim"):
+        if error_model is ErrorModel.AZIMUTHAL:
             avg = res[:, 0] / res[:, 2]
             avg2d = self._csr.T.dot(avg)  # tranform 1D average into 2D (works only if splitting is disabled)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 delta = (flat_sig / flat_nrm - avg2d)
             res[:, 1] = self._csr2.dot((delta * flat_nrm) ** 2)  # Σ c²·ω²·(x-x̄ )²
+            res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
+        elif error_model.do_variance:
+            res[:, 1] = self._csr2.dot(flat_var)  # Σ c²·σ²
             res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
         return res
 
@@ -208,7 +208,7 @@ class CsrIntegrator1d(CSRIntegrator):
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
-        :param error_model: set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model.
+        :param error_model: Enum or str, set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model.
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -220,10 +220,9 @@ class CsrIntegrator1d(CSRIntegrator):
         :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance 
         
         """
-        if variance is None and error_model is None:
-            do_variance = False
-        else:
-            do_variance = True
+        error_model = ErrorModel.parse(error_model)
+        if variance is not None:
+            error_model = ErrorModel.VARIANCE
         trans = CSRIntegrator.integrate(self, signal, variance, error_model,
                                         dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
@@ -237,7 +236,7 @@ class CsrIntegrator1d(CSRIntegrator):
             warnings.simplefilter("ignore")
             intensity = signal / normalization
             intensity[mask] = self.empty
-            if do_variance:
+            if error_model.do_variance:
                 sum_nrm2 = trans[:, 4]
                 std = numpy.sqrt(variance / sum_nrm2)
                 sem = numpy.sqrt(variance) / normalization
@@ -288,16 +287,17 @@ class CsrIntegrator1d(CSRIntegrator):
         :param solidangle: array of same shape as data for pre-processing
         :param polarization: array of same shape as data for pre-processing
         :param safe: Unused in this implementation
+        :param error_model: Enum or str, "azimuthal" or "poisson"
         :param normalization_factor: divide raw signal by this value
         :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :return: namedtuple with "position intensity error signal variance normalization count"
         """
         shape = data.shape
-        error_model = error_model.lower() if error_model else ""
-
-        poissonian = error_model.startswith("pois")
-        azimuthal = (not poissonian) and (variance is None)
+        error_model = ErrorModel.parse(error_model)
+        if error_model is ErrorModel.NO:
+            logger.error("No variance propagation is incompatible with sigma-clipping. Using `azimuthal` model !")
+            error_model = ErrorModel.AZIMUTHAL
 
         prep = preproc(data,
                        dark=dark,
@@ -314,7 +314,7 @@ class CsrIntegrator1d(CSRIntegrator):
                        variance=variance,
                        dark_variance=dark_variance,
                        dtype=numpy.float32,
-                       poissonian=poissonian)
+                       error_model=error_model)
 
         prep_flat = prep.reshape((numpy.prod(shape), 4))
 
@@ -329,7 +329,7 @@ class CsrIntegrator1d(CSRIntegrator):
             warnings.simplefilter("ignore")
             avg = sum_sig / sum_nrm
             interp_filter(avg, avg)
-            if azimuthal:
+            if error_model == ErrorModel.AZIMUTHAL:
                 avg2d = self._csr.T.dot(avg)  # backproject the average value to the image
                 msk = (flat_nrm == 0)
                 delta = (flat_sig / flat_nrm - avg2d)
@@ -356,7 +356,7 @@ class CsrIntegrator1d(CSRIntegrator):
                 cnt = self._csr.dot(flat_cnt)
                 avg = sum_sig / sum_nrm
                 interp_filter(avg, avg)
-                if azimuthal:
+                if error_model == ErrorModel.AZIMUTHAL:
                     avg2d = self._csr.T.dot(avg)  # backproject the average value to the image
                     msk = (flat_nrm == 0)
                     delta = (flat_sig / flat_nrm - avg2d)

@@ -34,8 +34,40 @@ __date__ = "24/06/2022"
 __status__ = "development"
 
 from collections import namedtuple
+from enum import IntEnum
+
 Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
 Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
+
+
+class ErrorModel(IntEnum):
+    NO = 0
+    VARIANCE = 1
+    POISSON = 2
+    AZIMUTHAL = 3
+    HYBRID = 4  # used in sigma-clipping, use azimuthal for clipping and poisson later on
+
+    @classmethod
+    def parse(cls, value):
+        if value is None:
+            return cls.NO
+        if isinstance(value, cls):
+            return value
+        elif isinstance(value, str):
+            for k, v in cls.__members__.items():
+                if k.startswith(value.upper()):
+                    return v
+        elif isinstance(value, int):
+            return cls(value)
+        return cls.NO
+
+    @property
+    def poissonian(self):
+        return self._value_ == 2
+
+    @property
+    def do_variance(self):
+        return self._value_ != 0
 
 
 class IntegrateResult(tuple):

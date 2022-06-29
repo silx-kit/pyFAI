@@ -29,8 +29,8 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "08/06/2022"
-__copyright__ = "2014-2021, ESRF, Grenoble"
+__date__ = "28/06/2022"
+__copyright__ = "2014-2022, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -158,7 +158,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                           ("radius2d", self.cl_mem["radius2d"]),
                                                           ("radius1d", self.cl_mem["radius1d"]),
                                                           ("averint", self.cl_mem["averint"]),
-                                                          ("stderr", self.cl_mem["stderr"]),
+                                                          ("std", self.cl_mem["std"]),
                                                           ("radius_min", numpy.float32(0.0)),
                                                           ("radius_max", numpy.float32(numpy.finfo(numpy.float32).max)),
                                                           ("cutoff", numpy.float32(5.0)),
@@ -173,7 +173,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                          ("radius2d", self.cl_mem["radius2d"]),
                                                          ("radius1d", self.cl_mem["radius1d"]),
                                                          ("averint", self.cl_mem["averint"]),
-                                                         ("stderr", self.cl_mem["stderr"]),
+                                                         ("std", self.cl_mem["std"]),
                                                          ("radius_min", numpy.float32(0.0)),
                                                          ("radius_max", numpy.float32(numpy.finfo(numpy.float32).max)),
                                                          ("cutoff", numpy.float32(5.0)),
@@ -633,7 +633,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             background_avg = numpy.empty(self.bins, dtype=numpy.float32)
             background_std = numpy.empty(self.bins, dtype=numpy.float32)
             ev1 = pyopencl.enqueue_copy(self.queue, background_avg, self.cl_mem["averint"])
-            ev2 = pyopencl.enqueue_copy(self.queue, background_std, self.cl_mem["stderr"])
+            ev2 = pyopencl.enqueue_copy(self.queue, background_std, self.cl_mem["std"])
             if self.profile:
                 self.events += [ EventDescription("copy D->H background_avg", ev1),
                                  EventDescription("copy D->H background_std", ev2)]

@@ -34,7 +34,7 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "29/06/2022"
 
 import logging
 import numpy
@@ -46,6 +46,7 @@ if ocl:
 from ...test.utilstest import UtilsTest
 from silx.opencl.common import _measure_workgroup_size
 from ...azimuthalIntegrator import AzimuthalIntegrator
+from ...containers import ErrorModel
 from scipy.ndimage import gaussian_filter1d
 logger = logging.getLogger(__name__)
 
@@ -162,7 +163,7 @@ class TestOclHistogram(unittest.TestCase):
                                  split_result=False,
                                  variance=None,
                                  dark_variance=None,
-                                 poissonian=False,
+                                 error_model=ErrorModel.NO,
                                  radial_range=[mini_rad, maxi_rad],
                                  azimuth_range=[mini_azim, maxi_azim])
 
