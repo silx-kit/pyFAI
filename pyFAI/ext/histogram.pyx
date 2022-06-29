@@ -458,7 +458,7 @@ def histogram1d_engine(radial, int npt,
                    split_result=4,
                    variance=variance,
                    dark_variance=dark_variance,
-                   poissonian=error_model.poissonian,
+                   error_model=error_model,
                    ).reshape(-1, 4)
     res, position = histogram_preproc(radial.ravel(),
                                       prep,

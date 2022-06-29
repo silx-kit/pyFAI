@@ -319,7 +319,7 @@ cdef class LutIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           poissonian= ErrorModel.poissonian)
+                           error_model=error_model)
 
         for i in prange(self.output_size, nogil=True):
             acc_sig = 0.0

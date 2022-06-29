@@ -1473,7 +1473,7 @@ class AzimuthalIntegrator(Geometry):
                                normalization_factor=normalization_factor,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range,
-                               poissonian=error_model.poissonian)
+                               error_model=error_model)
 
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -2603,7 +2603,7 @@ class AzimuthalIntegrator(Geometry):
                                                                     split_result=False,
                                                                     variance=variance,
                                                                     dark_variance=None,
-                                                                    poissonian=False,
+                                                                    error_model=ErrorModel.NO,
                                                                     radial_range=radial_range,
                                                                     azimuth_range=azimuth_range)
             I = intpl.intensity

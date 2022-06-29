@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2022"
+__date__ = "29/06/2022"
 __status__ = "development"
 
 import logging
@@ -134,7 +134,7 @@ class CSRIntegrator(object):
                        split_result=4,
                        variance=variance,
                        dtype=numpy.float32,
-                       poissonian=error_model.poissonian)
+                       error_model=error_model)
         prep.shape = numpy.prod(shape), 4
         flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
         res = numpy.empty((numpy.prod(self.bins), 5), dtype=numpy.float32)
@@ -299,9 +299,6 @@ class CsrIntegrator1d(CSRIntegrator):
             logger.error("No variance propagation is incompatible with sigma-clipping. Using `azimuthal` model !")
             error_model = ErrorModel.AZIMUTHAL
 
-#        poissonian = error_model.startswith("pois")
-#        azimuthal = (not poissonian) and (variance is None)
-
         prep = preproc(data,
                        dark=dark,
                        flat=flat,
@@ -317,7 +314,7 @@ class CsrIntegrator1d(CSRIntegrator):
                        variance=variance,
                        dark_variance=dark_variance,
                        dtype=numpy.float32,
-                       poissonian=error_model.poissonian)
+                       error_model=error_model)
 
         prep_flat = prep.reshape((numpy.prod(shape), 4))
 

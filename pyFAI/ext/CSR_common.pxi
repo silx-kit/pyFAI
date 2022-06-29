@@ -328,7 +328,7 @@ cdef class CsrIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           poissonian=ErrorModel.poissonian)
+                           error_model=error_model)
 
         for i in prange(self.output_size, nogil=True, schedule="guided"):
             acc_sig = 0.0
@@ -416,7 +416,7 @@ cdef class CsrIntegrator(object):
                    polarization=None, 
                    absorption=None,
                    bint safe=True, 
-                   error_model=None,
+                   error_model=ErrorModel.NO,
                    data_t normalization_factor=1.0,
                    double cutoff=0.0, 
                    int cycle=5,
@@ -468,7 +468,7 @@ cdef class CsrIntegrator(object):
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
-        error_model = error_model.lower() if error_model else ""
+        error_model = ErrorModel.parse(error_model)
         cdef:
             index_t i, j, c, bad_pix, idx = 0
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
@@ -484,7 +484,7 @@ cdef class CsrIntegrator(object):
             data_t[::1] stda = numpy.empty(self.output_size, dtype=data_d)
             data_t[::1] sema = numpy.empty(self.output_size, dtype=data_d)
             data_t[:, ::1] preproc4
-            bint do_azimuthal_variance = error_model.startswith("azim")
+            bint do_azimuthal_variance = error_model == ErrorModel.AZIMUTHAL
         assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
@@ -502,7 +502,7 @@ cdef class CsrIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           poissonian= error_model.startswith("poisson"))
+                           error_model=error_model)
         with nogil:
             # Integrate once
             for i in prange(self.output_size, schedule="guided"):

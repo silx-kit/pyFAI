@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "29/06/2022"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -44,6 +44,7 @@ from . import pyopencl
 if pyopencl is None:
     raise ImportError("pyopencl is not installed")
 from . import mf, processing
+from ..containers import ErrorModel
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
@@ -355,7 +356,7 @@ class OCL_Preproc(OpenclProcessing):
                 variance=None,
                 dark_variance=None,
                 normalization_factor=1.0,
-                poissonian=None,
+                error_model=ErrorModel.NO,
                 split_result=None,
                 ):
         """Perform the pixel-wise operation of the array
@@ -365,7 +366,7 @@ class OCL_Preproc(OpenclProcessing):
         :param variance: numpy array with the variance of input image
         :param dark_variance: numpy array with the variance of dark-current image
         :param normalization_factor: divide the result by this
-        :param poissonian: set to true to set variance=signal (minimum 1). None uses the default from constructor
+        :param error_model: set to "poisson"  to set variance=signal (minimum 1). None uses the default from constructor
         :return: array with processed data,
                 may be an array of (data,variance,normalization) depending on class initialization
         """
@@ -386,7 +387,7 @@ class OCL_Preproc(OpenclProcessing):
                 if id(dark_variance) != id(self.on_device.get("dark_variance")):
                     self.send_buffer(dark_variance, "dark_variance")
 
-            if poissonian is None:
+            if error_model.poissonian:
                 poissonian = self.on_host.get("poissonian")
             if split_result is None:
                 split_result = self.on_host.get("split_result")

@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2019-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -108,7 +108,7 @@ def histogram1d_engine(radial, npt,
                    split_result=4,
                    variance=variance,
                    dark_variance=dark_variance,
-                   poissonian=error_model.poissonian,
+                   error_model=error_model,
                    empty=0
                    )
     radial = radial.ravel()
@@ -162,7 +162,7 @@ def histogram2d_engine(radial, azimuthal, npt,
                        split_result=False,
                        variance=None,
                        dark_variance=None,
-                       poissonian=False,
+                       error_model=ErrorModel.NO,
                        radial_range=None,
                        azimuth_range=None
                        ):
@@ -184,7 +184,7 @@ def histogram2d_engine(radial, azimuthal, npt,
     :param empty: value to be given for empty bins
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
-    :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
+    :param error_model: set to "poisson" for assuming the detector is poissonian and variance = raw + dark
 
 
     NaN are always considered as invalid values
@@ -212,7 +212,7 @@ def histogram2d_engine(radial, azimuthal, npt,
                    split_result=4,
                    variance=variance,
                    dark_variance=dark_variance,
-                   poissonian=poissonian,
+                   error_model=error_model,
                    empty=0
                    )
     radial = radial.ravel()
@@ -229,7 +229,7 @@ def histogram2d_engine(radial, azimuthal, npt,
     histo_signal = histo_signal.T
     histo_normalization = histo_normalization.T
     histo_count = histo_count.T
-    if variance is not None or poissonian:
+    if error_model:
         histo_variance, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 1], range=rng)
         histo_variance = histo_variance.T
     else:
