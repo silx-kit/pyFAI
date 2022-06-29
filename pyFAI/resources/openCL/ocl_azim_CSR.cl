@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 28/06/2021
+ *   Last revision: 29/06/2021
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@
 
 #include "for_eclipse.h"
 #define NULL 0
-enum ErrorModel { NO = 0, VARIANCE=1, POISSON=2, AZIMUTHAL=3, HYBRID=4 };
+enum ErrorModel { NO=0, VARIANCE=1, POISSON=2, AZIMUTHAL=3, HYBRID=4 };
 /**
  * \brief OpenCL workgroup function for sparse matrix-dense vector multiplication
  *
@@ -208,23 +208,25 @@ static inline float8 _accumulate_poisson(float8 accum8,
     count = value4.s3;
     
     if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0.0f)) {
-        float sum_norm_1, sum_count;
-        float2 sum_signal_K, sum_variance_K, w, sum_norm_2, coef2;
+        float sum_norm_1, sum_count, sum_norm_2;
+        float2 sum_signal_K, sum_variance_K, w, coef2;
  
         sum_signal_K = (float2)(accum8.s0, accum8.s1);  
         sum_variance_K = (float2)(accum8.s2, accum8.s3); 
         sum_norm_1 = accum8.s4;
-        sum_norm_2 = (float2)(accum8.s5, accum8.s7);
+        sum_norm_2 = accum8.s5;
         sum_count = accum8.s6;
         // defined in silx:doubleword.cl
         sum_signal_K = dw_plus_dw(sum_signal_K, fp_times_fp(coef, signal));
         coef2 = fp_times_fp(coef,  coef);
         sum_variance_K = dw_plus_dw(sum_variance_K, dw_times_fp(coef2, variance));
-        w = fp_times_fp(coef, norm);
-        sum_norm_1 = dw_plus_fp(w, sum_norm_1).s0;
-        sum_norm_2 = dw_plus_dw(dw_times_dw(w, w), sum_norm_2);
+//        w = fp_times_fp(coef, norm);
+//        sum_norm_1 = dw_plus_fp(w, sum_norm_1).s0;
+//        sum_norm_2 = dw_plus_fp(dw_times_dw(w, w), sum_norm_2).s0;
+        sum_norm_1 += coef * norm;
+        sum_norm_2 += coef * coef * norm * norm;
         sum_count = fma(coef, count, sum_count);
-        accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_1, sum_norm_2.s0, sum_count, 0.0f);
+        accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_1, sum_norm_2, sum_count, 0.0f);
     }
     return accum8;
 }
@@ -307,15 +309,19 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
 static inline float8 _merge_poisson(float8 here,
                                     float8 there){
     float2 sum_signal_K, sum_variance_K;
-    float sum_norm_1, sum_norm_2, sum_count;
+//    float sum_norm_1, sum_norm_2, sum_count;
     sum_signal_K = dw_plus_dw((float2)(here.s0, here.s1), 
                                    (float2)(there.s0, there.s1));
     sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3), 
                                      (float2)(there.s2, there.s3));
-    sum_norm_1 = here.s4 + there.s4;
-    sum_norm_2 = here.s5 + there.s5;
-    sum_count = here.s6 + there.s6;
-    return (float8)(sum_signal_K, sum_variance_K, sum_norm_1, sum_norm_2, sum_count, 0.0f);
+//    sum_norm_1 = here.s4 + there.s4;
+//    sum_norm_2 = here.s5 + there.s5;
+//    sum_count = here.s6 + there.s6;
+    return (float8)(sum_signal_K, sum_variance_K, 
+                    here.s4 + there.s4,
+                    here.s5 + there.s5,
+                    here.s6 + there.s6,
+                    0.0f);
 }
 
 /* _merge_azimuthal: Merge two partial dataset considering the azimuthal regions
@@ -393,7 +399,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
     int bin_size = bin_bounds.y - bin_bounds.x;
     // we use _K suffix to highlight it is float2 used for Kahan summation
-    float8 accum8 = (float8) (0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    volatile float8 accum8 = (float8) (0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
     int idx, k, j;
 
     for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
@@ -416,22 +422,25 @@ static inline float8 CSRxVec4(const   global  float4   *data,
  */
     super_sum[thread_id_loc] = accum8;
     barrier(CLK_LOCAL_MEM_FENCE);
-
     while (active_threads > 1) {
         active_threads /= 2;
         if (thread_id_loc < active_threads) {
             if (error_model==AZIMUTHAL){
-                super_sum[thread_id_loc] = _merge_azimuthal(super_sum[thread_id_loc], 
-                                                            super_sum[thread_id_loc + active_threads]);
+                accum8 = _merge_azimuthal(super_sum[thread_id_loc], 
+                                          super_sum[thread_id_loc + active_threads]);
+ 
             }//if azimuthal
             else{
-                super_sum[thread_id_loc] = _merge_poisson(super_sum[thread_id_loc], 
-                                                          super_sum[thread_id_loc + active_threads]);
+                accum8 = _merge_poisson(super_sum[thread_id_loc], 
+                                        super_sum[thread_id_loc + active_threads]);
+                 
             }//if poisson
-        }
+            super_sum[thread_id_loc] = accum8;    
+        } //therad active
         barrier(CLK_LOCAL_MEM_FENCE);
-    }
-    return super_sum[0];
+    } // loop reduction
+    accum8 = super_sum[0]; 
+    return accum8;
 }
 
 
@@ -749,7 +758,7 @@ csr_integrate4(  const   global  float4  *weights,
         float8 result = CSRxVec4(weights, coefs, indices, indptr, error_model, shared);
         if (get_local_id(0)==0) {
             summed[bin_num] = result;
-            if (result.s4 > 0.0f) {
+            if (result.s5 > 0.0f) {
                 averint[bin_num] =  result.s0 / result.s4;
                 stdevpix[bin_num] = sqrt(result.s2 / result.s5);
                 stderrmean[bin_num] = sqrt(result.s2) / result.s4;
@@ -843,11 +852,12 @@ csr_sigma_clip4(          global  float4  *data4,
                           global  float   *stderrmean) {
     int bin_num = get_group_id(0);
     int wg = get_local_size(0);
-    float aver, std, sem;
+    float aver, std;
     int cnt, nbpix;
     char curr_error_model;
     volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
+    float8 result;
 
     // Number of pixel in this bin. 
     // Used to calulate the minimum reasonnable cut-off according to Chauvenet criterion. 
@@ -863,19 +873,16 @@ csr_sigma_clip4(          global  float4  *data4,
     }
     
     // first calculation of azimuthal integration to initialize aver & std
-    
-    float8 result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
+    result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
                             CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
 
     if (result.s5 > 0.0f){
         aver = result.s0 / result.s4;
         std = sqrt(result.s2 / result.s5);
-        sem = sqrt(result.s2) / result.s4;
     }
     else {
         aver = NAN;
         std = NAN;
-        sem = NAN;
     }
 
     for (int i=0; i<cycle; i++) {
@@ -894,29 +901,33 @@ csr_sigma_clip4(          global  float4  *data4,
                 curr_error_model = POISSON;
         }
         result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
-                         CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
+                                CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
 
         if (result.s5 > 0.0f) {
             aver = result.s0 / result.s4;
             std = sqrt(result.s2 / result.s5);
-            sem = sqrt(result.s2) / result.s4;
         }
         else {
             aver = NAN;
             std = NAN;
-            sem = NAN;
             break;
         }
         if ((cnt == 0) && (error_model==HYBRID)) {
             break;
         }
-    }
+    } // clipping loop
         
     if (get_local_id(0) == 0) {
         summed[bin_num] = result;
-        averint[bin_num] = isfinite(aver) ? aver : empty;
-        //Note the standard error of the mean, SEM,  differs from std by sqrt of the normalization factor
-        stdevpix[bin_num] = isfinite(std) ? std : empty;
-        stderrmean[bin_num] = isfinite(sem) ? sem : empty;
+        if (result.s5 > 0.0f) {
+            averint[bin_num] =  aver;
+            stdevpix[bin_num] = std;
+            stderrmean[bin_num] = sqrt(result.s2) / result.s4;
+        }
+        else {
+            averint[bin_num] = empty;
+            stderrmean[bin_num] = empty;
+            stdevpix[bin_num] = empty;
+        }
     }
 } //end csr_sigma_clip4 kernel
