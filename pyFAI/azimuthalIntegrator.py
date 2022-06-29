@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/06/2022"
+__date__ = "29/06/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1404,13 +1404,16 @@ class AzimuthalIntegrator(Geometry):
                            normalization_factor=normalization_factor,
                            mask=mask,
                            radial_range=radial_range,
-                           poissonian=error_model.poissonian)
+                           error_model=error_model)
 
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity,
                                            intpl.sigma)
                 result._set_sum_variance(intpl.variance)
+                result._set_std(intpl.std)
+                result._set_sem(intpl.sem)
+                result._set_sum_normalization2(intpl.norm_sq)
             else:
                 result = Integrate1dResult(intpl.position * unit.scale,
                                            intpl.intensity)

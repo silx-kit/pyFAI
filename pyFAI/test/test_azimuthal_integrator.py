@@ -466,8 +466,8 @@ class TestSaxs(unittest.TestCase):
             ratio_i = ref1d[method + "_1"].intensity.mean() / ref1d[method + "_10"].intensity.mean()
             ratio_s = ref1d[method + "_1"].sigma.mean() / ref1d[method + "_10"].sigma.mean()
 
-            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 1d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
-            self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 1d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
+            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 1d intensity Method: %s ratio: %s expected 10" % (ref1d[method + "_1"].method, ratio_i))
+            self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 1d sigma Method: %s ratio: %s expected 10" % (ref1d[method + "_1"].method, ratio_s))
             # ai.reset()
             ref2d[method + "_1"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, error_model="poisson")
             ref2d[method + "_10"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, normalization_factor=10, error_model="poisson")
