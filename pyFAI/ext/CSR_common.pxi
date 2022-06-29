@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "28/06/2022"
+__date__ = "29/06/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -343,7 +343,7 @@ cdef class CsrIntegrator(object):
                 idx = self._indices[j]
                 
                 if do_azimuthal_variance:
-                    if acc_count == 0.0:
+                    if acc_norm_sq <= 0.0:
                         acc_sig = coef * preproc4[idx, 0]
                         #Variance remains at 0
                         acc_norm = coef * preproc4[idx, 2]
@@ -376,7 +376,7 @@ cdef class CsrIntegrator(object):
             sum_norm[i] = acc_norm
             sum_norm_sq[i] = acc_norm_sq
             sum_count[i] = acc_count
-            if acc_count > 0.0:
+            if acc_norm_sq > 0.0:
                 merged[i] = acc_sig / acc_norm
                 std[i] = sqrt(acc_var / acc_norm_sq)
                 sem[i] = sqrt(acc_var) / acc_norm

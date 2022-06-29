@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "24/06/2022"
+__date__ = "29/06/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -288,15 +288,17 @@ cdef class LutIntegrator(object):
         cdef:
             int32_t i, j, idx = 0, 
             index_t lut_size = self.lut_size
-            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0
-            acc_t delta, x, omega_A, omega_B, omega3
+            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
+            acc_t delta, x, omega_A, omega_B, omega3, omega2_A, omega2_B, w
             data_t empty
             acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_norm = numpy.empty(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_norm_sq = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_count = numpy.empty(self.output_size, dtype=acc_d)
             data_t[::1] merged = numpy.empty(self.output_size, dtype=data_d)
-            data_t[::1] error = numpy.empty(self.output_size, dtype=data_d)
+            data_t[::1] std = numpy.empty(self.output_size, dtype=data_d)
+            data_t[::1] sem = numpy.empty(self.output_size, dtype=data_d)
             data_t[:, ::1] preproc4
             bint do_azimuthal_variance = ErrorModel.AZIMUTHAL
             
@@ -323,6 +325,7 @@ cdef class LutIntegrator(object):
             acc_sig = 0.0
             acc_var = 0.0
             acc_norm = 0.0
+            acc_norm_sq = 0.0
             acc_count = 0.0
             for j in range(lut_size):
                 idx = self._lut[i, j].idx
@@ -331,51 +334,64 @@ cdef class LutIntegrator(object):
                     continue
                 
                 if do_azimuthal_variance:
-                    if acc_count == 0.0:
-                        acc_sig = acc_sig + coef * preproc4[idx, 0]
+                    if acc_norm_sq <= 0.0:
+                        acc_sig = coef * preproc4[idx, 0]
                         #Variance remains at 0
-                        acc_norm = acc_norm + coef * preproc4[idx, 2] 
-                        acc_count = acc_count + coef * preproc4[idx, 3]
+                        acc_norm = coef * preproc4[idx, 2]
+                        acc_norm_sq = (coef * preproc4[idx, 2])**2
+                        acc_count = coef * preproc4[idx, 3]
                     else:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                         omega_A = acc_norm
                         omega_B = coef * preproc4[idx, 2]
+                        omega2_A = acc_norm_sq
+                        omega2_B = omega_B*omega_B
                         acc_norm = omega_A + omega_B
-                        omega3 = acc_norm * omega_A * omega_B
-                        x = <acc_t> preproc4[idx, 0] / preproc4[idx, 2]
-                        delta = omega_B*acc_sig - omega_A*x
+                        acc_norm_sq = omega2_A + omega2_B
+                        omega3 = acc_norm_sq * omega_A * omega_B
+                        x = coef * preproc4[idx, 0]
+                        delta = omega2_B*acc_sig - omega2_A*x
                         acc_var = acc_var +  delta*delta/omega3
-                        acc_sig = acc_sig + coef * preproc4[idx, 0]
+                        acc_sig = acc_sig + x
                         acc_count = acc_count + coef * preproc4[idx, 3]
                 else:
                     acc_sig = acc_sig + coef * preproc4[idx, 0]
                     acc_var = acc_var + coef * coef * preproc4[idx, 1]
-                    acc_norm = acc_norm + coef * preproc4[idx, 2] 
+                    w = coef * preproc4[idx, 2]
+                    acc_norm = acc_norm + w
+                    acc_norm_sq = acc_norm_sq + w*w
                     acc_count = acc_count + coef * preproc4[idx, 3]
             sum_sig[i] = acc_sig
             sum_var[i] = acc_var
             sum_norm[i] = acc_norm
+            sum_norm_sq[i] = acc_norm_sq
             sum_count[i] = acc_count
-            if acc_count > 0.0:
+            if acc_norm_sq > 0.0:
                 merged[i] = acc_sig / acc_norm
-                error[i] = sqrt(acc_var) / acc_norm
+                std[i] = sqrt(acc_var / acc_norm_sq)
+                sem[i] = sqrt(acc_var) / acc_norm
             else:
                 merged[i] = empty
-                error[i] = empty
+                std[i] = empty
+                sem[i] = empty
         if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
                               numpy.asarray(merged).reshape(self.bins).T, 
-                              numpy.asarray(error).reshape(self.bins).T,
+                              numpy.asarray(sem).reshape(self.bins).T,
                               numpy.asarray(sum_sig).reshape(self.bins).T, 
                               numpy.asarray(sum_var).reshape(self.bins).T, 
                               numpy.asarray(sum_norm).reshape(self.bins).T, 
-                              numpy.asarray(sum_count).reshape(self.bins).T,)
+                              numpy.asarray(sum_count).reshape(self.bins).T,
+                              numpy.asarray(std).reshape(self.bins).T, 
+                              numpy.asarray(sem).reshape(self.bins).T, 
+                              numpy.asarray(sum_norm_sq).reshape(self.bins).T)
         else:
-            # 1D integration case: "position intensity error signal variance normalization count"
+            # 1D integration case: "position intensity error signal variance normalization count std sem norm_sq"
             return Integrate1dtpl(self.bin_centers, 
-                                  numpy.asarray(merged),numpy.asarray(error) ,
+                                  numpy.asarray(merged),numpy.asarray(sem) ,
                                   numpy.asarray(sum_sig),numpy.asarray(sum_var), 
-                                  numpy.asarray(sum_norm), numpy.asarray(sum_count))
+                                  numpy.asarray(sum_norm), numpy.asarray(sum_count),
+                                  numpy.asarray(std), numpy.asarray(sem), numpy.asarray(sum_norm_sq))
 
     integrate = integrate_legacy
