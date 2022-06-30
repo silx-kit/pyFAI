@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "28/06/2022"
+__date__ = "30/06/2022"
 __copyright__ = "2014-2022, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,7 +37,7 @@ import logging
 from collections import OrderedDict
 import math
 import numpy
-from ..containers import SparseFrame
+from ..containers import SparseFrame, ErrorModel
 from ..utils import EPS32
 from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
 from . import get_x87_volatile_option
@@ -196,7 +196,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                flat=None, solidangle=None, polarization=None, absorption=None,
                dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-               safe=True, error_model=None,
+               safe=True, error_model=ErrorModel.NO,
                normalization_factor=1.0,
                cutoff_clip=5.0, cycle=5):
         """Performs the sigma-clipping which is common to all processing        
@@ -216,7 +216,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
+        :param error_model: ErrorModel enum "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
@@ -311,20 +311,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         kw_corr["do_absorption"] = do_absorption
 
         kw_int = self.cl_kernel_args["csr_sigma_clip4"]
-        if error_model.startswith("poisson"):
-            kw_corr["poissonian"] = numpy.int8(1)
-            kw_int["error_model"] = numpy.int8(0)
-        elif error_model.startswith("azim"):
-            kw_corr["poissonian"] = numpy.int8(0)
-            kw_int["error_model"] = numpy.int8(1)
-        elif error_model.startswith("hybrid"):
-            kw_corr["poissonian"] = numpy.int8(1)
-            kw_int["error_model"] = numpy.int8(2)
-        elif variance is None:
-            logger.error("Unsupported error model and no variance provided: expect garbage as output!")
-        else:
-            kw_corr["poissonian"] = numpy.int8(0)
-            kw_int["error_model"] = numpy.int8(0)
+        kw_corr["error_model"] = kw_int["error_model"] = numpy.int8(error_model.value)
 
         wg = max(self.workgroup_size["corrections4"])
         wdim_data = (self.size + wg - 1) & ~(wg - 1),
@@ -392,7 +379,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                     flat=None, solidangle=None, polarization=None, absorption=None,
                     dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                     polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
-                    safe=True, error_model=None,
+                    safe=True, error_model=ErrorModel.NO,
                     normalization_factor=1.0,
                     cutoff_clip=5.0, cycle=5, noise=1.0, cutoff_peak=3.0,
                     radial_range=None, patch_size=3, connected=3):
@@ -418,7 +405,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
+        :param error_model: ErrorModel enum can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
@@ -536,7 +523,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
+        :param error_model: ErrorModel enum "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping.
                    Values of 4-5 are quite common.
@@ -548,12 +535,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
         :return: number of pixel of high intensity found
         """
-        if isinstance(error_model, str):
-            error_model = error_model.lower()
-        else:
+        error_model = ErrorModel.parse(error_model)
+        if error_model == ErrorModel.NO:
             if variance is None:
-                logger.warning("Nor variance, nor error-model is provided ... expect garbage-out")
-            error_model = ""
+                logger.warning("Nor variance nor error-model is provided ... expect garbage-out")
+            else:
+                error_model = ErrorModel.VARIANCE
         with self.sem:
             self._sigma_clip(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
                              dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
@@ -604,7 +591,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
+        :param error_model: ErrorModel enum "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
@@ -618,12 +605,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :return: SparseFrame object, see `intensity`, `x` and `y` properties
 
         """
-        if isinstance(error_model, str):
-            error_model = error_model.lower()
-        else:
+        error_model = ErrorModel.parse(error_model)
+        if error_model == ErrorModel.NO:
             if variance is None:
-                logger.warning("Nor variance, nor error-model is provided ... expect garbage-out")
-            error_model = ""
+                logger.warning("Nor variance nor error-model is provided ... expect garbage-out")
+            else:
+                error_model = ErrorModel.VARIANCE
         
         with self.sem:
             self._sigma_clip(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
@@ -742,7 +729,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param solidangle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param error_model: can be "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
+        :param error_model: ErrorModel enum "poisson" for poissonian model V=I, "azimuthal" or "hybrid", i.e azimuthal for clipping and Poisson for picking
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping.
                    Values of 4-5 are quite common.
@@ -756,12 +743,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param connected: number of pixels above threshold in 3x3 region
         :return: number of pixel of high intensity found
         """
-        if isinstance(error_model, str):
-            error_model = error_model.lower()
-        else:
+        error_model = ErrorModel.parse(error_model)
+        if error_model == ErrorModel.NO:
             if variance is None:
                 logger.warning("Nor variance nor error-model is provided ... expect garbage-out")
-            error_model = ""
+            else:
+                error_model = ErrorModel.VARIANCE
         with self.sem:
             count = self._count_peak(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
                                      dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,

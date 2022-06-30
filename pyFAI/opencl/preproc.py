@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "29/06/2022"
+__date__ = "30/06/2022"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -77,7 +77,7 @@ class OCL_Preproc(OpenclProcessing):
     def __init__(self, image_size=None, image_dtype=None, image=None,
                  dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
                  mask=None, dummy=None, delta_dummy=None, empty=None,
-                 split_result=False, calc_variance=False, poissonian=False,
+                 split_result=False, calc_variance=False, error_model=ErrorModel.NO,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=32, profile=False,
                  ):
@@ -95,7 +95,7 @@ class OCL_Preproc(OpenclProcessing):
         :param empty: value to be assigned to pixel without contribution (i.e masked)
         :param split_result: return the result a tuple: data, [variance], normalization, so the last dim becomes 2 or 3
         :param calc_variance: report the result as  data, variance, normalization
-        :param poissonian: assumes poisson law for data and dark,
+        :param error_model: default error-model to be used
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
@@ -113,7 +113,7 @@ class OCL_Preproc(OpenclProcessing):
         self.allocate_buffers()
         self.compile_kernels()
 
-        if poissonian:
+        if error_model:
             calc_variance = True
         if calc_variance:
             split_result = True
@@ -122,7 +122,7 @@ class OCL_Preproc(OpenclProcessing):
                         "empty": empty,
                         "calc_variance": calc_variance,
                         "split_result": split_result,
-                        "poissonian": poissonian
+                        "error_model": error_model
                         }
         self.set_kernel_arguments()
 
@@ -356,7 +356,7 @@ class OCL_Preproc(OpenclProcessing):
                 variance=None,
                 dark_variance=None,
                 normalization_factor=1.0,
-                error_model=ErrorModel.NO,
+                error_model=None,
                 split_result=None,
                 ):
         """Perform the pixel-wise operation of the array
@@ -387,8 +387,10 @@ class OCL_Preproc(OpenclProcessing):
                 if id(dark_variance) != id(self.on_device.get("dark_variance")):
                     self.send_buffer(dark_variance, "dark_variance")
 
-            if error_model.poissonian:
-                poissonian = self.on_host.get("poissonian")
+            if error_model is None:
+                error_model = self.on_host.get("error_model")
+            else:
+                error_model = ErrorModel.NO
             if split_result is None:
                 split_result = self.on_host.get("split_result")
 
@@ -409,7 +411,7 @@ class OCL_Preproc(OpenclProcessing):
             kwargs["do_dark"] = do_dark
             kwargs["normalization_factor"] = numpy.float32(normalization_factor)
             if split_result >= 3:
-                kwargs["poissonian"] = numpy.int8(poissonian)
+                kwargs["error_model"] = numpy.int8(error_model)
             if (kernel_name == "corrections3") and (self.on_device.get("dark_variance") is not None):
                 kwargs["do_dark_variance"] = do_dark
             kernel = self.kernels.get_kernel(kernel_name)
@@ -462,7 +464,7 @@ def preproc(raw,
             split_result=False,
             variance=None,
             dark_variance=None,
-            poissonian=False,
+            error_model=ErrorModel.NO,
             dtype=numpy.float32
             ):
     """Common preprocessing step, implemented using OpenCL. May be inefficient
@@ -480,7 +482,7 @@ def preproc(raw,
     :param empty: value to be given for empty pixels
     :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
     :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
-    :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
+    :param error_model: set to POISSONIAN to assume  
     :param dtype: dtype for all processing
 
     All calculation are performed in single precision floating point (32 bits).
@@ -513,7 +515,7 @@ def preproc(raw,
                          mask=mask, dummy=dummy, delta_dummy=delta_dummy, empty=empty,
                          split_result=split_result,
                          calc_variance=(variance is not None),
-                         poissonian=poissonian,
+                         error_model=error_model,
                          devicetype="all")
     result = engine.process(raw, dark=dark, variance=variance,
                             dark_variance=dark_variance,

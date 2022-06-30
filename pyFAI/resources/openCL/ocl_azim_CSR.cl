@@ -38,7 +38,6 @@
 
 #include "for_eclipse.h"
 #define NULL 0
-enum ErrorModel { NO=0, VARIANCE=1, POISSON=2, AZIMUTHAL=3, HYBRID=4 };
 /**
  * \brief OpenCL workgroup function for sparse matrix-dense vector multiplication
  *

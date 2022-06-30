@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "29/06/2022"
+__date__ = "30/06/2022"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -280,7 +280,7 @@ class OCL_Histogram1d(OpenclProcessing):
 
         """
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -433,10 +433,8 @@ class OCL_Histogram1d(OpenclProcessing):
             events.append(EventDescription("memset_histograms", memset))
             kw_correction = self.cl_kernel_args["corrections4"]
             kw_histogram = self.cl_kernel_args["histogram_1d_preproc"]
-            kw_correction["poissonian"] = numpy.int8(error_model.poissonian)
-            if variance is None:
-                kw_correction["variance"] = self.cl_mem["image"]
-            else:
+            kw_correction["error_model"] = numpy.int8(error_model.value)
+            if variance is not None:
                 self.send_buffer(variance, "variance")
                 kw_correction["variance"] = self.cl_mem["variance"]
 
