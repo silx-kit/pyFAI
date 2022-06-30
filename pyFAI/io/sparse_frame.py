@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/06/2022"
+__date__ = "30/06/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -42,6 +42,7 @@ from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
 import numpy
+import fabio
 from .. import version
 from .nexus import Nexus, get_isotime, h5py
 
@@ -79,7 +80,7 @@ for idx, bg in enumerate(background_avg):
     return res
 
 
-def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, extra={}):
+def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, extra={}, start_time=None):
     """Write the list of frames into a HDF5 file
     
     :param filename: name of the file
@@ -88,10 +89,11 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
     :param ai: Instance of geometry or azimuthal integrator
     :param source: list of input files
     :param extra: dict with extra metadata 
+    :param start_time: float with the time of start of the processing
     :return: None
     """
     assert len(frames)
-    with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
+    with Nexus(filename, mode="w", creator="pyFAI_%s" % version, start_time=start_time) as nexus:
         instrument = nexus.new_instrument(instrument_name=beamline)
         entry = instrument.parent
         sparse_grp = nexus.new_class(entry, "sparse_frames", class_type="NXdata")
@@ -182,8 +184,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             sparsify_grp["date"] = get_isotime()
             sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, h5py.string_dtype("utf8"))).attrs["help"] = "Command line arguments"
             sparsify_grp.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
-            if source is not None:
-                sparsify_grp["source"] = source
+
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")
             config_grp["type"] = "text/json"
             parameters = OrderedDict([("geometry", ai.get_config()),
@@ -210,3 +211,18 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
 #                 nrj_ds = monochromator_grp.create_dataset("energy", data=numpy.floaself.energy)
 #                 nrj_ds.attrs["units"] = "keV"
 #                 #nrj_ds.attrs["resolution"] = 0.014
+
+        if source is not None:
+            dat_grp = nexus.new_class(entry, "data", "NXdata")
+            idx = 1
+            for fn in source:
+                rel_path = os.path.relpath(os.path.abspath(fn), os.path.dirname(os.path.abspath(filename)))
+                with fabio.open(fn) as fimg:
+                    for ds in fimg.dataset:
+                        dat_grp[f"data_{idx:04d}"] = h5py.ExternalLink(rel_path, ds.name)
+                        idx += 1
+            sparsify_grp["source"] = source
+                
+                
+                
+                

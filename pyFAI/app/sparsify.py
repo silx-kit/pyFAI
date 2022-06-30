@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/06/2022"
+__date__ = "30/06/2022"
 __status__ = "production"
 
 import os
@@ -76,7 +76,7 @@ from ..io.sparse_frame import save_sparse
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
 EXIT_ARGUMENT_FAILURE = 2
-
+start_time=time.time()
 
 def expand_args(args):
     """
@@ -339,7 +339,8 @@ def process(options):
                 beamline=options.beamline,
                 ai=ai,
                 source=options.images if options.save_source else None,
-                extra=parameters)
+                extra=parameters,
+                start_time=start_time)
 
     if options.profile:
         try:
