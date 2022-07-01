@@ -853,7 +853,7 @@ csr_sigma_clip4(          global  float4  *data4,
     int wg = get_local_size(0);
     float aver, std;
     int cnt, nbpix;
-    char curr_error_model;
+    char curr_error_model=error_model;
     volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
     float8 result;
@@ -864,11 +864,11 @@ csr_sigma_clip4(          global  float4  *data4,
     nbpix = max(3, indptr[bin_num + 1] - indptr[bin_num]);
     
     // special case: no cycle and hybrid mode, should be best handled at host side
-    if ((cycle==0) && (error_model==HYBRID)){
-        curr_error_model = POISSON;
-    }
-    else{
-        curr_error_model = AZIMUTHAL;
+    if (error_model==HYBRID){
+        if (cycle==0)
+            curr_error_model = POISSON;
+        else
+            curr_error_model = AZIMUTHAL;            
     }
     
     // first calculation of azimuthal integration to initialize aver & std

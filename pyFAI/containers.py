@@ -83,7 +83,6 @@ class IntegrateResult(tuple):
         self._sum_normalization = None  # sum of all normalization SA, pol, ...
         self._sum_normalization2 = None  # sum of all normalization squared
         self._count = None  # sum of counts, from signal/norm
-        self._count2 = None  # sum of counts squared, from variance
         self._unit = None
         self._has_mask_applied = None
         self._has_dark_correction = None
@@ -96,6 +95,7 @@ class IntegrateResult(tuple):
         self._method = None
         self._method_called = None
         self._compute_engine = None
+        self._error_model = None
         self._std = None  # standard deviation (error for a pixel)
         self._sem = None  # standard error of the mean (error for the mean)
 
@@ -349,6 +349,13 @@ class IntegrateResult(tuple):
     @property
     def sem(self):
         return self._sem
+
+    @property
+    def error_model(self):
+        return self._error_model
+
+    def _set_error_model(self, value):
+        self._error_model = value
 
 
 class Integrate1dResult(IntegrateResult):
