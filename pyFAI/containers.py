@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2022"
+__date__ = "01/07/2022"
 __status__ = "development"
 
 from collections import namedtuple
@@ -45,21 +45,23 @@ class ErrorModel(IntEnum):
     VARIANCE = 1
     POISSON = 2
     AZIMUTHAL = 3
-    HYBRID = 4  # used in sigma-clipping, use azimuthal for clipping and poisson later on
+    HYBRID = 4  # used in peak-pickin, use azimuthal for sigma-clipping and poisson later on
 
     @classmethod
     def parse(cls, value):
+        res = cls.NO
         if value is None:
-            return cls.NO
-        if isinstance(value, cls):
-            return value
+            res = cls.NO
+        elif isinstance(value, cls):
+            res = value
         elif isinstance(value, str):
             for k, v in cls.__members__.items():
                 if k.startswith(value.upper()):
-                    return v
+                    res = v
+                    break
         elif isinstance(value, int):
-            return cls(value)
-        return cls.NO
+            res = cls(value)
+        return res
 
     @property
     def poissonian(self):

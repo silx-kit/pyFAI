@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2022"
+__date__ = "01/07/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -216,13 +216,14 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             dat_grp = nexus.new_class(entry, "data", "NXdata")
             idx = 1
             for fn in source:
-                rel_path = os.path.relpath(os.path.abspath(fn), os.path.dirname(os.path.abspath(filename)))
                 with fabio.open(fn) as fimg:
-                    for ds in fimg.dataset:
-                        dat_grp[f"data_{idx:04d}"] = h5py.ExternalLink(rel_path, ds.name)
-                        idx += 1
+                    if "dataset" in dir(fimg):
+                        for ds in fimg.dataset:
+                            actual_filename = ds.file.filename
+                            rel_path = os.path.relpath(os.path.abspath(actual_filename), os.path.dirname(os.path.abspath(filename)))
+                            dat_grp[f"data_{idx:04d}"] = h5py.ExternalLink(rel_path, ds.name)
+                            idx += 1
+                    else:
+                        logger.error("Only HDF5 files readable with FabIO can be linked")
             sparsify_grp["source"] = source
-                
-                
-                
-                
+
