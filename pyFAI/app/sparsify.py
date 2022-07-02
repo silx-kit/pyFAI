@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/06/2022"
+__date__ = "01/07/2022"
 __status__ = "production"
 
 import os
@@ -76,6 +76,7 @@ from ..io.sparse_frame import save_sparse
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
 EXIT_ARGUMENT_FAILURE = 2
+start_time = time.time()
 
 
 def expand_args(args):
@@ -324,7 +325,7 @@ def process(options):
     logger.debug("Save data")
 
     parameters["unit"] = unit.name.split("_")[0]
-    parameters["error_model"] = options.error_model
+    parameters["error_model"] = frames[0].error_model.name if frames else options.error_model
 
     if options.polarization is not None:
         parameters.pop("polarization")
@@ -339,7 +340,8 @@ def process(options):
                 beamline=options.beamline,
                 ai=ai,
                 source=options.images if options.save_source else None,
-                extra=parameters)
+                extra=parameters,
+                start_time=start_time)
 
     if options.profile:
         try:

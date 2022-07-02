@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2022"
+__date__ = "01/07/2022"
 __status__ = "production"
 
 import os
@@ -325,7 +325,7 @@ def process(options):
     logger.debug("Save data")
 
     parameters["unit"] = unit.name
-    parameters["error_model"] = options.error_model
+    parameters["error_model"] = frames[0].error_model.name if frames else options.error_model
 
     if options.polarization is not None:
         parameters.pop("polarization")

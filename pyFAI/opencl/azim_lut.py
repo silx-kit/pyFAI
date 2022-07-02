@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "24/06/2022"
+__date__ = "30/06/2022"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -255,7 +255,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                             ("sum_count", self.cl_mem["sum_count"]),
                                                             ("merged", self.cl_mem["merged"])))
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -497,7 +497,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
-        :param poissonian: set to use signal as variance (minimum 1)
+        :param error_model: select the ErrorModel (defined in enum), use POISSON to enforce variance=signal
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -542,7 +542,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
-            kw_corr["poissonian"] = numpy.int8(1 if error_model.poissonian else 0)
+            kw_corr["error_model"] = numpy.int8(error_model.value)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:

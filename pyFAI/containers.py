@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2022"
+__date__ = "01/07/2022"
 __status__ = "development"
 
 from collections import namedtuple
@@ -45,21 +45,23 @@ class ErrorModel(IntEnum):
     VARIANCE = 1
     POISSON = 2
     AZIMUTHAL = 3
-    HYBRID = 4  # used in sigma-clipping, use azimuthal for clipping and poisson later on
+    HYBRID = 4  # used in peak-pickin, use azimuthal for sigma-clipping and poisson later on
 
     @classmethod
     def parse(cls, value):
+        res = cls.NO
         if value is None:
-            return cls.NO
-        if isinstance(value, cls):
-            return value
+            res = cls.NO
+        elif isinstance(value, cls):
+            res = value
         elif isinstance(value, str):
             for k, v in cls.__members__.items():
                 if k.startswith(value.upper()):
-                    return v
+                    res = v
+                    break
         elif isinstance(value, int):
-            return cls(value)
-        return cls.NO
+            res = cls(value)
+        return res
 
     @property
     def poissonian(self):
@@ -81,7 +83,6 @@ class IntegrateResult(tuple):
         self._sum_normalization = None  # sum of all normalization SA, pol, ...
         self._sum_normalization2 = None  # sum of all normalization squared
         self._count = None  # sum of counts, from signal/norm
-        self._count2 = None  # sum of counts squared, from variance
         self._unit = None
         self._has_mask_applied = None
         self._has_dark_correction = None
@@ -94,6 +95,7 @@ class IntegrateResult(tuple):
         self._method = None
         self._method_called = None
         self._compute_engine = None
+        self._error_model = None
         self._std = None  # standard deviation (error for a pixel)
         self._sem = None  # standard error of the mean (error for the mean)
 
@@ -347,6 +349,13 @@ class IntegrateResult(tuple):
     @property
     def sem(self):
         return self._sem
+
+    @property
+    def error_model(self):
+        return self._error_model
+
+    def _set_error_model(self, value):
+        self._error_model = value
 
 
 class Integrate1dResult(IntegrateResult):

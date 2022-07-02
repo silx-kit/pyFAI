@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2022"
+__date__ = "01/07/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1591,6 +1591,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         result._set_method_called("integrate1d_ng")
         result._set_metadata(metadata)
+        result._set_error_model(error_model)
 
         if filename is not None:
             writer = DefaultAiWriter(filename, self)
@@ -3075,7 +3076,7 @@ class AzimuthalIntegrator(Geometry):
                       correctSolidAngle=True,
                       polarization_factor=None,
                       variance=None,
-                      error_model=None,
+                      error_model=ErrorModel.NO,
                       radial_range=None,
                       azimuth_range=None,
                       dark=None,
@@ -3143,9 +3144,12 @@ class AzimuthalIntegrator(Geometry):
                 logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D intergration is performed anymore")
             else:
                 logger.warning("Got unknown argument %s %s", k, kwargs[k])
-        if (error_model is None) and (variance is None):
-            logger.warning("Either `variance` or `error_model` is needed for sigma-clipping, using a Poissonnian model as default !")
-            error_model = "poisson"
+
+        error_model = ErrorModel.parse(error_model)
+        if variance is not None:
+            assert variance.size == data.size
+            error_model = ErrorModel.VARIANCE
+
         unit = units.to_unit(unit)
         if radial_range:
             radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
@@ -3337,6 +3341,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_count(intpl.count)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
+        result._set_error_model(error_model)
         return result
 
     @deprecated(reason="will be replaced by `sigma_clip_ng` in version 0.23.0. Please use either `_sigma_clip_legacy` for full compatibility or upgrade your code to accomodate the new API",

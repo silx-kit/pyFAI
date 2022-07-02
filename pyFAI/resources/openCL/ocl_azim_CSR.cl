@@ -38,7 +38,6 @@
 
 #include "for_eclipse.h"
 #define NULL 0
-enum ErrorModel { NO=0, VARIANCE=1, POISSON=2, AZIMUTHAL=3, HYBRID=4 };
 /**
  * \brief OpenCL workgroup function for sparse matrix-dense vector multiplication
  *
@@ -854,7 +853,7 @@ csr_sigma_clip4(          global  float4  *data4,
     int wg = get_local_size(0);
     float aver, std;
     int cnt, nbpix;
-    char curr_error_model;
+    char curr_error_model=error_model;
     volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
     float8 result;
@@ -865,12 +864,14 @@ csr_sigma_clip4(          global  float4  *data4,
     nbpix = max(3, indptr[bin_num + 1] - indptr[bin_num]);
     
     // special case: no cycle and hybrid mode, should be best handled at host side
-    if ((cycle==0) && (error_model==HYBRID)){
-        curr_error_model = POISSON;
+    if (error_model==HYBRID){
+        if (cycle==0)
+            curr_error_model = POISSON;
+        else
+            curr_error_model = AZIMUTHAL;            
     }
-    else{
-        curr_error_model = AZIMUTHAL;
-    }
+//    if ((get_local_id(0) == 0) && (bin_num==400))
+//        printf("%d em %d cem %d\n", bin_num, error_model, curr_error_model);
     
     // first calculation of azimuthal integration to initialize aver & std
     result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
@@ -892,6 +893,10 @@ csr_sigma_clip4(          global  float4  *data4,
 
         float chauvenet_cutoff = max(cutoff, sqrt(2.0f*log((float)nbpix/sqrt(2.0f*M_PI_F))));
         cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std *chauvenet_cutoff, counter);
+        
+//        if ((get_local_id(0) == 0) && (bin_num==400))
+//            printf("bin %d i %d cycle %d cnt %d em %d cem %d\n", bin_num, i, cycle, cnt, error_model, curr_error_model);
+
         if ((cnt == 0) && (error_model!=HYBRID)){
             break;
         }
@@ -899,6 +904,8 @@ csr_sigma_clip4(          global  float4  *data4,
         nbpix = max(3, nbpix - cnt);
         if ((error_model==HYBRID) && ((cycle==i+1) || (cnt==0))) {
                 curr_error_model = POISSON;
+//                if ((get_local_id(0) == 0) && (bin_num==400))
+//                printf("Change model em %d cem %d\n",error_model, curr_error_model);
         }
         result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
                                 CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
@@ -916,6 +923,8 @@ csr_sigma_clip4(          global  float4  *data4,
             break;
         }
     } // clipping loop
+//    if ((get_local_id(0) == 0) && (bin_num==400))
+//        printf("end %d em %d cem %d\n\n", bin_num, error_model, curr_error_model);
         
     if (get_local_id(0) == 0) {
         summed[bin_num] = result;

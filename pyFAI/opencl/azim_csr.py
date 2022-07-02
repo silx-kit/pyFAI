@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "29/06/2022"
+__date__ = "01/07/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -330,7 +330,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("sum_count", self.cl_mem["sum_count"]),
                                                             ("merged", self.cl_mem["merged"])))
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -669,8 +669,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["dummy"] = dummy
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
-            kw_corr["poissonian"] = numpy.int8(1 if error_model.poissonian else 0)
-            kw_int["error_model"] = numpy.int8(error_model.value)
+            kw_int["error_model"] = kw_corr["error_model"] = numpy.int8(error_model.value)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:
@@ -756,21 +755,21 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 merged = None
             else:
                 merged = out_merged.data
-                
+
             if out_avgint is None:
                 avgint = numpy.empty(self.bins, dtype=numpy.float32)
             elif out_avgint is False:
                 avgint = None
             else:
                 avgint = out_avgint.data
-                
+
             if out_sem is None:
                 sem = numpy.empty(self.bins, dtype=numpy.float32)
             elif out_sem is  False:
                 sem = None
             else:
                 sem = out_sem.data
-                
+
             if out_std is None:
                 std = numpy.empty(self.bins, dtype=numpy.float32)
             elif out_std is  False:
@@ -788,10 +787,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 ev = pyopencl.enqueue_copy(self.queue, sem, self.cl_mem["sem"])
                 events.append(EventDescription("copy D->H sem", ev))
 
-            if self.azim_centers is None: # 1D case
+            if self.azim_centers is None:  # 1D case
                 if merged is None:
-                    #position intensity sigma signal variance normalization count std sem norm_sq
-                    res = Integrate1dtpl(self.bin_centers, avgint, sem, None, None, None, None,std, sem, None)
+                    # position intensity sigma signal variance normalization count std sem norm_sq
+                    res = Integrate1dtpl(self.bin_centers, avgint, sem, None, None, None, None, std, sem, None)
                 else:
                     ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
                     events.append(EventDescription("copy D->H merged8", ev))
@@ -804,14 +803,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 if merged is None:  # "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq"
                     res = Integrate2dtpl(self.bin_centers, self.azim_centers,
                                          avgint.reshape(outshape).T, sem,
-                                         None, None, None, None, std, sem )
+                                         None, None, None, None, std, sem)
                 else:
                     ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
                     events.append(EventDescription("copy D->H merged8", ev))
                     res = Integrate2dtpl(self.bin_centers, self.azim_centers,
                                          avgint.reshape(outshape).T, sem,
                                          merged[:, 0].reshape(outshape).T, merged[:, 2].reshape(outshape).T, merged[:, 4].reshape(outshape).T, merged[:, 6].reshape(outshape).T,
-                                         std, sem, merged[:, 5].reshape(outshape).T )
+                                         std, sem, merged[:, 5].reshape(outshape).T)
 
         if self.profile:
             self.events += events
@@ -897,10 +896,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
-            if error_model.poissonian:
-                variance = numpy.maximum(data, 1)
             if variance is not None:
+                error_model = ErrorModel.VARIANCE
                 self.send_buffer(variance, "variance")
+            kw_int["error_model"] = kw_corr["error_model"] = numpy.int8(error_model)
             if dark_variance is not None:
                 if not dark_variance_checksum:
                     dark_variance_checksum = calc_checksum(dark_variance, safe)
@@ -968,7 +967,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             kw_int["cutoff"] = numpy.float32(cutoff)
             kw_int["cycle"] = numpy.int32(cycle)
-            kw_int["error_model"] = numpy.int8(error_model.value)
 
             wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
 
@@ -990,7 +988,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 sem = None
             else:
                 sem = out_sem.data
-                
+
             if out_std is None:
                 std = numpy.empty(self.bins, dtype=numpy.float32)
             elif out_std is  False:

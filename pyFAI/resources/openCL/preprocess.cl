@@ -3,11 +3,11 @@
  *            Preprocessing program
  *
  *
- *   Copyright (C) 2012-2021 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2022 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 26/03/2021
+ *   Last revision: 20/06/2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@
  */
 
 #include "for_eclipse.h"
+enum ErrorModel { NO_VAR=0, VARIANCE=1, POISSON=2, AZIMUTHAL=3, HYBRID=4 };
 
 /**
  * \brief cast values of an array of int8 into a float output array.
@@ -157,7 +158,7 @@ s32_to_float(__global int  *array_int,
  * Invalid/Dummy pixels will all have the 3rd/4th-member set to 0, i.e. no weight
  *
  * - image           Float pointer to global memory storing the input image.
- * - poissonian      when set, uses the signal as the variance (with minimum of 1)
+ * - error_model     If POISSON or HYBRID, initialize variance with raw signal
  * - do_dark         Bool/int: shall dark-current correction be applied ?
  * - dark            Float pointer to global memory storing the dark image.
  * - do_flat         Bool/int: shall flat-field correction be applied ?
@@ -178,7 +179,7 @@ s32_to_float(__global int  *array_int,
 **/
 
 static float4 _preproc4(const __global float  *image,
-                        const          char   poissonian,
+                        const          char   error_model,
                         const __global float  *variance,
                         const          char   do_dark,
                         const __global float  *dark,
@@ -203,10 +204,20 @@ static float4 _preproc4(const __global float  *image,
     float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
     if (i < NIMAGE){
         if ((!do_mask) || (!mask[i])){
-            if (poissonian)
-                result = (float4)(image[i], max(image[i], 1.0f), normalization_factor, 1.0f);
-            else
-                result = (float4)(image[i], variance[i], normalization_factor, 1.0f);
+            float v = 0.0f;
+            switch(error_model)
+            {
+            case VARIANCE:
+                v = variance[i];
+                break;
+            case NO_VAR:
+                v = 0.0f;
+                break;
+            default:
+                v = max(image[i], 1.0f);
+            }
+            result = (float4)(image[i], v, normalization_factor, 1.0f);
+                
             if ( (!do_dummy)
                   ||((delta_dummy != 0.0f) && (fabs(result.s0-dummy) > delta_dummy))
                   ||((delta_dummy == 0.0f) && (result.s0 != dummy))){
@@ -434,7 +445,7 @@ corrections2(const __global float  *image,
 
 kernel void
 corrections3(const __global float  *image,
-             const          char   poissonian,
+             const          char   error_model,
              const __global float  *variance,
              const          char   do_dark,
              const __global float  *dark,
@@ -462,7 +473,7 @@ corrections3(const __global float  *image,
     if (i < NIMAGE){
         float4 result;
         result = _preproc4( image,
-                            poissonian,
+                            error_model,
                             variance,
                             do_dark,
                             dark,
@@ -499,7 +510,7 @@ corrections3(const __global float  *image,
  * Dummy pixels are left untouched so that they remain dummy
  *
  * - image           Float pointer to global memory storing the input image.
- * - poissonian      when set, uses the signal as the variance (with minimum of 1)
+ * - error_model     error_model, int defined in the ErrorModel enum
  * - do_dark         Bool/int: shall dark-current correction be applied ?
  * - dark            Float pointer to global memory storing the dark image.
  * - do_flat         Bool/int: shall flat-field correction be applied ?
@@ -518,7 +529,7 @@ corrections3(const __global float  *image,
 
 kernel void
 corrections4(const __global float  *image,
-             const          char   poissonian,
+             const          char   error_model,
              const __global float  *variance,
              const          char   do_dark,
              const __global float  *dark,
@@ -546,7 +557,7 @@ corrections4(const __global float  *image,
     if (i < NIMAGE)
     {
         result = _preproc4( image,
-                            poissonian,
+                            error_model,
                             variance,
                             do_dark,
                             dark,
