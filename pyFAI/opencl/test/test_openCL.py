@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2022"
+__date__ = "02/07/2022"
 
 import unittest
 import os
@@ -149,10 +149,10 @@ class TestMask(unittest.TestCase):
         for ds in self.datasets:
             ai = load(ds["poni"])
             data = fabio.open(ds["img"]).data
-            ref = ai.integrate1d_ng(data, N, method=("no", "histogram", "cython"), unit="2th_deg")
+            ref = ai.integrate1d_ng(data, N, method=("no", "histogram", "cython"), unit="2th_deg", error_model="poisson")
             for method  in  to_test:
                 try:
-                    res = ai.sigma_clip_ng(data, N, method=method, unit="2th_deg")
+                    res = ai.sigma_clip_ng(data, N, method=method, unit="2th_deg", error_model="poisson")
                 except (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError) as error:
                     logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory.", method, os.path.basename(ds["img"]), os.linesep, error)
                     break
