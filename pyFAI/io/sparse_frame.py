@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/07/2022"
+__date__ = "05/07/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -98,6 +98,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
         entry = instrument.parent
         sparse_grp = nexus.new_class(entry, "sparse_frames", class_type="NXdata")
         entry.attrs["default"] = sparse_grp.name
+        entry.attrs["pyFAI_sparse_frames"] = sparse_grp.name
         sparse_grp["frame_ptr"] = numpy.concatenate(([0], numpy.cumsum([i.intensity.size for i in frames]))).astype(dtype=numpy.uint32)
         index = numpy.concatenate([i.index for i in frames]).astype(numpy.uint32)
         intensity = numpy.concatenate([i.intensity for i in frames])
@@ -149,7 +150,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
             ypos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
             snr = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
-            entry.attrs["default"] = peak_grp.name
+            #entry.attrs["default"] = peak_grp.name # prevents the densify from working
 
             for i, s in enumerate(peaks):
                 l = len(s)
