@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/07/2022"
+__date__ = "06/07/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -117,8 +117,10 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
         sparse_grp.create_dataset("dummy", data=dummy)
         rds = sparse_grp.create_dataset("radius", data=radius, dtype=numpy.float32)
         rds.attrs["interpretation"] = "spectrum"
+        rds.attrs["unit"] = frames[0].unit
         mskds = sparse_grp.create_dataset("mask", data=mask, **cmp)
         mskds.attrs["interpretation"] = "image"
+        mskds.attrs["unit"] = frames[0].unit
         background_avg = numpy.vstack([f.background_avg for f in frames])
         background_std = numpy.vstack([f.background_std for f in frames])
         bgavgds = sparse_grp.create_dataset("background_avg", data=background_avg, **cmp)
