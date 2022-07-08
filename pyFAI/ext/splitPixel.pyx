@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/12/2021"
+__date__ = "07/07/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -261,7 +261,7 @@ def fullSplit1D_engine(pos not None,
                        polarization=None,
                        data_t empty=0.0,
                        double normalization_factor=1.0,
-                       bint allow_pos0_neg=False,
+                       bint allow_pos0_neg=True,
                        bint chiDiscAtPi=True
                        ):
     """
