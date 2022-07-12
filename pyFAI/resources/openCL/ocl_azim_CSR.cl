@@ -292,18 +292,7 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
             sum_signal_K = dw_plus_dw(sum_signal_K, fp_times_fp(coef, signal));
             delta2 = dw_plus_dw(dw_div_dw(sum_signal_K, sum_norm_1), -x);
             sum_variance_K = dw_plus_dw(sum_variance_K, dw_times_dw(omega2_B, dw_times_dw(delta2, delta)));
-            
-            /*
-            delta = dw_plus_dw(dw_times_dw(omega1_B, sum_signal_K), - dw_times_dw(x, omega1_A));               
-            //delta2 = dw_times_dw(delta, delta);
-            delta2 = dw_times_dw( dw_times_fp(omega2_B, omega2_A), dw_times_dw(delta, delta));
-            OmegaAOmegaB = dw_times_dw(omega1_B, omega1_A);
-//            omega3 = dw_times_dw(sum_norm_2, dw_times_dw(OmegaAOmegaB, OmegaAOmegaB));
-            omega3 = dw_times_dw(sum_norm_2, OmegaAOmegaB);
-            sum_variance_K = dw_plus_dw(sum_variance_K, dw_div_dw(delta2, omega3));
-            sum_signal_K = dw_plus_dw(sum_signal_K, fp_times_fp(coef, signal));
-            */
-            
+                        
             // at the end as X_A is used in the variance XX_A
             
             sum_count = fma(coef, count, sum_count);
