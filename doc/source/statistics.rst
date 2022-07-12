@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 24/06/2022
+:Date: 12/07/2022
 :Keywords: average sigma uncertainties standard-deviation standard-error-of-the-mean std sem
 :Target: General audiance
 
@@ -73,10 +73,10 @@ Four different accumulators are used in pyFAI for azimuthal integration to simpl
     
     \Omega_A = \sum\limits_{i \in A} c_{i,r} \cdot normalization_i
     
-    \Omega\Omega_A = \sum\limits_{i \in A} c_{i,r}^2 \cdot normalization_i
+    \Omega\Omega_A = \sum\limits_{i \in A} c_{i,r}^2 \cdot normalization_i^2
 
 Those *accumulators* are inspired by `Schubert & Gertz (2018) <https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf>`_
-but due to different convention on weights considering the variance, their formula for variance propagaion does not match ours.
+but due to different convention on weights considering the variance, their formula (eq22) for variance propagaion does not match ours.
 Those accumulator are summing over an ensemble :math:`A` and are designed for parallel reduction by regrouping ensembles:
 
 .. math::
@@ -102,14 +102,14 @@ The standard error correspond to the uncertainty for a pixel value in the ensemb
 
     \sigma(I_r) = \sqrt{\frac{VV_{i \in bin_r}}{\Omega\Omega_{i \in bin_r}}}
     
-This value is always larger then the *sem* by a factor  :math:`\sqrt{N}`, where N is the number of pixel in the bin (unweighted analogy).
-The standard deviation is rarely used in pyFAI except in the sigma-clipping procedure where it is used.
+This value is always larger then the *sem* by a factor  :math:`\sqrt{N}`, where N is the number of pixel in the bin (unweighted case).
+The standard deviation is rarely used in pyFAI except in the sigma-clipping procedure where it is used to discard pixels.
 The numerical value can be retrieved from an azimuthal-integration result with the *std* attribute.    
 
 Standard error of the mean
 ++++++++++++++++++++++++++
 
-As the name states, this uncertainty correspond to the precision with wich one knows the mean value and this is the *sigma* reproted by pyFAI by default.
+As the name states, this uncertainty correspond to the precision with wich one knows the mean value and this is the *sigma* reported by pyFAI by default.
 
 .. math::
 
@@ -121,7 +121,7 @@ Uncertainties propagated from known variance
 ++++++++++++++++++++++++++++++++++++++++++++
 
 Sometimes variance can be modeled and the array VV can be calculated directly. 
-Very often the variance is based on Poissonian statistics (i.e. variance_i = max(1, signal_i))
+Very often the variance formula is based on Poissonian statistics (i.e. variance_i = max(1, signal_i))
 
 .. math::
 
@@ -134,28 +134,28 @@ This is the classical way to evaluate variance:
 
 .. math::
 
-    VV_A = \sum\limits_{i \in A} \omega_i^2\cdot(v_i - \frac{V_A}{\Omega_A})^2 
+    VV_A = \sum\limits_{i \in A} \omega_i^2\cdot(v_i - \oveline{v_A})^2 
 
 Note this formula differs from `Schubert & Gertz (2018) <https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf>`_'s 
 paper with squared weights, but it does match the textbook or the `wikipedia <https://en.wikipedia.org/wiki/Weighted_arithmetic_mean>`_ page on the topic.
-This formula is a classical 2-pass algorithm which is not suitable for parallel reduction. 
-The 2-pass version is used in the python-implementation of CSR-sparse matrix multiplication and provided a ground-truth to validate the single pass versions.  
+This formula is a classical 2-pass algorithm which is not suitable for parallel reductions. 
+The 2-pass version is used in the python-implementation of CSR-sparse matrix multiplication and provided a ground-truth to validate the single pass version.  
 
-For accumulating the variance of a running mean, the formula becomes: 
+For accumulating the variance in a single pass, the formula becomes: 
 
 .. math::
 
     VV_{A\cup b} = VV_A + \omega_b^2\cdot(v_b-\frac{V_A}{\Omega_A})(v_b-\frac{V_{A\cup b}}{\Omega_{A\cup b}})
- 
-This formula can be extended when merging two ensemble A and B (with card(A) > card(B)):
+
+This formula is subject to numerical error accumulation and can be extended when merging two ensemble A and B (with :math:`Omega_A > Omega_B`):
 
 .. math::
 
     VV_{A\cup B} = VV_A + VV_B + \frac{\Omega_B^2\cdot(V_A \cdot \Omega_B-V_B\cdot \Omega_A)^2}{\Omega_{A\cup B} \cdot \Omega_A \cdot \Omega_B^2}
 
 
-The equivalence of those formula can be checked thanks to a notebook available at tutorial/Variance/uncertainties.
-It is worth noting the error-bars obtained from the azimuthal model are always more noisy (but of similar magnitude) when compared to the ones obtained from the Poisson statistics.
+The equivalence of those formula can be checked thanks to a notebook available at tutorial/Variance/uncertainties (TODO: link).
+It is worth noticing error-bars obtained from the azimuthal model are always more noisy (but of similar magnitude) when compared to the ones obtained from the Poisson statistics on a Poissonian signal.
 
 Conclusion
 ----------
