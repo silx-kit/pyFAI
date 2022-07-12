@@ -97,6 +97,7 @@ class TestErrorModel(unittest.TestCase):
         cls.ai = cls.npt = cls.kwargs = None 
 
     def test(self):
+        epsilon = 1e-3 if sys.platform == "win32" else 5e-2
         results = {}
         for error_model in ("poisson", "azimuthal", "hybrid"):
             for impl in ("python", "cython", "opencl"):
@@ -117,7 +118,7 @@ class TestErrorModel(unittest.TestCase):
                     continue 
                 for array in ("count", "sum_signal", "sum_normalization", "sum_variance"): 
                     # print(k, array, cormap(ref.__getattribute__(array), res.__getattribute__(array)))
-                    self.assertGreaterEqual(cormap(ref.__getattribute__(array), res.__getattribute__(array)), 0.05, f"array {array} matches for {k} vs numpy")
+                    self.assertGreaterEqual(cormap(ref.__getattribute__(array), res.__getattribute__(array)), epsilon, f"array {array} matches for {k} vs numpy")
         # test clip
         ref =  results[ "poisson", "python", "clip"]
         for k in results:
@@ -127,7 +128,7 @@ class TestErrorModel(unittest.TestCase):
                     continue 
                 for array in ("count", "sum_signal", "sum_normalization", "sum_variance"): 
                     # print(k, array, cormap(ref.__getattribute__(array), res.__getattribute__(array)))
-                    self.assertGreaterEqual(cormap(ref.__getattribute__(array), res.__getattribute__(array)), 0.05, f"array {array} matches for {k} vs numpy")
+                    self.assertGreaterEqual(cormap(ref.__getattribute__(array), res.__getattribute__(array)), epsilon, f"array {array} matches for {k} vs numpy")
 
         # raise 
 def suite():
