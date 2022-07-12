@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -27,11 +27,11 @@
 
 """Module with GUI for diffraction mapping experiments"""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "25/03/2022"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -40,28 +40,28 @@ import time
 import json
 import threading
 import logging
-
+import numpy
 from silx.gui import qt
 from silx.gui import icons
 
-from .matplotlib import pyplot
+from .matplotlib import pyplot, colors
 from ..utils import int_, str_, get_ui_file
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from .. import worker
-from ..io.integration_config import ConfigurationReader
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
 
 logger = logging.getLogger(__name__)
-
-
+lognorm = colors.LogNorm()
+    
+    
 class IntegrateDialog(qt.QDialog):
 
     def __init__(self, parent=None):
         qt.QDialog.__init__(self)
         self.widget = WorkerConfigurator(self)
-        self.widget.set1dIntegrationOnly(True)
+        # self.widget.set1dIntegrationOnly(True)
 
         layout = qt.QVBoxLayout(self)
         layout.addWidget(self.widget)
@@ -157,7 +157,7 @@ class DiffMapWidget(qt.QWidget):
         try:
             qt.loadUi(get_ui_file(self.uif), self)
         except AttributeError as _error:
-            logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
+            logger.error("It looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
 
         pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
@@ -188,6 +188,7 @@ class DiffMapWidget(qt.QWidget):
         self.img = None
         self.plot = None
         self.radial_data = None
+        self.azimuthal_data = None
         self.data_h5 = None  # one in hdf5 dataset while processing.
         self.data_np = None  # The numpy one is used only at the end.
         self.last_idx = -1
@@ -247,9 +248,9 @@ class DiffMapWidget(qt.QWidget):
         listFiles object
         """
         filters = [
-            # "NeXuS files (*.nxs)"
-            # "HDF5 files (*.h5)"
-            # "HDF5 files (*.hdf5)"
+            "HDF5 files (*.h5)",
+            "HDF5 files (*.hdf5)",
+            "NeXuS files (*.nxs)",
             "EDF image files (*.edf)",
             "TIFF image files (*.tif)",
             "CBF files (*.cbf)",
@@ -301,7 +302,7 @@ class DiffMapWidget(qt.QWidget):
         """
         fname = qt.QFileDialog.getSaveFileName(self, "Output file",
                                                qt.QDir.currentPath(),
-                                               filter=self.tr("NeXuS file (*.nxs);;HDF5 file (*.h5);;HDF5 file (*.hdf5)"))
+                                               filter=self.tr("HDF5 file (*.h5);;HDF5 file (*.hdf5);;NeXuS file (*.nxs)"))
         if isinstance(fname, tuple):
             # Compatibility with PyQt5
             fname = fname[0]
@@ -455,7 +456,7 @@ class DiffMapWidget(qt.QWidget):
             diffmap.worker = worker.Worker()
             diffmap.worker.set_config(config_ai, consume_keys=False)
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
-            self.radial_data = diffmap.init_ai()
+            self.radial_data, self.azimuthal_data = diffmap.init_ai()
             self.data_h5 = diffmap.dataset
             for i, fn in enumerate(self.list_dataset):
                 diffmap.process_one_file(fn.path)
@@ -485,10 +486,11 @@ class DiffMapWidget(qt.QWidget):
                                           xlim=(-0.5, config.get("fast_motor_points", 1) - 0.5),
                                           ylim=(-0.5, config.get("slow_motor_points", 1) - 0.5))
         self.aximg.set_title(config.get("experiment_title", "Diffraction imaging"))
-
+        # print(config)
         self.axplt = self.fig.add_subplot(1, 2, 2,
                                           xlabel=to_unit(config.get("ai").get("unit")).label,
-                                          ylabel="Scattered intensity")
+                                          # ylabel="Scattered intensity"
+                                          )
         self.axplt.set_title("Average diffraction pattern")
         self.fig.show()
 
@@ -498,6 +500,8 @@ class DiffMapWidget(qt.QWidget):
         :param idx_file: file number
         :param idx_img: frame number
         """
+        cmap = "inferno"
+        
         if idx_file >= 0:
             self.progressBar.setValue(idx_file)
 
@@ -517,20 +521,46 @@ class DiffMapWidget(qt.QWidget):
                 return
 
             npt = self.radial_data.size
-
+            intensity = numpy.nanmean(data, axis=(0,1))
             if self.last_idx < 0:
                 self.update_slice()
-                intensity = data[0, 0, :]
-                img = data[:, :, self.slice].mean(axis=2)
-                self.plot = self.axplt.plot(self.radial_data, intensity)[0]
-                self.img = self.aximg.imshow(img, interpolation="nearest")
+                
+                if data.ndim == 4:
+                    img = data[..., self.slice].mean(axis=(2,3))
+                    
+                    self.plot = self.axplt.imshow(intensity, 
+                                                  interpolation="nearest", 
+                                                  norm=lognorm, 
+                                                  cmap=cmap,
+                                                  origin="lower",
+                                                  extent=[self.radial_data.min(), self.radial_data.max(), 
+                                                          self.azimuthal_data.min(), self.azimuthal_data.max()],
+                                                  aspect="auto",)
+                    self.axplt.set_ylabel("Azimuthal angle (°)") 
+                else:
+                    img = data[..., self.slice].mean(axis=-1)
+                    self.axplt.set_ylabel("Scattered intensity")
+                    self.plot = self.axplt.plot(self.radial_data, intensity)[0]
+                self.img = self.aximg.imshow(img, 
+                                             interpolation="nearest", 
+                                             cmap=cmap,
+                                             origin="lower",
+                                             )                
             else:
-                img = data[:, :, self.slice].mean(axis=2)
-                intensity = data.reshape(-1, npt)[:idx_img].mean(axis=0)
-                self.plot.set_ydata(intensity)
+                if data.ndim == 4:
+                    img = numpy.nanmean(data[..., self.slice], axis=(2,3))
+                    img[img<=lognorm.vmin] = numpy.NaN
+                    self.plot.set_data(intensity)
+                else:
+                    img = data[:, :, self.slice].mean(axis=2)
+                    self.plot.set_ydata(intensity)
                 self.img.set_data(img)
             self.last_idx = idx_img
-            self.fig.canvas.draw()
+            try:
+                self.fig.canvas.draw()
+            except Exception as err:
+                logger.error(f"{type(err)}: {err} intercepted in matplotlib drawing")
+             
             qt.QCoreApplication.processEvents()
             time.sleep(0.1)
 

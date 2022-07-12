@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "10/01/2022"
+__date__ = "30/06/2022"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -40,7 +40,7 @@ if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from . import processing
 from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
@@ -79,11 +79,13 @@ class OCL_LUT_Integrator(OpenclProcessing):
                numpy.int16: "s16_to_float",
                numpy.uint16: "u16_to_float",
                numpy.uint32: "u32_to_float",
-               numpy.int32: "s32_to_float"
+               numpy.uintc: "u32_to_float",
+               numpy.int32: "s32_to_float",
+               numpy.intc: "s32_to_float"
                }
 
     def __init__(self, lut, image_size, checksum=None,
-                 empty=None, unit=None, bin_centers=None, azim_centers=None,
+                 empty=None, unit=None, bin_centers=None, azim_centers=None, mask_checksum=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """Constructor of the OCL_LUT_Integrator class
@@ -95,6 +97,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         :param unit: Storage for the unit related to the LUT
         :param bin_centers: the radial position of the bin_center, place_holder
         :param azim_centers: the radial position of the bin_center, place_holder
+        :param mask_checksum: placeholder for the checksum of the mask
         :param ctx: actual working context, left to None for automatic
                     initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
@@ -116,7 +119,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.bin_centers = bin_centers
         self.azim_centers = azim_centers
         # a few place-folders
-        self.pos0_range = self.pos1_range = self.check_mask = None
+        self.mask_checksum = mask_checksum
+        self.pos0_range = self.pos1_range = None
 
         if not checksum:
             checksum = calc_checksum(self._lut)
@@ -157,6 +161,10 @@ class OCL_LUT_Integrator(OpenclProcessing):
     @property
     def checksum(self):
         return self.on_device.get("data")
+
+    @property
+    def check_mask(self):
+        return self.mask_checksum is not None
 
     def __copy__(self):
         """Shallow copy of the object
@@ -247,7 +255,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                             ("sum_count", self.cl_mem["sum_count"]),
                                                             ("merged", self.cl_mem["merged"])))
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -466,7 +474,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
     integrate = integrate_legacy
 
     def integrate_ng(self, data, dark=None, dummy=None, delta_dummy=None,
-                     poissonian=None, variance=None, dark_variance=None,
+                     error_model=ErrorModel.NO, variance=None, dark_variance=None,
                      flat=None, solidangle=None, polarization=None, absorption=None,
                      dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                      polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
@@ -489,7 +497,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
-        :param poissonian: set to use signal as variance (minimum 1)
+        :param error_model: select the ErrorModel (defined in enum), use POISSON to enforce variance=signal
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -534,7 +542,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
 
-            kw_corr["poissonian"] = numpy.int8(1 if poissonian else 0)
+            kw_corr["error_model"] = numpy.int8(error_model.value)
             if variance is not None:
                 self.send_buffer(variance, "variance")
             if dark_variance is not None:

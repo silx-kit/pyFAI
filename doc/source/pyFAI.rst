@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 19/01/2021
+:Date: 24/06/2022
 :Keywords: generic description of the software
 :Target: General audiance
 
@@ -146,18 +146,26 @@ Regrouping mechanism
 
 In pyFAI, regrouping is performed using a histogram-like algorithm.
 Each pixel of the image is associated to its polar coordinates
-:math:`(2\theta , \chi )` or :math:`(q, \chi )`, then a pair of
-histograms versus :math:`2\theta` (or :math:`q`) are built, one non
+:math:`(2\theta , \chi )` or :math:`(q, \chi )`, then several histograms 
+versus :math:`2\theta` (or :math:`q`) are built, one non
 weighted for measuring the number of pixels falling in each bin and
 another weighted by pixel intensities (after dark-current subtraction,
 and corrections for flat-field, solid-angle and polarization).
-The division of the weighted histogram by the number of pixels per bin gives
+The division of the intensity weighted histogram by the normalization 
+weighted histogram (~ number of pixels per bin) gives
 the average signal over the given corona which provides the diffraction pattern.
 :math:`2D` regrouping (called *caking* in
 FIT2D) is obtained in the same way using two-dimensional histograms over
 radial (:math:`2\theta` or :math:`q`) and azimuthal angles
 (:math:`\chi`).
 
+Associated uncertainties are extracted in a similar manner, the formula are described in this sub-section:
+
+.. toctree::
+   :maxdepth: 1
+
+   statistics
+   
 Pixel splitting algorithm
 .........................
 

@@ -31,11 +31,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2021"
+__date__ = "29/06/2022"
 __status__ = "development"
 
 import warnings
 import numpy
+from ..containers import ErrorModel
 
 
 def preproc(raw,
@@ -52,7 +53,7 @@ def preproc(raw,
             split_result=False,
             variance=None,
             dark_variance=None,
-            poissonian=False,
+            error_model=ErrorModel.NO,
             dtype=numpy.float32
             ):
     """Common preprocessing step for all integration engines
@@ -74,7 +75,7 @@ def preproc(raw,
             split_result=True and return an float3 array with variance in second position.
     :param dark_variance: provide an estimation of the variance of the dark_current,
             enforce split_result=True and return an float3 array with variance in second position.
-    :param poissonian: set to "True" for assuming the detector is poissonian and variance = max(1, raw + dark)
+    :param error_model: set to "Poisson" for assuming the detector is poissonian and variance = max(1, raw + dark)
     :param dtype: dtype for all processing
 
     All calculation are performed in single precision floating point (32 bits).
@@ -106,10 +107,10 @@ def preproc(raw,
         dtype = numpy.dtype(dtype).type
     shape = raw.shape
     out_shape = list(shape)
-    if split_result or (variance is not None) or poissonian:
+    if split_result or error_model:
         if split_result == 4:
             out_shape += [4]
-        elif (variance is not None) or poissonian:
+        elif error_model:
             out_shape += [3]
         else:
             out_shape += [2]
@@ -138,7 +139,7 @@ def preproc(raw,
     normalization = numpy.zeros_like(signal) + normalization_factor
     if variance is not None:
         variance = numpy.ascontiguousarray(variance.ravel(), dtype=dtype)
-    elif poissonian:
+    elif error_model.poissonian:
         variance = numpy.maximum(1.0, signal)  # this makes a copy
 
     # runtime warning here
@@ -162,7 +163,7 @@ def preproc(raw,
                 else:
                     mask |= abs(dark - cdummy) < ddummy
             signal -= dark
-            if poissonian:
+            if error_model.poissonian:
                 variance += dark
             elif dark_variance is not None:
                 variance += dark_variance

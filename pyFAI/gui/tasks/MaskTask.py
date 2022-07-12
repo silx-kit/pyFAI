@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/06/2021"
+__date__ = "05/05/2022"
 
 import logging
 import os.path
@@ -181,6 +181,8 @@ class MaskTask(AbstractCalibrationTask):
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
         self.__synchronizeRawView.registerPlot(self.__plot)
+
+        super()._initGui()
 
     def __plotContextMenu(self, pos):
         plot = self.__plot

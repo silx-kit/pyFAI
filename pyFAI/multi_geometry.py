@@ -31,11 +31,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2021"
+__date__ = "12/05/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
-import collections
+import collections.abc
 import logging
 logger = logging.getLogger(__name__)
 from .azimuthalIntegrator import AzimuthalIntegrator
@@ -121,7 +121,7 @@ class MultiGeometry(object):
             raise RuntimeError("List of images cannot be empty")
         if normalization_factor is None:
             normalization_factor = [1.0] * len(self.ais)
-        elif not isinstance(normalization_factor, collections.Iterable):
+        elif not isinstance(normalization_factor, collections.abc.Iterable):
             normalization_factor = [normalization_factor] * len(self.ais)
         if lst_variance is None:
             lst_variance = [None] * len(self.ais)
@@ -204,7 +204,7 @@ class MultiGeometry(object):
             raise RuntimeError("List of images cannot be empty")
         if normalization_factor is None:
             normalization_factor = [1.0] * len(self.ais)
-        elif not isinstance(normalization_factor, collections.Iterable):
+        elif not isinstance(normalization_factor, collections.abc.Iterable):
             normalization_factor = [normalization_factor] * len(self.ais)
         if lst_variance is None:
             lst_variance = [None] * len(self.ais)

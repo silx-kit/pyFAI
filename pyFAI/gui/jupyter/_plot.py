@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,13 +33,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2021"
+__date__ = "31/03/2022"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
 import numpy
-from pylab import subplots, legend
+from pylab import subplots
 from matplotlib import lines
+from matplotlib.colors import SymLogNorm
 
 
 def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
@@ -65,8 +66,13 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
             ai = sg.geometry_refinement
         if label is None:
             label = sg.label
-
-    ax.imshow(numpy.arcsinh(img).astype(numpy.float32), origin="lower", cmap="inferno")
+    colornorm = SymLogNorm(1, base=10,
+                           vmin=numpy.nanmin(img),
+                           vmax=numpy.nanmax(img))
+    ax.imshow(img,
+              origin="lower",
+              cmap="inferno",
+              norm=colornorm)
     ax.set_title(label)
     if cp is not None:
         for lbl in cp.get_labels():
@@ -77,7 +83,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
             tth = cp.calibrant.get_2th()
             ttha = ai.twoThetaArray()
             ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
-        legend()
+        ax.legend()
     return ax
 
 
@@ -131,11 +137,16 @@ def plot2d(result, calibrant=None, label=None, ax=None):
     pos_azim = result.azimuthal
     if ax is None:
         _fig, ax = subplots()
-    ax.imshow(numpy.arcsinh(img),
+    colornorm = SymLogNorm(1, base=10,
+                           vmin=numpy.nanmin(img),
+                           vmax=numpy.nanmax(img))
+
+    ax.imshow(img,
               origin="lower",
               extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
               aspect="auto",
-              cmap="inferno")
+              cmap="inferno",
+              norm=colornorm)
     if label:
         ax.set_title("2D regrouping")
     else:

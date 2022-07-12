@@ -504,20 +504,15 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
-       <widget class="QCheckBox" name="do_poisson">
+       <widget class="QLabel" name="label_22">
         <property name="text">
-         <string>Propagation of error:</string>
+         <string>Error propagation:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1" colspan="3">
-       <widget class="QComboBox" name="error_selection">
-        <item>
-         <property name="text">
-          <string>Poisson law</string>
-         </property>
-        </item>
-       </widget>
+      <item row="0" column="1">
+        <widget class="QComboBox" name="error_model">
+        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QCheckBox" name="do_normalization">
@@ -690,8 +685,7 @@
   <tabstop>azimuth_range_min</tabstop>
   <tabstop>azimuth_range_max</tabstop>
   <tabstop>chi_discontinuity_at_0</tabstop>
-  <tabstop>do_poisson</tabstop>
-  <tabstop>error_selection</tabstop>
+  <tabstop>error_model</tabstop>
   <tabstop>do_normalization</tabstop>
   <tabstop>normalization_factor</tabstop>
   <tabstop>monitor_name</tabstop>

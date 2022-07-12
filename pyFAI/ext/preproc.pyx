@@ -9,7 +9,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2011-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2011-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -38,15 +38,15 @@ flat-field normalization... taking care of masked values and normalization.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "29/04/2020"
-__copyright__ = "2011-2020, ESRF"
+__date__ = "29/06/2022"
+__copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 include "regrid_common.pxi"
 
 import cython
 from cython.parallel import prange
-
+from ..containers import ErrorModel
 from libc.math cimport fabs
 from .isnan cimport isnan
 from cython cimport floating
@@ -532,7 +532,7 @@ def preproc(raw,
             split_result=False,
             variance=None,
             dark_variance=None,
-            bint poissonian=False,
+            error_model=ErrorModel.NO,
             dtype=numpy.float32
             ):
     """Common preprocessing step for all
@@ -550,7 +550,7 @@ def preproc(raw,
     :param empty: value to be given for empty bins
     :param variance: variance of the data
     :param dark_variance: variance of the dark
-    :param poissonian: set to True to consider the variance is equal to raw signal (minimum 1)
+    :param error_model: set to "poisson" to consider the variance is equal to raw signal (minimum 1)
     :param dtype: type for working: float32 or float64
 
     All calculation are performed in the `dtype` precision
@@ -633,4 +633,4 @@ def preproc(raw,
                     split_result,
                     variance,
                     dark_variance,
-                    poissonian)
+                    error_model.poissonian)

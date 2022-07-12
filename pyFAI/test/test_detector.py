@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "22/04/2022"
 
 import os
 import shutil
@@ -216,7 +216,7 @@ class TestDetector(unittest.TestCase):
 
         # check Pilatus with displacement maps
         # check spline
-        # check SPD sisplacement
+        # check SPD displacement
 
         shutil.rmtree(tmpdir)
 
@@ -346,6 +346,26 @@ class TestDetector(unittest.TestCase):
         self.assertTrue(numpy.allclose(obt_b[..., 2] - detector.pixel2 * delta_x, ref[..., 2]), msg="dx on edge")
 
         self.assertTrue(numpy.allclose(obt_b, obt_a))
+
+    def test_hexagonal_detector(self):
+        pix = detector_factory("Pixirad1")
+        wl = 1e-10
+        from ..calibrant import ALL_CALIBRANTS
+        from ..azimuthalIntegrator import AzimuthalIntegrator
+        AgBh = ALL_CALIBRANTS("AgBh")
+        AgBh.wavelength = 1e-10
+        ai = AzimuthalIntegrator(detector=pix, wavelength=wl)
+        img = AgBh.fake_calibration_image(ai, Imax=10000, W=0.00001)
+
+        ai.integrate1d(img, 500, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 500, method=("no", "histogram", "cython"))
+        ai.integrate1d(img, 500, method=("bbox", "histogram", "cython"))
+        ai.integrate2d(img, 500, method=("bbox", "histogram", "cython"))
+        try:
+            ai.integrate1d(img, 500, method=("full", "histogram", "cython"))
+            ai.integrate2d(img, 500, method=("full", "histogram", "cython"))
+        except Exception as err:
+            self.skipTest(f"SplitPixel does not work (yet) with hexagonal pixels: {err}")
 
 
 def suite():

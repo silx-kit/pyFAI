@@ -30,12 +30,46 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/03/2021"
+__date__ = "01/07/2022"
 __status__ = "development"
 
 from collections import namedtuple
-Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count")
-Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count")
+from enum import IntEnum
+
+Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
+Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
+
+
+class ErrorModel(IntEnum):
+    NO = 0
+    VARIANCE = 1
+    POISSON = 2
+    AZIMUTHAL = 3
+    HYBRID = 4  # used in peak-pickin, use azimuthal for sigma-clipping and poisson later on
+
+    @classmethod
+    def parse(cls, value):
+        res = cls.NO
+        if value is None:
+            res = cls.NO
+        elif isinstance(value, cls):
+            res = value
+        elif isinstance(value, str):
+            for k, v in cls.__members__.items():
+                if k.startswith(value.upper()):
+                    res = v
+                    break
+        elif isinstance(value, int):
+            res = cls(value)
+        return res
+
+    @property
+    def poissonian(self):
+        return self._value_ == 2
+
+    @property
+    def do_variance(self):
+        return self._value_ != 0
 
 
 class IntegrateResult(tuple):
@@ -47,8 +81,8 @@ class IntegrateResult(tuple):
         self._sum_signal = None  # sum of signal
         self._sum_variance = None  # sum of variance
         self._sum_normalization = None  # sum of all normalization SA, pol, ...
+        self._sum_normalization2 = None  # sum of all normalization squared
         self._count = None  # sum of counts, from signal/norm
-        self._count2 = None  # sum of counts squared, from variance
         self._unit = None
         self._has_mask_applied = None
         self._has_dark_correction = None
@@ -61,6 +95,9 @@ class IntegrateResult(tuple):
         self._method = None
         self._method_called = None
         self._compute_engine = None
+        self._error_model = None
+        self._std = None  # standard deviation (error for a pixel)
+        self._sem = None  # standard error of the mean (error for the mean)
 
     @property
     def method(self):
@@ -147,6 +184,21 @@ class IntegrateResult(tuple):
         :type count: numpy.ndarray
         """
         self._sum_normalization = sum_
+
+    @property
+    def sum_normalization2(self):
+        """Sum of all normalization squared information
+
+        :rtype: numpy.ndarray
+        """
+        return self._sum_normalization2
+
+    def _set_sum_normalization2(self, sum_):
+        """Set the sum of all normalization information
+
+        :type count: numpy.ndarray
+        """
+        self._sum_normalization2 = sum_
 
     @property
     def count(self):
@@ -283,6 +335,27 @@ class IntegrateResult(tuple):
 
     def _set_npt_azim(self, value):
         self._npt_azim = value
+
+    def _set_std(self, value):
+        self._std = value
+
+    @property
+    def std(self):
+        return self._std
+
+    def _set_sem(self, value):
+        self._sem = value
+
+    @property
+    def sem(self):
+        return self._sem
+
+    @property
+    def error_model(self):
+        return self._error_model
+
+    def _set_error_model(self, value):
+        self._error_model = value
 
 
 class Integrate1dResult(IntegrateResult):
@@ -743,10 +816,16 @@ class SparseFrame(tuple):
         self._method = None
         self._method_called = None
         self._compute_engine = None
-        self._cutoff = None
+        self._cutoff_clip = None
+        self._cutoff_pick = None
+        self._cutoff_peak = None
         self._background_cycle = None
         self._noise = None
         self._radial_range = None
+        self._error_model = None
+        self._peaks = None
+        self._peak_patch_size = None
+        self._peak_connected = None
 
     @property
     def index(self):
@@ -790,10 +869,6 @@ class SparseFrame(tuple):
             return self[0] // self._shape[-1]
 
     @property
-    def cutoff(self):
-        return self._cutoff
-
-    @property
     def noise(self):
         return self._noise
 
@@ -820,3 +895,33 @@ class SparseFrame(tuple):
     @property
     def dummy(self):
         return self._dummy
+
+    @property
+    def peaks(self):
+        return self._peaks
+
+    @property
+    def cutoff_clip(self):
+        return self._cutoff_clip
+
+    @property
+    def cutoff_pick(self):
+        return self._cutoff_pick
+
+    cutoff = cutoff_pick
+
+    @property
+    def cutoff_peak(self):
+        return self._cutoff_peak
+
+    @property
+    def error_model(self):
+        return self._error_model
+
+    @property
+    def peak_patch_size(self):
+        return self._peak_patch_size
+
+    @property
+    def peak_connected(self):
+        return self._peak_connected

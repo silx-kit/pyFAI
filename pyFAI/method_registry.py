@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2021"
+__date__ = "30/06/2022"
 __status__ = "development"
 
 import inspect
@@ -394,10 +394,10 @@ class IntegrationMethod:
         return "IntegrationMethod(%s)" % string
 
     def _does_manage_variance(self):
-        "Checks if the method handles alone the variance in the case poissonian=True or False"
+        "Checks if the method handles alone the error_model"
         manage_variance = False
         if self.class_funct_ng and self.class_funct_ng.function:
             function = self.class_funct_ng.function
             sig = inspect.signature(function)
-            manage_variance = "poissonian" in sig.parameters
+            manage_variance = ("poissonian" in sig.parameters) or ("error_model" in sig.parameters)
         return manage_variance

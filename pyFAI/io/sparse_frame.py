@@ -31,17 +31,20 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2021"
+__date__ = "01/07/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import os
+import sys
 import json
 from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
 import numpy
+import fabio
 from .. import version
-from .nexus import Nexus, get_isotime
+from .nexus import Nexus, get_isotime, h5py
 
 try:
     import hdf5plugin
@@ -77,7 +80,7 @@ for idx, bg in enumerate(background_avg):
     return res
 
 
-def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, extra={}):
+def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, extra={}, start_time=None):
     """Write the list of frames into a HDF5 file
     
     :param filename: name of the file
@@ -86,10 +89,11 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
     :param ai: Instance of geometry or azimuthal integrator
     :param source: list of input files
     :param extra: dict with extra metadata 
+    :param start_time: float with the time of start of the processing
     :return: None
     """
     assert len(frames)
-    with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
+    with Nexus(filename, mode="w", creator="pyFAI_%s" % version, start_time=start_time) as nexus:
         instrument = nexus.new_instrument(instrument_name=beamline)
         entry = instrument.parent
         sparse_grp = nexus.new_class(entry, "sparse_frames", class_type="NXdata")
@@ -130,6 +134,34 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
         except TypeError:
             logger.error("Please upgrade your installation of h5py !!!")
 
+        if frames[0].peaks is not None:
+            peaks = [f.peaks for f in frames]
+            spots_per_frame = numpy.array([len(s) for s in peaks], dtype=numpy.int32)
+            nframes = len(frames)
+            max_spots = spots_per_frame.max()
+
+            peak_grp = nexus.new_class(entry, "peaks", class_type="NXdata")
+            peak_grp.attrs["NX_class"] = "NXdata"
+            peak_grp.attrs["signal"] = "nPeaks"
+            peak_grp.create_dataset("nPeaks", data=spots_per_frame).attrs["interpretation"] = "spectrum"
+
+            total_int = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            ypos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            snr = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
+            entry.attrs["default"] = peak_grp.name
+
+            for i, s in enumerate(peaks):
+                l = len(s)
+                total_int[i,:l] = s["intensity"]
+                xpos[i,:l] = s["pos1"]
+                ypos[i,:l] = s["pos0"]
+                snr[i,:l] = s["intensity"] / s["sigma"]
+            peak_grp.create_dataset("peakTotalIntensity", data=total_int, **cmp)
+            peak_grp.create_dataset("peakXPosRaw", data=xpos, **cmp)
+            peak_grp.create_dataset("peakYPosRaw", data=ypos, **cmp)
+            peak_grp.create_dataset("peakSNR", data=snr, **cmp)
+
         if ai is not None:
             if extra.get("correctSolidAngle") or (extra.get("polarization_factor") is not None):
                 if extra.get("correctSolidAngle"):
@@ -150,8 +182,9 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             sparsify_grp["sequence_index"] = 1
             sparsify_grp["version"] = version
             sparsify_grp["date"] = get_isotime()
-            if source is not None:
-                sparsify_grp["source"] = source
+            sparsify_grp.create_dataset("argv", data=numpy.array(sys.argv, h5py.string_dtype("utf8"))).attrs["help"] = "Command line arguments"
+            sparsify_grp.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
+
             config_grp = nexus.new_class(sparsify_grp, "configuration", class_type="NXnote")
             config_grp["type"] = "text/json"
             parameters = OrderedDict([("geometry", ai.get_config()),
@@ -178,3 +211,19 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
 #                 nrj_ds = monochromator_grp.create_dataset("energy", data=numpy.floaself.energy)
 #                 nrj_ds.attrs["units"] = "keV"
 #                 #nrj_ds.attrs["resolution"] = 0.014
+
+        if source is not None:
+            dat_grp = nexus.new_class(entry, "data", "NXdata")
+            idx = 1
+            for fn in source:
+                with fabio.open(fn) as fimg:
+                    if "dataset" in dir(fimg):
+                        for ds in fimg.dataset:
+                            actual_filename = ds.file.filename
+                            rel_path = os.path.relpath(os.path.abspath(actual_filename), os.path.dirname(os.path.abspath(filename)))
+                            dat_grp[f"data_{idx:04d}"] = h5py.ExternalLink(rel_path, ds.name)
+                            idx += 1
+                    else:
+                        logger.error("Only HDF5 files readable with FabIO can be linked")
+            sparsify_grp["source"] = source
+

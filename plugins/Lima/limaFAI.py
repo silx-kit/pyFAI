@@ -251,10 +251,8 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
 #                kwarg["filename"] += self.extension
 #            else:
 #                kwarg["filename"] += ".xy"
-#        if self.do_poisson:
-#            kwarg["error_model"] = "poisson"
-#        else:
-#            kwarg["error_model"] = "None"
+#        if self.error_model:
+#            kwarg["error_model"] = self.error_model
 #
 #        try:
 #            if self.do_2D():

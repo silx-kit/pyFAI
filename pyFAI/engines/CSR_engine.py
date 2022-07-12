@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "29/06/2022"
 __status__ = "development"
 
 import logging
@@ -44,7 +44,7 @@ except ImportError as err:
 else:
     preproc = preproc_cy
 from ..utils import calc_checksum
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 
 class CSRIntegrator(object):
@@ -90,7 +90,7 @@ class CSRIntegrator(object):
     def integrate(self,
                   signal,
                   variance=None,
-                  poissonian=None,
+                  error_model=None,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -104,7 +104,7 @@ class CSRIntegrator(object):
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
-        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model. 
+        :param error_model: Enum or string, set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model. 
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -114,10 +114,11 @@ class CSRIntegrator(object):
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
         :return: the preprocessed data integrated as array nbins x 4 which contains:
-                    regrouped signal, variance, normalization and pixel count 
+                    regrouped signal, variance, normalization, pixel count, sum_norm² 
 
         Nota: all normalizations are grouped in the preprocessing step.
         """
+        error_model = ErrorModel.parse(error_model)
         shape = signal.shape
         prep = preproc(signal,
                        dark=dark,
@@ -133,22 +134,24 @@ class CSRIntegrator(object):
                        split_result=4,
                        variance=variance,
                        dtype=numpy.float32,
-                       poissonian=bool(poissonian))
-        prep.shape = numpy.prod(shape), -1
-        # logger.warning("prep.shape %s lut_size %s, image_size %s, bins %s", prep.shape, self.lut_size, self.size, self.bins)
-        res = numpy.empty((numpy.prod(self.bins), 4), dtype=numpy.float32)
-        # logger.warning(self._csr.shape)
-        res[:, 0] = self._csr.dot(prep[:, 0])
-        res[:, 2] = self._csr.dot(prep[:, 2])
-        res[:, 3] = self._csr.dot(prep[:, 3])
-        if variance is not None or poissonian:
-            res[:, 1] = self._csr2.dot(prep[:, 1])
-        elif poissonian is False:
-            # ask for azimuthal error model
+                       error_model=error_model)
+        prep.shape = numpy.prod(shape), 4
+        flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
+        res = numpy.empty((numpy.prod(self.bins), 5), dtype=numpy.float32)
+        res[:, 0] = self._csr.dot(flat_sig)  # Σ c·x
+        res[:, 2] = self._csr.dot(flat_nrm)  # Σ c·ω
+        res[:, 3] = self._csr.dot(flat_cnt)  # Σ c·1
+        if error_model is ErrorModel.AZIMUTHAL:
             avg = res[:, 0] / res[:, 2]
-            avg_ext = self._csr.T.dot(avg)
-            delta = (prep[:, 0] / prep[:, 2] - avg_ext) ** 2
-            res[:, 1] = self._csr.dot(delta)
+            avg2d = self._csr.T.dot(avg)  # tranform 1D average into 2D (works only if splitting is disabled)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                delta = (flat_sig / flat_nrm - avg2d)
+            res[:, 1] = self._csr2.dot((delta * flat_nrm) ** 2)  # Σ c²·ω²·(x-x̄ )²
+            res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
+        elif error_model.do_variance:
+            res[:, 1] = self._csr2.dot(flat_var)  # Σ c²·σ²
+            res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
         return res
 
 
@@ -160,6 +163,7 @@ class CsrIntegrator1d(CSRIntegrator):
                  empty=0.0,
                  unit=None,
                  bin_centers=None,
+                 mask_checksum=None
                  ):
         """Constructor of the abstract class for 1D integration
         
@@ -168,25 +172,14 @@ class CsrIntegrator1d(CSRIntegrator):
         :param empty: value for empty pixels
         :param unit: the kind of radial units
         :param bin_center: position of the bin center
-        
-        Nota: bins are deduced from bin_centers 
-
-
-        TODO: 
-        ~/workspace-400/pyFAI/build/lib.linux-x86_64-3.7/pyFAI/azimuthalIntegrator.py in sigma_clip_ng(self, data, npt, correctSolidAngle, polarization_factor, variance, error_model, dark, flat, method, unit, thres, max_iter, dummy, delta_dummy, mask, normalization_factor, metadata, safe, **kwargs)
-   3508                         elif (mask is None) and (integr.check_mask):
-   3509                             reset = "no mask but CSR has mask"
--> 3510                         elif (mask is not None) and (integr.mask_checksum != mask_crc):
-   3511                             reset = "mask changed"
-   3512 #                         if (radial_range is None) and (integr.pos0_range is not None):
-
-AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
-
+        :param mask_checksum: just a place-holder to track which mask was used
+        Nota: bins value is deduced from the dimentionality of bin_centers 
         """
         self.bin_centers = bin_centers
         CSRIntegrator.__init__(self, image_size, lut, empty)
         self.pos0_range = self.pos1_range = None
         self.unit = unit
+        self.mask_checksum = mask_checksum
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
@@ -201,7 +194,7 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
     def integrate(self,
                   signal,
                   variance=None,
-                  poissonian=None,
+                  error_model=None,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -215,7 +208,7 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
-        :param poissonian: set to use signal as variance (minimum 1), set to False to use azimuthal model.
+        :param error_model: Enum or str, set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model.
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -227,30 +220,33 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance 
         
         """
-        if variance is None and poissonian is None:
-            do_variance = False
-        else:
-            do_variance = True
-        trans = CSRIntegrator.integrate(self, signal, variance, poissonian,
+        error_model = ErrorModel.parse(error_model)
+        if variance is not None:
+            error_model = ErrorModel.VARIANCE
+        trans = CSRIntegrator.integrate(self, signal, variance, error_model,
                                         dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         signal = trans[:, 0]
         variance = trans[:, 1]
         normalization = trans[:, 2]
-        count = trans[..., -1]  # should be 3
+        count = trans[:, 3]
         mask = (normalization == 0)
-        with numpy.errstate(divide='ignore', invalid='ignore'):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
             intensity = signal / normalization
             intensity[mask] = self.empty
-            if do_variance:
-                error = numpy.sqrt(variance) / normalization
-                error[mask] = self.empty
+            if error_model.do_variance:
+                sum_nrm2 = trans[:, 4]
+                std = numpy.sqrt(variance / sum_nrm2)
+                sem = numpy.sqrt(variance) / normalization
+                std[mask] = self.empty
+                sem[mask] = self.empty
             else:
-                variance = error = None
+                variance = std = sem = sum_nrm2 = None
         return Integrate1dtpl(self.bin_centers,
-                              intensity, error,
-                              signal, variance, normalization, count)
+                              intensity, sem,
+                              signal, variance, normalization, count, std, sem, sum_nrm2)
 
     integrate_ng = integrate
 
@@ -291,16 +287,17 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
         :param solidangle: array of same shape as data for pre-processing
         :param polarization: array of same shape as data for pre-processing
         :param safe: Unused in this implementation
+        :param error_model: Enum or str, "azimuthal" or "poisson"
         :param normalization_factor: divide raw signal by this value
         :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :return: namedtuple with "position intensity error signal variance normalization count"
         """
         shape = data.shape
-        error_model = error_model.lower() if error_model else ""
-
-        poissonian = error_model.startswith("pois")
-        azimuthal = (not poissonian) and (variance is None)
+        error_model = ErrorModel.parse(error_model)
+        if error_model is ErrorModel.NO:
+            logger.error("No variance propagation is incompatible with sigma-clipping. Using `azimuthal` model !")
+            error_model = ErrorModel.AZIMUTHAL
 
         prep = preproc(data,
                        dark=dark,
@@ -317,79 +314,73 @@ AttributeError: 'CsrIntegrator1d' object has no attribute 'mask_checksum'
                        variance=variance,
                        dark_variance=dark_variance,
                        dtype=numpy.float32,
-                       poissonian=poissonian)
+                       error_model=error_model)
 
         prep_flat = prep.reshape((numpy.prod(shape), 4))
-        res = numpy.empty((numpy.prod(self.bins), 4), dtype=numpy.float32)
 
         # First azimuthal integration:
-        res[:, 0] = self._csr.dot(prep_flat[:, 0])
-        res[:, 2] = self._csr.dot(prep_flat[:, 2])
-        res[:, 3] = self._csr.dot(prep_flat[:, 3])
-        if azimuthal:
-            # ask for azimuthal error model
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                avg = res[:, 0] / res[:, 2]
-                avg_ext = self._csr.T.dot(interp_filter(avg, avg))  # backproject the average value to the image
-                norm = prep_flat[:, 2]
-                msk = (norm == 0)
-                delta2 = (prep_flat[:, 0] / norm - avg_ext) ** 2
-                delta2[msk] = 0
-            res[:, 1] = self._csr.dot(delta2)  # * norm) / self._csr.dot(norm)
-        else:
-            res[:, 1] = self._csr2.dot(prep_flat[:, 1])
+        flat_sig, flat_var, flat_nrm, flat_cnt = prep_flat.T  # should create views!
+        sum_sig = self._csr.dot(flat_sig)
+        sum_nrm = self._csr.dot(flat_nrm)
+        sum_nrm2 = self._csr2.dot(flat_nrm ** 2)
+        cnt = self._csr.dot(flat_cnt)
 
-        for _ in range(cycle):
-            nrm = res[:, 2]
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                avg = res[:, 0] / nrm
-                std = numpy.sqrt(res[:, 1] / nrm)
-            # Replace NaNs with interpolated values.
-            avg = interp_filter(avg, avg)
-            std = interp_filter(std, std)
-            cnt = numpy.maximum(res[:, 3], 3)
-
-            # Interpolate in 2D:
-            avg2d = self._csr.T.dot(avg)
-            std2d = self._csr.T.dot(std)
-            cnt2d = numpy.maximum(self._csr.T.dot(cnt), 3)  # Needed for Chauvenet criterion
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                delta = abs(prep_flat[..., 0] / prep_flat[..., 2] - avg2d)
-            chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0 * numpy.log(cnt2d / numpy.sqrt(2.0 * numpy.pi)))) * std2d
-            # chauvenet = cutoff * std2d
-            msk2d = numpy.where(numpy.logical_not(delta <= chauvenet))
-            # print(len(msk2d[0]))
-            prep_flat[msk2d] = 0
-            # subsequent integrations:
-            res[:, 0] = self._csr.dot(prep_flat[:, 0])
-            res[:, 2] = self._csr.dot(prep_flat[:, 2])
-            res[:, 3] = self._csr.dot(prep_flat[:, 3])
-            if azimuthal:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    avg = res[:, 0] / res[:, 2]
-                    avg_ext = self._csr.T.dot(interp_filter(avg, avg))  # backproject the average value to the image
-                    msk = prep_flat[:, 2] == 0
-                    delta2 = (prep_flat[:, 0] / prep_flat[:, 2] - avg_ext) ** 2
-                    delta2[msk] = 0
-                res[:, 1] = self._csr.dot(delta2)
-            else:
-                res[:, 1] = self._csr2.dot(prep_flat[:, 1])
-
-        nrm = res[:, 2]
-        msk = nrm <= 0
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            avg = res[:, 0] / nrm
-            # Here we return the standaard deviation and not the standard error of the mean !
-            std = numpy.sqrt(res[:, 1]) / nrm
+            avg = sum_sig / sum_nrm
+            interp_filter(avg, avg)
+            if error_model == ErrorModel.AZIMUTHAL:
+                avg2d = self._csr.T.dot(avg)  # backproject the average value to the image
+                msk = (flat_nrm == 0)
+                delta = (flat_sig / flat_nrm - avg2d)
+                delta[msk] = 0
+                sum_var = self._csr2.dot((delta * flat_nrm) ** 2)
+            else:
+                sum_var = self._csr2.dot(flat_var)
+            std = numpy.sqrt(sum_var / sum_nrm2)
+            interp_filter(std, std)
+            for _ in range(cycle):
+                # Interpolate in 2D: TODO: can be skipped in the case of azimuthal...
+                avg2d = self._csr.T.dot(avg)
+                std2d = self._csr.T.dot(std)
+                cnt2d = numpy.maximum(self._csr.T.dot(cnt), 3)  # Needed for Chauvenet criterion
+                delta = abs(flat_sig / flat_nrm - avg2d)
+                chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0 * numpy.log(cnt2d / numpy.sqrt(2.0 * numpy.pi))))
+                msk2d = numpy.where(numpy.logical_not(abs(delta) <= chauvenet * std2d))
+                # discard outlier pixel here:
+                prep_flat[msk2d] = 0
+                # subsequent integrations:
+                sum_sig = self._csr.dot(flat_sig)
+                sum_nrm = self._csr.dot(flat_nrm)
+                sum_nrm2 = self._csr2.dot(flat_nrm ** 2)
+                cnt = self._csr.dot(flat_cnt)
+                avg = sum_sig / sum_nrm
+                interp_filter(avg, avg)
+                if error_model == ErrorModel.AZIMUTHAL:
+                    avg2d = self._csr.T.dot(avg)  # backproject the average value to the image
+                    msk = (flat_nrm == 0)
+                    delta = (flat_sig / flat_nrm - avg2d)
+                    delta[msk] = 0
+                    sum_var = self._csr2.dot((delta * flat_nrm) ** 2)
+                else:
+                    sum_var = self._csr2.dot(flat_var)
+                std = numpy.sqrt(sum_var / sum_nrm2)
+                interp_filter(std, std)
+            # Finally calculate the sem in addition to the std
+
+            sem = std * numpy.sqrt(sum_nrm2) / sum_nrm
+        # mask out remaining NaNs
+        msk = sum_nrm <= 0
         avg[msk] = self.empty
         std[msk] = self.empty
+        sem[msk] = self.empty
 
-        return Integrate1dtpl(self.bin_centers, avg, std, res[:, 0], res[:, 1], res[:, 2], res[:, 3])
+        # Here we return the standard deviation and not the standard error of the mean !
+        return Integrate1dtpl(self.bin_centers, avg, std, sum_sig, sum_var, sum_nrm, cnt, std, sem, sum_nrm2)
+
+    @property
+    def check_mask(self):
+        return self.mask_checksum is not None
 
 
 class CsrIntegrator2d(CSRIntegrator):
@@ -400,7 +391,8 @@ class CsrIntegrator2d(CSRIntegrator):
                  empty=0.0,
                  bin_centers0=None,
                  bin_centers1=None,
-                 checksum=None):
+                 checksum=None,
+                 mask_checksum=None):
         """Constructor of the abstract class for 2D integration
         
         :param size: input image size
@@ -408,6 +400,8 @@ class CsrIntegrator2d(CSRIntegrator):
                      index of the start of line in the CSR matrix
         :param empty: value for empty pixels
         :param bin_center: position of the bin center
+        :param checksum: checksum for the LUT, if not provided, recalculated
+        :param mask_checksum: just a place-holder to track which mask was used
 
         Nota: bins are deduced from bin_centers0, bin_centers1 
     
@@ -471,18 +465,25 @@ class CsrIntegrator2d(CSRIntegrator):
         signal = trans[..., 0]
         variance = trans[..., 1]
         normalization = trans[..., 2]
-        count = trans[..., -1]  # should be 3
+        count = trans[..., 3]
+
         mask = (normalization == 0)
-        with numpy.errstate(divide='ignore', invalid='ignore'):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
             intensity = signal / normalization
             intensity[mask] = self.empty
             if do_variance:
                 error = numpy.sqrt(variance) / normalization
                 error[mask] = self.empty
+                sum_nrm2 = trans[..., 4]
             else:
-                variance = error = None
+                variance = error = sum_nrm2 = None
         return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
                               intensity, error,
-                              signal, variance, normalization, count)
+                              signal, variance, normalization, count, sum_nrm2)
 
     integrate_ng = integrate
+
+    @property
+    def check_mask(self):
+        return self.mask_checksum is not None

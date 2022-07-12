@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2020"
+__date__ = "30/06/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -124,13 +124,14 @@ class Nexus(object):
     TODO: make it thread-safe !!!
     """
 
-    def __init__(self, filename, mode=None, creator=None):
+    def __init__(self, filename, mode=None, creator=None, start_time=None):
         """
         Constructor
 
         :param filename: name of the hdf5 file containing the nexus
         :param mode: can be 'r', 'a', 'w', '+' ....
         :param creator: set as attr of the NXroot
+        :param start_time: set as attr of the NXroot
         """
         self.filename = os.path.abspath(filename)
         self.mode = mode
@@ -155,7 +156,7 @@ class Nexus(object):
 
         if not pre_existing or "w" in mode:
             self.h5.attrs["NX_class"] = "NXroot"
-            self.h5.attrs["file_time"] = get_isotime()
+            self.h5.attrs["file_time"] = get_isotime(start_time)
             self.h5.attrs["file_name"] = self.filename
             self.h5.attrs["HDF5_Version"] = h5py.version.hdf5_version
             self.h5.attrs["creator"] = creator or self.__class__.__name__

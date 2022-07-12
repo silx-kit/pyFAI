@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2021"
+__date__ = "22/04/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -58,7 +58,7 @@ from .utils.decorators import deprecated
 from .utils import crc32, deg2rad
 from . import utils
 from .io import ponifile, integration_config
-
+from .units import CONST_hc
 logger = logging.getLogger(__name__)
 
 try:
@@ -270,15 +270,15 @@ class Geometry(object):
         if self._parallax is not None:
                 r0 = numpy.vstack((p1.ravel(), p2.ravel()))
                 length = numpy.linalg.norm(r0, axis=0)
-                length[length==0] = 1.0 #avoid zero division error
-                r0 /= length  # normalize array r0 
-                
+                length[length == 0] = 1.0  # avoid zero division error
+                r0 /= length  # normalize array r0
+
                 displacement = self._parallax(self.sin_incidence(d1.ravel(), d2.ravel()))
                 delta1, delta2 = displacement * r0
                 delta1.shape = p1.shape
-                delta2.shape = p2.shape                
+                delta2.shape = p2.shape
                 p1 -= delta1
-                p2 -= delta2 
+                p2 -= delta2
         return delta1, delta2
 
     def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None, do_parallax=False):
@@ -304,7 +304,7 @@ class Geometry(object):
 
         p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
         p1 = p1 - poni1
-        p2 =  p2 - poni2
+        p2 = p2 - poni2
         if do_parallax and (self._parallax is not None):
             self._correct_parallax(d1, d2, p1, p2)
         return p1, p2, p3
@@ -407,9 +407,9 @@ class Geometry(object):
         else:
             t3, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param, do_parallax=True)
             if path == "cos":
-                tmp = arccos(t3 / sqrt(t1*t1 + t2*t2 + t3*t3))
+                tmp = arccos(t3 / sqrt(t1 * t1 + t2 * t2 + t3 * t3))
             else:
-                tmp = arctan2(sqrt(t1*t1 + t2*t2), t3)
+                tmp = arctan2(sqrt(t1 * t1 + t2 * t2), t3)
         return tmp
 
     def qFunction(self, d1, d2, param=None, path="cython"):
@@ -881,7 +881,7 @@ class Geometry(object):
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
                 tmp = ary.copy()
-                tmp[..., 0] *= unit.scale 
+                tmp[..., 0] *= unit.scale
                 return tmp
             else:
                 return ary
@@ -894,7 +894,7 @@ class Geometry(object):
         self._cached_array[key] = ary
         if scale and unit:
                 tmp = ary.copy()
-                tmp[..., 0] *= unit.scale 
+                tmp[..., 0] *= unit.scale
                 return tmp
         else:
             return ary
@@ -927,7 +927,7 @@ class Geometry(object):
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
                 tmp = ary.copy()
-                tmp[..., 0] *= unit.scale 
+                tmp[..., 0] *= unit.scale
                 return tmp
             else:
                 return ary
@@ -938,7 +938,7 @@ class Geometry(object):
         self._cached_array[space] = ary
         if scale and unit:
             tmp = ary.copy()
-            tmp[..., 0] *= unit.scale 
+            tmp[..., 0] *= unit.scale
             return tmp
 
         else:
@@ -1096,24 +1096,24 @@ class Geometry(object):
         :param path: can be "cython", "numexpr" or "numpy" (fallback).
         :return: cosine of the incidence angle
         """
-        
+
         if self.detector.IS_FLAT:
             p1, p2, _ = self._calc_cartesian_positions(d1, d2)
             if (_geometry is not None) and (path == "cython"):
                 sina = _geometry.calc_sina(self._dist, p1, p2)
-            elif (numexpr is not None) and (path!="numpy"):
+            elif (numexpr is not None) and (path != "numpy"):
                 sina = numexpr.evaluate("sqrt((p1*p1 + p2*p2) / (dist*dist + (p1*p1 + p2*p2)))",
                                         local_dict={"dist": self._dist, "p1":p1, "p2":p2})
             else:
                 sina = numpy.sqrt((p1 * p1 + p2 * p2) / (self._dist * self._dist + (p1 * p1 + p2 * p2)))
         else:
             cosa = self.cos_incidence(d1, d2, path).clip(0.0, 1.0)
-            if numexpr is not None and path!="numpy":
+            if numexpr is not None and path != "numpy":
                 sina = numexpr.evaluate("sqrt(1.0-cosa*cosa)")
             else:
-                sina = numpy.sqrt(1.0 - (cosa*cosa)) 
+                sina = numpy.sqrt(1.0 - (cosa * cosa))
         return sina
-            
+
     def cos_incidence(self, d1, d2, path="cython"):
         """
         Calculate the cosinus of the incidence angle (alpha) for current pixels (P).
@@ -1164,7 +1164,7 @@ class Geometry(object):
         else:
             if (_geometry is not None) and (path == "cython"):
                 cosa = _geometry.calc_cosa(self._dist, p1, p2)
-            elif (numexpr is not None) and (path!="numpy"):
+            elif (numexpr is not None) and (path != "numpy"):
                 cosa = numexpr.evaluate("dist/sqrt(dist*dist + (p1*p1 + p2*p2))",
                                         local_dict={"dist": self._dist, "p1":p1, "p2":p2})
             else:
@@ -1385,9 +1385,9 @@ class Geometry(object):
             if "detector" in kwargs:
                 self.detector = detectors.Detector.from_dict(kwargs)
             else:
-                self.detector = detectors.Detector(pixel1=kwargs.get("pixel1"), 
-                                                   pixel2=kwargs.get("pixel2"), 
-                                                   splineFile=kwargs.get("splineFile"), 
+                self.detector = detectors.Detector(pixel1=kwargs.get("pixel1"),
+                                                   pixel2=kwargs.get("pixel2"),
+                                                   splineFile=kwargs.get("splineFile"),
                                                    max_shape=kwargs.get("max_shape"))
             self.param = [self._dist, self._poni1, self._poni2,
                           self._rot1, self._rot2, self._rot3]
@@ -1670,6 +1670,87 @@ class Geometry(object):
         self.reset()
         return self
 
+    def getCXI(self):
+        """Export the geometry in the CXI format as defined in 
+        https://raw.githubusercontent.com/cxidb/CXI/master/cxi_file_format.pdf
+        
+        :return: dict with the structure of a CXI file to be written into HDF5
+        """
+        cxi = {"cxi_version": 160}
+        if self._wavelength:
+            cxi["beam"] = {"incident_energy": self.get_energy(),
+                           "incident_wavelength": self.get_wavelength(),
+                           # "incident_polarization": #TODO
+            }
+        detector = {"distance": self.dist,
+                    "x_pixel_size": self.detector.pixel2,
+                    "y_pixel_size": self.detector.pixel1,
+                    "description": self.detector.name,
+                    "mask": self.detector.mask}
+        geometry = {"translation": [-self.poni2, -self.poni1, self.dist]}
+        # This is the matrix that transforms the sample's orientation to the detector's orientation
+        rot = numpy.linalg.inv(self.rotation_matrix())
+        # TODO: double check this with CXI gemetry visualizer. Indices could be transposed.
+        geometry["orientation"] = [rot[1, 1],  # x′ · x,
+                                   rot[1, 0],  # x′ · y,
+                                   rot[1, 2],  # x′ · z,
+                                   rot[0, 1],  # y′ · x,
+                                   rot[0, 0],  # y′ · y,
+                                   rot[0, 2],  # y′ · z]
+                                    ]
+        detector["geometry_1"] = geometry
+        cxi["detector_1"] = detector
+        return cxi
+
+    def setCXI(self, dico):
+        """Set the geometry of the azimuthal integrator from a CXI data structure (as dict)
+        
+        :param dico: dictionary with CXI information 
+        """
+        detector = dico.get("detector_1", {})
+        det = detectors.detector_factory(detector.get("description", "Detector"))
+        if "x_pixel_size" in detector:
+            det.pixel2 = float(detector["x_pixel_size"])
+        if "y_pixel_size" in detector:
+            det.pixel1 = float(detector["y_pixel_size"])
+        if "mask" in detector:
+            det.mask = detector["mask"]
+        self.detector = det
+        if "distance" in detector:
+            self.dist = float(detector["distance"])
+        if "beam" in dico:
+            beam = dico["beam"]
+            if "incident_energy" in beam:
+                self.energy = float(beam["incident_energy"])
+            if "incident_wavelength" in beam:
+                self.wavelength = float(beam["incident_wavelength"])
+        if "geometry_1" in detector:
+            geo = detector["geometry_1"]
+            translation = geo.get("translation", [])
+            if len(translation) == 3:
+                self.dist = translation[2]
+                self.poni1 = -translation[1]
+                self.poni2 = -translation[0]
+            orientation = geo.get("orientation", [])
+            if len(orientation) == 6:
+                rot = numpy.zeros((3, 3))
+                rot[1, 1] = orientation[0]  # x′ · x,
+                rot[1, 0] = orientation[1]  # x′ · y,
+                rot[1, 2] = orientation[2]  # x′ · z,
+                rot[0, 1] = orientation[3]  # y′ · x,
+                rot[0, 0] = orientation[4]  # y′ · y,
+                rot[0, 2] = orientation[5]  # y′ · z
+                rot[2] = numpy.cross(rot[0], rot[1])
+                rot = numpy.linalg.inv(rot)
+                rot4 = numpy.identity(4)
+                rot4[:3,:3] = rot
+                from .third_party.transformations import euler_from_matrix
+                euler = euler_from_matrix(rot4, axes='sxyz')
+                self._rot1 = -euler[0]
+                self._rot2 = -euler[1]
+                self._rot3 = euler[2]
+        self.reset()
+
     def set_param(self, param):
         """set the geometry from a 6-tuple with dist, poni1, poni2, rot1, rot2,
         rot3
@@ -1693,7 +1774,7 @@ class Geometry(object):
         :param w: Real part of the quaternion (correspond to cos alpha/2)
         :param x: Imaginary part of the quaternion, correspond to u1*sin(alpha/2)
         :param y: Imaginary part of the quaternion, correspond to u2*sin(alpha/2)
-        :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/21)
+        :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/2)
         """
         from .third_party.transformations import euler_from_quaternion
 
@@ -1806,7 +1887,7 @@ class Geometry(object):
                 new[i::self._oversampling, j::self._oversampling] = myarray
         return new
 
-    def polarization(self, shape=None, factor=None, axis_offset=0, with_checksum=False):
+    def polarization(self, shape=None, factor=None, axis_offset=0, with_checksum=False, path="numexpr"):
         """
         Calculate the polarization correction accoding to the
         polarization factor:
@@ -1824,19 +1905,24 @@ class Geometry(object):
         The axis_offset parameter allows correction for the misalignement of
         the polarization plane (or ellipse main axis) and the the detector's X axis.
 
+        :param shape: the shape of the array, 
+                    can be guessed most of the time from the detector definition
         :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization)
                     and 1 (where division by 0 could occure at 2th=90, chi=0)
         :param axis_offset: Angle between the polarization main axis and
                             detector's X direction (in radians !!!)
-        :return: 2D array with polarization correction array
-                        (intensity/polarisation)
+        :param with_checksum: calculate also the checksum (used with OpenCL integration)
+        :param path: set to numpy to enforce the use of numpy, else uses numexpr (mutithreaded)
+        :return: 2D array with polarization correction (normalization) array 
+                 or namedtuple if with_checksum
+
 
         """
 
         shape = self.get_shape(shape)
         if shape is None:
             raise RuntimeError(("You should provide a shape if the"
-                                " geometry is not yet initiallized"))
+                                " geometry is not yet initialized"))
         if factor is None:
             if with_checksum:
                 one = numpy.ones(shape, dtype=numpy.float32)
@@ -1857,10 +1943,13 @@ class Geometry(object):
             chi = self.chiArray(shape)
             with self._sem:
                 if pol is None or (pol.array.shape != shape):
-                    # TODO: use numexpr for evaluation
-                    cos2_tth = numpy.cos(tth) ** 2
-                    pola = 0.5 * (1.0 + cos2_tth -
-                                  factor * numpy.cos(2.0 * (chi + axis_offset)) * (1.0 - cos2_tth))
+                    if path == "numexpr" and numexpr:
+                        pola = numexpr.evaluate(
+    "0.5 * (1.0 + cos(tth)**2 - factor * cos(2.0 * (chi + axis_offset)) * (1.0 - cos(tth)**2))")
+                    else:
+                        cos2_tth = numpy.cos(tth) ** 2
+                        pola = 0.5 * (1.0 + cos2_tth -
+                                      factor * numpy.cos(2.0 * (chi + axis_offset)) * (1.0 - cos2_tth))
                     pola = pola.astype(numpy.float32)
                     polc = crc32(pola)
                     pol = PolarizationArray(pola, polc)
@@ -2248,6 +2337,7 @@ class Geometry(object):
     rot3 = property(get_rot3, set_rot3)
 
     def set_wavelength(self, value):
+        "Set the wavelength in meter!"
         old_wl = self._wavelength
         if isinstance(value, float):
             self._wavelength = value
@@ -2274,6 +2364,17 @@ class Geometry(object):
         return self._wavelength
 
     wavelength = property(get_wavelength, set_wavelength)
+
+    def get_energy(self):
+        if self._wavelength:
+            return 1e-10 * CONST_hc / self._wavelength
+
+    def set_energy(self, energy):
+        "Set the energy in keV"
+        wavlength = 1e-10 * CONST_hc / energy
+        self.set_wavelength(wavlength)
+
+    energy = property(get_energy, set_energy)
 
     def get_ttha(self):
         return self._cached_array.get("2th_center")
@@ -2395,13 +2496,14 @@ class Geometry(object):
 
     def get_parallax(self):
         return self._parallax
-    
+
     def set_parallax(self, value):
         from .parallax import Parallax
         if value is not None:
             assert isinstance(value, Parallax)
         self._parallax = value
         self.reset()
+
     parallax = property(get_parallax, set_parallax)
 
     # Property to provide _dssa and _dssa_crc and so one to maintain the API

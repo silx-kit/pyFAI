@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #
@@ -27,7 +27,7 @@
 #  THE SOFTWARE.
 #
 
-"""peakfinder: Count the number of Bragg-peaks on an image
+"""peakfinder: Count the number of Bragg-peaks on an image.
 
 Bragg peaks are local maxima of the background subtracted signal. 
 Peaks are integrated and variance propagated. The centroids are reported.
@@ -38,19 +38,18 @@ The number of iteration, the clipping value and the number of radial bins could 
 This program requires OpenCL. The device needs be properly selected.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/12/2021"
-__status__ = "status"
+__date__ = "01/07/2022"
+__status__ = "production"
 
 import os
 import sys
 import argparse
 import time
 from collections import OrderedDict
-import numpy
 import numexpr
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -72,7 +71,7 @@ if ocl is None:
 else:
     from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
-from ..io.spots import save_spots
+from ..io.spots import save_spots_nexus, save_spots_cxi
 # Define few constants:
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
@@ -98,7 +97,7 @@ def expand_args(args):
 
 def parse():
     epilog = "Current status of the program: " + __status__
-    parser = argparse.ArgumentParser(prog="spasify-Bragg",
+    parser = argparse.ArgumentParser(prog="peakfinder",
                                      description=__doc__,
                                      epilog=epilog)
     parser.add_argument("IMAGE", nargs="*",
@@ -106,24 +105,27 @@ def parse():
     parser.add_argument("-V", "--version", action='version', version=version,
                         help="output version and exit")
     parser.add_argument("-v", "--verbose", action='store_true', dest="verbose", default=False,
-                        help="show information for each frame")
+                        help="Show information for each frame")
     parser.add_argument("--debug", action='store_true', dest="debug", default=False,
-                        help="show debug information")
+                        help="Show debug information")
     parser.add_argument("--profile", action='store_true', dest="profile", default=False,
-                        help="show profiling information")
+                        help="Show profiling information")
     group = parser.add_argument_group("main arguments")
 #     group.add_argument("-l", "--list", action="store_true", dest="list", default=None,
 #                        help="show the list of available formats and exit")
     group.add_argument("-o", "--output", default='spots.h5', type=str,
                        help="Output filename")
+    group.add_argument("--format", default='cxi', type=str,
+                       help="Output file format, can be `nexus` (former default) or `cxi` (current default)")
     group.add_argument("--save-source", action='store_true', dest="save_source", default=False,
-                       help="save the path for all source files")
-    
+                       help="Save the path for all source files")
+    group.add_argument("--save-powder", action='store_true', dest="save_powder", default=False,
+                       help="Save the pseudo powder diffraction pattern generated from all source files (only peaks)")
     group = parser.add_argument_group("Scan options")
     group.add_argument("--grid-size", nargs=2, type=int, dest="grid_size", default=None,
-                       help="Grid along which the data was acquired")
+                       help="Grid along which the data was acquired, disabled by default")
     group.add_argument("--zig-zag", action='store_true', dest="zig_zag", default=False,
-                       help="The scan was performed with a zig-zag pattern")
+                       help="Build the 2D image considering the scan was performed with a zig-zag pattern")
 # TODO: implement those
 #     group = parser.add_argument_group("optional behaviour arguments")
 #     group.add_argument("-f", "--force", dest="force", action="store_true", default=False,
@@ -150,39 +152,39 @@ def parse():
     group.add_argument("-b", "--beamline", type=str, default="beamline",
                        help="Name of the instument (for the HDF5 NXinstrument)")
     group.add_argument("-p", "--poni", type=str, default=None,
-                       help="geometry description file")
+                       help="Geometry description file: Mandatory")
     group.add_argument("-m", "--mask", type=str, default=None,
-                       help="mask to be used for invalid pixels")
+                       help="Mask to be used for invalid pixels")
     group.add_argument("--dummy", type=float, default=None,
-                       help="value of dynamically masked pixels")
+                       help="Value of dynamically masked pixels (disabled by default)")
     group.add_argument("--delta-dummy", type=float, default=None,
-                       help="precision for dummy value")
+                       help="Precision for dummy value")
     group.add_argument("--radial-range", dest="radial_range", nargs=2, type=float, default=None,
-                       help="radial range as a 2-tuple of number of pixels, by default all available range")
+                       help="radial range as a 2-tuple of number of pixels (all available range by default)")
     group.add_argument("-P", "--polarization", type=float, default=None,
-                       help="Polarization factor of the incident beam [-1:1], by default disabled, 0.99 is a good guess")
+                       help="Polarization factor of the incident beam [-1:1] (off by default, 0.99 is a good guess on synchrotrons")
     group.add_argument("-A", "--solidangle", action='store_true', default=None,
                        help="Correct for solid-angle correction (important if the detector is not mounted normally to the incident beam, off by default")
     group = parser.add_argument_group("Sigma-clipping options")
-    group.add_argument("--bins", type=int, default=1000,
-                       help="Number of radial bins to consider")
-    group.add_argument("--unit", type=str, default="r_m",
-                       help="radial unit to perform the calculation")
+    group.add_argument("--bins", type=int, default=800,
+                       help="Number of radial bins to consider (800 by default)")
+    group.add_argument("--unit", type=str, default="q_A^-1",
+                       help="radial unit to perform the calculation (q_Å^1 by default)")
     group.add_argument("--cycle", type=int, default=5,
-                       help="precision for dummy value")
+                       help="Number of cycles for the sigma-clipping (5 by default)")
     group.add_argument("--cutoff-clip", dest="cutoff_clip", type=float, default=0.0,
-                       help="SNR threshold for considering a pixel outlier when performing the sigma-clipping")
+                       help="SNR threshold for considering a pixel outlier when performing the sigma-clipping (0 by default: fallback on Chauvenet criterion)")
     group.add_argument("--error-model", dest="error_model", type=str, default="poisson",
                        help="Statistical model for the signal error, may be `poisson`(default) or `azimuthal` (slower) or even a simple formula like '5*I+8'")
     group = parser.add_argument_group("Peak finding options")
-    group.add_argument("--cutoff-pick", dest="cutoff_pick", type=float, default=3.0,
-                       help="SNR threshold for considering a pixel high when searching for peaks")
+    group.add_argument("--cutoff-peak", dest="cutoff_peak", type=float, default=3.0,
+                       help="SNR threshold for considering a pixel high when searching for peaks (3 by default)")
     group.add_argument("--noise", type=float, default=1.0,
-                       help="Quadratically added noise to the background")
+                       help="Noise added quadratically to the background (1 by default")
     group.add_argument("--patch-size", type=int, default=5,
-                       help="size of the neighborhood for integration")
+                       help="Size of the neighborhood patch for integration (5 by default)")
     group.add_argument("--connected", type=int, default=3,
-                       help="Number of high pixels in neighborhood to be considered as a peak")
+                       help="Number of high pixels in neighborhood to be considered as a peak (3 by default)")
     group = parser.add_argument_group("Opencl setup options")
     group.add_argument("--workgroup", type=int, default=None,
                        help="Enforce the workgroup size for OpenCL kernel. Impacts only on the execution speed, not on the result.")
@@ -269,7 +271,7 @@ def process(options):
                         empty=options.dummy,
                         unit=unit,
                         bin_centers=integrator.bin_centers,
-                        radius=ai._cached_array[unit.name.split("_")[0] + "_center"],
+                        radius=ai.array_from_unit(typ="center", unit=unit, scale=False),
                         mask=mask,
                         ctx=ctx,
                         profile=options.profile,
@@ -293,9 +295,9 @@ def process(options):
                               ("cutoff_clip", options.cutoff_clip),
                               ("cycle", options.cycle),
                               ("noise", options.noise),
-                              ("cutoff_pick", options.cutoff_pick),
+                              ("cutoff_peak", options.cutoff_peak),
                               ("radial_range", rrange),
-                              ('patch_size', options.patch_size), 
+                              ('patch_size', options.patch_size),
                               ("connected", options.connected)])
     if options.solidangle:
         parameters["solidangle"], parameters["solidangle_checksum"] = ai.solidAngleArray(with_checksum=True)
@@ -305,14 +307,14 @@ def process(options):
     for fabioimage in dense:
         for frame in fabioimage:
             intensity = frame.data
-            current = pf.peakfinder8(intensity,
-                                     variance=None if variance is None else variance(intensity),
-                                     **parameters)
+            current = pf.peakfinder(intensity,
+                                    variance=None if variance is None else variance(intensity),
+                                    **parameters)
             frames.append(current)
             if pb:
-                pb.update(cnt, message="%s: %i pixels" % (os.path.basename(fabioimage.filename), len(current)))
+                pb.update(cnt, message=f"{os.path.basename(fabioimage.filename)}: {len(current)} peaks")
             else:
-                print("%s frame #%d, found %d intense pixels" % (fabioimage.filename, fabioimage.currentframe, len(current)))
+                print(f"{fabioimage.filename} frame #{fabioimage.currentframe}, found {len(current)} peaks")
             cnt += 1
     t1 = time.perf_counter()
     if pb:
@@ -322,8 +324,8 @@ def process(options):
         print("Saving: " + options.output)
     logger.debug("Save data")
 
-    parameters["unit"] = unit.name.split("_")[0]
-    parameters["error_model"] = options.error_model
+    parameters["unit"] = unit.name
+    parameters["error_model"] = frames[0].error_model.name if frames else options.error_model
 
     if options.polarization is not None:
         parameters.pop("polarization")
@@ -335,14 +337,18 @@ def process(options):
         parameters["correctSolidAngle"] = True
     if options.mask is not None:
         parameters["mask"] = True
-        
+    if options.format.lower() == "nexus":
+        save_spots = save_spots_nexus
+    else:
+        save_spots = save_spots_cxi
     save_spots(options.output,
-                frames,
-                beamline=options.beamline,
-                ai=ai,
-                source=options.images if options.save_source else None,
-                extra=parameters,
-                grid = (options.grid_size, options.zig_zag))
+              frames,
+              beamline=options.beamline,
+              ai=ai,
+              source=options.images if options.save_source else None,
+              extra=parameters,
+              grid=(options.grid_size, options.zig_zag),
+              powder=integrator.bin_centers * unit.scale if options.save_powder else None)
 
     if options.profile:
         try:
@@ -351,7 +357,7 @@ def process(options):
             pf.log_profile()
     if pb:
         pb.clear()
-    logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1-t0, cnt/(t1-t0))
+    logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1 - t0, cnt / (t1 - t0))
 
     return EXIT_SUCCESS
 

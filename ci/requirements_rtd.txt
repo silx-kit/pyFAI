@@ -10,3 +10,4 @@ silx
 nbsphinx
 sphinx-rtd-theme
 docutils<0.19
+ipython_genutils

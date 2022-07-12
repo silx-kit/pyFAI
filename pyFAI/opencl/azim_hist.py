@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "10/01/2022"
+__date__ = "30/06/2022"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -48,7 +48,7 @@ else:
 
 from . import allocate_cl_buffers, release_cl_buffers, kernel_workgroup_size
 from . import concatenate_cl_kernel, get_x87_volatile_option, processing
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from ..utils.decorators import deprecated
 EventDescription = processing.EventDescription
 OpenclProcessing = processing.OpenclProcessing
@@ -87,7 +87,9 @@ class OCL_Histogram1d(OpenclProcessing):
                numpy.int16: "s16_to_float",
                numpy.uint16: "u16_to_float",
                numpy.uint32: "u32_to_float",
-               numpy.int32: "s32_to_float"
+               numpy.uintc: "u32_to_float",
+               numpy.int32: "s32_to_float",
+               numpy.intc: "s32_to_float"
                }
 
     def __init__(self, radial, bins, radial_checksum=None, empty=None, unit=None,
@@ -278,7 +280,7 @@ class OCL_Histogram1d(OpenclProcessing):
 
         """
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -375,7 +377,7 @@ class OCL_Histogram1d(OpenclProcessing):
 
     def integrate(self, data, dark=None,
                   dummy=None, delta_dummy=None,
-                  poissonian=False,
+                  error_model=ErrorModel.NO,
                   variance=None, dark_variance=None,
                   flat=None, solidangle=None, polarization=None, absorption=None,
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
@@ -401,7 +403,7 @@ class OCL_Histogram1d(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
-        :param poissonian: set to assume variance is data (minimum 1) 
+        :param error_model: set to "poisson" assume variance is data (minimum 1) 
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -431,10 +433,8 @@ class OCL_Histogram1d(OpenclProcessing):
             events.append(EventDescription("memset_histograms", memset))
             kw_correction = self.cl_kernel_args["corrections4"]
             kw_histogram = self.cl_kernel_args["histogram_1d_preproc"]
-            kw_correction["poissonian"] = numpy.int8(1 if poissonian else 0)
-            if variance is None:
-                kw_correction["variance"] = self.cl_mem["image"]
-            else:
+            kw_correction["error_model"] = numpy.int8(error_model.value)
+            if variance is not None:
                 self.send_buffer(variance, "variance")
                 kw_correction["variance"] = self.cl_mem["variance"]
 

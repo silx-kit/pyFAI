@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -62,7 +62,7 @@ Here are the valid keys:
 - "nbpt_rad"
 - "do_solid_angle"
 - "do_radial_range"
-- "do_poisson"
+- "error_model"
 - "delta_dummy"
 - "nbpt_azim"
 - "flat_field"
@@ -78,11 +78,11 @@ Here are the valid keys:
 - "method"
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2021"
+__date__ = "29/06/2022"
 __status__ = "development"
 
 import threading
@@ -97,12 +97,14 @@ logger = logging.getLogger(__name__)
 from . import average
 from . import method_registry
 from .azimuthalIntegrator import AzimuthalIntegrator
-from pyFAI.method_registry import IntegrationMethod
+from .containers import ErrorModel
+from .method_registry import IntegrationMethod
 from .distortion import Distortion
 from . import units
 from .io import integration_config
 import pyFAI.io.image
 from .engines.preproc import preproc as preproc_numpy
+from .utils.decorators import deprecated_warning
 try:
     import numexpr
 except ImportError as err:
@@ -252,8 +254,7 @@ class Worker(object):
         self.mask_image = None
         self.subdir = ""
         self.extension = None
-        self.do_poisson = None
-        self.do_azimuthal_error = None
+        self.error_model = None
         self.needs_reset = True
         self.output = "numpy"  # exports as numpy array by default
         self.shape = shapeIn
@@ -351,10 +352,8 @@ class Worker(object):
         kwarg["safe"] = self.safe
         kwarg["variance"] = variance
 
-        if self.do_poisson:
-            kwarg["error_model"] = "poisson"
-        elif self.do_azimuthal_error:
-            kwarg["error_model"] = "azimuth"
+        if self.error_model:
+            kwarg["error_model"] = self.error_model
 
         if metadata is not None:
             kwarg["metadata"] = metadata
@@ -367,7 +366,6 @@ class Worker(object):
             kwarg["npt_azim"] = self.nbpt_azim
         else:
             kwarg["npt"] = self.nbpt_rad
-        kwarg["error_model"] = self.error_model
 
         if self.radial_range is not None:
             kwarg["radial_range"] = self.radial_range
@@ -508,8 +506,28 @@ class Worker(object):
         value = config.pop("unit", units.TTH_DEG)
         self.unit = units.to_unit(value)
 
-        value = config.pop("do_poisson", False)
-        self.do_poisson = bool(value)
+        value = config.pop("do_poisson", None)
+        if value is not None:
+            deprecated_warning(
+                __name__,
+                name="do_poisson",
+                reason='do_poisson=True is replaced by error_model="poisson"'
+            )
+            self.do_poisson = value
+
+        value = config.pop("do_azimuthal_error", None)
+        if value is not None:
+            deprecated_warning(
+                __name__,
+                name="do_azimuthal_error",
+                reason='do_azimuthal_error=True is replaced by error_model="azimuthal"'
+            )
+            self.do_azimuthal_error = value
+
+        value = config.pop("error_model", None)
+        if value:
+            value = value.lower()
+        self.error_model = value
 
         value = config.pop("polarization_factor", None)
         apply_value = config.pop("do_polarization", True)
@@ -533,8 +551,8 @@ class Worker(object):
         value = config.pop("do_solid_angle", True)
         self.correct_solid_angle = bool(value)
 
-        self.dummy = config.pop("delta_dummy", None)
-        self.delta_dummy = config.pop("val_dummy", None)
+        self.dummy = config.pop("val_dummy", None)
+        self.delta_dummy = config.pop("delta_dummy", None)
         apply_values = config.pop("do_dummy", True)
         if not apply_values:
             self.dummy, self.delta_dummy = None, None
@@ -556,21 +574,6 @@ class Worker(object):
 
     unit = property(get_unit, set_unit)
 
-    def set_error_model(self, value):
-        if value == "poisson":
-            self.do_poisson = True
-        elif value is None or value == "":
-            self.do_poisson = False
-        else:
-            raise RuntimeError("Unsupported error model '%s'" % value)
-
-    def get_error_model(self):
-        if self.do_poisson:
-            return "poisson"
-        return None
-
-    error_model = property(get_error_model, set_error_model)
-
     def get_config(self):
         """Returns the configuration as a dictionary.
 
@@ -585,7 +588,7 @@ class Worker(object):
                 pass
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "dummy", "delta_dummy",
                     "correct_solid_angle", "dark_current_image", "flat_field_image",
-                    "mask_image", "do_poisson", "shape", "method"]:
+                    "mask_image", "error_model", "shape", "method"]:
             try:
                 config[key] = self.__getattribute__(key)
             except Exception:
@@ -672,6 +675,41 @@ class Worker(object):
 
     __call__ = process
 
+    @staticmethod
+    def validate_config(config, raise_exception=RuntimeError):
+        """
+        Validates a configuration for any inconsitencies
+        
+        :param config: dict contraining the configuration
+        :param raise_exception: Exception class to raise when configuration is not consistant
+        :return: None or reason as a string when raise_exception is None, else raise the given exception   
+        """
+        reason = None
+        if not config.get("dist"):
+            reason = "Detector distance is undefined"
+        elif config.get("poni1") is None:
+            reason = "Distance `poni1` is undefined"
+        elif config.get("poni2") is None:
+            reason = "Distance `poni2` is undefined"
+        elif config.get("rot1") is None:
+            reason = "Rotation `rot1` is undefined"
+        elif config.get("rot2") is None:
+            reason = "Rotation `rot2` is undefined"
+        elif config.get("rot3") is None:
+            reason = "Rotation `rot3` is undefined"
+        elif not config.get("nbpt_rad"):
+            reason = "Number of radial bins is is undefined"
+        elif config.get("do_2D") and not config.get("nbpt_rad"):
+            reason = "Number of azimuthal bins is is undefined while 2D integration requested"
+        elif config.get("wavelength") is None:
+            unit = config.get("unit", "_").split("_")[0]
+            if "q" in unit:
+                reason = "Wavelength undefined but integration in q-space"
+            elif "d" in unit:
+                reason = "Wavelength undefined but integration in d*-space"
+        if reason and isinstance(raise_exception, Exception):
+            raise_exception(reason)
+        return reason
 
 class PixelwiseWorker(object):
     """
@@ -747,7 +785,7 @@ class PixelwiseWorker(object):
                            delta_dummy=self.delta_dummy,
                            normalization_factor=normalization_factor,
                            empty=self.empty,
-                           poissonian=0,
+                           error_model=ErrorModel.NO,
                            dtype=self.dtype)
         if propagate_error:
             proc_data = temp_data[..., 0]

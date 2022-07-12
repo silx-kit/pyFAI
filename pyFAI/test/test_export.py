@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "22/04/2022"
 
 import unittest
 import logging
@@ -113,14 +113,14 @@ class TestFIT2D(unittest.TestCase):
                 self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
 
 
-class TestSPD(unittest.TestCase):
+class TestExport(unittest.TestCase):
     poniFile = "Pilatus1M.poni"
 
     def setUp(self):
         """Download files"""
         self.poniFile = UtilsTest.getimage(self.__class__.poniFile)
 
-    def test_simple(self):
+    def test_SPD(self):
         ref = AzimuthalIntegrator.sload(self.poniFile)
         obt = AzimuthalIntegrator()
         obt.setSPD(**ref.getSPD())
@@ -132,12 +132,25 @@ class TestSPD(unittest.TestCase):
             else:
                 self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
 
+    def test_CXI(self):
+        ref = AzimuthalIntegrator.sload(self.poniFile)
+        obt = AzimuthalIntegrator()
+        cxi = ref.getCXI()
+        obt.setCXI(cxi)
+        for key in ["dist", "poni1", "poni2", "rot3", "pixel1", "pixel2", "splineFile"]:
+            refv = ref.__getattribute__(key)
+            obtv = obt.__getattribute__(key)
+            if refv is None:
+                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+            else:
+                self.assertAlmostEqual(refv, obtv, 8, "%s: %s != %s" % (key, refv, obtv))
+
 
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestFIT2D))
-    testsuite.addTest(loader(TestSPD))
+    testsuite.addTest(loader(TestExport))
     return testsuite
 
 

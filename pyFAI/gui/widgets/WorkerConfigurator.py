@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2021"
+__date__ = "01/04/2022"
 __status__ = "development"
 
 import logging
@@ -142,6 +142,14 @@ class WorkerConfigurator(qt.QWidget):
         self.normalization_factor.setValidator(doubleOrEmptyValidator)
         self.normalization_factor.setText("1.0")
 
+        for value in [None, "poisson", "azimuthal"]:
+            if value:
+                text = value.capitalize()
+            else:
+                text = ""
+            self.error_model.addItem(text, value)
+        self.error_model.setCurrentIndex(0)
+
         self.__configureDisabledStates()
 
         self.setDetector(None)
@@ -155,7 +163,6 @@ class WorkerConfigurator(qt.QWidget):
         self.do_polarization.clicked.connect(self.__updateDisabledStates)
         self.do_radial_range.clicked.connect(self.__updateDisabledStates)
         self.do_azimuthal_range.clicked.connect(self.__updateDisabledStates)
-        self.do_poisson.clicked.connect(self.__updateDisabledStates)
         self.do_normalization.clicked.connect(self.__updateDisabledStates)
 
         self.__updateDisabledStates()
@@ -173,7 +180,6 @@ class WorkerConfigurator(qt.QWidget):
         enabled = self.do_azimuthal_range.isChecked()
         self.azimuth_range_min.setEnabled(enabled)
         self.azimuth_range_max.setEnabled(enabled)
-        self.error_selection.setEnabled(self.do_poisson.isChecked())
         self.normalization_factor.setEnabled(self.do_normalization.isChecked())
         self.monitor_name.setEnabled(self.do_normalization.isChecked())
 
@@ -258,9 +264,11 @@ class WorkerConfigurator(qt.QWidget):
         value = self.__getRadialNbpt()
         if value is not None:
             config["nbpt_rad"] = value
+
         value = self.__getAzimuthalNbpt()
         if value is not None:
             config["nbpt_azim"] = value
+
         config["unit"] = str(self.radial_unit.model().value())
         config["do_radial_range"] = bool(self.do_radial_range.isChecked())
         config["radial_range_min"] = self._float("radial_range_min", None)
@@ -272,7 +280,7 @@ class WorkerConfigurator(qt.QWidget):
         # processing-config
         config["chi_discontinuity_at_0"] = bool(self.chi_discontinuity_at_0.isChecked())
         config["do_solid_angle"] = bool(self.do_solid_angle.isChecked())
-        config["do_poisson"] = bool(self.do_poisson.isChecked())
+        config["error_model"] = self.error_model.currentData()
 
         method = self.__method
         if method is not None:
@@ -388,7 +396,6 @@ class WorkerConfigurator(qt.QWidget):
         setup_data["do_mask"] = self.do_mask.setChecked
         setup_data["do_radial_range"] = self.do_radial_range.setChecked
         setup_data["do_azimuthal_range"] = self.do_azimuthal_range.setChecked
-        setup_data["do_poisson"] = self.do_poisson.setChecked
 
         for key, value in setup_data.items():
             if key in dico and (value is not None):
@@ -402,6 +409,10 @@ class WorkerConfigurator(qt.QWidget):
         if value is not None:
             unit = to_unit(value)
             self.radial_unit.model().setValue(unit)
+
+        value = dico.pop("error_model", None)
+        index = self.error_model.findData(value)
+        self.error_model.setCurrentIndex(index)
 
         method = reader.pop_method()
         self.__setMethod(method)

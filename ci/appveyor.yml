@@ -31,10 +31,6 @@ environment:
 
     matrix:
 
-        # Python 3.6
-        - PYTHON_DIR: "C:\\Python36-x64"
-          PYTHON_ARCH: "64"
-
         # Python 3.7
         - PYTHON_DIR: "C:\\Python37-x64"
           PYTHON_ARCH: "64"

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2020"
+__date__ = "21/03/2022"
 __status__ = "stable"
 
 
@@ -44,9 +44,12 @@ from ._dectris import *
 from ._imxpad import *
 from ._rayonix import *
 from ._esrf import *
+from ._xspectrum import *
 from ._psi import *
 from ._non_flat import *
 from ._others import *
+from ._hexagonal import *
+
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
