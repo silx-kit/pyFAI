@@ -885,11 +885,12 @@ def _longest_true(a):
 
     # Get indices of group shifts
     s = numpy.flatnonzero(b[:-1]!=b[1:])
-
-    # Get group lengths and hence the max index group
-    m = (s[1::2]-s[::2]).argmax()
-
-    return s[2*m+1] - s[2*m]
+    if len(s):
+        # Get group lengths and hence the max index group
+        m = (s[1::2]-s[::2]).argmax()
+        return s[2*m+1] - s[2*m]
+    else:
+        return 0
 
 def cormap(ref, obt):
     """Calculate the probabily of two array to be the same based on the CorMap algorithm

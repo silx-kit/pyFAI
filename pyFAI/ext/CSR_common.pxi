@@ -369,9 +369,9 @@ cdef class CsrIntegrator(object):
                         # omega3 = acc_norm * omega_A * omega2_B
                         # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
                         b = sig / norm
-                        delta1 = b - acc_sig/omega_A
+                        delta1 = acc_sig/omega_A - b
                         acc_sig = acc_sig + coef * sig 
-                        delta2 = b - acc_sig / acc_norm                        
+                        delta2 = acc_sig / acc_norm - b                        
                         acc_var = acc_var +  omega2_B * delta1 * delta2
                         acc_count = acc_count + coef * count
                 else:
@@ -484,7 +484,7 @@ cdef class CsrIntegrator(object):
             index_t i, j, c, bad_pix, idx = 0
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
             acc_t sig, norm, count, var
-            acc_t delta, x, omega_A, omega_B, omega3, aver, std, chauvenet_cutoff, omega2_A, omega2_B, w
+            acc_t delta1, delta2, b, x, omega_A, omega_B, aver, std, chauvenet_cutoff, omega2_A, omega2_B, w
             data_t empty
             acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
@@ -543,18 +543,19 @@ cdef class CsrIntegrator(object):
                             acc_norm_sq = w*w
                             acc_count = coef * count
                         else:
-                            # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                             omega_A = acc_norm
-                            omega_B = w
+                            omega_B = coef * norm # ω_i = c_i * norm_i
                             omega2_A = acc_norm_sq
                             omega2_B = omega_B*omega_B
                             acc_norm = omega_A + omega_B
                             acc_norm_sq = omega2_A + omega2_B
-                            omega3 = acc_norm_sq * omega_A * omega_B
-                            x = coef * sig
-                            delta = omega2_B*acc_sig - omega2_A*x
-                            acc_var = acc_var +  delta*delta/omega3
-                            acc_sig = acc_sig + x
+                            # omega3 = acc_norm * omega_A * omega2_B
+                            # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                            b = sig / norm
+                            delta1 = acc_sig/omega_A - b
+                            acc_sig = acc_sig + coef * sig 
+                            delta2 = acc_sig / acc_norm - b                        
+                            acc_var = acc_var +  omega2_B * delta1 * delta2
                             acc_count = acc_count + coef * count
                     else:
                         acc_sig = acc_sig + coef * sig
@@ -629,18 +630,19 @@ cdef class CsrIntegrator(object):
                                 acc_norm_sq = w*w
                                 acc_count = coef * count
                             else:
-                                # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                                 omega_A = acc_norm
-                                omega_B = w
+                                omega_B = coef * norm # ω_i = c_i * norm_i
                                 omega2_A = acc_norm_sq
                                 omega2_B = omega_B*omega_B
                                 acc_norm = omega_A + omega_B
                                 acc_norm_sq = omega2_A + omega2_B
-                                omega3 = acc_norm_sq * omega_A * omega_B
-                                x = coef * sig
-                                delta = omega2_B*acc_sig - omega2_A*x
-                                acc_var = acc_var +  delta*delta/omega3
-                                acc_sig = acc_sig + x
+                                # omega3 = acc_norm * omega_A * omega2_B
+                                # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                                b = sig / norm
+                                delta1 = acc_sig/omega_A - b
+                                acc_sig = acc_sig + coef * sig 
+                                delta2 = acc_sig / acc_norm - b                        
+                                acc_var = acc_var +  omega2_B * delta1 * delta2
                                 acc_count = acc_count + coef * count
                         else:
                             acc_sig = acc_sig + coef * sig

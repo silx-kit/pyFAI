@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2021"
+__date__ = "12/07/2022"
 
 import sys
 import unittest
@@ -92,6 +92,7 @@ from . import test_invert_geometry
 from . import test_massif
 from . import test_rectangle
 from . import test_parallax
+from . import test_error_model
 
 
 def suite():
@@ -147,6 +148,7 @@ def suite():
     testsuite.addTest(test_massif.suite())
     testsuite.addTest(test_rectangle.suite())
     testsuite.addTest(test_parallax.suite())
+    testsuite.addTest(test_error_model.suite())
     return testsuite
 
 
