@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "01/07/2022"
+__date__ = "08/07/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -795,7 +795,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
                     events.append(EventDescription("copy D->H merged8", ev))
                     res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
-                                         std, sem, merged[:, 5])
+                                         std, sem, merged[:, 7])
             else:  # 2D case
                 outshape = self.bin_centers.size, self.azim_centers.size
                 std = std.reshape(outshape).T if std is not None else None
@@ -810,7 +810,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     res = Integrate2dtpl(self.bin_centers, self.azim_centers,
                                          avgint.reshape(outshape).T, sem,
                                          merged[:, 0].reshape(outshape).T, merged[:, 2].reshape(outshape).T, merged[:, 4].reshape(outshape).T, merged[:, 6].reshape(outshape).T,
-                                         std, sem, merged[:, 5].reshape(outshape).T)
+                                         std, sem, merged[:, 7].reshape(outshape).T)
 
         if self.profile:
             self.events += events
@@ -1011,7 +1011,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         if self.profile:
             self.events += events
         res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
-                             std, sem, merged[:, 5])
+                             std, sem, merged[:, 7])
         return res
 
     # Name of the default "process" method

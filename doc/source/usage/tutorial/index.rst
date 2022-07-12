@@ -25,6 +25,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Recalib/Recalib_notebook
    Ellipse/ellipse
    PixelSplitting
+   Variance/uncertainties
    LogScale/Guinier
    multi-geometry
    Goniometer/index

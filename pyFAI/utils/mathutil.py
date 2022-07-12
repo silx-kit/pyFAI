@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2022"
+__date__ = "12/07/2022"
 __status__ = "production"
 
 import logging
@@ -786,6 +786,120 @@ def chi_square(obt, ref):
     return (big_delta_int[non_null] ** 2 / big_variance[non_null]).mean()
 
 
+class LongestRunOfHeads(object):
+    """Implements the "longest run of heads" by Mark F. Schilling
+    The College Mathematics Journal, Vol. 21, No. 3, (1990), pp. 196-207
+    
+    See: http://www.maa.org/sites/default/files/pdf/upload_library/22/Polya/07468342.di020742.02p0021g.pdf
+    """
+
+    def __init__(self):
+        "We store already calculated values for (n,c)"
+        self.knowledge = {}
+
+    def A(self, n, c):
+        """Calculate A(number_of_toss, length_of_longest_run)
+        
+        :param n: number of coin toss in the experiment, an integer
+        :param c: length of the longest run of 
+        :return: The A parameter used in the formula
+        
+        """
+        if n <= c:
+            return 2 ** n
+        elif (n, c) in self.knowledge:
+            return self.knowledge[(n, c)]
+        else:
+            s = 0
+            for j in range(c, -1, -1):
+                s += self.A(n - 1 - j, c)
+            self.knowledge[(n, c)] = s
+            return s
+
+    def B(self, n, c):
+        """Calculate B(number_of_toss, length_of_longest_run)
+        to have either a run of Heads either a run of Tails
+        
+        :param n: number of coin toss in the experiment, an integer
+        :param c: length of the longest run of 
+        :return: The B parameter used in the formula
+        """
+        return 2 * self.A(n - 1, c - 1)
+
+    def __call__(self, n, c):
+        """Calculate the probability for the longest run of heads to exceed the observed length  
+        
+        :param n: number of coin toss in the experiment, an integer
+        :param c: length of the longest run of heads, an integer 
+        :return: The probablility of having c subsequent heads in a n toss of fair coin
+        """
+        if c >= n:
+            return 0
+        delta = 2 ** n - self.A(n, c)
+        if delta <= 0:
+            return 0
+        return 2.0 ** (math.log(delta, 2) - n)
+
+    def probaHeadOrTail(self, n, c):
+        """Calculate the probability of a longest run of head or tails to occur 
+        
+        :param n: number of coin toss in the experiment, an integer
+        :param c: length of the longest run of heads or tails, an integer 
+        :return: The probablility of having c subsequent heads or tails in a n toss of fair coin
+        """
+        if c > n:
+            return 0
+        if c == 0:
+            return 0
+        delta = self.B(n, c) - self.B(n, c - 1)
+        if delta <= 0:
+            return 0
+        return min(2.0 ** (math.log(delta, 2.0) - n), 1.0)
+
+    def probaLongerRun(self, n, c):
+        """Calculate the probability for the longest run of heads or tails to exceed the observed length  
+        
+        :param n: number of coin toss in the experiment, an integer
+        :param c: length of thee observed run of heads or tails, an integer 
+        :return: The probablility of having more than c subsequent heads or tails in a n toss of fair coin
+        """
+        if c > n:
+            return 0
+        if c == 0:
+            return 0
+        delta = (2 ** n) - self.B(n, c)
+        if delta <= 0:
+            return 0
+        return min(2.0 ** (math.log(delta, 2.0) - n), 1.0)
+
+LROH = LongestRunOfHeads()
+
+
+def _longest_true(a):
+    """measure longest section of only "true" in a binary array"""
+    # Convert to array
+    a = numpy.asarray(a)
+
+    # Attach sentients on either sides w.r.t True
+    b = numpy.r_[False,a,False]
+
+    # Get indices of group shifts
+    s = numpy.flatnonzero(b[:-1]!=b[1:])
+    if len(s):
+        # Get group lengths and hence the max index group
+        m = (s[1::2]-s[::2]).argmax()
+        return s[2*m+1] - s[2*m]
+    else:
+        return 0
+
+def cormap(ref, obt):
+    """Calculate the probabily of two array to be the same based on the CorMap algorithm
+    This is a simplifed implementation 
+    """
+    longest = max(_longest_true(ref<obt), _longest_true(ref>obt))
+    return LROH.probaLongerRun(len(ref), longest - 1)
+    
+    
 def interp_filter(ary, out=None):
     """Interpolate missing values (nan or infinite) in a 1D array
     
