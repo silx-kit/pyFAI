@@ -147,7 +147,7 @@ For accumulating the variance in a single pass, the formula becomes:
 
     VV_{A\cup b} = VV_A + \omega_b^2\cdot(v_b-\frac{V_A}{\Omega_A})(v_b-\frac{V_{A\cup b}}{\Omega_{A\cup b}})
 
-This formula is subject to numerical error accumulation and can be extended when merging two ensemble A and B (with :math:`Omega_A > Omega_B`):
+This formula is subject to numerical error accumulation and can be extended when merging two ensemble A and B (with :math:`\Omega_A > \Omega_B`):
 
 .. math::
 
