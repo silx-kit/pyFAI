@@ -635,9 +635,11 @@ def preproc(raw,
     if out is None:
         result = numpy.empty((size, ndim), dtype=dtype)
     else:
-        assert out.dtype == dtype, "output dtype matches"
-        assert out.size == size*ndim, "size matches"
-        result = out.reshape((size, ndim))
+        # assert out.dtype == dtype, "output dtype matches"
+        if out.shape[0] == size and out.shape[1]:
+            result = out
+        else:
+            result = out.reshape((size, ndim))
     
     _preproc(raw,
              check_dummy,
