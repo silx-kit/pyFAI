@@ -134,7 +134,7 @@ This is the classical way to evaluate variance:
 
 .. math::
 
-    VV_A = \sum\limits_{i \in A} \omega_i^2\cdot(v_i - \oveline{v_A})^2 
+    VV_A = \sum\limits_{i \in A} \omega_i^2\cdot(v_i - \overline{v_A})^2 
 
 Note this formula differs from `Schubert & Gertz (2018) <https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf>`_'s 
 paper with squared weights, but it does match the textbook or the `wikipedia <https://en.wikipedia.org/wiki/Weighted_arithmetic_mean>`_ page on the topic.
