@@ -69,7 +69,7 @@ Four different accumulators are used in pyFAI for azimuthal integration to simpl
 
     V_A = \sum\limits_{i \in A} c_{i,r} \cdot signal_i
     
-    VV_A = \sum\limits_{i \in A} c_{i,r}^2 \cdot variance_i
+    VV_A = \sum \omega^2 = \sum\limits_{i \in A} c_{i,r}^2 \cdot normalization_i^2 \cdot \sigma_i^2
     
     \Omega_A = \sum\limits_{i \in A} c_{i,r} \cdot normalization_i
     
@@ -102,7 +102,6 @@ The standard error correspond to the uncertainty for a pixel value in the ensemb
 
     \sigma(I_r) = \sqrt{\frac{VV_{i \in bin_r}}{\Omega\Omega_{i \in bin_r}}}
     
-This value is always larger then the *sem* by a factor  :math:`\sqrt{N}`, where N is the number of pixel in the bin (unweighted case).
 The standard deviation is rarely used in pyFAI except in the sigma-clipping procedure where it is used to discard pixels.
 The numerical value can be retrieved from an azimuthal-integration result with the *std* attribute.    
 
@@ -115,13 +114,15 @@ As the name states, this uncertainty correspond to the precision with wich one k
 
     \sigma (\overline{I_r}) = \frac{\sqrt{VV_{i \in bin_r}}}{\Omega_{i \in bin_r}}
 
+The numerical value of the *sem* is always smaller than the *std* by a factor close to :math:`\sqrt{N}`, where N is the number of pixel in the bin (unweighted mean analogy).
+
 The numerical value can be retrieved from an azimuthal-integration result with the *sem* attribute.
 
 Uncertainties propagated from known variance
 ++++++++++++++++++++++++++++++++++++++++++++
 
 Sometimes variance can be modeled and the array VV can be calculated directly. 
-Very often the variance formula is based on Poissonian statistics (i.e. variance_i = max(1, signal_i))
+Very often the variance formula is based on asumption that the distribution is Poissonian (i.e. variance_i = max(1, signal_i)) which, after normalization, becomes :math:`\sigma_i^2 = max(1, signal_i)/ \cdot normalization_i^2`, thus:
 
 .. math::
 
@@ -138,7 +139,10 @@ This is the classical way to evaluate variance:
 
 Note this formula differs from `Schubert & Gertz (2018) <https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf>`_'s 
 paper with squared weights, but it does match the textbook or the `wikipedia <https://en.wikipedia.org/wiki/Weighted_arithmetic_mean>`_ page on the topic.
-This formula is a classical 2-pass algorithm which is not suitable for parallel reductions. 
+Since there is no assumption made on the underlying distribution, this formula should be used when the input data are not Poissonian.
+There are several drawbacks, the first is the speed and the second, the noise of extracted uncertainties.
+
+This formula is a classical 2-pass algorithm which is not suitable for parallel reductions, but numerically stable. 
 The 2-pass version is used in the python-implementation of CSR-sparse matrix multiplication and provided a ground-truth to validate the single pass version.  
 
 For accumulating the variance in a single pass, the formula becomes: 
@@ -154,7 +158,7 @@ This formula is subject to numerical error accumulation and can be extended when
     VV_{A\cup B} = VV_A + VV_B + \frac{\Omega_B^2\cdot(V_A \cdot \Omega_B-V_B\cdot \Omega_A)^2}{\Omega_{A\cup B} \cdot \Omega_A \cdot \Omega_B^2}
 
 
-The equivalence of those formula can be checked thanks to a notebook available at tutorial/Variance/uncertainties (TODO: link).
+The equivalence of those formula can be checked thanks to a notebook available at `tutorial/Variance/uncertainties <https://github.com/silx-kit/pyFAI/blob/master/doc/source/usage/tutorial/Variance/uncertainties.ipynb>`_.
 It is worth noticing error-bars obtained from the azimuthal model are always more noisy (but of similar magnitude) when compared to the ones obtained from the Poisson statistics on a Poissonian signal.
 
 Conclusion
