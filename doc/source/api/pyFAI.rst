@@ -125,6 +125,14 @@ pyFAI package
     :undoc-members:
     :show-inheritance:
 
+:mod:`containers` Module
+--------------------
+
+.. automodule:: pyFAI.containers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Other sub-packages:
 -------------------
 
