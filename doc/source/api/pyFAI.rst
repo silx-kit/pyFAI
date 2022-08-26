@@ -126,7 +126,7 @@ pyFAI package
     :show-inheritance:
 
 :mod:`containers` Module
---------------------
+------------------------
 
 .. automodule:: pyFAI.containers
     :members:
