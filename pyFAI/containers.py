@@ -365,7 +365,7 @@ class Integrate1dResult(IntegrateResult):
 
     For compatibility with older API, the object can be read as a tuple in different ways:
 
-    .. codeblock::
+    .. code-block:: python
 
         result = ai.integrate1d(...)
         if result.sigma is None:
@@ -421,7 +421,7 @@ class Integrate2dResult(IntegrateResult):
 
     For compatibility with older API, the object can be read as a tuple in different ways:
 
-    .. codeblock::
+    .. code-block:: python
 
         result = ai.integrate2d(...)
         if result.sigma is None:
