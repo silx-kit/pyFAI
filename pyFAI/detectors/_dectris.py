@@ -633,6 +633,13 @@ class Pilatus300kw(Pilatus):
     aliases = ["Pilatus 300kw"]
 
 
+class Pilatus900kw(Pilatus):
+    """
+    Pilatus 900k-wide detector
+    """
+    MAX_SHAPE = (619, 1475)
+    aliases = ["Pilatus 900kw"]
+
 class Pilatus1M(Pilatus):
     """
     Pilatus 1M detector
