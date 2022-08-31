@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/07/2022"
+__date__ = "31/08/2022"
 __status__ = "development"
 
 from collections import namedtuple
@@ -98,6 +98,7 @@ class IntegrateResult(tuple):
         self._error_model = None
         self._std = None  # standard deviation (error for a pixel)
         self._sem = None  # standard error of the mean (error for the mean)
+        self._poni = None # Contains the geometry which was used for the integration
 
     @property
     def method(self):
@@ -357,7 +358,15 @@ class IntegrateResult(tuple):
     def _set_error_model(self, value):
         self._error_model = value
 
+    @property
+    def poni(self):
+        """content of the PONI-file
+        """
+        return self._poni
 
+    def _set_poni(self, value):
+        self._poni = value
+        
 class Integrate1dResult(IntegrateResult):
     """
     Result of an 1D integration. Provide a tuple access as a simple way to reach main attrbutes.
