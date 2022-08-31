@@ -433,7 +433,7 @@ def save_NXmonpd(filename, result,
     with Nexus(filename, mode="w") as nxs:
         entry_grp = nxs.new_entry(entry=entry, program_name="pyFAI",
                   title=title, force_time=None, force_name=True)
-        entry_grp["definition"] = "NXmonpd"
+        entry_grp["definition"] = "NXmonopd"
         entry_grp["definition"].attrs["version"] = "3.1"
         process = nxs.new_class(entry_grp, "pyFAI", "NXprocess")
         process["sequence_index"] = 1
@@ -459,6 +459,7 @@ def save_NXmonpd(filename, result,
         if result.poni and  result.poni.wavelength:
             crystal_grp = nxs.new_class(instrument_grp, "monochromator", "NXcrystal")
             crystal_grp["wavelength"] = float(result.poni.wavelength)
+            crystal_grp["wavelength"].attrs["unit"] = "m"
         detector = result.poni.detector.__class__.__name__ if result.poni else "Detector"
         detector_grp = nxs.new_class(instrument_grp, detector, "NXdetector")
         detector_grp["name"] = detector
