@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/07/2022"
+__date__ = "31/08/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -48,6 +48,7 @@ from .utils import EPS32, deg2rad, crc32
 from .utils.decorators import deprecated, deprecated_warning
 from .containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
 from .io import DefaultAiWriter
+from .io.ponifile import PoniFile
 error = None
 from .method_registry import IntegrationMethod
 
@@ -1592,6 +1593,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_method_called("integrate1d_ng")
         result._set_metadata(metadata)
         result._set_error_model(error_model)
+        result._set_poni(PoniFile(self))
 
         if filename is not None:
             writer = DefaultAiWriter(filename, self)

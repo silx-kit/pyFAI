@@ -31,7 +31,7 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/04/2021"
+__date__ = "31/08/2022"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -62,7 +62,7 @@ class PoniFile(object):
             self.read_from_file(data)
         else:
             self.read_from_duck(data)
-
+        
     def __repr__(self):
         return json.dumps(self.as_dict(), indent=4)
 
@@ -197,7 +197,7 @@ class PoniFile(object):
 
     @property
     def detector(self):
-        """:rtype: Union[None,float]"""
+        """:rtype: Union[None, object]"""
         return self._detector
 
     @property

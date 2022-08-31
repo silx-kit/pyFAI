@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2022"
+__date__ = "31/08/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -39,6 +39,7 @@ import os
 import sys
 import time
 import logging
+import json
 import numpy
 from ..utils.decorators import deprecated
 from .. import version
@@ -403,3 +404,110 @@ class Nexus(object):
             else:
                 dec = raw
         return dec
+    
+    
+def save_NXmonpd(filename, result, 
+                 title="monopd",
+                 entry="entry", 
+                 instrument="beamline",
+                 source_name="ESRF",
+                 source_type="synchotron",
+                 source_probe="x-ray",
+                 sample="sample", 
+                 extra=None):
+    """Save integrated data into a HDF5-file following 
+    the Nexus powder diffraction application definition:
+    https://manual.nexusformat.org/classes/applications/NXmonopd.html
+    
+    :param filename: name of the file to be written
+    :param result: instance of Integrate1dResult
+    :param title: title of the experiment
+    :param entry: name of the entry
+    :param instrument: name/brand of the instrument
+    :param source_name: name/brand of the particule source 
+    :param source_type: kind of source as a string
+    :param source_probe: Any of these values: 'neutron' | 'x-ray' | 'electron'
+    :param sample: sample name
+    :param extra: extra metadata as a dict
+    """
+    with Nexus(filename, mode="w") as nxs:
+        entry_grp = nxs.new_entry(entry=entry, program_name="pyFAI",
+                  title=title, force_time=None, force_name=True)
+        entry_grp["definition"] = "NXmonpd"
+        entry_grp["definition"].attrs["version"] = "3.1"
+        process = nxs.new_class(entry_grp, "pyFAI", "NXprocess")
+        process["sequence_index"] = 1
+        process["program"] = "pyFAI"
+        process["version"] = str(version)
+        process["date"] = get_isotime()
+        cfg_grp = nxs.new_class(process, "configuration", "NXnote")
+        cfg_grp.create_dataset("data", data=json.dumps(result.poni.as_dict(), indent=2, separators=(",\r\n", ": ")))
+        cfg_grp.create_dataset("format", data="text/json")
+        pf = float(result.polarization_factor) if result.polarization_factor is not None else "None"
+        pol_ds = cfg_grp.create_dataset("polarization_factor", data=pf)
+        pol_ds.attrs["comment"] = "Between -1 and +1, 0 for circular, None for no-correction"
+        if result.method:
+            cfg_grp.create_dataset("integration_method", data=json.dumps(result.method.method._asdict() or {}))
+
+        # Instrument:
+        instrument_grp = nxs.new_instrument(entry_grp, instrument)
+        instrument_grp["name"] = str(instrument)
+        source_grp = nxs.new_class(instrument_grp, source_name, "NXsource")
+        source_grp["type"] = str(source_type)
+        source_grp["name"] = str(source_name)
+        source_grp["probe"] = str(source_probe)
+        if result.poni and  result.poni.wavelength:
+            crystal_grp = nxs.new_class(instrument_grp, "monochromator", "NXcrystal")
+            crystal_grp["wavelength"] = float(result.poni.wavelength)
+        detector = result.poni.detector.__class__.__name__ if result.poni else "Detector"
+        detector_grp = nxs.new_class(instrument_grp, detector, "NXdetector")
+        detector_grp["name"] = detector
+        if result.poni:
+            detector_grp["config"] = json.dumps(result.poni.detector.get_config())
+        polar_angle_ds = detector_grp.create_dataset("polar_angle", data=result.radial)
+        polar_angle_ds.attrs["axis"] = "1"
+        polar_angle_ds.attrs["unit"] = str(result.unit)
+        polar_angle_ds.attrs["long_name"] = result.unit.label
+        intensities_ds = detector_grp.create_dataset("data", data=result.intensity)
+        intensities_ds.attrs["doc"] = "weighted average of all pixels in a bin"
+        intensities_ds.attrs["signal"] = "1"
+        intensities_ds.attrs["interpretation"] = "spectrum"
+        raw_ds = detector_grp.create_dataset("raw", data=result.sum_signal)
+        raw_ds.attrs["doc"] = "Sum of signal of all pixels in a bin"
+        raw_ds.attrs["interpretation"] = "spectrum"
+        
+        #sample
+        sample_grp = nxs.new_class(entry_grp, sample, "NXsample")
+        sample_grp["name"] = sample
+        #normalization
+        nrm_grp = nxs.new_class(entry_grp, "normalization", "NXmonitor")
+        nrm_grp["mode"] = "monitor"
+        # nrm_grp["preset"] = ???
+        nrm_ds = nrm_grp.create_dataset("integral", data= result.sum_normalization)
+        nrm_ds.attrs["doc"] = "sum of normalization of all pixels in a bin"
+        nrm_ds.attrs["interpretation"] = "spectrum"
+        nrm2_ds = nrm_grp.create_dataset("integral_sq", data= result.sum_normalization2)
+        nrm2_ds.attrs["doc"] = "sum of normalization squarred of all pixels in a bin"
+        nrm2_ds.attrs["interpretation"] = "spectrum"
+        
+        #Results available as links 
+        integration_data = nxs.new_class(entry_grp, "results", "NXdata")
+        integration_data["polar_angle"] = polar_angle_ds
+        integration_data["data"] = intensities_ds
+        if result.sum_variance is not None:
+            errors_ds = detector_grp.create_dataset("errors", data=result.sem)
+            errors_ds.attrs["doc"] = "standard error of the mean"
+            integration_data["errors"] = errors_ds
+            detector_grp.create_dataset("sum_variance", data=result.sum_variance).attrs["doc"] = "Propagated variance, prior to normalization"
+            
+        integration_data.attrs["signal"] = "data"
+        integration_data.attrs["axes"] = ["polar_angle"]
+        integration_data.attrs["polar_angle_indices"] = 0
+        integration_data["title"] = f"Powder diffraction pattern of {sample}" 
+        entry_grp.attrs["default"] = integration_data.name
+        
+        if extra:
+            extra_grp = nxs.new_class(entry_grp, "extra", "NXnote")
+            extra_grp.create_dataset("data", data=json.dumps(extra, indent=2, separators=(",\r\n", ": ")))
+            extra_grp.create_dataset("format", data="text/json")
+
