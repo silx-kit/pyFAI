@@ -40,9 +40,12 @@ import sys
 import time
 import logging
 import json
-import numpy
+import posixpath
 from ..utils.decorators import deprecated
+from ..containers import Integrate1dResult, ErrorModel
 from .. import version
+from .ponifile import PoniFile
+from ..method_registry import IntegrationMethod
 logger = logging.getLogger(__name__)
 try:
     import h5py
@@ -406,6 +409,52 @@ class Nexus(object):
         return dec
 
 
+def load_nexus(filename):
+    """Tried to read-back a file from a Nexus file written by pyFAI
+    
+    :param filename: the name of the nexus file
+    :return: parsed result
+    """
+    with Nexus(filename, mode="r") as nxs:
+        entry = nxs.get_entries()[0]
+        ad = entry["definition"][()]
+        process_grp = entry["pyFAI"]
+        cfg_grp = process_grp["configuration"]
+        poni = PoniFile(json.loads(cfg_grp["data"][()]))
+
+        if ad == "NXmonopd":
+            result = Integrate1dResult(entry["results/polar_angle"][()],
+                                       entry["results/data"][()],
+                                       entry["results/errors"][()] if "results/errors" in entry else None)
+            result._set_unit(entry["results/polar_angle"].attrs["units"])
+            detector_grp = nxs.h5[posixpath.split(entry["results/polar_angle"].attrs["target"])[0]]
+            result._set_sum_signal(detector_grp["raw"][()])
+            result._set_sum_variance(detector_grp["sum_variance"][()])
+            norm_grp = entry["normalization"]
+            result._set_sum_normalization(norm_grp["integral"][()])
+            result._set_sum_normalization2(norm_grp["integral_sq"][()])
+            result._set_count(norm_grp["pixels"][()])
+
+        else:
+            raise RuntimeError(f"Unsupported application definition: {ad}, please fill in a bug")
+        result._set_compute_engine(cfg_grp["compute_engine"][()])
+        result._set_has_solidangle_correction(cfg_grp["has_solidangle_correction"][()])
+        if "integration_method" in cfg_grp:
+            result._set_method(IntegrationMethod.select_method(**json.loads(cfg_grp["integration_method"][()]))[0])
+        result._set_has_dark_correction(cfg_grp["has_dark_correction"][()])
+        result._set_has_flat_correction(cfg_grp["has_flat_correction"][()])
+        result._set_has_mask_applied(cfg_grp["has_mask_applied"][()])
+        pf = cfg_grp["polarization_factor"][()]
+        result._set_polarization_factor(None if pf == "None" else pf)
+        result._set_normalization_factor(cfg_grp["normalization_factor"][()])
+        result._set_method_called(cfg_grp["method_called"][()])
+        result._set_metadata(json.loads(cfg_grp["metadata"][()]))
+        result._set_error_model(ErrorModel.parse(cfg_grp["error_model"][()]))
+        result._set_poni(poni)
+
+        return result
+
+
 def save_NXmonpd(filename, result,
                  title="monopd",
                  entry="entry",
@@ -453,9 +502,16 @@ def save_NXmonpd(filename, result,
         cfg_grp["has_dark_correction"] = result.has_dark_correction
         cfg_grp["has_flat_correction"] = result.has_flat_correction
         cfg_grp["has_solidangle_correction"] = result.has_solidangle_correction
+        cfg_grp["metadata"] = json.dumps(result.metadata)
+        if result.percentile is not None:
+            cfg_grp.create_dataset("percentile", data=result.percentile).attrs["doc"] = "used with median-filter like reduction"
+        cfg_grp.create_dataset("method_called", data=result.method_called).attrs["doc"] = "name of the function called of AzimuthalIntegrator"
+        cfg_grp.create_dataset("compute_engine", data=result.compute_engine).attrs["doc"] = "name of the compute engine selected by pyFAI"
+        cfg_grp.create_dataset("error_model", data=result.error_model.as_str()).attrs["doc"] = "how is variance assessed from signal ?"
 
         if result.method:
-            cfg_grp.create_dataset("integration_method", data=json.dumps(result.method.method._asdict() or {}))
+            cfg_grp.create_dataset("integration_method", data=json.dumps(result.method.method._asdict() or {})).\
+                attrs["doc"] = "dict with the type of splitting, the kind of algorithm and its implementation"
 
         # Instrument:
         instrument_grp = nxs.new_instrument(entry_grp, instrument)
@@ -475,7 +531,7 @@ def save_NXmonpd(filename, result,
             detector_grp["config"] = json.dumps(result.poni.detector.get_config())
         polar_angle_ds = detector_grp.create_dataset("polar_angle", data=result.radial)
         polar_angle_ds.attrs["axis"] = "1"
-        polar_angle_ds.attrs["unit"] = str(result.unit)
+        polar_angle_ds.attrs["units"] = str(result.unit)
         polar_angle_ds.attrs["long_name"] = result.unit.label
         polar_angle_ds.attrs["target"] = polar_angle_ds.name
         intensities_ds = detector_grp.create_dataset("data", data=result.intensity)
@@ -493,7 +549,7 @@ def save_NXmonpd(filename, result,
         # normalization
         nrm_grp = nxs.new_class(entry_grp, "normalization", "NXmonitor")
         nrm_grp["mode"] = "monitor"
-        # nrm_grp["preset"] =
+        # nrm_grp["preset"] = ?
         nrm_ds = nrm_grp.create_dataset("integral", data=result.sum_normalization)
         nrm_ds.attrs["doc"] = "sum of normalization of all pixels in a bin"
         nrm_ds.attrs["units"] = "relative to the PONI position"
@@ -501,6 +557,10 @@ def save_NXmonpd(filename, result,
         nrm2_ds = nrm_grp.create_dataset("integral_sq", data=result.sum_normalization2)
         nrm2_ds.attrs["doc"] = "sum of normalization squarred of all pixels in a bin"
         nrm2_ds.attrs["interpretation"] = "spectrum"
+        cnt_ds = nrm_grp.create_dataset("pixels", data=result.count)
+        cnt_ds.attrs["doc"] = "Number of pixels contributing to each bin"
+        cnt_ds.attrs["units"] = "pixels"
+        cnt_ds.attrs["interpretation"] = "spectrum"
 
         # Results available as links
         integration_data = nxs.new_class(entry_grp, "results", "NXdata")
