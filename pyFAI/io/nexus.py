@@ -418,6 +418,7 @@ def load_nexus(filename):
     with Nexus(filename, mode="r") as nxs:
         entry = nxs.get_entries()[0]
         ad = entry["definition"][()]
+        ad = ad.decode() if isinstance(ad, bytes) else ad
         process_grp = entry["pyFAI"]
         cfg_grp = process_grp["configuration"]
         poni = PoniFile(json.loads(cfg_grp["data"][()]))
