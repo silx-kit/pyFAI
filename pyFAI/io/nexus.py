@@ -494,10 +494,10 @@ def save_NXmonpd(filename, result,
         cfg_grp.create_dataset("format", data="text/json")
         pf = float(result.polarization_factor) if result.polarization_factor is not None else "None"
         pol_ds = cfg_grp.create_dataset("polarization_factor", data=pf)
-        pol_ds.attrs["comment"] = "Between -1 and +1, 0 for circular, None for no-correction"
+        pol_ds.attrs["doc"] = "Between -1 and +1, 0 for circular, None for no-correction"
         nf = float(result.normalization_factor) if result.normalization_factor is not None else "None"
         nf_ds = cfg_grp.create_dataset("normalization_factor", data=nf)
-        nf_ds.attrs["comment"] = "User-provided normalization factor, usually to account for incident flux"
+        nf_ds.attrs["doc"] = "User-provided normalization factor, usually to account for incident flux"
         cfg_grp["has_mask_applied"] = result.has_mask_applied
         cfg_grp["has_dark_correction"] = result.has_dark_correction
         cfg_grp["has_flat_correction"] = result.has_flat_correction
@@ -534,6 +534,7 @@ def save_NXmonpd(filename, result,
         polar_angle_ds.attrs["units"] = str(result.unit)
         polar_angle_ds.attrs["long_name"] = result.unit.label
         polar_angle_ds.attrs["target"] = polar_angle_ds.name
+        polar_angle_ds.attrs["interpretation"] = "spectrum"
         intensities_ds = detector_grp.create_dataset("data", data=result.intensity)
         intensities_ds.attrs["doc"] = "weighted average of all pixels in a bin"
         intensities_ds.attrs["signal"] = "1"
