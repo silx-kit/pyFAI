@@ -417,8 +417,7 @@ def load_nexus(filename):
     """
     with Nexus(filename, mode="r") as nxs:
         entry = nxs.get_entries()[0]
-        ad = entry["definition"][()]
-        ad = ad.decode() if isinstance(ad, bytes) else ad
+        ad = entry["definition"].asstr()
         process_grp = entry["pyFAI"]
         cfg_grp = process_grp["configuration"]
         poni = PoniFile(json.loads(cfg_grp["data"][()]))
@@ -438,7 +437,7 @@ def load_nexus(filename):
 
         else:
             raise RuntimeError(f"Unsupported application definition: {ad}, please fill in a bug")
-        result._set_compute_engine(cfg_grp["compute_engine"][()])
+        result._set_compute_engine(cfg_grp["compute_engine"].asstr())
         result._set_has_solidangle_correction(cfg_grp["has_solidangle_correction"][()])
         if "integration_method" in cfg_grp:
             result._set_method(IntegrationMethod.select_method(**json.loads(cfg_grp["integration_method"][()]))[0])
@@ -448,9 +447,9 @@ def load_nexus(filename):
         pf = cfg_grp["polarization_factor"][()]
         result._set_polarization_factor(None if pf == "None" else pf)
         result._set_normalization_factor(cfg_grp["normalization_factor"][()])
-        result._set_method_called(cfg_grp["method_called"][()])
+        result._set_method_called(cfg_grp["method_called"].asstr())
         result._set_metadata(json.loads(cfg_grp["metadata"][()]))
-        result._set_error_model(ErrorModel.parse(cfg_grp["error_model"][()]))
+        result._set_error_model(ErrorModel.parse(cfg_grp["error_model"].asstr()))
         result._set_poni(poni)
 
         return result
