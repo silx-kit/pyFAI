@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2022"
+__date__ = "01/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -404,16 +404,16 @@ class Nexus(object):
             else:
                 dec = raw
         return dec
-    
-    
-def save_NXmonpd(filename, result, 
+
+
+def save_NXmonpd(filename, result,
                  title="monopd",
-                 entry="entry", 
+                 entry="entry",
                  instrument="beamline",
                  source_name="ESRF",
                  source_type="synchotron",
                  source_probe="x-ray",
-                 sample="sample", 
+                 sample="sample",
                  extra=None):
     """Save integrated data into a HDF5-file following 
     the Nexus powder diffraction application definition:
@@ -446,6 +446,14 @@ def save_NXmonpd(filename, result,
         pf = float(result.polarization_factor) if result.polarization_factor is not None else "None"
         pol_ds = cfg_grp.create_dataset("polarization_factor", data=pf)
         pol_ds.attrs["comment"] = "Between -1 and +1, 0 for circular, None for no-correction"
+        nf = float(result.normalization_factor) if result.normalization_factor is not None else "None"
+        nf_ds = cfg_grp.create_dataset("normalization_factor", data=nf)
+        nf_ds.attrs["comment"] = "User-provided normalization factor, usually to account for incident flux"
+        cfg_grp["has_mask_applied"] = result.has_mask_applied
+        cfg_grp["has_dark_correction"] = result.has_dark_correction
+        cfg_grp["has_flat_correction"] = result.has_flat_correction
+        cfg_grp["has_solidangle_correction"] = result.has_solidangle_correction
+
         if result.method:
             cfg_grp.create_dataset("integration_method", data=json.dumps(result.method.method._asdict() or {}))
 
@@ -458,8 +466,8 @@ def save_NXmonpd(filename, result,
         source_grp["probe"] = str(source_probe)
         if result.poni and  result.poni.wavelength:
             crystal_grp = nxs.new_class(instrument_grp, "monochromator", "NXcrystal")
-            crystal_grp["wavelength"] = float(result.poni.wavelength)
-            crystal_grp["wavelength"].attrs["unit"] = "m"
+            crystal_grp["wavelength"] = float(result.poni.wavelength * 1e10)
+            crystal_grp["wavelength"].attrs["units"] = "angstrom"
         detector = result.poni.detector.__class__.__name__ if result.poni else "Detector"
         detector_grp = nxs.new_class(instrument_grp, detector, "NXdetector")
         detector_grp["name"] = detector
@@ -469,44 +477,50 @@ def save_NXmonpd(filename, result,
         polar_angle_ds.attrs["axis"] = "1"
         polar_angle_ds.attrs["unit"] = str(result.unit)
         polar_angle_ds.attrs["long_name"] = result.unit.label
+        polar_angle_ds.attrs["target"] = polar_angle_ds.name
         intensities_ds = detector_grp.create_dataset("data", data=result.intensity)
         intensities_ds.attrs["doc"] = "weighted average of all pixels in a bin"
         intensities_ds.attrs["signal"] = "1"
         intensities_ds.attrs["interpretation"] = "spectrum"
+        intensities_ds.attrs["target"] = intensities_ds.name
         raw_ds = detector_grp.create_dataset("raw", data=result.sum_signal)
         raw_ds.attrs["doc"] = "Sum of signal of all pixels in a bin"
         raw_ds.attrs["interpretation"] = "spectrum"
-        
-        #sample
+
+        # sample
         sample_grp = nxs.new_class(entry_grp, sample, "NXsample")
         sample_grp["name"] = sample
-        #normalization
+        # normalization
         nrm_grp = nxs.new_class(entry_grp, "normalization", "NXmonitor")
         nrm_grp["mode"] = "monitor"
-        # nrm_grp["preset"] = ???
-        nrm_ds = nrm_grp.create_dataset("integral", data= result.sum_normalization)
+        # nrm_grp["preset"] =
+        nrm_ds = nrm_grp.create_dataset("integral", data=result.sum_normalization)
         nrm_ds.attrs["doc"] = "sum of normalization of all pixels in a bin"
+        nrm_ds.attrs["units"] = "relative to the PONI position"
         nrm_ds.attrs["interpretation"] = "spectrum"
-        nrm2_ds = nrm_grp.create_dataset("integral_sq", data= result.sum_normalization2)
+        nrm2_ds = nrm_grp.create_dataset("integral_sq", data=result.sum_normalization2)
         nrm2_ds.attrs["doc"] = "sum of normalization squarred of all pixels in a bin"
         nrm2_ds.attrs["interpretation"] = "spectrum"
-        
-        #Results available as links 
+
+        # Results available as links
         integration_data = nxs.new_class(entry_grp, "results", "NXdata")
         integration_data["polar_angle"] = polar_angle_ds
         integration_data["data"] = intensities_ds
         if result.sum_variance is not None:
             errors_ds = detector_grp.create_dataset("errors", data=result.sem)
+            errors_ds.attrs["target"] = errors_ds.name
             errors_ds.attrs["doc"] = "standard error of the mean"
+            errors_ds.attrs["interpretation"] = "spectrum"
             integration_data["errors"] = errors_ds
-            detector_grp.create_dataset("sum_variance", data=result.sum_variance).attrs["doc"] = "Propagated variance, prior to normalization"
-            
+            vari_ds = detector_grp.create_dataset("sum_variance", data=result.sum_variance)
+            vari_ds.attrs["doc"] = "Propagated variance, prior to normalization"
+            vari_ds.attrs["interpretation"] = "spectrum"
         integration_data.attrs["signal"] = "data"
         integration_data.attrs["axes"] = ["polar_angle"]
         integration_data.attrs["polar_angle_indices"] = 0
-        integration_data["title"] = f"Powder diffraction pattern of {sample}" 
+        integration_data["title"] = f"Powder diffraction pattern of {sample}"
         entry_grp.attrs["default"] = integration_data.name
-        
+
         if extra:
             extra_grp = nxs.new_class(entry_grp, "extra", "NXnote")
             extra_grp.create_dataset("data", data=json.dumps(extra, indent=2, separators=(",\r\n", ": ")))

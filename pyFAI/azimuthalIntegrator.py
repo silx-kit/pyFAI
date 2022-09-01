@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2022"
+__date__ = "01/09/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1594,6 +1594,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_metadata(metadata)
         result._set_error_model(error_model)
         result._set_poni(PoniFile(self))
+        result._set_has_solidangle_correction(correctSolidAngle)
 
         if filename is not None:
             writer = DefaultAiWriter(filename, self)

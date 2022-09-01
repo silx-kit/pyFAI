@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2022"
+__date__ = "01/09/2022"
 __status__ = "development"
 
 from collections import namedtuple
@@ -87,6 +87,7 @@ class IntegrateResult(tuple):
         self._has_mask_applied = None
         self._has_dark_correction = None
         self._has_flat_correction = None
+        self._has_solidangle_correction = None
         self._normalization_factor = None
         self._polarization_factor = None
         self._metadata = None
@@ -98,7 +99,7 @@ class IntegrateResult(tuple):
         self._error_model = None
         self._std = None  # standard deviation (error for a pixel)
         self._sem = None  # standard error of the mean (error for the mean)
-        self._poni = None # Contains the geometry which was used for the integration
+        self._poni = None  # Contains the geometry which was used for the integration
 
     @property
     def method(self):
@@ -277,6 +278,21 @@ class IntegrateResult(tuple):
         self._has_flat_correction = has_flat_correction
 
     @property
+    def has_solidangle_correction(self):
+        """True if a flat correction was applied
+
+        :rtype: bool
+        """
+        return self._has_solidangle_correction
+
+    def _set_has_solidangle_correction(self, has_solidangle_correction):
+        """Define if flat correction was applied
+
+        :type has_solidangle_correction: bool
+        """
+        self._has_solidangle_correction = has_solidangle_correction
+
+    @property
     def normalization_factor(self):
         """The normalisation factor used
 
@@ -366,7 +382,8 @@ class IntegrateResult(tuple):
 
     def _set_poni(self, value):
         self._poni = value
-        
+
+
 class Integrate1dResult(IntegrateResult):
     """
     Result of an 1D integration. Provide a tuple access as a simple way to reach main attrbutes.
