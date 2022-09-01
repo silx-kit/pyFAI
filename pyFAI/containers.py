@@ -71,6 +71,9 @@ class ErrorModel(IntEnum):
     def do_variance(self):
         return self._value_ != 0
 
+    def as_str(self):
+        return self.name.lower()
+
 
 class IntegrateResult(tuple):
     """
