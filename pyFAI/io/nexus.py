@@ -415,9 +415,10 @@ def load_nexus(filename):
     :param filename: the name of the nexus file
     :return: parsed result
     """
+    autodecode = lambda ma: ma.decode() if isinstance(ma, bytes) else ma
     with Nexus(filename, mode="r") as nxs:
         entry = nxs.get_entries()[0]
-        ad = entry["definition"].asstr()
+        ad = autodecode(entry["definition"][()])
         process_grp = entry["pyFAI"]
         cfg_grp = process_grp["configuration"]
         poni = PoniFile(json.loads(cfg_grp["data"][()]))
@@ -437,19 +438,19 @@ def load_nexus(filename):
 
         else:
             raise RuntimeError(f"Unsupported application definition: {ad}, please fill in a bug")
-        result._set_compute_engine(cfg_grp["compute_engine"].asstr())
+        result._set_compute_engine(autodecode(cfg_grp["compute_engine"][()]))
         result._set_has_solidangle_correction(cfg_grp["has_solidangle_correction"][()])
         if "integration_method" in cfg_grp:
             result._set_method(IntegrationMethod.select_method(**json.loads(cfg_grp["integration_method"][()]))[0])
         result._set_has_dark_correction(cfg_grp["has_dark_correction"][()])
         result._set_has_flat_correction(cfg_grp["has_flat_correction"][()])
-        result._set_has_mask_applied(cfg_grp["has_mask_applied"][()])
-        pf = cfg_grp["polarization_factor"][()]
+        result._set_has_mask_applied(autodecode(cfg_grp["has_mask_applied"][()]))
+        pf = autodecode(cfg_grp["polarization_factor"][()])
         result._set_polarization_factor(None if pf == "None" else pf)
         result._set_normalization_factor(cfg_grp["normalization_factor"][()])
-        result._set_method_called(cfg_grp["method_called"].asstr())
+        result._set_method_called(autodecode(cfg_grp["method_called"][()]))
         result._set_metadata(json.loads(cfg_grp["metadata"][()]))
-        result._set_error_model(ErrorModel.parse(cfg_grp["error_model"].asstr()))
+        result._set_error_model(ErrorModel.parse(autodecode(cfg_grp["error_model"][()])))
         result._set_poni(poni)
 
         return result
