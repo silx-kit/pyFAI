@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "30/06/2022"
+__date__ = "13/07/2022"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -358,6 +358,7 @@ class OCL_Preproc(OpenclProcessing):
                 normalization_factor=1.0,
                 error_model=None,
                 split_result=None,
+                out=None
                 ):
         """Perform the pixel-wise operation of the array
 
@@ -367,6 +368,7 @@ class OCL_Preproc(OpenclProcessing):
         :param dark_variance: numpy array with the variance of dark-current image
         :param normalization_factor: divide the result by this
         :param error_model: set to "poisson"  to set variance=signal (minimum 1). None uses the default from constructor
+        :param out: output buffer to save a malloc
         :return: array with processed data,
                 may be an array of (data,variance,normalization) depending on class initialization
         """
@@ -396,17 +398,24 @@ class OCL_Preproc(OpenclProcessing):
 
             if split_result == 4:
                 kernel_name = "corrections4"
-                dest = numpy.empty(self.on_device.get("image").shape + (4,), dtype=numpy.float32)
-
+                dshape = self.on_device.get("image").shape + (4,)
             elif split_result == 3:
                 kernel_name = "corrections3"
-                dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)
+                dshape = self.on_device.get("image").shape + (3,)
             elif split_result == 2:
                 kernel_name = "corrections2"
-                dest = numpy.empty(self.on_device.get("image").shape + (2,), dtype=numpy.float32)
+                dshape = self.on_device.get("image").shape + (2,)
             else:
                 kernel_name = "corrections"
-                dest = numpy.empty(self.on_device.get("image").shape, dtype=numpy.float32)
+                dshape = self.on_device.get("image").shape
+
+            if out is None:
+                dest = numpy.empty(dshape, dtype=numpy.float32)
+            else:
+                dest = out
+                assert dest.dtype == numpy.float32
+                assert dest.shape == dshape 
+
             kwargs = self.cl_kernel_args[kernel_name]
             kwargs["do_dark"] = do_dark
             kwargs["normalization_factor"] = numpy.float32(normalization_factor)
@@ -465,7 +474,8 @@ def preproc(raw,
             variance=None,
             dark_variance=None,
             error_model=ErrorModel.NO,
-            dtype=numpy.float32
+            dtype=numpy.float32,
+            out=None
             ):
     """Common preprocessing step, implemented using OpenCL. May be inefficient
 
@@ -484,6 +494,7 @@ def preproc(raw,
     :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
     :param error_model: set to POISSONIAN to assume  
     :param dtype: dtype for all processing
+    :param out: output buffer to save a malloc
 
     All calculation are performed in single precision floating point (32 bits).
 
@@ -519,7 +530,8 @@ def preproc(raw,
                          devicetype="all")
     result = engine.process(raw, dark=dark, variance=variance,
                             dark_variance=dark_variance,
-                            normalization_factor=normalization_factor)
+                            normalization_factor=normalization_factor,
+                            out=out)
 
     if result.dtype != dtype:
         result = numpy.ascontiguousarray(result, dtype)
