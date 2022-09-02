@@ -705,6 +705,7 @@ def save_NXcansas(filename, result,
         integration_data = nxs.new_class(entry_grp, "sasdata", "NXdata")
         integration_data.attrs["canSAS_class"] = "SASdata"
         integration_data.attrs["signal"] = "I"
+        integration_data.attrs["axes"] = ["Q"]
         integration_data.attrs["I_axes"] = "Q"
         integration_data.attrs["timestamp"] = get_isotime()
         entry_grp.attrs["default"] = integration_data.name

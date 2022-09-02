@@ -145,8 +145,8 @@ class TestNexus(unittest.TestCase):
                 continue
 
             elif isinstance(a, numpy.ndarray):
-                print(k)
-                print(a[:10], "\n", b[:10])
+                # print(k)
+                # print(a[:10], "\n", b[:10])
                 self.assertTrue(numpy.allclose(a, b), msg=f"check {k}")
             elif isinstance(a, (int, float, str, tuple, type(None))):
                 self.assertEqual(a, b, k)
