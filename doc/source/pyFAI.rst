@@ -136,7 +136,7 @@ integrated before being plotted.
    :align: center
    :alt: image
 
-The :ref:`tutorial` section makes heavy use of *Jupyter notebooks* to process data using *pyFAI*.
+The :ref:`tutorials` section makes heavy use of *Jupyter notebooks* to process data using *pyFAI*.
 The first tutorial also explains a bit how *Python* and *Jupyter* works to be
 able to perform basic processing efficiently with pyFAI.
 

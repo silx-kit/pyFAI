@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/07/2022"
+__date__ = "13/07/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -58,6 +58,7 @@ cdef class CsrIntegrator(object):
         readonly data_t empty
         readonly data_t[::1] _data
         readonly index_t[::1] _indices, _indptr
+        readonly data_t[:, ::1] preprocessed
 
     def __init__(self,
                   tuple lut,
@@ -72,6 +73,7 @@ cdef class CsrIntegrator(object):
         """
         self.empty = empty
         self.input_size = image_size
+        self.preprocessed = numpy.empty((image_size, 4), dtype=data_d)
         assert len(lut) == 3, "Sparse matrix is expected as 3-tuple CSR with (data, indices, indptr)"
         assert len(lut[1]) == len(lut[0]),  "Sparse matrix in CSR format is expected to have len(data) == len(indices) is expected as 3-tuple CSR with (data, indices, indptr)"
         self._data = numpy.ascontiguousarray(lut[0], dtype=data_d)
@@ -84,6 +86,7 @@ cdef class CsrIntegrator(object):
         self._data = None
         self._indices = None
         self._indpts = None
+        self.preprocessed = None
         self.empty = 0
         self.input_size = 0
         self.output_size = 0 
@@ -328,7 +331,8 @@ cdef class CsrIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           error_model=error_model)
+                           error_model=error_model,
+                           out=self.preprocessed)
 
         for i in prange(self.output_size, nogil=True, schedule="guided"):
             acc_sig = 0.0
@@ -513,7 +517,8 @@ cdef class CsrIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           error_model=error_model)
+                           error_model=error_model,
+                           out=self.preprocessed)
         with nogil:
             # Integrate once
             for i in prange(self.output_size, schedule="guided"):
