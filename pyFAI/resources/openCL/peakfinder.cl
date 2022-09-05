@@ -88,7 +88,9 @@ inline float2 correct_pixel2(
             }//Upper most bin: no interpolation
         }// this pixel is between radius_min and max
         float4 raw = preproc4[gid];
-        value = (float2)((raw.s2>0.0) ? raw.s0 / raw.s2 - background : 0.0f, fast_length((float2)(uncert, noise)));
+//        printf("%6.3f %6.3f %6.3f\n",uncert, noise, fast_length((float2)(uncert, noise)));
+        value = (float2)((raw.s2>0.0) ? raw.s0 / raw.s2 - background : 0.0f, 
+                          fast_length((float2)(uncert, noise)));
     }// this pixel is valid
     return value;
 }
@@ -264,27 +266,26 @@ kernel void peakfinder(   const global  float4 *preproc4, // Pixel wise array of
     if (valid) {
         int active = 0;
         // value has been already calculated
-        float local_value = value.s0; 
-        if (local_value >= cutoff * value.s1){
-            float local_max = 0.0f;
+        if ((value.s0>0.0f) && (value.s0 >= cutoff * value.s1)){
+//            printf("%6.3f %6.3f %6.3f\n", value.s0, value.s1, cutoff);
+            float local_max = value.s0;
             float sum_int = 0.0f, sum_var=0.0f;
             float som0=0.0f, som1=0.0f;    
             for (int i=-half_patch; i<=half_patch; i++){
                 for (int j=-half_patch; j<=half_patch; j++){
-                    value = get_shared2(buffer, tid0+i, tid1+j, half_patch);
-                    if (value.s0 >= cutoff * value.s1){
-                        active+=1;
-                    }
-                    local_max = max(local_max, value.s0);
-                    if (value.s0>0.0f){
-                        som0 += i * value.s0;
-                        som1 += j * value.s0;
-                        sum_int += value.s0;
-                        sum_var += value.s1*value.s1;
+                    float2 local_value = get_shared2(buffer, tid0+i, tid1+j, half_patch);
+                    if (local_value.s0>0.0f){
+                        if (local_value.s0 >= cutoff * local_value.s1)
+                            active+=1;
+                        local_max = max(local_max, local_value.s0);
+                        som0 += i * local_value.s0;
+                        som1 += j * local_value.s0;
+                        sum_int += local_value.s0;
+                        sum_var += local_value.s1*local_value.s1;
                     }// add pixel to intgral
                 } // for j
             } // for i
-            if ((local_value == local_max) && (active>=connected)){
+            if ((value.s0 == local_max) && (active>=connected)){
                 int position = atomic_inc(local_counter);
                 local_highidx[position] = gid0*width + gid1;
                 local_peaks[position] = (float4)(som0/sum_int + (float)(gid0), 

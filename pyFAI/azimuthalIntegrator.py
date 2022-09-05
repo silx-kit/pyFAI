@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/07/2022"
+__date__ = "01/09/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -48,6 +48,7 @@ from .utils import EPS32, deg2rad, crc32
 from .utils.decorators import deprecated, deprecated_warning
 from .containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
 from .io import DefaultAiWriter
+from .io.ponifile import PoniFile
 error = None
 from .method_registry import IntegrationMethod
 
@@ -1592,6 +1593,8 @@ class AzimuthalIntegrator(Geometry):
         result._set_method_called("integrate1d_ng")
         result._set_metadata(metadata)
         result._set_error_model(error_model)
+        result._set_poni(PoniFile(self))
+        result._set_has_solidangle_correction(correctSolidAngle)
 
         if filename is not None:
             writer = DefaultAiWriter(filename, self)
@@ -3345,7 +3348,7 @@ class AzimuthalIntegrator(Geometry):
         return result
 
     @deprecated(reason="will be replaced by `sigma_clip_ng` in version 0.23.0. Please use either `_sigma_clip_legacy` for full compatibility or upgrade your code to accomodate the new API",
-                replacement="sigma_clip_ng", since_version="0.21.0", only_once=True, skip_backtrace_count=1, deprecated_since="2022/01/01")
+                replacement="sigma_clip_ng", since_version="0.21.0", only_once=True, skip_backtrace_count=1, deprecated_since="0.22.0")
     def sigma_clip(self, *args, **kwargs):
         return self._sigma_clip_legacy(*args, **kwargs)
 

@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2022"
+__date__ = "13/07/2022"
 __status__ = "development"
 
 import logging
@@ -61,6 +61,7 @@ class CSRIntegrator(object):
         :param empty: value for empty pixels
         """
         self.size = image_size
+        self.preprocessed = numpy.empty((image_size, 4), dtype=numpy.float32)
         self.empty = empty
         self.bins = None
         self._csr = None
@@ -134,7 +135,8 @@ class CSRIntegrator(object):
                        split_result=4,
                        variance=variance,
                        dtype=numpy.float32,
-                       error_model=error_model)
+                       error_model=error_model,
+                       out=self.preprocessed)
         prep.shape = numpy.prod(shape), 4
         flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
         res = numpy.empty((numpy.prod(self.bins), 5), dtype=numpy.float32)
@@ -314,7 +316,8 @@ class CsrIntegrator1d(CSRIntegrator):
                        variance=variance,
                        dark_variance=dark_variance,
                        dtype=numpy.float32,
-                       error_model=error_model)
+                       error_model=error_model,
+                       out=self.preprocessed)
 
         prep_flat = prep.reshape((numpy.prod(shape), 4))
 

@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 29/06/2021
+ *   Last revision: 08/07/2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -207,25 +207,26 @@ static inline float8 _accumulate_poisson(float8 accum8,
     count = value4.s3;
     
     if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0.0f)) {
-        float sum_norm_1, sum_count, sum_norm_2;
-        float2 sum_signal_K, sum_variance_K, w, coef2;
+        float sum_count, sum_norm_2;
+        float2 sum_signal_K, sum_variance_K, sum_norm_1, w, coef2;
  
         sum_signal_K = (float2)(accum8.s0, accum8.s1);  
         sum_variance_K = (float2)(accum8.s2, accum8.s3); 
-        sum_norm_1 = accum8.s4;
-        sum_norm_2 = accum8.s5;
+        sum_norm_1 = (float2)(accum8.s4, accum8.s5);
         sum_count = accum8.s6;
+        sum_norm_2 = accum8.s7;
         // defined in silx:doubleword.cl
         sum_signal_K = dw_plus_dw(sum_signal_K, fp_times_fp(coef, signal));
         coef2 = fp_times_fp(coef,  coef);
         sum_variance_K = dw_plus_dw(sum_variance_K, dw_times_fp(coef2, variance));
-//        w = fp_times_fp(coef, norm);
-//        sum_norm_1 = dw_plus_fp(w, sum_norm_1).s0;
-//        sum_norm_2 = dw_plus_fp(dw_times_dw(w, w), sum_norm_2).s0;
-        sum_norm_1 += coef * norm;
-        sum_norm_2 += coef * coef * norm * norm;
+        w = fp_times_fp(coef, norm);
+        sum_norm_1 = dw_plus_dw(w, sum_norm_1);
+        sum_norm_2 = dw_plus_fp(dw_times_dw(w, w), sum_norm_2).s0;
+        
+//        sum_norm_1 += coef * norm;
+//        sum_norm_2 += coef * coef * norm * norm;
         sum_count = fma(coef, count, sum_count);
-        accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_1, sum_norm_2, sum_count, 0.0f);
+        accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_1, sum_count, sum_norm_2);
     }
     return accum8;
 }
@@ -257,41 +258,45 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
     
     if (isfinite(signal) && isfinite(norm) && (count > 0) && (coef > 0))
     {
-        if (accum8.s4 == 0.0f){
+        if (accum8.s7 <= 0.0f){
             // Initialize the accumulator with data from the pixel
+            float2 w = fp_times_fp(coef, norm);
             accum8 = (float8)(fp_times_fp(coef, signal),
                               0.0f, 0.0f,
-                              coef * norm , coef * coef * norm *  norm, 
-                              coef * count, 0.0f);
+                              w, 
+                              coef * count, 
+                              dw_times_dw(w, w).s0);
         }
         else{
             //The accumulator is already initialized
             float2 sum_signal_K, sum_variance_K, sum_norm_1, sum_norm_2;
-            float sum_count, omega_A, omega2_A;
-            float2 x, delta, delta2, omega_B, omega2_B, omega3;
+            float sum_count, omega2_A;
+            float2 x, delta, omega1_A, delta2, omega1_B, omega2_B, omega3, OmegaAOmegaB;
             
             sum_signal_K = (float2)(accum8.s0, accum8.s1);
             sum_variance_K = (float2)(accum8.s2, accum8.s3); 
-            
-            omega_A = accum8.s4;
-            omega2_A = accum8.s5;
+            omega1_A = (float2)(accum8.s4, accum8.s5);
             sum_count = accum8.s6;
+            omega2_A = accum8.s7;
             // defined in silx:doubleword.cl
-            omega_B = fp_times_fp(coef, norm);
-            omega2_B = dw_times_dw(omega_B, omega_B);
-            sum_norm_1 = dw_plus_fp(omega_B, accum8.s4);
-            sum_norm_2 = dw_plus_fp(omega2_B, accum8.s5);
+            omega1_B = fp_times_fp(coef, norm);
+            omega2_B = dw_times_dw(omega1_B, omega1_B);
+            sum_norm_1 = dw_plus_dw(omega1_B, omega1_A);
+            sum_norm_2 = dw_plus_fp(omega2_B, omega2_A);
+
+            x = dw_div_fp((float2)(signal, 0.0f), norm);
             
-            x = fp_times_fp(coef, signal);
-            delta = dw_plus_dw(dw_times_dw(omega2_B, sum_signal_K), - dw_times_fp(x, omega2_A));               
-            delta2 = dw_times_dw(delta, delta);
-            omega3 = dw_times_dw(sum_norm_2, dw_times_fp(omega_B, omega_A));
-            sum_variance_K = dw_plus_dw(sum_variance_K, dw_div_dw(delta2, omega3));
             
+            // VV(AUb) = VV(A) + w_b^2*(b-<A>)*(b-<AUb>)
+            delta = dw_plus_dw(dw_div_dw(sum_signal_K, omega1_A), -x);           
+            sum_signal_K = dw_plus_dw(sum_signal_K, fp_times_fp(coef, signal));
+            delta2 = dw_plus_dw(dw_div_dw(sum_signal_K, sum_norm_1), -x);
+            sum_variance_K = dw_plus_dw(sum_variance_K, dw_times_dw(omega2_B, dw_times_dw(delta2, delta)));
+                        
             // at the end as X_A is used in the variance XX_A
-            sum_signal_K = dw_plus_dw(sum_signal_K, x);
+            
             sum_count = fma(coef, count, sum_count);
-            accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_1.s0, sum_norm_2.s0, sum_count, 0.0f);
+            accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_1, sum_count, sum_norm_2.s0);
         }        
     }
     return accum8;
@@ -307,20 +312,18 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
 
 static inline float8 _merge_poisson(float8 here,
                                     float8 there){
-    float2 sum_signal_K, sum_variance_K;
-//    float sum_norm_1, sum_norm_2, sum_count;
+    float2 sum_signal_K, sum_variance_K, sum_omega;
     sum_signal_K = dw_plus_dw((float2)(here.s0, here.s1), 
                                    (float2)(there.s0, there.s1));
     sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3), 
                                      (float2)(there.s2, there.s3));
-//    sum_norm_1 = here.s4 + there.s4;
-//    sum_norm_2 = here.s5 + there.s5;
-//    sum_count = here.s6 + there.s6;
-    return (float8)(sum_signal_K, sum_variance_K, 
-                    here.s4 + there.s4,
-                    here.s5 + there.s5,
+    sum_omega = dw_plus_dw((float2)(here.s4, here.s5), 
+                           (float2)(there.s4, there.s5));
+    return (float8)(sum_signal_K, 
+                    sum_variance_K,
+                    sum_omega,
                     here.s6 + there.s6,
-                    0.0f);
+                    here.s7 + there.s7);
 }
 
 /* _merge_azimuthal: Merge two partial dataset considering the azimuthal regions
@@ -338,35 +341,56 @@ static inline float8 _merge_poisson(float8 here,
 
 static inline float8 _merge_azimuthal(float8 here,
                                       float8 there){
-    if (here.s5 <= 0.0f){ // Check the counter is not null 
+    if (here.s7 <= 0.0f){ // Check the counter is not null 
         return there;
     }
-    else if (there.s5 <= 0.0f){
+    else if (there.s7 <= 0.0f){
         return here;
     }
-    float2 sum_signal_K, sum_variance_K, V_A, V_B, delta, delta2, omega3, sum_norm_1, sum_norm_2;
-    float sum_count, omega1_A, omega2_A, omega1_B, omega2_B;
+    float2 sum_signal_K, sum_variance_K, V_A, V_B, delta, delta2, omega3, sum_norm_1, sum_norm_2, omega1_A, omega1_B;
+    float sum_count, omega2_A, omega2_B;
     
-    V_A = (float2)(here.s0, here.s1);
-    V_B = (float2)(there.s0, there.s1);
+    
+    sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3), 
+                                (float2)(there.s2, there.s3));
+    
+    // Omaga_A > Omaga_B (better numerical stability since algo is non symetrical)
+    if (here.s4<there.s4){
+        V_A = (float2)(there.s0, there.s1);
+        V_B = (float2)(here.s0, here.s1);
+
+        omega1_A = (float2)(there.s4, there.s5);
+        omega1_B = (float2)(here.s4, here.s5);
+        
+        omega2_A = there.s7;
+        omega2_B = here.s7;        
+    }
+    else{
+        V_A = (float2)(here.s0, here.s1);
+        V_B = (float2)(there.s0, there.s1);
+
+        omega1_A = (float2)(here.s4, here.s5);
+        omega1_B = (float2)(there.s4, there.s5);
+        
+        omega2_A = here.s7;
+        omega2_B = there.s7;        
+    }
     sum_signal_K = dw_plus_dw(V_A, V_B);
-    sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3), (float2)(there.s2, there.s3));
     
-    omega1_A = here.s4;
-    omega2_A = there.s5;
-    omega1_B = there.s4;
-    omega2_B = there.s5;
-    sum_norm_1 = fp_plus_fp(omega1_A, omega1_B);
+    sum_norm_1 = dw_plus_dw(omega1_A, omega1_B);
     sum_norm_2 = fp_plus_fp(omega2_A, omega2_B);
     sum_count = here.s6 + there.s6;
+    
     // Add the cross-ensemble part
     // If one of the sub-ensemble is empty, the cross-region term is empty as well 
-    delta = dw_plus_dw(dw_times_fp(V_A, omega2_B), - dw_times_fp(V_B, omega2_A));
-    delta2 = dw_times_dw(delta, delta);
-    omega3 = dw_times_dw(sum_norm_2, fp_times_fp(omega1_A,  omega1_B));
+    delta = dw_plus_dw(dw_times_dw(V_A, omega1_B), - dw_times_dw(V_B, omega1_A));
+    //delta2 = dw_times_dw(delta, delta);
+    delta2 = dw_times_fp(dw_times_dw(delta, delta), omega2_B);
+    //omega3 = dw_times_dw(sum_norm_2, dw_times_dw(dw_times_dw(omega1_A,omega1_A), dw_times_dw(omega1_B,omega1_B)));
+    omega3 = dw_times_dw(sum_norm_1, dw_times_dw(omega1_A,dw_times_dw(omega1_B,omega1_B)));
     sum_variance_K = dw_plus_dw(sum_variance_K, dw_div_dw(delta2, omega3));          
    
-    return (float8)(sum_signal_K, sum_variance_K, sum_norm_1.s0, sum_norm_2.s0, sum_count, 0.0f);
+    return (float8)(sum_signal_K, sum_variance_K, sum_norm_1, sum_count, sum_norm_2.s0);
 }
 
 /**
@@ -757,9 +781,9 @@ csr_integrate4(  const   global  float4  *weights,
         float8 result = CSRxVec4(weights, coefs, indices, indptr, error_model, shared);
         if (get_local_id(0)==0) {
             summed[bin_num] = result;
-            if (result.s5 > 0.0f) {
+            if (result.s6 > 0.0f) {
                 averint[bin_num] =  result.s0 / result.s4;
-                stdevpix[bin_num] = sqrt(result.s2 / result.s5);
+                stdevpix[bin_num] = sqrt(result.s2 / result.s7);
                 stderrmean[bin_num] = sqrt(result.s2) / result.s4;
             }
             else {
@@ -808,7 +832,7 @@ csr_integrate4_single(  const   global  float4  *weights,
         summed[bin_num] = accum8;
         if (accum8.s6 > 0.0f) {
             averint[bin_num] = accum8.s0 / accum8.s4;
-            stdevpix[bin_num] = sqrt(accum8.s2 / accum8.s5);
+            stdevpix[bin_num] = sqrt(accum8.s2 / accum8.s7);
             stderrmean[bin_num] = sqrt(accum8.s2) / accum8.s4;
         }
         else {
@@ -877,9 +901,9 @@ csr_sigma_clip4(          global  float4  *data4,
     result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
                             CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
 
-    if (result.s5 > 0.0f){
+    if (result.s6 > 0.0f){
         aver = result.s0 / result.s4;
-        std = sqrt(result.s2 / result.s5);
+        std = sqrt(result.s2 / result.s7);
     }
     else {
         aver = NAN;
@@ -910,9 +934,9 @@ csr_sigma_clip4(          global  float4  *data4,
         result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
                                 CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
 
-        if (result.s5 > 0.0f) {
+        if (result.s6 > 0.0f) {
             aver = result.s0 / result.s4;
-            std = sqrt(result.s2 / result.s5);
+            std = sqrt(result.s2 / result.s7);
         }
         else {
             aver = NAN;
@@ -928,7 +952,7 @@ csr_sigma_clip4(          global  float4  *data4,
         
     if (get_local_id(0) == 0) {
         summed[bin_num] = result;
-        if (result.s5 > 0.0f) {
+        if (result.s6 > 0.0f) {
             averint[bin_num] =  aver;
             stdevpix[bin_num] = std;
             stderrmean[bin_num] = sqrt(result.s2) / result.s4;

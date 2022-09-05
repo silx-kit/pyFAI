@@ -5,6 +5,7 @@ fabio
 sphinx
 scipy
 cython
+pygments[plugins]
 sphinxcontrib-programoutput
 silx
 nbsphinx

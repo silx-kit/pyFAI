@@ -324,7 +324,7 @@ class TestHistogram2d(unittest.TestCase):
         self.assertTrue(delta == 0, msg="check all pixels were counted")
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
-    @unittest.skipIf(UtilsTest.low_mem, "test unreliable on 32bits processor")
+    @unittest.skipIf(UtilsTest.TEST_IS32_BIT, "test unreliable on 32bits processor")
     def test_count_csr(self):
         """
         Test that the pixel count and the total intensity is conserved
@@ -339,7 +339,7 @@ class TestHistogram2d(unittest.TestCase):
         self.assertTrue(delta == 0, msg="check all pixels were counted")
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
-    @unittest.skipIf(UtilsTest.low_mem, "test unreliable on 32bits processor")
+    @unittest.skipIf(UtilsTest.TEST_IS32_BIT, "test unreliable on 32bits processor")
     def test_numpy_vs_cython_vs_csr_2d(self):
         """
         Compare numpy histogram with cython simple implementation

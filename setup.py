@@ -110,10 +110,10 @@ def get_readme():
 classifiers = ["Development Status :: 5 - Production/Stable",
                "Intended Audience :: Developers",
                "Programming Language :: Python :: 3",
-               "Programming Language :: Python :: 3.6",
                "Programming Language :: Python :: 3.7",
                "Programming Language :: Python :: 3.8",
                "Programming Language :: Python :: 3.9",
+               "Programming Language :: Python :: 3.10",
                "Programming Language :: Python :: Implementation :: CPython",
                "Programming Language :: Cython",
                "Environment :: Console",
@@ -1096,7 +1096,7 @@ def get_project_configuration(dry_run):
                         zip_safe=False,
                         entry_points=entry_points,
                         license="MIT",
-                        python_requires='>=3.6',
+                        python_requires='>=3.7',
                         )
     return setup_kwargs
 

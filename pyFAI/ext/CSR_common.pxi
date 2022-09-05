@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/06/2022"
+__date__ = "13/07/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -58,6 +58,7 @@ cdef class CsrIntegrator(object):
         readonly data_t empty
         readonly data_t[::1] _data
         readonly index_t[::1] _indices, _indptr
+        readonly data_t[:, ::1] preprocessed
 
     def __init__(self,
                   tuple lut,
@@ -72,6 +73,7 @@ cdef class CsrIntegrator(object):
         """
         self.empty = empty
         self.input_size = image_size
+        self.preprocessed = numpy.empty((image_size, 4), dtype=data_d)
         assert len(lut) == 3, "Sparse matrix is expected as 3-tuple CSR with (data, indices, indptr)"
         assert len(lut[1]) == len(lut[0]),  "Sparse matrix in CSR format is expected to have len(data) == len(indices) is expected as 3-tuple CSR with (data, indices, indptr)"
         self._data = numpy.ascontiguousarray(lut[0], dtype=data_d)
@@ -84,6 +86,7 @@ cdef class CsrIntegrator(object):
         self._data = None
         self._indices = None
         self._indpts = None
+        self.preprocessed = None
         self.empty = 0
         self.input_size = 0
         self.output_size = 0 
@@ -299,7 +302,7 @@ cdef class CsrIntegrator(object):
         cdef:
             index_t i, j, idx = 0
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
-            acc_t delta, x, omega_A, omega_B, omega3, omega2_A, omega2_B, w
+            acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B, w, norm, sig, var, count
             data_t empty
             acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
@@ -328,7 +331,8 @@ cdef class CsrIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           error_model=error_model)
+                           error_model=error_model,
+                           out=self.preprocessed)
 
         for i in prange(self.output_size, nogil=True, schedule="guided"):
             acc_sig = 0.0
@@ -341,35 +345,46 @@ cdef class CsrIntegrator(object):
                 if coef == 0.0:
                     continue
                 idx = self._indices[j]
+
+                sig = preproc4[idx, 0]
+                var = preproc4[idx, 1]
+                norm = preproc4[idx, 2] 
+                count = preproc4[idx, 3]
+                
                 
                 if do_azimuthal_variance:
                     if acc_norm_sq <= 0.0:
-                        acc_sig = coef * preproc4[idx, 0]
+                        acc_sig = coef * sig
                         #Variance remains at 0
-                        acc_norm = coef * preproc4[idx, 2]
-                        acc_norm_sq = (coef * preproc4[idx, 2])**2 
-                        acc_count = coef * preproc4[idx, 3]
+                        acc_norm = coef * norm
+                        acc_norm_sq = acc_norm * acc_norm
+                        acc_count = coef * count
                     else:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
+                        # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
+                        # Emprically validated against 2-pass implementation in Python/scipy-sparse   
+                        
                         omega_A = acc_norm
-                        omega_B = coef * preproc4[idx, 2]
+                        omega_B = coef * norm # ω_i = c_i * norm_i
                         omega2_A = acc_norm_sq
                         omega2_B = omega_B*omega_B
                         acc_norm = omega_A + omega_B
                         acc_norm_sq = omega2_A + omega2_B
-                        omega3 = acc_norm_sq * omega_A * omega_B
-                        x = coef * preproc4[idx, 0]
-                        delta = omega2_B*acc_sig - omega2_A*x
-                        acc_var = acc_var +  delta*delta/omega3
-                        acc_sig = acc_sig + x
-                        acc_count = acc_count + coef * preproc4[idx, 3]
+                        # omega3 = acc_norm * omega_A * omega2_B
+                        # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                        b = sig / norm
+                        delta1 = acc_sig/omega_A - b
+                        acc_sig = acc_sig + coef * sig 
+                        delta2 = acc_sig / acc_norm - b                        
+                        acc_var = acc_var +  omega2_B * delta1 * delta2
+                        acc_count = acc_count + coef * count
                 else:
-                    acc_sig = acc_sig + coef * preproc4[idx, 0]
-                    acc_var = acc_var + coef * coef * preproc4[idx, 1]
-                    w = coef * preproc4[idx, 2]
+                    acc_sig = acc_sig + coef * sig
+                    acc_var = acc_var + coef * coef * var
+                    w = coef * norm
                     acc_norm = acc_norm + w
                     acc_norm_sq = acc_norm_sq + w*w
-                    acc_count = acc_count + coef * preproc4[idx, 3]
+                    acc_count = acc_count + coef * count
 
             sum_sig[i] = acc_sig
             sum_var[i] = acc_var
@@ -473,7 +488,7 @@ cdef class CsrIntegrator(object):
             index_t i, j, c, bad_pix, idx = 0
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
             acc_t sig, norm, count, var
-            acc_t delta, x, omega_A, omega_B, omega3, aver, std, chauvenet_cutoff, omega2_A, omega2_B, w
+            acc_t delta1, delta2, b, x, omega_A, omega_B, aver, std, chauvenet_cutoff, omega2_A, omega2_B, w
             data_t empty
             acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
@@ -502,7 +517,8 @@ cdef class CsrIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           error_model=error_model)
+                           error_model=error_model,
+                           out=self.preprocessed)
         with nogil:
             # Integrate once
             for i in prange(self.output_size, schedule="guided"):
@@ -532,18 +548,19 @@ cdef class CsrIntegrator(object):
                             acc_norm_sq = w*w
                             acc_count = coef * count
                         else:
-                            # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                             omega_A = acc_norm
-                            omega_B = w
+                            omega_B = coef * norm # ω_i = c_i * norm_i
                             omega2_A = acc_norm_sq
                             omega2_B = omega_B*omega_B
                             acc_norm = omega_A + omega_B
                             acc_norm_sq = omega2_A + omega2_B
-                            omega3 = acc_norm_sq * omega_A * omega_B
-                            x = coef * sig
-                            delta = omega2_B*acc_sig - omega2_A*x
-                            acc_var = acc_var +  delta*delta/omega3
-                            acc_sig = acc_sig + x
+                            # omega3 = acc_norm * omega_A * omega2_B
+                            # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                            b = sig / norm
+                            delta1 = acc_sig/omega_A - b
+                            acc_sig = acc_sig + coef * sig 
+                            delta2 = acc_sig / acc_norm - b                        
+                            acc_var = acc_var +  omega2_B * delta1 * delta2
                             acc_count = acc_count + coef * count
                     else:
                         acc_sig = acc_sig + coef * sig
@@ -618,18 +635,19 @@ cdef class CsrIntegrator(object):
                                 acc_norm_sq = w*w
                                 acc_count = coef * count
                             else:
-                                # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                                 omega_A = acc_norm
-                                omega_B = w
+                                omega_B = coef * norm # ω_i = c_i * norm_i
                                 omega2_A = acc_norm_sq
                                 omega2_B = omega_B*omega_B
                                 acc_norm = omega_A + omega_B
                                 acc_norm_sq = omega2_A + omega2_B
-                                omega3 = acc_norm_sq * omega_A * omega_B
-                                x = coef * sig
-                                delta = omega2_B*acc_sig - omega2_A*x
-                                acc_var = acc_var +  delta*delta/omega3
-                                acc_sig = acc_sig + x
+                                # omega3 = acc_norm * omega_A * omega2_B
+                                # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                                b = sig / norm
+                                delta1 = acc_sig/omega_A - b
+                                acc_sig = acc_sig + coef * sig 
+                                delta2 = acc_sig / acc_norm - b                        
+                                acc_var = acc_var +  omega2_B * delta1 * delta2
                                 acc_count = acc_count + coef * count
                         else:
                             acc_sig = acc_sig + coef * sig
