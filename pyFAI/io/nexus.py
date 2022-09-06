@@ -744,7 +744,7 @@ def save_NXcansas(filename, result,
             errors_ds.attrs["doc"] = "standard error of the mean"
             errors_ds.attrs["interpretation"] = "spectrum"
             errors_ds.attrs["units"] = "arbitrary"
-            # integration_data["errors"] = errors_ds
+            integration_data["errors"] = errors_ds
             vari_ds = integration_data.create_dataset("sum_variance", data=result.sum_variance)
             vari_ds.attrs["doc"] = "Propagated variance, prior to normalization"
             vari_ds.attrs["interpretation"] = "spectrum"
