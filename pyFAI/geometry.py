@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/04/2022"
+__date__ = "07/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -52,6 +52,7 @@ import os
 import threading
 import json
 from collections import namedtuple, OrderedDict
+from .geometry_conversion import convert_to_Fit2d, convert_from_Fit2d 
 from . import detectors
 from . import units
 from .utils.decorators import deprecated
@@ -1403,39 +1404,8 @@ class Geometry(object):
         :return: dict with parameters compatible with fit2D geometry
         """
         with self._sem:
-            cos_tilt = cos(self._rot1) * cos(self._rot2)
-            sin_tilt = sqrt(1.0 - cos_tilt * cos_tilt)
-            tan_tilt = sin_tilt / cos_tilt
-            # This is tilt plane rotation
-            if sin_tilt == 0:
-                # tilt plan rotation is undefined when there is no tilt!, does not matter
-                cos_tilt = 1.0
-                sin_tilt = 0.0
-                cos_tpr = 1.0
-                sin_tpr = 0.0
-
-            else:
-                cos_tpr = max(-1.0, min(1.0, -cos(self._rot2) * sin(self._rot1) / sin_tilt))
-                sin_tpr = sin(self._rot2) / sin_tilt
-            directDist = 1.0e3 * self._dist / cos_tilt
-            tilt = degrees(arccos(cos_tilt))
-            if sin_tpr < 0:
-                tpr = -degrees(arccos(cos_tpr))
-            else:
-                tpr = degrees(arccos(cos_tpr))
-
-            centerX = (self._poni2 + self._dist * tan_tilt * cos_tpr) / self.pixel2
-            if abs(tilt) < 1e-5:  # in degree
-                centerY = (self._poni1) / self.pixel1
-            else:
-                centerY = (self._poni1 + self._dist * tan_tilt * sin_tpr) / self.pixel1
-            out = self.detector.getFit2D()
-            out["directDist"] = directDist
-            out["centerX"] = centerX
-            out["centerY"] = centerY
-            out["tilt"] = tilt
-            out["tiltPlanRotation"] = tpr
-        return out
+            f2d = convert_to_Fit2d(self)
+        return f2d._asdict()
 
     def setFit2D(self, directDist, centerX, centerY,
                  tilt=0., tiltPlanRotation=0.,
@@ -1443,6 +1413,7 @@ class Geometry(object):
         """
         Set the Fit2D-like parameter set: For geometry description see
         HPR 1996 (14) pp-240
+        https://doi.org/10.1080/08957959608201408
 
         Warning: Fit2D flips automatically images depending on their file-format.
         By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
@@ -1460,41 +1431,31 @@ class Geometry(object):
         :param centerX, centerY: pixel position of the beam center
         :param splineFile: name of the file containing the spline
         """
+        pixelX = pixelX if pixelX is not None else self.detector.pixel2*1e6
+        pixelY = pixelY if pixelY is not None else self.detector.pixel1*1e6
+        splineFile = splineFile if splineFile is not None else self.detector.splineFile
+        poni = convert_from_Fit2d({"directDist":directDist, 
+                                   "centerX":centerX, 
+                                   "centerY":centerY,
+                                   "tilt":tilt, 
+                                   "tiltPlanRotation":tiltPlanRotation,
+                                   "pixelX":pixelX, 
+                                   "pixelY":pixelY, 
+                                   "splineFile":splineFile})
+        print(type(poni))
         with self._sem:
-            try:
-                cos_tilt = cos(radians(tilt))
-                sin_tilt = sin(radians(tilt))
-                cos_tpr = cos(radians(tiltPlanRotation))
-                sin_tpr = sin(radians(tiltPlanRotation))
-            except AttributeError as error:
-                logger.error(("Got strange results with tilt=%s"
-                              " and tiltPlanRotation=%s: %s") %
-                             (tilt, tiltPlanRotation, error))
-            if splineFile is None:
-                if pixelX is not None:
-                    self.detector.pixel1 = pixelY * 1.0e-6
-                if pixelY is not None:
-                    self.detector.pixel2 = pixelX * 1.0e-6
-            else:
-                self.detector.set_splineFile(splineFile)
-            self._dist = directDist * cos_tilt * 1.0e-3
-            self._poni1 = centerY * self.pixel1 - directDist * sin_tilt * sin_tpr * 1.0e-3
-            self._poni2 = centerX * self.pixel2 - directDist * sin_tilt * cos_tpr * 1.0e-3
-            rot2 = numpy.arcsin(sin_tilt * sin_tpr)  # or pi-
-            rot1 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt / numpy.sqrt(1.0 - (sin_tpr * sin_tilt) ** 2)))))  # + or -
-            if cos_tpr * sin_tilt > 0:
-                rot1 = -rot1
-            assert abs(cos_tilt - cos(rot1) * cos(rot2)) < 1e-6
-            if tilt == 0.0:
-                rot3 = 0
-            else:
-                rot3 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt * cos_tpr * sin_tpr - cos_tpr * sin_tpr) / numpy.sqrt(10 - sin_tpr * sin_tpr * sin_tilt * sin_tilt))))  # + or -
-                rot3 = numpy.pi / 2.0 - rot3
-            self._rot1 = rot1
-            self._rot2 = rot2
-            self._rot3 = rot3
+            print("poni.detector", poni.detector)
+            self._detector = poni.detector
+            self._dist = poni.dist
+            self._poni1 = poni.poni1 
+            self._poni2 = poni.poni2 
+            self._rot1 = poni.rot1
+            self._rot2 = poni.rot2
+            self._rot3 = poni.rot3
             self.reset()
-            return self
+            print("self.detector", self._detector)
+        print("self", self)
+        return self
 
     def setSPD(self, SampleDistance, Center_1, Center_2, Rot_1=0, Rot_2=0, Rot_3=0,
                PSize_1=None, PSize_2=None, splineFile=None, BSize_1=1, BSize_2=1,
@@ -1805,7 +1766,7 @@ class Geometry(object):
         return quaternion_from_euler(-rot1, -rot2, rot3, axes="sxyz")
 
     def make_headers(self, type_="list"):
-        """Create a configuration for the
+        """Create a configuration / header for the integrated data
 
         :param type: can be "list" or "dict"
         :return: the header with the proper format

@@ -44,6 +44,7 @@ __date__ = "07/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import os
 import logging
 logger = logging.getLogger(__name__)
 from collections import namedtuple
@@ -54,18 +55,22 @@ from .detectors import Detector
 from .io.ponifile import PoniFile
 
 Fit2dGeometry = namedtuple("Fit2dGeometry", "directDist centerX centerY tilt tiltPlanRotation pixelX pixelY splineFile",
-                           default=[None,]*8)
+                           defaults=[None,]*8)
 Fit2dGeometry.__doc__ = "distance is in mm, angles in degree, beam-center in pixels and pixel size in micron"
 
 
 def convert_to_Fit2d(poni):
     """Convert a Geometry|PONI object to the geometry of Fit2D
+    Please see the doc from Fit2dGeometry
+    
     :param poni: azimuthal integrator, geometry or poni
     :return: same geometry as a Fit2dGeometry named-tuple
     """
+    print(poni.detector)
     poni = PoniFile(poni)
+    print(poni.detector)
 
-    cos_tilt = cos(poni.rot1) * cos(poni.rot2)
+    cos_tilt = cos(poni._rot1) * cos(poni._rot2)
     
     sin_tilt = sqrt(1.0 - cos_tilt * cos_tilt)
     tan_tilt = sin_tilt / cos_tilt
@@ -78,20 +83,20 @@ def convert_to_Fit2d(poni):
         sin_tpr = 0.0
 
     else:
-        cos_tpr = max(-1.0, min(1.0, -cos(poni.rot2) * sin(poni.rot1) / sin_tilt))
-        sin_tpr = sin(poni.rot2) / sin_tilt
-    directDist = 1.0e3 * poni.dist / cos_tilt
+        cos_tpr = max(-1.0, min(1.0, -cos(poni._rot2) * sin(poni._rot1) / sin_tilt))
+        sin_tpr = sin(poni._rot2) / sin_tilt
+    directDist = 1.0e3 * poni._dist / cos_tilt
     tilt = degrees(acos(cos_tilt))
     if sin_tpr < 0:
         tpr = -degrees(acos(cos_tpr))
     else:
         tpr = degrees(acos(cos_tpr))
 
-    centerX = (poni.poni2 + poni.dist * tan_tilt * cos_tpr) / poni.pixel2
+    centerX = (poni._poni2 + poni.dist * tan_tilt * cos_tpr) / poni.detector.pixel2
     if abs(tilt) < 1e-5:  # in degree
-        centerY = (poni.poni1) / poni.pixel1
+        centerY = (poni.poni1) / poni.detector.pixel1
     else:
-        centerY = (poni.poni1 + poni.dist * tan_tilt * sin_tpr) / poni.pixel1
+        centerY = (poni._poni1 + poni.dist * tan_tilt * sin_tpr) / poni.detector.pixel1
     out = poni.detector.getFit2D()
     out["directDist"] = directDist
     out["centerX"] = centerX
@@ -102,6 +107,11 @@ def convert_to_Fit2d(poni):
 
 
 def convert_from_Fit2d(f2d):
+    """Import the geometry from Fit2D
+    
+    :param f2d: instance of Fit2dGeometry
+    :return: PoniFile instance
+    """  
     if not isinstance(f2d, Fit2dGeometry):
         if isinstance(f2d, dict):
             f2d = Fit2dGeometry(**f2d)
@@ -117,21 +127,20 @@ def convert_from_Fit2d(f2d):
         logger.error(("Got strange results with tilt=%s"
                       " and tiltPlanRotation=%s: %s"),
                      f2d.tilt, f2d.tiltPlanRotation, error)
-    if f2d.splineFile is None:
-        pixel1 = pixel2 = None
-        if f2d.pixelX is not None:
-            pixel1 = f2d.pixelY * 1.0e-6
-        if f2d.pixelY is not None:
-            pixel2 = f2d.pixelX * 1.0e-6
-        detector = Detector(pixel1, pixel2)
-    else:
-        detector = Detector(splineFile=f2d.splineFile)
-    res.detector = detector
-    pixel1 = detector.pixel1
-    pixel2 = detector.pixel2
+    
+    detector = Detector()
+    if f2d.splineFile:
+        detector.splineFile = os.path.abspath(f2d.splineFile)
+    elif f2d.pixelX and f2d.pixelY:
+        detector.pixel1 = f2d.pixelY * 1.0e-6
+        detector.pixel2 = f2d.pixelX * 1.0e-6
+
+    print(detector)
+    res._detector = detector
+    print(res.detector)
     res._dist = f2d.directDist * cos_tilt * 1.0e-3
-    res._poni1 = f2d.centerY * pixel1 - f2d.directDist * sin_tilt * sin_tpr * 1.0e-3
-    res._poni2 = f2d.centerX * pixel2 - f2d.directDist * sin_tilt * cos_tpr * 1.0e-3
+    res._poni1 = f2d.centerY * detector.pixel1 - f2d.directDist * sin_tilt * sin_tpr * 1.0e-3
+    res._poni2 = f2d.centerX * detector.pixel2 - f2d.directDist * sin_tilt * cos_tpr * 1.0e-3
     res._rot2 = rot2 = asin(sin_tilt * sin_tpr)  # or pi-
     rot1 = acos(min(1.0, max(-1.0, (cos_tilt / sqrt(1.0 - (sin_tpr * sin_tilt) ** 2)))))  # + or -
     if cos_tpr * sin_tilt > 0:
