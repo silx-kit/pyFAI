@@ -1188,19 +1188,12 @@ class AzimuthalIntegrator(Geometry):
                     if split == "pseudo":
                         split = "full"
                     try:
-                        if method.algo_lower == "csr":
-                            cython_integr = self.setup_CSR(shape, npt, mask,
-                                                           radial_range, azimuth_range,
-                                                           mask_checksum=mask_crc,
-                                                           unit=unit, split=split,
-                                                           empty=empty, scale=False)
-                        else:
-                            cython_integr = self.setup_LUT(shape, npt, mask,
-                                                           radial_range, azimuth_range,
-                                                           mask_checksum=mask_crc,
-                                                           unit=unit, split=split,
-                                                           empty=empty, scale=False)
-                    except MemoryError:  # CSR method is hungry...
+                        cython_integr = self.setup_sparse_integrator(shape, npt, mask,
+                                                                     radial_range, azimuth_range,
+                                                                     mask_checksum=mask_crc,
+                                                                     unit=unit, split=split, impl=method.algo_lower,
+                                                                     empty=empty, scale=False)
+                    except MemoryError:  # sparse methods are hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         cython_integr = None
                         self.reset_engines()
@@ -2220,19 +2213,12 @@ class AzimuthalIntegrator(Geometry):
                     if split == "pseudo":
                         split = "full"
                     try:
-                        if method.algo_lower == "csr":
-                            cython_integr = self.setup_CSR(shape, npt, mask,
-                                                           radial_range, azimuth_range,
-                                                           mask_checksum=mask_crc,
-                                                           unit=unit, split=split,
-                                                           empty=empty, scale=False)
-                        else:
-                            cython_integr = self.setup_LUT(shape, npt, mask,
-                                                           radial_range, azimuth_range,
-                                                           mask_checksum=mask_crc,
-                                                           unit=unit, split=split,
-                                                           empty=empty, scale=False)
-                    except MemoryError:  # CSR method is hungry...
+                        cython_integr = self.setup_sparse_integrator(shape, npt, mask,
+                                                                     radial_range, azimuth_range,
+                                                                     mask_checksum=mask_crc,
+                                                                     unit=unit, split=split, impl=method.algo_lower,
+                                                                     empty=empty, scale=False)
+                    except MemoryError:  # sparse method are hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         cython_integr = None
                         self.reset_engines()
@@ -2281,18 +2267,11 @@ class AzimuthalIntegrator(Geometry):
                         logger.info("AI.integrate2d: Resetting integrator because %s", reset)
                         split = method.split_lower
                         try:
-                            if method.algo_lower == "csr":
-                                cython_integr = self.setup_CSR(shape, npt, mask,
-                                                               radial_range, azimuth_range,
-                                                               mask_checksum=mask_crc,
-                                                               unit=unit, split=split,
-                                                               empty=empty, scale=False)
-                            else:
-                                cython_integr = self.setup_LUT(shape, npt, mask,
-                                                               radial_range, azimuth_range,
-                                                               mask_checksum=mask_crc,
-                                                               unit=unit, split=split,
-                                                               empty=empty, scale=False)
+                            cython_integr = self.setup_sparse_integrator(shape, npt, mask,
+                                                                         radial_range, azimuth_range,
+                                                                         mask_checksum=mask_crc,
+                                                                         unit=unit, split=split, impl=method.algo_lower,
+                                                                         empty=empty, scale=False)
                         except MemoryError:
                             logger.warning("MemoryError: falling back on default implementation")
                             cython_integr = None
