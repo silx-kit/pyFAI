@@ -64,7 +64,7 @@ else:
 
 from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
                                 splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
-                                histogram_engine, splitPixelFullLUT, splitBBoxCSC
+                                histogram_engine, splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC
 from .engines import Engine
 
 # Few constants for engine names:
@@ -497,10 +497,8 @@ class AzimuthalIntegrator(Geometry):
                                                     empty=empty)
         elif algo == "CSC":
             if split == "full":
-                # Unimplemented for now
-                return
                 if int2d:
-                    return splitPixelFullCSR.FullSplitCSR_2d(pos,
+                    return splitPixelFullCSC.FullSplitCSC_2d(pos,
                                                              bins=npt,
                                                              pos0_range=pos0_range,
                                                              pos1_range=pos1_range,
@@ -511,7 +509,7 @@ class AzimuthalIntegrator(Geometry):
                                                              chiDiscAtPi=self.chiDiscAtPi,
                                                              empty=empty)
                 else:
-                    return splitPixelFullCSR.FullSplitCSR_1d(pos,
+                    return splitPixelFullCSC.FullSplitCSC_1d(pos,
                                                              bins=npt,
                                                              pos0_range=pos0_range,
                                                              pos1_range=pos1_range,
@@ -1250,7 +1248,6 @@ class AzimuthalIntegrator(Geometry):
             if method.impl_lower == "cython":
                 # The integrator has already been initialized previously
                 integr = self.engines[method].engine
-                print(f"in {integr.input_size}, out: {integr.output_size}, got {data.size}")
                 intpl = integr.integrate_ng(data,
                                             variance=variance,
                                             error_model=error_model,
@@ -1366,7 +1363,7 @@ class AzimuthalIntegrator(Geometry):
             result._set_sem(intpl.sem)
             result._set_std(intpl.std)
 
-        # END of CSR/LUT common implementations
+        # END of CSR/CSC/LUT common implementations
         elif (method.method[1:3] == ("no", "histogram") and
               method.method[3] in ("python", "cython")):
             integr = method.class_funct_ng.function  # should be histogram[_engine].histogram1d_engine

@@ -145,6 +145,7 @@ else:
     IntegrationMethod(2, "bbox", "CSC", "cython",
                       class_funct_legacy=(splitBBoxCSC.HistoBBox2d, splitBBoxCSC.HistoBBox2d.integrate_ng))
 
+    # TODO
     # IntegrationMethod(1, "no", "CSC", "python",
     #                   class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
     # IntegrationMethod(2, "no", "CSC", "python",
@@ -212,6 +213,25 @@ else:
     IntegrationMethod(2, "full", "CSR", "python",
                       class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate),
                       class_funct_ng=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+
+try:
+    from .ext import splitPixelFullCSC  # IGNORE:F0401
+except ImportError as error:
+    logger.error("Unable to import pyFAI.ext.splitPixelFullCSC"
+                 " CSC based azimuthal integration: %s", error)
+    splitPixelFullCSR = None
+else:
+    # Register splitPixelFullCSR integrators
+    IntegrationMethod(1, "full", "CSC", "cython",
+                      class_funct_ng=(splitPixelFullCSC.FullSplitCSC_1d, splitPixelFullCSC.FullSplitCSC_1d.integrate_ng))
+    IntegrationMethod(2, "full", "CSC", "cython",
+                      class_funct_ng=(splitPixelFullCSC.FullSplitCSC_2d, splitPixelFullCSC.FullSplitCSC_2d.integrate_ng))
+    # TODO
+    # IntegrationMethod(1, "full", "CSC", "python",
+    #                   class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+    #
+    # IntegrationMethod(2, "full", "CSR", "python",
+    #                   class_funct_ng=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
 
 try:
     from .opencl import ocl

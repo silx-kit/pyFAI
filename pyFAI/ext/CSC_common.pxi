@@ -279,7 +279,7 @@ cdef class CscIntegrator(object):
 
             #calulate means from accumulators:
             for bin in range(self.output_size):
-                if sum_norm_sq[bin]>1e-6:
+                if sum_norm_sq[bin] > 0:
                     merged[bin] = sum_sig[bin] / sum_norm[bin]
                     sem[bin] = sqrt(sum_var[bin]) / sum_norm[bin]
                     std[bin] = sqrt(sum_var[bin] / sum_norm_sq[bin])
