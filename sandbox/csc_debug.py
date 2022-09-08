@@ -1,3 +1,4 @@
+import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
 import time, gc
 import numpy
@@ -18,7 +19,7 @@ ref = csr.integrate_ng(img.data, dummy=-5)
 res = csc.integrate_ng(img.data, dummy=-5)
 for idx in ("position", 'intensity', 'sigma', 'signal', 'variance', 'normalization', 'count', 'std', 'sem', 'norm_sq'):
     got = numpy.allclose(ref.__getattribute__(idx), res.__getattribute__(idx))
-    print(idx, got)
+    print(f"Checking {idx}: {got}")
     if not got:
         print(ref.__getattribute__(idx)[:10])
         print(res.__getattribute__(idx)[:10])
@@ -30,7 +31,8 @@ if 1:
     stack = [numpy.random.randint(0, 65000, size=img.shape) for i in range(1000)]
 
     gc.collect()
-    for t in [1, 2, 4, 8, 16]:
+    for i in range(int(1 + numpy.ceil(numpy.log(multiprocessing.cpu_count()) / numpy.log(2)))):
+        t = 1 << i
         t0 = time.perf_counter()
         with ThreadPoolExecutor(max_workers=t) as executor:
             results = [i for i in executor.map(csc.integrate_ng, stack)]
