@@ -33,11 +33,9 @@ __date__ = "08/09/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
-include "regrid_common.pxi"
 import cython
 import numpy
 
-from .preproc import preproc
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 
@@ -57,11 +55,10 @@ cdef class CscIntegrator(object):
         readonly data_t empty
         readonly data_t[::1] _data
         readonly index_t[::1] _indices, _indptr
-        readonly data_t[:, ::1] preprocessed
 
     def __init__(self,
                   tuple lut,
-                  int image_size,
+                  int output_size,
                   data_t empty=0.0):
 
         """Constructor for a CSR generic integrator
@@ -71,21 +68,19 @@ cdef class CscIntegrator(object):
         :param empty: value for empty pixels
         """
         self.empty = empty
-        self.input_size = image_size
-        self.preprocessed = numpy.empty((image_size, 4), dtype=data_d)
+        self.input_size = len(lut[2])-1
         assert len(lut) == 3, "Sparse matrix is expected as 3-tuple CSR with (data, indices, indptr)"
         assert len(lut[1]) == len(lut[0]),  "Sparse matrix in CSC format is expected to have len(data) == len(indices) is expected as 3-tuple CSR with (data, indices, indptr)"
         self._data = numpy.ascontiguousarray(lut[0], dtype=data_d)
         self._indices = numpy.ascontiguousarray(lut[1], dtype=numpy.int32)
         self._indptr = numpy.ascontiguousarray(lut[2], dtype=numpy.int32)
         self.nnz = len(lut[1])
-        self.output_size = len(lut[2])-1
+        self.output_size = output_size
 
     def __dealloc__(self):
         self._data = None
         self._indices = None
         self._indptr = None
-        self.preprocessed = None
         self.empty = 0
         self.input_size = 0
         self.output_size = 0 
@@ -146,7 +141,7 @@ cdef class CscIntegrator(object):
         """
         cdef:
             index_t idx, start, stop, j, bin
-            acc_t coef, coef2 
+            acc_t coef, w
             data_t empty, cdummy, cddummy
             data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
             acc_t[::1] sum_sig = numpy.zeros(self.output_size, dtype=acc_d)
@@ -157,10 +152,12 @@ cdef class CscIntegrator(object):
             data_t[::1] merged = numpy.empty(self.output_size, dtype=data_d)
             data_t[::1] std = numpy.empty(self.output_size, dtype=data_d)
             data_t[::1] sem = numpy.empty(self.output_size, dtype=data_d)
-            data_t[::1] cvariance, cdark, cflat, cpolarization, csolidangle
+            data_t[::1] cvariance, cdark, cflat, cpolarization, csolidangle, cabsorption
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
-            bint do_variance, is_valid, do_dark, do_flat, do_polarization
+            bint do_variance, is_valid, do_dark, do_flat, do_polarization, check_dummy, do_solidangle, do_absorption
             preproc_t value
+            acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B
+
 
         
         assert weights.size == self.input_size, "weights size"
@@ -185,7 +182,7 @@ cdef class CscIntegrator(object):
             do_variance = True
             cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
         else:
-            do_variance = False
+            do_variance = error_model is not ErrorModel.NO
     
         if dark is not None:
             do_dark = True
@@ -211,6 +208,12 @@ cdef class CscIntegrator(object):
             csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=data_d)
         else:
             do_solidangle = False
+        if absorption is not None:
+            do_absorption = True
+            assert absorption.size == self.input_size, "absorption array size"
+            cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=data_d)
+        else:
+            do_absorption = False
     
     
         with nogil:
@@ -228,7 +231,7 @@ cdef class CscIntegrator(object):
                                                  flat=cflat[idx] if do_flat else 1.0,
                                                  solidangle=csolidangle[idx] if do_solidangle else 1.0,
                                                  polarization=cpolarization[idx] if do_polarization else 1.0,
-                                                 absorption=1.0, #not yer implemented
+                                                 absorption=cabsorption[idx] if do_absorption else 1.0,
                                                  mask=0, #masked pixel have already been treated
                                                  dummy=cdummy,
                                                  delta_dummy=cddummy,
@@ -240,23 +243,52 @@ cdef class CscIntegrator(object):
                 for j in range(start, stop):
                     bin = self._indices[j]
                     coef = self._data[j]
-                    coef2 = coef*coef 
-                    sum_sig[bin] += coef * value.signal
-                    sum_var[bin] += coef2 * value.variance
-                    sum_norm[bin] += coef * value.norm
-                    sum_norm_sq[bin] += coef2 * value.norm * value.norm
-                    sum_count[bin] += coef * value.count
+                    w = coef * value.norm
+                    if do_azimuthal_variance:
+                        if sum_norm_sq[bin] <= 0.0:
+                            sum_sig[bin] = coef * value.signal
+                            sum_norm[bin] = w
+                            sum_norm_sq[bin] = w * w
+                            sum_count[bin] = coef * value.count
+                        else:
+                            # Inspired from https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
+                            # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
+                            # Emprically validated against 2-pass implementation in Python/scipy-sparse   
+                            
+                            omega_A = sum_norm[bin]
+                            omega_B = w
+                            omega2_A = sum_norm_sq[bin]
+                            omega2_B = omega_B*omega_B
+                            sum_norm[bin] = omega_A + omega_B
+                            sum_norm_sq[bin] = omega2_A + omega2_B
+                            # omega3 = acc_norm * omega_A * omega2_B
+                            # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                            b = value.signal / value.norm
+                            delta1 = sum_sig[bin]/omega_A - b
+                            sum_sig[bin] += coef * value.signal 
+                            delta2 = sum_sig[bin] / sum_norm[bin] - b                        
+                            sum_var[bin] += omega2_B * delta1 * delta2
+                            sum_count[bin] += coef * value.count
+                    else:
+                        sum_sig[bin] += coef * value.signal
+                        
+                        sum_norm[bin] += w
+                        sum_count[bin] += coef * value.count
+                        if do_variance: 
+                            sum_var[bin] += coef * coef * value.variance
+                            sum_norm_sq[bin] += w * w
+                        
+                        
 
             #calulate means from accumulators:
             for bin in range(self.output_size):
                 if sum_norm_sq[bin]:
                     merged[bin] = sum_sig[bin] / sum_norm[bin]
-                    std[bin] = sqrt(sum_var[bin]) / sum_norm[bin]
-                    sem[bin] = sqrt(sum_var[bin] / sum_norm_sq[bin])
+                    sem[bin] = sqrt(sum_var[bin]) / sum_norm[bin]
+                    std[bin] = sqrt(sum_var[bin] / sum_norm_sq[bin])
                 else:
                     merged[bin] = std[bin] = sem[bin] = empty 
-        # if self.bin_centers is None:
-        if False:
+        if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
                               numpy.asarray(merged).reshape(self.bins).T, 
