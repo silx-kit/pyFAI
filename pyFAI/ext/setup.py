@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/07/2022"
+__date__ = "08/09/2022"
 
 from numpy.distutils.misc_util import Configuration
 import platform
@@ -82,6 +82,7 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('splitPixelFullCSR', can_use_openmp=True, language='c++'),
         create_extension_config('splitBBoxLUT', can_use_openmp=True, language='c++'),
         create_extension_config('splitPixelFullLUT', can_use_openmp=True, language='c++'),
+        create_extension_config('CSC_integrator'),
         create_extension_config('relabel'),
         create_extension_config("bilinear", can_use_openmp=True),
         create_extension_config('_bispev', can_use_openmp=True),
