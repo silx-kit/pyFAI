@@ -1,8 +1,8 @@
 # coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
-##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
@@ -107,10 +107,10 @@ class HistoBBox1d(CscIntegrator, SplitBBoxIntegrator):
                                           self.pos0_max - 0.5 * self.delta, 
                                           self.bins)
 
-        lut = sparse.csr_matrix(self.calc_lut_1d().to_csr()).tocsc()
-
+        csc = sparse.csr_matrix(self.calc_lut_1d().to_csr()).tocsc()
+         
         #Call the constructor of the parent class
-        CscIntegrator.__init__(self, lut, bins, empty or 0.0)    
+        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, bins, empty or 0.0)    
 
         self.lut_checksum = crc32(self.data)        
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
@@ -184,9 +184,9 @@ class HistoBBox2d(CscIntegrator, SplitBBoxIntegrator):
         self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
                                            self.pos1_max - 0.5 * self.delta1, 
                                            self.bins[1])
-        lut = self.calc_lut_2d().to_csr()
+        csc = self.calc_lut_2d().to_csr()
         #Call the constructor of the parent class
-        CscIntegrator.__init__(self, lut, numpy.prod(bins), empty or 0.0)
+        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, numpy.prod(bins), empty or 0.0)
         self.lut_checksum = crc32(self.data) 
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 

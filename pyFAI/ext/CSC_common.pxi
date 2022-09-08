@@ -58,6 +58,7 @@ cdef class CscIntegrator(object):
 
     def __init__(self,
                   tuple lut,
+                  int input_size,
                   int output_size,
                   data_t empty=0.0):
 
@@ -68,7 +69,7 @@ cdef class CscIntegrator(object):
         :param empty: value for empty pixels
         """
         self.empty = empty
-        self.input_size = len(lut[2])-1
+        assert input_size >= len(lut[2])-1, "image size is OK"
         assert len(lut) == 3, "Sparse matrix is expected as 3-tuple CSR with (data, indices, indptr)"
         assert len(lut[1]) == len(lut[0]),  "Sparse matrix in CSC format is expected to have len(data) == len(indices) is expected as 3-tuple CSR with (data, indices, indptr)"
         self._data = numpy.ascontiguousarray(lut[0], dtype=data_d)
@@ -76,6 +77,7 @@ cdef class CscIntegrator(object):
         self._indptr = numpy.ascontiguousarray(lut[2], dtype=numpy.int32)
         self.nnz = len(lut[1])
         self.output_size = output_size
+        self.input_size = input_size
 
     def __dealloc__(self):
         self._data = None
@@ -215,10 +217,9 @@ cdef class CscIntegrator(object):
         else:
             do_absorption = False
     
-    
         with nogil:
             #first loop for pixel in input image
-            for idx in range(self.input_size):  
+            for idx in range(self._indptr.shape[0]-1):  
                 # skip pixel if masked:
                 start = self._indptr[idx]
                 stop = self._indptr[idx+1]
@@ -270,24 +271,21 @@ cdef class CscIntegrator(object):
                             sum_var[bin] += omega2_B * delta1 * delta2
                             sum_count[bin] += coef * value.count
                     else:
-                        sum_sig[bin] += coef * value.signal
-                        
+                        sum_sig[bin] += coef * value.signal                        
                         sum_norm[bin] += w
                         sum_count[bin] += coef * value.count
-                        if do_variance: 
-                            sum_var[bin] += coef * coef * value.variance
-                            sum_norm_sq[bin] += w * w
-                        
-                        
+                        sum_norm_sq[bin] += w * w
+                        sum_var[bin] += coef * coef * value.variance                            
 
             #calulate means from accumulators:
             for bin in range(self.output_size):
-                if sum_norm_sq[bin]:
+                if sum_norm_sq[bin]>1e-6:
                     merged[bin] = sum_sig[bin] / sum_norm[bin]
                     sem[bin] = sqrt(sum_var[bin]) / sum_norm[bin]
                     std[bin] = sqrt(sum_var[bin] / sum_norm_sq[bin])
                 else:
                     merged[bin] = std[bin] = sem[bin] = empty 
+
         if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
@@ -302,7 +300,7 @@ cdef class CscIntegrator(object):
                               numpy.asarray(sum_norm_sq).reshape(self.bins).T)
         else:
             # 1D integration case: "position intensity error signal variance normalization count std sem norm_sq"
-            return Integrate1dtpl(True, #self.bin_centers, 
+            return Integrate1dtpl(self.bin_centers, 
                                   numpy.asarray(merged),numpy.asarray(sem) ,
                                   numpy.asarray(sum_sig),numpy.asarray(sum_var), 
                                   numpy.asarray(sum_norm), numpy.asarray(sum_count),

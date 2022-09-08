@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/07/2022"
+__date__ = "08/09/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -396,9 +396,7 @@ cdef class CsrIntegrator(object):
                 std[i] = sqrt(acc_var / acc_norm_sq)
                 sem[i] = sqrt(acc_var) / acc_norm
             else:
-                merged[i] = empty
-                std[i] = empty
-                sem[i] = empty
+                merged[i] = std[i] = sem[i] = empty
         if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,

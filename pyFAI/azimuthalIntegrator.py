@@ -64,7 +64,7 @@ else:
 
 from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
                                 splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
-                                histogram_engine, splitPixelFullLUT
+                                histogram_engine, splitPixelFullLUT, splitBBoxCSC
 from .engines import Engine
 
 # Few constants for engine names:
@@ -316,7 +316,7 @@ class AzimuthalIntegrator(Geometry):
                                 mask=None,
                                 pos0_range=None, pos1_range=None,
                                 mask_checksum=None, unit=units.TTH,
-                                split="bbox", impl="CSR",
+                                split="bbox", algo="CSR",
                                 empty=None, scale=True):
         """
         Prepare a sparse-matrix integrator based on LUT, CSR or CSC format
@@ -336,7 +336,7 @@ class AzimuthalIntegrator(Geometry):
         :param unit: use to propagate the LUT object for further checkings
         :type unit: pyFAI.units.Unit
         :param split: Splitting scheme: valid options are "no", "bbox", "full"
-        :param impl: Sparse matrix format to use: "LUT", "CSR" or "CSC"
+        :param algo: Sparse matrix format to use: "LUT", "CSR" or "CSC"
         :param empty: override the default empty value
         :param scale: set to False for working in S.I. units for pos0_range
                       which is faster. By default assumes pos0_range has `units`
@@ -406,8 +406,8 @@ class AzimuthalIntegrator(Geometry):
             mask_checksum = None
         else:
             assert mask.shape == shape
-        impl = impl.upper()
-        if impl == "LUT":
+        algo = algo.upper()
+        if algo == "LUT":
             if split == "full":
                 if int2d:
                     return splitPixelFullLUT.HistoLUT2dFullSplit(pos,
@@ -451,7 +451,7 @@ class AzimuthalIntegrator(Geometry):
                                                     allow_pos0_neg=False,
                                                     unit=unit,
                                                     empty=empty)
-        elif impl == "CSR":
+        elif algo == "CSR":
             if split == "full":
                 if int2d:
                     return splitPixelFullCSR.FullSplitCSR_2d(pos,
@@ -495,27 +495,73 @@ class AzimuthalIntegrator(Geometry):
                                                     allow_pos0_neg=False,
                                                     unit=unit,
                                                     empty=empty)
+        elif algo == "CSC":
+            if split == "full":
+                # Unimplemented for now
+                return
+                if int2d:
+                    return splitPixelFullCSR.FullSplitCSR_2d(pos,
+                                                             bins=npt,
+                                                             pos0_range=pos0_range,
+                                                             pos1_range=pos1_range,
+                                                             mask=mask,
+                                                             mask_checksum=mask_checksum,
+                                                             allow_pos0_neg=False,
+                                                             unit=unit,
+                                                             chiDiscAtPi=self.chiDiscAtPi,
+                                                             empty=empty)
+                else:
+                    return splitPixelFullCSR.FullSplitCSR_1d(pos,
+                                                             bins=npt,
+                                                             pos0_range=pos0_range,
+                                                             pos1_range=pos1_range,
+                                                             mask=mask,
+                                                             mask_checksum=mask_checksum,
+                                                             allow_pos0_neg=False,
+                                                             unit=unit,
+                                                             empty=empty)
+            else:
+                if int2d:
+                    return splitBBoxCSC.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+                                                    bins=npt,
+                                                    pos0_range=pos0_range,
+                                                    pos1_range=pos1_range,
+                                                    mask=mask,
+                                                    mask_checksum=mask_checksum,
+                                                    allow_pos0_neg=False,
+                                                    unit=unit,
+                                                    empty=empty)
+                else:
+                    return splitBBoxCSC.HistoBBox1d(pos0, dpos0, pos1, dpos1,
+                                                    bins=npt,
+                                                    pos0_range=pos0_range,
+                                                    pos1_range=pos1_range,
+                                                    mask=mask,
+                                                    mask_checksum=mask_checksum,
+                                                    allow_pos0_neg=False,
+                                                    unit=unit,
+                                                    empty=empty)
 
     def setup_LUT(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
                   mask_checksum=None, unit=units.TTH,
                   split="bbox", empty=None, scale=True):
-        """See documentation of setup_sparse_integrator where impl=LUT"""
+        """See documentation of setup_sparse_integrator where algo=LUT"""
         return self.setup_sparse_integrator(shape, npt, mask,
                                             pos0_range, pos1_range,
                                             mask_checksum, unit,
-                                            split=split, impl="LUT",
+                                            split=split, algo="LUT",
                                             empty=empty, scale=scale)
 
     def setup_CSR(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
                   mask_checksum=None, unit=units.TTH,
                   split="bbox", empty=None, scale=True):
-        """See documentation of setup_sparse_integrator where impl=CSR"""
+        """See documentation of setup_sparse_integrator where algo=CSR"""
         return self.setup_sparse_integrator(shape, npt, mask,
                                             pos0_range, pos1_range,
                                             mask_checksum, unit,
-                                            split=split, impl="CSR",
+                                            split=split, algo="CSR",
                                             empty=empty, scale=scale)
 
     @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
@@ -1146,7 +1192,7 @@ class AzimuthalIntegrator(Geometry):
                 variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
 
         # Prepare LUT if needed!
-        if method.algo_lower in ("csr", "lut"):
+        if method.algo_lower in ("csr", "lut", "csc"):
             # initialize the CSR/LUT integrator in Cython as it may be needed later on.
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
             if cython_method not in self.engines:
@@ -1191,7 +1237,7 @@ class AzimuthalIntegrator(Geometry):
                         cython_integr = self.setup_sparse_integrator(shape, npt, mask,
                                                                      radial_range, azimuth_range,
                                                                      mask_checksum=mask_crc,
-                                                                     unit=unit, split=split, impl=method.algo_lower,
+                                                                     unit=unit, split=split, algo=method.algo_lower,
                                                                      empty=empty, scale=False)
                     except MemoryError:  # sparse methods are hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
@@ -1204,6 +1250,7 @@ class AzimuthalIntegrator(Geometry):
             if method.impl_lower == "cython":
                 # The integrator has already been initialized previously
                 integr = self.engines[method].engine
+                print(f"in {integr.input_size}, out: {integr.output_size}, got {data.size}")
                 intpl = integr.integrate_ng(data,
                                             variance=variance,
                                             error_model=error_model,
@@ -2216,7 +2263,7 @@ class AzimuthalIntegrator(Geometry):
                         cython_integr = self.setup_sparse_integrator(shape, npt, mask,
                                                                      radial_range, azimuth_range,
                                                                      mask_checksum=mask_crc,
-                                                                     unit=unit, split=split, impl=method.algo_lower,
+                                                                     unit=unit, split=split, algo=method.algo_lower,
                                                                      empty=empty, scale=False)
                     except MemoryError:  # sparse method are hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
@@ -2270,7 +2317,7 @@ class AzimuthalIntegrator(Geometry):
                             cython_integr = self.setup_sparse_integrator(shape, npt, mask,
                                                                          radial_range, azimuth_range,
                                                                          mask_checksum=mask_crc,
-                                                                         unit=unit, split=split, impl=method.algo_lower,
+                                                                         unit=unit, split=split, algo=method.algo_lower,
                                                                          empty=empty, scale=False)
                         except MemoryError:
                             logger.warning("MemoryError: falling back on default implementation")
