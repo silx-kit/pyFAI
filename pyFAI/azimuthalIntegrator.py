@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/07/2022"
+__date__ = "08/09/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -310,12 +310,16 @@ class AzimuthalIntegrator(Geometry):
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
 
-    def setup_LUT(self, shape, npt, mask=None,
-                  pos0_range=None, pos1_range=None,
-                  mask_checksum=None, unit=units.TTH,
-                  split="bbox", empty=None, scale=True):
+    def setup_sparse_integrator(self,
+                                shape,
+                                npt,
+                                mask=None,
+                                pos0_range=None, pos1_range=None,
+                                mask_checksum=None, unit=units.TTH,
+                                split="bbox", impl="CSR",
+                                empty=None, scale=True):
         """
-        Prepare a look-up-table
+        Prepare a sparse-matrix integrator based on LUT, CSR or CSC format
 
         :param shape: shape of the dataset
         :type shape: (int, int)
@@ -332,6 +336,7 @@ class AzimuthalIntegrator(Geometry):
         :param unit: use to propagate the LUT object for further checkings
         :type unit: pyFAI.units.Unit
         :param split: Splitting scheme: valid options are "no", "bbox", "full"
+        :param impl: Sparse matrix format to use: "LUT", "CSR" or "CSC"
         :param empty: override the default empty value
         :param scale: set to False for working in S.I. units for pos0_range
                       which is faster. By default assumes pos0_range has `units`
@@ -401,20 +406,66 @@ class AzimuthalIntegrator(Geometry):
             mask_checksum = None
         else:
             assert mask.shape == shape
-        if split == "full":
-            if int2d:
-                return splitPixelFullLUT.HistoLUT2dFullSplit(pos,
-                                                bins=npt,
-                                                pos0_range=pos0_range,
-                                                pos1_range=pos1_range,
-                                                mask=mask,
-                                                mask_checksum=mask_checksum,
-                                                allow_pos0_neg=False,
-                                                unit=unit,
-                                                chiDiscAtPi=self.chiDiscAtPi,
-                                                empty=empty)
+        impl = impl.upper()
+        if impl == "LUT":
+            if split == "full":
+                if int2d:
+                    return splitPixelFullLUT.HistoLUT2dFullSplit(pos,
+                                                    bins=npt,
+                                                    pos0_range=pos0_range,
+                                                    pos1_range=pos1_range,
+                                                    mask=mask,
+                                                    mask_checksum=mask_checksum,
+                                                    allow_pos0_neg=False,
+                                                    unit=unit,
+                                                    chiDiscAtPi=self.chiDiscAtPi,
+                                                    empty=empty)
+                else:
+                    return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
+                                                                 bins=npt,
+                                                                 pos0_range=pos0_range,
+                                                                 pos1_range=pos1_range,
+                                                                 mask=mask,
+                                                                 mask_checksum=mask_checksum,
+                                                                 allow_pos0_neg=False,
+                                                                 unit=unit,
+                                                                 empty=empty)
             else:
-                return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
+                if int2d:
+                    return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+                                                    bins=npt,
+                                                    pos0_range=pos0_range,
+                                                    pos1_range=pos1_range,
+                                                    mask=mask,
+                                                    mask_checksum=mask_checksum,
+                                                    allow_pos0_neg=False,
+                                                    unit=unit,
+                                                    empty=empty)
+                else:
+                    return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
+                                                    bins=npt,
+                                                    pos0_range=pos0_range,
+                                                    pos1_range=pos1_range,
+                                                    mask=mask,
+                                                    mask_checksum=mask_checksum,
+                                                    allow_pos0_neg=False,
+                                                    unit=unit,
+                                                    empty=empty)
+        elif impl == "CSR":
+            if split == "full":
+                if int2d:
+                    return splitPixelFullCSR.FullSplitCSR_2d(pos,
+                                                             bins=npt,
+                                                             pos0_range=pos0_range,
+                                                             pos1_range=pos1_range,
+                                                             mask=mask,
+                                                             mask_checksum=mask_checksum,
+                                                             allow_pos0_neg=False,
+                                                             unit=unit,
+                                                             chiDiscAtPi=self.chiDiscAtPi,
+                                                             empty=empty)
+                else:
+                    return splitPixelFullCSR.FullSplitCSR_1d(pos,
                                                              bins=npt,
                                                              pos0_range=pos0_range,
                                                              pos1_range=pos1_range,
@@ -423,156 +474,49 @@ class AzimuthalIntegrator(Geometry):
                                                              allow_pos0_neg=False,
                                                              unit=unit,
                                                              empty=empty)
-        else:
-            if int2d:
-                return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
-                                                bins=npt,
-                                                pos0_range=pos0_range,
-                                                pos1_range=pos1_range,
-                                                mask=mask,
-                                                mask_checksum=mask_checksum,
-                                                allow_pos0_neg=False,
-                                                unit=unit,
-                                                empty=empty)
             else:
-                return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
-                                                bins=npt,
-                                                pos0_range=pos0_range,
-                                                pos1_range=pos1_range,
-                                                mask=mask,
-                                                mask_checksum=mask_checksum,
-                                                allow_pos0_neg=False,
-                                                unit=unit,
-                                                empty=empty)
+                if int2d:
+                    return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+                                                    bins=npt,
+                                                    pos0_range=pos0_range,
+                                                    pos1_range=pos1_range,
+                                                    mask=mask,
+                                                    mask_checksum=mask_checksum,
+                                                    allow_pos0_neg=False,
+                                                    unit=unit,
+                                                    empty=empty)
+                else:
+                    return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
+                                                    bins=npt,
+                                                    pos0_range=pos0_range,
+                                                    pos1_range=pos1_range,
+                                                    mask=mask,
+                                                    mask_checksum=mask_checksum,
+                                                    allow_pos0_neg=False,
+                                                    unit=unit,
+                                                    empty=empty)
+
+    def setup_LUT(self, shape, npt, mask=None,
+                  pos0_range=None, pos1_range=None,
+                  mask_checksum=None, unit=units.TTH,
+                  split="bbox", empty=None, scale=True):
+        """See documentation of setup_sparse_integrator where impl=LUT"""
+        return self.setup_sparse_integrator(shape, npt, mask,
+                                            pos0_range, pos1_range,
+                                            mask_checksum, unit,
+                                            split=split, impl="LUT",
+                                            empty=empty, scale=scale)
 
     def setup_CSR(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
                   mask_checksum=None, unit=units.TTH,
                   split="bbox", empty=None, scale=True):
-        """
-        Prepare a look-up-table
-
-        :param shape: shape of the dataset
-        :type shape: (int, int)
-        :param npt: number of points in the the output pattern
-        :type npt: int or (int, int)
-        :param mask: array with masked pixel (1=masked)
-        :type mask: ndarray
-        :param pos0_range: range in radial dimension
-        :type pos0_range: (float, float)
-        :param pos1_range: range in azimuthal dimension
-        :type pos1_range: (float, float)
-        :param mask_checksum: checksum of the mask buffer
-        :type mask_checksum: int (or anything else ...)
-        :param unit: use to propagate the LUT object for further checkings
-        :type unit: pyFAI.units.Unit
-        :param split: Splitting scheme: valid options are "no", "bbox", "full"
-        :param empty: Override the empty value
-        :param scale: set to False for working in S.I. units for pos0_range
-                      which is faster. By default assumes pos0_range has `units`
-                      Note that pos1_range, the chi-angle, is expected in radians
-
-        This method is called when a look-up table needs to be set-up.
-        The *shape* parameter, correspond to the shape of the original
-        datatset. It is possible to customize the number of point of
-        the output histogram with the *npt* parameter which can be
-        either an integer for an 1D integration or a 2-tuple of
-        integer in case of a 2D integration. The LUT will have a
-        different shape: (npt, lut_max_size), the later parameter
-        being calculated during the instanciation of the splitBBoxLUT
-        class.
-
-        It is possible to prepare the LUT with a predefine
-        *mask*. This operation can speedup the computation of the
-        later integrations. Instead of applying the patch on the
-        dataset, it is taken into account during the histogram
-        computation. If provided the *mask_checksum* prevent the
-        re-calculation of the mask. When the mask changes, its
-        checksum is used to reset (or not) the LUT (which is a very
-        time consuming operation !)
-
-        It is also possible to restrain the range of the 1D or 2D
-        pattern with the *pos1_range* and *pos2_range*.
-
-        The *unit* parameter is just propagated to the LUT integrator
-        for further checkings: The aim is to prevent an integration to
-        be performed in 2th-space when the LUT was setup in q space.
-        """
-
-        if scale and pos0_range:
-            unit = units.to_unit(unit)
-            pos0_scale = unit.scale
-            pos0_range = tuple(pos0_range[i] / pos0_scale for i in (0, -1))
-        empty = self._empty if empty is None else empty
-        if "__len__" in dir(npt) and len(npt) == 2:
-            int2d = True
-        else:
-            int2d = False
-        if split == "full":
-            pos = self.array_from_unit(shape, "corner", unit, scale=False)
-        else:
-            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-            if split == "no":
-                dpos0 = None
-            else:
-                dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
-            if (pos1_range is None) and (not int2d):
-                pos1 = None
-                dpos1 = None
-            else:
-                pos1 = self.chiArray(shape)
-                if split == "no":
-                    dpos1 = None
-                else:
-                    dpos1 = self.deltaChi(shape)
-        if mask is None:
-            mask_checksum = None
-        else:
-            assert mask.shape == shape
-        if split == "full":
-
-            if int2d:
-                return splitPixelFullCSR.FullSplitCSR_2d(pos,
-                                                         bins=npt,
-                                                         pos0_range=pos0_range,
-                                                         pos1_range=pos1_range,
-                                                         mask=mask,
-                                                         mask_checksum=mask_checksum,
-                                                         allow_pos0_neg=False,
-                                                         unit=unit,
-                                                         chiDiscAtPi=self.chiDiscAtPi,
-                                                         empty=empty)
-            else:
-                return splitPixelFullCSR.FullSplitCSR_1d(pos,
-                                                         bins=npt,
-                                                         pos0_range=pos0_range,
-                                                         pos1_range=pos1_range,
-                                                         mask=mask,
-                                                         mask_checksum=mask_checksum,
-                                                         allow_pos0_neg=False,
-                                                         unit=unit,
-                                                         empty=empty)
-        else:
-            if int2d:
-                return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
-                                                bins=npt,
-                                                pos0_range=pos0_range,
-                                                pos1_range=pos1_range,
-                                                mask=mask,
-                                                mask_checksum=mask_checksum,
-                                                allow_pos0_neg=False,
-                                                unit=unit,
-                                                empty=empty)
-            else:
-                return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
-                                                bins=npt,
-                                                pos0_range=pos0_range,
-                                                pos1_range=pos1_range,
-                                                mask=mask,
-                                                mask_checksum=mask_checksum,
-                                                allow_pos0_neg=False,
-                                                unit=unit,
-                                                empty=empty)
+        """See documentation of setup_sparse_integrator where impl=CSR"""
+        return self.setup_sparse_integrator(shape, npt, mask,
+                                            pos0_range, pos1_range,
+                                            mask_checksum, unit,
+                                            split=split, impl="CSR",
+                                            empty=empty, scale=scale)
 
     @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
     def integrate1d_legacy(self, data, npt, filename=None,
