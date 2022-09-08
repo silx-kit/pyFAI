@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "13/01/2022"
+__date__ = "08/09/2022"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -222,6 +222,7 @@ class Bench(object):
               ("bbox", "lut", "opencl"): "LUT",
               ("bbox", "csr", "cython"): "CPU_CSR_OpenMP",
               ("bbox", "csr", "opencl"): "CSR",
+              ("bbox", "csc", "cython"): "CPU_CSC_Serial",
               }
 
     def __init__(self, nbr=10, repeat=1, memprofile=False, unit="2th_deg", max_size=None):
@@ -745,7 +746,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     if do_1d:
         bench.bench_1d("splitBBox", True, function="integrate1d_legacy")
         bench.bench_1d("splitBBox", True, function="integrate1d_ng")
-#         bench.bench_1d("lut", True)
+        bench.bench_1d(("bbox", "csc", "cython"), True, function="integrate1d_ng")
         bench.bench_1d("csr", True, function="integrate1d_legacy")
         bench.bench_1d("csr", True, function="integrate1d_ng")
         for device in ocl_devices:
