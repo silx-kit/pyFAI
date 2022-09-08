@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "08/09/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -127,6 +127,32 @@ else:
                       class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
     IntegrationMethod(2, "bbox", "CSR", "python",
                       class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+
+try:
+    from .ext import splitBBoxCSC  # IGNORE:F0401
+except ImportError as error:
+    logger.error("Unable to import pyFAI.ext.splitBBoxCSC"
+                 " CSC based azimuthal integration: %s", error)
+    splitBBoxCSC = None
+else:
+    # Register splitBBoxCSR integrators
+    IntegrationMethod(1, "no", "CSC", "cython",
+                      class_funct_ng=(splitBBoxCSC.HistoBBox1d, splitBBoxCSC.HistoBBox1d.integrate_ng))
+    IntegrationMethod(2, "no", "CSC", "cython",
+                      class_funct_ng=(splitBBoxCSC.HistoBBox2d, splitBBoxCSC.HistoBBox2d.integrate_ng))
+    IntegrationMethod(1, "bbox", "CSC", "cython",
+                      class_funct_ng=(splitBBoxCSC.HistoBBox1d, splitBBoxCSC.HistoBBox1d.integrate_ng))
+    IntegrationMethod(2, "bbox", "CSC", "cython",
+                      class_funct_legacy=(splitBBoxCSC.HistoBBox2d, splitBBoxCSC.HistoBBox2d.integrate_ng))
+
+    # IntegrationMethod(1, "no", "CSC", "python",
+    #                   class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+    # IntegrationMethod(2, "no", "CSC", "python",
+    #                   class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+    # IntegrationMethod(1, "bbox", "CSR", "python",
+    #                   class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
+    # IntegrationMethod(2, "bbox", "CSR", "python",
+    #                   class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
 
 try:
     from .ext import splitBBoxLUT
