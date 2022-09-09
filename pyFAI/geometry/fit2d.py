@@ -26,21 +26,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""This modules contains only one (large) class in charge of:
-
-* calculating the geometry, i.e. the position in the detector space of each pixel of the detector
-* manages caches to store intermediate results
-
-NOTA: The Geometry class is not a "transformation class" which would take a
-detector and transform it. It is rather a description of the experimental setup.
-
+"""This modules contains helper function to convert to/from FIT2D geometry 
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2022"
+__date__ = "09/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -51,12 +44,16 @@ from collections import namedtuple
 from math import pi, cos, sin, sqrt, acos, asin
 degrees = lambda  x: 180*x/pi
 radians = lambda  x: x*pi/180 
-from .detectors import Detector
-from .io.ponifile import PoniFile
+from ..detectors import Detector
+from ..io.ponifile import PoniFile
 
-Fit2dGeometry = namedtuple("Fit2dGeometry", "directDist centerX centerY tilt tiltPlanRotation pixelX pixelY splineFile",
+Fit2dGeometry = namedtuple("Fit2dGeometry", "directDist centerX centerY tilt tiltPlanRotation pixelX pixelY splineFile detectorName",
                            defaults=[None,]*8)
 Fit2dGeometry.__doc__ = "distance is in mm, angles in degree, beam-center in pixels and pixel size in micron"
+def Fit2dGeometry_repr(f2d):
+    return f"DirectBeamDist= {f2d.directDist:.3f} mm\tCenter: x={f2d.centerX:.3f}, y={f2d.centerY:.3f} pix\t"\
+           f"Tilt= {f2d.tilt:.3f} deg  tiltPlanRotation= {f2d.tiltPlanRotation:.3f} deg"
+Fit2dGeometry.__repr__ = Fit2dGeometry_repr 
 
 
 def convert_to_Fit2d(poni):
@@ -66,9 +63,7 @@ def convert_to_Fit2d(poni):
     :param poni: azimuthal integrator, geometry or poni
     :return: same geometry as a Fit2dGeometry named-tuple
     """
-    print(poni.detector)
     poni = PoniFile(poni)
-    print(poni.detector)
 
     cos_tilt = cos(poni._rot1) * cos(poni._rot2)
     
@@ -103,6 +98,7 @@ def convert_to_Fit2d(poni):
     out["centerY"] = centerY
     out["tilt"] = tilt
     out["tiltPlanRotation"] = tpr
+    out["detectorName"] = poni.detector.__class__.__name__
     return Fit2dGeometry(**out)
 
 
@@ -127,17 +123,19 @@ def convert_from_Fit2d(f2d):
         logger.error(("Got strange results with tilt=%s"
                       " and tiltPlanRotation=%s: %s"),
                      f2d.tilt, f2d.tiltPlanRotation, error)
-    
-    detector = Detector()
+    cfg = {}
     if f2d.splineFile:
-        detector.splineFile = os.path.abspath(f2d.splineFile)
-    elif f2d.pixelX and f2d.pixelY:
-        detector.pixel1 = f2d.pixelY * 1.0e-6
-        detector.pixel2 = f2d.pixelX * 1.0e-6
+        cfg["splineFile"] = os.path.abspath(f2d.splineFile)
+    if f2d.pixelX and f2d.pixelY:
+        cfg["pixel1"] = f2d.pixelY * 1.0e-6
+        cfg["pixel2"] = f2d.pixelX * 1.0e-6
+    
+    if f2d.detectorName:
+        detector = Detector.factory(f2d.detectorName, cfg)
+    else:
+        detector = Detector(**cfg)
 
-    print(detector)
     res._detector = detector
-    print(res.detector)
     res._dist = f2d.directDist * cos_tilt * 1.0e-3
     res._poni1 = f2d.centerY * detector.pixel1 - f2d.directDist * sin_tilt * sin_tpr * 1.0e-3
     res._poni2 = f2d.centerX * detector.pixel2 - f2d.directDist * sin_tilt * cos_tpr * 1.0e-3

@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2022"
+__date__ = "09/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -52,14 +52,14 @@ import os
 import threading
 import json
 from collections import namedtuple, OrderedDict
-from .geometry_conversion import convert_to_Fit2d, convert_from_Fit2d 
-from . import detectors
-from . import units
-from .utils.decorators import deprecated
-from .utils import crc32, deg2rad
-from . import utils
-from .io import ponifile, integration_config
-from .units import CONST_hc
+from .fit2d import convert_to_Fit2d, convert_from_Fit2d 
+from .. import detectors
+from .. import units
+from ..utils.decorators import deprecated
+from ..utils import crc32, deg2rad
+from .. import utils
+from ..io import ponifile, integration_config
+from ..units import CONST_hc, to_unit
 logger = logging.getLogger(__name__)
 
 try:
@@ -185,27 +185,21 @@ class Geometry(object):
         :param wl_unit: units used for wavelengths
         :return: nice string representing the configuration in use
         """
-        dist_unit = units.to_unit(dist_unit, units.LENGTH_UNITS) or units.l_m
-        ang_unit = units.to_unit(ang_unit, units.ANGLE_UNITS) or units.A_rad
-        wl_unit = units.to_unit(wl_unit, units.LENGTH_UNITS) or units.l_m
+        dist_unit = to_unit(dist_unit, units.LENGTH_UNITS) or units.l_m
+        ang_unit = to_unit(ang_unit, units.ANGLE_UNITS) or units.A_rad
+        wl_unit = to_unit(wl_unit, units.LENGTH_UNITS) or units.l_m
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         lstTxt = [self.detector.__repr__()]
         if self._wavelength:
-            lstTxt.append("Wavelength= %.6e%s" %
-                          (self._wavelength * wl_unit.scale, wl_unit))
-        lstTxt.append(("SampleDetDist= %.6e%s\tPONI= %.6e, %.6e%s\trot1=%.6f"
-                       "  rot2= %.6f  rot3= %.6f %s") %
-                      (self._dist * dist_unit.scale, dist_unit, self._poni1 * dist_unit.scale,
-                       self._poni2 * dist_unit.scale, dist_unit,
-                      self._rot1 * ang_unit.scale, self._rot2 * ang_unit.scale,
-                      self._rot3 * ang_unit.scale, ang_unit))
+            lstTxt.append(f"Wavelength= {self._wavelength * wl_unit.scale:.6e} {wl_unit}")
+        lstTxt.append(f"SampleDetDist= {self._dist * dist_unit.scale:.6e} {dist_unit}\t"
+                       f"PONI= {self._poni1 * dist_unit.scale:.6e}, {self._poni2 * dist_unit.scale:.6e} {dist_unit}\t"
+                       f"rot1={self._rot1 * ang_unit.scale:.6f}  "
+                       f"rot2={self._rot2 * ang_unit.scale:.6f}  "
+                       f"rot3={self._rot3 * ang_unit.scale:.6f} {ang_unit}")
         if self.detector.pixel1:
-            f2d = self.getFit2D()
-            lstTxt.append(("DirectBeamDist= %.3fmm\tCenter: x=%.3f, y=%.3f pix"
-                           "\tTilt=%.3f deg  tiltPlanRotation= %.3f deg") %
-                          (f2d["directDist"], f2d["centerX"], f2d["centerY"],
-                           f2d["tilt"], f2d["tiltPlanRotation"]))
+            lstTxt.append(convert_to_Fit2d(self).__repr__())
         return os.linesep.join(lstTxt)
 
     def check_chi_disc(self, azimuth_range):
@@ -720,8 +714,9 @@ class Geometry(object):
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
+        print(unit)
         if unit:
-            unit = units.to_unit(unit)
+            unit = to_unit(unit)
             space = unit.name.split("_")[0]
         else:
             # If no unit is asked, any is OK for extracting the Chi array
@@ -730,7 +725,9 @@ class Geometry(object):
                 ary = self._cached_array.get(space + "_corner")
                 if (ary is not None) and (shape == ary.shape[:2]):
                     return ary
-            space = "r"  # This is the fastest to calculate
+            # This is the fastest to calculate
+            space = "r"  
+            #unit = to_unit("r_m")
         key = space + "_corner"
         if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
@@ -790,6 +787,7 @@ class Geometry(object):
                         else:
                             corners[:shape[0],:shape[1],:, 1] = chi[:shape[0],:shape[1],:]
                         if space is not None:
+                            print(unit)
                             rad = unit.equation(x, y, z, self._wavelength)
                             if rad.shape[:2] == shape:
                                 corners[..., 0] = rad
@@ -869,7 +867,7 @@ class Geometry(object):
             - dim3[1]: azimuthal angle chi
         """
 
-        unit = units.to_unit(unit)
+        unit = to_unit(unit)
         space = unit.name.split("_")[0]
         key = space + "_center"
         ary = self._cached_array.get(key)
@@ -916,7 +914,7 @@ class Geometry(object):
             - dim3[1]: azimuthal angle chi
         """
 
-        unit = units.to_unit(unit)
+        unit = to_unit(unit)
         space = unit.name.split("_")[0] + "_delta"
         ary = self._cached_array.get(space)
 
@@ -1067,7 +1065,7 @@ class Geometry(object):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
-        unit = units.to_unit(unit)
+        unit = to_unit(unit)
         meth_name = unit.get(typ)
         if meth_name and meth_name in dir(Geometry):
             # fast path may be available
@@ -1409,7 +1407,8 @@ class Geometry(object):
 
     def setFit2D(self, directDist, centerX, centerY,
                  tilt=0., tiltPlanRotation=0.,
-                 pixelX=None, pixelY=None, splineFile=None):
+                 pixelX=None, pixelY=None, splineFile=None,
+                 detectorName=None):
         """
         Set the Fit2D-like parameter set: For geometry description see
         HPR 1996 (14) pp-240
@@ -1430,10 +1429,12 @@ class Geometry(object):
         :param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
         :param centerX, centerY: pixel position of the beam center
         :param splineFile: name of the file containing the spline
+        :param detectorName: name of the detector
         """
         pixelX = pixelX if pixelX is not None else self.detector.pixel2*1e6
         pixelY = pixelY if pixelY is not None else self.detector.pixel1*1e6
         splineFile = splineFile if splineFile is not None else self.detector.splineFile
+        detectorName = detectorName if detectorName is not None else self.detector.__class__.__name__
         poni = convert_from_Fit2d({"directDist":directDist, 
                                    "centerX":centerX, 
                                    "centerY":centerY,
@@ -1441,20 +1442,10 @@ class Geometry(object):
                                    "tiltPlanRotation":tiltPlanRotation,
                                    "pixelX":pixelX, 
                                    "pixelY":pixelY, 
-                                   "splineFile":splineFile})
-        print(type(poni))
+                                   "splineFile":splineFile,
+                                   "detectorName": detectorName})
         with self._sem:
-            print("poni.detector", poni.detector)
-            self._detector = poni.detector
-            self._dist = poni.dist
-            self._poni1 = poni.poni1 
-            self._poni2 = poni.poni2 
-            self._rot1 = poni.rot1
-            self._rot2 = poni.rot2
-            self._rot3 = poni.rot3
-            self.reset()
-            print("self.detector", self._detector)
-        print("self", self)
+            self._init_from_poni(poni)
         return self
 
     def setSPD(self, SampleDistance, Center_1, Center_2, Rot_1=0, Rot_2=0, Rot_3=0,
@@ -1705,7 +1696,7 @@ class Geometry(object):
                 rot = numpy.linalg.inv(rot)
                 rot4 = numpy.identity(4)
                 rot4[:3,:3] = rot
-                from .third_party.transformations import euler_from_matrix
+                from ..third_party.transformations import euler_from_matrix
                 euler = euler_from_matrix(rot4, axes='sxyz')
                 self._rot1 = -euler[0]
                 self._rot2 = -euler[1]
@@ -1737,7 +1728,7 @@ class Geometry(object):
         :param y: Imaginary part of the quaternion, correspond to u2*sin(alpha/2)
         :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/2)
         """
-        from .third_party.transformations import euler_from_quaternion
+        from ..third_party.transformations import euler_from_quaternion
 
         euler = euler_from_quaternion((w, x, y, z), axes='sxyz')
         self._rot1 = -euler[0]
@@ -1753,7 +1744,7 @@ class Geometry(object):
         :param param: use this set of parameters instead of the default one.
         :return: numpy array with 4 elements [w, x, y, z]
         """
-        from .third_party.transformations import quaternion_from_euler
+        from ..third_party.transformations import quaternion_from_euler
         if param is None:
             rot1 = self.rot1
             rot2 = self.rot2
@@ -1997,7 +1988,7 @@ class Geometry(object):
         :return: 2D image reconstructed
 
         """
-        dim1_unit = units.to_unit(dim1_unit)
+        dim1_unit = to_unit(dim1_unit)
         tth = tth / dim1_unit.scale
 
         if shape is None:
@@ -2050,8 +2041,8 @@ class Geometry(object):
         :return: 2D image reconstructed
 
         """
-        dim1_unit = units.to_unit(dim1_unit)
-        dim2_unit = units.to_unit(dim2_unit)
+        dim1_unit = to_unit(dim1_unit)
+        dim2_unit = to_unit(dim2_unit)
         tth = numpy.ascontiguousarray(tth, numpy.float64) / dim1_unit.scale
         chi = numpy.ascontiguousarray(chi, numpy.float64) / dim2_unit.scale
         if shape is None:
@@ -2066,7 +2057,7 @@ class Geometry(object):
         built_mask = numpy.ones(shape, dtype=numpy.int8)
         empty_data = numpy.zeros(shape, dtype=numpy.float32)
 
-        from .ext.inpainting import polar_interpolate
+        from ..ext.inpainting import polar_interpolate
 
         calcimage = polar_interpolate(empty_data,
                                       mask=built_mask,
@@ -2459,7 +2450,7 @@ class Geometry(object):
         return self._parallax
 
     def set_parallax(self, value):
-        from .parallax import Parallax
+        from ..parallax import Parallax
         if value is not None:
             assert isinstance(value, Parallax)
         self._parallax = value
