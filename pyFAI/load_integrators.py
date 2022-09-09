@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2022"
+__date__ = "09/09/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -135,7 +135,7 @@ except ImportError as error:
                  " CSC based azimuthal integration: %s", error)
     splitBBoxCSC = None
 else:
-    # Register splitBBoxCSR integrators
+    # Register splitBBoxCSC integrators
     IntegrationMethod(1, "no", "CSC", "cython",
                       class_funct_ng=(splitBBoxCSC.HistoBBox1d, splitBBoxCSC.HistoBBox1d.integrate_ng))
     IntegrationMethod(2, "no", "CSC", "cython",
@@ -143,7 +143,7 @@ else:
     IntegrationMethod(1, "bbox", "CSC", "cython",
                       class_funct_ng=(splitBBoxCSC.HistoBBox1d, splitBBoxCSC.HistoBBox1d.integrate_ng))
     IntegrationMethod(2, "bbox", "CSC", "cython",
-                      class_funct_legacy=(splitBBoxCSC.HistoBBox2d, splitBBoxCSC.HistoBBox2d.integrate_ng))
+                      class_funct_ng=(splitBBoxCSC.HistoBBox2d, splitBBoxCSC.HistoBBox2d.integrate_ng))
 
     # TODO
     # IntegrationMethod(1, "no", "CSC", "python",
@@ -221,7 +221,7 @@ except ImportError as error:
                  " CSC based azimuthal integration: %s", error)
     splitPixelFullCSR = None
 else:
-    # Register splitPixelFullCSR integrators
+    # Register splitPixelFullCSC integrators
     IntegrationMethod(1, "full", "CSC", "cython",
                       class_funct_ng=(splitPixelFullCSC.FullSplitCSC_1d, splitPixelFullCSC.FullSplitCSC_1d.integrate_ng))
     IntegrationMethod(2, "full", "CSC", "cython",
