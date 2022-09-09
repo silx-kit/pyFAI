@@ -29,11 +29,10 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/09/2022"
+__date__ = "09/09/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
-import cython
 import numpy
 
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
@@ -42,11 +41,11 @@ from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 cdef class CscIntegrator(object):
     """Abstract class which implements only the integrator...
 
-    Now uses CSR (Compressed Sparse Column) with main attributes:
+    Now uses CSC (Compressed Sparse Column) with main attributes:
     * nnz: number of non zero elements
     * data: coefficient of the matrix in a 1D vector of float32
-    * indices: Column index position for the data (same size as
-    * indptr: Column pointer indicates the start of a given Column. len ncol+1
+    * indices: Line index position for the data (same size as data)
+    * indptr: Column pointer indicates the start of a given Column. len ncol+1, or size of the image+1.
 
     Nota: nnz = indptr[-1]+1 = len(indices) = len(data)
     """
@@ -142,7 +141,7 @@ cdef class CscIntegrator(object):
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
         cdef:
-            index_t idx, start, stop, j, bin
+            index_t idx, start, stop, j, bin_idx
             acc_t coef, w
             data_t empty, cdummy, cddummy
             data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
@@ -158,7 +157,7 @@ cdef class CscIntegrator(object):
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
             bint do_variance, is_valid, do_dark, do_flat, do_polarization, check_dummy, do_solidangle, do_absorption
             preproc_t value
-            acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B
+            acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B, omega_AB 
 
 
         
@@ -242,49 +241,51 @@ cdef class CscIntegrator(object):
                 if not is_valid:
                     continue
                 for j in range(start, stop):
-                    bin = self._indices[j]
+                    bin_idx = self._indices[j]
                     coef = self._data[j]
                     w = coef * value.norm
+                    sum_count[bin_idx] += coef * value.count
                     if do_azimuthal_variance:
-                        if sum_norm_sq[bin] <= 0.0:
-                            sum_sig[bin] = coef * value.signal
-                            sum_norm[bin] = w
-                            sum_norm_sq[bin] = w * w
-                            sum_count[bin] = coef * value.count
-                        else:
+                        if sum_norm_sq[bin_idx] > 0.0:
                             # Inspired from https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                             # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
                             # Emprically validated against 2-pass implementation in Python/scipy-sparse   
                             
-                            omega_A = sum_norm[bin]
+                            omega_A = sum_norm[bin_idx]
                             omega_B = w
-                            omega2_A = sum_norm_sq[bin]
+                            omega2_A = sum_norm_sq[bin_idx]
                             omega2_B = omega_B*omega_B
-                            sum_norm[bin] = omega_A + omega_B
-                            sum_norm_sq[bin] = omega2_A + omega2_B
-                            # omega3 = acc_norm * omega_A * omega2_B
+                            sum_norm[bin_idx] = omega_AB = omega_A + omega_B
+                            sum_norm_sq[bin_idx] = omega2_A + omega2_B
+
                             # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
                             b = value.signal / value.norm
-                            delta1 = sum_sig[bin]/omega_A - b
-                            sum_sig[bin] += coef * value.signal 
-                            delta2 = sum_sig[bin] / sum_norm[bin] - b                        
-                            sum_var[bin] += omega2_B * delta1 * delta2
-                            sum_count[bin] += coef * value.count
+                            delta1 = sum_sig[bin_idx]/omega_A - b
+                            sum_sig[bin_idx] += coef * value.signal 
+                            delta2 = sum_sig[bin_idx] / omega_AB - b                        
+                            sum_var[bin_idx] += omega2_B * delta1 * delta2
+                        else:
+                            sum_sig[bin_idx] = coef * value.signal
+                            sum_norm[bin_idx] = w
+                            sum_norm_sq[bin_idx] = w * w
                     else:
-                        sum_sig[bin] += coef * value.signal                        
-                        sum_norm[bin] += w
-                        sum_count[bin] += coef * value.count
-                        sum_norm_sq[bin] += w * w
-                        sum_var[bin] += coef * coef * value.variance                            
-
+                        sum_sig[bin_idx] += coef * value.signal                        
+                        sum_norm[bin_idx] += w
+                        sum_norm_sq[bin_idx] += w * w
+                        if do_variance:
+                            sum_var[bin_idx] += coef * coef * value.variance
+                    
             #calulate means from accumulators:
-            for bin in range(self.output_size):
-                if sum_norm_sq[bin] > 0:
-                    merged[bin] = sum_sig[bin] / sum_norm[bin]
-                    sem[bin] = sqrt(sum_var[bin]) / sum_norm[bin]
-                    std[bin] = sqrt(sum_var[bin] / sum_norm_sq[bin])
+            for bin_idx in range(self.output_size):
+                if sum_norm_sq[bin_idx] > 0:
+                    merged[bin_idx] = sum_sig[bin_idx] / sum_norm[bin_idx]
+                    if do_variance:
+                        sem[bin_idx] = sqrt(sum_var[bin_idx]) / sum_norm[bin_idx]
+                        std[bin_idx] = sqrt(sum_var[bin_idx] / sum_norm_sq[bin_idx])
+                    else:
+                        std[bin_idx] = sem[bin_idx] = empty
                 else:
-                    merged[bin] = std[bin] = sem[bin] = empty 
+                    merged[bin_idx] = std[bin_idx] = sem[bin_idx] = empty 
 
         if self.bin_centers is None:
             # 2D integration case
