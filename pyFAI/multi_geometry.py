@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2022"
+__date__ = "27/09/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -58,6 +58,7 @@ class MultiGeometry(object):
                  wavelength=None, empty=0.0, chi_disc=180):
         """
         Constructor of the multi-geometry integrator
+        
         :param ais: list of azimuthal integrators
         :param radial_range: common range for integration
         :param azimuthal_range: common range for integration

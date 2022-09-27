@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "09/09/2022"
 
 import os
 from numpy.distutils.misc_util import Configuration
@@ -38,6 +38,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('detectors')
     config.add_subpackage('engines')
     config.add_subpackage('ext')
+    config.add_subpackage('geometry')
     config.add_subpackage('gui')
     config.add_subpackage('opencl')
     config.add_subpackage('resources')
