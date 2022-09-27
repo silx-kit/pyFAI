@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2022"
+__date__ = "02/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -39,9 +39,13 @@ import os
 import sys
 import time
 import logging
-import numpy
+import json
+import posixpath
 from ..utils.decorators import deprecated
+from ..containers import Integrate1dResult, ErrorModel
 from .. import version
+from .ponifile import PoniFile
+from ..method_registry import IntegrationMethod
 logger = logging.getLogger(__name__)
 try:
     import h5py
@@ -403,3 +407,350 @@ class Nexus(object):
             else:
                 dec = raw
         return dec
+
+
+def load_nexus(filename):
+    """Tried to read-back a file from a Nexus file written by pyFAI
+    
+    :param filename: the name of the nexus file
+    :return: parsed result
+    """
+    autodecode = lambda ma: ma.decode() if isinstance(ma, bytes) else ma
+    with Nexus(filename, mode="r") as nxs:
+        entry = nxs.get_entries()[0]
+        ad = autodecode(entry["definition"][()])
+        process_grp = entry["pyFAI"]
+        cfg_grp = process_grp["poni"]
+        poni = PoniFile(json.loads(cfg_grp["data"][()]))
+        cfg_grp = process_grp["integrate"]
+
+        if ad == "NXmonopd":
+            result = Integrate1dResult(entry["results/polar_angle"][()],
+                                       entry["results/data"][()],
+                                       entry["results/errors"][()] if "results/errors" in entry else None)
+            result._set_unit(entry["results/polar_angle"].attrs["units"])
+            detector_grp = nxs.h5[posixpath.split(entry["results/polar_angle"].attrs["target"])[0]]
+            result._set_sum_signal(detector_grp["raw"][()])
+            result._set_sum_variance(detector_grp["sum_variance"][()])
+            norm_grp = entry["normalization"]
+            result._set_sum_normalization(norm_grp["integral"][()])
+            result._set_sum_normalization2(norm_grp["integral_sq"][()])
+            result._set_count(norm_grp["pixels"][()])
+        elif ad == "NXcanSAS":
+            data_grp = entry[entry.attrs["default"]]
+            result = Integrate1dResult(data_grp["Q"][()],
+                                       data_grp["I"][()],
+                                       data_grp["Idev"][()] if "Idev" in data_grp else None)
+            unit = data_grp["Q"].attrs["units"]
+            unit = unit if "_" in unit else f"q_{unit[2:]}^-1"
+            result._set_unit(unit)
+            result._set_sum_signal(data_grp["sum_signal"][()])
+            if "sum_variance" in data_grp:
+                result._set_sum_variance(data_grp["sum_variance"][()])
+            if "sum_normalization" in data_grp:
+                result._set_sum_normalization(data_grp["sum_normalization"][()])
+            if "sum_normalization2" in data_grp:
+                result._set_sum_normalization2(data_grp["sum_normalization2"][()])
+            if "count" in data_grp:
+                result._set_count(data_grp["count"][()])
+        else:
+            raise RuntimeError(f"Unsupported application definition: {ad}, please fill in a bug")
+
+        result._set_compute_engine(autodecode(cfg_grp["compute_engine"][()]))
+        result._set_has_solidangle_correction(cfg_grp["has_solidangle_correction"][()])
+        if "integration_method" in cfg_grp:
+            result._set_method(IntegrationMethod.select_method(**json.loads(cfg_grp["integration_method"][()]))[0])
+        result._set_has_dark_correction(cfg_grp["has_dark_correction"][()])
+        result._set_has_flat_correction(cfg_grp["has_flat_correction"][()])
+        result._set_has_mask_applied(autodecode(cfg_grp["has_mask_applied"][()]))
+        pf = autodecode(cfg_grp["polarization_factor"][()])
+        result._set_polarization_factor(None if pf == "None" else pf)
+        result._set_normalization_factor(cfg_grp["normalization_factor"][()])
+        result._set_method_called(autodecode(cfg_grp["method_called"][()]))
+        result._set_metadata(json.loads(cfg_grp["metadata"][()]))
+        result._set_error_model(ErrorModel.parse(autodecode(cfg_grp["error_model"][()])))
+        result._set_poni(poni)
+
+        return result
+
+
+def _save_pyFAI(nexus, entry_grp, result):
+    """Write the NXprocess into the entry
+    
+    :param nexus: Opened Nexus file 
+    :param entry: HDF5 group containing the NXentry
+    :param result: instance of Integrate1dResult
+    :return: the NXprocess group
+    """
+    process = nexus.new_class(entry_grp, "pyFAI", "NXprocess")
+    process["sequence_index"] = 1
+    process["program"] = "pyFAI"
+    process["version"] = str(version)
+    process["date"] = get_isotime()
+    cfg_grp = nexus.new_class(process, "poni", "NXnote")
+    cfg_grp.create_dataset("data", data=json.dumps(result.poni.as_dict(), indent=2, separators=(",\r\n", ": ")))
+    cfg_grp.create_dataset("format", data="text/json")
+    col_grp = nexus.new_class(process, "integrate", "NXcollection")
+    pf = float(result.polarization_factor) if result.polarization_factor is not None else "None"
+    pol_ds = col_grp.create_dataset("polarization_factor", data=pf)
+    pol_ds.attrs["doc"] = "Between -1 and +1, 0 for circular, None for no-correction"
+    nf = float(result.normalization_factor) if result.normalization_factor is not None else "None"
+    nf_ds = col_grp.create_dataset("normalization_factor", data=nf)
+    nf_ds.attrs["doc"] = "User-provided normalization factor, usually to account for incident flux"
+    col_grp["has_mask_applied"] = result.has_mask_applied
+    col_grp["has_dark_correction"] = result.has_dark_correction
+    col_grp["has_flat_correction"] = result.has_flat_correction
+    col_grp["has_solidangle_correction"] = result.has_solidangle_correction
+    col_grp["metadata"] = json.dumps(result.metadata)
+    if result.percentile is not None:
+        col_grp.create_dataset("percentile", data=result.percentile).attrs["doc"] = "used with median-filter like reduction"
+    col_grp.create_dataset("method_called", data=result.method_called).attrs["doc"] = "name of the function called of AzimuthalIntegrator"
+    col_grp.create_dataset("compute_engine", data=result.compute_engine).attrs["doc"] = "name of the compute engine selected by pyFAI"
+    col_grp.create_dataset("error_model", data=result.error_model.as_str()).attrs["doc"] = "how is variance assessed from signal ?"
+
+    if result.method:
+        col_grp.create_dataset("integration_method", data=json.dumps(result.method.method._asdict() or {})).\
+            attrs["doc"] = "dict with the type of splitting, the kind of algorithm and its implementation"
+    return process
+
+
+def save_NXmonpd(filename, result,
+                 title="monopd",
+                 entry="entry",
+                 instrument="beamline",
+                 source_name="ESRF",
+                 source_type="synchotron",
+                 source_probe="x-ray",
+                 sample="sample",
+                 extra=None):
+    """Save integrated data into a HDF5-file following 
+    the Nexus powder diffraction application definition:
+    https://manual.nexusformat.org/classes/applications/NXmonopd.html
+    
+    :param filename: name of the file to be written
+    :param result: instance of Integrate1dResult
+    :param title: title of the experiment
+    :param entry: name of the entry
+    :param instrument: name/brand of the instrument
+    :param source_name: name/brand of the particule source 
+    :param source_type: kind of source as a string
+    :param source_probe: Any of these values: 'neutron' | 'x-ray' | 'electron'
+    :param sample: sample name
+    :param extra: extra metadata as a dict
+    """
+    with Nexus(filename, mode="w") as nxs:
+        entry_grp = nxs.new_entry(entry=entry, program_name="pyFAI",
+                  title=title, force_time=None, force_name=True)
+        entry_grp["definition"] = "NXmonopd"
+        entry_grp["definition"].attrs["version"] = "3.1"
+
+        process = _save_pyFAI(nxs, entry_grp, result)
+
+        # sample
+        sample_grp = nxs.new_class(entry_grp, sample, "NXsample")
+        sample_grp["name"] = sample
+
+        # instrument
+        instrument_grp = nxs.new_instrument(entry_grp, instrument)
+        # source
+        source_grp = nxs.new_class(instrument_grp, source_name, "NXsource")
+        source_grp["type"] = str(source_type)
+        source_grp["name"] = str(source_name)
+        source_grp["probe"] = str(source_probe)
+        if result.poni and  result.poni.wavelength:
+            crystal_grp = nxs.new_class(instrument_grp, "monochromator", "NXcrystal")
+            crystal_grp["wavelength"] = float(result.poni.wavelength * 1e10)
+            crystal_grp["wavelength"].attrs["units"] = "angstrom"
+        # detector
+        detector = result.poni.detector.__class__.__name__ if result.poni else "Detector"
+        detector_grp = nxs.new_class(instrument_grp, detector, "NXdetector")
+        detector_grp["name"] = detector
+        if result.poni:
+            detector_grp["config"] = json.dumps(result.poni.detector.get_config())
+        polar_angle_ds = detector_grp.create_dataset("polar_angle", data=result.radial)
+        polar_angle_ds.attrs["axis"] = "1"
+        polar_angle_ds.attrs["units"] = str(result.unit)
+        polar_angle_ds.attrs["long_name"] = result.unit.label
+        polar_angle_ds.attrs["target"] = polar_angle_ds.name
+        polar_angle_ds.attrs["interpretation"] = "spectrum"
+        intensities_ds = detector_grp.create_dataset("data", data=result.intensity)
+        intensities_ds.attrs["doc"] = "weighted average of all pixels in a bin"
+        intensities_ds.attrs["signal"] = "1"
+        intensities_ds.attrs["interpretation"] = "spectrum"
+        intensities_ds.attrs["target"] = intensities_ds.name
+        raw_ds = detector_grp.create_dataset("raw", data=result.sum_signal)
+        raw_ds.attrs["doc"] = "Sum of signal of all pixels in a bin"
+        raw_ds.attrs["interpretation"] = "spectrum"
+
+        # normalization
+        nrm_grp = nxs.new_class(entry_grp, "normalization", "NXmonitor")
+        nrm_grp["mode"] = "monitor"
+        # nrm_grp["preset"] = ?
+        nrm_ds = nrm_grp.create_dataset("integral", data=result.sum_normalization)
+        nrm_ds.attrs["doc"] = "sum of normalization of all pixels in a bin"
+        nrm_ds.attrs["units"] = "relative to the PONI position"
+        nrm_ds.attrs["interpretation"] = "spectrum"
+        nrm2_ds = nrm_grp.create_dataset("integral_sq", data=result.sum_normalization2)
+        nrm2_ds.attrs["doc"] = "sum of normalization squarred of all pixels in a bin"
+        nrm2_ds.attrs["interpretation"] = "spectrum"
+        cnt_ds = nrm_grp.create_dataset("pixels", data=result.count)
+        cnt_ds.attrs["doc"] = "Number of pixels contributing to each bin"
+        cnt_ds.attrs["units"] = "pixels"
+        cnt_ds.attrs["interpretation"] = "spectrum"
+
+        # Results available as links
+        integration_data = nxs.new_class(entry_grp, "results", "NXdata")
+        integration_data["polar_angle"] = polar_angle_ds
+        integration_data["data"] = intensities_ds
+        if result.sum_variance is not None:
+            errors_ds = detector_grp.create_dataset("errors", data=result.sem)
+            errors_ds.attrs["target"] = errors_ds.name
+            errors_ds.attrs["doc"] = "standard error of the mean"
+            errors_ds.attrs["interpretation"] = "spectrum"
+            integration_data["errors"] = errors_ds
+            vari_ds = detector_grp.create_dataset("sum_variance", data=result.sum_variance)
+            vari_ds.attrs["doc"] = "Propagated variance, prior to normalization"
+            vari_ds.attrs["interpretation"] = "spectrum"
+        integration_data.attrs["signal"] = "data"
+        integration_data.attrs["axes"] = ["polar_angle"]
+        integration_data.attrs["polar_angle_indices"] = 0
+        integration_data["title"] = f"Powder diffraction pattern of {sample}"
+        entry_grp.attrs["default"] = integration_data.name
+
+        if extra:
+            extra_grp = nxs.new_class(entry_grp, "extra", "NXnote")
+            extra_grp.create_dataset("data", data=json.dumps(extra, indent=2, separators=(",\r\n", ": ")))
+            extra_grp.create_dataset("format", data="text/json")
+
+
+def save_NXcansas(filename, result,
+                  title="something descriptive yet short",
+                  run="run-number",
+                  entry="entry",
+                  instrument="beamline",
+                  source_name="ESRF",
+                  source_type="synchotron",
+                  source_probe="x-ray",
+                  sample="sample",
+                  extra=None):
+    """Save integrated data into a HDF5-file following 
+    the Nexus canSAS application definition:
+    https://manual.nexusformat.org/classes/applications/NXcanSAS.html
+    
+    :param filename: name of the file to be written
+    :param result: instance of Integrate1dResult
+    :param title: title of the experiment
+    :param entry: name of the entry
+    :param instrument: name/brand of the instrument
+    :param source_name: name/brand of the particule source 
+    :param source_type: kind of source as a string
+    :param source_probe: Any of these values: 'neutron' | 'x-ray' | 'electron'
+    :param sample: sample name
+    :param extra: extra metadata as a dict
+    """
+    with Nexus(filename, mode="w") as nxs:
+        entry_grp = nxs.new_entry(entry=entry, program_name="pyFAI",
+                  title=title, force_time=None, force_name=True)
+
+        entry_grp.attrs["canSAS_class"] = "SASentry"
+        entry_grp.attrs["version"] = "1.1"
+
+        entry_grp["definition"] = "NXcanSAS"
+        entry_grp["definition"].attrs["version"] = "1.1"
+        entry_grp["run"] = run
+
+        process = _save_pyFAI(nxs, entry_grp, result)
+        process.attrs["canSAS_class"] = "SASprocess"
+        process["name"] = "Azimuthal integration"
+
+        # sample
+        sample_grp = nxs.new_class(entry_grp, sample, "NXsample")
+        sample_grp["name"] = sample
+
+        # Instrument:
+        instrument_grp = nxs.new_instrument(entry_grp, instrument)
+        instrument_grp.attrs["canSAS_class"] = "SASinstrument"
+        instrument_grp["name"] = str(instrument)
+        # NXaperture ?
+        # NXcollimator?
+        # Detector
+        detector = result.poni.detector.__class__.__name__ if result.poni else "Detector"
+        detector_grp = nxs.new_class(instrument_grp, detector, "NXdetector")
+        detector_grp.attrs["canSAS_class"] = "SASdetector"
+        detector_grp["name"] = detector
+        if result.poni:
+            detector_grp["config"] = json.dumps(result.poni.detector.get_config())
+            detector_grp.create_dataset("SDD", data=result.poni.dist).attrs["units"] = "m"
+            detector_grp.create_dataset("x_position", data=-result.poni.poni2).attrs["units"] = "m"
+            detector_grp.create_dataset("y_position", data=-result.poni.poni1).attrs["units"] = "m"
+            detector_grp.create_dataset("roll", data=-result.poni.rot3).attrs["units"] = "rad"
+            detector_grp.create_dataset("pitch", data=-result.poni.rot2).attrs["units"] = "rad"
+            detector_grp.create_dataset("yaw", data=-result.poni.rot1).attrs["units"] = "rad"
+            detector_grp.create_dataset("x_pixel_size", data=result.poni.detector.pixel2).attrs["units"] = "m"
+            detector_grp.create_dataset("y_pixel_size", data=result.poni.detector.pixel1).attrs["units"] = "m"
+            # this is approximate but should be enough for SAXS where tilts are small:
+            detector_grp.create_dataset("beam_center_x", data=result.poni.poni2 / result.poni.detector.pixel2).attrs["units"] = "m"
+            detector_grp.create_dataset("beam_center_y", data=result.poni.poni1 / result.poni.detector.pixel1).attrs["units"] = "m"
+
+        # source
+        source_grp = nxs.new_class(instrument_grp, source_name, "NXsource")
+        source_grp.attrs["canSAS_class"] = "SASsource"
+        source_grp["type"] = str(source_type)
+        source_grp["name"] = str(source_name)
+        source_grp["probe"] = str(source_probe)
+        if result.poni and  result.poni.wavelength:
+            source_grp.create_dataset("incident_wavelength", data=float(result.poni.wavelength * 1e10)).attrs["units"] = "angstrom"
+
+        # data
+        integration_data = nxs.new_class(entry_grp, "sasdata", "NXdata")
+        integration_data.attrs["canSAS_class"] = "SASdata"
+        integration_data.attrs["signal"] = "I"
+        integration_data.attrs["axes"] = ["Q"]
+        integration_data.attrs["I_axes"] = "Q"
+        integration_data.attrs["timestamp"] = get_isotime()
+        entry_grp.attrs["default"] = integration_data.name
+
+        q_ds = integration_data.create_dataset("Q", data=result.radial)
+        q_ds.attrs["axis"] = "1"
+        q_ds.attrs["units"] = ("1/" + str(result.unit).split("_")[-1].split("^")[0]) if str(result.unit).startswith("q") else str(result.unit)
+        q_ds.attrs["long_name"] = result.unit.label
+        # q_ds.attrs["target"] = q_ds.name
+        q_ds.attrs["interpretation"] = "spectrum"
+        intensities_ds = integration_data.create_dataset("I", data=result.intensity)
+        intensities_ds.attrs["doc"] = "weighted average of all pixels in a bin"
+        intensities_ds.attrs["signal"] = "1"
+        intensities_ds.attrs["interpretation"] = "spectrum"
+        intensities_ds.attrs["units"] = "arbitrary"
+
+        # intensities_ds.attrs["target"] = intensities_ds.name
+        raw_ds = integration_data.create_dataset("sum_signal", data=result.sum_signal)
+        raw_ds.attrs["doc"] = "Sum of signal of all pixels in a bin"
+        raw_ds.attrs["interpretation"] = "spectrum"
+        nrm_ds = integration_data.create_dataset("sum_normalization", data=result.sum_normalization)
+        nrm_ds.attrs["doc"] = "sum of normalization of all pixels in a bin"
+        nrm_ds.attrs["units"] = "relative to the PONI position"
+        nrm_ds.attrs["interpretation"] = "spectrum"
+        nrm2_ds = integration_data.create_dataset("sum_normalization2", data=result.sum_normalization2)
+        nrm2_ds.attrs["doc"] = "sum of normalization squarred of all pixels in a bin"
+        nrm2_ds.attrs["interpretation"] = "spectrum"
+        cnt_ds = integration_data.create_dataset("count", data=result.count)
+        cnt_ds.attrs["doc"] = "Number of pixels contributing to each bin"
+        cnt_ds.attrs["units"] = "pixels"
+        cnt_ds.attrs["interpretation"] = "spectrum"
+        if result.sum_variance is not None:
+            errors_ds = integration_data.create_dataset("Idev", data=result.sem)
+            intensities_ds.attrs["uncertainties"] = "Idev"
+            errors_ds.attrs["target"] = errors_ds.name
+            errors_ds.attrs["doc"] = "standard error of the mean"
+            errors_ds.attrs["interpretation"] = "spectrum"
+            errors_ds.attrs["units"] = "arbitrary"
+            integration_data["errors"] = errors_ds
+            vari_ds = integration_data.create_dataset("sum_variance", data=result.sum_variance)
+            vari_ds.attrs["doc"] = "Propagated variance, prior to normalization"
+            vari_ds.attrs["interpretation"] = "spectrum"
+
+        if extra:
+            extra_grp = nxs.new_class(entry_grp, "extra", "NXnote")
+            extra_grp.create_dataset("data", data=json.dumps(extra, indent=2, separators=(",\r\n", ": ")))
+            extra_grp.create_dataset("format", data="text/json")
+

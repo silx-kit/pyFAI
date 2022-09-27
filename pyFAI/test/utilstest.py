@@ -42,6 +42,7 @@ import contextlib
 import tempfile
 import getpass
 import functools
+import struct
 
 from silx.resources import ExternalResources
 from ..directories import testimages
@@ -82,6 +83,9 @@ class TestOptions(object):
 
         self.TEST_LOW_MEM = False
         """Skip tests using too much memory"""
+
+        self.TEST_IS32_BIT = False
+        """Skip tests on 32-bit systems"""
 
         self.options = None
         self.timeout = 60  # timeout in seconds for downloading images
@@ -166,6 +170,9 @@ class TestOptions(object):
             self.TEST_LOW_MEM = True
         elif os.environ.get('PYFAI_LOW_MEM', 'True') == 'False':
             self.TEST_LOW_MEM = True
+
+        if struct.calcsize("P") == 4:
+            self.TEST_IS32_BIT = True
 
     def add_parser_argument(self, parser):
         """Add extrat arguments to the test argument parser

@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/06/2022"
+__date__ = "13/07/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -55,6 +55,7 @@ cdef class LutIntegrator(object):
         readonly index_t input_size, output_size, lut_size
         readonly data_t empty
         readonly lut_t[:, ::1] _lut
+        readonly data_t[:, ::1] preprocessed
 
     def __init__(self,
                  lut_t[:, ::1] lut,
@@ -69,12 +70,14 @@ cdef class LutIntegrator(object):
         """
         self.empty = empty
         self.input_size = image_size
+        self.preprocessed = numpy.empty((image_size, 4), dtype=data_d)
         self.output_size = lut.shape[0]
         self.lut_size = lut.shape[1]
         self._lut = lut
     
     def __dealloc__(self):
         self._lut = None
+        self.preprocessed = None
         self.empty = 0
         self.input_size = 0
         self.output_size = 0 
@@ -319,7 +322,8 @@ cdef class LutIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           error_model=error_model)
+                           error_model=error_model,
+                           out=self.preprocessed)
 
         for i in prange(self.output_size, nogil=True):
             acc_sig = 0.0
