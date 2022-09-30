@@ -9,8 +9,8 @@ import scipy.sparse
 from pyFAI.ext.splitBBoxCSR import HistoBBox1d as HistoBBox1dCSR
 from pyFAI.ext.splitBBoxCSC import HistoBBox1d as HistoBBox1dCSC
 
-img = fabio.open(pyFAI.test.utilstest.UtilsTest.getimage("Pilatus1M.edf"))
-ai = pyFAI.load(pyFAI.test.utilstest.UtilsTest.getimage("Pilatus1M.poni"))
+img = fabio.open(pyFAI.test.utilstest.UtilsTest.getimage("Eiger4M.edf"))
+ai = pyFAI.load(pyFAI.test.utilstest.UtilsTest.getimage("Eiger4M.poni"))
 
 csr = ai.setup_sparse_integrator(img.shape, 1000, algo="CSR")
 csc = ai.setup_sparse_integrator(img.shape, 1000, algo="CSC")

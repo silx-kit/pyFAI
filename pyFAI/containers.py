@@ -954,3 +954,9 @@ class SparseFrame(tuple):
     @property
     def peak_connected(self):
         return self._peak_connected
+
+    @property
+    def unit(self):
+        return self._unit
+
+
