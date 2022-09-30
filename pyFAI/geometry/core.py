@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/04/2022"
+__date__ = "13/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -52,13 +52,13 @@ import os
 import threading
 import json
 from collections import namedtuple, OrderedDict
-from . import detectors
-from . import units
-from .utils.decorators import deprecated
-from .utils import crc32, deg2rad
-from . import utils
-from .io import ponifile, integration_config
-from .units import CONST_hc
+from .. import detectors
+from .. import units
+from ..utils.decorators import deprecated
+from ..utils import crc32, deg2rad
+from .. import utils
+from ..io import ponifile, integration_config
+from ..units import CONST_hc
 logger = logging.getLogger(__name__)
 
 try:
@@ -68,13 +68,13 @@ except ImportError:
     numexpr = None
 
 try:
-    from .ext import _geometry
+    from ..ext import _geometry
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     _geometry = None
 
 try:
-    from .ext import bilinear
+    from ..ext import bilinear
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     bilinear = None
@@ -771,7 +771,6 @@ class Geometry(object):
                                     corners[:,:, 3,:] = res[:-1, 1:,:]
                             else:
                                 corners = res
-
                     if corners is None:
                         # In case the fast-path is not implemented
                         pos = self.position_array(shape, corners=True)
@@ -1744,7 +1743,7 @@ class Geometry(object):
                 rot = numpy.linalg.inv(rot)
                 rot4 = numpy.identity(4)
                 rot4[:3,:3] = rot
-                from .third_party.transformations import euler_from_matrix
+                from ..third_party.transformations import euler_from_matrix
                 euler = euler_from_matrix(rot4, axes='sxyz')
                 self._rot1 = -euler[0]
                 self._rot2 = -euler[1]
@@ -1776,7 +1775,7 @@ class Geometry(object):
         :param y: Imaginary part of the quaternion, correspond to u2*sin(alpha/2)
         :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/2)
         """
-        from .third_party.transformations import euler_from_quaternion
+        from ..third_party.transformations import euler_from_quaternion
 
         euler = euler_from_quaternion((w, x, y, z), axes='sxyz')
         self._rot1 = -euler[0]
@@ -1792,7 +1791,7 @@ class Geometry(object):
         :param param: use this set of parameters instead of the default one.
         :return: numpy array with 4 elements [w, x, y, z]
         """
-        from .third_party.transformations import quaternion_from_euler
+        from ..third_party.transformations import quaternion_from_euler
         if param is None:
             rot1 = self.rot1
             rot2 = self.rot2
@@ -1877,6 +1876,7 @@ class Geometry(object):
         self.pixel1 /= self._oversampling / lastOversampling
         self.pixel2 /= self._oversampling / lastOversampling
 
+    @deprecated
     def oversampleArray(self, myarray):
         origShape = myarray.shape
         origType = myarray.dtype
@@ -2105,7 +2105,7 @@ class Geometry(object):
         built_mask = numpy.ones(shape, dtype=numpy.int8)
         empty_data = numpy.zeros(shape, dtype=numpy.float32)
 
-        from .ext.inpainting import polar_interpolate
+        from ..ext.inpainting import polar_interpolate
 
         calcimage = polar_interpolate(empty_data,
                                       mask=built_mask,
@@ -2498,7 +2498,7 @@ class Geometry(object):
         return self._parallax
 
     def set_parallax(self, value):
-        from .parallax import Parallax
+        from ..parallax import Parallax
         if value is not None:
             assert isinstance(value, Parallax)
         self._parallax = value
