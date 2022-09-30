@@ -33,27 +33,56 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/09/2022"
+__date__ = "30/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
 logger = logging.getLogger(__name__)
-from collections import namedtuple
+from typing import NamedTuple
 from math import pi, cos, sin, sqrt, acos, asin
 degrees = lambda  x: 180*x/pi
 radians = lambda  x: x*pi/180 
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
 
-Fit2dGeometry = namedtuple("Fit2dGeometry", "directDist centerX centerY tilt tiltPlanRotation pixelX pixelY splineFile detectorName",
-                           defaults=[None,]*8)
-Fit2dGeometry.__doc__ = "distance is in mm, angles in degree, beam-center in pixels and pixel size in micron"
-def Fit2dGeometry_repr(f2d):
-    return f"DirectBeamDist= {f2d.directDist:.3f} mm\tCenter: x={f2d.centerX:.3f}, y={f2d.centerY:.3f} pix\t"\
-           f"Tilt= {f2d.tilt:.3f} deg  tiltPlanRotation= {f2d.tiltPlanRotation:.3f} deg"
-Fit2dGeometry.__repr__ = Fit2dGeometry_repr 
+class Fit2dGeometry(NamedTuple):
+    """ This object represents the geometry as configured in Fit2D
+
+    :param directDist: Distance from sample to the detector along the incident beam in mm. The detector may be extrapolated when tilted. 
+    :param centerX: Position of the beam-center on the detector in pixels, along the fastest axis of the image.
+    :param centerY: Position of the beam-center on the detector in pixels, along the slowest axis of the image.
+    :param tilt: Angle of tilt of the detector in degrees
+    :param tiltPlanRotation: Direction of the tilt (unefined when tilt is 0)
+    :param detector: Detector definition as is pyFAI.
+    :param wavelength: Wavelength of the beam in Angstrom
+    """
+    directDist: float=None
+    centerX: float=None
+    centerY: float=None
+    tilt: float=0.0
+    tiltPlanRotation: float=0.0
+    pixelX: float=None
+    pixelY: float=None
+    splineFile: str=None
+    detector: Detector=None
+    wavelength: float=None
+
+    @classmethod
+    def _fromdict(cls, dico):
+        "Mirror of _asdict: take the dict and populate the tuple to be returned"
+        try:
+            obj = cls(**dico)
+        except TypeError as err:
+            logger.warning("TypeError: %s", err)
+            obj = cls(**{key: dico[key] for key in [i for i in cls._fields if i in dico]})
+        return obj
+
+    def __repr__(self):
+        return f"DirectBeamDist= {self.directDist:.3f} mm\tCenter: x={self.centerX:.3f}, y={self.centerY:.3f} pix\t"\
+               f"Tilt= {self.tilt:.3f}° tiltPlanRotation= {self.tiltPlanRotation:.3f}°" + \
+               (f" 𝛌= {self.wavelength:.3f}Å" if self.wavelength else "")
 
 
 def convert_to_Fit2d(poni):
@@ -98,7 +127,12 @@ def convert_to_Fit2d(poni):
     out["centerY"] = centerY
     out["tilt"] = tilt
     out["tiltPlanRotation"] = tpr
-    out["detectorName"] = poni.detector.__class__.__name__
+    out["detector"] = poni.detector
+    out["pixelX"] = poni.detector.pixel2 * 1e6
+    out["pixelY"] = poni.detector.pixel1 * 1e6
+    out["splineFile"] = poni.detector.splineFile
+    if poni.wavelength:
+        out["wavelength"] = poni.wavelength*1e10
     return Fit2dGeometry(**out)
 
 
@@ -123,19 +157,23 @@ def convert_from_Fit2d(f2d):
         logger.error(("Got strange results with tilt=%s"
                       " and tiltPlanRotation=%s: %s"),
                      f2d.tilt, f2d.tiltPlanRotation, error)
-    cfg = {}
-    if f2d.splineFile:
-        cfg["splineFile"] = os.path.abspath(f2d.splineFile)
-    if f2d.pixelX and f2d.pixelY:
-        cfg["pixel1"] = f2d.pixelY * 1.0e-6
-        cfg["pixel2"] = f2d.pixelX * 1.0e-6
-    
-    if f2d.detectorName:
-        detector = Detector.factory(f2d.detectorName, cfg)
-    else:
+    if f2d.detector is None or f2d.detector.pixel1 is None:
+        cfg = {}
+        if f2d.splineFile:
+            cfg["splineFile"] = os.path.abspath(f2d.splineFile)
+        if f2d.pixelX and f2d.pixelY:
+            cfg["pixel1"] = f2d.pixelY * 1.0e-6
+            cfg["pixel2"] = f2d.pixelX * 1.0e-6
         detector = Detector(**cfg)
-
+    elif isinstance(f2d.detector, Detector):
+        detector = f2d.detector
+    else:
+        detector = Detector.factory(f2d.detector)
+    
+    print(detector, f2d.detector, f2d.pixelX, f2d.pixelY, f2d.splineFile)
     res._detector = detector
+    if f2d.wavelength:
+        res._wavelength = f2d.wavelength*1e-10
     res._dist = f2d.directDist * cos_tilt * 1.0e-3
     res._poni1 = f2d.centerY * detector.pixel1 - f2d.directDist * sin_tilt * sin_tpr * 1.0e-3
     res._poni2 = f2d.centerX * detector.pixel2 - f2d.directDist * sin_tilt * cos_tpr * 1.0e-3

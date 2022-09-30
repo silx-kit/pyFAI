@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/09/2022"
+__date__ = "30/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1408,7 +1408,7 @@ class Geometry(object):
     def setFit2D(self, directDist, centerX, centerY,
                  tilt=0., tiltPlanRotation=0.,
                  pixelX=None, pixelY=None, splineFile=None,
-                 detectorName=None):
+                 detector=None, wavelength=None):
         """
         Set the Fit2D-like parameter set: For geometry description see
         HPR 1996 (14) pp-240
@@ -1429,12 +1429,14 @@ class Geometry(object):
         :param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
         :param centerX, centerY: pixel position of the beam center
         :param splineFile: name of the file containing the spline
-        :param detectorName: name of the detector
+        :param detector: name of the detector or detector object
         """
         pixelX = pixelX if pixelX is not None else self.detector.pixel2*1e6
         pixelY = pixelY if pixelY is not None else self.detector.pixel1*1e6
         splineFile = splineFile if splineFile is not None else self.detector.splineFile
-        detectorName = detectorName if detectorName is not None else self.detector.__class__.__name__
+        detector = detector if detector is not None else self.detector
+        wavelength = wavelength if wavelength else (
+                        self.wavelength*1e10 if self.wavelength else None)
         poni = convert_from_Fit2d({"directDist":directDist,
                                    "centerX":centerX,
                                    "centerY":centerY,
@@ -1443,7 +1445,8 @@ class Geometry(object):
                                    "pixelX":pixelX,
                                    "pixelY":pixelY,
                                    "splineFile":splineFile,
-                                   "detectorName": detectorName})
+                                   "detector": detector,
+                                   'wavelength':wavelength})
         with self._sem:
             self._init_from_poni(poni)
         return self
