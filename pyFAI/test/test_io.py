@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2022"
+__date__ = "04/10/2022"
 
 import unittest
 import os
@@ -41,6 +41,7 @@ import numpy
 import time
 import sys
 import logging
+import json
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)

@@ -49,6 +49,8 @@ import os
 import sys
 import argparse
 import time
+import copy
+import signal
 from collections import OrderedDict
 import numexpr
 import logging
@@ -72,13 +74,131 @@ else:
     from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
 from ..io.sparse_frame import save_sparse
+
+from threading import Thread, Semaphore, Event
+from queue import Queue, Empty
+
 # Define few constants:
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
 EXIT_ARGUMENT_FAILURE = 2
 start_time = time.time()
 
+abort = Event()
+def sigterm_handler(_signo, _stack_frame):
+    sys.stderr.write(f"Caught signal {_signo}, quitting !\n")
+    sys.stderr.flush()
+    abort.set()
+signal.signal(signal.SIGTERM, sigterm_handler)
+signal.signal(signal.SIGINT, sigterm_handler)
 
+
+class FileToken:
+    "Token to be used to indicated the end of a file"
+    def __init__(self, name, kind="start"):
+        self.name = name
+        self.kind = kind
+
+
+class FileReader(Thread):
+    """Read all images in a file and enqueue the image.
+    Ends with an EndOfFileToken
+    """
+    def __init__(self, filenames, queue):
+        """
+        :param filenames: list of multi-frame fabio objects.
+        :param queue: queue where to put the image in as numpy array.
+        """
+        Thread.__init__(self, name="FileReader")
+        self.queue = queue
+        self.filenames = filenames
+        
+    def run(self):
+        "feed all input images into the queue"
+        for filename, fabioimage in self.filenames.items():
+            for frame in fabioimage:
+                self.queue.put(frame.data)
+                time.sleep(1e-3)
+            self.queue.put(FileToken(filename))
+            if abort.is_set():
+                return
+        self.queue.put(FileToken(None))
+
+
+class Sparsifyer(Thread):
+    def __init__(self, inqueue, outqueue, pf, variance, parameters, progress):
+        Thread.__init__(self, name="Sparsifyer")
+        self.inqueue = inqueue
+        self.outqueue = outqueue
+        self.pf = pf
+        self.variance = variance
+        self.parameters = copy.copy(parameters)
+        self.progress = progress
+        
+    def run(self):
+        filename = ""
+        frames = []
+        cnt = 0
+        while not abort.is_set():
+            try:
+                intensity = self.inqueue.get_nowait()
+            except Empty:
+                time.sleep(1e-3)
+                continue
+            if isinstance(intensity, FileToken):
+                if intensity.kind == "start":
+                    self.outqueue.put(intensity)
+                    if intensity.name is None:
+                        self.inqueue.task_done()
+                        return
+                    filename = os.path.basename(intensity.name)
+                elif intensity.kind == "end":
+                    self.outqueue.put(frames)
+                    frames = []
+                self.inqueue.task_done()
+            else:
+                current = self.pf.sparsify(intensity,
+                                  variance=None if self.variance is None else self.variance(intensity),
+                                  **self.parameters)
+                frames.append(current)
+                self.inqueue.task_done()
+            if self.progress:
+                if len(current.peaks):
+                    self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels/ {len(current.peaks):4} peaks")
+                else:
+                    self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels")
+            else:
+                print(f"{filename} frame #{cnt:04d}, found {current.intensity.size:6d} intense pixels")
+            cnt += 1
+
+class Writer(Thread):
+    
+    def __init__(self, queue, output, kwargs):
+        Thread.__init__(self, name="writer")
+        self.queue = queue
+        self.output = output
+        self.kwargs = kwargs
+
+    def run(self):
+        filename = self.output
+        while not abort.is_set():
+            try:
+                token = self.queue.get_nowait()
+            except Empty:
+                time.sleep(1e-3)
+                continue
+            if isinstance(token, FileToken):
+                self.queue.task_done()
+                if token.name is None:
+                    return
+                filename = os.path.splitext(token.name)[0]+self.outfile
+            else:
+                save_sparse(filename,
+                            token,
+                            **self.kwargs)
+                self.queue.task_done()
+
+            
 def expand_args(args):
     """
     Takes an argv and expand it (under Windows, cmd does not convert *.tif into
@@ -114,8 +234,8 @@ def parse():
     group = parser.add_argument_group("main arguments")
 #     group.add_argument("-l", "--list", action="store_true", dest="list", default=None,
 #                        help="show the list of available formats and exit")
-    group.add_argument("-o", "--output", default='sparse.h5', type=str,
-                       help="Output filename")
+    group.add_argument("-o", "--output", default='_sparse.h5', type=str,
+                       help="Suffix for output filename")
     group.add_argument("--save-source", action='store_true', dest="save_source", default=False,
                        help="save the path for all source files")
 
@@ -223,8 +343,8 @@ def process(options):
     logger.debug("Count the number of frames")
     if pb:
         pb.update(0, message="Count the number of frames")
-    dense = [fabio.open(f) for f in options.images]
-    nframes = sum([f.nframes for f in dense])
+    dense = OrderedDict([(f, fabio.open(f)) for f in options.images])
+    nframes = sum([f.nframes for f in dense.values()])
 
     logger.debug("Initialize the geometry")
     if pb:
@@ -235,7 +355,7 @@ def process(options):
         ai.detector.mask = mask
     else:
         mask = ai.detector.mask
-    shape = dense[0].shape
+    shape = dense[list(dense.keys())[0]].shape #Assume they are all the same
 
     unit = to_unit(options.unit)
     if options.radial_range is not None:
@@ -273,9 +393,6 @@ def process(options):
                         block_size=options.workgroup)
 
     logger.debug("Start sparsification")
-    frames = []
-
-    cnt = 0
     if "I" in options.error_model:
         variance = numexpr.NumExpr(options.error_model)
         error_model = None
@@ -300,33 +417,12 @@ def process(options):
         parameters["solidangle"], parameters["solidangle_checksum"] = ai.solidAngleArray(with_checksum=True)
     if options.polarization is not None:
         parameters["polarization"], parameters["polarization_checksum"] = ai.polarization(factor=options.polarization, with_checksum=True)
-    t0 = time.perf_counter()
-    for fabioimage in dense:
-        for frame in fabioimage:
-            intensity = frame.data
-            current = pf.sparsify(intensity,
-                                  variance=None if variance is None else variance(intensity),
-                                  **parameters)
-            frames.append(current)
-            if pb:
-                if  options.cutoff_peak:
-                    pb.update(cnt, message=f"{os.path.basename(fabioimage.filename)}: {current.intensity.size:6d} pixels/ {len(current.peaks):4} peaks")
-                else:
-                    pb.update(cnt, message=f"{os.path.basename(fabioimage.filename)}: {current.intensity.size:6d} pixels")
-            else:
-                print(f"{os.path.basename(fabioimage.filename)} frame #{fabioimage.currentframe:04d}, found {current.intensity.size:6d} intense pixels")
-            cnt += 1
-    t1 = time.perf_counter()
-    if pb:
-        pb.update(nframes, message="Saving: " + options.output)
-        pb.clear()
-    else:
-        print("Saving: " + options.output)
-    logger.debug("Save data")
-
+    queue_read = Queue()
+    queue_process = Queue()
+    reader = FileReader(dense, queue_read)
+    sparsifyer = Sparsifyer(queue_read, queue_process, pf, variance, parameters, pb)
     parameters["unit"] = unit
-    parameters["error_model"] = frames[0].error_model.name if frames else options.error_model
-
+    parameters["error_model"] = options.error_model
     if options.polarization is not None:
         parameters.pop("polarization")
         parameters.pop("polarization_checksum")
@@ -335,13 +431,21 @@ def process(options):
         parameters.pop("solidangle")
         parameters.pop("solidangle_checksum")
         parameters["correctSolidAngle"] = True
-    save_sparse(options.output,
-                frames,
-                beamline=options.beamline,
-                ai=ai,
-                source=options.images if options.save_source else None,
-                extra=parameters,
-                start_time=start_time)
+    kwargs = {"beamline":options.beamline,
+              "ai":ai,
+              "source": options.images if options.save_source else None,
+              "extra": parameters,
+              "start_time": start_time}
+    writer = Writer(queue_process, options.output, kwargs)
+    t0 = time.perf_counter()
+    reader.start()
+    sparsifyer.start()
+    writer.start()
+    
+    reader.join()
+    sparsifyer.join()
+    writer.join()
+    t1 = time.perf_counter()
 
     if options.profile:
         try:
@@ -350,7 +454,7 @@ def process(options):
             pf.log_profile()
     if pb:
         pb.clear()
-    logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1 - t0, cnt / (t1 - t0))
+    logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1 - t0, nframes / (t1 - t0))
 
     return EXIT_SUCCESS
 
