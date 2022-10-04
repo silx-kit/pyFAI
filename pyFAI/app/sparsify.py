@@ -168,13 +168,13 @@ class Sparsifyer(Thread):
                                   **self.parameters)
                 frames.append(current)
                 self.inqueue.task_done()
-            if self.progress:
-                if len(current.peaks):
-                    self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels/ {len(current.peaks):4} peaks")
+                if self.progress:
+                    if len(current.peaks):
+                        self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels/ {len(current.peaks):4} peaks")
+                    else:
+                        self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels")
                 else:
-                    self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels")
-            else:
-                print(f"{filename} frame #{cnt:04d}, found {current.intensity.size:6d} intense pixels")
+                    print(f"{filename} frame #{cnt:04d}, found {current.intensity.size:6d} intense pixels")
             cnt += 1
 
 class Writer(Thread):
