@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/09/2022"
+__date__ = "30/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -52,13 +52,14 @@ import os
 import threading
 import json
 from collections import namedtuple, OrderedDict
+from .fit2d import convert_to_Fit2d, convert_from_Fit2d 
 from .. import detectors
 from .. import units
 from ..utils.decorators import deprecated
 from ..utils import crc32, deg2rad
 from .. import utils
 from ..io import ponifile, integration_config
-from ..units import CONST_hc
+from ..units import CONST_hc, to_unit
 logger = logging.getLogger(__name__)
 
 try:
@@ -184,27 +185,21 @@ class Geometry(object):
         :param wl_unit: units used for wavelengths
         :return: nice string representing the configuration in use
         """
-        dist_unit = units.to_unit(dist_unit, units.LENGTH_UNITS) or units.l_m
-        ang_unit = units.to_unit(ang_unit, units.ANGLE_UNITS) or units.A_rad
-        wl_unit = units.to_unit(wl_unit, units.LENGTH_UNITS) or units.l_m
+        dist_unit = to_unit(dist_unit, units.LENGTH_UNITS) or units.l_m
+        ang_unit = to_unit(ang_unit, units.ANGLE_UNITS) or units.A_rad
+        wl_unit = to_unit(wl_unit, units.LENGTH_UNITS) or units.l_m
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         lstTxt = [self.detector.__repr__()]
         if self._wavelength:
-            lstTxt.append("Wavelength= %.6e%s" %
-                          (self._wavelength * wl_unit.scale, wl_unit))
-        lstTxt.append(("SampleDetDist= %.6e%s\tPONI= %.6e, %.6e%s\trot1=%.6f"
-                       "  rot2= %.6f  rot3= %.6f %s") %
-                      (self._dist * dist_unit.scale, dist_unit, self._poni1 * dist_unit.scale,
-                       self._poni2 * dist_unit.scale, dist_unit,
-                      self._rot1 * ang_unit.scale, self._rot2 * ang_unit.scale,
-                      self._rot3 * ang_unit.scale, ang_unit))
+            lstTxt.append(f"Wavelength= {self._wavelength * wl_unit.scale:.6e} {wl_unit}")
+        lstTxt.append(f"SampleDetDist= {self._dist * dist_unit.scale:.6e} {dist_unit}\t"
+                       f"PONI= {self._poni1 * dist_unit.scale:.6e}, {self._poni2 * dist_unit.scale:.6e} {dist_unit}\t"
+                       f"rot1={self._rot1 * ang_unit.scale:.6f}  "
+                       f"rot2={self._rot2 * ang_unit.scale:.6f}  "
+                       f"rot3={self._rot3 * ang_unit.scale:.6f} {ang_unit}")
         if self.detector.pixel1:
-            f2d = self.getFit2D()
-            lstTxt.append(("DirectBeamDist= %.3fmm\tCenter: x=%.3f, y=%.3f pix"
-                           "\tTilt=%.3f deg  tiltPlanRotation= %.3f deg") %
-                          (f2d["directDist"], f2d["centerX"], f2d["centerY"],
-                           f2d["tilt"], f2d["tiltPlanRotation"]))
+            lstTxt.append(convert_to_Fit2d(self).__repr__())
         return os.linesep.join(lstTxt)
 
     def check_chi_disc(self, azimuth_range):
@@ -240,10 +235,10 @@ class Geometry(object):
         return False
 
     def normalize_azimuth_range(self, azimuth_range):
-        """Convert the azimuth range from degrees to radians 
-        
+        """Convert the azimuth range from degrees to radians
+
         This method takes care of the position of the discontinuity and adapts the range accordingly!
-        
+
         :param azimuth_range: 2-tuple of float in degrees
         :return: 2-tuple of float in radians in a range such to avoid the discontinuity
         """
@@ -257,12 +252,13 @@ class Geometry(object):
 
     def _correct_parallax(self, d1, d2, p1, p2):
         """Calculate the displacement of pixels due to parallax effect.
+
         :param d1: ndarray of dimention 1/2 containing the Y pixel positions
         :param d2: ndarray of dimention 1/2 containing the X pixel positions
         :param p1: ndarray of dimention 1/1 containing the x pixel positions in meter. MODIFIED IN PLACE!
         :param p2: ndarray of dimention 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
         :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
-        
+
         d1, d2, p1 and p2 should all have the same shape !!!
         p1 and p2 get modified in place !
         """
@@ -719,8 +715,9 @@ class Geometry(object):
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
+        print(unit)
         if unit:
-            unit = units.to_unit(unit)
+            unit = to_unit(unit)
             space = unit.name.split("_")[0]
         else:
             # If no unit is asked, any is OK for extracting the Chi array
@@ -729,7 +726,9 @@ class Geometry(object):
                 ary = self._cached_array.get(space + "_corner")
                 if (ary is not None) and (shape == ary.shape[:2]):
                     return ary
-            space = "r"  # This is the fastest to calculate
+            # This is the fastest to calculate
+            space = "r"  
+            #unit = to_unit("r_m")
         key = space + "_corner"
         if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
@@ -788,6 +787,7 @@ class Geometry(object):
                         else:
                             corners[:shape[0],:shape[1],:, 1] = chi[:shape[0],:shape[1],:]
                         if space is not None:
+                            print(unit)
                             rad = unit.equation(x, y, z, self._wavelength)
                             if rad.shape[:2] == shape:
                                 corners[..., 0] = rad
@@ -867,7 +867,7 @@ class Geometry(object):
             - dim3[1]: azimuthal angle chi
         """
 
-        unit = units.to_unit(unit)
+        unit = to_unit(unit)
         space = unit.name.split("_")[0]
         key = space + "_center"
         ary = self._cached_array.get(key)
@@ -914,7 +914,7 @@ class Geometry(object):
             - dim3[1]: azimuthal angle chi
         """
 
-        unit = units.to_unit(unit)
+        unit = to_unit(unit)
         space = unit.name.split("_")[0] + "_delta"
         ary = self._cached_array.get(space)
 
@@ -1065,7 +1065,7 @@ class Geometry(object):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
-        unit = units.to_unit(unit)
+        unit = to_unit(unit)
         meth_name = unit.get(typ)
         if meth_name and meth_name in dir(Geometry):
             # fast path may be available
@@ -1087,7 +1087,7 @@ class Geometry(object):
         Calculate the sinus of the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
         it's incidence angle is :math:`\\{alpha} = 0` hence :math:`sin(\\{alpha}) = 0`.
-        
+
         Works also for non-flat detectors where the normal of the pixel is considered.
 
         :param d1: 1d or 2d set of points in pixel coord
@@ -1118,7 +1118,7 @@ class Geometry(object):
         Calculate the cosinus of the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
         it's incidence angle is :math:`\\{alpha} = 0` hence :math:`cos(\\{alpha}) = 1`.
-        
+
         Works also for non-flat detectors where the normal of the pixel is considered.
 
         :param d1: 1d or 2d set of points in pixel coord
@@ -1351,7 +1351,7 @@ class Geometry(object):
     def getPyFAI(self):
         """
         Export geometry setup with the geometry of PyFAI
-        
+
         Deprecated, please use get/set_config which is cleaner! when it comes to detector specification
 
         :return: dict with the parameter-set of the PyFAI geometry
@@ -1371,7 +1371,7 @@ class Geometry(object):
     def setPyFAI(self, **kwargs):
         """
         set the geometry from a pyFAI-like dict
-        
+
         Deprecated, please use get/set_config which is cleaner! when it comes to detector specification
         """
         with self._sem:
@@ -1402,46 +1402,17 @@ class Geometry(object):
         :return: dict with parameters compatible with fit2D geometry
         """
         with self._sem:
-            cos_tilt = cos(self._rot1) * cos(self._rot2)
-            sin_tilt = sqrt(1.0 - cos_tilt * cos_tilt)
-            tan_tilt = sin_tilt / cos_tilt
-            # This is tilt plane rotation
-            if sin_tilt == 0:
-                # tilt plan rotation is undefined when there is no tilt!, does not matter
-                cos_tilt = 1.0
-                sin_tilt = 0.0
-                cos_tpr = 1.0
-                sin_tpr = 0.0
-
-            else:
-                cos_tpr = max(-1.0, min(1.0, -cos(self._rot2) * sin(self._rot1) / sin_tilt))
-                sin_tpr = sin(self._rot2) / sin_tilt
-            directDist = 1.0e3 * self._dist / cos_tilt
-            tilt = degrees(arccos(cos_tilt))
-            if sin_tpr < 0:
-                tpr = -degrees(arccos(cos_tpr))
-            else:
-                tpr = degrees(arccos(cos_tpr))
-
-            centerX = (self._poni2 + self._dist * tan_tilt * cos_tpr) / self.pixel2
-            if abs(tilt) < 1e-5:  # in degree
-                centerY = (self._poni1) / self.pixel1
-            else:
-                centerY = (self._poni1 + self._dist * tan_tilt * sin_tpr) / self.pixel1
-            out = self.detector.getFit2D()
-            out["directDist"] = directDist
-            out["centerX"] = centerX
-            out["centerY"] = centerY
-            out["tilt"] = tilt
-            out["tiltPlanRotation"] = tpr
-        return out
+            f2d = convert_to_Fit2d(self)
+        return f2d._asdict()
 
     def setFit2D(self, directDist, centerX, centerY,
                  tilt=0., tiltPlanRotation=0.,
-                 pixelX=None, pixelY=None, splineFile=None):
+                 pixelX=None, pixelY=None, splineFile=None,
+                 detector=None, wavelength=None):
         """
         Set the Fit2D-like parameter set: For geometry description see
         HPR 1996 (14) pp-240
+        https://doi.org/10.1080/08957959608201408
 
         Warning: Fit2D flips automatically images depending on their file-format.
         By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
@@ -1458,42 +1429,27 @@ class Geometry(object):
         :param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
         :param centerX, centerY: pixel position of the beam center
         :param splineFile: name of the file containing the spline
+        :param detector: name of the detector or detector object
         """
+        pixelX = pixelX if pixelX is not None else self.detector.pixel2*1e6
+        pixelY = pixelY if pixelY is not None else self.detector.pixel1*1e6
+        splineFile = splineFile if splineFile is not None else self.detector.splineFile
+        detector = detector if detector is not None else self.detector
+        wavelength = wavelength if wavelength else (
+                        self.wavelength*1e10 if self.wavelength else None)
+        poni = convert_from_Fit2d({"directDist":directDist,
+                                   "centerX":centerX,
+                                   "centerY":centerY,
+                                   "tilt":tilt,
+                                   "tiltPlanRotation":tiltPlanRotation,
+                                   "pixelX":pixelX,
+                                   "pixelY":pixelY,
+                                   "splineFile":splineFile,
+                                   "detector": detector,
+                                   'wavelength':wavelength})
         with self._sem:
-            try:
-                cos_tilt = cos(radians(tilt))
-                sin_tilt = sin(radians(tilt))
-                cos_tpr = cos(radians(tiltPlanRotation))
-                sin_tpr = sin(radians(tiltPlanRotation))
-            except AttributeError as error:
-                logger.error(("Got strange results with tilt=%s"
-                              " and tiltPlanRotation=%s: %s") %
-                             (tilt, tiltPlanRotation, error))
-            if splineFile is None:
-                if pixelX is not None:
-                    self.detector.pixel1 = pixelY * 1.0e-6
-                if pixelY is not None:
-                    self.detector.pixel2 = pixelX * 1.0e-6
-            else:
-                self.detector.set_splineFile(splineFile)
-            self._dist = directDist * cos_tilt * 1.0e-3
-            self._poni1 = centerY * self.pixel1 - directDist * sin_tilt * sin_tpr * 1.0e-3
-            self._poni2 = centerX * self.pixel2 - directDist * sin_tilt * cos_tpr * 1.0e-3
-            rot2 = numpy.arcsin(sin_tilt * sin_tpr)  # or pi-
-            rot1 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt / numpy.sqrt(1.0 - (sin_tpr * sin_tilt) ** 2)))))  # + or -
-            if cos_tpr * sin_tilt > 0:
-                rot1 = -rot1
-            assert abs(cos_tilt - cos(rot1) * cos(rot2)) < 1e-6
-            if tilt == 0.0:
-                rot3 = 0
-            else:
-                rot3 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt * cos_tpr * sin_tpr - cos_tpr * sin_tpr) / numpy.sqrt(10 - sin_tpr * sin_tpr * sin_tilt * sin_tilt))))  # + or -
-                rot3 = numpy.pi / 2.0 - rot3
-            self._rot1 = rot1
-            self._rot2 = rot2
-            self._rot3 = rot3
-            self.reset()
-            return self
+            self._init_from_poni(poni)
+        return self
 
     def setSPD(self, SampleDistance, Center_1, Center_2, Rot_1=0, Rot_2=0, Rot_3=0,
                PSize_1=None, PSize_2=None, splineFile=None, BSize_1=1, BSize_2=1,
@@ -1588,8 +1544,8 @@ class Geometry(object):
         """Export the current geometry in ImageD11 format.
         Please refer to the documentation in doc/source/geometry_conversion.rst
         for the orientation and units of those values.
-        
-        :return: an Ordered dict with those parameters:    
+
+        :return: an Ordered dict with those parameters:
             distance 294662.658 #in nm
             o11 1
             o12 0
@@ -1632,12 +1588,12 @@ class Geometry(object):
         return out
 
     def setImageD11(self, param):
-        """Set the geometry from the parameter set which contains distance, 
-        o11, o12, o21, o22, tilt_x, tilt_y tilt_z, wavelength, y_center, y_size, 
-        z_center and z_size. 
+        """Set the geometry from the parameter set which contains distance,
+        o11, o12, o21, o22, tilt_x, tilt_y tilt_z, wavelength, y_center, y_size,
+        z_center and z_size.
         Please refer to the documentation in doc/source/geometry_conversion.rst
         for the orientation and units of those values.
-        
+
         :param param: dict with the values to set.
         """
         o11 = param.get("o11")
@@ -1670,9 +1626,9 @@ class Geometry(object):
         return self
 
     def getCXI(self):
-        """Export the geometry in the CXI format as defined in 
+        """Export the geometry in the CXI format as defined in
         https://raw.githubusercontent.com/cxidb/CXI/master/cxi_file_format.pdf
-        
+
         :return: dict with the structure of a CXI file to be written into HDF5
         """
         cxi = {"cxi_version": 160}
@@ -1703,8 +1659,8 @@ class Geometry(object):
 
     def setCXI(self, dico):
         """Set the geometry of the azimuthal integrator from a CXI data structure (as dict)
-        
-        :param dico: dictionary with CXI information 
+
+        :param dico: dictionary with CXI information
         """
         detector = dico.get("detector_1", {})
         det = detectors.detector_factory(detector.get("description", "Detector"))
@@ -1804,7 +1760,7 @@ class Geometry(object):
         return quaternion_from_euler(-rot1, -rot2, rot3, axes="sxyz")
 
     def make_headers(self, type_="list"):
-        """Create a configuration for the
+        """Create a configuration / header for the integrated data
 
         :param type: can be "list" or "dict"
         :return: the header with the proper format
@@ -1905,7 +1861,7 @@ class Geometry(object):
         The axis_offset parameter allows correction for the misalignement of
         the polarization plane (or ellipse main axis) and the the detector's X axis.
 
-        :param shape: the shape of the array, 
+        :param shape: the shape of the array,
                     can be guessed most of the time from the detector definition
         :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization)
                     and 1 (where division by 0 could occure at 2th=90, chi=0)
@@ -1913,7 +1869,7 @@ class Geometry(object):
                             detector's X direction (in radians !!!)
         :param with_checksum: calculate also the checksum (used with OpenCL integration)
         :param path: set to numpy to enforce the use of numpy, else uses numexpr (mutithreaded)
-        :return: 2D array with polarization correction (normalization) array 
+        :return: 2D array with polarization correction (normalization) array
                  or namedtuple if with_checksum
 
 
@@ -2036,7 +1992,7 @@ class Geometry(object):
         :return: 2D image reconstructed
 
         """
-        dim1_unit = units.to_unit(dim1_unit)
+        dim1_unit = to_unit(dim1_unit)
         tth = tth / dim1_unit.scale
 
         if shape is None:
@@ -2089,8 +2045,8 @@ class Geometry(object):
         :return: 2D image reconstructed
 
         """
-        dim1_unit = units.to_unit(dim1_unit)
-        dim2_unit = units.to_unit(dim2_unit)
+        dim1_unit = to_unit(dim1_unit)
+        dim2_unit = to_unit(dim2_unit)
         tth = numpy.ascontiguousarray(tth, numpy.float64) / dim1_unit.scale
         chi = numpy.ascontiguousarray(chi, numpy.float64) / dim2_unit.scale
         if shape is None:

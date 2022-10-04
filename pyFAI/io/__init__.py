@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/04/2022"
+__date__ = "07/09/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -68,8 +68,7 @@ except ImportError:
     fabio = None
     logger.error("fabio module missing")
 
-from .nexus import get_isotime, from_isotime, is_hdf5, Nexus, h5py
-
+from .nexus import get_isotime, from_isotime, is_hdf5, Nexus, h5py, save_NXcansas, save_NXmonpd
 # Activating compression has an important performance penalty and,
 # as we are saving Float32, the compression obtained is far from optimal
 #
@@ -980,3 +979,13 @@ class FabioWriter(Writer):
 
     def close(self):
         pass
+
+
+def save_integrate_result(filename, result, title="title", sample="sample", instrument="beamline"):
+    """Dispatcher for saving in different formats
+    """
+    if filename.endswith(".nxs"):
+        raise RuntimeError("Implement Nexus writer")
+    else:
+            writer = DefaultAiWriter(filename, result.poni)
+            writer.write(result)

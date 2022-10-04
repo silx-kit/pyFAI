@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2022"
+__date__ = "30/09/2022"
 __status__ = "development"
 
 import os
@@ -280,7 +280,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         if wavelength is None:
             wavelength = self.wavelength
-        if wavelength <= 0:
+        if wavelength is None or wavelength <= 0.0:
             return [numpy.finfo("float32").max] * len(rings)
         rings = numpy.ascontiguousarray(rings, dtype=numpy.int32)
 
