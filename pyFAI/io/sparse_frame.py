@@ -45,7 +45,7 @@ import numpy
 import fabio
 from .. import version
 from .nexus import Nexus, get_isotime, h5py
-from .json import UnitEncoder
+from ._json import UnitEncoder
 
 try:
     import hdf5plugin

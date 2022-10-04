@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2022"
+__date__ = "04/10/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -56,6 +56,7 @@ import threading
 import time
 from collections import OrderedDict
 import __main__ as main
+from ._json import UnitEncoder 
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
 from .. import version
@@ -287,8 +288,8 @@ class HDF5Writer(Writer):
 
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
-                open("fai_cfg.debug.json", "w").write(json.dumps(self.fai_cfg, indent=4))
-                open("lima_cfg.debug.json", "w").write(json.dumps(self.lima_cfg, indent=4))
+                open("fai_cfg.debug.json", "w").write(json.dumps(self.fai_cfg, indent=4, cls=UnitEncoder))
+                open("lima_cfg.debug.json", "w").write(json.dumps(self.lima_cfg, indent=4, cls=UnitEncoder))
 
             self.fai_cfg["nbpt_rad"] = self.fai_cfg.get("nbpt_rad", 1000)
 
@@ -309,7 +310,7 @@ class HDF5Writer(Writer):
             self.config_grp = self.nxs.new_class(self.process_grp, self.CONFIG, "NXnote")
             self.config_grp.attrs["desc"] = "PyFAI worker configuration"
             self.config_grp["type"] = "text/json"
-            self.config_grp["data"] = json.dumps(self.fai_cfg, indent=2, separators=(",\r\n", ": "))
+            self.config_grp["data"] = json.dumps(self.fai_cfg, indent=2, separators=(",\r\n", ": "), cls=UnitEncoder)
 
             rad_name, rad_unit = str(self.fai_cfg.get("unit", "2th_deg")).split("_", 1)
 
@@ -592,7 +593,7 @@ class DefaultAiWriter(Writer):
 
         if metadata is not None:
             header_lst += ["", "Headers of the input frame:"]
-            header_lst += [i.strip() for i in json.dumps(metadata, indent=2).split("\n")]
+            header_lst += [i.strip() for i in json.dumps(metadata, indent=2, cls=UnitEncoder).split("\n")]
         header = "\n".join(["%s %s" % (hdr, i) for i in header_lst])
 
         return header

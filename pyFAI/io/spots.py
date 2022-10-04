@@ -45,7 +45,7 @@ import numpy
 import fabio
 from .. import version
 from ..units import to_unit
-from .json import UnitEncoder
+from ._json import UnitEncoder
 from .nexus import Nexus, get_isotime, h5py
 
 try:
