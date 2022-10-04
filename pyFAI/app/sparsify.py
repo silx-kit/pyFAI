@@ -118,7 +118,6 @@ class FileReader(Thread):
         for filename, fabioimage in self.filenames.items():
             for frame in fabioimage:
                 self.queue.put(frame.data)
-                time.sleep(1e-3)
             self.queue.put(FileToken(filename))
             if abort.is_set():
                 return
@@ -191,7 +190,7 @@ class Writer(Thread):
                 self.queue.task_done()
                 if token.name is None:
                     return
-                filename = os.path.splitext(token.name)[0]+self.outfile
+                filename = os.path.splitext(token.name)[0]+self.output
             else:
                 save_sparse(filename,
                             token,
