@@ -51,6 +51,7 @@ import argparse
 import time
 import copy
 import signal
+import gc
 from collections import OrderedDict
 import numexpr
 import logging
@@ -115,10 +116,15 @@ class FileReader(Thread):
         
     def run(self):
         "feed all input images into the queue"
-        for filename, fabioimage in self.filenames.items():
+        for filename in list(self.filenames.keys()):
+            fabioimage = self.filenames.pop(filename)
             for frame in fabioimage:
                 self.queue.put(frame.data)
+            if abort.is_set():
+                return
             self.queue.put(FileToken(filename))
+            del fabioimage
+            gc.collect()
             if abort.is_set():
                 return
         self.queue.put(FileToken(None))
