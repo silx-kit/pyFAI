@@ -201,9 +201,9 @@ class Writer(Thread):
                 filename = os.path.splitext(token.name)[0]+self.output
                 sys.stderr.write(f"filename {filename}\n")
             else:
-                # save_sparse(filename,
-                #             token,
-                #             **self.kwargs)
+                save_sparse(filename,
+                            token,
+                            **self.kwargs)
                 self.queue.task_done()
                 del token
 
