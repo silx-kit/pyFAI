@@ -124,6 +124,7 @@ class FileReader(Thread):
             if abort.is_set():
                 return
             self.queue.put(FileToken(filename, "end"))
+            fabioimage.close()
             del fabioimage
             gc.collect()
             if abort.is_set():
