@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/07/2022"
+__date__ = "04/10/2022"
 __status__ = "production"
 
 import os
@@ -244,7 +244,7 @@ def process(options):
 
     unit = to_unit(options.unit)
     if options.radial_range is not None:
-        rrange = [ float(i) for i in options.radial_range]
+        rrange = [ float(i)/unit.scale for i in options.radial_range]
     else:
         rrange = None
 
@@ -324,7 +324,7 @@ def process(options):
         print("Saving: " + options.output)
     logger.debug("Save data")
 
-    parameters["unit"] = unit.name
+    parameters["unit"] = unit
     parameters["error_model"] = options.error_model
 
     if options.polarization is not None:
@@ -348,7 +348,7 @@ def process(options):
               source=options.images if options.save_source else None,
               extra=parameters,
               grid=(options.grid_size, options.zig_zag),
-              powder=integrator.bin_centers * unit.scale if options.save_powder else None)
+              powder=integrator.bin_centers if options.save_powder else None)
 
     if options.profile:
         try:

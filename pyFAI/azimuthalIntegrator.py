@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2022"
+__date__ = "04/10/2022"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -540,6 +540,7 @@ class AzimuthalIntegrator(Geometry):
                                                     unit=unit,
                                                     empty=empty)
 
+    @deprecated(since_version="0.22", only_once=True, replacement="setup_sparse_integrator", deprecated_since="0.22.0")
     def setup_LUT(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
                   mask_checksum=None, unit=units.TTH,
@@ -551,6 +552,7 @@ class AzimuthalIntegrator(Geometry):
                                             split=split, algo="LUT",
                                             empty=empty, scale=scale)
 
+    @deprecated(since_version="0.22", only_once=True, replacement="setup_sparse_integrator", deprecated_since="0.22.0")
     def setup_CSR(self, shape, npt, mask=None,
                   pos0_range=None, pos1_range=None,
                   mask_checksum=None, unit=units.TTH,
@@ -562,7 +564,7 @@ class AzimuthalIntegrator(Geometry):
                                             split=split, algo="CSR",
                                             empty=empty, scale=scale)
 
-    @deprecated(since_version="0.20", only_once=True, deprecated_since="0.20.0")
+    @deprecated(since_version="0.20", only_once=True, replacement="integrate1d_ng", deprecated_since="0.20.0")
     def integrate1d_legacy(self, data, npt, filename=None,
                            correctSolidAngle=True,
                            variance=None, error_model=None,

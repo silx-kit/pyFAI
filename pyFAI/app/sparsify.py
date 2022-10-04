@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/07/2022"
+__date__ = "04/10/2022"
 __status__ = "production"
 
 import os
@@ -239,18 +239,17 @@ def process(options):
 
     unit = to_unit(options.unit)
     if options.radial_range is not None:
-        rrange = [ float(i) for i in options.radial_range]
+        rrange = [ float(i)/unit.scale for i in options.radial_range]
     else:
         rrange = None
-
-    integrator = ai.setup_CSR(shape,
-                              options.bins,
-                              mask=mask,
-                              pos0_range=rrange,
-                              unit=unit,
-                              split="no",
-                              scale=False)
-
+    integrator = ai.setup_sparse_integrator(shape,
+                                            options.bins,
+                                            mask=mask,
+                                            pos0_range=rrange,
+                                            unit=unit,
+                                            split="no",
+                                            algo="CSR",
+                                            scale=False)
     logger.debug("Initialize the OpenCL device")
     if pb:
         pb.update(0, message="Initialize the OpenCL device")
@@ -261,12 +260,13 @@ def process(options):
         ctx = ocl.create_context(devicetype=options.device_type)
 
     logger.debug("Initialize the sparsificator")
+    radius2d = ai._cached_array[unit.name.split("_")[0] + "_center"] # * unit.scale
     pf = OCL_PeakFinder(integrator.lut,
                         image_size=shape[0] * shape[1],
                         empty=options.dummy,
                         unit=unit,
                         bin_centers=integrator.bin_centers,
-                        radius=ai._cached_array[unit.name.split("_")[0] + "_center"],
+                        radius=radius2d,
                         mask=mask,
                         ctx=ctx,
                         profile=options.profile,
@@ -324,7 +324,7 @@ def process(options):
         print("Saving: " + options.output)
     logger.debug("Save data")
 
-    parameters["unit"] = unit.name.split("_")[0]
+    parameters["unit"] = unit
     parameters["error_model"] = frames[0].error_model.name if frames else options.error_model
 
     if options.polarization is not None:

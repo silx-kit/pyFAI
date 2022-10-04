@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2022"
+__date__ = "04/10/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -45,6 +45,7 @@ import numpy
 import fabio
 from .. import version
 from ..units import to_unit
+from .json import UnitEncoder
 from .nexus import Nexus, get_isotime, h5py
 
 try:
@@ -136,7 +137,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
             config_grp["type"] = "text/json"
             parameters = OrderedDict([("geometry", ai.get_config()),
                                       ("peakfinder", extra)])
-            config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "))
+            config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "), cls=UnitEncoder)
 
             detector_grp = nexus.new_class(instrument, ai.detector.name.replace(" ", "_"), "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)
@@ -206,7 +207,7 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
         process = result.create_group("process_1")
         process.attrs["NX_class"] = "NXprocess"
         if extra:
-            process["metadata"] = json.dumps(extra, indent=2)
+            process["metadata"] = json.dumps(extra, indent=2, cls=UnitEncoder)
             process["metadata"].attrs["type"] = "text/json"
         process.create_dataset("command",
                                data=numpy.array(sys.argv, dtype=h5py.special_dtype(vlen=str)),
@@ -217,7 +218,7 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
 
         if powder is not None:
             unit = to_unit(extra.get("unit", "r_mm"))
-            r1d = powder
+            r1d = powder * unit.scale
             dr = (r1d[1:] - r1d[:-1]).mean()
             rng = [r1d[0] - dr * 0.5, r1d[-1] + dr * 0.5]
 
