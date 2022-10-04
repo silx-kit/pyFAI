@@ -118,11 +118,12 @@ class FileReader(Thread):
         "feed all input images into the queue"
         for filename in list(self.filenames.keys()):
             fabioimage = self.filenames.pop(filename)
+            self.queue.put(FileToken(filename, "start"))
             for frame in fabioimage:
                 self.queue.put(frame.data)
             if abort.is_set():
                 return
-            self.queue.put(FileToken(filename))
+            self.queue.put(FileToken(filename, "end"))
             del fabioimage
             gc.collect()
             if abort.is_set():
@@ -146,24 +147,24 @@ class Sparsifyer(Thread):
         cnt = 0
         while not abort.is_set():
             try:
-                intensity = self.inqueue.get_nowait()
+                token = self.inqueue.get_nowait()
             except Empty:
                 time.sleep(1e-3)
                 continue
-            if isinstance(intensity, FileToken):
-                if intensity.kind == "start":
-                    self.outqueue.put(intensity)
-                    if intensity.name is None:
+            if isinstance(token, FileToken):
+                if token.kind == "start":
+                    self.outqueue.put(token)
+                    if token.name is None:
                         self.inqueue.task_done()
                         return
-                    filename = os.path.basename(intensity.name)
-                elif intensity.kind == "end":
+                    filename = os.path.basename(token.name)
+                elif token.kind == "end":
                     self.outqueue.put(frames)
                     frames = []
                 self.inqueue.task_done()
             else:
-                current = self.pf.sparsify(intensity,
-                                  variance=None if self.variance is None else self.variance(intensity),
+                current = self.pf.sparsify(token,
+                                  variance=None if self.variance is None else self.variance(token),
                                   **self.parameters)
                 frames.append(current)
                 self.inqueue.task_done()
@@ -190,13 +191,14 @@ class Writer(Thread):
             try:
                 token = self.queue.get_nowait()
             except Empty:
-                time.sleep(1e-3)
+                time.sleep(1)
                 continue
             if isinstance(token, FileToken):
                 self.queue.task_done()
                 if token.name is None:
                     return
                 filename = os.path.splitext(token.name)[0]+self.output
+                sys.stderr.write(f"filename {filename}\n")
             else:
                 save_sparse(filename,
                             token,
