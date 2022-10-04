@@ -204,6 +204,7 @@ class Writer(Thread):
                             token,
                             **self.kwargs)
                 self.queue.task_done()
+                del token
 
             
 def expand_args(args):
@@ -427,6 +428,7 @@ def process(options):
     queue_read = Queue()
     queue_process = Queue()
     reader = FileReader(dense, queue_read)
+    del dense
     sparsifyer = Sparsifyer(queue_read, queue_process, pf, variance, parameters, pb)
     parameters["unit"] = unit
     parameters["error_model"] = options.error_model
@@ -451,8 +453,8 @@ def process(options):
     
     reader.join()
     sparsifyer.join()
-    writer.join()
     t1 = time.perf_counter()
+    writer.join()
 
     if options.profile:
         try:
