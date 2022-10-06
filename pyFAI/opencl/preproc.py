@@ -348,7 +348,7 @@ class OCL_Preproc(OpenclProcessing):
             cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
             events += [EventDescription("copy raw", dest), EventDescription("cast to float", cast_to_float)]
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         self.on_device[dest] = data
 
     def process(self, image,

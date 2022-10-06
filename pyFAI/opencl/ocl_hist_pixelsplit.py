@@ -341,7 +341,7 @@ class OCL_Hist_Pixelsplit(object):
             events.append(("copy D->H outMerge", ev))
             ev.wait()
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         return outMerge, outData, outCount
 
     def log_profile(self):

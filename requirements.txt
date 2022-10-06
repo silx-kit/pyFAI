@@ -1,3 +1,4 @@
+setuptools<60
 numpy
 cython
 fabio

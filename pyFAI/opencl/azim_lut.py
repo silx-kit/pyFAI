@@ -312,7 +312,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
             events += [EventDescription("copy raw %s" % dest, copy_image), EventDescription("cast to float", cast_to_float)]
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum
 
@@ -434,7 +434,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
                 events.append(EventDescription("copy D->H image", ev))
                 if self.profile:
-                    self.events += events
+                    self.profile_multi(events)
                 ev.wait()
                 return image
             integrate = self.kernels.lut_integrate(self.queue, self.wdim_bins, self.workgroup_size, *list(kw_int.values()))
@@ -468,7 +468,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 events.append(EventDescription("copy D->H sum_count", ev))
             ev.wait()
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         return merged, sum_data, sum_count
 
     integrate = integrate_legacy
@@ -659,6 +659,6 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                          merged[:, 4].reshape(outshape).T,
                                          merged[:, 6].reshape(outshape).T)
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         return res
 

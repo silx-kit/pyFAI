@@ -263,7 +263,7 @@ class Separator(OpenclProcessing):
 
         if self.profile:
             with self.sem:
-                self.events += events
+                self.profile_multi(events)
         return self.cl_mem["input_data"]
 
     def sort_horizontal(self, data, dummy=None):
@@ -311,7 +311,7 @@ class Separator(OpenclProcessing):
 
         if self.profile:
             with self.sem:
-                self.events += events
+                self.profile_multi(events)
         return self.cl_mem["input_data"]
 
     def filter_vertical(self, data, dummy=None, quantile=0.5):
@@ -440,7 +440,7 @@ class Separator(OpenclProcessing):
             evt = self.kernels.mean_std_vertical(self.queue, ws, (wg, 1), *kargs.values())
             events.append(EventDescription("mean_std_vertical", evt))
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         return self.cl_mem["vector_vertical"], self.cl_mem["vector_vertical_2"]
 
     def mean_std_horizontal(self, data, dummy=None):
@@ -468,7 +468,7 @@ class Separator(OpenclProcessing):
             evt = self.kernels.mean_std_horizontal(self.queue, ws, (1, wg), *kargs.values())
             events.append(EventDescription("mean_std_horizontal", evt))
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         return self.cl_mem["vector_horizontal"], self.cl_mem["vector_horizontal_2"]
 
     def sigma_clip_vertical(self, data, sigma_lo=3, sigma_hi=None, max_iter=5, dummy=None):
@@ -502,7 +502,7 @@ class Separator(OpenclProcessing):
             evt = self.kernels.sigma_clip_vertical(self.queue, ws, (wg, 1), *kargs.values())
             events.append(EventDescription("sigma_clip_vertical", evt))
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         return self.cl_mem["vector_vertical"], self.cl_mem["vector_vertical_2"]
 
     def sigma_clip_horizontal(self, data, sigma_lo=3, sigma_hi=None, max_iter=5, dummy=None):
@@ -534,5 +534,5 @@ class Separator(OpenclProcessing):
             evt = self.kernels.sigma_clip_horizontal(self.queue, ws, (1, wg), *kargs.values())
             events.append(EventDescription("sigma_clip_horizontal", evt))
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         return self.cl_mem["vector_horizontal"], self.cl_mem["vector_horizontal_2"]

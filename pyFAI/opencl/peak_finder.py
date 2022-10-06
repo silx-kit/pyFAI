@@ -327,7 +327,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
         events.append(EventDescription("csr_sigma_clip4", integrate))
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
 
     def _count_intense(self, noise=1.0, cutoff_pick=3.0, radial_range=None):
         """
@@ -371,7 +371,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         ev = pyopencl.enqueue_copy(self.queue, cnt, self.cl_mem["counter"])
         events.append(EventDescription("copy D->H counter", ev))
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         return cnt[0]
 
     def _count_peak(self, data, dark=None, dummy=None, delta_dummy=None,
@@ -487,7 +487,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         ev = pyopencl.enqueue_copy(self.queue, cnt, self.cl_mem["counter"])
         events.append(EventDescription("copy D->H counter", ev))
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         return cnt[0]
 
 #==================================================
@@ -990,7 +990,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                 events += [EventDescription("copy raw H->D " + dest, copy_image),
                            EventDescription("cast " + kernel_name, cast_to_float)]
         if self.profile:
-            self.events += events
+            self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum
 
