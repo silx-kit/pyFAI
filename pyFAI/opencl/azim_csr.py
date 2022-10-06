@@ -592,9 +592,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if sum_count is not None:
                 ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
                 events.append(EventDescription("copy D->H sum_count", ev))
-            # ev.wait()
-        if self.profile:
-            self.profile_multi(events)
+        self.profile_multi(events)
         return merged, sum_data, sum_count
 
     integrate = integrate_legacy
@@ -811,8 +809,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                          merged[:, 0].reshape(outshape).T, merged[:, 2].reshape(outshape).T, merged[:, 4].reshape(outshape).T, merged[:, 6].reshape(outshape).T,
                                          std, sem, merged[:, 7].reshape(outshape).T)
 
-        if self.profile:
-            self.profile_multi(events)
+        self.profile_multi(events)
         return res
 
     def sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,
@@ -1007,8 +1004,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
             events.append(EventDescription("copy D->H merged8", ev))
-        if self.profile:
-            self.profile_multi(events)
+        self.profile_multi(events)
         res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
                              std, sem, merged[:, 7])
         return res
