@@ -43,10 +43,9 @@ import numpy
 from . import pyopencl
 if pyopencl is None:
     raise ImportError("pyopencl is not installed")
-from . import mf, processing
+from . import mf, processing, OpenclProcessing
 from ..containers import ErrorModel
 EventDescription = processing.EventDescription
-OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
 
 

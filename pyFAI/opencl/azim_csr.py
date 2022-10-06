@@ -42,10 +42,9 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
-from . import processing
+from . import processing, OpenclProcessing
 from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
-OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
 
 logger = logging.getLogger(__name__)

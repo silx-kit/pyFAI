@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "30/06/2022"
+__date__ = "06/10/2022"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -47,11 +47,10 @@ else:
     raise ImportError("pyopencl is not installed")
 
 from . import allocate_cl_buffers, release_cl_buffers, kernel_workgroup_size
-from . import concatenate_cl_kernel, get_x87_volatile_option, processing
+from . import concatenate_cl_kernel, get_x87_volatile_option, processing, OpenclProcessing
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from ..utils.decorators import deprecated
 EventDescription = processing.EventDescription
-OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
 from ..utils import calc_checksum
 logger = logging.getLogger(__name__)

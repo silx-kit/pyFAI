@@ -33,7 +33,7 @@ separation on GPU.
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "31/05/2021"
+__date__ = "06/10/2022"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,9 +45,8 @@ import numpy
 from . import ocl
 if ocl:
     import pyopencl.array
-    from . import processing
+    from . import processing, OpenclProcessing
     EventDescription = processing.EventDescription
-    OpenclProcessing = processing.OpenclProcessing
     BufferDescription = processing.BufferDescription
 else:
     raise ImportError("pyopencl is not installed or no device is available")
