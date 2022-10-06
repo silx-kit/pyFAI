@@ -220,7 +220,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param normalization_factor: divide raw signal by this value
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping. 4-5 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
-
+        :return: list of event to wait for.
         """
         events = []
         self.send_buffer(data, "image")
@@ -326,10 +326,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         wdim_bins = (self.bins * wg_min),
         integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
         events.append(EventDescription("csr_sigma_clip4", integrate))
-        if self.profile:
-            self.profile_multi(events)
+        return events
 
-    def _count_intense(self, noise=1.0, cutoff_pick=3.0, radial_range=None):
+    def _count_intense(self, noise=1.0, cutoff_pick=3.0, radial_range=None, events=None):
         """
         Count the number of high-pixel by:
         * reconstruct the background in 2D
@@ -342,10 +341,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
+        :param events: list of OpenCL events for timing
         :return: number of pixel of high intensity found
         """
-
-        events = []
+        if events is None:
+            events = []
         # now perform the calc_from_1d on the device and count the number of pixels
         memset = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset))
@@ -370,8 +370,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         cnt = numpy.empty(1, dtype=numpy.int32)
         ev = pyopencl.enqueue_copy(self.queue, cnt, self.cl_mem["counter"])
         events.append(EventDescription("copy D->H counter", ev))
-        if self.profile:
-            self.profile_multi(events)
+        self.profile_multi(events)
         return cnt[0]
 
     def _count_peak(self, data, dark=None, dummy=None, delta_dummy=None,
@@ -416,7 +415,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param connected: number of pixels above threshold in local patch
         :return: number of pixel of high intensity found
         """
-        self._sigma_clip(data, dark, dummy, delta_dummy,
+        events = self._sigma_clip(data, dark, dummy, delta_dummy,
                variance, dark_variance,
                flat, solidangle, polarization, absorption,
                dark_checksum, flat_checksum, solidangle_checksum,
@@ -424,9 +423,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                safe, error_model,
                normalization_factor,
                cutoff_clip, cycle)
-        return self._peak_picking(data, noise, cutoff_peak, radial_range, patch_size, connected)
+        return self._peak_picking(data, noise, cutoff_peak, radial_range, patch_size, connected,
+                                  events=events)
 
-    def _peak_picking(self, data, noise, cutoff_peak, radial_range=None, patch_size=3, connected=3):
+    def _peak_picking(self, data, noise, cutoff_peak, radial_range=None, patch_size=3, connected=3,
+                      events=None):
         """This calls only the peak-picking kernel, unlocked
 
         :param data: input 2d image 
@@ -437,7 +438,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param connected: number of pixels above threshold in local patch
         :return: number of pixel of high intensity found
         """
-        events = []
+        if events is None:
+            events = []
         # reset the count of the number of pixels
         memset = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset))
@@ -486,8 +488,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         cnt = numpy.empty(1, dtype=numpy.int32)
         ev = pyopencl.enqueue_copy(self.queue, cnt, self.cl_mem["counter"])
         events.append(EventDescription("copy D->H counter", ev))
-        if self.profile:
-            self.profile_multi(events)
+        self.profile_multi(events)
         return cnt[0]
 
 #==================================================
@@ -542,10 +543,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             else:
                 error_model = ErrorModel.VARIANCE
         with self.sem:
-            self._sigma_clip(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
+            events = self._sigma_clip(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
                              dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
                              safe, error_model, normalization_factor, cutoff_clip, cycle)
-            count = self._count_intense(noise, cutoff_pick, radial_range)
+            count = self._count_intense(noise, cutoff_pick, radial_range, events=events)
         return count
 
     count = count_intense
@@ -614,7 +615,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 error_model = ErrorModel.VARIANCE
 
         with self.sem:
-            self._sigma_clip(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
+            events = self._sigma_clip(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
                              dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
                              safe, error_model, normalization_factor, cutoff_clip, cycle)
 
@@ -622,7 +623,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             background_std = numpy.empty(self.bins, dtype=numpy.float32)
             ev1 = pyopencl.enqueue_copy(self.queue, background_avg, self.cl_mem["averint"])
             ev2 = pyopencl.enqueue_copy(self.queue, background_std, self.cl_mem["std"])
-            events = [EventDescription("copy D->H background_avg", ev1),
+            events += [EventDescription("copy D->H background_avg", ev1),
                            EventDescription("copy D->H background_std", ev2)]
 
             # Perform first peak-picking before sparsification because it does not mangle the preproc4 array
