@@ -129,7 +129,9 @@ class FileReader(Thread):
             gc.collect()
             if abort.is_set():
                 return
-        self.queue.put(FileToken(None))
+        sys.stderr.write("End of reading\n")
+        sys.stderr.flush()
+        self.queue.put(FileToken())
 
 
 class PeakFinder(Thread):
@@ -147,17 +149,19 @@ class PeakFinder(Thread):
         filename = ""
         frames = []
         cnt = 0
+        last_update = time.perf_counter()
         while not abort.is_set():
             try:
-                token = self.inqueue.get_nowait()
+                token = self.inqueue.get_nowait(block=False, timeout=1e-3)
             except Empty:
-                time.sleep(1e-3)
                 continue
             if isinstance(token, FileToken):
                 if token.kind == "start":
                     self.outqueue.put(token)
                     if token.name is None:
                         self.inqueue.task_done()
+                        sys.stderr.write("End of processing\n")
+                        sys.stderr.flush()
                         return
                     filename = os.path.basename(token.name)
                 elif token.kind == "end":
@@ -170,10 +174,13 @@ class PeakFinder(Thread):
                                   **self.parameters)
                 frames.append(current)
                 self.inqueue.task_done()
-                if self.progress:
-                    self.progress.update(cnt, message=f"{filename} frame #{len(frames):04d}: {len(current):4d} peaks")
-                else:
-                    print(f"{filename} frame #{len(frames):04d}, found {len(current):4d} peaks")
+                now = time.perf_counter()
+                if now>last_update+0.1:
+                    last_update = now
+                    if self.progress:
+                        self.progress.update(cnt, message=f"{filename} frame #{len(frames):04d}: {len(current):4d} peaks")
+                    else:
+                        print(f"{filename} frame #{len(frames):04d}, found {len(current):4d} peaks")
             cnt += 1
 
 
@@ -190,15 +197,21 @@ class Writer(Thread):
         filename = self.output
         while not abort.is_set():
             try:
-                token = self.queue.get_nowait()
+                token = self.queue.get(block=False, timeout=1.0)
             except Empty:
-                time.sleep(1)
                 continue
             if isinstance(token, FileToken):
                 self.queue.task_done()
                 if token.name is None:
+                    sys.stderr.write("End of writing\n")
+                    sys.stderr.flush()
                     return
-                filename = os.path.splitext(token.name)[0] + self.output
+                if "{basename}" in self.output:
+                    base = os.path.basename(os.path.splitext(token.name)[0])
+                    filename = self.output.replace("{basename}", base)
+                else:
+                    filename = os.path.splitext(token.name)[0] + self.output
+
                 sys.stderr.write(f"filename {filename}\n")
             else:
                 self.save(filename,
@@ -463,11 +476,16 @@ def process(options):
     reader.start()
     peakfinder.start()
     writer.start()
-
     reader.join()
+    sys.stderr.write("Reader finished\n")
+    sys.stderr.flush()
     peakfinder.join()
     t1 = time.perf_counter()
+    sys.stderr.write("Processing finished\n")
+    sys.stderr.flush()
     writer.join()
+    sys.stderr.write("Writing finished\n")
+    sys.stderr.flush()
 
     if options.profile:
         try:

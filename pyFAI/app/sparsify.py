@@ -131,7 +131,7 @@ class FileReader(Thread):
             gc.collect()
             if abort.is_set():
                 return
-        self.queue.put(FileToken(None))
+        self.queue.put(FileToken())
 
 
 class Sparsifyer(Thread):
