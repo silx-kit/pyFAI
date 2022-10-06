@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "06/10/2022"
 __status__ = "production"
 
 import os
@@ -86,10 +86,14 @@ EXIT_ARGUMENT_FAILURE = 2
 FileToken = namedtuple("FileToken", "name kind", defaults=(None, None))
 
 abort = Event()
+
+
 def sigterm_handler(_signo, _stack_frame):
     sys.stderr.write(f"Caught signal {_signo}, quitting !\n")
     sys.stderr.flush()
     abort.set()
+
+
 signal.signal(signal.SIGTERM, sigterm_handler)
 signal.signal(signal.SIGINT, sigterm_handler)
 
@@ -98,6 +102,7 @@ class FileReader(Thread):
     """Read all images in a file and enqueue the image.
     Ends with an EndOfFileToken
     """
+
     def __init__(self, filenames, queue):
         """
         :param filenames: list of multi-frame fabio objects.
@@ -106,11 +111,11 @@ class FileReader(Thread):
         Thread.__init__(self, name="FileReader")
         self.queue = queue
         self.filenames = filenames
-        
+
     def run(self):
         "feed all input images into the queue"
         for filename in list(self.filenames.keys()):
-            while self.queue.qsize>100:
+            while self.queue.qsize > 100:
                time.sleep(0.1)
             fabioimage = self.filenames.pop(filename)
             self.queue.put(FileToken(filename, "start"))
@@ -128,6 +133,7 @@ class FileReader(Thread):
 
 
 class PeakFinder(Thread):
+
     def __init__(self, inqueue, outqueue, pf, variance, parameters, progress):
         Thread.__init__(self, name="PeakFinder")
         self.inqueue = inqueue
@@ -136,7 +142,7 @@ class PeakFinder(Thread):
         self.variance = variance
         self.parameters = copy.copy(parameters)
         self.progress = progress
-        
+
     def run(self):
         filename = ""
         frames = []
@@ -165,13 +171,14 @@ class PeakFinder(Thread):
                 frames.append(current)
                 self.inqueue.task_done()
                 if self.progress:
-                    self.progress.update(cnt, message=f"{filename} frame #{len(frames):04d}: {len(current):4d} peaks")                    
+                    self.progress.update(cnt, message=f"{filename} frame #{len(frames):04d}: {len(current):4d} peaks")
                 else:
                     print(f"{filename} frame #{len(frames):04d}, found {len(current):4d} peaks")
             cnt += 1
 
 
 class Writer(Thread):
+
     def __init__(self, queue, output, save, kwargs):
         Thread.__init__(self, name="writer")
         self.queue = queue
@@ -191,7 +198,7 @@ class Writer(Thread):
                 self.queue.task_done()
                 if token.name is None:
                     return
-                filename = os.path.splitext(token.name)[0]+self.output
+                filename = os.path.splitext(token.name)[0] + self.output
                 sys.stderr.write(f"filename {filename}\n")
             else:
                 self.save(filename,
@@ -236,8 +243,8 @@ def parse():
     group = parser.add_argument_group("main arguments")
 #     group.add_argument("-l", "--list", action="store_true", dest="list", default=None,
 #                        help="show the list of available formats and exit")
-    group.add_argument("-o", "--output", default='spots.h5', type=str,
-                       help="Output filename")
+    group.add_argument("-o", "--output", default='{basename}_spots.h5', type=str,
+                       help="Replacement pattern for output file, like `{basename}_spots.h5`")
     group.add_argument("--format", default='cxi', type=str,
                        help="Output file format, can be `nexus` (former default) or `cxi` (current default)")
     group.add_argument("--save-source", action='store_true', dest="save_source", default=False,
@@ -363,11 +370,11 @@ def process(options):
         ai.detector.mask = mask
     else:
         mask = ai.detector.mask
-    shape = dense[list(dense.keys())[0]].shape #Assume they are all the same
+    shape = dense[list(dense.keys())[0]].shape  # Assume they are all the same
 
     unit = to_unit(options.unit)
     if options.radial_range is not None:
-        rrange = [ float(i)/unit.scale for i in options.radial_range]
+        rrange = [ float(i) / unit.scale for i in options.radial_range]
     else:
         rrange = None
     integrator = ai.setup_sparse_integrator(shape,
@@ -429,17 +436,8 @@ def process(options):
     del dense
     peakfinder = PeakFinder(queue_read, queue_process, pf, variance, parameters, pb)
 
-    t1 = time.perf_counter()
-    if pb:
-        pb.update(nframes, message="Saving: " + options.output)
-        pb.clear()
-    else:
-        print("Saving: " + options.output)
-    logger.debug("Save data")
-
     parameters["unit"] = unit
     parameters["error_model"] = options.error_model
-
     if options.polarization is not None:
         parameters.pop("polarization")
         parameters.pop("polarization_checksum")
@@ -463,11 +461,11 @@ def process(options):
     writer = Writer(queue_process, options.output, save_spots, kwargs)
     t0 = time.perf_counter()
     reader.start()
-    sparsifyer.start()
+    peakfinder.start()
     writer.start()
-    
+
     reader.join()
-    sparsifyer.join()
+    peakfinder.join()
     t1 = time.perf_counter()
     writer.join()
 

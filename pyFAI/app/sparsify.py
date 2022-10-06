@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "06/10/2022"
 __status__ = "production"
 
 import os
@@ -52,7 +52,7 @@ import time
 import copy
 import signal
 import gc
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 import numexpr
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -88,10 +88,14 @@ start_time = time.time()
 FileToken = namedtuple("FileToken", "name kind", defaults=(None, None))
 
 abort = Event()
+
+
 def sigterm_handler(_signo, _stack_frame):
     sys.stderr.write(f"Caught signal {_signo}, quitting !\n")
     sys.stderr.flush()
     abort.set()
+
+
 signal.signal(signal.SIGTERM, sigterm_handler)
 signal.signal(signal.SIGINT, sigterm_handler)
 
@@ -100,6 +104,7 @@ class FileReader(Thread):
     """Read all images in a file and enqueue the image.
     Ends with an EndOfFileToken
     """
+
     def __init__(self, filenames, queue):
         """
         :param filenames: list of multi-frame fabio objects.
@@ -108,11 +113,11 @@ class FileReader(Thread):
         Thread.__init__(self, name="FileReader")
         self.queue = queue
         self.filenames = filenames
-        
+
     def run(self):
         "feed all input images into the queue"
         for filename in list(self.filenames.keys()):
-            while self.queue.qsize>100:
+            while self.queue.qsize > 100:
                time.sleep(0.1)
             fabioimage = self.filenames.pop(filename)
             self.queue.put(FileToken(filename, "start"))
@@ -130,6 +135,7 @@ class FileReader(Thread):
 
 
 class Sparsifyer(Thread):
+
     def __init__(self, inqueue, outqueue, pf, variance, parameters, progress):
         Thread.__init__(self, name="Sparsifyer")
         self.inqueue = inqueue
@@ -138,7 +144,7 @@ class Sparsifyer(Thread):
         self.variance = variance
         self.parameters = copy.copy(parameters)
         self.progress = progress
-        
+
     def run(self):
         filename = ""
         frames = []
@@ -177,6 +183,7 @@ class Sparsifyer(Thread):
 
 
 class Writer(Thread):
+
     def __init__(self, queue, output, kwargs):
         Thread.__init__(self, name="writer")
         self.queue = queue
@@ -195,7 +202,12 @@ class Writer(Thread):
                 self.queue.task_done()
                 if token.name is None:
                     return
-                filename = os.path.splitext(token.name)[0]+self.output
+
+                if "{basename}" in self.output:
+                    base = os.path.basename(os.path.splitext(token.name)[0])
+                    filename = self.output.replace("{basename}", base)
+                else:
+                    filename = os.path.splitext(token.name)[0] + self.output
                 sys.stderr.write(f"filename {filename}\n")
             else:
                 save_sparse(filename,
@@ -204,7 +216,7 @@ class Writer(Thread):
                 self.queue.task_done()
                 del token
 
-            
+
 def expand_args(args):
     """
     Takes an argv and expand it (under Windows, cmd does not convert *.tif into
@@ -240,8 +252,8 @@ def parse():
     group = parser.add_argument_group("main arguments")
 #     group.add_argument("-l", "--list", action="store_true", dest="list", default=None,
 #                        help="show the list of available formats and exit")
-    group.add_argument("-o", "--output", default='_sparse.h5', type=str,
-                       help="Suffix for output filename")
+    group.add_argument("-o", "--output", default='{basename}_sparse.h5', type=str,
+                       help="Replacement pattern for output file, like `{basename}_sparse.h5`")
     group.add_argument("--save-source", action='store_true', dest="save_source", default=False,
                        help="save the path for all source files")
 
@@ -361,11 +373,11 @@ def process(options):
         ai.detector.mask = mask
     else:
         mask = ai.detector.mask
-    shape = dense[list(dense.keys())[0]].shape #Assume they are all the same
+    shape = dense[list(dense.keys())[0]].shape  # Assume they are all the same
 
     unit = to_unit(options.unit)
     if options.radial_range is not None:
-        rrange = [ float(i)/unit.scale for i in options.radial_range]
+        rrange = [ float(i) / unit.scale for i in options.radial_range]
     else:
         rrange = None
     integrator = ai.setup_sparse_integrator(shape,
@@ -448,7 +460,7 @@ def process(options):
     reader.start()
     sparsifyer.start()
     writer.start()
-    
+
     reader.join()
     sparsifyer.join()
     t1 = time.perf_counter()
