@@ -117,8 +117,8 @@ class FileReader(Thread):
     def run(self):
         "feed all input images into the queue"
         for filename in list(self.filenames.keys()):
-            while self.queue.qsize > 100:
-               time.sleep(0.1)
+            while self.queue.qsize() > 100:
+                time.sleep(0.1)
             fabioimage = self.filenames.pop(filename)
             self.queue.put(FileToken(filename, "start"))
             for frame in fabioimage:
