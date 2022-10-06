@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "13/07/2022"
+__date__ = "06/10/2022"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -414,7 +414,7 @@ class OCL_Preproc(OpenclProcessing):
             else:
                 dest = out
                 assert dest.dtype == numpy.float32
-                assert dest.shape == dshape 
+                assert dest.shape == dshape
 
             kwargs = self.cl_kernel_args[kernel_name]
             kwargs["do_dark"] = do_dark
@@ -428,8 +428,8 @@ class OCL_Preproc(OpenclProcessing):
 
             copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["output"])
             copy_result.wait()
-            if self.profile:
-                self.events += [EventDescription("preproc", evt), EventDescription("copy result", copy_result)]
+            self.profile_multi([EventDescription("preproc", evt),
+                                EventDescription("copy result", copy_result)])
         return dest
 
     def __copy__(self):

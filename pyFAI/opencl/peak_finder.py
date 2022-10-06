@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "30/06/2022"
+__date__ = "06/10/2022"
 __copyright__ = "2014-2022, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -547,8 +547,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                              safe, error_model, normalization_factor, cutoff_clip, cycle)
             count = self._count_intense(noise, cutoff_pick, radial_range)
         return count
+
     count = count_intense
-    
+
     def sparsify(self, data, dark=None, dummy=None, delta_dummy=None,
                  variance=None, dark_variance=None,
                  flat=None, solidangle=None, polarization=None, absorption=None,
@@ -611,7 +612,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 logger.warning("Nor variance nor error-model is provided ... expect garbage-out")
             else:
                 error_model = ErrorModel.VARIANCE
-        
+
         with self.sem:
             self._sigma_clip(data, dark, dummy, delta_dummy, variance, dark_variance, flat, solidangle, polarization, absorption,
                              dark_checksum, flat_checksum, solidangle_checksum, polarization_checksum, absorption_checksum, dark_variance_checksum,
@@ -621,11 +622,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             background_std = numpy.empty(self.bins, dtype=numpy.float32)
             ev1 = pyopencl.enqueue_copy(self.queue, background_avg, self.cl_mem["averint"])
             ev2 = pyopencl.enqueue_copy(self.queue, background_std, self.cl_mem["std"])
-            if self.profile:
-                self.events += [ EventDescription("copy D->H background_avg", ev1),
-                                 EventDescription("copy D->H background_std", ev2)]
+            events = [EventDescription("copy D->H background_avg", ev1),
+                           EventDescription("copy D->H background_std", ev2)]
 
-            #Perform first peak-picking before sparsification because it does not mangle the preproc4 array
+            # Perform first peak-picking before sparsification because it does not mangle the preproc4 array
             if cutoff_peak:
                 cnt_peaks = self._peak_picking(data, noise, cutoff_peak, radial_range, patch_size, connected)
                 index = numpy.empty(cnt_peaks, dtype=numpy.int32)
@@ -635,15 +635,14 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 if cnt_peaks:
                     ev_idx = pyopencl.enqueue_copy(self.queue, index, self.cl_mem["position"])
                     ev_pks = pyopencl.enqueue_copy(self.queue, peak4, self.cl_mem["descriptor"])
-                    if self.profile:
-                        self.events += [ EventDescription("copy D->H peak positions", ev_idx),
-                                         EventDescription("copy D->H peak descriptor", ev_pks)]
+                    events += [ EventDescription("copy D->H peak positions", ev_idx),
+                                EventDescription("copy D->H peak descriptor", ev_pks)]
                 peaks["index"] = index
                 peaks["pos0"], peaks["pos1"], peaks["intensity"], peaks["sigma"] = peak4.T
 
-            #Perform sparsification after peak-finding since it mangles the "preproc4" array  
+            # Perform sparsification after peak-finding since it mangles the "preproc4" array
             cnt_intense = self._count_intense(noise, cutoff_pick, radial_range)
-                
+
             indexes = numpy.empty(cnt_intense, dtype=numpy.int32)
             dtype = data.dtype
             if dtype.kind == 'f':
@@ -663,11 +662,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                          *list(kw.values()))
                 ev1 = pyopencl.enqueue_copy(self.queue, indexes, self.cl_mem["position"])
                 ev2 = pyopencl.enqueue_copy(self.queue, signal, self.cl_mem["descriptor"])
-    
-                if self.profile:
-                    self.events += [EventDescription(f"copy D->D + cast {numpy.dtype(dtype).name} intensity", ev0),
-                                    EventDescription("copy D->H intense pixels position", ev1),
-                                    EventDescription("copy D->H intense pixels intensity", ev2)]
+
+                events += [EventDescription(f"copy D->D + cast {numpy.dtype(dtype).name} intensity", ev0),
+                           EventDescription("copy D->H intense pixels position", ev1),
+                           EventDescription("copy D->H intense pixels intensity", ev2)]
+
         result = SparseFrame(indexes, signal)
         result._shape = data.shape
         result._dtype = data.dtype
@@ -698,6 +697,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             result._cutoff_peak = cutoff_peak
             result._peak_patch_size = patch_size
             result._peak_connected = connected
+        self.profile_multi(events)
         return result
 
     def peakfinder(self, data, dark=None, dummy=None, delta_dummy=None,
@@ -758,9 +758,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             if count:
                 idxp = pyopencl.enqueue_copy(self.queue, index, self.cl_mem["position"])
                 idxd = pyopencl.enqueue_copy(self.queue, peaks, self.cl_mem["descriptor"])
-                if self.profile:
-                    self.events += [ EventDescription("copy D->H peak positions", idxp),
-                                     EventDescription("copy D->H peak descriptor", idxd)]
+                self.profile_multi([ EventDescription("copy D->H peak positions", idxp),
+                                     EventDescription("copy D->H peak descriptor", idxd)])
         output = numpy.empty(count, dtype=[("index", numpy.int32), ("intensity", numpy.float32), ("sigma", numpy.float32),
                                            ("pos0", numpy.float32), ("pos1", numpy.float32)])
         output["index"] = index
@@ -1021,10 +1020,9 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         count = numpy.empty(1, dtype=numpy.int32)
         copy_count = pyopencl.enqueue_copy(self.queue, count, self.cl_mem["count"])
 
-        if self.profile:
-            self.events += [
+        self.profile_multi([
                 EventDescription("simple_spot_finder", ev),
-                EventDescription("copy_count", copy_count)]
+                EventDescription("copy_count", copy_count)])
         return count[0]
 
     def count(self,
@@ -1082,11 +1080,10 @@ class OCL_SimplePeakFinder(OpenclProcessing):
 
             copy_index = pyopencl.enqueue_copy(self.queue, indexes, self.cl_mem["output"])
             copy_value = pyopencl.enqueue_copy(self.queue, values, self.cl_mem["peak_intensity"])
-        if self.profile:
-            self.events += [EventDescription("copy D->D values", copy_intense),
-                          EventDescription("copy D->H index", copy_index),
-                          EventDescription("copy D->H values", copy_value)
-                          ]
+        self.profile_multi([EventDescription("copy D->D values", copy_intense),
+                            EventDescription("copy D->H index", copy_index),
+                            EventDescription("copy D->H values", copy_value)
+                          ])
         result = SparseFrame(indexes, values)
         result._shape = self.shape
         result._compute_engine = self.__class__.__name__
