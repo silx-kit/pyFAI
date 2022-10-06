@@ -89,7 +89,7 @@ abort = Event()
 
 
 def sigterm_handler(_signo, _stack_frame):
-    sys.stderr.write(f"Caught signal {_signo}, quitting !\n")
+    sys.stderr.write(f"\nCaught signal {_signo}, quitting !\n")
     sys.stderr.flush()
     abort.set()
 
@@ -129,8 +129,6 @@ class FileReader(Thread):
             gc.collect()
             if abort.is_set():
                 return
-        sys.stderr.write("End of reading\n")
-        sys.stderr.flush()
         self.queue.put(FileToken())
 
 
@@ -160,8 +158,6 @@ class PeakFinder(Thread):
                     self.outqueue.put(token)
                     if token.name is None:
                         self.inqueue.task_done()
-                        sys.stderr.write("End of processing\n")
-                        sys.stderr.flush()
                         return
                     filename = os.path.basename(token.name)
                 elif token.kind == "end":
@@ -203,16 +199,13 @@ class Writer(Thread):
             if isinstance(token, FileToken):
                 self.queue.task_done()
                 if token.name is None:
-                    sys.stderr.write("End of writing\n")
-                    sys.stderr.flush()
                     return
                 if "{basename}" in self.output:
                     base = os.path.basename(os.path.splitext(token.name)[0])
                     filename = self.output.replace("{basename}", base)
                 else:
                     filename = os.path.splitext(token.name)[0] + self.output
-
-                sys.stderr.write(f"filename {filename}\n")
+                sys.stderr.write(f"Saving filename {filename}\n")
             else:
                 self.save(filename,
                            token,
@@ -477,15 +470,9 @@ def process(options):
     peakfinder.start()
     writer.start()
     reader.join()
-    sys.stderr.write("Reader finished\n")
-    sys.stderr.flush()
     peakfinder.join()
     t1 = time.perf_counter()
-    sys.stderr.write("Processing finished\n")
-    sys.stderr.flush()
     writer.join()
-    sys.stderr.write("Writing finished\n")
-    sys.stderr.flush()
 
     if options.profile:
         try:

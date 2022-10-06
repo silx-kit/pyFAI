@@ -70,7 +70,7 @@ from ..units import to_unit
 from ..opencl import ocl
 
 if ocl is None:
-    logger.error("Sparsfy requires a valid OpenCL stack to be installed")
+    logger.error("Sparsify requires a valid OpenCL stack to be installed")
 else:
     from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
@@ -91,7 +91,7 @@ abort = Event()
 
 
 def sigterm_handler(_signo, _stack_frame):
-    sys.stderr.write(f"Caught signal {_signo}, quitting !\n")
+    sys.stderr.write(f"\nCaught signal {_signo}, quitting !\n")
     sys.stderr.flush()
     abort.set()
 
@@ -149,11 +149,11 @@ class Sparsifyer(Thread):
         filename = ""
         frames = []
         cnt = 0
+        last_update = time.perf_counter()
         while not abort.is_set():
             try:
-                token = self.inqueue.get_nowait()
+                token = self.inqueue.get(block=False, timeout=1e-3)
             except Empty:
-                time.sleep(1e-3)
                 continue
             if isinstance(token, FileToken):
                 if token.kind == "start":
@@ -172,13 +172,16 @@ class Sparsifyer(Thread):
                                   **self.parameters)
                 frames.append(current)
                 self.inqueue.task_done()
-                if self.progress:
-                    if len(current.peaks):
-                        self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels/ {len(current.peaks):4} peaks")
+                now = time.perf_counter()
+                if now > last_update + 0.1:  # 10Hz is enough
+                    last_update = now
+                    if self.progress:
+                        if len(current.peaks):
+                            self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels/ {len(current.peaks):4} peaks")
+                        else:
+                            self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels")
                     else:
-                        self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels")
-                else:
-                    print(f"{filename} frame #{cnt:04d}, found {current.intensity.size:6d} intense pixels")
+                        print(f"{filename} frame #{cnt:04d}, found {current.intensity.size:6d} intense pixels")
             cnt += 1
 
 
@@ -194,21 +197,19 @@ class Writer(Thread):
         filename = self.output
         while not abort.is_set():
             try:
-                token = self.queue.get_nowait()
+                token = self.queue.get(block=False, timeout=1.0)
             except Empty:
-                time.sleep(1)
                 continue
             if isinstance(token, FileToken):
                 self.queue.task_done()
                 if token.name is None:
                     return
-
                 if "{basename}" in self.output:
                     base = os.path.basename(os.path.splitext(token.name)[0])
                     filename = self.output.replace("{basename}", base)
                 else:
                     filename = os.path.splitext(token.name)[0] + self.output
-                sys.stderr.write(f"filename {filename}\n")
+                sys.stderr.write(f"Saving filename {filename}\n")
             else:
                 save_sparse(filename,
                             token,
