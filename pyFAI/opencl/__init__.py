@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2019"
+__date__ = "06/10/2022"
 __status__ = "stable"
 
 import os
@@ -71,3 +71,21 @@ def get_x87_volatile_option(ctx):
             return "-DX87_VOLATILE=volatile"
         else:
             return ""
+
+
+# Patch needed until silx v1.1 is actually available
+if "profile_multi" in dir(processing.OpenclProcessing):
+    OpenclProcessing = processing.OpenclProcessing
+else:
+
+    class OpenclProcessing(processing.OpenclProcessing):
+
+        def profile_multi(self, event_lists):
+            """
+            addapter wich does not solve the issue of memory leak 
+    
+            :param event_lists: list of ("desc", pyopencl.NanyEvent).
+            """
+            if self.profile:
+                self.events += event_lists
+
