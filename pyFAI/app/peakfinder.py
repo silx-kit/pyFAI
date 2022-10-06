@@ -83,7 +83,7 @@ EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
 EXIT_ARGUMENT_FAILURE = 2
 
-FileToken = namedtuple("FileToken", "name kind", defaults=(None, None))
+FileToken = namedtuple("FileToken", "name kind", defaults=(None, "start"))
 
 abort = Event()
 
