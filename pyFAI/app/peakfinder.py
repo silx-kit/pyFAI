@@ -49,7 +49,10 @@ import os
 import sys
 import argparse
 import time
-from collections import OrderedDict
+import copy
+import signal
+import gc
+from collections import OrderedDict, namedtuple
 import numexpr
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -72,10 +75,130 @@ else:
     from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
 from ..io.spots import save_spots_nexus, save_spots_cxi
+from threading import Thread, Semaphore, Event
+from queue import Queue, Empty
+
 # Define few constants:
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
 EXIT_ARGUMENT_FAILURE = 2
+
+FileToken = namedtuple("FileToken", "name kind", defaults=(None, None))
+
+abort = Event()
+def sigterm_handler(_signo, _stack_frame):
+    sys.stderr.write(f"Caught signal {_signo}, quitting !\n")
+    sys.stderr.flush()
+    abort.set()
+signal.signal(signal.SIGTERM, sigterm_handler)
+signal.signal(signal.SIGINT, sigterm_handler)
+
+
+class FileReader(Thread):
+    """Read all images in a file and enqueue the image.
+    Ends with an EndOfFileToken
+    """
+    def __init__(self, filenames, queue):
+        """
+        :param filenames: list of multi-frame fabio objects.
+        :param queue: queue where to put the image in as numpy array.
+        """
+        Thread.__init__(self, name="FileReader")
+        self.queue = queue
+        self.filenames = filenames
+        
+    def run(self):
+        "feed all input images into the queue"
+        for filename in list(self.filenames.keys()):
+            while self.queue.qsize>100:
+               time.sleep(0.1)
+            fabioimage = self.filenames.pop(filename)
+            self.queue.put(FileToken(filename, "start"))
+            for frame in fabioimage:
+                self.queue.put(frame.data)
+            if abort.is_set():
+                return
+            self.queue.put(FileToken(filename, "end"))
+            fabioimage.close()
+            del fabioimage
+            gc.collect()
+            if abort.is_set():
+                return
+        self.queue.put(FileToken(None))
+
+
+class PeakFinder(Thread):
+    def __init__(self, inqueue, outqueue, pf, variance, parameters, progress):
+        Thread.__init__(self, name="PeakFinder")
+        self.inqueue = inqueue
+        self.outqueue = outqueue
+        self.pf = pf
+        self.variance = variance
+        self.parameters = copy.copy(parameters)
+        self.progress = progress
+        
+    def run(self):
+        filename = ""
+        frames = []
+        cnt = 0
+        while not abort.is_set():
+            try:
+                token = self.inqueue.get_nowait()
+            except Empty:
+                time.sleep(1e-3)
+                continue
+            if isinstance(token, FileToken):
+                if token.kind == "start":
+                    self.outqueue.put(token)
+                    if token.name is None:
+                        self.inqueue.task_done()
+                        return
+                    filename = os.path.basename(token.name)
+                elif token.kind == "end":
+                    self.outqueue.put(frames)
+                    frames = []
+                self.inqueue.task_done()
+            else:
+                current = self.pf.peakfinder(token,
+                                  variance=None if self.variance is None else self.variance(token),
+                                  **self.parameters)
+                frames.append(current)
+                self.inqueue.task_done()
+                if self.progress:
+                    self.progress.update(cnt, message=f"{filename} frame #{len(frames):04d}: {len(current):4d} peaks")                    
+                else:
+                    print(f"{filename} frame #{len(frames):04d}, found {len(current):4d} peaks")
+            cnt += 1
+
+
+class Writer(Thread):
+    def __init__(self, queue, output, save, kwargs):
+        Thread.__init__(self, name="writer")
+        self.queue = queue
+        self.output = output
+        self.save = save
+        self.kwargs = kwargs
+
+    def run(self):
+        filename = self.output
+        while not abort.is_set():
+            try:
+                token = self.queue.get_nowait()
+            except Empty:
+                time.sleep(1)
+                continue
+            if isinstance(token, FileToken):
+                self.queue.task_done()
+                if token.name is None:
+                    return
+                filename = os.path.splitext(token.name)[0]+self.output
+                sys.stderr.write(f"filename {filename}\n")
+            else:
+                self.save(filename,
+                           token,
+                           **self.kwargs)
+                self.queue.task_done()
+                del token
 
 
 def expand_args(args):
@@ -228,8 +351,8 @@ def process(options):
     logger.debug("Count the number of frames")
     if pb:
         pb.update(0, message="Count the number of frames")
-    dense = [fabio.open(f) for f in options.images]
-    nframes = sum([f.nframes for f in dense])
+    dense = OrderedDict([(f, fabio.open(f)) for f in options.images])
+    nframes = sum([f.nframes for f in dense.values()])
 
     logger.debug("Initialize the geometry")
     if pb:
@@ -240,22 +363,21 @@ def process(options):
         ai.detector.mask = mask
     else:
         mask = ai.detector.mask
-    shape = dense[0].shape
+    shape = dense[list(dense.keys())[0]].shape #Assume they are all the same
 
     unit = to_unit(options.unit)
     if options.radial_range is not None:
         rrange = [ float(i)/unit.scale for i in options.radial_range]
     else:
         rrange = None
-
-    integrator = ai.setup_CSR(shape,
-                              options.bins,
-                              mask=mask,
-                              pos0_range=rrange,
-                              unit=unit,
-                              split="no",
-                              scale=False)
-
+    integrator = ai.setup_sparse_integrator(shape,
+                                            options.bins,
+                                            mask=mask,
+                                            pos0_range=rrange,
+                                            unit=unit,
+                                            split="no",
+                                            algo="CSR",
+                                            scale=False)
     logger.debug("Initialize the OpenCL device")
     if pb:
         pb.update(0, message="Initialize the OpenCL device")
@@ -265,22 +387,20 @@ def process(options):
     else:
         ctx = ocl.create_context(devicetype=options.device_type)
 
-    logger.debug("Initialize the azimuthal integrator")
+    logger.debug("Initialize the PeakFinder")
+    radius2d = ai.array_from_unit(typ="center", unit=unit, scale=False)
     pf = OCL_PeakFinder(integrator.lut,
                         image_size=shape[0] * shape[1],
                         empty=options.dummy,
                         unit=unit,
                         bin_centers=integrator.bin_centers,
-                        radius=ai.array_from_unit(typ="center", unit=unit, scale=False),
+                        radius=radius2d,
                         mask=mask,
                         ctx=ctx,
                         profile=options.profile,
                         block_size=options.workgroup)
 
     logger.debug("Start peak search")
-    frames = []
-
-    cnt = 0
     if "I" in options.error_model:
         variance = numexpr.NumExpr(options.error_model)
         error_model = None
@@ -303,19 +423,12 @@ def process(options):
         parameters["solidangle"], parameters["solidangle_checksum"] = ai.solidAngleArray(with_checksum=True)
     if options.polarization is not None:
         parameters["polarization"], parameters["polarization_checksum"] = ai.polarization(factor=options.polarization, with_checksum=True)
-    t0 = time.perf_counter()
-    for fabioimage in dense:
-        for frame in fabioimage:
-            intensity = frame.data
-            current = pf.peakfinder(intensity,
-                                    variance=None if variance is None else variance(intensity),
-                                    **parameters)
-            frames.append(current)
-            if pb:
-                pb.update(cnt, message=f"{os.path.basename(fabioimage.filename)}: {len(current)} peaks")
-            else:
-                print(f"{fabioimage.filename} frame #{fabioimage.currentframe}, found {len(current)} peaks")
-            cnt += 1
+    queue_read = Queue()
+    queue_process = Queue()
+    reader = FileReader(dense, queue_read)
+    del dense
+    peakfinder = PeakFinder(queue_read, queue_process, pf, variance, parameters, pb)
+
     t1 = time.perf_counter()
     if pb:
         pb.update(nframes, message="Saving: " + options.output)
@@ -341,14 +454,22 @@ def process(options):
         save_spots = save_spots_nexus
     else:
         save_spots = save_spots_cxi
-    save_spots(options.output,
-              frames,
-              beamline=options.beamline,
-              ai=ai,
-              source=options.images if options.save_source else None,
-              extra=parameters,
-              grid=(options.grid_size, options.zig_zag),
-              powder=integrator.bin_centers if options.save_powder else None)
+    kwargs = {"beamline":options.beamline,
+              "ai":ai,
+              "source": options.images if options.save_source else None,
+              "extra": parameters,
+              "grid": (options.grid_size, options.zig_zag),
+              "powder": integrator.bin_centers if options.save_powder else None}
+    writer = Writer(queue_process, options.output, save_spots, kwargs)
+    t0 = time.perf_counter()
+    reader.start()
+    sparsifyer.start()
+    writer.start()
+    
+    reader.join()
+    sparsifyer.join()
+    t1 = time.perf_counter()
+    writer.join()
 
     if options.profile:
         try:
@@ -357,7 +478,7 @@ def process(options):
             pf.log_profile()
     if pb:
         pb.clear()
-    logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1 - t0, cnt / (t1 - t0))
+    logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1 - t0, nframes / (t1 - t0))
 
     return EXIT_SUCCESS
 

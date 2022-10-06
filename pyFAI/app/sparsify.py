@@ -85,6 +85,8 @@ EXIT_FAILURE = 1
 EXIT_ARGUMENT_FAILURE = 2
 start_time = time.time()
 
+FileToken = namedtuple("FileToken", "name kind", defaults=(None, None))
+
 abort = Event()
 def sigterm_handler(_signo, _stack_frame):
     sys.stderr.write(f"Caught signal {_signo}, quitting !\n")
@@ -92,13 +94,6 @@ def sigterm_handler(_signo, _stack_frame):
     abort.set()
 signal.signal(signal.SIGTERM, sigterm_handler)
 signal.signal(signal.SIGINT, sigterm_handler)
-
-
-class FileToken:
-    "Token to be used to indicated the end of a file"
-    def __init__(self, name, kind="start"):
-        self.name = name
-        self.kind = kind
 
 
 class FileReader(Thread):
@@ -117,6 +112,8 @@ class FileReader(Thread):
     def run(self):
         "feed all input images into the queue"
         for filename in list(self.filenames.keys()):
+            while self.queue.qsize>100:
+               time.sleep(0.1)
             fabioimage = self.filenames.pop(filename)
             self.queue.put(FileToken(filename, "start"))
             for frame in fabioimage:
@@ -178,8 +175,8 @@ class Sparsifyer(Thread):
                     print(f"{filename} frame #{cnt:04d}, found {current.intensity.size:6d} intense pixels")
             cnt += 1
 
+
 class Writer(Thread):
-    
     def __init__(self, queue, output, kwargs):
         Thread.__init__(self, name="writer")
         self.queue = queue
@@ -389,7 +386,7 @@ def process(options):
         ctx = ocl.create_context(devicetype=options.device_type)
 
     logger.debug("Initialize the sparsificator")
-    radius2d = ai._cached_array[unit.name.split("_")[0] + "_center"] # * unit.scale
+    radius2d = ai.array_from_unit(typ="center", unit=unit, scale=False)
     pf = OCL_PeakFinder(integrator.lut,
                         image_size=shape[0] * shape[1],
                         empty=options.dummy,
