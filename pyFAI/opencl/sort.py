@@ -260,9 +260,7 @@ class Separator(OpenclProcessing):
         evt = self.kernels.bsort_vertical(self.queue, (ws, self.npt_width), (ws, 1), *kargs.values())
         events.append(EventDescription("bsort_vertical", evt))
 
-        if self.profile:
-            with self.sem:
-                self.profile_multi(events)
+        self.profile_multi(events)
         return self.cl_mem["input_data"]
 
     def sort_horizontal(self, data, dummy=None):

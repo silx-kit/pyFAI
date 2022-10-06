@@ -369,8 +369,7 @@ class OCL_Histogram1d(OpenclProcessing):
                 cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
                 events += [EventDescription("copy raw H->D " + dest, copy_image),
                            EventDescription("cast " + kernel_name, cast_to_float)]
-        if self.profile:
-            self.profile_multi(events)
+        self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum
 
@@ -519,8 +518,7 @@ class OCL_Histogram1d(OpenclProcessing):
                 image = numpy.empty(data.shape + (4,), dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output4"])
                 events.append(EventDescription("copy D->H image", ev))
-                if self.profile:
-                    self.profile_multi(events)
+                self.profile_multi(events)
                 ev.wait()
                 return image
 
@@ -594,8 +592,7 @@ class OCL_Histogram1d(OpenclProcessing):
             delta = (radial_maxi - radial_mini) / self.bins
             positions = numpy.linspace(radial_mini + 0.5 * delta, radial_maxi - 0.5 * delta, self.bins)
 
-        if self.profile:
-            self.profile_multi(events)
+        self.profile_multi(events)
 
         return Integrate1dtpl(positions, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)
 
@@ -882,9 +879,8 @@ class OCL_Histogram2d(OCL_Histogram1d):
                 image = numpy.empty(data.shape + (4,), dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
                 events.append(EventDescription("copy D->H image", ev))
-                if self.profile:
-                    self.profile_multi(events)
                 ev.wait()
+                self.profile_multi(events)
                 return image
 
             if radial_range:
@@ -957,8 +953,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
             pos_radial = numpy.linspace(radial_mini + 0.5 * delta_radial, radial_maxi - 0.5 * delta_radial, self.bins_radial)
             pos_azim = numpy.linspace(azim_mini + 0.5 * delta_azimuthal, azim_maxi - 0.5 * delta_azimuthal, self.bins_azimuthal)
             ev.wait()
-        if self.profile:
-            self.profile_multi(events)
+        self.profile_multi(events)
         return Integrate2dtpl(pos_radial, pos_azim, intensity.T, error.T,
                               histo_signal[:,:, 0].T,
                               histo_variance[:,:, 0].T,

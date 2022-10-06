@@ -548,9 +548,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 image = numpy.empty(data.shape, dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
                 events.append(EventDescription("copy D->H image", ev))
-                if self.profile:
-                    self.profile_multi(events)
-                # ev.wait()
+                self.profile_multi(events)
                 return image
 
             wg_min, wg_max = self.workgroup_size["csr_integrate"]

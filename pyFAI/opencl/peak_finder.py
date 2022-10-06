@@ -989,8 +989,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
                 cast_to_float = kernel(self.queue, self.wdim, self.workgroup_size[kernel_name], *list(kw.values()))
                 events += [EventDescription("copy raw H->D " + dest, copy_image),
                            EventDescription("cast " + kernel_name, cast_to_float)]
-        if self.profile:
-            self.profile_multi(events)
+        self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum
 
