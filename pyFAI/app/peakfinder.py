@@ -152,7 +152,7 @@ class PeakFinder(Thread):
         last_update = time.perf_counter()
         while not abort.is_set():
             try:
-                token = self.inqueue.get_nowait(block=False, timeout=1e-3)
+                token = self.inqueue.get(block=False, timeout=1e-3)
             except Empty:
                 continue
             if isinstance(token, FileToken):
@@ -175,7 +175,7 @@ class PeakFinder(Thread):
                 frames.append(current)
                 self.inqueue.task_done()
                 now = time.perf_counter()
-                if now>last_update+0.1:
+                if now > last_update + 0.1:  # 10Hz is enough
                     last_update = now
                     if self.progress:
                         self.progress.update(cnt, message=f"{filename} frame #{len(frames):04d}: {len(current):4d} peaks")
