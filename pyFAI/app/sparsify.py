@@ -149,11 +149,13 @@ class Sparsifyer(Thread):
         filename = ""
         frames = []
         cnt = 0
+        delay = 1e-3
         last_update = time.perf_counter()
         while not abort.is_set():
             try:
-                token = self.inqueue.get(block=False, timeout=1e-3)
+                token = self.inqueue.get(block=False, timeout=delay)
             except Empty:
+                time.sleep(delay)
                 continue
             if isinstance(token, FileToken):
                 if token.kind == "start":
@@ -194,11 +196,13 @@ class Writer(Thread):
         self.kwargs = kwargs
 
     def run(self):
+        delay = 1.0
         filename = self.output
         while not abort.is_set():
             try:
-                token = self.queue.get(block=False, timeout=1.0)
+                token = self.queue.get(block=False, timeout=delay)
             except Empty:
+                time.sleep(delay)
                 continue
             if isinstance(token, FileToken):
                 self.queue.task_done()
