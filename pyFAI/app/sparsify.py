@@ -119,7 +119,7 @@ class FileReader(Thread):
     def run(self):
         "feed all input images into the queue"
         for filename in list(self.filenames.keys()):
-            while self.queue.qsize() > 100:
+            while self.queue.qsize() > self.read_ahead:
                 time.sleep(1.0)
             fabioimage = self.filenames.pop(filename)
             self.queue.put(FileToken(filename, "start"))
@@ -213,8 +213,8 @@ class Writer(Thread):
                     filename = self.output.replace("{basename}", base)
                 else:
                     filename = os.path.splitext(token.name)[0] + self.output
-                sys.stderr.write(f"\nSaving filename {filename}\n")
             else:
+                sys.stderr.write(f"\nSaving filename {filename}\n")
                 save_sparse(filename,
                             token,
                             **self.kwargs)

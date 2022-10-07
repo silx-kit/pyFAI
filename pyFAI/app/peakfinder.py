@@ -209,8 +209,8 @@ class Writer(Thread):
                     filename = self.output.replace("{basename}", base)
                 else:
                     filename = os.path.splitext(token.name)[0] + self.output
-                sys.stderr.write(f"\nSaving filename {filename}\n")
             else:
+                sys.stderr.write(f"\nSaving filename {filename}\n")
                 self.save(filename,
                            token,
                            **self.kwargs)
