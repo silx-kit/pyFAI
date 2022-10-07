@@ -146,6 +146,7 @@ class PeakFinder: #(Thread):
         self.progress = progress
 
     def run(self):
+        ":return: the number of frames processes"
         filename = ""
         frames = []
         cnt = 0
@@ -161,7 +162,7 @@ class PeakFinder: #(Thread):
                     self.outqueue.put(token)
                     if token.name is None:
                         self.inqueue.task_done()
-                        return
+                        return cnt
                     filename = os.path.basename(token.name)
                 elif token.kind == "end":
                     self.outqueue.put(frames)
@@ -181,7 +182,7 @@ class PeakFinder: #(Thread):
                     else:
                         print(f"{filename} frame #{len(frames):04d}, found {len(current):4d} peaks")
                 cnt += 1
-
+        return cnt
 
 class Writer(Thread):
 
@@ -472,7 +473,7 @@ def process(options):
     reader.start()
     writer.start()
     t0 = time.perf_counter()
-    peakfinder.run()  #Running in main thread, not in its own
+    cnt = peakfinder.run()  #Running in main thread, not in its own
     t1 = time.perf_counter()
     reader.join()
     writer.join()
@@ -484,7 +485,7 @@ def process(options):
             pf.log_profile()
     if pb:
         pb.clear()
-    logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1 - t0, nframes / (t1 - t0))
+    logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1 - t0, cnt / (t1 - t0))
 
     return EXIT_ARGUMENT_FAILURE if abort.is_set() else EXIT_SUCCESS
 

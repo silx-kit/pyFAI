@@ -148,6 +148,7 @@ class Sparsifyer:
         self.progress = progress
 
     def run(self):
+        ":return: the number of frames processes"
         filename = ""
         frames = []
         cnt = 0
@@ -163,7 +164,7 @@ class Sparsifyer:
                     self.outqueue.put(token)
                     if token.name is None:
                         self.inqueue.task_done()
-                        return
+                        return cnt
                     filename = os.path.basename(token.name)
                 elif token.kind == "end":
                     self.outqueue.put(frames)
@@ -186,7 +187,7 @@ class Sparsifyer:
                     else:
                         print(f"{filename} frame #{cnt:04d}, found {current.intensity.size:6d} intense pixels")
                 cnt += 1
-
+        return cnt
 
 class Writer(Thread):
 
@@ -465,7 +466,7 @@ def process(options):
     reader.start()
     writer.start()
     t0 = time.perf_counter()
-    sparsifyer.run()  #Running in main thread, not in its own
+    cnt = sparsifyer.run()  #Running in main thread, not in its own
     t1 = time.perf_counter()
     reader.join()
     writer.join()
@@ -477,7 +478,7 @@ def process(options):
             pf.log_profile()
     if pb:
         pb.clear()
-    logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1 - t0, nframes / (t1 - t0))
+    logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1 - t0, cnt / (t1 - t0))
 
     return EXIT_ARGUMENT_FAILURE if abort.is_set() else EXIT_SUCCESS
 
