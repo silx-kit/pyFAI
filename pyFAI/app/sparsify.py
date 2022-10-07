@@ -125,8 +125,8 @@ class FileReader(Thread):
             self.queue.put(FileToken(filename, "start"))
             for frame in fabioimage:
                 self.queue.put(frame.data)
-            if abort.is_set():
-                return
+                if abort.is_set():
+                    return
             self.queue.put(FileToken(filename, "end"))
             fabioimage.close()
             del fabioimage

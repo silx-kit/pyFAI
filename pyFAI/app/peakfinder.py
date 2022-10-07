@@ -89,9 +89,9 @@ abort = Event()
 
 
 def sigterm_handler(_signo, _stack_frame):
+    abort.set()
     sys.stderr.write(f"\nCaught signal {_signo}, quitting !\n")
     sys.stderr.flush()
-    abort.set()
 
 
 signal.signal(signal.SIGTERM, sigterm_handler)
@@ -123,8 +123,8 @@ class FileReader(Thread):
             self.queue.put(FileToken(filename, "start"))
             for frame in fabioimage:
                 self.queue.put(frame.data)
-            if abort.is_set():
-                return
+                if abort.is_set():
+                    return
             self.queue.put(FileToken(filename, "end"))
             fabioimage.close()
             del fabioimage
