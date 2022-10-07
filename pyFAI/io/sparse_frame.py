@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/07/2022"
+__date__ = "04/10/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -45,6 +45,7 @@ import numpy
 import fabio
 from .. import version
 from .nexus import Nexus, get_isotime, h5py
+from ._json import UnitEncoder
 
 try:
     import hdf5plugin
@@ -109,18 +110,21 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
         radius = frames[0].radius
         mask = frames[0].mask
         dummy = frames[0].dummy
+        unit = frames[0].unit
         if dummy is None:
             if is_integer:
                 dummy = 0
             else:
                 dummy = numpy.NaN
         sparse_grp.create_dataset("dummy", data=dummy)
-        rds = sparse_grp.create_dataset("radius", data=radius, dtype=numpy.float32)
+        rds = sparse_grp.create_dataset("radius", data=radius * unit.scale, dtype=numpy.float32)
         rds.attrs["interpretation"] = "spectrum"
-        rds.attrs["unit"] = str(frames[0].unit)
-        mskds = sparse_grp.create_dataset("mask", data=mask, **cmp)
+        rds.attrs["unit"] = str(unit)
+        rds.attrs["long_name"] = unit.label
+        mskds = sparse_grp.create_dataset("mask", data=mask * unit.scale, **cmp)
         mskds.attrs["interpretation"] = "image"
-        mskds.attrs["unit"] = str(frames[0].unit)
+        rds.attrs["long_name"] = unit.label
+        mskds.attrs["unit"] = str(unit)
         background_avg = numpy.vstack([f.background_avg for f in frames])
         background_std = numpy.vstack([f.background_std for f in frames])
         bgavgds = sparse_grp.create_dataset("background_avg", data=background_avg, **cmp)
@@ -192,7 +196,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             config_grp["type"] = "text/json"
             parameters = OrderedDict([("geometry", ai.get_config()),
                                       ("sparsify", extra)])
-            config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "))
+            config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "), cls=UnitEncoder)
 
             detector_grp = nexus.new_class(instrument, ai.detector.name.replace(" ", "_"), "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)

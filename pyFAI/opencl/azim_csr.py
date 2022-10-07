@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "08/07/2022"
+__date__ = "06/10/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -42,10 +42,9 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
-from . import processing
+from . import processing, OpenclProcessing
 from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
-OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
 
 logger = logging.getLogger(__name__)
@@ -422,8 +421,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
                 events += [EventDescription("copy raw H->D " + dest, copy_image),
                            EventDescription("cast " + kernel_name, cast_to_float)]
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum
 
@@ -550,9 +548,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 image = numpy.empty(data.shape, dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
                 events.append(EventDescription("copy D->H image", ev))
-                if self.profile:
-                    self.events += events
-                # ev.wait()
+                self.profile_multi(events)
                 return image
 
             wg_min, wg_max = self.workgroup_size["csr_integrate"]
@@ -593,9 +589,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if sum_count is not None:
                 ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
                 events.append(EventDescription("copy D->H sum_count", ev))
-            # ev.wait()
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         return merged, sum_data, sum_count
 
     integrate = integrate_legacy
@@ -812,8 +806,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                          merged[:, 0].reshape(outshape).T, merged[:, 2].reshape(outshape).T, merged[:, 4].reshape(outshape).T, merged[:, 6].reshape(outshape).T,
                                          std, sem, merged[:, 7].reshape(outshape).T)
 
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         return res
 
     def sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,
@@ -1008,8 +1001,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
             events.append(EventDescription("copy D->H merged8", ev))
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
                              std, sem, merged[:, 7])
         return res
