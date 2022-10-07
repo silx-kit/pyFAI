@@ -105,20 +105,22 @@ class FileReader(Thread):
     Ends with an EndOfFileToken
     """
 
-    def __init__(self, filenames, queue):
+    def __init__(self, filenames, queue, read_ahead=1000):
         """
         :param filenames: list of multi-frame fabio objects.
         :param queue: queue where to put the image in as numpy array.
+        :param read_ahead: read in advance that many frames, should be > to the fps 
         """
         Thread.__init__(self, name="FileReader")
         self.queue = queue
         self.filenames = filenames
+        self.read_ahead = read_ahead
 
     def run(self):
         "feed all input images into the queue"
         for filename in list(self.filenames.keys()):
             while self.queue.qsize() > 100:
-                time.sleep(0.1)
+                time.sleep(1.0)
             fabioimage = self.filenames.pop(filename)
             self.queue.put(FileToken(filename, "start"))
             for frame in fabioimage:
@@ -134,10 +136,10 @@ class FileReader(Thread):
         self.queue.put(FileToken())
 
 
-class Sparsifyer(Thread):
+class Sparsifyer:
 
     def __init__(self, inqueue, outqueue, pf, variance, parameters, progress):
-        Thread.__init__(self, name="Sparsifyer")
+        #Thread.__init__(self, name="Sparsifyer")
         self.inqueue = inqueue
         self.outqueue = outqueue
         self.pf = pf
@@ -153,9 +155,8 @@ class Sparsifyer(Thread):
         last_update = time.perf_counter()
         while not abort.is_set():
             try:
-                token = self.inqueue.get(block=False, timeout=delay)
+                token = self.inqueue.get(block=True, timeout=delay)
             except Empty:
-                time.sleep(delay)
                 continue
             if isinstance(token, FileToken):
                 if token.kind == "start":
@@ -184,7 +185,7 @@ class Sparsifyer(Thread):
                             self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels")
                     else:
                         print(f"{filename} frame #{cnt:04d}, found {current.intensity.size:6d} intense pixels")
-            cnt += 1
+                cnt += 1
 
 
 class Writer(Thread):
@@ -200,9 +201,8 @@ class Writer(Thread):
         filename = self.output
         while not abort.is_set():
             try:
-                token = self.queue.get(block=False, timeout=delay)
+                token = self.queue.get(block=True, timeout=delay)
             except Empty:
-                time.sleep(delay)
                 continue
             if isinstance(token, FileToken):
                 self.queue.task_done()
@@ -213,7 +213,7 @@ class Writer(Thread):
                     filename = self.output.replace("{basename}", base)
                 else:
                     filename = os.path.splitext(token.name)[0] + self.output
-                sys.stderr.write(f"Saving filename {filename}\n")
+                sys.stderr.write(f"\nSaving filename {filename}\n")
             else:
                 save_sparse(filename,
                             token,
@@ -461,17 +461,16 @@ def process(options):
               "extra": parameters,
               "start_time": start_time}
     writer = Writer(queue_process, options.output, kwargs)
-    t0 = time.perf_counter()
+    
     reader.start()
-    sparsifyer.start()
     writer.start()
-
-    reader.join()
-    sparsifyer.join()
+    t0 = time.perf_counter()
+    sparsifyer.run()  #Running in main thread, not in its own
     t1 = time.perf_counter()
+    reader.join()
     writer.join()
 
-    if options.profile:
+    if options.profile and not abort.is_set():
         try:
             pf.log_profile(True)
         except Exception:
@@ -480,7 +479,7 @@ def process(options):
         pb.clear()
     logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1 - t0, nframes / (t1 - t0))
 
-    return EXIT_SUCCESS
+    return EXIT_ARGUMENT_FAILURE if abort.is_set() else EXIT_SUCCESS
 
 
 def main():

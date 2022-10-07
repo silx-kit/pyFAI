@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2022"
+__date__ = "07/10/2022"
 __status__ = "production"
 
 import os
@@ -103,20 +103,22 @@ class FileReader(Thread):
     Ends with an EndOfFileToken
     """
 
-    def __init__(self, filenames, queue):
+    def __init__(self, filenames, queue, read_ahead=1000):
         """
         :param filenames: list of multi-frame fabio objects.
         :param queue: queue where to put the image in as numpy array.
+        :param read_ahead: read in advance that many frames, should be > to the fps 
         """
         Thread.__init__(self, name="FileReader")
         self.queue = queue
         self.filenames = filenames
+        self.read_ahead = read_ahead
 
     def run(self):
         "feed all input images into the queue"
         for filename in list(self.filenames.keys()):
-            while self.queue.qsize() > 100:
-                time.sleep(0.1)
+            while self.queue.qsize() > self.read_ahead:
+                time.sleep(1.0)
             fabioimage = self.filenames.pop(filename)
             self.queue.put(FileToken(filename, "start"))
             for frame in fabioimage:
@@ -132,10 +134,10 @@ class FileReader(Thread):
         self.queue.put(FileToken())
 
 
-class PeakFinder(Thread):
+class PeakFinder: #(Thread):
 
     def __init__(self, inqueue, outqueue, pf, variance, parameters, progress):
-        Thread.__init__(self, name="PeakFinder")
+        #Thread.__init__(self, name="PeakFinder")
         self.inqueue = inqueue
         self.outqueue = outqueue
         self.pf = pf
@@ -151,9 +153,8 @@ class PeakFinder(Thread):
         last_update = time.perf_counter()
         while not abort.is_set():
             try:
-                token = self.inqueue.get(block=False, timeout=delay)
+                token = self.inqueue.get(block=True, timeout=delay)
             except Empty:
-                time.sleep(delay)
                 continue
             if isinstance(token, FileToken):
                 if token.kind == "start":
@@ -179,7 +180,7 @@ class PeakFinder(Thread):
                         self.progress.update(cnt, message=f"{filename} frame #{len(frames):04d}: {len(current):4d} peaks")
                     else:
                         print(f"{filename} frame #{len(frames):04d}, found {len(current):4d} peaks")
-            cnt += 1
+                cnt += 1
 
 
 class Writer(Thread):
@@ -196,9 +197,8 @@ class Writer(Thread):
         delay = 1.0
         while not abort.is_set():
             try:
-                token = self.queue.get(block=False, timeout=delay)
+                token = self.queue.get(block=True, timeout=delay)
             except Empty:
-                time.sleep(delay)
                 continue
             if isinstance(token, FileToken):
                 self.queue.task_done()
@@ -209,7 +209,7 @@ class Writer(Thread):
                     filename = self.output.replace("{basename}", base)
                 else:
                     filename = os.path.splitext(token.name)[0] + self.output
-                sys.stderr.write(f"Saving filename {filename}\n")
+                sys.stderr.write(f"\nSaving filename {filename}\n")
             else:
                 self.save(filename,
                            token,
@@ -445,7 +445,6 @@ def process(options):
     reader = FileReader(dense, queue_read)
     del dense
     peakfinder = PeakFinder(queue_read, queue_process, pf, variance, parameters, pb)
-
     parameters["unit"] = unit
     parameters["error_model"] = options.error_model
     if options.polarization is not None:
@@ -469,16 +468,16 @@ def process(options):
               "grid": (options.grid_size, options.zig_zag),
               "powder": integrator.bin_centers if options.save_powder else None}
     writer = Writer(queue_process, options.output, save_spots, kwargs)
-    t0 = time.perf_counter()
+    
     reader.start()
-    peakfinder.start()
     writer.start()
-    reader.join()
-    peakfinder.join()
+    t0 = time.perf_counter()
+    peakfinder.run()  #Running in main thread, not in its own
     t1 = time.perf_counter()
+    reader.join()
     writer.join()
 
-    if options.profile:
+    if options.profile and not abort.is_set():
         try:
             pf.log_profile(True)
         except Exception:
@@ -487,7 +486,7 @@ def process(options):
         pb.clear()
     logger.info(f"Total peakfinder time: %.3fs \t (%.3f fps)", t1 - t0, nframes / (t1 - t0))
 
-    return EXIT_SUCCESS
+    return EXIT_ARGUMENT_FAILURE if abort.is_set() else EXIT_SUCCESS
 
 
 def main():
