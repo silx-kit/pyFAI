@@ -95,7 +95,7 @@ class TestOclPeakFinder(unittest.TestCase):
         """
         unit = "r_m"
         msk = self.img < 0
-        engine = self.ai.setup_CSR(self.img.shape, 128, mask=msk, split="no", unit=unit)
+        engine = self.ai.setup_sparse_integrator(self.img.shape, 128, mask=msk, split="no", algo="CSR", unit=unit)
         bin_centers = engine.bin_centers
         lut = engine.lut
         distance = self.ai._cached_array["r_center"]
@@ -120,7 +120,7 @@ class TestOclPeakFinder(unittest.TestCase):
         """
         unit = "r_m"
         msk = self.img < 0
-        engine = self.ai.setup_CSR(self.img.shape, 128, mask=msk, split="no", unit=unit)
+        engine = self.ai.setup_sparse_integrator(self.img.shape, 128, mask=msk, split="no", algo="CSR", unit=unit)
         bin_centers = engine.bin_centers
         lut = engine.lut
         distance = self.ai._cached_array["r_center"]
@@ -145,7 +145,7 @@ class TestOclPeakFinder(unittest.TestCase):
         """
         unit = "r_m"
         msk = self.img < 0
-        engine = self.ai.setup_CSR(self.img.shape, 128, mask=msk, split="no", unit=unit)
+        engine = self.ai.setup_sparse_integrator(self.img.shape, 128, mask=msk, split="no", algo="CSR", unit=unit)
         bin_centers = engine.bin_centers
         lut = engine.lut
         distance = self.ai._cached_array["r_center"]
@@ -168,7 +168,7 @@ class TestOclPeakFinder(unittest.TestCase):
         """
         unit = "r_m"
         msk = self.img < 0
-        engine = self.ai.setup_CSR(self.img.shape, 1000, mask=msk, split="no", unit=unit)
+        engine = self.ai.setup_sparse_integrator(self.img.shape, 1000, mask=msk, split="no", algo="CSR", unit=unit)
         bin_centers = engine.bin_centers
         lut = engine.lut
         distance = self.ai._cached_array["r_center"]

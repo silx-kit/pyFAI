@@ -737,10 +737,10 @@ class AzimuthalIntegrator(Geometry):
                     if split == "pseudo":
                         split = "full"
                     try:
-                        integr = self.setup_LUT(shape, npt, mask,
-                                                radial_range, azimuth_range,
+                        integr = self.setup_sparse_integrator(shape, npt, mask=mask,
+                                                pos0_range=radial_range, pos1_range=azimuth_range,
                                                 mask_checksum=mask_crc,
-                                                unit=unit, split=split,
+                                                unit=unit, split=split, algo="LUT",
                                                 scale=False)
 
                     except MemoryError:
@@ -850,10 +850,10 @@ class AzimuthalIntegrator(Geometry):
                     if split == "pseudo":
                         split = "full"
                     try:
-                        integr = self.setup_CSR(shape, npt, mask,
-                                                radial_range, azimuth_range,
+                        integr = self.setup_sparse_integrator(shape, npt, mask=mask,
+                                                pos0_range=radial_range, pos1_range=azimuth_range,
                                                 mask_checksum=mask_crc,
-                                                unit=unit, split=split,
+                                                unit=unit, split=split, algo="CSR",
                                                 scale=False)
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
@@ -1825,8 +1825,9 @@ class AzimuthalIntegrator(Geometry):
                 if reset:
                     logger.info("ai.integrate2d: Resetting integrator because %s", reset)
                     try:
-                        integr = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range,
-                                                mask_checksum=mask_crc, unit=unit, scale=False)
+                        integr = self.setup_sparse_integrator(shape, npt, mask=mask,
+                                                pos0_range=radial_range, pos1_range=azimuth_range,
+                                                mask_checksum=mask_crc, algo="LUT", unit=unit, scale=False)
                     except MemoryError:
                         # LUT method is hungry im memory...
                         logger.warning("MemoryError: falling back on forward implementation")
@@ -1916,10 +1917,10 @@ class AzimuthalIntegrator(Geometry):
                     if split == "pseudo":
                         split = "full"
                     try:
-                        integr = self.setup_CSR(shape, npt, mask,
-                                                radial_range, azimuth_range,
+                        integr = self.setup_sparse_integrator(shape, npt, mask=mask,
+                                                pos0_range=radial_range, pos1_range=azimuth_range,
                                                 mask_checksum=mask_crc,
-                                                unit=unit, split=split,
+                                                unit=unit, split=split, algo="CSR",
                                                 scale=False)
                     except MemoryError:
                         logger.warning("MemoryError: falling back on default forward implementation")
@@ -3196,9 +3197,9 @@ class AzimuthalIntegrator(Geometry):
                     if split == "pseudo":
                         split = "full"
                     try:
-                        cython_integr = self.setup_CSR(data.shape, npt, mask,
+                        cython_integr = self.setup_sparse_integrator(data.shape, npt, mask=mask,
                                                        mask_checksum=mask_crc,
-                                                       unit=unit, split=split,
+                                                       unit=unit, split=split, algo="CSR",
                                                        pos0_range=radial_range,
                                                        pos1_range=azimuth_range,
                                                        empty=self._empty,
