@@ -21,7 +21,7 @@ print(img.shape, img.mean(), img.std())
 JF4 = Detector(pixel1=75e-6, pixel2=75e-6, max_shape=shape)
 ai = AzimuthalIntegrator(detector=JF4)
 ai.setFit2D(100, shape[1] // 2, shape[0] // 2)
-csr = ai.setup_CSR(None, nbins, unit="r_m", split="no").lut
+csr = ai.setup_sparse_integrator(None, nbins, unit="r_m", split="no", algo="CSR").lut
 
 r2 = ai.array_from_unit(unit="r_m")
 res = ai.integrate1d(img, nbins, unit="r_m")
