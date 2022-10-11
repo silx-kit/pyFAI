@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2022"
+__date__ = "13/07/2022"
 __status__ = "development"
 
 import warnings
@@ -54,7 +54,8 @@ def preproc(raw,
             variance=None,
             dark_variance=None,
             error_model=ErrorModel.NO,
-            dtype=numpy.float32
+            dtype=numpy.float32,
+            out= None
             ):
     """Common preprocessing step for all integration engines
 
@@ -77,6 +78,7 @@ def preproc(raw,
             enforce split_result=True and return an float3 array with variance in second position.
     :param error_model: set to "Poisson" for assuming the detector is poissonian and variance = max(1, raw + dark)
     :param dtype: dtype for all processing
+    :param out: output buffer to save a malloc
 
     All calculation are performed in single precision floating point (32 bits).
 
@@ -196,8 +198,15 @@ def preproc(raw,
         mask |= (normalization == 0)
         if variance is not None:
             mask |= numpy.logical_not(numpy.isfinite(variance))
-        if split_result:
+            
+        if out is None:
             result = numpy.zeros(out_shape, dtype=dtype)
+        else:
+            assert out.dtype == dtype
+            assert out.shape == out_shape 
+            result = out
+                
+        if split_result:
             signal[mask] = 0.0
             normalization[mask] = 0.0
             result[..., 0] = signal.reshape(shape)
@@ -208,13 +217,14 @@ def preproc(raw,
                 result[..., 2] = normalization.reshape(shape)
                 result[..., 3] = 1.0 - mask.reshape(shape)
             elif variance is None:
-                result[:, :, 1] = normalization.reshape(shape)
+                result[..., 1] = normalization.reshape(shape)
             else:
                 variance[mask] = 0.0
                 result[..., 1] = variance.reshape(shape)
                 result[..., 2] = normalization.reshape(shape)
         else:
-            result = signal / normalization
-            result[mask] = cdummy
+            lin = result.ravel() 
+            lin[...] = signal / normalization
+            lin[mask] = cdummy
             result.shape = shape
     return result

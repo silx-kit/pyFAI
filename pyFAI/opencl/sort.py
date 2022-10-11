@@ -33,7 +33,7 @@ separation on GPU.
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "31/05/2021"
+__date__ = "06/10/2022"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,9 +45,8 @@ import numpy
 from . import ocl
 if ocl:
     import pyopencl.array
-    from . import processing
+    from . import processing, OpenclProcessing
     EventDescription = processing.EventDescription
-    OpenclProcessing = processing.OpenclProcessing
     BufferDescription = processing.BufferDescription
 else:
     raise ImportError("pyopencl is not installed or no device is available")
@@ -261,9 +260,7 @@ class Separator(OpenclProcessing):
         evt = self.kernels.bsort_vertical(self.queue, (ws, self.npt_width), (ws, 1), *kargs.values())
         events.append(EventDescription("bsort_vertical", evt))
 
-        if self.profile:
-            with self.sem:
-                self.events += events
+        self.profile_multi(events)
         return self.cl_mem["input_data"]
 
     def sort_horizontal(self, data, dummy=None):
@@ -308,10 +305,7 @@ class Separator(OpenclProcessing):
             kargs["l_data"] = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
         evt = self.kernels.bsort_horizontal(self.queue, (self.npt_height, ws), (1, ws), *kargs.values())
         events.append(EventDescription("bsort_horizontal", evt))
-
-        if self.profile:
-            with self.sem:
-                self.events += events
+        self.profile_multi(events)
         return self.cl_mem["input_data"]
 
     def filter_vertical(self, data, dummy=None, quantile=0.5):
@@ -439,8 +433,7 @@ class Separator(OpenclProcessing):
                 kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
             evt = self.kernels.mean_std_vertical(self.queue, ws, (wg, 1), *kargs.values())
             events.append(EventDescription("mean_std_vertical", evt))
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         return self.cl_mem["vector_vertical"], self.cl_mem["vector_vertical_2"]
 
     def mean_std_horizontal(self, data, dummy=None):
@@ -467,8 +460,7 @@ class Separator(OpenclProcessing):
                 kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
             evt = self.kernels.mean_std_horizontal(self.queue, ws, (1, wg), *kargs.values())
             events.append(EventDescription("mean_std_horizontal", evt))
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         return self.cl_mem["vector_horizontal"], self.cl_mem["vector_horizontal_2"]
 
     def sigma_clip_vertical(self, data, sigma_lo=3, sigma_hi=None, max_iter=5, dummy=None):
@@ -501,8 +493,7 @@ class Separator(OpenclProcessing):
                 kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
             evt = self.kernels.sigma_clip_vertical(self.queue, ws, (wg, 1), *kargs.values())
             events.append(EventDescription("sigma_clip_vertical", evt))
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         return self.cl_mem["vector_vertical"], self.cl_mem["vector_vertical_2"]
 
     def sigma_clip_horizontal(self, data, sigma_lo=3, sigma_hi=None, max_iter=5, dummy=None):
@@ -533,6 +524,5 @@ class Separator(OpenclProcessing):
                 kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
             evt = self.kernels.sigma_clip_horizontal(self.queue, ws, (1, wg), *kargs.values())
             events.append(EventDescription("sigma_clip_horizontal", evt))
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         return self.cl_mem["vector_horizontal"], self.cl_mem["vector_horizontal_2"]

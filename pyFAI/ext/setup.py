@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/01/2022"
+__date__ = "08/09/2022"
 
 from numpy.distutils.misc_util import Configuration
 import platform
@@ -82,6 +82,8 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('splitPixelFullCSR', can_use_openmp=True, language='c++'),
         create_extension_config('splitBBoxLUT', can_use_openmp=True, language='c++'),
         create_extension_config('splitPixelFullLUT', can_use_openmp=True, language='c++'),
+        create_extension_config('splitBBoxCSC', can_use_openmp=False, language='c++'),
+        create_extension_config('splitPixelFullCSC', can_use_openmp=False, language='c++'),
         create_extension_config('relabel'),
         create_extension_config("bilinear", can_use_openmp=True),
         create_extension_config('_bispev', can_use_openmp=True),
@@ -91,7 +93,7 @@ def configuration(parent_package='', top_path=None):
         create_extension_config('watershed'),
         create_extension_config('_tree'),
         create_extension_config('sparse_utils'),
-        create_extension_config('preproc', can_use_openmp=True),
+        create_extension_config('preproc'),
         create_extension_config('inpainting'),
         create_extension_config('invert_geometry'),
         create_extension_config('dynamic_rectangle'),

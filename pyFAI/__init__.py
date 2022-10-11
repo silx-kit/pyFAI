@@ -28,15 +28,13 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "04/10/2022"
 
 import sys
 import os
 import logging
 if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
     logging.basicConfig()
-
-import os
 
 try:
     from ._version import __date__ as date

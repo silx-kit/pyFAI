@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "30/06/2022"
+__date__ = "06/10/2022"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -41,10 +41,9 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
-from . import processing
+from . import processing, OpenclProcessing
 from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
-OpenclProcessing = processing.OpenclProcessing
 BufferDescription = processing.BufferDescription
 
 logger = logging.getLogger(__name__)
@@ -155,8 +154,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             ev = pyopencl.enqueue_copy(self.queue, self.cl_mem["lut"], lut)
         else:
             ev = pyopencl.enqueue_copy(self.queue, self.cl_mem["lut"], lut.T.copy())
-        if self.profile:
-            self.events.append(EventDescription("copy LUT", ev))
+        self.profile_add(ev, "copy LUT")
 
     @property
     def checksum(self):
@@ -311,8 +309,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             kernel = self.kernels.get_kernel(self.mapping[data.dtype.type])
             cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
             events += [EventDescription("copy raw %s" % dest, copy_image), EventDescription("cast to float", cast_to_float)]
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum
 
@@ -433,9 +430,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 image = numpy.empty(data.shape, dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
                 events.append(EventDescription("copy D->H image", ev))
-                if self.profile:
-                    self.events += events
                 ev.wait()
+                self.profile_multi(events)
                 return image
             integrate = self.kernels.lut_integrate(self.queue, self.wdim_bins, self.workgroup_size, *list(kw_int.values()))
             events.append(EventDescription("integrate", integrate))
@@ -467,8 +463,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
                 events.append(EventDescription("copy D->H sum_count", ev))
             ev.wait()
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         return merged, sum_data, sum_count
 
     integrate = integrate_legacy
@@ -658,7 +653,6 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                          merged[:, 2].reshape(outshape).T,
                                          merged[:, 4].reshape(outshape).T,
                                          merged[:, 6].reshape(outshape).T)
-        if self.profile:
-            self.events += events
+        self.profile_multi(events)
         return res
 

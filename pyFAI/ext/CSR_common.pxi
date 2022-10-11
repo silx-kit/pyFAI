@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/07/2022"
+__date__ = "09/09/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -58,6 +58,7 @@ cdef class CsrIntegrator(object):
         readonly data_t empty
         readonly data_t[::1] _data
         readonly index_t[::1] _indices, _indptr
+        readonly data_t[:, ::1] preprocessed
 
     def __init__(self,
                   tuple lut,
@@ -72,6 +73,7 @@ cdef class CsrIntegrator(object):
         """
         self.empty = empty
         self.input_size = image_size
+        self.preprocessed = numpy.empty((image_size, 4), dtype=data_d)
         assert len(lut) == 3, "Sparse matrix is expected as 3-tuple CSR with (data, indices, indptr)"
         assert len(lut[1]) == len(lut[0]),  "Sparse matrix in CSR format is expected to have len(data) == len(indices) is expected as 3-tuple CSR with (data, indices, indptr)"
         self._data = numpy.ascontiguousarray(lut[0], dtype=data_d)
@@ -84,6 +86,7 @@ cdef class CsrIntegrator(object):
         self._data = None
         self._indices = None
         self._indpts = None
+        self.preprocessed = None
         self.empty = 0
         self.input_size = 0
         self.output_size = 0 
@@ -311,6 +314,7 @@ cdef class CsrIntegrator(object):
             data_t[::1] sem = numpy.empty(self.output_size, dtype=data_d)
             data_t[:, ::1] preproc4
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
+            bint do_variance = error_model is not ErrorModel.NO
         assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
@@ -328,7 +332,8 @@ cdef class CsrIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           error_model=error_model)
+                           error_model=error_model,
+                           out=self.preprocessed)
 
         for i in prange(self.output_size, nogil=True, schedule="guided"):
             acc_sig = 0.0
@@ -347,14 +352,13 @@ cdef class CsrIntegrator(object):
                 norm = preproc4[idx, 2] 
                 count = preproc4[idx, 3]
                 
-                
+                acc_count = acc_count + coef * count
                 if do_azimuthal_variance:
                     if acc_norm_sq <= 0.0:
                         acc_sig = coef * sig
                         #Variance remains at 0
                         acc_norm = coef * norm
                         acc_norm_sq = acc_norm * acc_norm
-                        acc_count = coef * count
                     else:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                         # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
@@ -373,14 +377,14 @@ cdef class CsrIntegrator(object):
                         acc_sig = acc_sig + coef * sig 
                         delta2 = acc_sig / acc_norm - b                        
                         acc_var = acc_var +  omega2_B * delta1 * delta2
-                        acc_count = acc_count + coef * count
                 else:
                     acc_sig = acc_sig + coef * sig
-                    acc_var = acc_var + coef * coef * var
+                    if do_variance:
+                        acc_var = acc_var + coef * coef * var
                     w = coef * norm
                     acc_norm = acc_norm + w
                     acc_norm_sq = acc_norm_sq + w*w
-                    acc_count = acc_count + coef * count
+                    
 
             sum_sig[i] = acc_sig
             sum_var[i] = acc_var
@@ -389,12 +393,13 @@ cdef class CsrIntegrator(object):
             sum_count[i] = acc_count
             if acc_norm_sq > 0.0:
                 merged[i] = acc_sig / acc_norm
-                std[i] = sqrt(acc_var / acc_norm_sq)
-                sem[i] = sqrt(acc_var) / acc_norm
+                if do_variance:
+                    std[i] = sqrt(acc_var / acc_norm_sq)
+                    sem[i] = sqrt(acc_var) / acc_norm
+                else:
+                    std[i] = sem[i] = empty
             else:
-                merged[i] = empty
-                std[i] = empty
-                sem[i] = empty
+                merged[i] = std[i] = sem[i] = empty
         if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
@@ -513,7 +518,8 @@ cdef class CsrIntegrator(object):
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
-                           error_model=error_model)
+                           error_model=error_model,
+                           out=self.preprocessed)
         with nogil:
             # Integrate once
             for i in prange(self.output_size, schedule="guided"):

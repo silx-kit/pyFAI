@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2022"
+__date__ = "08/09/2022"
 __status__ = "development"
 
 import inspect
@@ -154,7 +154,7 @@ class IntegrationMethod:
     _registry = OrderedDict()
 
     AVAILABLE_SPLITS = ("no", "bbox", "pseudo", "full")
-    AVAILABLE_ALGOS = ("histogram", "lut", "csr")
+    AVAILABLE_ALGOS = ("histogram", "lut", "csr", "csc")
     AVAILABLE_IMPLS = ("python", "cython", "opencl")
 
     @classmethod

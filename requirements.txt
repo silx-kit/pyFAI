@@ -1,3 +1,4 @@
+setuptools<60
 numpy
 cython
 fabio
@@ -5,7 +6,7 @@ scipy
 matplotlib
 numexpr
 h5py
-silx >=0.15.2
+silx #>=1.1
 PyOpenGL
 PyQt5
 hdf5plugin

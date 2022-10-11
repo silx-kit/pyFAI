@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/04/2022"
+__date__ = "04/10/2022"
 
 import unittest
 import os
@@ -41,13 +41,16 @@ import numpy
 import time
 import sys
 import logging
+import json
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
-import pyFAI.azimuthalIntegrator
 import pyFAI.io.spots
+import h5py
+import fabio
+import pyFAI.azimuthalIntegrator
 
 
 class TestIsoTime(unittest.TestCase):
@@ -85,6 +88,84 @@ class TestNexus(unittest.TestCase):
 
         self.assertTrue(io.is_hdf5(fname), "nexus file is an HDF5")
         # os.system("h5ls -r -a %s" % fname)
+
+    @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
+    def test_NXmonopd(self):
+        img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
+        ref = ai.integrate1d(img.data, 1000, unit="2th_deg", error_model="poisson")
+        fname = os.path.join(self.tmpdir, "NXmonopd.h5")
+        io.nexus.save_NXmonpd(fname, ref, sample="AgBh", instrument="Dubble")
+        res = io.nexus.load_nexus(fname)
+        for i, j in zip(res, ref):
+            self.assertTrue(numpy.allclose(i, j))
+        for k in dir(ref):
+            if k.startswith("__") or k in ["_sem", "std", "_std", "sem", "_sem"]:
+                continue
+            a = getattr(ref, k, None)
+            b = getattr(res, k, None)
+            if callable(a):
+                continue
+            elif isinstance(a, numpy.ndarray):
+                self.assertTrue(numpy.allclose(a, b), msg=f"check {k}")
+            elif isinstance(a, (int, float, str, tuple, type(None))):
+                self.assertEqual(a, b, k)
+            elif isinstance(a, io.ponifile.PoniFile):
+                self.assertEqual(a.as_dict(), b.as_dict(), "Poni matches")
+            elif isinstance(a, pyFAI.method_registry.IntegrationMethod):
+                self.assertEqual(a.method, b.method, "method matches")
+            elif isinstance(a, pyFAI.units.Unit):
+                self.assertEqual(str(a), str(b), "unit matches")
+
+            elif isinstance(a, dict):
+                for l in a:
+                    print(l, a[l])
+                    self.assertEqual(a[l], b[l], f"{k}[{l}]")
+            else:
+                logger.warning("unchecked: %s vs %s", a, b)
+        # clean up
+        os.unlink(fname)
+
+    @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
+    def test_NXcansas(self):
+        img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
+        ref = ai.integrate1d(img.data, 1000, unit="q_nm^-1", error_model="poisson")
+        fname = os.path.join(self.tmpdir, "NXcansas.h5")
+        io.nexus.save_NXcansas(fname, ref, sample="AgBh", instrument="Dubble")
+        res = io.nexus.load_nexus(fname)
+        # shutil.copy(fname, "/tmp")
+        for i, j in zip(res, ref):
+            self.assertTrue(numpy.allclose(i, j))
+        for k in dir(ref):
+            if k.startswith("__") or k in ["_sem", "std", "_std", "sem", "_sem"]:
+                continue
+            a = getattr(ref, k, None)
+            b = getattr(res, k, None)
+            if callable(a):
+                continue
+
+            elif isinstance(a, numpy.ndarray):
+                # print(k)
+                # print(a[:10], "\n", b[:10])
+                self.assertTrue(numpy.allclose(a, b), msg=f"check {k}")
+            elif isinstance(a, (int, float, str, tuple, type(None))):
+                self.assertEqual(a, b, k)
+            elif isinstance(a, io.ponifile.PoniFile):
+                self.assertEqual(a.as_dict(), b.as_dict(), "Poni matches")
+            elif isinstance(a, pyFAI.method_registry.IntegrationMethod):
+                self.assertEqual(a.method, b.method, "method matches")
+            elif isinstance(a, pyFAI.units.Unit):
+                self.assertEqual(str(a), str(b), "unit matches")
+
+            elif isinstance(a, dict):
+                for l in a:
+                    print(l, a[l])
+                    self.assertEqual(a[l], b[l], f"{k}[{l}]")
+            else:
+                logger.warning("unchecked: %s vs %s", a, b)
+        # clean up
+        os.unlink(fname)
 
 
 class TestHDF5Writer(unittest.TestCase):
