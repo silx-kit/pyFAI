@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2022"
+__date__ = "11/10/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -715,7 +715,6 @@ class Geometry(object):
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
-        print(unit)
         if unit:
             unit = to_unit(unit)
             space = unit.name.split("_")[0]
@@ -787,7 +786,6 @@ class Geometry(object):
                         else:
                             corners[:shape[0],:shape[1],:, 1] = chi[:shape[0],:shape[1],:]
                         if space is not None:
-                            print(unit)
                             rad = unit.equation(x, y, z, self._wavelength)
                             if rad.shape[:2] == shape:
                                 corners[..., 0] = rad

@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/07/2022"
+__date__ = "11/10/2022"
 
 import unittest
 import sys
@@ -97,7 +97,7 @@ class TestErrorModel(unittest.TestCase):
         cls.ai = cls.npt = cls.kwargs = None 
 
     def test(self):
-        epsilon = 1e-3 if sys.platform == "win32" else 1e-2
+        epsilon = 1e-3 if sys.platform == "win32" else 2e-3
         results = {}
         for error_model in ("poisson", "azimuthal", "hybrid"):
             for impl in ("python", "cython", "opencl"):
