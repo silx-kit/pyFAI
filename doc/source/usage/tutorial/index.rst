@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 21/01/2021
+:Date: 21/10/2021
 :Keywords: Tutorials
 :Target: Advanced users tutorials using jupyter notebooks
 
@@ -33,4 +33,5 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    ThickDetector/index
    Variance/Variance
    Separation/index
+   Parallelization/index
    Soleil/index
