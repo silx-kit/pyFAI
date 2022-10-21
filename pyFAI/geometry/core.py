@@ -1275,7 +1275,7 @@ class Geometry(object):
             self._rot2 = poni.rot2
         if poni.rot3 is not None:
             self._rot3 = poni.rot3
-        if poni.rot3 is not None:
+        if poni.wavelength is not None:
             self._wavelength = poni.wavelength
         self.reset()
 
