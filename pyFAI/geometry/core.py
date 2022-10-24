@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/10/2022"
+__date__ = "21/10/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -52,7 +52,7 @@ import os
 import threading
 import json
 from collections import namedtuple, OrderedDict
-from .fit2d import convert_to_Fit2d, convert_from_Fit2d 
+from .fit2d import convert_to_Fit2d, convert_from_Fit2d
 from .. import detectors
 from .. import units
 from ..utils.decorators import deprecated
@@ -726,8 +726,8 @@ class Geometry(object):
                 if (ary is not None) and (shape == ary.shape[:2]):
                     return ary
             # This is the fastest to calculate
-            space = "r"  
-            #unit = to_unit("r_m")
+            space = "r"
+            # unit = to_unit("r_m")
         key = space + "_corner"
         if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
@@ -1429,12 +1429,12 @@ class Geometry(object):
         :param splineFile: name of the file containing the spline
         :param detector: name of the detector or detector object
         """
-        pixelX = pixelX if pixelX is not None else self.detector.pixel2*1e6
-        pixelY = pixelY if pixelY is not None else self.detector.pixel1*1e6
+        pixelX = pixelX if pixelX is not None else self.detector.pixel2 * 1e6
+        pixelY = pixelY if pixelY is not None else self.detector.pixel1 * 1e6
         splineFile = splineFile if splineFile is not None else self.detector.splineFile
         detector = detector if detector is not None else self.detector
         wavelength = wavelength if wavelength else (
-                        self.wavelength*1e10 if self.wavelength else None)
+                        self.wavelength * 1e10 if self.wavelength else None)
         poni = convert_from_Fit2d({"directDist":directDist,
                                    "centerX":centerX,
                                    "centerY":centerY,
