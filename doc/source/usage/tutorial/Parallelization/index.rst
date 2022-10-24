@@ -27,8 +27,8 @@ must be tuned to use a single thread to avoid cache poisoning.
 One of the limitation could be the repetitive allocation of buffers for
 output, but maybe python is able to handle this transparently.
 
-2. Multiprocessing: This is knows to be efficient under linux thanks to
-the `fork` mechanism but one has to use `spawn`, like under windows to
+2. Multiprocessing: This is known to be efficient under Linux thanks to
+the `fork` mechanism but one has to use `spawn`, like under Windows to
 be compatible with GPU processing. One GPU can host up to 15 parallel instances.
 
 3. Dask/Joblib: this is a variant of the former, maybe a bit simpler to
