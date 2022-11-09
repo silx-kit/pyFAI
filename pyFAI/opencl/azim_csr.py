@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "06/10/2022"
+__date__ = "09/11/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -390,7 +390,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
 
     def send_buffer(self, data, dest, checksum=None):
-        """Send a numpy array to the device, including the cast on the device if possible
+        """Send a numpy array to the device, including the type conversion on the device if possible
 
         :param data: numpy array with data
         :param dest: name of the buffer as registered in the class
@@ -406,9 +406,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
                 kernel_name = self.mapping[data.dtype.type]
                 kernel = self.kernels.get_kernel(kernel_name)
-                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                convert_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
                 events += [EventDescription("copy raw D->D " + dest, copy_image),
-                           EventDescription("cast " + kernel_name, cast_to_float)]
+                           EventDescription("convert " + kernel_name, convert_to_float)]
         else:
             # Assume it is a numpy array
             if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
@@ -418,9 +418,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
                 kernel_name = self.mapping[data.dtype.type]
                 kernel = self.kernels.get_kernel(kernel_name)
-                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                convert_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
                 events += [EventDescription("copy raw H->D " + dest, copy_image),
-                           EventDescription("cast " + kernel_name, cast_to_float)]
+                           EventDescription("cast " + kernel_name, convert_to_float)]
         self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum
