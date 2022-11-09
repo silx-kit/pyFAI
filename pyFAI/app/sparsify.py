@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2022"
+__date__ = "18/10/2022"
 __status__ = "production"
 
 import os
@@ -194,7 +194,10 @@ class Writer(Thread):
     def __init__(self, queue, output, kwargs):
         Thread.__init__(self, name="writer")
         self.queue = queue
-        self.output = output
+        if os.path.splitext(output)[1].lower() in (".h5", ".nxs"):
+            self.output = output
+        else:
+            self.output = output + ".h5"
         self.kwargs = kwargs
 
     def run(self):
