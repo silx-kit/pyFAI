@@ -2,7 +2,7 @@
 # coding: utf8
 # /*##########################################################################
 #
-# Copyright (c) 2015-2020 European Synchrotron Radiation Facility
+# Copyright (c) 2015-2020, 2022 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,37 +36,26 @@ import shutil
 import logging
 import glob
 
+import setuptools
+
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger("pyFAI.setup")
 
 from distutils.command.clean import clean as Clean
 from distutils.command.build import build as _build
+
+from setuptools import Command
+from setuptools.command.build_py import build_py as _build_py
+from setuptools.command.build_ext import build_ext
+from setuptools.command.sdist import sdist
 try:
-    from setuptools import Command
-    from setuptools.command.build_py import build_py as _build_py
-    from setuptools.command.build_ext import build_ext
-    from setuptools.command.sdist import sdist
-    try:
-        from Cython.Build import build_ext
-        logger.info("Use setuptools with cython")
-    except ImportError:
-        from setuptools.command.build_ext import build_ext
-        logger.info("Use setuptools, cython is missing")
+    from Cython.Build import build_ext
+    logger.info("Use setuptools with cython")
 except ImportError:
-    try:
-        from numpy.distutils.core import Command
-    except ImportError:
-        from distutils.core import Command
-    from distutils.command.build_py import build_py as _build_py
-    from distutils.command.build_ext import build_ext
-    from distutils.command.sdist import sdist
-    try:
-        from Cython.Build import build_ext
-        logger.info("Use distutils with cython")
-    except ImportError:
-        from distutils.command.build_ext import build_ext
-        logger.info("Use distutils, cython is missing")
+    from setuptools.command.build_ext import build_ext
+    logger.info("Use setuptools, cython is missing")
+
 try:
     import sphinx
     import sphinx.util.console
@@ -946,7 +935,7 @@ class TestData(Command):
         """
         from silx.utils.ExternalResources import ExternalResources
         # sorry for duplicating this code ....
-        testimages = "pyFAI_testdata" 
+        testimages = "pyFAI_testdata"
         if "PYFAI_TESTIMAGES" in os.environ:
             testimages = os.environ.get("PYFAI_TESTIMAGES")
         url_base = "http://ftp.edna-site.org/pyFAI/testimages"
