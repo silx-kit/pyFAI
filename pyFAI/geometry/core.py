@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/10/2022"
+__date__ = "03/11/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1332,8 +1332,11 @@ class Geometry(object):
         :return: itself with updated parameters
         """
         try:
-            with open(filename) as f:
-                dico = json.load(f)
+            if os.path.exists(filename):
+                with open(filename) as f:
+                    dico = json.load(f)
+            else:
+                dico = json.loads(filename)
         except Exception:
             logger.info("Unable to parse %s as JSON file, defaulting to PoniParser", filename)
             poni = ponifile.PoniFile(data=filename)
