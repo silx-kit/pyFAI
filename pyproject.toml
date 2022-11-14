@@ -1,11 +1,11 @@
 [build-system]
 requires = [
     "wheel",
-    "setuptools<60.0.0",
+    "setuptools<60",
     "oldest-supported-numpy",
     "scipy",
     "sphinx",
     "nbsphinx",
-    "silx>=0.10",
+    "silx>=1.1",
     "Cython>=0.25"
 ]
