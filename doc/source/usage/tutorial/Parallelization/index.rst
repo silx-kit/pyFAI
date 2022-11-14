@@ -46,10 +46,11 @@ silx v1.2 (development for now). This is demonstrate in the second tutorial.
 to GPU but requires even more specialized hardware and staff: both decompression 
 and integration can be performed there.
 
-The notebook hereafter present some of those approaches:
+The notebook hereafter present some of those approaches (0, 1 and 3):
 
 .. toctree::
    :maxdepth: 1
 
    Direct_chunk_read
    GPU-decompression
+   MultiGPU  
