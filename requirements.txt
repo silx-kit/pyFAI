@@ -6,7 +6,7 @@ scipy
 matplotlib
 numexpr
 h5py
-silx #>=1.1
+silx >=1.1
 PyOpenGL
 PyQt5
 hdf5plugin
