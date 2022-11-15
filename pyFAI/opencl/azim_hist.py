@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "06/10/2022"
+__date__ = "15/11/2022"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -509,7 +509,6 @@ class OCL_Histogram1d(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw_correction["do_absorption"] = do_absorption
 
-            for k, v in kw_correction.items(): print(k, v)
             ev = self.kernels.corrections4(self.queue, self.wdim_data, self.workgroup_size["corrections4"],
                                            *list(kw_correction.values()))
             events.append(EventDescription("corrections4", ev))
