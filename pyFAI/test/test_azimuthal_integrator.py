@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2022"
+__date__ = "15/11/2022"
 
 import unittest
 import os
@@ -501,6 +501,24 @@ class TestSaxs(unittest.TestCase):
 # TODO bug 1446 error-model "azimuthal" is not implemented in `integrate1d_ng`
         res_azimuthal = ai.integrate1d_legacy(img, 1000, mask=mask, error_model="azimuthal")
         self.assertGreater(res_azimuthal.sigma.min(), 0, "Azimuthal error are positive")
+
+    def test_empty(self):
+        """Non regression about #1760"""
+        ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
+        img = numpy.empty(ai.detector.shape)
+        ref = ai.empty
+        target = -42
+        self.assertNotEqual(ref, target, "buggy test !")
+        for m in ("LUT", "CSR", "CSC"):
+            ai.integrate1d(img, 100, method=("no", m, "cython"))
+        for k,v in ai.engines.items():
+            self.assertEqual(v.engine.empty, ref, k)
+        ai.empty = target
+        for k,v in ai.engines.items():
+            self.assertEqual(v.engine.empty, target, k)
+        ai.empty = ref
+        for k,v in ai.engines.items():
+            self.assertEqual(v.engine.empty, ref, k)
 
 
 class TestSetter(unittest.TestCase):

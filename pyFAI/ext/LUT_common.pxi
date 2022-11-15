@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/07/2022"
+__date__ = "15/11/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -53,7 +53,7 @@ cdef class LutIntegrator(object):
     """
     cdef:
         readonly index_t input_size, output_size, lut_size
-        readonly data_t empty
+        public data_t empty
         readonly lut_t[:, ::1] _lut
         readonly data_t[:, ::1] preprocessed
 

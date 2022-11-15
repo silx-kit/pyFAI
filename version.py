@@ -64,7 +64,7 @@ MAJOR = 0
 MINOR = 22
 MICRO = 0
 RELEV = "dev"  # <16
-SERIAL = 10  # <16
+SERIAL = 11  # <16
 
 date = __date__
 
