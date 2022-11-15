@@ -42,5 +42,3 @@ with PiCamera() as camera:
             fig.canvas.draw()
             QtCore.QCoreApplication.processEvents()
             raw.truncate(0)
-
-

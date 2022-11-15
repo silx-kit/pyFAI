@@ -229,4 +229,3 @@ if __name__ == "__main__":
     runner.run(suite())
     if runner.run(suite()).wasSuccessful():
         UtilsTest.clean_up()
-

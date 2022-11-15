@@ -185,7 +185,7 @@ cdef class ArrayBuilder:
 
 
     def __cinit__(self, int nlines, min_size=4):
-        deprecated_warning("class", "ArrayBuilder", reason=None, 
+        deprecated_warning("class", "ArrayBuilder", reason=None,
                            replacement="sparse_builder.SparseBuilder",
                            since_version='0.21.0', only_once=True,
                            skip_backtrace_count=0, deprecated_since='0.21.0')

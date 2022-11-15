@@ -44,7 +44,7 @@ from .crc32 cimport pyFAI_crc32
 
 def crc32(numpy.ndarray data not None):
     """Calculate the CRC32 checksum of a numpy array
-    
+
     :param data: a numpy array
     :return: unsigned integer
     """

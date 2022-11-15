@@ -127,7 +127,7 @@ def histoBBox1d(weights,
     cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
     dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
-    
+
     sum_data = numpy.zeros(bins, dtype=acc_d)
     sum_count = numpy.zeros(bins, dtype=acc_d)
     out_merge = numpy.zeros(bins, dtype=data_d)
@@ -175,9 +175,9 @@ def histoBBox1d(weights,
     else:
         cpos1 = None
         dpos1 = None
-    
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0, 
-                                                                 cpos1, dpos1, 
+
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
+                                                                 cpos1, dpos1,
                                                                  cmask, pos0_range, pos1_range,
                                                                  allow_pos0_neg=False, chiDiscAtPi=True, clip_pos1=False)
     pos0_max = calc_upper_bound(pos0_maxin)
@@ -321,7 +321,7 @@ def histoBBox1d_engine(weights,
 
         # Related to positions: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
-        position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)        
+        position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
         position_t[::1] cpos1=None, dpos1=None
         acc_t[:, ::1] out_data = numpy.zeros((bins, 4), dtype=acc_d)
         data_t[::1] out_intensity = numpy.zeros(bins, dtype=data_d)
@@ -386,8 +386,8 @@ def histoBBox1d_engine(weights,
         cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0, 
-                                                                 cpos1, dpos1, 
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
+                                                                 cpos1, dpos1,
                                                                  cmask, pos0_range, pos1_range,
                                                                  allow_pos0_neg, chiDiscAtPi=True, clip_pos1=False)
 
@@ -423,23 +423,23 @@ def histoBBox1d_engine(weights,
             c0 = cpos0[idx]
             d0 = dpos0[idx]
             min0 = c0 - d0
-            max0 = c0 + d0  
+            max0 = c0 + d0
 
             if (max0 < pos0_min) or (min0 > pos0_maxin):
                 continue
-                      
+
             if check_pos1:
                 c1 = cpos1[idx]
                 d1 = dpos1[idx]
                 if (((c1 + d1) < pos1_min) or ((c1 - d1) > pos1_max)):
                     continue
-        
+
             fbin0_min = get_bin_number(min0, pos0_min, delta)
             fbin0_max = get_bin_number(max0, pos0_min, delta)
 
-            bin0_max = min(< Py_ssize_t > fbin0_max, bins - 1)             
+            bin0_max = min(< Py_ssize_t > fbin0_max, bins - 1)
             bin0_min = max(< Py_ssize_t > fbin0_min, 0)
-            
+
             # Here starts the pixel distribution
             if bin0_min == bin0_max:
                 # All pixel is within a single bin
@@ -471,7 +471,7 @@ def histoBBox1d_engine(weights,
 
     bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
 
-    return Integrate1dtpl(bin_centers, numpy.asarray(out_intensity), numpy.asarray(out_error) if do_variance else None, 
+    return Integrate1dtpl(bin_centers, numpy.asarray(out_intensity), numpy.asarray(out_error) if do_variance else None,
                           numpy.asarray(out_data[:, 0]), numpy.asarray(out_data[:, 1]), numpy.asarray(out_data[:, 2]), numpy.asarray(out_data[:, 3]))
 
 
@@ -611,8 +611,8 @@ def histoBBox2d(weights,
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0, 
-                                                                 cpos1, dpos1, 
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
+                                                                 cpos1, dpos1,
                                                                  cmask, pos0_range, pos1_range,
                                                                  allow_pos0_neg, chiDiscAtPi, clip_pos1)
 
@@ -891,8 +891,8 @@ def histoBBox2d_engine(weights,
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0, 
-                                                                 cpos1, dpos1, 
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
+                                                                 cpos1, dpos1,
                                                                  cmask, pos0_range, pos1_range,
                                                                  allow_pos0_neg, chiDiscAtPi, clip_pos1)
     pos0_max = calc_upper_bound(pos0_maxin)
@@ -945,7 +945,7 @@ def histoBBox2d_engine(weights,
             bin0_max = <Py_ssize_t> fbin0_max
             bin1_min = <Py_ssize_t> fbin1_min
             bin1_max = <Py_ssize_t> fbin1_max
-            
+
             if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     continue
 
@@ -954,7 +954,7 @@ def histoBBox2d_engine(weights,
             bin0_min = max(bin0_min, 0)
             bin1_max = min(bin1_max, bins1 - 1)
             bin1_min = max(bin1_min, 0)
-            
+
             if bin0_min == bin0_max:
                 # No spread along dim0
                 if bin1_min == bin1_max:

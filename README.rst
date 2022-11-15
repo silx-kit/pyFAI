@@ -39,7 +39,7 @@ As most Python packages, pyFAI is available via PIP::
 It is advised to run this in a vitural environment.
 Provide the *--user* to perform an installation local to your user (not recommended).
 Under UNIX, you may have to run the command via *sudo* to gain root access an
-perform a system wide installation (neither recommended). 
+perform a system wide installation (neither recommended).
 
 
 With conda
@@ -90,7 +90,7 @@ repository::
     git clone https://github.com/silx-kit/pyFAI.git
     cd pyFAI
     pip install --upgrade .
-    
+
 If you want pyFAI to make use of your graphic card, please install
 `pyopencl <http://mathema.tician.de/software/pyopencl>`_
 
@@ -158,13 +158,13 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-One needs to install `Python` (>=3.6) and `Xcode` prior to start installing pyFAI. 
+One needs to install `Python` (>=3.6) and `Xcode` prior to start installing pyFAI.
 The compiled extension will use only one core due to the limitation of the compiler.
-OpenCL is hence greately adviced on Apple systems. 
+OpenCL is hence greately adviced on Apple systems.
 Then install the missing dependencies with `pip`::
 
    pip install -r requirements.txt
-	
+
 
 Windows
 -------

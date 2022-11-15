@@ -49,7 +49,7 @@ class Beam:
 
     def __init__(self, width=None, profile="gaussian"):
         """Constructor of the Beam
-        
+
         :param width: FWHM or diameter of the beam in meters
         :param shape: can be "gaussian", "circle" or "square"
         """
@@ -148,15 +148,15 @@ class BaseSensor:
     """
     This class represents the sensor material for an thick slab (thickness >> 1/mu) and a small beam .
 
-    The absorption for the beam is assumed to follow Beer-Lambert's law, 
+    The absorption for the beam is assumed to follow Beer-Lambert's law,
     i.e. the beam sees an exponential decay of the intensity with the traveled distance exp(-µx).
     The inverse of the absorption coefficient, 1/mu, is the "average" penetration distance.
     """
 
     def __init__(self, mu=None):
         """Constructor of the base-sensor.
-        
-        :param mu: 
+
+        :param mu:
         """
         self.mu = mu
 
@@ -191,17 +191,17 @@ ThickSensor = BaseSensor
 class ThinSensor(BaseSensor):
     """
     This class represents the sensor material.
-    
-    The absorption for the beam is assumed to follow Beer-Lambert's law, 
+
+    The absorption for the beam is assumed to follow Beer-Lambert's law,
     i.e. the beam sees an exponential decay of the intensity with the traveled distance.
     The inverse of the absorption coefficient, 1/mu, is the "average" penetration distance.
-     
+
     The sensor is defined by its thickness (in meter) and the apparent (normal) efficiency
-    of the material which is usually easier to obtain from the manufacturer than the 
+    of the material which is usually easier to obtain from the manufacturer than the
     exect composition of the sensor or the absortion coefficient.
-    
+
     Nota: the absortion coefficient depends on the wavelength, but the effect is expected to
-    be negligeable when refining the wagelength in a calibration experiment. 
+    be negligeable when refining the wagelength in a calibration experiment.
     """
 
     def __init__(self, thickness=None, efficiency=None):
@@ -261,7 +261,7 @@ class ThinSensor(BaseSensor):
 
     def absorption(self, angle, over=None):
         """Calculate the absorption along the path for a beam inclined with the given angle
-        
+
         :param angle: incidence angle in radian
         :param over: enforce oversampling factor
         :return position (along the detector), absorption (normalized)
@@ -374,13 +374,13 @@ class ThinSensor(BaseSensor):
 class Parallax:
     """Provides the displacement of the peak position
     due to parallax effect from the sine of the incidence angle
-     
+
     """
     SIZE = 64  # <8k  best fits into L1 cache
 
     def __init__(self, sensor=None, beam=None):
         """Constructor for the Parallax class
-        
+
         :param sensor: instance of the BaseSensor
         :param beam: instance of Beam
         """
@@ -399,7 +399,7 @@ class Parallax:
     def init(self, over=None):
         """Initialize actually the class...
 
-        :param over: enforce the oversampling factor for numerical integration 
+        :param over: enforce the oversampling factor for numerical integration
         """
         angles = numpy.linspace(0, pi / 2.0, self.SIZE)
         displacement = [self.sensor.measure_displacement(angle, beam=self.beam, over=over)

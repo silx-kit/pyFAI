@@ -1,4 +1,4 @@
-# coding: utf-8 
+# coding: utf-8
 #
 #    Project: Azimuthal integration using single threaded CSC integrators
 #             https://github.com/silx-kit/pyFAI
@@ -84,7 +84,7 @@ cdef class CscIntegrator(object):
         self._indptr = None
         self.empty = 0
         self.input_size = 0
-        self.output_size = 0 
+        self.output_size = 0
         self.nnz = 0
 
     @property
@@ -120,7 +120,7 @@ cdef class CscIntegrator(object):
         :type weights: ndarray
         :param variance: the variance associate to the image
         :type variance: ndarray
-        :param error_model: enum ErrorModel 
+        :param error_model: enum ErrorModel
         :param dummy: value for dead pixels (optional)
         :type dummy: float
         :param delta_dummy: precision for dead-pixel value in dynamic masking
@@ -134,7 +134,7 @@ cdef class CscIntegrator(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param absorption: Apparent efficiency of a pixel due to parallax effect
-        :type absorption: ndarray        
+        :type absorption: ndarray
         :param normalization_factor: divide the valid result by this value
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
@@ -157,10 +157,10 @@ cdef class CscIntegrator(object):
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
             bint do_variance, is_valid, do_dark, do_flat, do_polarization, check_dummy, do_solidangle, do_absorption
             preproc_t value
-            acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B, omega_AB 
+            acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B, omega_AB
 
 
-        
+
         assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
 
@@ -177,14 +177,14 @@ cdef class CscIntegrator(object):
             check_dummy = False
             cdummy = <data_t> float(empty)
             cddummy = 0.0
-    
+
         if variance is not None:
             assert variance.size == self.input_size, "variance size"
             do_variance = True
             cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
         else:
             do_variance = error_model is not ErrorModel.NO
-    
+
         if dark is not None:
             do_dark = True
             assert dark.size == self.input_size, "dark current array size"
@@ -215,10 +215,10 @@ cdef class CscIntegrator(object):
             cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=data_d)
         else:
             do_absorption = False
-    
+
         with nogil:
             #first loop for pixel in input image
-            for idx in range(self._indptr.shape[0]-1):  
+            for idx in range(self._indptr.shape[0]-1):
                 # skip pixel if masked:
                 start = self._indptr[idx]
                 stop = self._indptr[idx+1]
@@ -249,8 +249,8 @@ cdef class CscIntegrator(object):
                         if sum_norm_sq[bin_idx] > 0.0:
                             # Inspired from https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                             # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
-                            # Emprically validated against 2-pass implementation in Python/scipy-sparse   
-                            
+                            # Emprically validated against 2-pass implementation in Python/scipy-sparse
+
                             omega_A = sum_norm[bin_idx]
                             omega_B = w
                             omega2_A = sum_norm_sq[bin_idx]
@@ -261,20 +261,20 @@ cdef class CscIntegrator(object):
                             # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
                             b = value.signal / value.norm
                             delta1 = sum_sig[bin_idx]/omega_A - b
-                            sum_sig[bin_idx] += coef * value.signal 
-                            delta2 = sum_sig[bin_idx] / omega_AB - b                        
+                            sum_sig[bin_idx] += coef * value.signal
+                            delta2 = sum_sig[bin_idx] / omega_AB - b
                             sum_var[bin_idx] += omega2_B * delta1 * delta2
                         else:
                             sum_sig[bin_idx] = coef * value.signal
                             sum_norm[bin_idx] = w
                             sum_norm_sq[bin_idx] = w * w
                     else:
-                        sum_sig[bin_idx] += coef * value.signal                        
+                        sum_sig[bin_idx] += coef * value.signal
                         sum_norm[bin_idx] += w
                         sum_norm_sq[bin_idx] += w * w
                         if do_variance:
                             sum_var[bin_idx] += coef * coef * value.variance
-                    
+
             #calulate means from accumulators:
             for bin_idx in range(self.output_size):
                 if sum_norm_sq[bin_idx] > 0:
@@ -285,25 +285,24 @@ cdef class CscIntegrator(object):
                     else:
                         std[bin_idx] = sem[bin_idx] = empty
                 else:
-                    merged[bin_idx] = std[bin_idx] = sem[bin_idx] = empty 
+                    merged[bin_idx] = std[bin_idx] = sem[bin_idx] = empty
 
         if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
-                              numpy.asarray(merged).reshape(self.bins).T, 
+                              numpy.asarray(merged).reshape(self.bins).T,
                               numpy.asarray(sem).reshape(self.bins).T,
-                              numpy.asarray(sum_sig).reshape(self.bins).T, 
-                              numpy.asarray(sum_var).reshape(self.bins).T, 
-                              numpy.asarray(sum_norm).reshape(self.bins).T, 
+                              numpy.asarray(sum_sig).reshape(self.bins).T,
+                              numpy.asarray(sum_var).reshape(self.bins).T,
+                              numpy.asarray(sum_norm).reshape(self.bins).T,
                               numpy.asarray(sum_count).reshape(self.bins).T,
-                              numpy.asarray(std).reshape(self.bins).T, 
-                              numpy.asarray(sem).reshape(self.bins).T, 
+                              numpy.asarray(std).reshape(self.bins).T,
+                              numpy.asarray(sem).reshape(self.bins).T,
                               numpy.asarray(sum_norm_sq).reshape(self.bins).T)
         else:
             # 1D integration case: "position intensity error signal variance normalization count std sem norm_sq"
-            return Integrate1dtpl(self.bin_centers, 
+            return Integrate1dtpl(self.bin_centers,
                                   numpy.asarray(merged),numpy.asarray(sem) ,
-                                  numpy.asarray(sum_sig),numpy.asarray(sum_var), 
+                                  numpy.asarray(sum_sig),numpy.asarray(sum_var),
                                   numpy.asarray(sum_norm), numpy.asarray(sum_count),
                                   numpy.asarray(std), numpy.asarray(sem), numpy.asarray(sum_norm_sq))
-    

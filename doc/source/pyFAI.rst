@@ -146,12 +146,12 @@ Regrouping mechanism
 
 In pyFAI, regrouping is performed using a histogram-like algorithm.
 Each pixel of the image is associated to its polar coordinates
-:math:`(2\theta , \chi )` or :math:`(q, \chi )`, then several histograms 
+:math:`(2\theta , \chi )` or :math:`(q, \chi )`, then several histograms
 versus :math:`2\theta` (or :math:`q`) are built, one non
 weighted for measuring the number of pixels falling in each bin and
 another weighted by pixel intensities (after dark-current subtraction,
 and corrections for flat-field, solid-angle and polarization).
-The division of the intensity weighted histogram by the normalization 
+The division of the intensity weighted histogram by the normalization
 weighted histogram (~ number of pixels per bin) gives
 the average signal over the given corona which provides the diffraction pattern.
 :math:`2D` regrouping (called *caking* in
@@ -165,7 +165,7 @@ Associated uncertainties are extracted in a similar manner, the formula are desc
    :maxdepth: 1
 
    statistics
-   
+
 Pixel splitting algorithm
 .........................
 
@@ -296,4 +296,3 @@ Acknowledgments
 
 Porting pyFAI to GPU would have not been possible without
 the financial support of LinkSCEEM-2 (RI-261600).
-

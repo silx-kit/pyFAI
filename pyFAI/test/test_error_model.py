@@ -89,12 +89,12 @@ class TestErrorModel(unittest.TestCase):
         cls.kwargs["flat"] = flat
         img = numpy.random.poisson(img_theo)
         cls.kwargs["data"] = img
-          
-        
+
+
     @classmethod
     def tearDownClass(cls):
         super(TestErrorModel, cls).tearDownClass()
-        cls.ai = cls.npt = cls.kwargs = None 
+        cls.ai = cls.npt = cls.kwargs = None
 
     def test(self):
         epsilon = 1e-3 if sys.platform == "win32" else 2e-3
@@ -114,9 +114,9 @@ class TestErrorModel(unittest.TestCase):
         for k in results:
             if k[2] == "integrate":
                 res = results[k]
-                if res is ref: 
-                    continue 
-                for array in ("count", "sum_signal", "sum_normalization", "sum_variance"): 
+                if res is ref:
+                    continue
+                for array in ("count", "sum_signal", "sum_normalization", "sum_variance"):
                     # print(k, array, cormap(ref.__getattribute__(array), res.__getattribute__(array)))
                     self.assertGreaterEqual(cormap(ref.__getattribute__(array), res.__getattribute__(array)), epsilon, f"array {array} matches for {k} vs numpy")
         # test clip
@@ -124,13 +124,13 @@ class TestErrorModel(unittest.TestCase):
         for k in results:
             if k[2] == "clip":
                 res = results[k]
-                if res is ref: 
-                    continue 
-                for array in ("count", "sum_signal", "sum_normalization", "sum_variance"): 
+                if res is ref:
+                    continue
+                for array in ("count", "sum_signal", "sum_normalization", "sum_variance"):
                     # print(k, array, cormap(ref.__getattribute__(array), res.__getattribute__(array)))
                     self.assertGreaterEqual(cormap(ref.__getattribute__(array), res.__getattribute__(array)), epsilon, f"array {array} matches for {k} vs numpy")
 
-        # raise 
+        # raise
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

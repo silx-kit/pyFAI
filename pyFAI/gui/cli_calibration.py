@@ -550,7 +550,7 @@ class AbstractCalibration(object):
 
     def preprocess(self):
         """
-        Initialize peakpicker 
+        Initialize peakpicker
         """
         self.peakPicker = PeakPicker(self.img, reconst=self.reconstruct, mask=self.mask,
                                      pointfile=self.pointfile, calibrant=self.calibrant,
@@ -657,10 +657,10 @@ class AbstractCalibration(object):
     def refine(self, maxiter=1000000, fixed=None):
         """
         Contains the common geometry refinement part
-        
+
         :param maxiter: number of iteration to run for in the minimizer
         :param fixed: a list of parameters for maintain fixed during the refinement. self.fixed by default.
-        :return: nothing, object updated in place 
+        :return: nothing, object updated in place
         """
 
         fixed = self.fixed if fixed is None else fixed
@@ -1271,8 +1271,8 @@ class AbstractCalibration(object):
 
     def set_data(self, data):
         """call-back function for the peak-picker
-        
-        :param data: list of point with ring index 
+
+        :param data: list of point with ring index
         :return: associated azimuthal integrator
         """
         if self.weighted:
@@ -1619,10 +1619,10 @@ decrease the value if arcs are mixed together.""", default=None)
         """
         Contains the geometry refinement part specific to Calibration
         Sets up the initial guess when starting pyFAI-calib
-        
+
         :param maxiter: number of iteration to run for in the minimizer
         :param fixed: a list of parameters for maintain fixed during the refinement. self.fixed by default.
-        :return: nothing, object updated in place 
+        :return: nothing, object updated in place
         """
 
         fixed = self.fixed if fixed is None else fixed
@@ -1785,10 +1785,10 @@ and a new option which lets you choose between the original `massif` algorithm a
     def refine(self, maxiter=1000000, fixed=None):
         """
         Contains the geometry refinement part specific to Recalibration
-        
+
         :param maxiter: number of iteration to run for in the minimizer
         :param fixed: a list of parameters for maintain fixed during the refinement. self.fixed by default.
-        :return: nothing, object updated in place 
+        :return: nothing, object updated in place
         """
 
         fixed = self.fixed if fixed is None else fixed
@@ -1869,8 +1869,8 @@ class MultiCalib(object):
             description = """
         Calibrate automatically a set of frames taken at various sample-detector distance.
         Return the linear regression of the fit in funtion of the sample-setector distance.
-        
-        Nota: this tool is deprecated in favor of the jupyter notebook found in the documentation 
+
+        Nota: this tool is deprecated in favor of the jupyter notebook found in the documentation
         (with the same name).
         """
             epilog = """This tool has been developed for ESRF MX-beamlines where an acceptable calibration is

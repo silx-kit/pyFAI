@@ -23,9 +23,9 @@ Dependencies
 PyFAI is a Python library which relies on the scientific stack (numpy, scipy, matplotlib)
 
 * Python: version 3.6 or newer (version 3.5 was dropped with 0.19)
-* NumPy: version 1.12 or newer  
-* SciPy: version 0.18 or newer 
-* Matplotlib: verson 2.0 or newer 
+* NumPy: version 1.12 or newer
+* SciPy: version 0.18 or newer
+* Matplotlib: verson 2.0 or newer
 * FabIO: version 0.5 or newer
 * h5py: version 2.10 or newer
 * silx: version 0.14 or newer
@@ -111,5 +111,3 @@ PyFAI can use a certain number of environment variable to modify its default beh
 * PYFAI_DATA: path with gui, calibrant, ...
 * PYFAI_TESTIMAGES: path wit test images (if absent, they get downloaded from the internet)
 * PYFAI_NO_LOGGING: Disable the configuration of any python logger in interactive mode
-
-

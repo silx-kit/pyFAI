@@ -19,7 +19,7 @@ radial bins could be adjusted.
 This program requires OpenCL. The device needs be properly selected.
 
 
-Usage: 
+Usage:
 ------
 
 spasify-Bragg [-h] [-V] [-v] [--debug] [--profile] [-o OUTPUT] [--save-source] [-b BEAMLINE] [-p PONI] [-m MASK]

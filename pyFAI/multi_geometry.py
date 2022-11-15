@@ -58,7 +58,7 @@ class MultiGeometry(object):
                  wavelength=None, empty=0.0, chi_disc=180):
         """
         Constructor of the multi-geometry integrator
-        
+
         :param ais: list of azimuthal integrators
         :param radial_range: common range for integration
         :param azimuthal_range: common range for integration

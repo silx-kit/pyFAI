@@ -147,6 +147,3 @@ Other sub-packages:
     opencl/index
     resources/index
     utils/index
-    
-
-

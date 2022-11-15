@@ -36,7 +36,7 @@ __docformat__ = 'restructuredtext'
 
 """
 This module tries to load every possible type of integrator and registers them
-into the registry   
+into the registry
 """
 import logging
 logger = logging.getLogger(__name__)

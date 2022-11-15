@@ -15,15 +15,15 @@ radial bins could be adjusted.
 This program requires OpenCL. The device needs be properly selected.
 
 
-Usage: 
+Usage:
 ------
 
 spasify-Bragg [-h] [-V] [-v] [--debug] [--profile] [-o OUTPUT]
 [--save-source] [--grid-size GRID_SIZE GRID_SIZE]
 [--zig-zag] [-b BEAMLINE] [-p PONI] [-m MASK] [--dummy DUMMY]
-[--delta-dummy DELTA_DUMMY] 
+[--delta-dummy DELTA_DUMMY]
 [--radial-range RADIAL_RANGE_MIN RADIAL_RANGE_MAX] [-P POLARIZATION] [-A] [--bins BINS] [--unit UNIT]
-[--cycle CYCLE] [--cutoff-clip CUTOFF_CLIP] 
+[--cycle CYCLE] [--cutoff-clip CUTOFF_CLIP]
 [--error-model ERROR_MODEL] [--cutoff-pick CUTOFF_PICK] [--noise NOISE]
 [--patch-size PATCH_SIZE] [--connected CONNECTED] [--workgroup WORKGROUP] [--device DEVICE DEVICE] [--device-type DEVICE_TYPE]
 [IMAGE ...]

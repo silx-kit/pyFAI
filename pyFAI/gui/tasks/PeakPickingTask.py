@@ -1106,7 +1106,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         action.triggered.connect(lambda: self.__ringSelection.toggleNewRing())
         action.setShortcut(qt.QKeySequence(qt.Qt.Key_Equal))
         self.addAction(action)
-        
+
         super()._initGui()
 
     def __onPlotModeChanged(self, owner):

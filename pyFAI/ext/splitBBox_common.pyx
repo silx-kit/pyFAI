@@ -60,7 +60,7 @@ def calc_boundaries(position_t[::1] pos0,
     """Calculate the boundaries in radial/azimuthal space in bounding-box mode.
 
     :param pos0: 1D array with pos0: tth or q_vect
-    :param delta_pos0: 1D array with delta pos0: max center-corner distance. None to deactivate splitting 
+    :param delta_pos0: 1D array with delta pos0: max center-corner distance. None to deactivate splitting
     :param pos1: 1D array with pos1: chi
     :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
     :param cmask: 1d array with mask
@@ -76,7 +76,7 @@ def calc_boundaries(position_t[::1] pos0,
         bint check_mask = False, check_pos1 = True, do_split=True
         position_t pos0_min, pos0_max, pos1_min=-INFINITY, pos1_max=INFINITY
         position_t c0, c1=0.0, d0=0.0, d1=0.0
-          
+
     if cmask is not None:
         check_mask = True
         assert cmask.size == size, "mask size"
@@ -99,13 +99,13 @@ def calc_boundaries(position_t[::1] pos0,
                 c0 = pos0[idx]
                 if do_split:
                     d0 = delta_pos0[idx]
-                    
+
                 pos0_max = max(pos0_max, c0 + d0)
                 pos0_min = min(pos0_min, c0 - d0)
 
                 if check_pos1:
                     c1 = pos1[idx]
-                    if do_split:    
+                    if do_split:
                         d1 = delta_pos1[idx]
 
                     pos1_max = max(pos1_max, c1 + d1)
@@ -126,13 +126,13 @@ def calc_boundaries(position_t[::1] pos0,
     if pos1_range is not None and len(pos1_range) > 1:
         pos1_min = min(pos1_range)
         pos1_max = max(pos1_range)
-        
+
     return Boundaries(pos0_min, pos0_max, pos1_min, pos1_max)
 
 
 class SplitBBoxIntegrator:
     """
-    Abstract class which contains the boundary selection and the LUT calculation 
+    Abstract class which contains the boundary selection and the LUT calculation
     """
 
     def __init__(self,
@@ -149,9 +149,9 @@ class SplitBBoxIntegrator:
                  bint chiDiscAtPi=True,
                  bint clip_pos1=True):
         """Constructor of the class:
-        
+
         :param pos0: 1D array with pos0: tth or q_vect
-        :param delta_pos0: 1D array with delta pos0: max center-corner distance. None to deactivate splitting 
+        :param delta_pos0: 1D array with delta pos0: max center-corner distance. None to deactivate splitting
         :param pos1: 1D array with pos1: chi
         :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
         :param bins: number of output bins (tth=100, chi=36 by default)
@@ -178,11 +178,11 @@ class SplitBBoxIntegrator:
         if delta_pos1 is not None:
             self.dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
             assert self.dpos1.size == self.size, "dpos1 size"
-        
-        if "__len__" in dir(bins): 
+
+        if "__len__" in dir(bins):
             self.bins = tuple(max(i, 1) for i in bins)
         else:
-            self.bins = bins or 1 
+            self.bins = bins or 1
         self.allow_pos0_neg = allow_pos0_neg
         self.chiDiscAtPi = chiDiscAtPi
 
@@ -199,8 +199,8 @@ class SplitBBoxIntegrator:
         self.pos1_range = pos1_range
         cdef:
             position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
-        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.cpos0, self.dpos0, 
-                                                                     self.cpos1, self.dpos1, 
+        pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.cpos0, self.dpos0,
+                                                                     self.cpos1, self.dpos1,
                                                                      self.cmask, pos0_range, pos1_range,
                                                                      allow_pos0_neg, chiDiscAtPi, clip_pos1)
         self.pos0_min = pos0_min
@@ -214,7 +214,7 @@ class SplitBBoxIntegrator:
         """Calculate the LUT and return the LUT-builder object
         """
         cdef:
-            position_t[::1] cpos0, cpos1, dpos0, dpos1  
+            position_t[::1] cpos0, cpos1, dpos0, dpos1
             mask_t[::1] cmask
             position_t pos0_min = 0.0, pos1_min = 0.0, pos1_maxin=0.0
             position_t delta, inv_area=0.0
@@ -222,13 +222,13 @@ class SplitBBoxIntegrator:
             position_t fbin0_min, fbin0_max, delta_left, delta_right
             Py_ssize_t bins, idx=0, bin=0, bin0_max=0, bin0_min=0, size
             bint check_pos1=self.pos1_range, check_mask=False, do_split=True
-            SparseBuilder builder 
-        
-        check_pos1=self.pos1_range is not None        
+            SparseBuilder builder
+
+        check_pos1=self.pos1_range is not None
         cpos0 = self.cpos0
         cpos1 = self.cpos1
         dpos0 = self.dpos0
-        dpos1 = self.dpos1 
+        dpos1 = self.dpos1
         if self.dpos0 is None:
             do_split = False
         pos0_min = self.pos0_min
@@ -240,8 +240,8 @@ class SplitBBoxIntegrator:
         check_mask = self.check_mask
         cmask = self.cmask
         #heap size is larger than the size of the image and a multiple of 1024 which can be divided by 32
-        builder = SparseBuilder(bins, block_size=32, heap_size=(size+1023)&~(1023)) 
-            
+        builder = SparseBuilder(bins, block_size=32, heap_size=(size+1023)&~(1023))
+
         with nogil:
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
@@ -291,7 +291,7 @@ class SplitBBoxIntegrator:
         """
         cdef:
             Py_ssize_t bins0, bins1, size
-            position_t[::1] cpos0, cpos1, dpos0, dpos1  
+            position_t[::1] cpos0, cpos1, dpos0, dpos1
             mask_t[::1] cmask
             bint check_mask=False, do_split=True
             position_t c0, c1, d0, d1, min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
@@ -301,14 +301,14 @@ class SplitBBoxIntegrator:
             Py_ssize_t i = 0, j = 0, idx = 0
             Py_ssize_t bin0_min, bin0_max, bin1_min, bin1_max
             SparseBuilder builder
-        
+
         bins0=self.bins[0]
         bins1=self.bins[1]
         size = self.size
         cpos0 = self.cpos0
         cpos1 = self.cpos1
         dpos0 = self.dpos0
-        dpos1 = self.dpos1 
+        dpos1 = self.dpos1
         if self.dpos0 is None:
             do_split = False
         pos0_min = self.pos0_min
@@ -316,12 +316,12 @@ class SplitBBoxIntegrator:
         size = self.size
         check_mask = self.check_mask
         cmask = self.cmask
-        delta0 = self.delta0  
-        delta1 = self.delta1  
+        delta0 = self.delta0
+        delta1 = self.delta1
 
         #heap size is larger than the size of the image and a multiple of 1024 which can be divided by 8
-        builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=(size+1023)&~(1023)) 
-        
+        builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=(size+1023)&~(1023))
+
         with nogil:
             for idx in range(size):
                 if (check_mask) and cmask[idx]:
@@ -348,7 +348,7 @@ class SplitBBoxIntegrator:
 
                 if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     continue
-                
+
                 #clip values
                 bin0_max = min(bin0_max, bins0 - 1)
                 bin0_min = max(bin0_min, 0)
@@ -377,7 +377,7 @@ class SplitBBoxIntegrator:
                         inv_area = 1.0 / (fbin0_max - fbin0_min)
                         delta_left = (<position_t> (bin0_min + 1)) - fbin0_min
                         builder.cinsert(bin0_min * bins1 + bin1_min, idx, inv_area * delta_left)
-                        
+
                         delta_right = fbin0_max - (<position_t> bin0_max)
                         builder.cinsert(bin0_max * bins1 + bin1_min, idx, inv_area * delta_right)
 
@@ -396,7 +396,7 @@ class SplitBBoxIntegrator:
                         builder.cinsert(bin0_min * bins1 + bin1_max, idx, inv_area * delta_left * delta_up)
                         builder.cinsert(bin0_max * bins1 + bin1_min, idx, inv_area * delta_right * delta_down)
                         builder.cinsert(bin0_max * bins1 + bin1_max, idx, inv_area * delta_right * delta_up)
-                        
+
                         for i in range(bin0_min + 1, bin0_max):
                             builder.cinsert(i * bins1 + bin1_min, idx, inv_area * delta_down)
                             for j in range(bin1_min + 1, bin1_max):

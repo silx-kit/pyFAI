@@ -224,14 +224,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
     def guess_workgroup_size(self, block_size=None):
         """Determines the optimal workgroup size.
-        
-        For azimuthal integration, especially the 2D variant, the 
+
+        For azimuthal integration, especially the 2D variant, the
         smallest possible is the size of a warp/wavefront.
-        
-        The method can be overwritten by derived classes to select larger workgoup 
-        
+
+        The method can be overwritten by derived classes to select larger workgoup
+
         :param block_size: Input workgroup size (block is the cuda name)
-        :return: the optimal workgoup size as integer  
+        :return: the optimal workgoup size as integer
         """
         device = self.ctx.devices[0]
         platform = device.platform.name.lower()

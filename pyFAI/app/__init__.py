@@ -35,4 +35,3 @@ __license__ = "MIT"
 __copyright__ = "2020, European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/01/2020"
 __status__ = "production"
-

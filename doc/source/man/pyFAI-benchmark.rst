@@ -14,25 +14,25 @@ Purpose
 -------
 
 Measures the avarage execution time for azimuthal integration with various image sizes and algorithms,
-can be used to select the most suitable integrator, to evaluate the perfomance of a given computer, debug 
+can be used to select the most suitable integrator, to evaluate the perfomance of a given computer, debug
 some hardware problems.
 
 Image are between 1 and 16 Mpixel in size and all the method tested are providing the same
-results for azimuthal integration (and validated). 
+results for azimuthal integration (and validated).
 The `bbox` pixel splitting schem is used which is also the default one.
-By default, only the `histogram` and `CSR` algorithm (implemented in cython) are measued, but 
+By default, only the `histogram` and `CSR` algorithm (implemented in cython) are measued, but
 OpenCL devices can be probed with options "-c", "-g" and "-a".
 
-The result is a graphic with the number of images integrated per second as function 
-of the image size. 
+The result is a graphic with the number of images integrated per second as function
+of the image size.
 All the corresponding timings are also recorded in a JSON file.
- 
-Since pyFAI version 0.20, whith the new generation of integrator put in production,
-both ``integrate1d_legacy`` and ``integrate1d_ng`` are benchmarked together to validate 
-the absence of performance regression.
-A factor larger than 2 sould be considered as a bug.  
 
-Usage 
+Since pyFAI version 0.20, whith the new generation of integrator put in production,
+both ``integrate1d_legacy`` and ``integrate1d_ng`` are benchmarked together to validate
+the absence of performance regression.
+A factor larger than 2 sould be considered as a bug.
+
+Usage
 -----
 
 **-h**, **--help**

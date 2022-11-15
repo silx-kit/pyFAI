@@ -138,7 +138,7 @@ class TestIntegrate1D(unittest.TestCase):
                 logger.info("Processing %s" % m)
                 res[m] = self.ai.integrate1d_ng(self.data, self.npt,
                                                  variance=self.data,
-                                                 method=m, 
+                                                 method=m,
                                                  radial_range=radial_range,
                                                  error_model="poisson")
                 # self.ai.reset()
@@ -148,7 +148,7 @@ class TestIntegrate1D(unittest.TestCase):
                 for b in keys[i:]:
                     if a == b: continue
                     resa = res[a]
-                    resb = res[b] 
+                    resb = res[b]
                     R = mathutil.rwp(resa[:2], resb[:2])
                     Ru = mathutil.rwp(resa[::2], resb[::2])
                     err_msg = [f"test_ng_nosplit: {a} vs {b}",
@@ -165,7 +165,7 @@ class TestIntegrate1D(unittest.TestCase):
                     else:
                         logger.info(err_msg)
                     self.assertLess(R, self.Rmax)
-                    self.assertLess(Ru, 50) #self.Rmax) TODO: fix this test 
+                    self.assertLess(Ru, 50) #self.Rmax) TODO: fix this test
 
     def test_filename(self):
         with resulttempfile() as filename:

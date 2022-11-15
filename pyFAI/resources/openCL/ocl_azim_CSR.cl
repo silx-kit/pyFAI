@@ -83,23 +83,23 @@ static inline float2 CSRxVec(const   global  float   *vector,
                };//end if finite
        } //end if k < bin_bounds.y
      }//for j
-  
+
     // parallel reduction
 
     int index;
     if (bin_size < active_threads) {
-        if (thread_id_loc < bin_size) 
+        if (thread_id_loc < bin_size)
             super_sum[thread_id_loc] = sum_K;
-        else 
+        else
             super_sum[thread_id_loc] = (float2)(0.0f, 0.0f);
     }
-    else 
+    else
         super_sum[thread_id_loc] = sum_K;
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
     while (active_threads > 1) {
-        active_threads /= 2; 
+        active_threads /= 2;
         if (thread_id_loc < active_threads) {
             index = thread_id_loc + active_threads;
             super_sum[thread_id_loc] = dw_plus_dw(super_sum[thread_id_loc], super_sum[index]);
@@ -156,7 +156,7 @@ static inline float4 CSRxVec2(const   global  float2   *data,
                };//end if finite
        } //end if k < bin_bounds.y
     } //for j
-    
+
     // parallel reduction
     if (bin_size < active_threads) {
         if (thread_id_loc < bin_size) {
@@ -172,7 +172,7 @@ static inline float4 CSRxVec2(const   global  float2   *data,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     while (active_threads > 1) {
-        active_threads /= 2; 
+        active_threads /= 2;
         if (thread_id_loc < active_threads) {
             float4 here = super_sum[thread_id_loc];
             float4 there = super_sum[thread_id_loc + active_threads];
@@ -187,31 +187,31 @@ static inline float4 CSRxVec2(const   global  float2   *data,
 
 
 /* _accumulate_poisson: accumulate one value assuming a known error model like the poissonian model
- * 
- * All processings are compensated for error accumulation 
- * 
+ *
+ * All processings are compensated for error accumulation
+ *
  * :param accumulator8: float8 containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
  * :param value4: one quadret read from the preproc4 array containing Signal, Variance, normalization and 1 if the pixel is valid.
- * :param coef: how much of that pixel contributes due to pixel splitting [0-1] 
+ * :param coef: how much of that pixel contributes due to pixel splitting [0-1]
  * :retuen: the updated accumulator8
  * */
 
 static inline float8 _accumulate_poisson(float8 accum8,
                                          float4 value4,
                                          float coef){
-     
+
     float signal, variance, norm, count;
     signal = value4.s0;
     variance = value4.s1;
     norm = value4.s2;
     count = value4.s3;
-    
+
     if (isfinite(signal) && isfinite(variance) && isfinite(norm) && (count > 0.0f)) {
         float sum_count, sum_norm_2;
         float2 sum_signal_K, sum_variance_K, sum_norm_1, w, coef2;
- 
-        sum_signal_K = (float2)(accum8.s0, accum8.s1);  
-        sum_variance_K = (float2)(accum8.s2, accum8.s3); 
+
+        sum_signal_K = (float2)(accum8.s0, accum8.s1);
+        sum_variance_K = (float2)(accum8.s2, accum8.s3);
         sum_norm_1 = (float2)(accum8.s4, accum8.s5);
         sum_count = accum8.s6;
         sum_norm_2 = accum8.s7;
@@ -222,7 +222,7 @@ static inline float8 _accumulate_poisson(float8 accum8,
         w = fp_times_fp(coef, norm);
         sum_norm_1 = dw_plus_dw(w, sum_norm_1);
         sum_norm_2 = dw_plus_fp(dw_times_dw(w, w), sum_norm_2).s0;
-        
+
 //        sum_norm_1 += coef * norm;
 //        sum_norm_2 += coef * coef * norm * norm;
         sum_count = fma(coef, count, sum_count);
@@ -232,30 +232,30 @@ static inline float8 _accumulate_poisson(float8 accum8,
 }
 
 /* _accumulate_azimuthal: accumulate one value considering the azimuthal regions
- * 
+ *
  * All processings are compensated for error accumulation
- * See Schubert & Gretz 2018, especially Eq22. 
- * 
+ * See Schubert & Gretz 2018, especially Eq22.
+ *
  * :param accumulator8: float8 containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
  * :param value4: one quadret read from the preproc4 array containing Signal, (unused variance), normalization and 1 if the pixel is valid.
- * :param coef: how much of that pixel contributes due to pixel splitting [0-1] 
+ * :param coef: how much of that pixel contributes due to pixel splitting [0-1]
  * :retuen: the updated accumulator8
- * 
+ *
  * Nota: here the variance of the pixel is not used, the variance is calculated from the distance from the pixel to the mean.
- * This algorithm is not numerically as stable as the `poisson` variant  
- *   
+ * This algorithm is not numerically as stable as the `poisson` variant
+ *
  * */
 
 static inline float8 _accumulate_azimuthal(float8 accum8,
                                            float4 value4,
                                            float coef){
-     
+
     float signal, norm, count;
     signal = value4.s0;
 //    variance = quatret.s1;
     norm = value4.s2;
     count = value4.s3;
-    
+
     if (isfinite(signal) && isfinite(norm) && (count > 0) && (coef > 0))
     {
         if (accum8.s7 <= 0.0f){
@@ -263,8 +263,8 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
             float2 w = fp_times_fp(coef, norm);
             accum8 = (float8)(fp_times_fp(coef, signal),
                               0.0f, 0.0f,
-                              w, 
-                              coef * count, 
+                              w,
+                              coef * count,
                               dw_times_dw(w, w).s0);
         }
         else{
@@ -272,9 +272,9 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
             float2 sum_signal_K, sum_variance_K, sum_norm_1, sum_norm_2;
             float sum_count, omega2_A;
             float2 x, delta, omega1_A, delta2, omega1_B, omega2_B, omega3, OmegaAOmegaB;
-            
+
             sum_signal_K = (float2)(accum8.s0, accum8.s1);
-            sum_variance_K = (float2)(accum8.s2, accum8.s3); 
+            sum_variance_K = (float2)(accum8.s2, accum8.s3);
             omega1_A = (float2)(accum8.s4, accum8.s5);
             sum_count = accum8.s6;
             omega2_A = accum8.s7;
@@ -285,27 +285,27 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
             sum_norm_2 = dw_plus_fp(omega2_B, omega2_A);
 
             x = dw_div_fp((float2)(signal, 0.0f), norm);
-            
-            
+
+
             // VV(AUb) = VV(A) + w_b^2*(b-<A>)*(b-<AUb>)
-            delta = dw_plus_dw(dw_div_dw(sum_signal_K, omega1_A), -x);           
+            delta = dw_plus_dw(dw_div_dw(sum_signal_K, omega1_A), -x);
             sum_signal_K = dw_plus_dw(sum_signal_K, fp_times_fp(coef, signal));
             delta2 = dw_plus_dw(dw_div_dw(sum_signal_K, sum_norm_1), -x);
             sum_variance_K = dw_plus_dw(sum_variance_K, dw_times_dw(omega2_B, dw_times_dw(delta2, delta)));
-                        
+
             // at the end as X_A is used in the variance XX_A
-            
+
             sum_count = fma(coef, count, sum_count);
             accum8 = (float8)(sum_signal_K, sum_variance_K, sum_norm_1, sum_count, sum_norm_2.s0);
-        }        
+        }
     }
     return accum8;
 }
 
 /* _merge_poisson: Merge two partial dataset assuming a known error model like the poissonian model
- * 
- * All processings are compensated for error accumulation 
- * 
+ *
+ * All processings are compensated for error accumulation
+ *
  * :param here, there: two float8-accumulators containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
  * :return: the updated accumulator8
  * */
@@ -313,13 +313,13 @@ static inline float8 _accumulate_azimuthal(float8 accum8,
 static inline float8 _merge_poisson(float8 here,
                                     float8 there){
     float2 sum_signal_K, sum_variance_K, sum_omega;
-    sum_signal_K = dw_plus_dw((float2)(here.s0, here.s1), 
+    sum_signal_K = dw_plus_dw((float2)(here.s0, here.s1),
                                    (float2)(there.s0, there.s1));
-    sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3), 
+    sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3),
                                      (float2)(there.s2, there.s3));
-    sum_omega = dw_plus_dw((float2)(here.s4, here.s5), 
+    sum_omega = dw_plus_dw((float2)(here.s4, here.s5),
                            (float2)(there.s4, there.s5));
-    return (float8)(sum_signal_K, 
+    return (float8)(sum_signal_K,
                     sum_variance_K,
                     sum_omega,
                     here.s6 + there.s6,
@@ -327,21 +327,21 @@ static inline float8 _merge_poisson(float8 here,
 }
 
 /* _merge_azimuthal: Merge two partial dataset considering the azimuthal regions
- * 
+ *
  * All processings are compensated for error accumulation
- * See Schubert & Gretz 2018, especially Eq22. 
- * 
+ * See Schubert & Gretz 2018, especially Eq22.
+ *
  * :param here, there: two float8-accumulators containing (sumX_hi, sumX_lo, sumV_hi, sumV_lo, sumW_hi, sumW_lo, cnt_hi, cnt_lo)
  * :return: the updated accumulator8
- * 
+ *
  * Nota: here the variance of the pixel is not used, the variance is calculated from the distance from the pixel to the mean.
- * This algorithm is not numerically as stable as the `poisson` variant  
- *   
+ * This algorithm is not numerically as stable as the `poisson` variant
+ *
  * */
 
 static inline float8 _merge_azimuthal(float8 here,
                                       float8 there){
-    if (here.s7 <= 0.0f){ // Check the counter is not null 
+    if (here.s7 <= 0.0f){ // Check the counter is not null
         return there;
     }
     else if (there.s7 <= 0.0f){
@@ -349,11 +349,11 @@ static inline float8 _merge_azimuthal(float8 here,
     }
     float2 sum_signal_K, sum_variance_K, V_A, V_B, delta, delta2, omega3, sum_norm_1, sum_norm_2, omega1_A, omega1_B;
     float sum_count, omega2_A, omega2_B;
-    
-    
-    sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3), 
+
+
+    sum_variance_K = dw_plus_dw((float2)(here.s2, here.s3),
                                 (float2)(there.s2, there.s3));
-    
+
     // Omaga_A > Omaga_B (better numerical stability since algo is non symetrical)
     if (here.s4<there.s4){
         V_A = (float2)(there.s0, there.s1);
@@ -361,9 +361,9 @@ static inline float8 _merge_azimuthal(float8 here,
 
         omega1_A = (float2)(there.s4, there.s5);
         omega1_B = (float2)(here.s4, here.s5);
-        
+
         omega2_A = there.s7;
-        omega2_B = here.s7;        
+        omega2_B = here.s7;
     }
     else{
         V_A = (float2)(here.s0, here.s1);
@@ -371,25 +371,25 @@ static inline float8 _merge_azimuthal(float8 here,
 
         omega1_A = (float2)(here.s4, here.s5);
         omega1_B = (float2)(there.s4, there.s5);
-        
+
         omega2_A = here.s7;
-        omega2_B = there.s7;        
+        omega2_B = there.s7;
     }
     sum_signal_K = dw_plus_dw(V_A, V_B);
-    
+
     sum_norm_1 = dw_plus_dw(omega1_A, omega1_B);
     sum_norm_2 = fp_plus_fp(omega2_A, omega2_B);
     sum_count = here.s6 + there.s6;
-    
+
     // Add the cross-ensemble part
-    // If one of the sub-ensemble is empty, the cross-region term is empty as well 
+    // If one of the sub-ensemble is empty, the cross-region term is empty as well
     delta = dw_plus_dw(dw_times_dw(V_A, omega1_B), - dw_times_dw(V_B, omega1_A));
     //delta2 = dw_times_dw(delta, delta);
     delta2 = dw_times_fp(dw_times_dw(delta, delta), omega2_B);
     //omega3 = dw_times_dw(sum_norm_2, dw_times_dw(dw_times_dw(omega1_A,omega1_A), dw_times_dw(omega1_B,omega1_B)));
     omega3 = dw_times_dw(sum_norm_1, dw_times_dw(omega1_A,dw_times_dw(omega1_B,omega1_B)));
-    sum_variance_K = dw_plus_dw(sum_variance_K, dw_div_dw(delta2, omega3));          
-   
+    sum_variance_K = dw_plus_dw(sum_variance_K, dw_div_dw(delta2, omega3));
+
     return (float8)(sum_signal_K, sum_variance_K, sum_norm_1, sum_count, sum_norm_2.s0);
 }
 
@@ -402,7 +402,7 @@ static inline float8 _merge_azimuthal(float8 here,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
- * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid        
+ * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid
  * @param super_sum   Local array of float8 of size WORKGROUP_SIZE: mandatory as a static function !
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
@@ -449,20 +449,20 @@ static inline float8 CSRxVec4(const   global  float4   *data,
         active_threads /= 2;
         if (thread_id_loc < active_threads) {
             if (error_model==AZIMUTHAL){
-                accum8 = _merge_azimuthal(super_sum[thread_id_loc], 
+                accum8 = _merge_azimuthal(super_sum[thread_id_loc],
                                           super_sum[thread_id_loc + active_threads]);
- 
+
             }//if azimuthal
             else{
-                accum8 = _merge_poisson(super_sum[thread_id_loc], 
+                accum8 = _merge_poisson(super_sum[thread_id_loc],
                                         super_sum[thread_id_loc + active_threads]);
-                 
+
             }//if poisson
-            super_sum[thread_id_loc] = accum8;    
+            super_sum[thread_id_loc] = accum8;
         } //therad active
         barrier(CLK_LOCAL_MEM_FENCE);
     } // loop reduction
-    accum8 = super_sum[0]; 
+    accum8 = super_sum[0];
     return accum8;
 }
 
@@ -477,7 +477,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
  * @param coefs       float  array in global memory holding the coeficient part of the LUT
  * @param indices     integer array in global memory holding the corresponding column index of the coeficient
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
- * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid        
+ * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main,sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
  *
@@ -518,7 +518,7 @@ static inline float8 CSRxVec4_single(const   global  float4   *data,
  * @param indptr      Integer array in global memory holding the index of the start of the nth line
  * @param aver        average over the region
  * @param std         standard deviation of the average
- * @param cutoff      cut values above so many sigma, set count to NAN 
+ * @param cutoff      cut values above so many sigma, set count to NAN
  * @return number of pixel discarded in workgroup
  *
  */
@@ -544,13 +544,13 @@ static inline int _sigma_clip4(         global  float4   *data,
         if (k < bin_bounds.s1){
             idx = indices[k];
             float4 quatret = data[idx];
-            // Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division 
+            // Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division
             if (isfinite(quatret.s3) && (quatret.s2 != 0.0f)){
                 float signal = quatret.s0 / quatret.s2;
                 if (fabs(signal-aver) > cutoff){
                     data[idx].s3 = NAN;
                     atomic_inc(counter);
-                }       
+                }
             } // if finite
         }// in bounds
     }// loop
@@ -613,7 +613,7 @@ csr_integrate(  const   global  float   *weights,
         int idx, k, j;
     //    if (WORKGROUP_SIZE<active_threads){
     //        if ((bin_num == 0) &&  (thread_id_loc == 0))
-    //            printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n", 
+    //            printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n",
     //                    WORKGROUP_SIZE, active_threads);
     //    }
 
@@ -669,8 +669,8 @@ csr_integrate(  const   global  float   *weights,
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
-        if (thread_id_loc == 0) { 
-            //Only thread 0 works 
+        if (thread_id_loc == 0) {
+            //Only thread 0 works
             sum_data[bin_num] = super_sum_data[0].s0;
             sum_count[bin_num] = super_sum_count[0].s0;
             if (sum_count[bin_num] > 0.0f)
@@ -678,7 +678,7 @@ csr_integrate(  const   global  float   *weights,
             else
                 merged[bin_num] = dummy;
         } //end thread 0
-        
+
     } // valid bin
 }//end kernel
 
@@ -741,21 +741,21 @@ csr_integrate_single(  const   global  float   *weights,
         if (sum_count_K.s0 > epsilon)
             merged[bin_num] =  sum_data_K.s0 / sum_count_K.s0;
         else
-            merged[bin_num] = dummy;        
+            merged[bin_num] = dummy;
     } // if valid bin
 }//end kernel
 
 
 /**
  *  \brief csr_integrate4a: Performs 1d azimuthal integration based on CSR sparse matrix multiplication on preprocessed data
- *  
+ *
  *
  * @param weights     Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param empty       Float: value for bad pixels, NaN is a good guess
- * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid 
+ * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal 4:hybrid
  * @param summed      Float pointer to the output with all 4 histograms in Kahan representation
  * @param averint     Float pointer to the output 1D array with the averaged signal
  * @param stdevpix    Float pointer to the output 1D array with the propagated error (std)
@@ -769,7 +769,7 @@ csr_integrate4(  const   global  float4  *weights,
                  const   global  int     *indptr,
                  const           int      nbins,
                  const           float    empty,
-                 const           char     error_model,      
+                 const           char     error_model,
                          global  float8  *summed,
                          global  float   *averint,
                          global  float   *stdevpix,
@@ -791,7 +791,7 @@ csr_integrate4(  const   global  float4  *weights,
                 stderrmean[bin_num] = empty;
                 stdevpix[bin_num] = empty;
             } //end else
-        } // end if thread0         
+        } // end if thread0
     } // if valid bin
 };//end kernel
 
@@ -839,7 +839,7 @@ csr_integrate4_single(  const   global  float4  *weights,
             averint[bin_num] = empty;
             stderrmean[bin_num] = empty;
             stdevpix[bin_num] = empty;
-        }        
+        }
     } // if validd bin
 }//end kernel
 
@@ -851,8 +851,8 @@ csr_integrate4_single(  const   global  float4  *weights,
  * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param cutoff      Discard any value with |value - mean| > cutoff*sigma
- * @param cycle       number of cycle 
- * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal, 4:hybrid 
+ * @param cycle       number of cycle
+ * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal, 4:hybrid
  * @param summed      contains all the data
  * @param averint     Average signal
  * @param stdevpix    Float pointer to the output 1D array with the propagated error (std)
@@ -882,21 +882,21 @@ csr_sigma_clip4(          global  float4  *data4,
     volatile local int counter[1];
     float8 result;
 
-    // Number of pixel in this bin. 
-    // Used to calulate the minimum reasonnable cut-off according to Chauvenet criterion. 
-    // 3 is the smallest integer above sqrt(2pi) -> math domain error  
+    // Number of pixel in this bin.
+    // Used to calulate the minimum reasonnable cut-off according to Chauvenet criterion.
+    // 3 is the smallest integer above sqrt(2pi) -> math domain error
     nbpix = max(3, indptr[bin_num + 1] - indptr[bin_num]);
-    
+
     // special case: no cycle and hybrid mode, should be best handled at host side
     if (error_model==HYBRID){
         if (cycle==0)
             curr_error_model = POISSON;
         else
-            curr_error_model = AZIMUTHAL;            
+            curr_error_model = AZIMUTHAL;
     }
 //    if ((get_local_id(0) == 0) && (bin_num==400))
 //        printf("%d em %d cem %d\n", bin_num, error_model, curr_error_model);
-    
+
     // first calculation of azimuthal integration to initialize aver & std
     result = (wg==1? CSRxVec4_single(data4, coefs, indices, indptr, curr_error_model):
                             CSRxVec4(data4, coefs, indices, indptr, curr_error_model, shared8));
@@ -917,7 +917,7 @@ csr_sigma_clip4(          global  float4  *data4,
 
         float chauvenet_cutoff = max(cutoff, sqrt(2.0f*log((float)nbpix/sqrt(2.0f*M_PI_F))));
         cnt = _sigma_clip4(data4, coefs, indices, indptr, aver, std *chauvenet_cutoff, counter);
-        
+
 //        if ((get_local_id(0) == 0) && (bin_num==400))
 //            printf("bin %d i %d cycle %d cnt %d em %d cem %d\n", bin_num, i, cycle, cnt, error_model, curr_error_model);
 
@@ -949,7 +949,7 @@ csr_sigma_clip4(          global  float4  *data4,
     } // clipping loop
 //    if ((get_local_id(0) == 0) && (bin_num==400))
 //        printf("end %d em %d cem %d\n\n", bin_num, error_model, curr_error_model);
-        
+
     if (get_local_id(0) == 0) {
         summed[bin_num] = result;
         if (result.s6 > 0.0f) {

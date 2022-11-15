@@ -84,14 +84,14 @@ class HistoLUT1dFullSplit(LutIntegrator, FullSplitIntegrator):
         FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi)
 
         self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins))
-        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta, 
-                                          self.pos0_max - 0.5 * self.delta, 
+        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
+                                          self.pos0_max - 0.5 * self.delta,
                                           self.bins)
-        
+
         lut = self.calc_lut_1d().to_lut()
         #Call the constructor of the parent class
-        LutIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)  
-        
+        LutIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)
+
         self.lut_checksum = crc32(self.lut)
         self.lut_nbytes = self.lut.nbytes
 
@@ -146,20 +146,20 @@ class HistoLUT2dFullSplit(LutIntegrator, FullSplitIntegrator):
         self.bin_centers = None
         self.delta0 = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins[0]))
         self.delta1 = (self.pos1_max - self.pos1_min) / (<position_t> (self.bins[1]))
-        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
-                                           self.pos0_max - 0.5 * self.delta0, 
+        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0,
+                                           self.pos0_max - 0.5 * self.delta0,
                                            self.bins[0])
-        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
-                                           self.pos1_max - 0.5 * self.delta1, 
+        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1,
+                                           self.pos1_max - 0.5 * self.delta1,
                                            self.bins[1])
-        
+
         lut = self.calc_lut_2d().to_lut()
         #Call the constructor of the parent class
-        LutIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)    
-        
+        LutIntegrator.__init__(self, lut, self.pos.shape[0], empty or 0.0)
+
         self.lut_checksum = crc32(self.lut)
         self.lut_nbytes = lut.nbytes
-        
+
     @property
     def check_mask(self):
         return self.cmask is not None

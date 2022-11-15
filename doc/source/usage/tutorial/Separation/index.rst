@@ -30,4 +30,3 @@ Finally an alternative implementation of the *peakfinder8* algorithm from the Ch
    Separate
    Wilson
    Peakfinder8
-

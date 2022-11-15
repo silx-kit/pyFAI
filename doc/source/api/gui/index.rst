@@ -3,7 +3,7 @@ pyFAI.gui package
 
 The package pyFAI.gui contains mainly the code of the graphical user interface widgets.
 This code is not intended to be used by users of pyFAI as a library hence it makes little sense
-to document it all here. Only documentation on the *Jupyter* tools are exposed. 
+to document it all here. Only documentation on the *Jupyter* tools are exposed.
 
 pyFAI.gui.cli_calibration module
 --------------------------------
@@ -36,4 +36,3 @@ pyFAI.gui.peak_picker module
     :members:
     :undoc-members:
     :show-inheritance:
-

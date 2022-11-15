@@ -47,7 +47,7 @@ import numpy
 from cython.parallel import prange
 
 
-def horizontal_convolution(float[:, ::1] img, 
+def horizontal_convolution(float[:, ::1] img,
                            float[::1] filter):
     """
     Implements a 1D horizontal convolution with a filter.

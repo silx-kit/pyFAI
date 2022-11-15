@@ -348,7 +348,7 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
         entry_grp.attrs["default"] = self.nxdata_grp.name.split("/", 2)[2]
-        
+
         if self.worker.do_2D():
             self.dataset = self.nxdata_grp.create_dataset(
                             name="intensity",
@@ -368,10 +368,10 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.npt_rad),
                             fillvalue=numpy.NaN)
             self.dataset.attrs["interpretation"] = "spectrum"
-            self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]    
+            self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]
 
         self.nxdata_grp.attrs["signal"] = self.dataset.name.split("/")[-1]
-        
+
         self.dataset.attrs["title"] = str(self)
         self.nxs = nxs
 
@@ -541,7 +541,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         res = self.worker.process(frame)
         self.dataset[pos.rot, pos.trans, ...] = res.intensity
         if res.sigma is not None:
-            self.dataset_error[pos.rot, pos.trans, ...] = res.sigma    
+            self.dataset_error[pos.rot, pos.trans, ...] = res.sigma
 
     def process(self):
         if self.dataset is None:

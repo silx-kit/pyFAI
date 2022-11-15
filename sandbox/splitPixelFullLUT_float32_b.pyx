@@ -1016,4 +1016,3 @@ class HistoLUT1dFullSplit(object):
             #else:
                 #outMerge_1d[i] += cdummy
         #return  outMerge.T, self.outPos0, self.outPos1, outData.T, outCount.T
-

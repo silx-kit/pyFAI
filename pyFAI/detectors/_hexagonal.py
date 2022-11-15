@@ -35,7 +35,7 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "18/06/2020"
 __status__ = "production"
- 
+
 
 import numpy
 import logging
@@ -48,23 +48,23 @@ class HexDetector(Detector):
     """
     Abstract class for regular hexagonal-pixel detectors
 
-    This is characterized by the pitch, distance between 2 pixels 
-    
+    This is characterized by the pitch, distance between 2 pixels
+
     Pixels are aligned horizontally with the provided pitch
-    Vertically, 2 raws are separated by pitch*sqrt(3)/2 
-    Odd raws are offsetted horizontally by pitch/2 
+    Vertically, 2 raws are separated by pitch*sqrt(3)/2
+    Odd raws are offsetted horizontally by pitch/2
     """
     uniform_pixel = False # ensures we use the array of position !
     IS_CONTIGUOUS = False
     IS_FLAT = True
-    
+
     @staticmethod
     def build_pixel_coordinates(shape, pitch=1):
         """Build the 4D array with pixel coordinates for a detector composed of hexagonal-pixels
-        
+
         :param shape: 2-tuple with size of the detector in number of pixels (y, x)
         :param pitch: the distance between two pixels
-        :return: array with pixel coordinates 
+        :return: array with pixel coordinates
         """
         assert len(shape) == 2
         ary = numpy.zeros(shape+(6, 3))
@@ -74,16 +74,16 @@ class HexDetector(Detector):
         r = numpy.linspace(0, 2, 7, endpoint=True)[:-1] - 0.5
         c = numpy.exp((0+1j)*r*numpy.pi) / sqrt3
         c += complex(-c.real.min(), -c.imag.min())
-        
+
         px = numpy.atleast_3d(numpy.outer(numpy.ones(shape[0]), numpy.arange(shape[1])))
         py = numpy.atleast_3d(numpy.outer(numpy.arange(shape[0]), numpy.ones(shape[1])))*h
         cxy = px + complex(0, 1)*py
-        cplx = cxy + c[None, None, :]  
+        cplx = cxy + c[None, None, :]
         ary[..., 1] = cplx.imag
         ary[..., 2] = cplx.real
         ary[1::2, ... , 2] += 0.5
         return ary*pitch
-     
+
     def __init__(self, pitch=None, pixel1=None, pixel2=None, max_shape=None):
         if pitch:
             pitch = float(pitch)
@@ -92,7 +92,7 @@ class HexDetector(Detector):
             pitch = pixel2
             h = pixel1
         Detector.__init__(self, pixel1=h, pixel2=pitch, max_shape=max_shape)
-        self.set_pixel_corners(self.build_pixel_coordinates(self.max_shape, self.pitch))        
+        self.set_pixel_corners(self.build_pixel_coordinates(self.max_shape, self.pitch))
 
     @property
     def pitch(self):

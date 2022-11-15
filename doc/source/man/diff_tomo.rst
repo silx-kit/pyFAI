@@ -77,4 +77,3 @@ Options:
 If the number of files is too large, use double quotes "*.edf"
 
 Most of those options are mandatory to define the structure of the dataset.
-

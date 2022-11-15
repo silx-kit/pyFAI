@@ -149,7 +149,7 @@ s32_to_float(__global int  *array_int,
 
 /**
  * Internal functions pixel wise function.
- * 
+ *
  * Performs the normalization of input image by dark subtraction,
  *        variance is propagated to second member of the float4
  *        flatfield, solid angle, polarization and absorption are stored in
@@ -217,7 +217,7 @@ static float4 _preproc4(const __global float  *image,
                 v = max(image[i], 1.0f);
             }
             result = (float4)(image[i], v, normalization_factor, 1.0f);
-                
+
             if ( (!do_dummy)
                   ||((delta_dummy != 0.0f) && (fabs(result.s0-dummy) > delta_dummy))
                   ||((delta_dummy == 0.0f) && (result.s0 != dummy))){
@@ -385,7 +385,7 @@ corrections2(const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    
+
     if (i < NIMAGE)
     {
         float4 result;
@@ -469,7 +469,7 @@ corrections3(const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    
+
     if (i < NIMAGE){
         float4 result;
         result = _preproc4( image,
@@ -580,6 +580,3 @@ corrections4(const __global float  *image,
         output[i] = result;
     };//end if NIMAGE
 };//end kernel
-
-
-

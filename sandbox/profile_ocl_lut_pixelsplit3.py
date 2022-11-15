@@ -167,4 +167,3 @@ ref = splitPixelFullLUT.HistoLUT1dFullSplit(pos, bins, unit="2th_deg")
 # legend()
 # show()
 # six.moves.input()
-

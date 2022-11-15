@@ -143,4 +143,3 @@ Nevertheless its absolute value has no meaning, except the lower, the better.
 
 Subsequently, pyFAI offers some validation options in to check the quality of the fit.
 some of them global, some of them limited to given rings.
-

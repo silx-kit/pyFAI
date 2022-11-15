@@ -35,17 +35,17 @@
 
 
 /**
- * \brief  
- * 
+ * \brief
+ *
  * subroutine fpbspl evaluates the (k+1) non-zero b-splines of
  * degree k at t(l) <= x < t(l+1) using the stable recurrence
  * relation of de boor and cox.
- * 
+ *
  *
  * @param d_t:  Pointer to global memory with the data in int
  * @param n:    size of d_t
  * @param k:    size of d_t
- * 
+ *
  * @param h:    output: array of floats
  */
 
@@ -75,17 +75,17 @@ fpbspl(float* d_t, int n, int k, float x, int l, float* h)      {
  * fpbisp_serial1 and other part is parallel called fpbisp_parallel2.
  * One possibility is that serial part be written in Cython, then wx and wy have to transfered to
  * the parallel part
- * 
+ *
  * d_tx: array of float size nx containing position of knots in x
  * d_ty: array of float size ny containing position of knots in y
- * kx, ky: spline order (often  3)    
+ * kx, ky: spline order (often  3)
  * d_x, d_y : array of float of size mx, my specifying the domain over which to evaluate the spline
- * d_wx, d_wy: scratch space 
- * 
+ * d_wx, d_wy: scratch space
+ *
  */
 __kernel void
 fpbisp_serial1(	__global float* d_tx, int nx,
-				__global  float* d_ty, int ny, 
+				__global  float* d_ty, int ny,
 				int kx,	int ky,
 				__global float* d_x, int mx,
 				__global float* d_y, int my,
@@ -106,8 +106,8 @@ fpbisp_serial1(	__global float* d_tx, int nx,
 	int ky1 = ky + 1;
 	int nky1 = ny - ky1;
 	float h[6];
-	
-//	printf("Inside fpbisp_serial1");	
+
+//	printf("Inside fpbisp_serial1");
 
 	for (int i=1; i<=mx; i++)	{
 		int arg = d_x[i-1];
@@ -182,11 +182,11 @@ fpbisp_parallel2(int kx, int ky, int mx, int my, int ny,__global float* d_c,__gl
 	// exits all the threads whose id is greater than equal to mx
 	if (id > my)
 		return;
-	
+
 	float tmp;
 	int pm = 0;		// previous value of m
-		
-	// every thread has a private copy of hj, this way it reduces the memory cost	
+
+	// every thread has a private copy of hj, this way it reduces the memory cost
 	for (int j1=1; j1<=ky1; j1++)
 		hj[j1-1] = d_wy[(id-1)*ky1 + (j1-1)];
 

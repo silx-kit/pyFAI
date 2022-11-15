@@ -245,4 +245,3 @@ if __name__ == "__main__":
         i += 1
     print(f"Tested {i} configuration without issue")
     input("enter to quit")
-

@@ -58,7 +58,7 @@ from .mpl_calib import MplCalibWidget
 
 class QtMplCalibWidget(MplCalibWidget):
     """Specialized class based on Qt
-    
+
     Provides a unified interface for:
     - display the image
     - Plot group of points

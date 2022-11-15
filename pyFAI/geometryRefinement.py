@@ -369,9 +369,9 @@ class GeometryRefinement(AzimuthalIntegrator):
     def refine3(self, maxiter=1000000, fix=None):
         """
         Same as refine2 except it does not rely on upper_bound == lower_bound to fix parameters
-        
+
         This is a work around the regression introduced with scipy 1.5
-        
+
         :param maxiter: maximum number of iteration for finding the solution
         :param fix: parameters to be fixed. Does not assume the wavelength to be fixed by default
         :return: $sum_(2\theta_e-2\theta_i)²$

@@ -11,12 +11,12 @@ usage: check_calib [options] **-p** param.poni image.edf
 
 Check_calib is a deprecated tool aiming at validating both the geometric
 calibration and everything else like flat-field correction, distortion
-correction, at a sub-pixel level. 
+correction, at a sub-pixel level.
 
 Note that \`check_calib\` program is
 obsolete as the same functionality is available from within pyFAI-calib,
 using the \`validate\`, `validate2` and
-`chiplot` commands in the refinement process. 
+`chiplot` commands in the refinement process.
 
 options:
 --------

@@ -16,7 +16,7 @@ usage: pyFAI-average [options] [options] **-o** output.edf file1.edf file2.edf .
 positional arguments:
 +++++++++++++++++++++
   FILE                  Files to be processed
-  
+
 optional arguments:
 +++++++++++++++++++
 

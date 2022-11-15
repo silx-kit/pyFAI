@@ -46,4 +46,3 @@ typedef struct float4 {
   float3 xyz, xzy, yxz, yzx, zxy, zyx;
 } float4;
 #endif
-

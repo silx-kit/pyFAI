@@ -12,16 +12,16 @@ Purpose
 Calibrate the diffraction setup geometry based on Debye-Sherrer rings
 images without a priori knowledge of your setup. You will need to
 provide a calibrant or a "d-spacing" file containing the spacing of
-Miller plans in Angstrom (in decreasing order). 
+Miller plans in Angstrom (in decreasing order).
 
 Calibrants available:
 ``Al``, ``LaB6``, ``TiO2``, ``Pt`, ``Ni``, ``CuO``, ``quartz``, ``Si``, ``mock``, ``Si_SRM640e``, ``LaB6_SRM660a``,
 ``PBBA``, ``cristobaltite``, ``Si_SRM640``, ``NaCl``, ``AgBh``, ``CrOx``, ``LaB6_SRM660c``, ``C14H30O``,
 ``Si_SRM640a``, ``Au``, ``alpha_Al2O3``, ``ZnO``, ``Si_SRM640d``, ``Cr2O3``, ``Si_SRM640c``,
-``LaB6_SRM660b``, ``Si_SRM640b``, ``hydrocerussite``, ``CeO2`` or search in the 
+``LaB6_SRM660b``, ``Si_SRM640b``, ``hydrocerussite``, ``CeO2`` or search in the
 `American Mineralogist database  <http://rruff.geo.arizona.edu/AMS/amcsd.php>`_
 
-Usage: 
+Usage:
 ------
 
 ``pyFAI-calib2 [options] [input_image.edf]``

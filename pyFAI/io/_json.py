@@ -45,4 +45,3 @@ class UnitEncoder(JSONEncoder):
         if isinstance(unit, units.Unit):
             return unit.name
         JSONEncoder.default(self, unit)
-        

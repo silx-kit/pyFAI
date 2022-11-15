@@ -218,4 +218,3 @@ on a set of files grabbed from a Basler camera using LImA."""
         sys.exit(app.exec_())
     else:
         raise Exception("No sense!")
-

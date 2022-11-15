@@ -55,6 +55,3 @@ plot(foo[0])
 ####plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 # legend()
 show()
-
-
-

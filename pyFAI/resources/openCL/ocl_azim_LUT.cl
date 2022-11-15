@@ -35,7 +35,7 @@
  * Needed constant:
  *   NLUT: maximum size of the LUT
  *   NBINS: number of output bins for histograms
- *   ON_CPU: 0 for GPU, 1 for CPU and probably Xeon Phi 
+ *   ON_CPU: 0 for GPU, 1 for CPU and probably Xeon Phi
  */
 
 
@@ -137,15 +137,15 @@ lut_integrate(  const     global    float              *weights,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
  *
  */
-float8 static inline LUTxVec4(const   global  float4  *data, 
+float8 static inline LUTxVec4(const   global  float4  *data,
                               const   global    struct lut_point_t *lut)
 {
-	
+
 	int bin_num, k, j;
 	bin_num= get_global_id(0);
     float2 sum_signal_K = (float2)(0.0f, 0.0f);
     float2 sum_variance_K = (float2)(0.0f, 0.0f);
-    float2 sum_norm_K = (float2)(0.0f, 0.0f); 
+    float2 sum_norm_K = (float2)(0.0f, 0.0f);
     float2 sum_count_K = (float2)(0.0f, 0.0f);
     if(bin_num < NBINS){
         for (j=0;j<NLUT;j++){
@@ -157,7 +157,7 @@ float8 static inline LUTxVec4(const   global  float4  *data,
                 //On GPU best performances are obtained  when threads are reading adjacent memory
                 k = j*NBINS+bin_num;
             }
-    
+
             int idx = lut[k].idx;
             float coef = lut[k].coef;
             if((coef != 0.0f) && (idx >= 0)){//
@@ -186,7 +186,7 @@ float8 static inline LUTxVec4(const   global  float4  *data,
 * @param weights      Float pointer to global memory storing the input image after preprocessing. Contains (signal, variance, normalisation, count) as float4.
  * @param lut         Pointer to an 2D-array of (unsigned integers,float) containing the index of input pixels and the fraction of pixel going to the bin
  * @param empty       value given for empty bins, NaN is a good guess
- * @param summed      Pointer to the output 1D array with all the histograms: (sum_signal_Kahan, sum_variance_Kahan, sum_norm_Kahan, sum_count_Kahan) 
+ * @param summed      Pointer to the output 1D array with all the histograms: (sum_signal_Kahan, sum_variance_Kahan, sum_norm_Kahan, sum_count_Kahan)
  * @param averint     Float pointer to the output 1D array with the averaged signal
  * @param stderr      Float pointer to the output 1D array with the propagated error
  *

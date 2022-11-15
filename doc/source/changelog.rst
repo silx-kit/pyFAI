@@ -41,17 +41,17 @@ Bug-fix release with:
     - Implementation in Python, Cython and OpenCL with poissonian and azimuthal error-model
     - Sparsification, compression of single crystal data
 	- Application to peak-picking and quality assessement of SSX data
-	- Analysis of grid-scan to find single crystal 
+	- Analysis of grid-scan to find single crystal
 	- Single pass variance propagation in azimuthal bin
 	- Integration of the Jungfrau detector  (ID29)
 * 2D integration:
 	- New integrators with error propagation by default
 	- Full pixel splitting in addition to BBox and no splitting
-* Refactor of all LUT and CSR to share the same code base, makes tests more robust. 
+* Refactor of all LUT and CSR to share the same code base, makes tests more robust.
 * Calibration of experimental setup using Jupyter notebooks
 	- User interaction with plots in matplotlib (thanks Phil Hans)
 	- Factorize code between `pyFAI-calib` and jupyter calibration
-	- Tutorial as notebook and video recording 	
+	- Tutorial as notebook and video recording
 * Parallax correction for thick detector (still experimental, thanks to Vadim)
 * Improved tutorial on detector geometry calibration (based on Kabsch alignment)
 * Better performances on HPC nodes by limiting simple OpenMP to fewer cores
@@ -63,8 +63,8 @@ Bug-fix release with:
 -----------------
 * One year of development, about 500 commits & 370 files modified.
 * Generalization of the new generation 1D integrators (better error propagation)
-* Sigma clipping and sparsification of single crystal data (OpenCL only)  
-* Fix issue introduced with the scipy 1.15 (constrained calibration broken)  
+* Sigma clipping and sparsification of single crystal data (OpenCL only)
+* Fix issue introduced with the scipy 1.15 (constrained calibration broken)
 * Improved distortion correction (also on GPU, ...)
 * Major re-work of the documentation (thanks Thomas Kluyver and Loic Huder)
 * Improve the calibration of Pilatus and Eiger detectors based on a grid of holes.

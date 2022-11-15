@@ -655,4 +655,3 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                          merged[:, 6].reshape(outshape).T)
         self.profile_multi(events)
         return res
-

@@ -1,4 +1,4 @@
-# coding: utf-8 
+# coding: utf-8
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -25,7 +25,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-cimport cython 
+cimport cython
 from libc.math cimport floor, ceil, INFINITY
 import logging
 
@@ -82,7 +82,7 @@ cdef class Bilinear:
 
     def many(self, x):
         """Call the bilinear interpolator on many points...
-        
+
         :param x: array of points of shape (2, n), like (array_of_y, array_of_x)
         :return: array of shape n
         """
@@ -91,7 +91,7 @@ cdef class Bilinear:
             float[:] x0 = numpy.ascontiguousarray(x[0], numpy.float32)
             float[:] x1 = numpy.ascontiguousarray(x[1], numpy.float32)
             int i, size
-            float[:] res             
+            float[:] res
         size = min(x0.shape[0], x1.shape[0])
         res = numpy.empty(size, dtype=numpy.float32)
         with nogil:

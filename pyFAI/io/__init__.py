@@ -56,7 +56,7 @@ import threading
 import time
 from collections import OrderedDict
 import __main__ as main
-from ._json import UnitEncoder 
+from ._json import UnitEncoder
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
 from .. import version
@@ -861,7 +861,7 @@ class FabioWriter(Writer):
         :param prefix: basename of the file
         :param index_format: "_%04s" gives "_0001" for example
         :param start_index: often 0 or 1
-        :param  
+        :param
         """
         Writer.__init__(self, filename, extension)
         self.header = {}
@@ -956,7 +956,7 @@ class FabioWriter(Writer):
         """
         :param data: 2d array to save
         :param index: index of the file
-        :param header:  
+        :param header:
         """
         if index is None:
             index = self.index_format % (self.start_index + self.index)

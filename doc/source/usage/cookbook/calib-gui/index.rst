@@ -69,7 +69,7 @@ Mask and dark-current files can be provided in a similar way.
 .. figure:: 1_experiment.png
    :align: center
    :alt: Experiment setup
-   
+
 Finally set the ``energy`` of the experiment (or the ``wavelength``) and select the
 reference compound used in the ``calibrant`` drop-down menu.
 For this image, the beam was at 13.45 keV and the calibrant was corundum, which
@@ -102,7 +102,7 @@ as in the figure below:
 .. figure:: 2_mask.png
    :align: center
    :alt: Draw a mask on the image
-   
+
 Once you are done, click on the ``Next>`` button to pick some rings.
 
 Peak-picking and ring assignment
@@ -120,7 +120,7 @@ and misassignment is unlikely.
 
 .. figure:: 3_picking.png
    :align: center
-   :alt: Select peaks and assign them to rings 
+   :alt: Select peaks and assign them to rings
 
 
 Double check the ring-number assignment in the right panel.
@@ -140,7 +140,7 @@ the values of the 3 translation and 3 rotation.
 
 .. figure:: 4_geometry.png
    :align: center
-   :alt: Geometry optimization 
+   :alt: Geometry optimization
 
 
 Values can be modified and fixed by clicking on the lock.
@@ -177,7 +177,7 @@ like in this figure:
 
 .. figure:: 3_extract.png
    :align: center
-   :alt: Extract many rings 
+   :alt: Extract many rings
 
 The selected peaks with their ring assignment can be exported at this stage,
 by clicking on the ``floppy disk`` icon.
@@ -193,7 +193,7 @@ The radial unit can be customized and the images/curves can be saved.
 
 .. figure:: 5_cake.png
    :align: center
-   :alt: Azimuthal integration 
+   :alt: Azimuthal integration
 
 Last but not least, do not forget to save the geometry as a PONI-file for
 subsequent integrations.
@@ -206,32 +206,32 @@ pixels.
 
 .. figure:: improve_mask_1.png
    :align: center
-   :alt: Azimuthal integration 
+   :alt: Azimuthal integration
 
 Once this hot pixel is located on the 1D spectrum, use the 2D view to localize
 it, then mark it using the right mouse button.
 
 .. figure:: improve_mask_2.png
    :align: center
-   :alt: Azimuthal integration 
+   :alt: Azimuthal integration
 
 Back to the mask task.
 
 .. figure:: improve_mask_3.png
    :align: center
-   :alt: Azimuthal integration 
+   :alt: Azimuthal integration
 
 Zoom onto the mark.
 
 .. figure:: improve_mask_4.png
    :align: center
-   :alt: Azimuthal integration 
+   :alt: Azimuthal integration
 
 You can mask the defective area using one of the mask tools.
 
 .. figure:: improve_mask_5.png
    :align: center
-   :alt: Azimuthal integration 
+   :alt: Azimuthal integration
 
 Back to the integration task, the result will be updated.
 
@@ -246,7 +246,7 @@ Advanced video tutorial
 
 This tutorial was given at the **Hercules** courses in 2020, the data files used are here:
 `Calibration_Al2O3.h5 <http://www.silx.org/pub/pyFAI/pyFAI_UM_2020/data_ID13/Calibration_Al2O3.h5>`_ and
-`kevlar.h5 <http://www.silx.org/pub/pyFAI/pyFAI_UM_2020/data_ID13/kevlar.h5>`_. 
+`kevlar.h5 <http://www.silx.org/pub/pyFAI/pyFAI_UM_2020/data_ID13/kevlar.h5>`_.
 This 65mn tutorial presents also *silx view*, *pyFAI-average* and *pyFAI-integrate*.
 
 

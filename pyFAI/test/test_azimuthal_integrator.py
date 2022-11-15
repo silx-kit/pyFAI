@@ -611,7 +611,7 @@ class TestRange(unittest.TestCase):
                      ):
             results = {}
             for impl in ('python', # Python is already fixed, please fix the 2 others
-                         'cython', 
+                         'cython',
                          # 'opencl' #TODO
                          ):
                 try:

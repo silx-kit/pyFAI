@@ -54,8 +54,8 @@ from .utils.tree import ListDataSet, DataSet
 
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
-    
-    
+
+
 class IntegrateDialog(qt.QDialog):
 
     def __init__(self, parent=None):
@@ -501,7 +501,7 @@ class DiffMapWidget(qt.QWidget):
         :param idx_img: frame number
         """
         cmap = "inferno"
-        
+
         if idx_file >= 0:
             self.progressBar.setValue(idx_file)
 
@@ -524,28 +524,28 @@ class DiffMapWidget(qt.QWidget):
             intensity = numpy.nanmean(data, axis=(0,1))
             if self.last_idx < 0:
                 self.update_slice()
-                
+
                 if data.ndim == 4:
                     img = data[..., self.slice].mean(axis=(2,3))
-                    
-                    self.plot = self.axplt.imshow(intensity, 
-                                                  interpolation="nearest", 
-                                                  norm=lognorm, 
+
+                    self.plot = self.axplt.imshow(intensity,
+                                                  interpolation="nearest",
+                                                  norm=lognorm,
                                                   cmap=cmap,
                                                   origin="lower",
-                                                  extent=[self.radial_data.min(), self.radial_data.max(), 
+                                                  extent=[self.radial_data.min(), self.radial_data.max(),
                                                           self.azimuthal_data.min(), self.azimuthal_data.max()],
                                                   aspect="auto",)
-                    self.axplt.set_ylabel("Azimuthal angle (°)") 
+                    self.axplt.set_ylabel("Azimuthal angle (°)")
                 else:
                     img = data[..., self.slice].mean(axis=-1)
                     self.axplt.set_ylabel("Scattered intensity")
                     self.plot = self.axplt.plot(self.radial_data, intensity)[0]
-                self.img = self.aximg.imshow(img, 
-                                             interpolation="nearest", 
+                self.img = self.aximg.imshow(img,
+                                             interpolation="nearest",
                                              cmap=cmap,
                                              origin="lower",
-                                             )                
+                                             )
             else:
                 if data.ndim == 4:
                     img = numpy.nanmean(data[..., self.slice], axis=(2,3))
@@ -560,7 +560,7 @@ class DiffMapWidget(qt.QWidget):
                 self.fig.canvas.draw()
             except Exception as err:
                 logger.error(f"{type(err)}: {err} intercepted in matplotlib drawing")
-             
+
             qt.QCoreApplication.processEvents()
             time.sleep(0.1)
 

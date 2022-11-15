@@ -254,13 +254,13 @@ class TestOptions(object):
         return self._tempdir
 
     def tempfile(self, suffix=None, prefix=None, dir=None, text=False):
-        """create a temporary file, openend 
-        
+        """create a temporary file, openend
+
         See tempfile.mkstemp for the description of the options
         :param suffix: end of the filename
         :param prefix: start of the filename
         :dir: subdir where the file is created
-        :text: create the text in text (or binary) mode 
+        :text: create the text in text (or binary) mode
         return file_descriptor, filename
         """
         dest = self.tempdir
@@ -478,7 +478,7 @@ def create_fake_data(dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
                      detector="Pilatus300k", wavelength=1.54e-10,
                      calibrant="AgBh", Imax=1000, poissonian=True, offset=10):
     """Simulate a SAXS image with a small detector by default
-    :return: image, azimuthalIngtegrator 
+    :return: image, azimuthalIngtegrator
     """
     from .. import calibrant as pyFAI_calibrant
     from .. import azimuthalIntegrator
@@ -493,4 +493,3 @@ def create_fake_data(dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
         return numpy.random.poisson(img), ai
     else:
         return img, ai
-

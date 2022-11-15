@@ -198,14 +198,14 @@ def preproc(raw,
         mask |= (normalization == 0)
         if variance is not None:
             mask |= numpy.logical_not(numpy.isfinite(variance))
-            
+
         if out is None:
             result = numpy.zeros(out_shape, dtype=dtype)
         else:
             assert out.dtype == dtype
-            assert out.shape == out_shape 
+            assert out.shape == out_shape
             result = out
-                
+
         if split_result:
             signal[mask] = 0.0
             normalization[mask] = 0.0
@@ -223,7 +223,7 @@ def preproc(raw,
                 result[..., 1] = variance.reshape(shape)
                 result[..., 2] = normalization.reshape(shape)
         else:
-            lin = result.ravel() 
+            lin = result.ravel()
             lin[...] = signal / normalization
             lin[mask] = cdummy
             result.shape = shape

@@ -73,12 +73,12 @@ class MplCalibWidget:
                  option_cb=dangling_callback,
                  ):
         """
-        
+
         :param new_grp_cb: function to be called when new group of point needs to be added
         :param append_single_cb: function to be called when one point is added to the current group
         :param single_point_cb: function to be called to create a new group with a single point
-        :param append_more_cb: function to be called to append more points to a group 
-        :param erase_pt_cb: function to be called to delete one point 
+        :param append_more_cb: function to be called to append more points to a group
+        :param erase_pt_cb: function to be called to delete one point
         :param erase_grp_cb: function to be called to delete one group
         :param refine_cb: function to be called when clicking of the refine button
         :param option_cb:   function to be called when clicking of the option button
@@ -148,10 +148,10 @@ class MplCalibWidget:
             self.axd.yaxis.set_label_position('right')
             self.axd.yaxis.label.set_color('blue')
             self.axd.xaxis.label.set_color('blue')
-            self.axd.tick_params(colors="blue", 
+            self.axd.tick_params(colors="blue",
                                  labelbottom=False, labeltop=True,
                                  labelleft=False, labelright=True,
-                                 bottom=False, top=True, 
+                                 bottom=False, top=True,
                                  left=False, right=True)
             self.axd.set_xlabel(r'dim2 ($\approx m$)')
             self.axd.set_ylabel(r'dim1 ($\approx m$)')
@@ -160,7 +160,7 @@ class MplCalibWidget:
 
     def imshow(self, img, bounds=None, log=False, update=True):
         """Display a 2Dscattering image
-        
+
         :param img: preprocessed image
         :param bounds: 2-tuple with (vmin, vmax)
         :param log: display data in log-space or linear space
@@ -214,7 +214,7 @@ class MplCalibWidget:
 
     def shadow(self, mask=None, update=True):
         """Apply som shadowing overlay on top of background image
-        
+
         :param mask: mask to be overlaid. set to None to remove
         :param update: finally update the plot
         """
@@ -235,11 +235,11 @@ class MplCalibWidget:
 
     def contour(self, data, values=None, cmap="autumn", linewidths=2, linestyles="dashed", update=True):
         """
-        Overlay a contour-plot of data 
+        Overlay a contour-plot of data
 
         :param data: 2d-array with the 2theta values in radians...
         :param values: 1d-array with numerical values of the rings
-        :param update: finally update the plot 
+        :param update: finally update the plot
         """
         if self.fig is None:
             logger.warning("No diffraction image available => not showing the contour")
@@ -265,7 +265,7 @@ class MplCalibWidget:
     def reset(self, update=True):
         """
         Reset all control point and annotation from graph
-        
+
         :param update: finally update the plot
         """
         if self.fig:
@@ -284,10 +284,10 @@ class MplCalibWidget:
     def add_grp(self, label, points, update=True):
         """
         Append a group of points to the graph with its annotations
-        
+
         :param label: string with the label
         :param points: list of coordinates [(y,x)]
-        :param update: finally update the plot 
+        :param update: finally update the plot
         """
         if self.fig:
             if len(points):
@@ -306,7 +306,7 @@ class MplCalibWidget:
         remove a group of points
 
         :param label: label of the group of points
-        :param update: finally update the plot 
+        :param update: finally update the plot
         """
         if self.fig and label in self.points:
             gpt = self.points[label]

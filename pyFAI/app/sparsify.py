@@ -29,10 +29,10 @@
 
 """Sparsify 2D single crystal diffraction images by separating Bragg peaks from background signal.
 
-Positive outlier pixels (i.e. Bragg peaks) are all recorded as they are without destruction. 
+Positive outlier pixels (i.e. Bragg peaks) are all recorded as they are without destruction.
 Peaks are not integrated: see the `peakfinder` to perform peak integration.
 
-Background is calculated by an iterative sigma-clipping in the polar space. 
+Background is calculated by an iterative sigma-clipping in the polar space.
 The number of iteration, the clipping value and the number of radial bins could be adjusted.
 
 This program requires OpenCL. The device needs be properly selected.
@@ -109,7 +109,7 @@ class FileReader(Thread):
         """
         :param filenames: list of multi-frame fabio objects.
         :param queue: queue where to put the image in as numpy array.
-        :param read_ahead: read in advance that many frames, should be > to the fps 
+        :param read_ahead: read in advance that many frames, should be > to the fps
         """
         Thread.__init__(self, name="FileReader")
         self.queue = queue
@@ -465,7 +465,7 @@ def process(options):
               "extra": parameters,
               "start_time": start_time}
     writer = Writer(queue_process, options.output, kwargs)
-    
+
     reader.start()
     writer.start()
     t0 = time.perf_counter()

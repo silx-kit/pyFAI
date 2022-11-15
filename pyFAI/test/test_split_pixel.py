@@ -203,7 +203,7 @@ class TestSplitPixel(unittest.TestCase):
 
 
 class TestSplitBBoxNg(unittest.TestCase):
-    """Test the equivalence of the historical SplitBBox with the one propagating 
+    """Test the equivalence of the historical SplitBBox with the one propagating
     the variance"""
 
     @classmethod

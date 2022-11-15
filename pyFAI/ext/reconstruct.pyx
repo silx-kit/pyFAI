@@ -106,9 +106,9 @@ cdef inline float processPoint(float[:, ::1] data,
     return sum / count
 
 
-def reconstruct(data, 
-                mask=None, 
-                dummy=None, 
+def reconstruct(data,
+                mask=None,
+                dummy=None,
                 delta_dummy=None):
     """
     reconstruct missing part of an image (tries to be continuous)
@@ -126,11 +126,11 @@ def reconstruct(data,
         ssize_t d1 = data.shape[1]
         ssize_t p0, p1
         float[:, ::1] cdata
-        int8_t[:, ::1] cmask 
+        int8_t[:, ::1] cmask
         bint is_masked, do_dummy
         float cdummy, cddummy, value
         float[:, ::1] out = numpy.zeros_like(data)
-        
+
     cdata = numpy.ascontiguousarray(data, dtype=numpy.float32)
     if mask is not None:
         cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
@@ -147,7 +147,7 @@ def reconstruct(data,
         else:
             cddummy = <float> delta_dummy
 
-    #  Nota: this has to go in 2 passes, one to mark, one to reconstruct  
+    #  Nota: this has to go in 2 passes, one to mark, one to reconstruct
     for p0 in prange(d0, nogil=True, schedule="guided"):
         for p1 in range(d1):
             is_masked = cmask[p0, p1]
@@ -157,7 +157,7 @@ def reconstruct(data,
                     cmask[p0, p1] += (value == cdummy)
                 elif (fabs(value - cdummy) <= cddummy):
                     cmask[p0, p1] += 1
-    # Reconstruction phase         
+    # Reconstruction phase
     for p0 in prange(d0, nogil=True, schedule="guided"):
         for p1 in range(d1):
             if cmask[p0, p1]:

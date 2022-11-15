@@ -453,4 +453,3 @@ def histoBBox2d(numpy.ndarray weights not None,
                 else:
                     outMerge[i, j] = cdummy
     return outMerge.T, edges0, edges1, outData.T, outCount.T
-
