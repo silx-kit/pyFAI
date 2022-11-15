@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/09/2022"
+__date__ = "15/11/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -51,7 +51,7 @@ cdef class CscIntegrator(object):
     """
     cdef:
         readonly index_t input_size, output_size, nnz
-        readonly data_t empty
+        public data_t empty
         readonly data_t[::1] _data
         readonly index_t[::1] _indices, _indptr
 
