@@ -30,4 +30,3 @@ try:
     from transformations import *
 except (ImportError, ModuleNotFoundError):
     from ._local.transformations import *
-

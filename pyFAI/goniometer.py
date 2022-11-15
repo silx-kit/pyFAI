@@ -453,7 +453,7 @@ class Goniometer(object):
             logger.warning("Wavelength is a fitted parameter, cannot be set. Please set fitted parameter")
         else:
             self._wavelength = value
-            
+
     wavelength = property(get_wavelength, set_wavelength)
 
     def get_ai(self, position):
@@ -469,7 +469,7 @@ class Goniometer(object):
             params[name] = value
         return AzimuthalIntegrator(**params)
 
-    def get_mg(self, positions, 
+    def get_mg(self, positions,
                unit="2th_deg",
                radial_range=(0, 180), azimuth_range=(-180, 180),
                empty=0.0, chi_disc=180):
@@ -485,8 +485,8 @@ class Goniometer(object):
         :return: A freshly build multi-geometry
         """
         ais = [self.get_ai(pos) for pos in positions]
-        mg = MultiGeometry(ais, unit=unit, 
-                           radial_range=radial_range, azimuth_range=azimuth_range, 
+        mg = MultiGeometry(ais, unit=unit,
+                           radial_range=radial_range, azimuth_range=azimuth_range,
                            empty=empty, chi_disc=chi_disc)
         return mg
 
@@ -724,12 +724,12 @@ class SingleGeometry(object):
         ai = AzimuthalIntegrator()
         ai.set_config(config)
         return ai
-    
+
     def get_wavelength(self):
         assert self.calibrant.wavelength == self.geometry_refinement.wavelength
         return self.geometry_refinement.wavelength
     def set_wavelength(self, value):
-        self.calibrant.setWavelength_change2th(value) 
+        self.calibrant.setWavelength_change2th(value)
         self.geometry_refinement.set_wavelength(value)
     wavelength = property(get_wavelength, set_wavelength)
 
@@ -819,12 +819,12 @@ class GoniometerRefinement(Goniometer):
         return sumsquare / max(npt, 1)
 
     def calc_param3(self, fit_param, free, const):
-        """Function that calculate the param vector 
+        """Function that calculate the param vector
 
         :param fit_param: numpy array of float
         :param free: names of the free parameters, array of same size as fit_param
         :param const: dict with constant (non-fitted) parameters
-        :return: the parameter vector as in self.param 
+        :return: the parameter vector as in self.param
         """
         param = [ ]
         for name in self.nt_param._fields:
@@ -837,7 +837,7 @@ class GoniometerRefinement(Goniometer):
 
     def residu3(self, fit_param, free, const):
         """Evaluate the cost function:
-        
+
         :param fit_param: numpy array of float
         :param free: names of the free parameters, array of same size as fit_param
         :param const: dict with constant (non-fitted) parameters
@@ -845,9 +845,9 @@ class GoniometerRefinement(Goniometer):
         """
         sumsquare = 0.0
         npt = 0
-        
+
         param = self.calc_param3(fit_param, free, const)
-        
+
         for single in self.single_geometries.values():
             motor_pos = single.get_position()
             single_param = self.trans_function(param, motor_pos)._asdict()
@@ -871,7 +871,7 @@ class GoniometerRefinement(Goniometer):
         """Geometry refinement tool
 
         See https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.minimize.html
-        
+
         Nota: When upper and lower bounds are equal, the jacobian gets NaN since scipy 1.5.
 
         :param method: name of the minimizer
@@ -918,12 +918,12 @@ class GoniometerRefinement(Goniometer):
                 sg.calibrant.setWavelength_change2th(former_wavelength)
             print(self.nt_param(*self.param))
         return self.param
-    
-    
-    
+
+
+
     def refine3(self, fix=None, method="slsqp", verbose=True, **options):
         """Geometry refinement tool
-        
+
         :param fixed: list of parameters to be fixed (others are left free for refinement)
         :param method: name of the minimizer
         :param options: options for the minimizer
@@ -963,7 +963,7 @@ class GoniometerRefinement(Goniometer):
 
         res = minimize(self.residu3, param, method=method,
                        args=(free, const),
-                       bounds=bounds, tol=1e-12,    
+                       bounds=bounds, tol=1e-12,
                        options=options)
 
         new_delta_theta2 = self.residu3(res.x, free, const)
@@ -976,12 +976,12 @@ class GoniometerRefinement(Goniometer):
             i = abs(param - res.x).argmax()
             if verbose:
                 print(f"maxdelta on {free[i]}: {param[i]} --> {res.x[i]} ")
-            
+
             self.param = self.calc_param3(res.x, free, const)
             return new_delta_theta2
         else:
             return old_delta_theta2
-        
+
 
     def set_bounds(self, name, mini=None, maxi=None):
         """Redefines the bounds for the refinement
@@ -1037,5 +1037,5 @@ class GoniometerRefinement(Goniometer):
         Goniometer.set_wavelength(self, value)
         for sg in self.single_geometries.values():
             sg.set_wavelength(value)
-            
+
     wavelength = property(get_wavelength, set_wavelength)

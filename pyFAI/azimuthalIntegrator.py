@@ -215,11 +215,11 @@ class AzimuthalIntegrator(Geometry):
             * "where": does a numpy.where on the "numpy" output
 
         This method tries to accomodate various types of masks (like
-        valid=0 & masked=-1, ...) 
-        
+        valid=0 & masked=-1, ...)
+
         Note for the developper: we use a lot of numpy.logical_or in this method,
-        the out= argument allows to recycle buffers and save considerable time in 
-        allocating temporary arrays.  
+        the out= argument allows to recycle buffers and save considerable time in
+        allocating temporary arrays.
         """
         logical_or = numpy.logical_or
         shape = data.shape
@@ -1104,8 +1104,8 @@ class AzimuthalIntegrator(Geometry):
         :param ndarray data: 2D array from the Detector/CCD camera
         :param int npt: number of points in the output pattern
         :param str filename: output filename in 2/3 column ascii format
-        :param bool correctSolidAngle: correct for solid angle of each pixel if True 
-        :param ndarray variance: array containing the variance of the data. 
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param ndarray variance: array containing the variance of the data.
         :param str error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
         :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (min, max). Values outside the range are ignored.
         :type radial_range: (float, float), optional
@@ -1113,17 +1113,17 @@ class AzimuthalIntegrator(Geometry):
         :type azimuth_range: (float, float), optional
         :param ndarray mask: array with  0 for valid pixels, all other are masked (static mask)
         :param float dummy: value for dead/masked pixels (dynamic mask)
-        :param float delta_dummy: precision for dummy value 
+        :param float delta_dummy: precision for dummy value
         :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
                0 for circular polarization or random,
                None for no correction,
-               True for using the former correction 
+               True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param Unit unit: Output units, can be "q_nm^-1" (default), "2th_deg", "r_mm" for now.
         :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
-        :param float normalization_factor: Value of a normalization monitor 
+        :param float normalization_factor: Value of a normalization monitor
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
@@ -3065,23 +3065,23 @@ class AzimuthalIntegrator(Geometry):
                       metadata=None,
                       safe=True,
                        **kwargs):
-        """Performs iteratively the 1D integration with variance propagation 
+        """Performs iteratively the 1D integration with variance propagation
         and performs a sigm-clipping at each iteration, i.e.
-        all pixel which intensity differs more than thres*std is 
+        all pixel which intensity differs more than thres*std is
         discarded for next iteration.
-        
+
         Keep only pixels with intensty:
-        
+
             |I - <I>| < thres * std(I)
 
-        This enforces a gaussian distibution and is very good at extracting 
+        This enforces a gaussian distibution and is very good at extracting
         background or amorphous isotropic scattering out of Bragg peaks.
 
         :param data: input image as numpy array
         :param npt_rad: number of radial points
         :param bool correctSolidAngle: correct for solid angle of each pixel if True
         :param float polarization_factor: polarization factor between:
-                -1 (vertical) 
+                -1 (vertical)
                 +1 (horizontal).
                 - 0 for circular polarization or random,
                 - None for no correction,
@@ -3093,24 +3093,24 @@ class AzimuthalIntegrator(Geometry):
 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param ndarray variance: the variance of the signal 
-        :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)  
+        :param ndarray variance: the variance of the signal
+        :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)
         :param unit: unit to be used for integration
         :param method: pathway for integration and sort
         :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres.
-        :param max_iter: maximum number of iterations        
+        :param max_iter: maximum number of iterations
         :param mask: masked out pixels array
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: any other metadata,
         :type metadata: JSON serializable dict
         :param safe: set to False to skip some tests
         :return: Integrate1D like result like
-        
-        The difference with the previous version is that there is no 2D regrouping, hence this is faster. 
+
+        The difference with the previous version is that there is no 2D regrouping, hence this is faster.
         The standard deviation is usually smaller than previously and the signal cleaner. It is also slightly faster.
-        
+
         The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model.
-        
+
         """
         for k in kwargs:
             if k == "npt_azim":
@@ -3337,9 +3337,9 @@ class AzimuthalIntegrator(Geometry):
         :param mask: masked out pixels array
         :param restore_mask: masked pixels have the same value as input data provided
         :return: SeparateResult which the bragg & amorphous signal
-        
+
         Note: the filtered 1D spectrum can be retrieved from
-        SeparateResult.radial and SeparateResult.intensity 
+        SeparateResult.radial and SeparateResult.intensity
         """
 
         filter_result = self.medfilt1d(data, npt_rad=npt_rad, npt_azim=npt_azim,
@@ -3475,7 +3475,7 @@ class AzimuthalIntegrator(Geometry):
     def guess_max_bins(self, redundancy=1, search_range=None, unit="q_nm^-1", radial_range=None, azimuth_range=None):
         """
         Guess the maximum number of bins, considering the excpected minimum redundancy:
-        
+
         :param redundancy: minimum number of pixel per bin
         :param search_range: the minimum and maximun number of bins to be considered
         :param unit: the unit to be considered like "2th_deg" or "q_nm^-1"

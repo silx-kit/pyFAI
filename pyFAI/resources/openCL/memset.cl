@@ -137,4 +137,3 @@ memset_int(global int *array, int pattern, int size)
     array[i] = pattern;
   }
 }
-

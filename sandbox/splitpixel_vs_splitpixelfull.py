@@ -42,5 +42,3 @@ res_splitPixel = splitPixel.fullSplit1D(ai._corner4Da, data, bins=10000)
 
 for i, ary in enumerate(("tth", "I", "unweight", "weight")):
     print("Error on %s: %s" % (i, abs(res_splitPixelFull[i] - res_splitPixel[i]).max()))
-
-

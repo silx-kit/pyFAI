@@ -29,7 +29,7 @@
 """
 Description of detectors which are not flat.
 
-Mainly cylindrical curved imaging-plates for now. 
+Mainly cylindrical curved imaging-plates for now.
 """
 
 __author__ = "Jerome Kieffer"
@@ -56,15 +56,15 @@ except ImportError:
 
 class CylindricalDetector(Detector):
     "Abstract base class for all cylindrical detecors"
-    MANUFACTURER = None 
+    MANUFACTURER = None
     IS_FLAT = False
     force_pixel = True
- 
+
     def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989):
         Detector.__init__(self, pixel1, pixel2)
         self.radius = radius
         self._pixel_corners = None
-        
+
     def get_config(self):
         """Return the configuration with arguments to the constructor
 
@@ -107,7 +107,7 @@ class CylindricalDetector(Detector):
     def _get_compact_pixel_corners(self):
         "The core function which calculates the pixel corner coordinates"
         raise NotImplementedError("This is an abtract class")
-    
+
     def get_pixel_corners(self, correct_binning=False, use_cython=True):
         """
         Calculate the position of the corner of the pixels
@@ -244,8 +244,8 @@ class CylindricalDetector(Detector):
             p2 = p2.astype(numpy.float32)
             p3 = p3.astype(numpy.float32)
         return p1, p2, p3
-        
-    
+
+
 class Aarhus(CylindricalDetector):
     """
     Cylindrical detector made of a bent imaging-plate.
@@ -270,7 +270,7 @@ class Aarhus(CylindricalDetector):
 
     def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989):
         CylindricalDetector.__init__(self, pixel1, pixel2, radius)
-    
+
     def _get_compact_pixel_corners(self):
         "The core function which calculates the pixel corner coordinates"
         p1 = (numpy.arange(self.shape[0] + 1.0) * self._pixel1).astype(numpy.float32)
@@ -283,7 +283,7 @@ class Aarhus(CylindricalDetector):
 class Rapid(CylindricalDetector):
     """
     Cylindrical detector: Rigaku R-axis RAPID II
-    Unlike the Aarhus detector, the detectors is bent the other direction. 
+    Unlike the Aarhus detector, the detectors is bent the other direction.
     It covers 210°
     r = 127.26mm
     pixel size 100µm but can be binned 2x2
@@ -314,4 +314,3 @@ class Rapid(CylindricalDetector):
         p2 = (self.radius * numpy.sin(t2)).astype(numpy.float32)
         p3 = (self.radius * (numpy.cos(t2) - 1.0)).astype(numpy.float32)
         return p1, p2, p3
-        

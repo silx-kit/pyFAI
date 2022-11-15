@@ -66,11 +66,11 @@ from ..utils.callback import dangling_callback
 
 def preprocess_image(data, log=False, clip=0.001):
     """Preforms the pre-processing of the image
-    
+
     :param data: the input image
     :param log: set to apply logarithmic intensity scale
     :param clip: discard pixel fraction which are too weak/intense
-    :return: scaled image, bounds  
+    :return: scaled image, bounds
     """
     if log:
         data_disp = numpy.arcsinh(data)
@@ -242,7 +242,7 @@ class PeakPicker(object):
     def gui(self, log=False, maximize=False, pick=True, widget_klass=None):
         """
         Display the GUI
-        
+
         :param log: show z in log scale
         :param maximize: set to true to maximize window
         :param pick: activate pixel picking
@@ -313,7 +313,7 @@ class PeakPicker(object):
 
         :param points: list of points
         :param gpt: group of point, instance of PointGroup, the one to
-        :param ring: ring number  
+        :param ring: ring number
         :return: gpt
         """
         if points:

@@ -124,4 +124,3 @@ plot(out_ocl_csr_padded, label="ocl_csr_padded")
 legend()
 show()
 six.moves.input()
-

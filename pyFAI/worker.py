@@ -679,10 +679,10 @@ class Worker(object):
     def validate_config(config, raise_exception=RuntimeError):
         """
         Validates a configuration for any inconsitencies
-        
+
         :param config: dict contraining the configuration
         :param raise_exception: Exception class to raise when configuration is not consistant
-        :return: None or reason as a string when raise_exception is None, else raise the given exception   
+        :return: None or reason as a string when raise_exception is None, else raise the given exception
         """
         reason = None
         if not config.get("dist"):

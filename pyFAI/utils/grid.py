@@ -48,7 +48,7 @@ Alignment = namedtuple("Alignment", "points RMSD rotation center_ref center_set 
 
 
 class Kabsch:
-    """This class aligns a set of point on a reference grid and calculate 
+    """This class aligns a set of point on a reference grid and calculate
     the optimal rotation, translation.
     It offers 2 methods to correct (move to the reference position) or uncorrect other sets of points
     """
@@ -85,13 +85,13 @@ class Kabsch:
     def __init__(self, reference, points):
         """Constructor of the class:
         calculates the transformation to match the list of point to the reference points
-        
-        :param reference: 2d array like with `n` lines of `d` coordinates. The reference positions 
+
+        :param reference: 2d array like with `n` lines of `d` coordinates. The reference positions
         :param points: 2d array like with `n` lines of `d` coordinates. The point to match to the reference
-        
-        The transformation provided is the rigid transformation: 
-        `P·U + V` where U is the rotation matix and V the the translation 
-        
+
+        The transformation provided is the rigid transformation:
+        `P·U + V` where U is the rotation matix and V the the translation
+
         `d` is usally 2 for 2D detectors but 3 is very common. More shouldn't be an issue
         """
         R = numpy.ascontiguousarray(reference, dtype=numpy.float64)

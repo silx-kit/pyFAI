@@ -48,17 +48,17 @@ from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
 
 
-cdef: 
+cdef:
     Py_ssize_t MIN_SIZE = 1024  # Minumum size of the array to go parallel.
-    Py_ssize_t MAX_THREADS = 8  # Limit to 8 cores at maximum, avoids using multiple sockets usually. The value comes from numexpr 
+    Py_ssize_t MAX_THREADS = 8  # Limit to 8 cores at maximum, avoids using multiple sockets usually. The value comes from numexpr
     double twopi = 2.0 * M_PI
-    
+
 # We declare a second cython.floating so that it behaves like an actual template
 ctypedef fused float_or_double:
     cython.double
     cython.float
 
-try:    
+try:
     MAX_THREADS = min(MAX_THREADS, len(os.sched_getaffinity(os.getpid()))) # Limit to the actual number of threads
 except Exception:
     MAX_THREADS = min(MAX_THREADS, os.cpu_count() or 1)
@@ -550,7 +550,7 @@ def calc_rad_azim(double L,
                   pos2 not None,
                   pos3=None,
                   space="2th",
-                  wavelength=None, 
+                  wavelength=None,
                   bint chi_discontinuity_at_pi=True
                   ):
     """Calculate the radial & azimutal position for each pixel from pos1, pos2, pos3.

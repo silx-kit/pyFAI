@@ -197,5 +197,3 @@ six.moves.input()
         # aaa += 1
         # if not numpy.allclose(data_1[j],data_2[j]):
             # bbb += 1
-
-

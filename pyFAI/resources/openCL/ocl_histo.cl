@@ -135,7 +135,7 @@ kernel void histogram_1d(global float* position,
  * - mini: lower bound of the histogram
  * - maxi: upper boubd of the histogram (excluded)
  * - check_azim: set to 1 to validate the azimuthal position
- * - azim_mini: lower bound for valid azimuthal angle 
+ * - azim_mini: lower bound for valid azimuthal angle
  * - azim_maxi: upper bound for valid azimuthal angle (excluded)
  *
  * This is a 1D histogram
@@ -163,9 +163,9 @@ kernel void histogram_1d_preproc(global float* radial,
         if ((pvalue>=radial_mini) && (pvalue<radial_maxi))
         { // position in radial range
         	char valid;
-        	if (check_azim) 
+        	if (check_azim)
         	{ //position
-        		float azim = azimuthal[idx]; 
+        		float azim = azimuthal[idx];
         		valid = (azim>=azimuthal_mini) && (azim<azimuthal_maxi);
         	}
         	else
@@ -179,7 +179,7 @@ kernel void histogram_1d_preproc(global float* radial,
                 atomic_add_global_kahan(&histo_sig[target], quartet.s0);
                 atomic_add_global_kahan(&histo_var[target], quartet.s1);
                 atomic_add_global_kahan(&histo_nrm[target], quartet.s2);
-                atomic_add(&histo_cnt[target], (unsigned int)(quartet.s3 + 0.5f));        		
+                atomic_add(&histo_cnt[target], (unsigned int)(quartet.s3 + 0.5f));
         	} //Treat valid data
         } // else discard value
     } // if idx in array

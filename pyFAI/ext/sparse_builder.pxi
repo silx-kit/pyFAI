@@ -1,4 +1,4 @@
-# coding: utf-8 
+# coding: utf-8
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI

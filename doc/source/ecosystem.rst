@@ -29,8 +29,8 @@ Program using pyFAI as a library
 --------------------------------
 
 `Github keeps track of dependant projects <https://github.com/silx-kit/pyFAI/network/dependents>`_ and 60 open source projects are
-explicitely dependant on pyFAI. 
-Those include data analysis in most synchrotrons in the world (NSLS-II, APS ...) but also on Free electron laser facilities and in electron microscopy.   
+explicitely dependant on pyFAI.
+Those include data analysis in most synchrotrons in the world (NSLS-II, APS ...) but also on Free electron laser facilities and in electron microscopy.
 Here is a list of friendly projects which developpers contributed back to pyFAI:
 
 
@@ -184,5 +184,3 @@ graphics for plotting data and it  incorporates a number of powerful
 packages for integrating 2D powder diffraction images, analyzing the
 curves to obtain PDFs and then tools for assessing the data and modeling
 it.  It is available from `diffpy.org <http://diffpy.org>`_.
-
-

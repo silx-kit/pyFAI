@@ -497,7 +497,7 @@ class TestBugRegression(unittest.TestCase):
 
     def test_bug_1510(self):
         """
-        CSR engine got systematically discarded when radial range is provided 
+        CSR engine got systematically discarded when radial range is provided
         """
         method = ("no", "csr", "cython")
         detector = detectors.Pilatus100k()
@@ -518,7 +518,7 @@ class TestBugRegression(unittest.TestCase):
         self.assertEqual(id_before, id_after, "The CSR engine got reset")
 
     def test_bug_1536(self):
-        """Ensure setPyFAI accepts the output of getPyFAI() 
+        """Ensure setPyFAI accepts the output of getPyFAI()
         and that the detector description matches !
         """
         detector = detectors.Detector(5e-4, 5e-4, max_shape=(1100, 1000))
@@ -535,7 +535,7 @@ class TestBugRegression(unittest.TestCase):
 
 class TestBug1703(unittest.TestCase):
     """
-    Check the normalization affect propely the propagated errors/intensity 
+    Check the normalization affect propely the propagated errors/intensity
     """
 
     @classmethod

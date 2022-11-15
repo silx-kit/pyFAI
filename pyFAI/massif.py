@@ -265,12 +265,12 @@ class Massif(object):
             data = self.data.copy()
             if self.median_prefilter:
                 "First stage of cleaning, localy 3x3"
-                data[numpy.where(self.mask)] = numpy.NaN 
+                data[numpy.where(self.mask)] = numpy.NaN
                 data = median_filter(data, 3)
                 mask = numpy.logical_not(numpy.isfinite(data))
             else:
                 mask = self.mask
-                
+
             "Second stage of cleaning, further away"
             idx = distance_transform_edt(mask,
                                          return_distances=False,

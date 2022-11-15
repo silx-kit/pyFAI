@@ -361,7 +361,7 @@ class Detector(metaclass=DetectorMeta):
     def set_dx(self, dx=None):
         """
         set the pixel-wise displacement along X (dim2)
-        
+
         units: Displacement of a fraction of pixel in the direction X (along axis2)
         """
         if not self.max_shape:
@@ -399,8 +399,8 @@ class Detector(metaclass=DetectorMeta):
     def set_dy(self, dy=None):
         """
         set the pixel-wise displacement along Y (dim1)
-        
-        unit: Displacement of a fraction of pixel in the Y direction (along dim1) 
+
+        unit: Displacement of a fraction of pixel in the Y direction (along dim1)
         """
         if not self.max_shape:
             raise RuntimeError("Set detector shape before setting the distortion")

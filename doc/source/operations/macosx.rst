@@ -15,7 +15,7 @@ of Python3 (3.6 at least).
 Those distribution are available as *dmg* images from:
 `Python.org <https://www.python.org/downloads/mac-osx/>`_
 
-After downloading, move the **app** into the *Applications* folder. 
+After downloading, move the **app** into the *Applications* folder.
 
 Using a virtual environment:
 ----------------------------
@@ -76,7 +76,7 @@ To build pyFAI from sources, a C-compiler is needed.
 On an *Apple* computer, the default compiler is
 `Xcode <https://developer.apple.com/xcode/>`_, and it is available for free on
 the **AppStore**.
-As pyFAI will deactivate OpenMP on apple computer, for this  
+As pyFAI will deactivate OpenMP on apple computer, for this
 it needs to regenerate all Cython files without OpenMP.
 
 The absence of OpenMP is mitigated on Apple computer by the support of OpenCL which provied parallel intgeration.

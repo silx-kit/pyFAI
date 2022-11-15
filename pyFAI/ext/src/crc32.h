@@ -28,4 +28,3 @@ THE SOFTWARE.
 #endif
 
 PYFAI_VISIBILITY_HIDDEN uint32_t pyFAI_crc32(char *str, uint32_t len);
-

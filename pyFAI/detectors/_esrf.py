@@ -36,7 +36,7 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "18/06/2020"
 __status__ = "production"
- 
+
 
 import numpy
 import logging

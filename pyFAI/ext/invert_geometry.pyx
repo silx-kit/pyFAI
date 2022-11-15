@@ -110,16 +110,16 @@ cdef class InvertGeometry:
         :param ang: angular value
         :param refined: if True: use linear interpolation, else provide nearest pixel
         :param result: [p0, p1]: pixel coordinates, output parameter
-        :return 0 if properly interpolated, 1 if failed 
+        :return 0 if properly interpolated, 1 if failed
         """
         cdef:
-            int id0, id1, best0, best1, 
+            int id0, id1, best0, best1,
             bint err_code=0
             position_t cost, min_cost, gr0, ga0, gr1, ga1, cor0, cor1, target_ang, target_rad, det
 
         best0 = 0
         best1 = 0
-        cor0 = 0.0 
+        cor0 = 0.0
         cor1 = 0.0
         cost = self.ang_scale * (self.angle[0, 0] - ang) ** 2 \
              + self.rad_scale * (self.radius[0, 0] - rad) ** 2
@@ -171,11 +171,11 @@ cdef class InvertGeometry:
         with nogil:
             self._call(rad, ang, refined, res)
         return res[0], res[1]
-    
-    
+
+
     def many(self, radial, azimuthal, bint refined=True):
         """Interpolate many points for the ...
-        
+
         :param radial: array of radial positions
         :param azimuthal: array of azimuthal positions, same shape as radial
         :param refined: if True: use linear interpolation, else provide nearest pixel
@@ -185,8 +185,8 @@ cdef class InvertGeometry:
         cdef:
             position_t[::1] rad = numpy.ascontiguousarray(radial, position_d).ravel()
             position_t[::1] azim = numpy.ascontiguousarray(azimuthal, position_d).ravel()
-            int i, size = radial.size 
-            position_t[:, ::1] res             
+            int i, size = radial.size
+            position_t[:, ::1] res
         size = min(rad.shape[0], azim.shape[0])
         res = numpy.empty((size, 2), dtype=position_d)
         with nogil:

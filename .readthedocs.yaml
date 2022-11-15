@@ -27,4 +27,3 @@ python:
     - requirements: ci/requirements_rtd.txt
     - method: pip
       path:  .
-

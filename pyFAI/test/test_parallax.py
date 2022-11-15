@@ -52,14 +52,14 @@ class TestParallax(unittest.TestCase):
             x,y = beam()
             self.assertGreaterEqual(x[-1]-x[0], width, "{profile} profile is large enough")
             self.assertTrue(numpy.isclose(y.sum(), 1.0), "intensity are normalized")
-    
-        
-    
+
+
+
     def test_decay(self):
         t = ThinSensor(450e-6, 0.3)
         self.assertTrue(isinstance(t, BaseSensor))
         self.assertTrue(t.test(), msg="autotest OK")
-    
+
     def test_serialize1(self):
         beam = Beam(1e-3)
         sensor=ThinSensor(1e-3, 0.3)
@@ -74,7 +74,7 @@ class TestParallax(unittest.TestCase):
         q.set_config(p.get_config())
         self.assertEqual(str(p), str(q))
 
-        
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()

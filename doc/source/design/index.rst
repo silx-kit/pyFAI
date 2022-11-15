@@ -14,7 +14,7 @@ I would describe it as a stack of 5 layers, upper ones relying on lower ones:
 
 5. Graphical user interfaced application: ``pyFAI-calib2``, ``diff_map``, ...
 
-4. Command-line scripts: ``pyFAI-average``, ``pyFAI-benchmark``, ... 
+4. Command-line scripts: ``pyFAI-average``, ``pyFAI-benchmark``, ...
 
 3. Top level objects: ``AzimuthalIntegrator``, ``Distortion``, ...
 
@@ -24,12 +24,12 @@ I would describe it as a stack of 5 layers, upper ones relying on lower ones:
 
 0. Common basement: Python, Numpy, Cython, PyOpenCL and silx
 
-At level 5. are easy-to use applications, requiring no specific computing knowledge. 
-Levels 3. and 2. are heavily described in tutorials and should be accesible to 
+At level 5. are easy-to use applications, requiring no specific computing knowledge.
+Levels 3. and 2. are heavily described in tutorials and should be accesible to
 any Pythonistas. We try to keep the API on those levels consistent between versions.
 Level 1. is often written in Cython, or OpenCL and requires low-level expertise.
 
-Of course mastering level 1. provides faster analysis, but it is not of general use.     
+Of course mastering level 1. provides faster analysis, but it is not of general use.
 
 .. toctree::
    :maxdepth: 2

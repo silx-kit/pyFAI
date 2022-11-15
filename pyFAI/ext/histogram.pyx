@@ -444,7 +444,7 @@ def histogram1d_engine(radial, int npt,
         data_t norm, sig, var, cnt, norm2
         int i
         bint do_variance=error_model
-    
+
     prep = preproc(raw,
                    dark=dark,
                    flat=flat,
@@ -568,7 +568,7 @@ def histogram2d_engine(pos0,
         pos0_min = pos0.min()
         pos0_maxin = pos0.max()
     pos0_max = calc_upper_bound(pos0_maxin)
-    
+
     if pos1_range is not None and len(pos1_range) > 1:
         pos1_min = min(pos1_range)
         pos1_maxin = max(pos1_range)
@@ -621,10 +621,10 @@ def histogram2d_engine(pos0,
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-                    
+
     return Integrate2dtpl(bin_centers0, bin_centers1,
                           numpy.asarray(out_signal).T,
                           numpy.asarray(out_error) if nchan >= 3 else None,
                           numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
 
-histogram2d_preproc = histogram2d_engine 
+histogram2d_preproc = histogram2d_engine

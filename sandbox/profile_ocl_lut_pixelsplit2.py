@@ -183,4 +183,3 @@ plot(*ref, label="ref_merge")
 legend()
 show()
 six.moves.input()
-

@@ -38,9 +38,9 @@ def create_extension_config(name,
                             language="c"):
     """
     Util function to create numpy extension from the current pyFAI project.
-    
+
     Prefer using numpy add_extension without it.
-    
+
     """
     include_dirs = ['src', numpy.get_include()]
 

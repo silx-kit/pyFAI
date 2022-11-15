@@ -19,7 +19,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""simple histogram rebinning engine implemented in pure python (with the help of numpy !) 
+"""simple histogram rebinning engine implemented in pure python (with the help of numpy !)
 """
 
 __author__ = "Jerome Kieffer"
@@ -60,12 +60,12 @@ def histogram1d_engine(radial, npt,
                        split_result=False,
                        variance=None,
                        dark_variance=None,
-                       error_model=ErrorModel.NO, 
+                       error_model=ErrorModel.NO,
                        radial_range=None
                        ):
     """Implementation of rebinning engine using pure numpy histograms
-    
-    :param radial: radial position 2D array (same shape as raw)   
+
+    :param radial: radial position 2D array (same shape as raw)
     :param npt: number of points to integrate over
     :param raw: 2D array with the raw signal
     :param dark: array containing the value of the dark noise, to be subtracted
@@ -80,20 +80,20 @@ def histogram1d_engine(radial, npt,
     :param empty: value to be given for empty bins
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
-    :param error_model: Use the provided ErrorModel, only "poisson" and "variance" is valid 
+    :param error_model: Use the provided ErrorModel, only "poisson" and "variance" is valid
 
 
     NaN are always considered as invalid values
 
     if neither empty nor dummy is provided, empty pixels are left at 0.
-    
-    Nota: "azimuthal_range" has to be integrated into the 
-           mask prior to the call of this function 
-    
-    :return: Integrate1dtpl named tuple containing: 
-            position, average intensity, std on intensity, 
-            plus the various histograms on signal, variance, normalization and count.  
-                                               
+
+    Nota: "azimuthal_range" has to be integrated into the
+           mask prior to the call of this function
+
+    :return: Integrate1dtpl named tuple containing:
+            position, average intensity, std on intensity,
+            plus the various histograms on signal, variance, normalization and count.
+
     """
     prep = preproc(raw,
                    dark=dark,
@@ -167,7 +167,7 @@ def histogram2d_engine(radial, azimuthal, npt,
                        azimuth_range=None
                        ):
     """Implementation of 2D rebinning engine using pure numpy histograms
-    
+
     :param radial: radial position 2D array (same shape as raw)
     :param azimuthal: azimuthal position 2D array (same shape as raw)
     :param npt: number of points to integrate over in (radial, azimuthal) dimensions
@@ -190,14 +190,14 @@ def histogram2d_engine(radial, azimuthal, npt,
     NaN are always considered as invalid values
 
     if neither empty nor dummy is provided, empty pixels are left at 0.
-    
-    Nota: "azimuthal_range" has to be integrated into the 
-           mask prior to the call of this function 
-    
-    :return: Integrate1dtpl named tuple containing: 
-            position, average intensity, std on intensity, 
-            plus the various histograms on signal, variance, normalization and count.  
-                                               
+
+    Nota: "azimuthal_range" has to be integrated into the
+           mask prior to the call of this function
+
+    :return: Integrate1dtpl named tuple containing:
+            position, average intensity, std on intensity,
+            plus the various histograms on signal, variance, normalization and count.
+
     """
     prep = preproc(raw,
                    dark=dark,

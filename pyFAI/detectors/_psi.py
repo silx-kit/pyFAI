@@ -208,7 +208,7 @@ class Jungfrau4M(_Dectris):
     force_pixel = True
     aliases = ["Jungfrau 4M"]
     uniform_pixel = True
-    
+
     def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
@@ -229,7 +229,7 @@ class Jungfrau_16M_cor(Jungfrau):
     @staticmethod
     def load_geom(geom_fname):
         """"Load module geometry from ASCII file
-        
+
         Stollen from Alejandro Homs' code
         """
         import re
@@ -306,4 +306,3 @@ class Jungfrau_16M_cor(Jungfrau):
             mask[:, i + 257:self.MAX_SHAPE[1] - 2:self.MODULE_SIZE[1]] = 1
             mask[:, i + 258:self.MAX_SHAPE[1] - 2:self.MODULE_SIZE[1]] = 1
         return mask
-

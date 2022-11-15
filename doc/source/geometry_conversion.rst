@@ -133,7 +133,7 @@ given by
      \begin{bmatrix} d_H \\ d_V \end{bmatrix}
      \\
      D_{\mathtt{pyFAI}}
-     & = 
+     & =
      \begin{bmatrix}
        0 & \mathrm{pxsize}_V \\
        \mathrm{pxsize}_H & 0 \\
@@ -207,7 +207,7 @@ matrices:
      \begin{bmatrix}
        \cos(\theta_3) & -\sin(\theta_3) & 0\\
        \sin(\theta_3) & \cos(\theta_3) & 0\\
-       0 & 0 & 1  
+       0 & 0 & 1
      \end{bmatrix}.
      \label{eq-rot3}\end{aligned}
 
@@ -285,7 +285,7 @@ The inversion eq. [eq-tpyFAI] is straight-forward:
      \end{bmatrix}
      & =
      \begin{bmatrix}
-       A_1  \\ A_2 \\ A_3 
+       A_1  \\ A_2 \\ A_3
      \end{bmatrix}
      + \alpha
      \begin{bmatrix}
@@ -435,7 +435,7 @@ a detector :math:`D` matrix, this can be written as
 
    \begin{aligned}
      D_{\mathtt{ImageD11}}
-     & = 
+     & =
      \begin{bmatrix}
        0 & 0 \\
        y_{\mathrm{size}} o_{22} & z_{\mathrm{size}} o_{21} \\
@@ -525,7 +525,7 @@ vice versa.
      \cdot
      \begin{bmatrix}
        d_H - y_{\mathrm{center}} \\
-       d_V - z_{\mathrm{center}} 
+       d_V - z_{\mathrm{center}}
      \end{bmatrix}
      +
      \begin{bmatrix} \Delta \\ 0 \\ 0 \end{bmatrix}
@@ -613,7 +613,7 @@ comparing to the ``ImageD11`` rotation matrix, we see
      & =
      R_{\mathtt{ImageD11}}(\theta_x, \theta_y, \theta_z)
      \\
-     & = 
+     & =
      R_1(\theta_x) \cdot R_2(\theta_y) \cdot R_3(-\theta_z)\end{aligned}
 
 We find that, by divine intervention [1]_ and despite all the efforts to
@@ -662,7 +662,7 @@ Inserting eqs. [eq-thetax]–[eq-thetaz] into [eq-transformation], we find
      \cdot
      \begin{bmatrix}
        d_H - y_{\mathrm{center}} \\
-       d_V - z_{\mathrm{center}} 
+       d_V - z_{\mathrm{center}}
      \end{bmatrix}
      \\
      = &
@@ -683,7 +683,7 @@ Inserting eqs. [eq-thetax]–[eq-thetaz] into [eq-transformation], we find
      \begin{bmatrix}
        0 \\
        -\mathrm{pxsize}_H (d_H - y_{\mathrm{center}}) \\
-       \mathrm{pxsize}_V (d_V - z_{\mathrm{center}}) 
+       \mathrm{pxsize}_V (d_V - z_{\mathrm{center}})
      \end{bmatrix}
      \\
      = &
@@ -701,7 +701,7 @@ Inserting eqs. [eq-thetax]–[eq-thetaz] into [eq-transformation], we find
      \begin{bmatrix}
        0 \\
        -\mathrm{pxsize}_H (d_H - y_{\mathrm{center}}) \\
-       \mathrm{pxsize}_V (d_V - z_{\mathrm{center}}) 
+       \mathrm{pxsize}_V (d_V - z_{\mathrm{center}})
      \end{bmatrix}
      \right)
      \\

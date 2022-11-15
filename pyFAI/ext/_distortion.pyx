@@ -240,7 +240,7 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
     delta0, delta1 = max_pixel_size
     cdef int32_t[:, :] outMax = numpy.zeros((shape0, shape1), dtype=numpy.int32)
     buffer = numpy.empty((delta0, delta1), dtype=buffer_d)
-    
+
     if (size == 0):  # fix 271
         raise RuntimeError("The look-up table has dimension 0 which is a non-sense." +
                            " Did you mask out all pixel or is your image out of the geometry range?")
@@ -251,7 +251,7 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (delta1, delta0, size))
     #Manage global pixel offset:
     goffset0 = float(offset[0])
-    goffset1 = float(offset[1])    
+    goffset1 = float(offset[1])
     with nogil:
         # i,j, idx are indexes of the raw image uncorrected
         for i in range(shape0):
@@ -1122,7 +1122,7 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
         if delta_dummy is None:
             cdelta_dummy = 0.0
     else:
-        cdummy = numpy.NaN 
+        cdummy = numpy.NaN
         cdelta_dummy = 0.0
 
     data, indices, indptr = LUT
@@ -1243,7 +1243,7 @@ def correct_LUT_preproc_double(image, shape_out,
                 # case (signal, variance,  normalization)
                 lprop[i, 1] += sum_var
                 lprop[i, 2] += sum_norm
-                lout[i] += sum_sig / sum_norm 
+                lout[i] += sum_sig / sum_norm
                 lerr[i] += sqrt(sum_var) / sum_norm
             else:
                 # Case signal only. No normalization to behave like FIT2D does
@@ -1350,7 +1350,7 @@ def correct_CSR_preproc_double(image, shape_out,
                 # case (signal, variance,  normalization)
                 lprop[i, 1] += sum_var
                 lprop[i, 2] += sum_norm
-                lout[i] += sum_sig / sum_norm 
+                lout[i] += sum_sig / sum_norm
                 lerr[i] += sqrt(sum_var) / sum_norm
             else:
                 # Case signal only. No normalization to behave like FIT2D does

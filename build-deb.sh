@@ -37,7 +37,7 @@ deb_name=$(echo "$source_project" | tr '[:upper:]' '[:lower:]')
 
 # target system
 if [ -f /etc/debian_version ]
-then 
+then
     debian_version=$(cat /etc/debian_version | cut -d. -f1 | grep -o '[0-9]*')
     if [ -z $debian_version ]
     then
@@ -92,7 +92,7 @@ optional arguments:
     --help     show this help text
     --install  install the packages generated at the end of
                the process using 'sudo dpkg'
-    --stdeb-py3     Build using stdeb for python3           
+    --stdeb-py3     Build using stdeb for python3
     --debian9  Simulate a debian 9 Stretch system
     --debian10 Simulate a debian 10 Buster system
     --debian11 Simulate a debian 11 Bullseye system
@@ -165,7 +165,7 @@ clean_up()
 }
 
 build_deb() {
-    echo "Build for debian 9 or newer using actual packaging" 
+    echo "Build for debian 9 or newer using actual packaging"
     tarname=${project}_${debianversion}.orig.tar.gz
     clean_up
     python3 setup.py debian_src

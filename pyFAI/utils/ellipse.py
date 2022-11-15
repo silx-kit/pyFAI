@@ -51,7 +51,7 @@ Ellipse = namedtuple("Ellipse", ["center_1", "center_2", "angle", "half_long_axi
 def fit_ellipse(pty, ptx, _allow_delta=True):
     """Fit an ellipse
 
-    Math from 
+    Math from
     https://mathworld.wolfram.com/Ellipse.html #15
 
     inspired from

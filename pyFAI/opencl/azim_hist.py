@@ -27,7 +27,7 @@
 #  THE SOFTWARE.
 
 """
-Histogram (atomic-add) based integrator 
+Histogram (atomic-add) based integrator
 
 """
 __author__ = "Jérôme Kieffer"
@@ -401,7 +401,7 @@ class OCL_Histogram1d(OpenclProcessing):
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
         :param delta_dummy: precesion for dummy assessement
-        :param error_model: set to "poisson" assume variance is data (minimum 1) 
+        :param error_model: set to "poisson" assume variance is data (minimum 1)
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing

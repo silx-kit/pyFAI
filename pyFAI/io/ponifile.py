@@ -62,7 +62,7 @@ class PoniFile(object):
             self.read_from_file(data)
         else:
             self.read_from_duck(data)
-        
+
     def __repr__(self):
         return json.dumps(self.as_dict(), indent=4)
 

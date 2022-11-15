@@ -26,7 +26,7 @@ float max4f(float a, float b, float c, float d)
     return fmax(fmax(a,b),fmax(c,d));
 }
 
-void AtomicAdd(volatile __global float *source, const float operand) 
+void AtomicAdd(volatile __global float *source, const float operand)
 {
     union {
         unsigned int intVal;
@@ -61,8 +61,8 @@ memset_outMax(__global int *array0)
 __kernel
 void reduce_minmax_1(__global float2* buffer,
              __global float4* preresult) {
-    
-    
+
+
     int global_index = get_global_id(0);
     int global_size  = get_global_size(0);
     float4 accumulator;
@@ -70,7 +70,7 @@ void reduce_minmax_1(__global float2* buffer,
     accumulator.y = -INFINITY;
     accumulator.z = INFINITY;
     accumulator.w = -INFINITY;
-    
+
     // Loop sequentially over chunks of input vector
     while (global_index < POS_SIZE/2) {
         float2 element = buffer[global_index];
@@ -80,17 +80,17 @@ void reduce_minmax_1(__global float2* buffer,
         accumulator.w = (accumulator.w > element.s1) ? accumulator.w : element.s1;
         global_index += global_size;
     }
-    
+
     __local float4 scratch[WORKGROUP_SIZE];
 
     // Perform parallel reduction
     int local_index = get_local_id(0);
-    
+
     scratch[local_index] = accumulator;
     barrier(CLK_LOCAL_MEM_FENCE);
-    
+
     int active_threads = get_local_size(0);
-    
+
     while (active_threads != 1)
     {
         active_threads /= 2;
@@ -123,17 +123,17 @@ void reduce_minmax_1(__global float2* buffer,
 __kernel
 void reduce_minmax_2(__global float4* preresult,
              __global float4* result) {
-    
-    
+
+
     __local float4 scratch[WORKGROUP_SIZE];
 
     int local_index = get_local_id(0);
-    
+
     scratch[local_index] = preresult[local_index];
     barrier(CLK_LOCAL_MEM_FENCE);
-    
+
     int active_threads = get_local_size(0);
-    
+
     while (active_threads != 1)
     {
         active_threads /= 2;
@@ -155,7 +155,7 @@ void reduce_minmax_2(__global float4* preresult,
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    
+
 
     if (local_index == 0) {
         result[0] = scratch[0];
@@ -170,7 +170,7 @@ void lut_1(__global float8* pos,
                     float2 pos0Range,
                     float2 pos1Range,
            __global int*  outMax)
-{ 
+{
     int global_index = get_global_id(0);
     if (global_index < SIZE)
     {
@@ -183,26 +183,26 @@ void lut_1(__global float8* pos,
 
 
 
-        
+
         float delta = (pos0_max - pos0_min) / BINS;
-        
+
         int local_index = get_local_id(0);
-        
+
         float8 pixel = pos[global_index];
-        
+
         pixel.s0 = getBinNr(pixel.s0, delta, pos0_min);
         pixel.s2 = getBinNr(pixel.s2, delta, pos0_min);
         pixel.s4 = getBinNr(pixel.s4, delta, pos0_min);
         pixel.s6 = getBinNr(pixel.s6, delta, pos0_min);
-        
+
         float min0 = min4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
         float max0 = max4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
-        
+
         int bin0_min = floor(min0);
         int bin0_max = floor(max0);
-        
+
 //        if (bin0_min >= 0) && (bin0_max < BINS) // do i count half pixels
-        
+
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
             atomic_add(&outMax[bin], 1);
@@ -215,10 +215,10 @@ __kernel
 void lut_2(__global int*  outMax,
            __global int*  idx_ptr,
            __global int*  lutsize)
-{ 
+{
     int local_index = get_local_id(0);
 //    int local_size  = get_local_size(0);
-    
+
     if (local_index == 0)
     {
         idx_ptr[0] = 0;
@@ -226,19 +226,19 @@ void lut_2(__global int*  outMax,
             idx_ptr[i+1] = idx_ptr[i] + outMax[i];
         lutsize[0] = idx_ptr[BINS];
     }
-                     
+
 // for future memory access optimizations
 //
 //      __local int scratch1[WORKGROUP_SIZE];
-//      
+//
 //      scratch1[local_index] = 0
-//      
+//
 //     // Loop sequentially over chunks of input vector
 //     for (int i=local_index; i < BINS; i += local_size)
 //     {
 //         scratch1[i] = outMax[i];
 //         barrier(CLK_LOCAL_MEM_FENCE);
-//         
+//
 //         if (local_index == 0)
 //         {
 //             for (int j=0; j<local_size; j++)
@@ -270,31 +270,31 @@ void lut_3(__global float8* pos,
         float pos0_min = minmax[0].s0;
         float pos0_max = minmax[0].s1;
         pos0_max *= 1 + EPS;
-        
+
         float delta = (pos0_max - pos0_min) / BINS;
-        
+
         int local_index  = get_local_id(0);
-        
+
         float8 pixel = pos[global_index];
-        
+
         pixel.s0 = getBinNr(pixel.s0, delta, pos0_min);
         pixel.s2 = getBinNr(pixel.s2, delta, pos0_min);
         pixel.s4 = getBinNr(pixel.s4, delta, pos0_min);
         pixel.s6 = getBinNr(pixel.s6, delta, pos0_min);
-        
+
         float min0 = min4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
         float max0 = max4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
-        
+
         int bin0_min = floor(min0);
         int bin0_max = floor(max0);
-        
+
         float2 AB, BC, CD, DA;
-        
+
         pixel.s0 -= bin0_min;
         pixel.s2 -= bin0_min;
         pixel.s4 -= bin0_min;
         pixel.s6 -= bin0_min;
-        
+
         AB.x=(pixel.s3-pixel.s1)/(pixel.s2-pixel.s0);
         AB.y= pixel.s1 - AB.x*pixel.s0;
         BC.x=(pixel.s5-pixel.s3)/(pixel.s4-pixel.s2);
@@ -303,7 +303,7 @@ void lut_3(__global float8* pos,
         CD.y= pixel.s5 - CD.x*pixel.s4;
         DA.x=(pixel.s1-pixel.s7)/(pixel.s0-pixel.s6);
         DA.y= pixel.s7 - DA.x*pixel.s6;
-        
+
         float areaPixel = area4(pixel.s0, pixel.s1, pixel.s2, pixel.s3, pixel.s4, pixel.s5, pixel.s6, pixel.s7);
         float oneOverPixelArea = 1.0 / areaPixel;
         for (int bin=bin0_min; bin < bin0_max+1; bin++)

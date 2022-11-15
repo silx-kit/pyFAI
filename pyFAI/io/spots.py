@@ -61,7 +61,7 @@ else:
 def _stack_frames(fimg):
     """return a stack of images from a single or multiframe fabio object
     :param fimg: opened fabio image
-    :return: 3d array 
+    :return: 3d array
     """
     shape = (fimg.nframes,) + fimg.shape
     stack = numpy.empty(shape, dtype=fimg.dtype)
@@ -72,7 +72,7 @@ def _stack_frames(fimg):
 
 def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None, powder=False):
     """Write the list of spots per frame into a HDF5 file with the Nexus convention
-    
+
     :param filename: name of the file
     :param spots: list of spots per frame (as built by peakfinder)
     :param beamline: name of the beamline as text
@@ -80,7 +80,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
     :param source: list of input files
     :param extra: dict with extra metadata
     :param grid: 2-tuple with grid shape and if it was acquired in zigzag mode
-    :param powder: unused 
+    :param powder: unused
     :return: None
     """
     assert len(spots)
@@ -160,7 +160,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
 def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None, powder=None):
     """Write the list of spots per frame into a HDF5 file with the CXI convention
     https://raw.githubusercontent.com/cxidb/CXI/master/cxi_file_format.pdf
-    
+
     :param filename: name of the file
     :param spots: list of spots per frame (as built by peakfinder)
     :param beamline: name of the beamline as text

@@ -60,8 +60,8 @@ def feed_histogram(SparseBuilder builder not None,
                    double normalization_factor=1.0):
     """Missing docstring for feed_histogram
     Is this just a demo ?
-    
-    warning: 
+
+    warning:
         * Unused argument 'empty'
         * Unused argument 'normalization_factor'
 

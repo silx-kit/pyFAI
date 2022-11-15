@@ -69,7 +69,7 @@ Installation procedure on other linux distibution
 -------------------------------------------------
 
 If your distribution does not provide you pyFAI packages, using the **PIP** way
-is advised, via wheels packages. First install *pip* and *wheel* and activate a 
+is advised, via wheels packages. First install *pip* and *wheel* and activate a
 virtual environment:
 
 .. code-block:: shell
@@ -96,5 +96,5 @@ Or you can install pyFAI from the sources:
 
 **Nota:** The usage of "python setup.py install" is now deprecated.
 It causes much more trouble as there is no installed file tracking,
-hence no way to de-install properly the package. 
-One should never use *sudo pip* as it is likely to interfer with the software installed with the system. 
+hence no way to de-install properly the package.
+One should never use *sudo pip* as it is likely to interfer with the software installed with the system.

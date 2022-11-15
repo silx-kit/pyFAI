@@ -36,7 +36,7 @@ __date__ = "10/02/2021"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
-from cython cimport floating 
+from cython cimport floating
 cimport numpy
 import numpy
 from libc.math cimport floor, ceil

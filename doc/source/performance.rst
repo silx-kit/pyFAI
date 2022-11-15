@@ -11,15 +11,15 @@ Performances
 The performance analysis has to be done on what matters' most for the end user,
 which is often the azimuthal integration step.
 PyFAI features many integrators, many pixel splitting schemes and the best one is not always obvious.
-The :ref:`pyfaibenchmark` tool measures the time to perform the 1D azimuthal integration for images 
-between 1 and 16 megapixels and helps the user to take this descision. 
+The :ref:`pyfaibenchmark` tool measures the time to perform the 1D azimuthal integration for images
+between 1 and 16 megapixels and helps the user to take this descision.
 The pixel splitting scheme used, ``bbox``, is also the default one.
 Other splitting schemes have similar behavior.
- 
+
 By default the histogram and CSR algorithm implemented in cython are compared.
-All those cython engines accumulate information in `float64` containers while   
-OpenCL implementations accumulates using Kahan_summation_ with 4 `float32` operations 
-per addition.    
+All those cython engines accumulate information in `float64` containers while
+OpenCL implementations accumulates using Kahan_summation_ with 4 `float32` operations
+per addition.
 
 .. _Kahan_summation: http://en.wikipedia.org/wiki/Kahan_summation_algorithm
 
@@ -34,15 +34,15 @@ The vertical axis is in logarithmic scale, so a small offset can represent a fac
 Those curves have all hyperbolic shapes, which means that larger images process slower.
 
 By default, the benchmarking tool probes histogram- and CSR- based integrators (precisely ``("bbox", "histogram", "cython")``
-and ``("bbox", "csr", "cython")``. 
-The former is single threaded and offers the *worse* performances but it is still much faster than numpy based histograms. 
+and ``("bbox", "csr", "cython")``.
+The former is single threaded and offers the *worse* performances but it is still much faster than numpy based histograms.
 It is usually the lower curve.
- 
+
 The CSR-integration is usually 2-10x faster than the histogram thanks to the multi-threading.
 On Apple system and other system where multithreading is disabled, it can be that CSR-integrator
 is slower than histograms.
 One may also appreciate histogram-based integrators for their quicker initialization time or
-their lower memory footprint, for example when dealing with multi-geometry objects.  
+their lower memory footprint, for example when dealing with multi-geometry objects.
 
 In this plot, one OpenCL device has been added (plotted with dashed lines), it is a former high-end GPU.
 GPU provides the best performances when it comes to azimuthal integration, it is usually the upper most curve,
@@ -51,9 +51,8 @@ The best performances registered with this method is 2.5 GPix/s on recent gaming
 
 Since pyFAI version 0.20 introduced a new generation of integrator (in production),
 both `integrate1d_legacy` and `integrate1d_ng` are benchmarked together to validate the absence of regression.
-Note that `integrate1d_ng` performs 4 sums (on signal, variance, normalization and count) for each bin, 
-while former version `integrate1d_legacy` used to sum only 2 (signal and count), it is normal that the new version is 
+Note that `integrate1d_ng` performs 4 sums (on signal, variance, normalization and count) for each bin,
+while former version `integrate1d_legacy` used to sum only 2 (signal and count), it is normal that the new version is
 slightly slower. A factor larger than 2 should be considered as a bug.
 Depending on the system, the new version is sometimes even faster, up to 30% faster for
 histograms on Zen2 AMD processor with the histogram (thanks to the large caches available).
-  

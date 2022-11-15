@@ -9,7 +9,7 @@ Purpose
 Calibrate the diffraction setup geometry based on Debye-Sherrer rings
 images without a priori knowledge of your setup. You will need to
 provide a calibrant or a "d-spacing" file containing the spacing of
-Miller plans in Angstrom (in decreasing order). 
+Miller plans in Angstrom (in decreasing order).
 
 If you are using a standard calibrant, look at
 https://github.com/silx-kit/pyFAI/tree/master/calibration
@@ -257,7 +257,7 @@ While the sample is well diffracting and well known, the wavelength has been gue
 One should refine the wavelength when the peaks extracted are correct
 
 
-All those images are part of the benchmark suite of pyFAI. 
+All those images are part of the benchmark suite of pyFAI.
 To download them from internet, run the benchmark:
 
 ::
@@ -265,4 +265,3 @@ To download them from internet, run the benchmark:
 	pyFAI-benchmark
 
 Downloaded test images  are located in /tmp/pyFAI_testdata_${USER}
-

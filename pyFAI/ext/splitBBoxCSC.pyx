@@ -97,22 +97,22 @@ class HistoBBox1d(CscIntegrator, SplitBBoxIntegrator):
         """
         self.unit = unit
         SplitBBoxIntegrator.__init__(self, pos0, delta_pos0, pos1, delta_pos1,
-                                     bins, pos0_range, pos1_range, 
-                                     mask, mask_checksum, 
+                                     bins, pos0_range, pos1_range,
+                                     mask, mask_checksum,
                                      allow_pos0_neg, chiDiscAtPi, clip_pos1=clip_pos1)
-        
-        
+
+
         self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins))
-        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta, 
-                                          self.pos0_max - 0.5 * self.delta, 
+        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
+                                          self.pos0_max - 0.5 * self.delta,
                                           self.bins)
 
         csc = sparse.csr_matrix(self.calc_lut_1d().to_csr()).tocsc()
-         
-        #Call the constructor of the parent class
-        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, bins, empty or 0.0)    
 
-        self.lut_checksum = crc32(self.data)        
+        #Call the constructor of the parent class
+        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, bins, empty or 0.0)
+
+        self.lut_checksum = crc32(self.data)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
     @property
@@ -172,22 +172,22 @@ class HistoBBox2d(CscIntegrator, SplitBBoxIntegrator):
         :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π] depending on chiDiscAtPi), set to False to deactivate behavior
         """
         SplitBBoxIntegrator.__init__(self, pos0, delta_pos0, pos1, delta_pos1,
-                                     bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi, 
+                                     bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi,
                                      clip_pos1)
         self.unit = unit
         self.bin_centers = None
         self.delta0 = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins[0]))
         self.delta1 = (self.pos1_max - self.pos1_min) / (<position_t> (self.bins[1]))
-        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
-                                           self.pos0_max - 0.5 * self.delta0, 
+        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0,
+                                           self.pos0_max - 0.5 * self.delta0,
                                            self.bins[0])
-        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
-                                           self.pos1_max - 0.5 * self.delta1, 
+        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1,
+                                           self.pos1_max - 0.5 * self.delta1,
                                            self.bins[1])
         csc = self.calc_lut_2d().to_csr()
         #Call the constructor of the parent class
         CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, numpy.prod(bins), empty or 0.0)
-        self.lut_checksum = crc32(self.data) 
+        self.lut_checksum = crc32(self.data)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
     @property
@@ -207,4 +207,3 @@ class HistoBBox2d(CscIntegrator, SplitBBoxIntegrator):
     @property
     def check_mask(self):
         return self.cmask is not None
-

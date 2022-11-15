@@ -75,4 +75,3 @@ Bibliography
    Benecke, G. et al., (2014)
    J. Appl. Cryst. 47,
    http://dx.doi.org/10.1107/S1600576714019773
-
