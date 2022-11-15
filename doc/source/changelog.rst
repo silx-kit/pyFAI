@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 24/03/2022
+:Date: 15/11/2022
 :Keywords: changelog
 
 Change-log of versions
@@ -8,6 +8,7 @@ Change-log of versions
 0.22
 ----
 - Drop Python 3.6 (default parameters in namedtuple)
+- Require silx 1.1 (for OpenCL)
 
 0.21.3 24/03/2022
 -----------------
