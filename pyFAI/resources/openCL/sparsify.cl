@@ -57,7 +57,7 @@ kernel void find_intense(       global  float4 *preproc4,  // both input and out
                                global  int    *counter,    // Counter of the number of peaks found
                                global  int    *highidx,    // indexes of the pixels of high intensity
                          volatile local int *local_highidx)// Shared memory of size 4*WORKGROUP_SIZE
-{  
+{
     int tid = get_local_id(0);
     int gid = get_global_id(0);
     int wg = get_local_size(0);
