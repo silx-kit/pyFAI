@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 08/07/2022
+ *   Last revision: 17/11/2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,7 @@
  * \file
  * \brief OpenCL kernels for 1D azimuthal integration using CSR sparse matrix representation
  *
- * Constant to be provided at build time:
- *   WORKGROUP_SIZE
+ * Constant to be provided at build time: None
  */
 
 #include "for_eclipse.h"
@@ -69,20 +68,17 @@ static inline float2 CSRxVec(const   global  float   *vector,
     // we use _K suffix to highlight it is float2 used for Kahan summation
     float2 sum_K = (float2)(0.0f, 0.0f);
     float coef, signal;
-    int idx, k, j;
+    int idx;
 
-    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
-        k = j+thread_id_loc;
-        if (k < bin_bounds.y) {
-               coef = (data == NULL)?1.0f:data[k];
-               idx = indices[k];
-               signal = vector[idx];
-               if (isfinite(signal)) {
-                   // defined in silx:doubleword.cl
-                   sum_K = dw_plus_fp(sum_K, coef * signal);
-               };//end if finite
-       } //end if k < bin_bounds.y
-     }//for j
+    for (int k=bin_bounds.x+thread_id_loc; k<bin_bounds.y; k+=active_threads) {
+        coef = (data == NULL)?1.0f:data[k];
+        idx = indices[k];
+        signal = vector[idx];
+        if (isfinite(signal)) {
+           // defined in silx:doubleword.cl
+           sum_K = dw_plus_fp(sum_K, coef * signal);
+        };//end if finite
+     }//for k
 
     // parallel reduction
 
@@ -423,23 +419,20 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     int bin_size = bin_bounds.y - bin_bounds.x;
     // we use _K suffix to highlight it is float2 used for Kahan summation
     volatile float8 accum8 = (float8) (0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    int idx, k, j;
+    int idx;
 
-    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
-        k = j+thread_id_loc;
-        if (k < bin_bounds.y) {
-               float coef, signal, variance, norm, count;
-               coef = (coefs == NULL)?1.0f: coefs[k];
-               idx = indices[k];
-               float4 quatret = data[idx];
-               if (error_model==AZIMUTHAL){
-                   accum8 = _accumulate_azimuthal(accum8, quatret, coef);
-               }
-               else{
-                   accum8 = _accumulate_poisson(accum8, quatret, coef);
-               }
-       } //end if k < bin_bounds.y
-    };//for j
+    for (int k=bin_bounds.x+thread_id_loc; k<bin_bounds.y; k+=active_threads) {
+        float coef, signal, variance, norm, count;
+        coef = (coefs == NULL)?1.0f: coefs[k];
+        idx = indices[k];
+        float4 quatret = data[idx];
+        if (error_model==AZIMUTHAL){
+           accum8 = _accumulate_azimuthal(accum8, quatret, coef);
+        }
+        else{
+           accum8 = _accumulate_poisson(accum8, quatret, coef);
+        }
+    };//for k
 /*
  * parallel reduction
  */
@@ -531,7 +524,7 @@ static inline int _sigma_clip4(         global  float4   *data,
                                                 float    aver,
                                                 float    cutoff,
                                volatile local   int      *counter){
-    // each workgroup (ideal size: 1 warp or slightly larger) is assigned to 1 bin
+    // each workgroup is assigned to 1 bin
     int cnt, j, k, idx;
     counter[0] = 0;
     int bin_num = get_group_id(0);
@@ -578,7 +571,7 @@ static inline int _sigma_clip4(         global  float4   *data,
  * @param sum_data    Float pointer to the output 1D array with the weighted histogram
  * @param sum_count   Float pointer to the output 1D array with the unweighted histogram
  * @param merged      Float pointer to the output 1D array with the diffractogram
- *
+ * @param shared      Buffer of shared memory of size WORKGROUP_SIZE * 4 * sizeof(float)
  */
 kernel void
 csr_integrate(  const   global  float   *weights,
@@ -591,17 +584,13 @@ csr_integrate(  const   global  float   *weights,
                 const           int      coef_power,
                         global  float   *sum_data,
                         global  float   *sum_count,
-                        global  float   *merged
-             )
+                        global  float   *merged,
+                        local   float4  *shared)
 {
     // each workgroup (ideal size: warp) is assigned to 1 bin
     int bin_num = get_group_id(0);
     int thread_id_loc = get_local_id(0);
     int active_threads = get_local_size(0);
-
-    // REMEMBER TO PASS WORKGROUP_SIZE AS A COMPILE TIME CONSTANT (-DWORKGROUP_SIZE=32)
-    local float2 super_sum_data[WORKGROUP_SIZE];
-    local float2 super_sum_count[WORKGROUP_SIZE];
 
     if (bin_num<nbins){
         int2 bin_bounds = (int2) (indptr[bin_num], indptr[bin_num + 1]);
@@ -610,34 +599,22 @@ csr_integrate(  const   global  float   *weights,
         float2 sum_data_K = (float2)(0.0f, 0.0f);
         float2 sum_count_K = (float2)(0.0f, 0.0f);
         float coef, coefp, data;
-        int idx, k, j;
-    //    if (WORKGROUP_SIZE<active_threads){
-    //        if ((bin_num == 0) &&  (thread_id_loc == 0))
-    //            printf("Workgroup size is too small, compiled with %d but run with %d. Expect crashes\n",
-    //                    WORKGROUP_SIZE, active_threads);
-    //    }
+        int idx;
 
-        for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads) {
-            k = j+thread_id_loc;
-            if (k < bin_bounds.y) {
-                   coef = (coefs == NULL)?1.0f:coefs[k];;
-                   idx = indices[k];
-                   data = weights[idx];
-                   if  (! isfinite(data))
-                       continue;
+        for (int k=bin_bounds.x+thread_id_loc; k<bin_bounds.y; k+=active_threads) {
+           coef = (coefs == NULL)?1.0f:coefs[k];;
+           idx = indices[k];
+           data = weights[idx];
+           if  (! isfinite(data))
+               continue;
 
-                   if( (!do_dummy) || (data!=dummy) )
-                   {
-                       //sum_data +=  coef * data;
-                       //sum_count += coef;
-                       //Kahan summation allows single precision arithmetics with error compensation
-                       //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-                       // defined in silx:doubleword.cl
-                       sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
-                       sum_count_K = dw_plus_fp(sum_count_K, coef);
-                   };//end if dummy
-           } //end if k < bin_bounds.y
-        }//for j
+           if( (!do_dummy) || (data!=dummy) )
+           {
+               // defined in silx:doubleword.cl
+               sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
+               sum_count_K = dw_plus_fp(sum_count_K, coef);
+           };//end if dummy
+        }//for k
 
         // parallel reduction
 
@@ -645,17 +622,14 @@ csr_integrate(  const   global  float   *weights,
 
         if (bin_size < active_threads) {
             if (thread_id_loc < bin_size) {
-                super_sum_data[thread_id_loc] = sum_data_K;
-                super_sum_count[thread_id_loc] = sum_count_K;
+                shared[thread_id_loc] = (float4)(sum_data_K,sum_count_K);
             }
             else {
-                super_sum_data[thread_id_loc] = (float2)(0.0f, 0.0f);
-                super_sum_count[thread_id_loc] = (float2)(0.0f, 0.0f);
+                shared[thread_id_loc] = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
             }
         }
         else {
-            super_sum_data[thread_id_loc] = sum_data_K;
-            super_sum_count[thread_id_loc] = sum_count_K;
+            shared[thread_id_loc] = (float4)(sum_data_K, sum_count_K);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -663,16 +637,18 @@ csr_integrate(  const   global  float   *weights,
             active_threads /= 2 ;
             if (thread_id_loc < active_threads) {
                 index = thread_id_loc + active_threads;
-                super_sum_data[thread_id_loc] = dw_plus_dw(super_sum_data[thread_id_loc], super_sum_data[index]);
-                super_sum_count[thread_id_loc] = dw_plus_dw(super_sum_count[thread_id_loc], super_sum_count[index]);
+                float4 value4here =  shared[thread_id_loc];
+                float4 value4there =  shared[index];
+                shared[thread_id_loc] = (float4)(dw_plus_dw(value4here.lo, value4there.lo),
+                                                 dw_plus_dw(value4here.hi, value4there.hi));
             }
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
         if (thread_id_loc == 0) {
             //Only thread 0 works
-            sum_data[bin_num] = super_sum_data[0].s0;
-            sum_count[bin_num] = super_sum_count[0].s0;
+            sum_data[bin_num] = shared[0].s0;
+            sum_count[bin_num] = shared[0].s2;
             if (sum_count[bin_num] > 0.0f)
                 merged[bin_num] =  sum_data[bin_num] / sum_count[bin_num];
             else
@@ -711,7 +687,7 @@ csr_integrate_single(  const   global  float   *weights,
                                global  float   *sum_count,
                                global  float   *merged)
 {
-    // each workgroup of size=warp is assinged to 1 bin
+    // each workgroup of size does not matter, the smallest reasonably possible: highly divergent 
     int bin_num = get_global_id(0);
     if (bin_num<nbins){
         // we use _K suffix to highlight it is float2 used for Kahan summation
@@ -727,10 +703,6 @@ csr_integrate_single(  const   global  float   *weights,
             data = weights[idx];
 
             if( isfinite(data) && ((!do_dummy) || (data!=dummy))) {
-                //sum_data +=  coef * data;
-                //sum_count += coef;
-                //Kahan summation allows single precision arithmetics with error compensation
-                //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
                 // defined in silx:doubleword.cl
                 sum_data_K = dw_plus_fp(sum_data_K, ((coef_power == 2) ? coef*coef: coef) * data);
                 sum_count_K = dw_plus_fp(sum_count_K, coef);
@@ -760,6 +732,7 @@ csr_integrate_single(  const   global  float   *weights,
  * @param averint     Float pointer to the output 1D array with the averaged signal
  * @param stdevpix    Float pointer to the output 1D array with the propagated error (std)
  * @param stdevpix    Float pointer to the output 1D array with the propagated error (sem)
+ * @param shared      Buffer of shared memory of size WORKGROUP_SIZE * 8 * sizeof(float)
  *
  */
 kernel void
@@ -773,10 +746,10 @@ csr_integrate4(  const   global  float4  *weights,
                          global  float8  *summed,
                          global  float   *averint,
                          global  float   *stdevpix,
-                         global  float   *stderrmean)
+                         global  float   *stderrmean,
+                         local   float8  *shared)
 {
     int bin_num = get_group_id(0);
-    local float8 shared[WORKGROUP_SIZE];
     if (bin_num<nbins){
         float8 result = CSRxVec4(weights, coefs, indices, indptr, error_model, shared);
         if (get_local_id(0)==0) {
@@ -810,6 +783,7 @@ csr_integrate4(  const   global  float4  *weights,
  * @param averint     Float pointer to the output 1D array with the averaged signal
  * @param stdevpix    Float pointer to the output 1D array with the propagated error (std)
  * @param stdevpix    Float pointer to the output 1D array with the propagated error (sem)
+ * @param shared      Buffer of shared memory, unused
  *
  */
 kernel void
@@ -823,7 +797,8 @@ csr_integrate4_single(  const   global  float4  *weights,
                                 global  float8  *summed,
                                 global  float   *averint,
                                 global  float   *stdevpix,
-                                global  float   *stderrmean)
+                                global  float   *stderrmean,
+                                local   float8  *shared)
 {
     // each workgroup of size==1 is assinged to 1 bin
     int bin_num = get_global_id(0);
@@ -857,7 +832,7 @@ csr_integrate4_single(  const   global  float4  *weights,
  * @param averint     Average signal
  * @param stdevpix    Float pointer to the output 1D array with the propagated error (std)
  * @param stdevpix    Float pointer to the output 1D array with the propagated error (sem)
- *
+ * @param shared      Buffer of shared memory of size WORKGROUP_SIZE * 8 * sizeof(float)
  */
 
 kernel void
@@ -872,13 +847,15 @@ csr_sigma_clip4(          global  float4  *data4,
                           global  float8  *summed,
                           global  float   *averint,
                           global  float   *stdevpix,
-                          global  float   *stderrmean) {
+                          global  float   *stderrmean,
+                 volatile local   float8  *shared8
+                          ) 
+{
     int bin_num = get_group_id(0);
     int wg = get_local_size(0);
     float aver, std;
     int cnt, nbpix;
     char curr_error_model=error_model;
-    volatile local float8 shared8[WORKGROUP_SIZE];
     volatile local int counter[1];
     float8 result;
 
