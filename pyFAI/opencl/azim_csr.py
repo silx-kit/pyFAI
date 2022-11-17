@@ -641,7 +641,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param out_sem: destination array or pyopencl array for standard deviation (of mean)
         :param out_std: destination array or pyopencl array for standard deviation (of pixels)
         :param out_merged: destination array or pyopencl array for averaged data (float8!)
-        
+
         :return: named-tuple
         """
         events = []
