@@ -25,10 +25,10 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "17/11/2022"
 
 from ..model.GeometryModel import GeometryModel
-from .ElidedLabel import ElidedLabel
+from silx.gui.widgets.ElidedLabel import ElidedLabel
 
 
 class GeometryLabel(ElidedLabel):
@@ -39,7 +39,7 @@ class GeometryLabel(ElidedLabel):
         super(GeometryLabel, self).__init__(parent)
         self.__geometry = None
         self.__updateDisplay()
-        self.setValueAsToolTip(False)
+        self.setTextAsToolTip(False)
 
     def __updateDisplay(self):
         geometry = self.__geometry
