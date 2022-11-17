@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "09/11/2022"
+__date__ = "17/11/2022"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -107,7 +107,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
         :param platformid: integer with the platform_identifier, as given by clinfo
         :param deviceid: Integer with the device identifier, as given by clinfo
-        :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
+        :param block_size: preferred workgroup size, may vary depending on the outcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
         :param extra_buffers: List of additional buffer description  needed by derived classes
@@ -273,14 +273,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
 
-        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
-                          (self.bins, self.size, self.BLOCK_SIZE)
-        try:
-            default_compiler_options = self.get_compiler_options(x87_volatile=True)
-        except AttributeError:  # Silx version too old
-            logger.warning("Please upgrade to silx v0.10+")
-            default_compiler_options = get_x87_volatile_option(self.ctx)
-
+        compile_options = f"-D NBINS={self.bins} -D NIMAGE={self.size}"
+        default_compiler_options = self.get_compiler_options(x87_volatile=True)
         if default_compiler_options:
             compile_options += " " + default_compiler_options
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
@@ -327,7 +321,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("coef_power", numpy.int32(1)),
                                                             ("sum_data", self.cl_mem["sum_data"]),
                                                             ("sum_count", self.cl_mem["sum_count"]),
-                                                            ("merged", self.cl_mem["merged"])))
+                                                            ("merged", self.cl_mem["merged"]),
+                                                            ("shared", pyopencl.LocalMemory(16))))
+
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
                                                            ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
@@ -362,6 +358,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("averint", self.cl_mem["averint"]),
                                                             ("std", self.cl_mem["std"]),
                                                             ("sem", self.cl_mem["sem"]),
+                                                            ("shared", pyopencl.LocalMemory(32))
                                                              ))
 
         self.cl_kernel_args["csr_sigma_clip4"] = OrderedDict((("output4", self.cl_mem["output4"]),
@@ -376,6 +373,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("std", self.cl_mem["std"]),
                                                               ("sem", self.cl_mem["sem"]),
+                                                              ("shared", pyopencl.LocalMemory(32))
                                                              ))
 
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
@@ -553,12 +551,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wg_min, wg_max = self.workgroup_size["csr_integrate"]
             if wg_max == 1:
-                wg_min, wg_max = self.workgroup_size["csr_integrate_single"]
+                # thread-synchronization is probably not possible.
+                wg_max = max(self.workgroup_size["csr_integrate_single"])
                 wdim_bins = (self.bins + wg_max - 1) & ~(wg_max - 1),
                 integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg_max,), *kw_int.values())
                 events.append(EventDescription("csr_integrate_single", integrate))
             else:
                 wdim_bins = (self.bins * wg_min),
+                kw_int["shared"] = pyopencl.LocalMemory(16 * wg_min)  # sizeof(float4) == 16
                 integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg_min,), *kw_int.values())
                 events.append(EventDescription("csr_integrate", integrate))
             if out_merged is None:
@@ -735,11 +735,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
             wg_min, wg_max = self.workgroup_size["csr_integrate4"]
             if  wg_max == 1:
                 wg = max(self.workgroup_size["csr_integrate4_single"])
-                wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
+                wdim_bins = (self.bins + wg - 1) // wg * wg,  # & ~(wg - 1),
                 integrate = self.kernels.csr_integrate4_single(self.queue, wdim_bins, (wg,), *kw_int.values())
                 events.append(EventDescription("csr_integrate4_single", integrate))
             else:
                 wdim_bins = (self.bins * wg_min),
+                kw_int["shared"] = pyopencl.LocalMemory(32 * wg_min)  # sizeof(float8) == 32
                 integrate = self.kernels.csr_integrate4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
                 events.append(EventDescription("csr_integrate4", integrate))
 
@@ -961,8 +962,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_int["cutoff"] = numpy.float32(cutoff)
             kw_int["cycle"] = numpy.int32(cycle)
 
-            wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
-
+            wg_min = min(self.workgroup_size["csr_sigma_clip4"])
+            kw_int["shared"] = pyopencl.LocalMemory(32 * wg_min)
             wdim_bins = (self.bins * wg_min),
             integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
             events.append(EventDescription("csr_sigma_clip4", integrate))
