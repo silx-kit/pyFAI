@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "06/10/2022"
+__date__ = "17/11/2022"
 __copyright__ = "2014-2022, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -164,7 +164,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                           ("cutoff", numpy.float32(5.0)),
                                                           ("noise", numpy.float32(1.0)),
                                                           ("counter", self.cl_mem["counter"]),
-                                                          ("position", self.cl_mem["position"])))
+                                                          ("position", self.cl_mem["position"]),
+                                                          ('shared', None)))
         self.cl_kernel_args["copy_intense"] = OrderedDict((("position", self.cl_mem["position"]),
                                                            ("counter", 0),
                                                            ("output4", self.cl_mem["output4"]),
@@ -324,6 +325,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
         wg_min = min(self.workgroup_size["csr_sigma_clip4"])
         wdim_bins = (self.bins * wg_min),
+        kw_int["shared"] = pyopencl.LocalMemory(32 * wg_min)
         integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
         events.append(EventDescription("csr_sigma_clip4", integrate))
         return events
@@ -362,7 +364,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
         wg = max(self.workgroup_size["find_intense"])
-        wdim_data = (self.size + wg - 1) & ~(wg - 1),
+        wdim_data = (self.size + wg - 1) // wg * wg,  # & ~(wg - 1),
+        kw_proj["shared"] = pyopencl.LocalMemory(wg * 4)  # stores int
         peak_search = self.program.find_intense(self.queue, wdim_data, (wg,), *list(kw_proj.values()))
         events.append(EventDescription("find_intense", peak_search))
 

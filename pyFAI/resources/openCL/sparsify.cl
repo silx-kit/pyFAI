@@ -45,26 +45,24 @@
  *
  * The kernel uses local memory for keeping track of peak count and positions
  */
-kernel void find_intense(       global  float4 *preproc4, // both input and output, pixel wise array of (signal, variance, norm, cnt)
-                         const global  float  *radius2d,  // contains the distance to the center for each pixel
-                         const global  float  *radius1d,  // Radial bin postion
-                         const global  float  *average1d, // average intensity in the bin
-                         const global  float  *std1d,     // associated deviation
-                         const         float   radius_min,// minimum radius
-                         const         float   radius_max,// maximum radius
-                         const         float   cutoff,    // pick pixel with I>avg+min(cutoff*std, noise)
-                         const         float   noise,     // Noise level of the measurement
-                               global  int    *counter,   // Counter of the number of peaks found
-                               global  int    *highidx){  // indexes of the pixels of high intensity
+kernel void find_intense(       global  float4 *preproc4,  // both input and output, pixel wise array of (signal, variance, norm, cnt)
+                         const global  float  *radius2d,   // contains the distance to the center for each pixel
+                         const global  float  *radius1d,   // Radial bin postion
+                         const global  float  *average1d,  // average intensity in the bin
+                         const global  float  *std1d,      // associated deviation
+                         const         float   radius_min, // minimum radius
+                         const         float   radius_max, // maximum radius
+                         const         float   cutoff,     // pick pixel with I>avg+min(cutoff*std, noise)
+                         const         float   noise,      // Noise level of the measurement
+                               global  int    *counter,    // Counter of the number of peaks found
+                               global  int    *highidx,    // indexes of the pixels of high intensity
+                         volatile local int *local_highidx)// Shared memory of size 4*WORKGROUP_SIZE
+{  
     int tid = get_local_id(0);
     int gid = get_global_id(0);
     int wg = get_local_size(0);
     // all thread in this WG share this local counter, upgraded at the end
     volatile local int local_counter[2]; //first element MUST be set to zero
-    volatile local int local_highidx[WORKGROUP_SIZE]; //This array does not deserve to be initialized
-    // Ensure wg <= WORKGROUP_SIZE
-
-    // local_highidx[tid] = 0;
 
     // Only the first elements must be initialized
     if (tid<2){

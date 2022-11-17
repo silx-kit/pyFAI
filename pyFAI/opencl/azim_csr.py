@@ -373,6 +373,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("std", self.cl_mem["std"]),
                                                               ("sem", self.cl_mem["sem"]),
+                                                              ("shared", pyopencl.LocalMemory(32))
                                                              ))
 
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
@@ -961,8 +962,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_int["cutoff"] = numpy.float32(cutoff)
             kw_int["cycle"] = numpy.int32(cycle)
 
-            wg_min, wg_max = self.workgroup_size["csr_sigma_clip4"]
-
+            wg_min = min(self.workgroup_size["csr_sigma_clip4"])
+            kw_int["shared"] = pyopencl.LocalMemory(32 * wg_min)
             wdim_bins = (self.bins * wg_min),
             integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
             events.append(EventDescription("csr_sigma_clip4", integrate))
