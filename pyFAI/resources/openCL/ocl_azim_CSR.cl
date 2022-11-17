@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 17/11/2022
+ *   Last revision: 08/07/2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -419,7 +419,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
     int bin_size = bin_bounds.y - bin_bounds.x;
     // we use _K suffix to highlight it is float2 used for Kahan summation
     volatile float8 accum8 = (float8) (0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    int idx;
+    int idx, k, j;
 
     for (int k=bin_bounds.x+thread_id_loc; k<bin_bounds.y; k+=active_threads) {
         float coef, signal, variance, norm, count;
@@ -524,7 +524,7 @@ static inline int _sigma_clip4(         global  float4   *data,
                                                 float    aver,
                                                 float    cutoff,
                                volatile local   int      *counter){
-    // each workgroup is assigned to 1 bin
+    // each workgroup  is assigned to 1 bin
     int cnt, j, k, idx;
     counter[0] = 0;
     int bin_num = get_group_id(0);
@@ -687,7 +687,7 @@ csr_integrate_single(  const   global  float   *weights,
                                global  float   *sum_count,
                                global  float   *merged)
 {
-    // each workgroup of size does not matter, the smallest reasonably possible: highly divergent 
+    // each workgroup of size does not matter, the smallest reasonably possible: highly divergent
     int bin_num = get_global_id(0);
     if (bin_num<nbins){
         // we use _K suffix to highlight it is float2 used for Kahan summation
@@ -849,7 +849,7 @@ csr_sigma_clip4(          global  float4  *data4,
                           global  float   *stdevpix,
                           global  float   *stderrmean,
                  volatile local   float8  *shared8
-                          ) 
+                          )
 {
     int bin_num = get_group_id(0);
     int wg = get_local_size(0);
