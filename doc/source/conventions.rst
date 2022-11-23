@@ -19,8 +19,14 @@ Pixel Coordinates
 -----------------
 
 The origin is set at the corner of a pixel as shown in the figure below for a simple 3×4 pixel matrix.
-Note that the center of each pixel has fractional pixel coordinate.
 
 .. figure:: img/pixel_coordinates.svg
    :align: center
    :alt: Position of the origin with respect to the pixel matrix
+
+Note some specificities: 
+
+* Each pixel *n* starts at the coordinated *n* (included) and goes to the coordinate *n+1* (excluded). The center of any pixel is at half integer pixel coordinate. This convention differs by half a pixel from the one used in matplotlib where pixels range from *n-½* to *n-½*. Care must be taken when displaying images with matplotlib (when assessing beam-center for example): there is ½ pixel offset. 
+* The origin is at the bottom and differs from the *camera* convention where the origin is at the top. As a consequence, the sign of the ᵪ-angle gets  inverted.
+* The detector is seen from the sample and differs from the *camera* convention where the observer is behind the camera. As a consequence, the sign of the ᵪ-angle gets  inverted.
+* The former 2 inversions cancel each other.
