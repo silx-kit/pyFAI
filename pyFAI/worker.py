@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2022"
+__date__ = "26/11/2022"
 __status__ = "development"
 
 import threading
@@ -254,7 +254,6 @@ class Worker(object):
         self.mask_image = None
         self.subdir = ""
         self.extension = None
-        self.error_model = None
         self.needs_reset = True
         self.output = "numpy"  # exports as numpy array by default
         self.shape = shapeIn
@@ -264,6 +263,7 @@ class Worker(object):
         self.azimuth_range = None
         self.safe = True
         self.extra_options = {} if extra_options is None else extra_options.copy()
+        self.error_model = self.extra_options.get("error_model")
 
     def __repr__(self):
         """
