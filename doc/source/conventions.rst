@@ -6,7 +6,7 @@ Conventions
 ===========
 
 This page describes the conventions used by pyFAI.
-Some useful information (orientation, position of observer, etc.) can be found in :res:`geometry`
+Some useful information (orientation, position of observer, etc.) can be found in :ref:`geometry`
 
 Mask
 ----
