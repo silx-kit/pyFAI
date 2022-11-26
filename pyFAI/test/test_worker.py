@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2022"
+__date__ = "26/11/2022"
 
 import unittest
 import logging
@@ -300,6 +300,14 @@ class TestWorker(unittest.TestCase):
         delta_err = abs(err_cy - numpy.sqrt(ref) / 2.0).max()
         self.assertLess(delta_res, precision, "Cython intensity calculation are OK: %s" % err)
         self.assertLess(delta_err, precision, "Cython error calculation are OK: %s" % err)
+
+    def test_sigma_clip(self):
+        ai = AzimuthalIntegrator.sload({"detector": "Pilatus100k", "wavelength":1e-10})
+        worker = Worker(azimuthalIntegrator=ai,
+                        extra_options={"thres":2, "error_model":"azimuthal"},
+                        integrator_name="sigma_clip_ng",
+                        shapeOut=(1, 100))
+        self.assertEqual(worker.error_model, "azimuthal", "error model is OK")
 
 
 class TestWorkerConfig(unittest.TestCase):
