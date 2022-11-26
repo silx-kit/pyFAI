@@ -58,6 +58,7 @@ Despite the installation section could be as simple a:
 
    pyFAI
    usage/index
+   conventions
    man/scripts
    design/index
    api/modules
