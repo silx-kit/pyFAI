@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/01/2022"
+__date__ = "01/12/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -97,12 +97,12 @@ def histoBBox1d(weights,
     if 'pos0Range' in back_compat_kwargs:
         if pos0_range is not None:
             raise ValueError(f"Can not pass both pos0_range and pos0Range")
-        pos0_range = back_compat_kwargs.popn('pos0Range')
+        pos0_range = back_compat_kwargs.pop('pos0Range')
         warnings.warn("The keyword 'pos0Range' is deprecated in favor of 'pos0_range'")
     if 'pos1Range' in back_compat_kwargs:
         if pos1_range is not None:
             raise ValueError(f"Can not pass both pos1_range and pos1Range")
-        pos1_range = back_compat_kwargs.popn('pos1Range')
+        pos1_range = back_compat_kwargs.pop('pos1Range')
         warnings.warn("The keyword 'pos1Range' is deprecated in favor of 'pos1_range'")
     assert len(back_compat_kwargs) == 0
     cdef Py_ssize_t  size = weights.size
@@ -533,12 +533,12 @@ def histoBBox2d(weights,
     if 'pos0Range' in back_compat_kwargs:
         if pos0_range is not None:
             raise ValueError(f"Can not pass both pos0_range and pos0Range")
-        pos0_range = back_compat_kwargs.popn('pos0Range')
+        pos0_range = back_compat_kwargs.pop('pos0Range')
         warnings.warn("The keyword 'pos0Range' is deprecated in favor of 'pos0_range'")
     if 'pos1Range' in back_compat_kwargs:
         if pos1_range is not None:
             raise ValueError(f"Can not pass both pos1_range and pos1Range")
-        pos1_range = back_compat_kwargs.popn('pos1Range')
+        pos1_range = back_compat_kwargs.pop('pos1Range')
         warnings.warn("The keyword 'pos1Range' is deprecated in favor of 'pos1_range'")
     assert len(back_compat_kwargs) == 0
     cdef Py_ssize_t bins0, bins1, i, j, idx
