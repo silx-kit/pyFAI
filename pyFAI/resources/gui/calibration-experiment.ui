@@ -448,7 +448,7 @@
   <customwidget>
    <class>ElidedLabel</class>
    <extends>QLabel</extends>
-   <header>pyFAI.gui.widgets.ElidedLabel</header>
+   <header>silx.gui.widgets.ElidedLabel</header>
   </customwidget>
  </customwidgets>
  <tabstops>
