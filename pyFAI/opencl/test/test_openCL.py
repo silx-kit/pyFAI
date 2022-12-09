@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2022"
+__date__ = "09/12/2022"
 
 import unittest
 import os
@@ -529,12 +529,9 @@ class TestDoubleWord(unittest.TestCase):
         # this is running 32 bits OpenCL woth POCL
         if (platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4) and
                 cls.ctx.devices[0].platform.name == 'Portable Computing Language'):
-            cls.args = ""#-DX87_VOLATILE=volatile"
-            cls.eps = 2e-7
+            cls.args = "-DX87_VOLATILE=volatile"
         else:
             cls.args = ""
-            cls.eps = 0
-        logger.warning(f"config is {cls.args} with precision {cls.eps}\n")
         size = 1024
         cls.a = 1.0 + numpy.random.random(size)
         cls.b = 1.0 + numpy.random.random(size)
@@ -556,7 +553,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                       "float *a, float *b, float *res_h, float *res_l",
                       "float2 tmp = fast_fp_plus_fp(a[i], b[i]); res_h[i] = tmp.s0; res_l[i] = tmp.s1",
-                      preamble=self.doubleword)
+                      preamble=self.doubleword, options=[self.args])
         a_g = pyopencl.array.to_device(self.queue, self.ah)
         b_g = pyopencl.array.to_device(self.queue, self.bl)
         res_l = pyopencl.array.empty_like(a_g)
@@ -564,13 +561,13 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel(a_g, b_g, res_h, res_l)
         self.assertEqual(abs(self.ah + self.bl - res_h.get()).max(), 0, "Major matches")
         self.assertGreater(abs(self.ah.astype(numpy.float64) + self.bl - res_h.get()).max(), 0, "Exact mismatches")
-        self.assertLessEqual(abs(self.ah.astype(numpy.float64) + self.bl - (res_h.get().astype(numpy.float64) + res_l.get())).max(), self.eps, "Exact matches")
+        self.assertEqual(abs(self.ah.astype(numpy.float64) + self.bl - (res_h.get().astype(numpy.float64) + res_l.get())).max(), 0, "Exact matches")
 
     def test_sum2(self):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *a, float *b, float *res_h, float *res_l",
                     "float2 tmp = fp_plus_fp(a[i],b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         a_g = pyopencl.array.to_device(self.queue, self.ah)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
         res_l = pyopencl.array.empty_like(a_g)
@@ -578,13 +575,13 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel(a_g, b_g, res_h, res_l)
         self.assertEqual(abs(self.ah + self.bh - res_h.get()).max(), 0, "Major matches")
         self.assertGreater(abs(self.ah.astype(numpy.float64) + self.bh - res_h.get()).max(), 0, "Exact mismatches")
-        self.assertLessEqual(abs(self.ah.astype(numpy.float64) + self.bh - (res_h.get().astype(numpy.float64) + res_l.get())).max(), self.eps, "Exact matches")
+        self.assertEqual(abs(self.ah.astype(numpy.float64) + self.bh - (res_h.get().astype(numpy.float64) + res_l.get())).max(), 0, "Exact matches")
 
     def test_prod2(self):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *a, float *b, float *res_h, float *res_l",
                     "float2 tmp = fp_times_fp(a[i],b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         a_g = pyopencl.array.to_device(self.queue, self.ah)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
         res_l = pyopencl.array.empty_like(a_g)
@@ -600,7 +597,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *b, float *res_h, float *res_l",
                     "float2 tmp = dw_plus_fp((float2)(ah[i], al[i]),b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -611,13 +608,13 @@ class TestDoubleWord(unittest.TestCase):
         res = res_h.get().astype(numpy.float64) + res_l.get()
         self.assertLess(abs(self.a + self.bh - res_m).max(), EPS32, "Major matches")
         self.assertGreater(abs(self.a + self.bh - res_m).max(), EPS64, "Exact mismatches")
-        self.assertLess(abs(self.ah.astype(numpy.float64) + self.al + self.bh - res).max(), max(self.eps, 2 * EPS32 ** 2), "Exact matches")
+        self.assertLess(abs(self.ah.astype(numpy.float64) + self.al + self.bh - res).max(), 2 * EPS32 ** 2, "Exact matches")
 
     def test_dw_plus_dw(self):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *bh, float *bl, float *res_h, float *res_l",
                     "float2 tmp = dw_plus_dw((float2)(ah[i], al[i]),(float2)(bh[i], bl[i])); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         bh_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -635,7 +632,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *b, float *res_h, float *res_l",
                     "float2 tmp = dw_times_fp((float2)(ah[i], al[i]),b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -646,13 +643,13 @@ class TestDoubleWord(unittest.TestCase):
         res = res_h.get().astype(numpy.float64) + res_l.get()
         self.assertLess(abs(self.a * self.bh - res_m).max(), EPS32, "Major matches")
         self.assertGreater(abs(self.a * self.bh - res_m).max(), EPS64, "Exact mismatches")
-        self.assertLess(abs(self.a * self.bh - res).max(), max(self.eps,2 * EPS32 ** 2), "Exact matches")
+        self.assertLess(abs(self.a * self.bh - res).max(), 2 * EPS32 ** 2, "Exact matches")
 
     def test_dw_times_dw(self):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *bh, float *bl, float *res_h, float *res_l",
                     "float2 tmp = dw_times_dw((float2)(ah[i], al[i]),(float2)(bh[i], bl[i])); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         bh_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -664,13 +661,13 @@ class TestDoubleWord(unittest.TestCase):
         res = res_h.get().astype(numpy.float64) + res_l.get()
         self.assertLess(abs(self.a * self.b - res_m).max(), EPS32, "Major matches")
         self.assertGreater(abs(self.a * self.b - res_m).max(), EPS64, "Exact mismatches")
-        self.assertLess(abs(self.a * self.b - res).max(), max(self.eps, 5 * EPS32 ** 2), "Exact matches")
+        self.assertLess(abs(self.a * self.b - res).max(), 5 * EPS32 ** 2, "Exact matches")
 
     def test_dw_div_fp(self):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *b, float *res_h, float *res_l",
                     "float2 tmp = dw_div_fp((float2)(ah[i], al[i]),b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -687,7 +684,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *bh, float *bl, float *res_h, float *res_l",
                     "float2 tmp = dw_div_dw((float2)(ah[i], al[i]),(float2)(bh[i], bl[i])); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         bh_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -699,7 +696,7 @@ class TestDoubleWord(unittest.TestCase):
         res = res_h.get().astype(numpy.float64) + res_l.get()
         self.assertLess(abs(self.a / self.b - res_m).max(), EPS32, "Major matches")
         self.assertGreater(abs(self.a / self.b - res_m).max(), EPS64, "Exact mismatches")
-        self.assertLess(abs(self.a / self.b - res).max(), max(self.eps, 6 * (EPS32) ** 2), "Exact matches")
+        self.assertLess(abs(self.a / self.b - res).max(), 6 * EPS32 ** 2, "Exact matches")
 
 
 def suite():
