@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2022"
+__date__ = "09/12/2022"
 
 import unittest
 import os
@@ -553,7 +553,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                       "float *a, float *b, float *res_h, float *res_l",
                       "float2 tmp = fast_fp_plus_fp(a[i], b[i]); res_h[i] = tmp.s0; res_l[i] = tmp.s1",
-                      preamble=self.doubleword)
+                      preamble=self.doubleword, options=[self.args])
         a_g = pyopencl.array.to_device(self.queue, self.ah)
         b_g = pyopencl.array.to_device(self.queue, self.bl)
         res_l = pyopencl.array.empty_like(a_g)
@@ -567,7 +567,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *a, float *b, float *res_h, float *res_l",
                     "float2 tmp = fp_plus_fp(a[i],b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         a_g = pyopencl.array.to_device(self.queue, self.ah)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
         res_l = pyopencl.array.empty_like(a_g)
@@ -581,7 +581,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *a, float *b, float *res_h, float *res_l",
                     "float2 tmp = fp_times_fp(a[i],b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         a_g = pyopencl.array.to_device(self.queue, self.ah)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
         res_l = pyopencl.array.empty_like(a_g)
@@ -597,7 +597,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *b, float *res_h, float *res_l",
                     "float2 tmp = dw_plus_fp((float2)(ah[i], al[i]),b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -614,7 +614,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *bh, float *bl, float *res_h, float *res_l",
                     "float2 tmp = dw_plus_dw((float2)(ah[i], al[i]),(float2)(bh[i], bl[i])); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         bh_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -632,7 +632,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *b, float *res_h, float *res_l",
                     "float2 tmp = dw_times_fp((float2)(ah[i], al[i]),b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -649,7 +649,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *bh, float *bl, float *res_h, float *res_l",
                     "float2 tmp = dw_times_dw((float2)(ah[i], al[i]),(float2)(bh[i], bl[i])); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         bh_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -667,7 +667,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *b, float *res_h, float *res_l",
                     "float2 tmp = dw_div_fp((float2)(ah[i], al[i]),b[i]); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         b_g = pyopencl.array.to_device(self.queue, self.bh)
@@ -684,7 +684,7 @@ class TestDoubleWord(unittest.TestCase):
         test_kernel = ElementwiseKernel(self.ctx,
                     "float *ah, float *al, float *bh, float *bl, float *res_h, float *res_l",
                     "float2 tmp = dw_div_dw((float2)(ah[i], al[i]),(float2)(bh[i], bl[i])); res_h[i]=tmp.s0; res_l[i]=tmp.s1;",
-                    preamble=self.doubleword)
+                    preamble=self.doubleword, options=[self.args])
         ah_g = pyopencl.array.to_device(self.queue, self.ah)
         al_g = pyopencl.array.to_device(self.queue, self.al)
         bh_g = pyopencl.array.to_device(self.queue, self.bh)
