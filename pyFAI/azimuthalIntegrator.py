@@ -1756,7 +1756,7 @@ class AzimuthalIntegrator(Geometry):
                 variance = numpy.ascontiguousarray(data, numpy.float32)
 
         if azimuth_range is not None:
-            azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
+            azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
@@ -2177,7 +2177,7 @@ class AzimuthalIntegrator(Geometry):
                 variance = numpy.ascontiguousarray(data, numpy.float32)
 
         if azimuth_range is not None:
-            azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
+            azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
