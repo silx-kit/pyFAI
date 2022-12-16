@@ -2347,6 +2347,8 @@ class AzimuthalIntegrator(Geometry):
                                                                      unit=unit, empty=empty,
                                                                      mask_checksum=mask_crc
                                                                      )
+                                integr.pos0_range = cython_integr.pos0_range
+                                integr.pos1_range = cython_integr.pos1_range
 
                         elif (method.impl_lower == "python"):
                             with ocl_py_engine.lock:
