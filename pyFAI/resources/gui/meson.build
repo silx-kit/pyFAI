@@ -1,3 +1,7 @@
+subdir('icons')
+subdir('images')
+subdir('styles')
+
 py.install_sources(
    ['calibration-experiment.ui',
     'calibration-geometry.ui',

@@ -1,3 +1,7 @@
+subdir('calibration')
+subdir('gui')
+subdir('openCL')
+
 py.install_sources(
    [
     '__init__.py',

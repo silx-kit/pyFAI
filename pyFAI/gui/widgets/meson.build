@@ -1,3 +1,5 @@
+subdir('test')
+
 py.install_sources(
    ['AdvancedComboBox.py',
     'AdvancedSpinBox.py',

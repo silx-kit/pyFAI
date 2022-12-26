@@ -1,3 +1,5 @@
+subdir('test')
+
 py.install_sources(
    ['OCLFullSplit.py',
     '__init__.py',

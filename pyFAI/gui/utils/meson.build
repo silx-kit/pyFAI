@@ -1,3 +1,5 @@
+subdir('test')
+
 py.install_sources(
    ['FilterBuilder.py',
     'ProxyAction.py',

@@ -1,3 +1,12 @@
+subdir('dialog')
+subdir('helper')
+subdir('jupyter')
+subdir('model')
+subdir('tasks')
+subdir('test')
+subdir('utils')
+subdir('widgets')
+
 py.install_sources(
   ['ApplicationContext.py',
    'CalibrationContext.py',
