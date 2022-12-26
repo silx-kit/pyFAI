@@ -9,5 +9,5 @@ py.install_sources(
     'preproc.py',
     'sort.py'],
   pure: false,   # Will be installed next to binaries
-  subdir: 'pyFAI/opencl/test'  # Folder relative to site-packages to install to
+  subdir: 'pyFAI/opencl'  # Folder relative to site-packages to install to
 )
