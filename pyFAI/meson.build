@@ -15,7 +15,8 @@ subdir('utils')
 version_py = configure_file(input: '../version.py', output: '_version.py', copy: true)
 
 py.install_sources(
-   ['__init__.py',
+   [ version_py,
+    '__init__.py',
     'average.py',
     'azimuthalIntegrator.py',
     'blob_detection.py',
