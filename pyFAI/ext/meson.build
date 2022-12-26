@@ -45,11 +45,11 @@ py.extension_module('splitPixelFullLUT', 'splitPixelFullLUT.pyx',
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
 py.extension_module('splitBBoxCSC', 'splitBBoxCSC.pyx',
-        override_options : ['cython_language=cpp'], 
+        override_options : ['cython_language=cpp'],
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
 py.extension_module('splitPixelFullCSC', 'splitPixelFullCSC.pyx',
-        override_options : ['cython_language=cpp'], 
+        override_options : ['cython_language=cpp'],
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
 py.extension_module('relabel', 'relabel.pyx',
@@ -64,19 +64,19 @@ py.extension_module('_bispev', '_bispev.pyx', #TODO OpenMP
 py.extension_module('_convolution', '_convolution.pyx', #TODO OpenMP
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
-py.extension_module('_blob', '_blob.pyx', 
+py.extension_module('_blob', '_blob.pyx',
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
-py.extension_module('morphology', 'morphology.pyx', 
+py.extension_module('morphology', 'morphology.pyx',
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
-py.extension_module('watershed', 'watershed.pyx', 
+py.extension_module('watershed', 'watershed.pyx',
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
-py.extension_module('_tree', '_tree.pyx', 
+py.extension_module('_tree', '_tree.pyx',
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
-py.extension_module('sparse_utils', 'sparse_utils.pyx', #Deprecated 
+py.extension_module('sparse_utils', 'sparse_utils.pyx', #Deprecated
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
 py.extension_module('inpainting', 'inpainting.pyx',
