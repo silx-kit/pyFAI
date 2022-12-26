@@ -45,7 +45,7 @@ def build_project(name, root_dir):
     if sys.platform == "win32":
         libdir = "Lib"
         extra = ["--buildtype", "plain"]
-    
+
     build = os.path.join(root_dir, "build")
     if not(os.path.isdir(build) and os.path.isdir(os.path.join(build, name))):
         p = subprocess.Popen(["meson", "build"],
@@ -57,8 +57,8 @@ def build_project(name, root_dir):
     p = subprocess.Popen(["meson", "install", "--destdir", "."],
                      shell=False, cwd=build, env=os.environ)
     logger.debug("meson install ended with rc= %s", p.wait())
-        
-    
+
+
     if os.environ.get("PYBUILD_NAME") == name:
         # we are in the debian packaging way
         home = os.environ.get("PYTHONPATH", "").split(os.pathsep)[-1]
@@ -81,7 +81,7 @@ def build_project(name, root_dir):
         home = os.path.join(home, n)
 
     logger.warning("Building %s to %s", name, home)
-    
+
     return home
 
 

@@ -83,4 +83,3 @@ pyFAI-calib2 = 'pyFAI.app.calib2:main'
 pyFAI-drawmask = 'pyFAI.app.drawmask:main'
 pyFAI-diffmap = 'pyFAI.app.diff_map:main'
 pyFAI-integrate = 'pyFAI.app.integrate:main'
-
