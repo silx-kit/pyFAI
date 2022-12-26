@@ -35,20 +35,14 @@ __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
 __date__ = "10/01/2022"
 __license__ = "MIT"
 
-import sys
-import distutils.util
 import logging
 import os
 import subprocess
 import time
 import unittest
-import tempfile
 import collections
-from argparse import ArgumentParser
-
-if sys.version_info[0] < 3:
-    raise RuntimeError("Python2 is not more supported")
-
+import tomli
+import tempfile
 
 class StreamHandlerUnittestReady(logging.StreamHandler):
     """The unittest class TestResult redefine sys.stdout/err to capture
@@ -90,6 +84,8 @@ logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
 
 logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
+if sys.version_info.major < 3:
+    logger.error("pyFAI no more support Python2")
 
 try:
     import resource
@@ -113,8 +109,8 @@ except ImportError:
 
 try:
     import numpy
-except ImportError:
-    logger.warning("numpy missing")
+except Exception as error:
+    logger.warning("Numpy missing: %s", error)
 else:
     logger.info("Numpy %s", numpy.version.version)
 
@@ -146,19 +142,11 @@ except ImportError:
 else:
     logger.info("Cython %s", Cython.__version__)
 
-
-def get_project_name(root_dir):
-    """Retrieve project name by running python setup.py --name in root_dir.
-
-    :param str root_dir: Directory where to run the command.
-    :return: The name of the project stored in root_dir
-    """
-    logger.debug("Getting project name in %s", root_dir)
-    p = subprocess.Popen([sys.executable, "setup.py", "--name"],
-                         shell=False, cwd=root_dir, stdout=subprocess.PIPE)
-    name, _stderr_data = p.communicate()
-    logger.debug("subprocess ended with rc= %s", p.returncode)
-    return name.split()[-1].decode('ascii')
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, PROJECT_DIR)
+from bootstrap import get_project_name, build_project
+PROJECT_NAME = get_project_name(PROJECT_DIR)
+logger.info("Project name: %s", PROJECT_NAME)
 
 
 class TextTestResultWithSkipList(unittest.TextTestResult):
