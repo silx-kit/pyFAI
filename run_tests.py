@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "26/12/2022"
+__date__ = "27/12/2022"
 __license__ = "MIT"
 
 import sys
@@ -354,6 +354,24 @@ def get_test_options(project_module):
     return test_options
 
 
+if "-i" in sys.argv or "--installed" in sys.argv:
+    for bad_path in (".", os.getcwd(), PROJECT_DIR):
+        if bad_path in sys.path:
+            sys.path.remove(bad_path)
+    try:
+        module = importer(PROJECT_NAME)
+    except Exception:
+        logger.error("Cannot run tests on installed version: %s not installed or raising error.",
+                     PROJECT_NAME)
+        raise
+    else:
+        print("Running tests on system-wide installed project")
+else:
+    build_dir = build_project(PROJECT_NAME, PROJECT_DIR)
+    sys.path.insert(0, build_dir)
+    logger.warning("Patched sys.path, added: '%s'", build_dir)
+    module = importer(PROJECT_NAME)
+
 epilog = """Environment variables:
 WITH_QT_TEST=False to disable graphical tests
 PYFAI_OPENCL=False to disable OpenCL tests.
@@ -362,6 +380,16 @@ WITH_GL_TEST=False to disable tests using OpenGL
 """
 parser = ArgumentParser(description='Run the tests.',
                         epilog=epilog)
+
+test_options = get_test_options(module)
+"""Contains extra configuration for the tests."""
+test_options.add_parser_argument(parser)
+
+default_test_name = f"{PROJECT_NAME}.test.suite"
+parser.add_argument("test_name", nargs='*',
+                    default=(default_test_name,),
+                    help="Test names to run (Default: %s)" % default_test_name)
+
 
 parser.add_argument("--installed",
                     action="store_true", dest="installed", default=False,
@@ -382,38 +410,9 @@ parser.add_argument("-v", "--verbose", default=0,
 parser.add_argument("--qt-binding", dest="qt_binding", default=None,
                     help="Force using a Qt binding, from 'PyQt4', 'PyQt5', or 'PySide'")
 
-if True:
-    build_dir = build_project(PROJECT_NAME, PROJECT_DIR)
-    sys.path.insert(0, build_dir)
-    logger.warning("Patched sys.path, added: '%s'", build_dir)
-    module = importer(PROJECT_NAME)
-test_options = get_test_options(module)
-"""Contains extra configuration for the tests."""
-test_options.add_parser_argument(parser)
-
-default_test_name = f"{PROJECT_NAME}.test.suite"
-parser.add_argument("test_name", nargs='*',
-                    default=(default_test_name,),
-                    help="Test names to run (Default: %s)" % default_test_name)
 
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
-
-if options.installed:  # Use installed version
-    for bad_path in (".", os.getcwd(), os.path.abspath(".")):
-        if bad_path in sys.path:
-            sys.path.remove(bad_path)
-    try:
-        module = importer(PROJECT_NAME)
-    except Exception:
-        logger.error("Cannot run tests on installed version: %s not installed or raising error.",
-                     PROJECT_NAME)
-        raise
-else:  # Use built source
-    build_dir = build_project(PROJECT_NAME, PROJECT_DIR)
-    sys.path.insert(0, build_dir)
-    logger.warning("Patched sys.path, added: '%s'", build_dir)
-    module = importer(PROJECT_NAME)
 
 test_verbosity = 1
 use_buffer = True
