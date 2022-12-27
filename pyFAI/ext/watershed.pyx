@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,18 +35,18 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/04/2020"
+__date__ = "27/12/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
 import cython
 import numpy
-cimport numpy
 import sys
 import logging
 logger = logging.getLogger("pyFAI.ext.watershed")
 from cython.parallel import prange
-
+from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
+                         int32_t, uint32_t, int64_t, uint64_t
 include "numpy_common.pxi"
 include "bilinear.pxi"
 
@@ -270,7 +270,7 @@ class InverseWatershed(object):
     def init_labels(self):
         cdef:
             int i, j, width = self.width, height = self.height, idx, res
-            numpy.int32_t[:, :] labels = self.labels
+            int32_t[:, ::1] labels = self.labels
             dict regions = self.regions
             Bilinear bilinear = self.bilinear
         for i in range(height):
@@ -284,9 +284,9 @@ class InverseWatershed(object):
     def init_borders(self):
         cdef:
             int i, j, width = self.width, height = self.height, res
-            numpy.int32_t[:, :] labels = self.labels
-            numpy.uint8_t[:, :] borders = self.borders
-            numpy.uint8_t neighb
+            int32_t[:, ::1] labels = self.labels
+            uint8_t[:, ::1] borders = self.borders
+            uint8_t neighb
         for i in range(height):
             for j in range(width):
                 neighb = 0
@@ -313,9 +313,9 @@ class InverseWatershed(object):
     def init_regions(self):
         cdef:
             int i, j, idx, res
-            numpy.int32_t[:, ::1] labels = self.labels
-            numpy.uint8_t[:, ::1] borders = self.borders
-            numpy.uint8_t neighb = 0
+            int32_t[:, ::1] labels = self.labels
+            uint8_t[:, ::1] borders = self.borders
+            uint8_t neighb = 0
             Region region
             dict regions = self.regions
             int width = self.width
@@ -362,11 +362,11 @@ class InverseWatershed(object):
             int idx, i, j, key, key1
             Region region1, region2, region
             dict regions = self.regions
-            numpy.uint8_t neighb = 0
+            uint8_t neighb = 0
             float ref = 0.0
-            float[:, :] data = self.data
-            numpy.int32_t[:, ::1] labels = self.labels
-            numpy.uint8_t[:, ::1] borders = self.borders
+            float[:, ::1] data = self.data
+            int32_t[:, ::1] labels = self.labels
+            uint8_t[:, ::1] borders = self.borders
             int to_merge = -1
             int width = self.width
             int cnt = 0
@@ -492,9 +492,9 @@ class InverseWatershed(object):
         """
         cdef:
             int i, j, x, y, width = self.width
-            numpy.uint8_t[:] mask_flat = numpy.ascontiguousarray(mask.ravel(), numpy.uint8)
-            int[:] input_points = numpy.where(mask_flat)[0].astype(numpy.int32)
-            numpy.int32_t[:] labels = self.labels.ravel()
+            uint8_t[::1] mask_flat = numpy.ascontiguousarray(mask.ravel(), numpy.uint8)
+            int32_t[::1] input_points = numpy.where(mask_flat)[0].astype(numpy.int32)
+            int32_t[::1] labels = self.labels.ravel()
             dict regions = self.regions
             Region region
             list output_points = [], intensities = [], argsort, tmp_lst, rej_lst
