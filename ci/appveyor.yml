@@ -79,7 +79,7 @@ build_script:
 
     # Build
     - "python run_tests.py -m"
-    - "python -m build"
+    - "python -m build --wheel"
     - ps: "ls dist"
     # Install the generated wheel package to test it
     - "pip install --pre --no-index --find-links dist/ pyFAI"
