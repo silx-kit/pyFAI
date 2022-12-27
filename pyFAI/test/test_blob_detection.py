@@ -86,7 +86,7 @@ class TestBlobDetection(unittest.TestCase):
 class TestMorphology(unittest.TestCase):
     shape = (101, 103)
     img = None
-    
+
     @classmethod
     def setUpClass(cls):
         cls.img = numpy.zeros(cls.shape, dtype=numpy.int8)
