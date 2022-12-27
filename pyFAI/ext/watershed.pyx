@@ -47,7 +47,7 @@ logger = logging.getLogger("pyFAI.ext.watershed")
 from cython.parallel import prange
 from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
                          int32_t, uint32_t, int64_t, uint64_t
-include "numpy_common.pxi"
+#include "numpy_common.pxi"
 include "bilinear.pxi"
 
 cdef bint get_bit(int byteval, int idx) nogil:
