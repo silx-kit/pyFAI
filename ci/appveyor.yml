@@ -2,7 +2,7 @@
 # Windows
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
-version: 0.18.{build}
+version: 0.22.{build}
 shallow_clone: true
 build: false
 
@@ -78,9 +78,6 @@ build_script:
     - "dir"
 
     # Build
-    - "del pyFAI\\ext\\histogram.c"
-    - "python setup.py build %BUILD_ARGS%"
-    #- "python setup.py test"
     - "python run_tests.py -m"
     - "python -m build"
     - ps: "ls dist"
@@ -98,8 +95,6 @@ test_script:
 
     # Upgrade distribution modules
     - "python -m pip install --upgrade pip"
-    - 'pip install --upgrade meson meson-python tomli'
-    - "pip install --upgrade build wheel"
     # Install other build dependencies
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
     # Install the generated wheel package to test it
