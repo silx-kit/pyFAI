@@ -2,7 +2,7 @@ project('pyFAI',
   'c', 'cython',
   license: 'MIT',
   meson_version: '>= 0.60',
-  version: run_command('version.py',
+  version: run_command('version.py --wheel',
                        check:true).stdout().strip(),
 )
 
