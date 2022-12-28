@@ -94,7 +94,7 @@ test_script:
     - "%VENV_TEST_DIR%\\Scripts\\activate.bat"
 
     # Upgrade distribution modules
-    - "python -m pip install --upgrade pip"
+    - "python -m pip install --upgrade pip tomli"
     # Install other build dependencies
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
     # Install the generated wheel package to test it
