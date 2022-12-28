@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/12/2022"
+__date__ = "28/12/2022"
 
 import unittest
 import numpy
@@ -89,10 +89,14 @@ class TestMorphology(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.img = numpy.zeros(cls.shape, dtype=numpy.int8)
-        y = numpy.random.randint(0, cls.shape[0], max(cls.shape))
-        x = numpy.random.randint(0, cls.shape[1], max(cls.shape))
-        cls.img[y, x] = 1
+        yc = cls.shape[0] / 2
+        xc = cls.shape[0] / 2
+        y, x = numpy.ogrid[:self.shape[0],:self.shape[1]]
+        r = 0.4 * min(cls.shape)
+        r2 = r * r
+        y -= yc
+        x -= xc
+        cls.img = (x * x + y * y < r2).astype(numpy.int8)
 
     @classmethod
     def tearDownClass(cls):
