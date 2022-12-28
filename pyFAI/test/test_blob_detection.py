@@ -91,7 +91,7 @@ class TestMorphology(unittest.TestCase):
     def setUpClass(cls):
         yc = cls.shape[0] / 2
         xc = cls.shape[0] / 2
-        y, x = numpy.ogrid[:self.shape[0],:self.shape[1]]
+        y, x = numpy.ogrid[:cls.shape[0],:cls.shape[1]]
         r = 0.4 * min(cls.shape)
         r2 = r * r
         y -= yc
