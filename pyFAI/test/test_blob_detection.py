@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "28/12/2022"
 
 import unittest
 import numpy
@@ -42,6 +42,8 @@ from ..detectors import detector_factory
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..blob_detection import BlobDetection, local_max
 from ..ext import _blob
+from ..ext import morphology
+from scipy import ndimage
 
 
 def image_test_rings():
@@ -81,11 +83,38 @@ class TestBlobDetection(unittest.TestCase):
         self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, True) ==
                                       local_max(bd.dogs, bd.cur_mask, True)), "max test, 3x5x5")
 
+class TestMorphology(unittest.TestCase):
+    shape = (101, 103)
+    img = None
+
+    @classmethod
+    def setUpClass(cls):
+        yc = cls.shape[0] // 2
+        xc = cls.shape[0] // 2
+        y, x = numpy.ogrid[:cls.shape[0],:cls.shape[1]]
+        r = 0.4 * min(cls.shape)
+        r2 = r * r
+        y -= yc
+        x -= xc
+        cls.img = (x * x + y * y < r2).astype(numpy.int8)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.img = None
+
+    def test_morphology(self):
+        ref_d = ndimage.binary_dilation(self.img.astype(bool)).astype("int8")
+        res_d = morphology.binary_dilation(self.img)
+        self.assertTrue(numpy.allclose(ref_d, res_d), "binary dilation")
+        res_e = morphology.binary_erosion(res_d)
+        self.assertTrue(numpy.allclose(self.img, res_e), "binary erosion")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestBlobDetection))
+    testsuite.addTest(loader(TestMorphology))
     return testsuite
 
 

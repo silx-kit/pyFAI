@@ -32,23 +32,19 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "10/01/2022"
+__date__ = "27/12/2022"
 __license__ = "MIT"
 
 import sys
-import distutils.util
 import logging
 import os
+from argparse import ArgumentParser
 import subprocess
 import time
 import unittest
-import tempfile
 import collections
-from argparse import ArgumentParser
-
-if sys.version_info[0] < 3:
-    raise RuntimeError("Python2 is not more supported")
-
+import tomli
+import tempfile
 
 class StreamHandlerUnittestReady(logging.StreamHandler):
     """The unittest class TestResult redefine sys.stdout/err to capture
@@ -90,6 +86,8 @@ logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
 
 logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
+if sys.version_info.major < 3:
+    logger.error("pyFAI no more support Python2")
 
 try:
     import resource
@@ -113,8 +111,8 @@ except ImportError:
 
 try:
     import numpy
-except ImportError:
-    logger.warning("numpy missing")
+except Exception as error:
+    logger.warning("Numpy missing: %s", error)
 else:
     logger.info("Numpy %s", numpy.version.version)
 
@@ -146,19 +144,10 @@ except ImportError:
 else:
     logger.info("Cython %s", Cython.__version__)
 
-
-def get_project_name(root_dir):
-    """Retrieve project name by running python setup.py --name in root_dir.
-
-    :param str root_dir: Directory where to run the command.
-    :return: The name of the project stored in root_dir
-    """
-    logger.debug("Getting project name in %s", root_dir)
-    p = subprocess.Popen([sys.executable, "setup.py", "--name"],
-                         shell=False, cwd=root_dir, stdout=subprocess.PIPE)
-    name, _stderr_data = p.communicate()
-    logger.debug("subprocess ended with rc= %s", p.returncode)
-    return name.split()[-1].decode('ascii')
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+from bootstrap import get_project_name, build_project
+PROJECT_NAME = get_project_name(PROJECT_DIR)
+logger.info("Project name: %s", PROJECT_NAME)
 
 
 class TextTestResultWithSkipList(unittest.TextTestResult):
@@ -344,57 +333,11 @@ def is_debug_python():
     return hasattr(sys, "gettotalrefcount")
 
 
-def build_project(name, root_dir):
-    """Run python setup.py build for the project.
+# Prevent importing from source directory
+if os.path.dirname(os.path.abspath(__file__)) == os.path.abspath(sys.path[0]):
+    removed_from_sys_path = sys.path.pop(0)
+    logger.info("Patched sys.path, removed: '%s'", removed_from_sys_path)
 
-    Build directory can be modified by environment variables.
-
-    :param str name: Name of the project.
-    :param str root_dir: Root directory of the project
-    :return: The path to the directory were build was performed
-    """
-    platform = distutils.util.get_platform()
-    architecture = "lib.%s-%i.%i" % (platform,
-                                     sys.version_info[0], sys.version_info[1])
-    if is_debug_python():
-        architecture += "-pydebug"
-
-    if os.environ.get("PYBUILD_NAME") == name:
-        # we are in the debian packaging way
-        home = os.environ.get("PYTHONPATH", "").split(os.pathsep)[-1]
-    elif os.environ.get("BUILDPYTHONPATH"):
-        home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
-    else:
-        home = os.path.join(root_dir, "build", architecture)
-
-    logger.warning("Building %s to %s", name, home)
-    p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                         shell=False, cwd=root_dir)
-    logger.debug("subprocess ended with rc= %s", p.wait())
-    return home
-
-
-def import_project_module(project_name, project_dir):
-    """Import project module, from the system of from the project directory"""
-    # Prevent importing from source directory
-    if (os.path.dirname(os.path.abspath(__file__)) == os.path.abspath(sys.path[0])):
-        removed_from_sys_path = sys.path.pop(0)
-        logger.info("Patched sys.path, removed: '%s'", removed_from_sys_path)
-
-    if "--installed" in sys.argv:
-        try:
-            module = importer(project_name)
-        except ImportError:
-            raise ImportError(
-                "%s not installed: Cannot run tests on installed version" %
-                PROJECT_NAME)
-    else:  # Use built source
-        build_dir = build_project(project_name, project_dir)
-
-        sys.path.insert(0, build_dir)
-        logger.warning("Patched sys.path, added: '%s'", build_dir)
-        module = importer(project_name)
-    return module
 
 
 def get_test_options(project_module):
@@ -411,16 +354,23 @@ def get_test_options(project_module):
     return test_options
 
 
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_NAME = get_project_name(PROJECT_DIR)
-logger.info("Project name: %s", PROJECT_NAME)
-
-project_module = import_project_module(PROJECT_NAME, PROJECT_DIR)
-PROJECT_VERSION = getattr(project_module, 'version', '')
-PROJECT_PATH = project_module.__path__[0]
-
-test_options = get_test_options(project_module)
-"""Contains extra configuration for the tests."""
+if "-i" in sys.argv or "--installed" in sys.argv:
+    for bad_path in (".", os.getcwd(), PROJECT_DIR):
+        if bad_path in sys.path:
+            sys.path.remove(bad_path)
+    try:
+        module = importer(PROJECT_NAME)
+    except Exception:
+        logger.error("Cannot run tests on installed version: %s not installed or raising error.",
+                     PROJECT_NAME)
+        raise
+    else:
+        print("Running tests on system-wide installed project")
+else:
+    build_dir = build_project(PROJECT_NAME, PROJECT_DIR)
+    sys.path.insert(0, build_dir)
+    logger.warning("Patched sys.path, added: '%s'", build_dir)
+    module = importer(PROJECT_NAME)
 
 epilog = """Environment variables:
 WITH_QT_TEST=False to disable graphical tests
@@ -430,6 +380,16 @@ WITH_GL_TEST=False to disable tests using OpenGL
 """
 parser = ArgumentParser(description='Run the tests.',
                         epilog=epilog)
+
+test_options = get_test_options(module)
+"""Contains extra configuration for the tests."""
+test_options.add_parser_argument(parser)
+
+default_test_name = f"{PROJECT_NAME}.test.suite"
+parser.add_argument("test_name", nargs='*',
+                    default=(default_test_name,),
+                    help="Test names to run (Default: %s)" % default_test_name)
+
 
 parser.add_argument("--installed",
                     action="store_true", dest="installed", default=False,
@@ -449,13 +409,8 @@ parser.add_argument("-v", "--verbose", default=0,
                          "including debug messages and test help strings.")
 parser.add_argument("--qt-binding", dest="qt_binding", default=None,
                     help="Force using a Qt binding, from 'PyQt4', 'PyQt5', or 'PySide'")
-if test_options is not None:
-    test_options.add_parser_argument(parser)
 
-default_test_name = "%s.test.suite" % PROJECT_NAME
-parser.add_argument("test_name", nargs='*',
-                    default=(default_test_name,),
-                    help="Test names to run (Default: %s)" % default_test_name)
+
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
 
@@ -475,13 +430,16 @@ elif options.verbose > 1:
 if options.coverage:
     logger.info("Running test-coverage")
     import coverage
+    omits = ["*test*", "*third_party*", "*/setup.py",
+             # temporary test modules (silx.math.fit.test.test_fitmanager)
+             "*customfun.py", ]
     try:
         coverage_class = coverage.Coverage
     except AttributeError:
         coverage_class = coverage.coverage
-    print("|%s|" % PROJECT_NAME)
-    cov = coverage_class(include=["*/%s/*" % PROJECT_NAME],
-                         omit=["*test*", "*third_party*", "*/setup.py"])
+    print(f"|{PROJECT_NAME}|")
+    cov = coverage_class(include=[f"*/{PROJECT_NAME}/*"],
+                         omit=omits)
     cov.start()
 
 if options.qt_binding:
@@ -501,6 +459,10 @@ if options.qt_binding:
     else:
         raise ValueError("Qt binding '%s' is unknown" % options.qt_binding)
 
+PROJECT_VERSION = getattr(module, 'version', '')
+PROJECT_PATH = module.__path__[0]
+
+
 # Run the tests
 runnerArgs = {}
 runnerArgs["verbosity"] = test_verbosity
@@ -517,9 +479,11 @@ logger.warning("Test %s %s from %s",
 test_module_name = PROJECT_NAME + '.test'
 logger.info('Import %s', test_module_name)
 test_module = importer(test_module_name)
+
 test_suite = unittest.TestSuite()
 
 if test_options is not None:
+    print(test_options)
     # Configure the test options according to the command lines and the the environment
     test_options.configure(options)
 else:

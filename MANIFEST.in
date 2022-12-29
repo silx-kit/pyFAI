@@ -34,6 +34,8 @@ include TODO.txt
 include copyright
 include requirements.txt
 include pyproject.toml
+include meson.build
+recursive-include pyFAI meson.build
 
 #Include doc without checkpoints or downloaded files
 recursive-include doc *

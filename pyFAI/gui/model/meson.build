@@ -1,0 +1,26 @@
+py.install_sources(
+   ['AbstractModel.py',
+    'CalibrantModel.py',
+    'CalibrationModel.py',
+    'ConstraintModel.py',
+    'DataModel.py',
+    'DataModelAdaptor.py',
+    'DetectorModel.py',
+    'ExperimentSettingsModel.py',
+    'FilenameModel.py',
+    'Fit2dGeometryModel.py',
+    'GeometryConstraintsModel.py',
+    'GeometryHistoryModel.py',
+    'GeometryModel.py',
+    'ImageModel.py',
+    'IntegrationSettingsModel.py',
+    'ListModel.py',
+    'MarkerModel.py',
+    'MaskedImageModel.py',
+    'PeakModel.py',
+    'PeakSelectionModel.py',
+    'PlotViewModel.py',
+    '__init__.py'],
+  pure: false,   # Will be installed next to binaries
+  subdir: 'pyFAI/gui/model'  # Folder relative to site-packages to install to
+)

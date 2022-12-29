@@ -1,11 +1,85 @@
-[build-system]
-requires = [
-    "wheel",
-    "setuptools<60",
-    "oldest-supported-numpy",
-    "scipy",
-    "sphinx",
-    "nbsphinx",
-    "silx>=1.1",
-    "Cython>=0.25"
+[project]
+name = 'pyFAI'
+dynamic = ['version',]
+license = {file = 'copyright'}
+requires-python = '>=3.7'
+readme = 'README.rst'
+description = 'FabIO is an I/O library for images produced by 2D X-ray detectors and written in Python'
+authors = [
+
+  { name = 'Jérôme Kieffer', email = 'jerome.kieffer@esrf.fr'},
+  { name = 'Valentin Valls', email = 'valentin.valls@esrf.fr'},
+  { name = 'Jonathan P. Wright', email= 'wright@esrf.fr'},
+  { name = 'Gael Goret'},
+  { name = 'Brian Pauw'},
 ]
+
+# double check classifiers on https://pypi.python.org/pypi?%3Aaction=list_classifiers
+classifiers = ["Development Status :: 5 - Production/Stable",
+               "Intended Audience :: Developers",
+               "Programming Language :: Python :: 3",
+               "Programming Language :: Python :: 3.7",
+               "Programming Language :: Python :: 3.8",
+               "Programming Language :: Python :: 3.9",
+               "Programming Language :: Python :: 3.10",
+               "Programming Language :: Python :: Implementation :: CPython",
+               "Programming Language :: Cython",
+               "Environment :: Console",
+               "Environment :: X11 Applications :: Qt",
+               "Intended Audience :: Science/Research",
+               "License :: OSI Approved :: MIT License",
+               "Topic :: Software Development :: Libraries :: Python Modules",
+               "Operating System :: Microsoft :: Windows",
+               "Operating System :: Unix",
+               "Operating System :: MacOS :: MacOS X",
+               "Operating System :: POSIX",
+               "Topic :: Scientific/Engineering :: Physics"
+               ]
+
+dependencies = [
+   'numpy', 'h5py', 'fabio', 'silx', 'numexpr'
+]
+
+[build-system]
+build-backend = 'mesonpy'
+requires = [
+    'meson-python>=0.11',
+    "meson>=0.64; platform_system=='Windows'",
+    "meson>=0.60; platform_system!='Windows'",
+    'ninja',
+    'wheel',
+    'numpy',
+    'Cython>=0.25',
+    'numpy',
+    'pyproject-metadata>=0.5.0',
+    'tomli>=1.0.0'
+]
+
+[project.urls]
+homepage = 'http://silx.org'
+documentation = 'http://www.silx.org/doc/pyFAI/latest/'
+source = 'https://github.com/silx-kit/pyFAI'
+download = 'https://github.com/silx-kit/pyFAI/releases'
+tracker = 'https://github.com/silx-kit/pyFAI/issues'
+
+[project.scripts]
+check_calib = 'pyFAI.app.check_calib:main'
+detector2nexus = 'pyFAI.app.detector2nexus:main'
+diff_map = 'pyFAI.app.diff_map:main'
+diff_tomo = 'pyFAI.app.diff_tomo:main'
+eiger-mask = 'pyFAI.app.eiger_mask:main'
+MX-calibrate = 'pyFAI.app.mx_calibrate:main'
+pyFAI-average = 'pyFAI.app.average:main'
+pyFAI-benchmark = 'pyFAI.app.benchmark:main'
+pyFAI-calib = 'pyFAI.app.calib:main'
+pyFAI-recalib = 'pyFAI.app.recalib:main'
+pyFAI-saxs = 'pyFAI.app.saxs:main'
+pyFAI-waxs = 'pyFAI.app.waxs:main'
+sparsify-Bragg = 'pyFAI.app.sparsify:main'
+peakfinder = 'pyFAI.app.peakfinder:main'
+
+[project.gui-scripts]
+pyFAI-calib2 = 'pyFAI.app.calib2:main'
+pyFAI-drawmask = 'pyFAI.app.drawmask:main'
+pyFAI-diffmap = 'pyFAI.app.diff_map:main'
+pyFAI-integrate = 'pyFAI.app.integrate:main'

@@ -8,7 +8,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2017-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,19 +32,20 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "10/02/2021"
+__date__ = "27/12/2022"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
 from cython cimport floating
-cimport numpy
 import numpy
 from libc.math cimport floor, ceil
+from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
+                         int32_t, uint32_t, int64_t, uint64_t
 
 include "bilinear.pxi"
 
 
-def largest_width(numpy.int8_t[:, :]image):
+def largest_width(int8_t[:, :]image):
     """Calculate the width of the largest part in the binary image
     Nota: this is along the horizontal direction.
     """
@@ -71,7 +72,7 @@ def largest_width(numpy.int8_t[:, :]image):
 
 
 def polar_interpolate(data,
-                      numpy.int8_t[:, ::1] mask,
+                      int8_t[:, ::1] mask,
                       floating[:, ::1] radial,
                       floating[:, ::1] azimuthal,
                       polar,
@@ -129,8 +130,8 @@ def polar_interpolate(data,
 
 
 def polar_inpaint(floating[:, :] img not None,
-                  numpy.int8_t[:, :] topaint not None,
-                  numpy.int8_t[:, :] mask=None,
+                  int8_t[:, :] topaint not None,
+                  int8_t[:, :] mask=None,
                   empty=None):
     """Relaplce the values flagged in topaint with possible values
     If mask is provided, those values are knows to be invalid and not re-calculated
