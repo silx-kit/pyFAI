@@ -9,7 +9,7 @@ Change-log of versions
 ----------------
 - Developper and packager tools:
     + Switch build system from numpy.distutils to meson-python
-    + Keep the former setup.py for compatibility reasons: to be removed for next release 
+    + Keep the former setup.py for compatibility reasons: to be removed for next release
     + Drop Python 3.6 (default parameters in namedtuple feature used)
     + Require silx 1.1 (for OpenCL)
 - GUI side:
@@ -29,8 +29,8 @@ Change-log of versions
 - Improvement in the doc:
     + Multithreaded integration tutorial
     + GPU implementation tutorial
-- Facts and figures: 
-    + 400+ commits, 100 PR 
+- Facts and figures:
+    + 400+ commits, 100 PR
     +with the contrinution of:
         Clemens Prescher,
         Elena Pascal
