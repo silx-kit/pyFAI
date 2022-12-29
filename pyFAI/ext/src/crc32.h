@@ -27,4 +27,9 @@ THE SOFTWARE.
 #define PYFAI_VISIBILITY_HIDDEN
 #endif
 
+uint32_t CRC_TABLE_INITIALIZED;
+uint32_t CRC_TABLE[1 << 8];
+PYFAI_VISIBILITY_HIDDEN void slowcrc_init(void)
+PYFAI_VISIBILITY_HIDDEN uint32_t fastcrc32(char *str, uint32_t len);
+PYFAI_VISIBILITY_HIDDEN uint32_t slowcrc32(char *str, uint32_t len);
 PYFAI_VISIBILITY_HIDDEN uint32_t pyFAI_crc32(char *str, uint32_t len);
