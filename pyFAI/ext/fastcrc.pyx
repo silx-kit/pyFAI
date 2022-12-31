@@ -31,22 +31,91 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "18/11/2021"
-__contact__ = "Jerome.kieffer@esrf.fr"
+__date__ = "31/12/2022"
+__contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 
 import cython
-cimport numpy
 import numpy
+from libc.stdint cimport uint8_t, uint32_t
+from .crc32 cimport (pyFAI_crc32, CRC_TABLE_INITIALIZED, CRC_TABLE, _crc32_sse4, _crc32_table, _crc32_table_init)
 
-from .crc32 cimport pyFAI_crc32
+def get_crc_table_initialized():
+    return CRC_TABLE_INITIALIZED
 
+def get_crc_table():
+    cdef:
+         uint32_t size=1<<8, i
+         uint32_t[::1] table = numpy.empty(size, dtype=numpy.uint32)
+    for i in range(size):
+        table[i] = CRC_TABLE[i]
+    return numpy.asarray(table)
 
-def crc32(numpy.ndarray data not None):
+def init_crc32_table(uint32_t key=0x11EDC6F41):
+    _crc32_table_init(key)
+
+def crc32_table(data):
+    cdef: 
+        uint32_t size
+        uint8_t[::1] view
+    view = data.ravel().view(numpy.uint8)
+    size = data.shape[0]
+    return _crc32_table(<char *> &view[0], size)
+
+def crc32_sse4(data):
+    cdef: 
+        uint32_t size
+        uint8_t[::1] view
+    view = data.ravel().view(numpy.uint8)
+    size = data.shape[0]
+    return _crc32_sse4(<char *> &view[0], size)
+
+def crc32(data):
     """Calculate the CRC32 checksum of a numpy array
 
     :param data: a numpy array
     :return: unsigned integer
     """
-    cdef numpy.uint32_t size = data.nbytes
-    return pyFAI_crc32(<char *> data.data, size)
+    cdef: 
+        uint32_t size
+        uint8_t[::1] view
+    view = data.ravel().view(numpy.uint8)
+    size = data.shape[0]
+    return pyFAI_crc32(<char *> &view[0], size)
+
+
+cdef class SlowCRC:
+    """This class implements a fail-safe version of CRC using a look-up table"""
+    cdef:
+        readonly uint32_t initialized
+        readonly uint32_t[::1] table
+    
+    def __cinit__(self, uint32_t key=0x11EDC6F41):
+        cdef:
+            uint32_t i, j, a, s=1<<8
+        self.initialized = key
+        self.table = numpy.empty(s, dtype=numpy.uint32)
+        
+        for i in range(s):
+            a = i << 24;
+            for j in range(8):
+                if (a & 0x80000000):
+                    a = (a << 1) ^ key;
+                else:
+                    a = (a << 1);
+            self.table[i] = a
+
+    def __dealloc__(self):
+        self.initialized = 0
+        self.table = None
+    
+    def crc(self, buffer):
+        """Calculate the CRC checksum of the numpy array"""
+        cdef:
+            uint32_t i, size, lcrc = ~0
+            uint8_t[::1] view
+        view = buffer.ravel().view(numpy.uint8)
+        size = view.shape[0]
+        for i in range(size):
+            lcrc = (lcrc >> 8) ^ self.table[(lcrc ^ (view[i])) & 0xff]
+        return ~lcrc

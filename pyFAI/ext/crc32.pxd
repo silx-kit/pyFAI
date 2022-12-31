@@ -27,8 +27,9 @@
 
 from libc.stdint cimport uint32_t
 cdef extern from "src/crc32.h":
-    const uint32_t CRC_TABLE_INITIALIZED
-    const uint32_t CRC_TABLE[1<<8]
-    uint32_t slowcrc32(char * str, uint32_t len)
-    uint32_t fastcrc32(char * str, uint32_t len)
+    uint32_t CRC_TABLE_INITIALIZED
+    uint32_t CRC_TABLE[1<<8]
+    void _crc32_table_init(uint32_t key)
+    uint32_t _crc32_table(char * str, uint32_t len)
+    uint32_t _crc32_sse4( char * str, uint32_t len)
     uint32_t pyFAI_crc32(char * str, uint32_t len)

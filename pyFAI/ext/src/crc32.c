@@ -89,10 +89,11 @@ static void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint
 
 #endif
 
-static int is_initialized=0;
-static uint32_t slowcrc_table[1<<8];
+static uint32_t CRC_TABLE_INITIALIZED = 0;
+static uint32_t CRC_TABLE[1 << 8];
 
-static void slowcrc_init(void) {
+PYFAI_VISIBILITY_HIDDEN void _crc32_table_init(uint32_t key)
+{
     uint32_t i, j, a;
 
     for (i = 0; i < (1 << 8); i++)
@@ -101,50 +102,48 @@ static void slowcrc_init(void) {
         for (j = 0; j < 8; j++)
         {
             if (a & 0x80000000)
-                a = (a << 1) ^ 0x11EDC6F41;
+                a = (a << 1) ^ key;
             else
                 a = (a << 1);
         }
-        slowcrc_table[i] = a;
+        CRC_TABLE[i] = a;
     }
-    is_initialized = 1;
+    CRC_TABLE_INITIALIZED = key;
 }
 
 
-static uint32_t slowcrc(char *str, uint32_t len) {
+PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_table(char *str, uint32_t len)
+{
     uint32_t lcrc = ~0;
     char *p, *e;
 
     e = str + len;
     for (p = str; p < e; ++p)
-        lcrc = (lcrc >> 8) ^ slowcrc_table[(lcrc ^ (*p)) & 0xff];
+        lcrc = (lcrc >> 8) ^ CRC_TABLE[(lcrc ^ (*p)) & 0xff];
     return ~lcrc;
 }
 
-static uint32_t fastcrc(const char *str, uint32_t len) {
-    uint32_t q = len / sizeof(uint32_t), r = len % sizeof(uint32_t), *p =
-            (uint32_t*) str, crc = 0;
+PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_sse4(char *str, uint32_t len)
+{
+    uint32_t q = len / sizeof(uint32_t);
+    uint32_t r = len % sizeof(uint32_t);
+    uint32_t crc = 0;
+    uint32_t *p = (uint32_t*) str;
 
     while (q--)
     {
-//    crc = _mm_crc32_u32(crc,*p);
         __asm__ __volatile__(
                 ".byte 0xf2, 0xf, 0x38, 0xf1, 0xf1;"
                 :"=S"(crc)
-                :"0"(crc), "c"(*p)
-        );
+                :"0"(crc), "c"(*p) );
         p++;
     }
-
     str = (char*) p;
     while (r--)
     {
-//    crc = _mm_crc32_u8(crc,*str);
         __asm__ __volatile__(
                 ".byte 0xf2, 0xf, 0x38, 0xf0, 0xf1"
-                :"=S"(crc)
-                :"0"(crc), "c"(*str)
-        );
+                :"=S"(crc) :"0"(crc), "c"(*str));
         str++;
     }
 
@@ -152,18 +151,19 @@ static uint32_t fastcrc(const char *str, uint32_t len) {
 }
 
 PYFAI_VISIBILITY_HIDDEN uint32_t pyFAI_crc32(char *str, uint32_t len) {
-  uint32_t eax, ebx, ecx, edx;
+
+    uint32_t eax, ebx, ecx, edx;
   cpuid(1, &eax, &ebx, &ecx, &edx);
 
   if (ecx & bit_SSE4_2){
-        return fastcrc(str, len);
+        return _crc32_sse4(str, len);
     }
     else
     {
-        if (!is_initialized)
+        if (!CRC_TABLE_INITIALIZED)
         {
-            slowcrc_init();
+            _crc32_table_init((uint32_t) 0x11EDC6F41u);
         }
-        return slowcrc(str, len);
+        return _crc32_table(str, len);
     }
 }
