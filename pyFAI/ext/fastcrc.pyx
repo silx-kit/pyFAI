@@ -55,7 +55,7 @@ def init_crc32_table(uint32_t key=0x11EDC6F41):
     _crc32_table_init(key)
 
 def crc32_table(data):
-    cdef: 
+    cdef:
         uint32_t size
         uint8_t[::1] view
     view = data.ravel().view(numpy.uint8)
@@ -63,7 +63,7 @@ def crc32_table(data):
     return _crc32_table(<char *> &view[0], size)
 
 def crc32_sse4(data):
-    cdef: 
+    cdef:
         uint32_t size
         uint8_t[::1] view
     view = data.ravel().view(numpy.uint8)
@@ -76,7 +76,7 @@ def crc32(data):
     :param data: a numpy array
     :return: unsigned integer
     """
-    cdef: 
+    cdef:
         uint32_t size
         uint8_t[::1] view
     view = data.ravel().view(numpy.uint8)
@@ -89,13 +89,13 @@ cdef class SlowCRC:
     cdef:
         readonly uint32_t initialized
         readonly uint32_t[::1] table
-    
+
     def __cinit__(self, uint32_t key=0x11EDC6F41):
         cdef:
             uint32_t i, j, a, s=1<<8
         self.initialized = key
         self.table = numpy.empty(s, dtype=numpy.uint32)
-        
+
         for i in range(s):
             a = i << 24;
             for j in range(8):
@@ -108,7 +108,7 @@ cdef class SlowCRC:
     def __dealloc__(self):
         self.initialized = 0
         self.table = None
-    
+
     def crc(self, buffer):
         """Calculate the CRC checksum of the numpy array"""
         cdef:
