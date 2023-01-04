@@ -38,14 +38,13 @@ flat-field normalization... taking care of masked values and normalization.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "13/07/2022"
+__date__ = "26/12/2022"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 include "regrid_common.pxi"
 
 import cython
-from cython.parallel import prange
 from ..containers import ErrorModel
 from libc.math cimport fabs, isfinite
 from cython cimport floating
@@ -192,7 +191,6 @@ cdef floating[:, ::1] c2_preproc(floating[::1] data,
         assert result.shape[1] == 2, "nb component = 2"
 
     with nogil:
-        #for i in prange(size, nogil=True, schedule="static"):
         for i in range(size):
             one_num = data[i]
             one_den = normalization_factor
@@ -294,7 +292,6 @@ cdef floating[:, ::1] c3_preproc(floating[::1] data,
         assert result.shape[1] == 3, "nb component = 3"
 
 
-    # for i in prange(size, nogil=True, schedule="static"):
     with nogil:
         for i in range(size):
             one_num = data[i]
@@ -406,7 +403,6 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
 
     with nogil:
         for i in range(size):
-    # for i in prange(size, nogil=True, schedule="static"):
             one_num = data[i]
             one_den = normalization_factor
             if poissonian:

@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,18 +36,19 @@ They are also implemented in ``scipy.ndimage`` in the general case, but not as
 fast.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "30/04/2020"
+__date__ = "27/12/2022"
 __status__ = "stable"
 __license__ = "MIT"
 
 import cython
 import numpy
-cimport numpy
+from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
+                         int32_t, uint32_t, int64_t, uint64_t
 
 
-def binary_dilation(numpy.int8_t[:, ::1] image,
+def binary_dilation(int8_t[:, ::1] image,
                     float radius=1.0):
     """
     Return fast binary morphological dilation of an image.
@@ -60,13 +61,13 @@ def binary_dilation(numpy.int8_t[:, ::1] image,
     :return: ndiamge
     """
     cdef:
-        int x, y, i, j, size_x, size_y, px, py,
-        int r_int = int(radius), r2_int = int(radius * radius)
+        Py_ssize_t x, y, i, j, size_x, size_y, px, py,
+        Py_ssize_t r_int = int(radius), r2_int = int(radius * radius)
+        int8_t val, curr
+        int8_t[:, ::1] result
     size_y = image.shape[0]
     size_x = image.shape[1]
-    cdef:
-        numpy.int8_t val, curr
-        numpy.int8_t[:, ::1] result = numpy.empty(dtype=numpy.int8, shape=(size_y, size_x))
+    result = numpy.empty(dtype=numpy.int8, shape=(size_y, size_x))
 
     for y in range(size_y):
         for x in range(size_x):
@@ -86,7 +87,7 @@ def binary_dilation(numpy.int8_t[:, ::1] image,
     return numpy.asarray(result)
 
 
-def binary_erosion(numpy.int8_t[:, ::1] image,
+def binary_erosion(int8_t[:, ::1] image,
                    float radius=1.0):
     """Return fast binary morphological erosion of an image.
 
@@ -99,13 +100,13 @@ def binary_erosion(numpy.int8_t[:, ::1] image,
     :return: ndiamge
     """
     cdef:
-        int x, y, i, j, size_x, size_y, px, py,
-        int r_int = int(radius), r2_int = int(radius * radius)
+        Py_ssize_t x, y, i, j, size_x, size_y, px, py,
+        Py_ssize_t r_int = int(radius), r2_int = int(radius * radius)
+        int8_t val, curr
+        int8_t[:, ::1] result
     size_y = image.shape[0]
     size_x = image.shape[1]
-    cdef:
-        numpy.int8_t val, curr
-        numpy.int8_t[:, ::1] result = numpy.empty(dtype=numpy.int8, shape=(size_y, size_x))
+    result = numpy.empty(dtype=numpy.int8, shape=(size_y, size_x))
 
     for y in range(size_y):
         for x in range(size_x):

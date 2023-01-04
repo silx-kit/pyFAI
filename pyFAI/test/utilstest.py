@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "26/12/2022"
 
 PACKAGE = "pyFAI"
 
@@ -89,7 +89,6 @@ class TestOptions(object):
 
         self.options = None
         self.timeout = 60  # timeout in seconds for downloading images
-        # url_base = "http://forge.epn-campus.eu/attachments/download"
         self.url_base = "http://ftp.edna-site.org/pyFAI/testimages"
         self.resources = ExternalResources(PACKAGE,
                                            timeout=self.timeout,
@@ -106,6 +105,15 @@ class TestOptions(object):
         self.getimage = self.resources.getfile
 
         self._tempdir = None
+
+    def __repr__(self):
+        return f"TestOptions: WITH_QT_TEST {self.WITH_QT_TEST}, WITH_OPENCL_TEST {self.WITH_OPENCL_TEST}, "\
+               f"WITH_GL_TEST {self.WITH_GL_TEST}, TEST_LOW_MEM {self.TEST_LOW_MEM}, TEST_IS32_BIT {self.TEST_IS32_BIT}"
+
+    @property
+    def gui(self):
+        """For compatibility"""
+        return self.WITH_QT_TEST
 
     @property
     def low_mem(self):
@@ -179,7 +187,6 @@ class TestOptions(object):
 
         :param ArgumentParser parser: An argument parser
         """
-
         parser.add_argument("-x", "--no-gui", dest="gui", default=True,
                             action="store_false",
                             help="Disable the test of the graphical use interface")

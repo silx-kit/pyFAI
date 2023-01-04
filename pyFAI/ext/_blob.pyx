@@ -36,15 +36,14 @@ Some Cythonized function for blob detection function.
 It is used to find peaks in images by performing subsequent blurs.
 """
 
-__authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
+__authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/12/2020"
+__date__ = "26/12/2022"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
 import numpy
 from libc.stdint cimport int8_t
-from cython.parallel import prange
 
 
 def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):
