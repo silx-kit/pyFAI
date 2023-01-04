@@ -125,7 +125,7 @@ config = {"SSE4": check_sse4(),
           "key": init_crc32_table()}
 
 # benchmark the different implementations
-dummy = numpy.arange(2048*2048)
+dummy = numpy.arange(1<<20)
 start_time = time.perf_counter()
 zlib.crc32(dummy)
 time_zlib = time.perf_counter() - start_time
