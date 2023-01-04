@@ -99,6 +99,10 @@ py.extension_module('_distortion', '_distortion.pyx',
         override_options : ['cython_language=cpp'],
         dependencies : [py_dep, omp], install: true, subdir: 'pyFAI/ext')
 
+py.extension_module('fastcrc', ['fastcrc.pyx','src/crc32.c'],
+  #        override_options : ['cython_language=cpp'],
+        dependencies : [py_dep], install: true, subdir: 'pyFAI/ext')
+
 #    if (os.name == "posix") and ("x86" in platform.machine()):
 #        extra_sources = [os.path.join("src", "crc32.c")]
 #        ext_config = create_extension_config('fastcrc', extra_sources=extra_sources)

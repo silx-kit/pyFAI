@@ -19,9 +19,12 @@ THE SOFTWARE.
 */
 
 #include <stdint.h>
+#include "hwinfo.h"
 #include "crc32.h"
 
 #define bit_SSE4_2 (1<<20)
+
+#if defined(HWINFO_CPU_X86)
 
 #ifndef CPUIDEMU
 #if defined(__APPLE__) && defined(__i386__)
@@ -88,6 +91,7 @@ static void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint
 }
 
 #endif
+#endif
 
 static uint32_t CRC_TABLE_INITIALIZED = 0;
 static uint32_t CRC_TABLE[1 << 8];
@@ -122,6 +126,8 @@ PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_table(char *str, uint32_t len)
         lcrc = (lcrc >> 8) ^ CRC_TABLE[(lcrc ^ (*p)) & 0xff];
     return ~lcrc;
 }
+
+#if defined(HWINFO_CPU_X86)
 
 PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_sse4(char *str, uint32_t len)
 {
@@ -167,3 +173,18 @@ PYFAI_VISIBILITY_HIDDEN uint32_t pyFAI_crc32(char *str, uint32_t len) {
         return _crc32_table(str, len);
     }
 }
+
+#else
+
+//Non x86 version
+PYFAI_VISIBILITY_HIDDEN uint32_t pyFAI_crc32(char *str, uint32_t len) {
+    if (!CRC_TABLE_INITIALIZED){
+        _crc32_table_init((uint32_t) 0x11EDC6F41u);
+    }
+    return _crc32_table(str, len);
+}
+
+PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_sse4(char *str, uint32_t len) {
+    return pyFAI_crc32(str, len);
+}
+#endif
