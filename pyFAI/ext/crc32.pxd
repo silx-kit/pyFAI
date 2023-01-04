@@ -25,11 +25,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from libc.stdint cimport uint32_t
+from libc.stdint cimport uint32_t, int8_t
 cdef extern from "src/crc32.h":
-    uint32_t CRC_TABLE_INITIALIZED
-    uint32_t CRC_TABLE[1<<8]
+    uint32_t _get_crc32_table_key()
+    int8_t _is_crc32_sse4_available()
+    int8_t _check_sse4()
+    void _get_crc32_table(uint32_t *table)
     void _crc32_table_init(uint32_t key)
     uint32_t _crc32_table(char * str, uint32_t len)
-    uint32_t _crc32_sse4( char * str, uint32_t len)
+    uint32_t _crc32_sse4(char * str, uint32_t len)
     uint32_t pyFAI_crc32(char * str, uint32_t len)

@@ -95,16 +95,29 @@ static void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint
 
 static uint32_t CRC_TABLE_INITIALIZED = 0;
 static uint32_t CRC_TABLE[1 << 8];
+static int8_t CRC_SSE4_AVAILABLE = -1; // -1 means uninitialized
 
-PYFAI_VISIBILITY_HIDDEN void _crc32_table_init(uint32_t key)
-{
+PYFAI_VISIBILITY_HIDDEN uint32_t _get_crc32_table_key(){
+    return CRC_TABLE_INITIALIZED;
+}
+
+PYFAI_VISIBILITY_HIDDEN int8_t _is_crc32_sse4_available(){
+    return CRC_SSE4_AVAILABLE;
+}
+
+PYFAI_VISIBILITY_HIDDEN void _get_crc32_table(uint32_t *table){
+    for (int i=0; i<1<<8; i++)
+        table[i] = CRC_TABLE[i];
+
+}
+
+
+PYFAI_VISIBILITY_HIDDEN void _crc32_table_init(uint32_t key){
     uint32_t i, j, a;
 
-    for (i = 0; i < (1 << 8); i++)
-    {
+    for (i = 0; i < (1 << 8); i++){
         a = ((uint32_t) i) << 24;
-        for (j = 0; j < 8; j++)
-        {
+        for (j = 0; j < 8; j++){
             if (a & 0x80000000)
                 a = (a << 1) ^ key;
             else
@@ -112,6 +125,7 @@ PYFAI_VISIBILITY_HIDDEN void _crc32_table_init(uint32_t key)
         }
         CRC_TABLE[i] = a;
     }
+//     printf("set key from %u to %u\n", CRC_TABLE_INITIALIZED, key);
     CRC_TABLE_INITIALIZED = key;
 }
 
@@ -128,6 +142,14 @@ PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_table(char *str, uint32_t len)
 }
 
 #if defined(HWINFO_CPU_X86)
+
+PYFAI_VISIBILITY_HIDDEN int8_t _check_sse4(){
+    uint32_t eax, ebx, ecx, edx;
+    cpuid(1, &eax, &ebx, &ecx, &edx);
+//     printf("_check_sse4 %u %u %u %u \t %u\n", eax, ebx, ecx, edx, bit_SSE4_2);
+    CRC_SSE4_AVAILABLE = (ecx & bit_SSE4_2)>0;
+    return CRC_SSE4_AVAILABLE;
+}
 
 PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_sse4(char *str, uint32_t len)
 {
@@ -158,28 +180,31 @@ PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_sse4(char *str, uint32_t len)
 
 PYFAI_VISIBILITY_HIDDEN uint32_t pyFAI_crc32(char *str, uint32_t len) {
 
-    uint32_t eax, ebx, ecx, edx;
-  cpuid(1, &eax, &ebx, &ecx, &edx);
+    if (CRC_SSE4_AVAILABLE<0)
+        _check_sse4();
 
-  if (ecx & bit_SSE4_2){
+  if (CRC_SSE4_AVAILABLE){
         return _crc32_sse4(str, len);
     }
     else
     {
         if (!CRC_TABLE_INITIALIZED)
         {
-            _crc32_table_init((uint32_t) 0x11EDC6F41u);
+            _crc32_table_init((uint32_t) 0x1EDC6F41u);
         }
         return _crc32_table(str, len);
     }
 }
 
 #else
-
 //Non x86 version
+PYFAI_VISIBILITY_HIDDEN int8_t _check_sse4(){
+  return 0;
+}
+
 PYFAI_VISIBILITY_HIDDEN uint32_t pyFAI_crc32(char *str, uint32_t len) {
     if (!CRC_TABLE_INITIALIZED){
-        _crc32_table_init((uint32_t) 0x11EDC6F41u);
+        _crc32_table_init((uint32_t) 0x1EDC6F41u);
     }
     return _crc32_table(str, len);
 }
