@@ -49,14 +49,6 @@ pyFAI.opencl.preproc module
     :undoc-members:
     :show-inheritance:
 
-pyFAI.opencl.setup module
--------------------------
-
-.. automodule:: pyFAI.opencl.setup
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pyFAI.opencl.sort module
 ------------------------
 

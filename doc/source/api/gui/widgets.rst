@@ -73,14 +73,6 @@ pyFAI.gui.widgets.DetectorSelector module
     :undoc-members:
     :show-inheritance:
 
-pyFAI.gui.widgets.ElidedLabel module
-------------------------------------
-
-.. automodule:: pyFAI.gui.widgets.ElidedLabel
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pyFAI.gui.widgets.FileEdit module
 ---------------------------------
 

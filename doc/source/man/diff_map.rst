@@ -122,6 +122,6 @@ Bugs:
 .....
 
 Bugs: Many, see hereafter: 1)If the number of files is too large, use
-double quotes "*.edf" 2)There is a known bug on Debian7 where importing
+double quotes "\*.edf" 2)There is a known bug on Debian7 where importing
 a large number of file can take much longer than the integration itself:
 consider passing files in the command line
