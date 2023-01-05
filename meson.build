@@ -4,6 +4,7 @@ project('pyFAI',
   meson_version: '>= 0.60',
   version: run_command(['version.py', '--wheel'],
                        check:true).stdout().strip(),
+  default_options: ['buildtype=release', ],
 )
 
 
@@ -28,5 +29,13 @@ endif
 py_mod = import('python')
 py = py_mod.find_installation()
 py_dep = py.dependency()
+
+# MinGW-W64 #
+#if host_machine.system() == 'windows' and meson.get_compiler('c').get_id() == 'gcc'
+#  add_project_link_arguments('-lucrt', '-static', language: 'c')
+#  add_project_arguments('-mlong-double-64', language: 'c')
+#  add_project_arguments('-DMS_WIN64', language: 'c')
+#endif
+
 
 subdir('pyFAI')
