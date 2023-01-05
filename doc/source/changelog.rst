@@ -5,11 +5,11 @@
 Change-log of versions
 ======================
 
-2023.01 unleased
-----------------
+2023.01 unreleased
+------------------
 - Developper and packager tools:
-    + Switch build system from numpy.distutils to meson-python
-    + Keep the former setup.py for compatibility reasons: to be removed for next release
+    + Switch build system from ``numpy.distutils`` to ``meson-python``
+    + Keep the former ``setup.py`` for compatibility reasons: it will be removed in a future release
     + Drop Python 3.6 (default parameters in namedtuple feature used)
     + Require silx 1.1 (for OpenCL)
 - GUI side:
@@ -27,6 +27,7 @@ Change-log of versions
     + Hybrid error model (azimuthal for sigma-clipping but reports Poissonian noise)
     + Export peakfinder data to the CXI format (used by CrystFEL)
 - Improvement in the doc:
+    + Update installation instructions
     + Multithreaded integration tutorial
     + GPU implementation tutorial
 - Facts and figures:
