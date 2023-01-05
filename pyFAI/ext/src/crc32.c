@@ -113,7 +113,6 @@ PYFAI_VISIBILITY_HIDDEN void _crc32_table_init(uint32_t key){
         }
         CRC_TABLE[i] = a;
     }
-//     printf("set key from %u to %u\n", CRC_TABLE_INITIALIZED, key);
     CRC_TABLE_INITIALIZED = key;
 }
 
@@ -134,7 +133,6 @@ PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_table(char *str, uint32_t len)
 PYFAI_VISIBILITY_HIDDEN int8_t _check_sse4(){
     uint32_t eax, ebx, ecx, edx;
     cpuid(1, &eax, &ebx, &ecx, &edx);
-//     printf("_check_sse4 %u %u %u %u \t %u\n", eax, ebx, ecx, edx, bit_SSE4_2);
     CRC_SSE4_AVAILABLE = (ecx & bit_SSE4_2)>0;
     return CRC_SSE4_AVAILABLE;
 }
@@ -148,18 +146,26 @@ PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_sse4(char *str, uint32_t len)
 
     while (q--)
     {
+#if defined(_MSC_VER)
+        crc = _mm_crc32_u32(crc, *p);
+#else
         __asm__ __volatile__(
                 ".byte 0xf2, 0xf, 0x38, 0xf1, 0xf1;"
                 :"=S"(crc)
                 :"0"(crc), "c"(*p) );
+#endif
         p++;
     }
     str = (char*) p;
     while (r--)
     {
+#if defined(_MSC_VER)
+        crc = _mm_crc32_u8(crc, *str);
+#else
         __asm__ __volatile__(
                 ".byte 0xf2, 0xf, 0x38, 0xf0, 0xf1"
                 :"=S"(crc) :"0"(crc), "c"(*str));
+#endif
         str++;
     }
 
