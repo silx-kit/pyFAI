@@ -65,6 +65,15 @@ static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ec
 #else
 //i386 linux
 static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
+    __asm__ __volatile__("cpuid":
+            "=a" (*eax),
+            "=b" (*ebx),
+            "=c" (*ecx),
+            "=d" (*edx) :
+            "0" (op),
+            "1" (0),
+            "2" (0));
+    /*
     unsigned int tmp;
     __asm volatile
     ("push %%ebx\n\t"
@@ -77,6 +86,7 @@ static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ec
        "=d" (*edx)
       : "0" (*eax));
     *ebx = tmp;
+    */
 }
 #endif
 #endif
