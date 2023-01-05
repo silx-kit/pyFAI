@@ -25,7 +25,20 @@ THE SOFTWARE.
 #define bit_SSE4_2 (1<<20)
 
 #if defined(HWINFO_CPU_X86)
-#if defined(HWINFO_APPLE)
+
+#if defined(_MSC_VER)
+// Windows
+static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
+    uint32_t ary[4];
+    __cpuidex(&ary, op, 0);
+    eax[0] = ary[0];
+    ebx[0] = ary[1];
+    ecx[0] = ary[2];
+    edx[0] = ary[3];
+}
+
+#elif defined(HWINFO_APPLE)
+// MacOS
 static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
     __asm__ volatile ("cpuid":
                   "=a" (*eax),
@@ -37,18 +50,9 @@ static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ec
                   "c" (0),
                   "d" (0));
 }
-#elif defined(_MSC_VER)
-static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
-    uint32_t ary[4];
-    __cpuidex(&ary, op, 0);
-    eax[0] = ary[0];
-    ebx[0] = ary[1];
-    ecx[0] = ary[2];
-    edx[0] = ary[3];
-}
 
 #elif defined(__x86_64__) || defined(_M_AMD64) || defined (_M_X64)
-//amd64 linux + macos ?
+//amd64 linux
 static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
   __asm__ __volatile__("cpuid":
           "=a" (*eax),
@@ -59,7 +63,7 @@ static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ec
           "cc");
 }
 #else
-//i386 ?
+//i386 linux
 static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
     unsigned int tmp;
     __asm volatile
