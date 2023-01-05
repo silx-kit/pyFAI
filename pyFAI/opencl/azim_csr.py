@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "17/11/2022"
+__date__ = "05/01/2023"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -861,7 +861,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param error_model: enum ErrorModel
         :param normalization_factor: divide raw signal by this value
-        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common
+        :param cutoff: discard all points with ``|value - avg\| > cutoff * sigma``. 3-4 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param out_avgint: destination array or pyopencl array for sum of all data
         :param out_sem: destination array or pyopencl array for uncertainty on mean value

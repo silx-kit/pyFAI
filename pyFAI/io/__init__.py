@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "05/01/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -855,13 +855,14 @@ class FabioWriter(Writer):
     """
 
     def __init__(self, filename=None, extension=None, directory="", prefix=None, index_format="_%04d", start_index=0, fabio_class=None):
-        """
+        """Constructor of the class
+
         :param filename:
         :param extension:
         :param prefix: basename of the file
         :param index_format: "_%04s" gives "_0001" for example
         :param start_index: often 0 or 1
-        :param
+        :param fabio_class: type of file to write
         """
         Writer.__init__(self, filename, extension)
         self.header = {}

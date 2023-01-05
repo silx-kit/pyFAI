@@ -57,14 +57,6 @@ pyFAI.utils.orderedset module
     :undoc-members:
     :show-inheritance:
 
-pyFAI.utils.setup module
-------------------------
-
-.. automodule:: pyFAI.utils.setup
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pyFAI.utils.shell module
 ------------------------
 
