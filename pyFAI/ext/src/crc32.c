@@ -25,71 +25,55 @@ THE SOFTWARE.
 #define bit_SSE4_2 (1<<20)
 
 #if defined(HWINFO_CPU_X86)
-
-#ifndef CPUIDEMU
-#if defined(__APPLE__) && defined(__i386__)
-void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx);
-#else
+#if defined(HWINFO_APPLE)
 static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
-#if defined(__x86_64__) || defined(_M_AMD64) || defined (_M_X64)
-  __asm__ __volatile__
-    ("cpuid": "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx) : "a" (op) : "cc");
+    __asm__ volatile ("cpuid":
+                  "=a" (*eax),
+                  "=b" (*ebx),
+                  "=c" (*ecx),
+                  "=d" (*edx):
+                  "a"(op),
+                  "b" (0),
+                  "c" (0),
+                  "d" (0));
+}
+#elif defined(_MSC_VER)
+static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
+    uint32_t ary[4];
+    __cpuidex(&ary, op, 0);
+    eax[0] = ary[0];
+    ebx[0] = ary[1];
+    ecx[0] = ary[2];
+    edx[0] = ary[3];
+}
+
+#elif defined(__x86_64__) || defined(_M_AMD64) || defined (_M_X64)
+//amd64 linux + macos ?
+static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
+  __asm__ __volatile__("cpuid":
+          "=a" (*eax),
+          "=b" (*ebx),
+          "=c" (*ecx),
+          "=d" (*edx) :
+          "a" (op) :
+          "cc");
+}
 #else
+//i386 ?
+static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
     unsigned int tmp;
     __asm volatile
     ("push %%ebx\n\t"
-            "cpuid\n\t"
-            "mov %%ebx, (%1)\n\t"
-            "pop %%ebx"
-            : "=a" (*eax),
-            "=S" (tmp),
-            "=c" (*ecx),
-            "=d" (*edx)
-            : "0" (*eax));
+     "cpuid\n\t"
+     "mov %%ebx, (%1)\n\t"
+     "pop %%ebx"
+     : "=a" (*eax),
+       "=S" (tmp),
+       "=c" (*ecx),
+       "=d" (*edx)
+      : "0" (*eax));
     *ebx = tmp;
-#endif
 }
-#endif
-
-#else
-
-typedef struct {
-  uint32_t id, a, b, c, d;
-} idlist_t;
-
-typedef struct {
-  char *vendor;
-  char *name;
-  uint32_t start, stop;
-} vendor_t;
-
-extern idlist_t idlist[];
-extern vendor_t vendor[];
-
-static uint32_t cv = VENDOR;
-
-static void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
-
-  static uint32_t current = 0;
-
-  uint32_t start = vendor[cv].start;
-  uint32_t stop  = vendor[cv].stop;
-  uint32_t count = stop - start;
-
-  if ((current < start) || (current > stop)) current = start;
-
-  while ((count > 0) && (idlist[current].id != op)) {
-    current ++;
-    if (current > stop) current = start;
-    count --;
-  }
-
-  *eax = idlist[current].a;
-  *ebx = idlist[current].b;
-  *ecx = idlist[current].c;
-  *edx = idlist[current].d;
-}
-
 #endif
 #endif
 
