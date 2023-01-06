@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2023"
+__date__ = "06/01/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3074,7 +3074,7 @@ class AzimuthalIntegrator(Geometry):
 
         Keep only pixels with intensty:
 
-            \|I - <I>\| < thres * std(I)
+            ``|I - <I>| < thres * std(I)``
 
         This enforces a gaussian distibution and is very good at extracting
         background or amorphous isotropic scattering out of Bragg peaks.
