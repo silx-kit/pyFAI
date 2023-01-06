@@ -51,7 +51,7 @@ install:
     - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
 
     # Activate visual studio compiler
-    - "C:\\Program\ Files\ (x86)\\Microsoft\ Visual\ Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat"
+    - '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat"'
     - 'cl.exe'
 
     # Upgrade/install distribution modules
