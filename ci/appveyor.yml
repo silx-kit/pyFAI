@@ -2,7 +2,7 @@
 # Windows
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
-version: 0.22.{build}
+version: 2023.1.{build}
 shallow_clone: true
 build: false
 
@@ -49,6 +49,10 @@ init:
 install:
     # Add Python to PATH
     - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
+
+    # Activate visual studio compiler
+    - '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat"'
+    - 'cl.exe'
 
     # Upgrade/install distribution modules
     - 'python -m pip install --upgrade pip'
