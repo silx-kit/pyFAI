@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 07/01/2021
+:Date: 05/01/2023
 :Keywords: Installation procedure
 :Target: System administrators under windows
 
@@ -30,37 +30,8 @@ The test suite is not passing on Windows 32 bits due to the limited amount of
 memory available to the Python process.
 PyFAI has not been tested under Windows 32 bits for a while now, this configuration is unsupported.
 
-Alternative Scientific Python stacks exists, like
-`Enthought Python Distribution <https://www.enthought.com>`_ ,
-`Anaconda <https://www.anaconda.com/>`_,
-`WinPython <http://winpython.github.io/>`_.
-They all offer most of the scientific packages already installed which makes
-the installation of dependencies much easier.
-On the other hand, they all offer different packaging system and we cannot
-support all of them.
-Moreover, distribution from *Enthought* and *Anaconda* are not free so you
-should be able to get support from those companies.
-
-**Nota:** any flavor of those Python distribution is probably incompatible with
-any other due to change in compiler or Python compilation options.
-Mixing them is really looking for trouble, hence strongly discouraged.
-
-Install PIP
------------
-
-**PIP** is the package management system for Python, it connects to
-`the Python Package Index <http://pypi.python.org>`_,
-download and install software packages from there.
-
-PIP has revolutionize the way Python libraries are installed as it is able to
-select the right build for your system, or compile them from the sources,
-which could be extremely tricky otherwise.
-If you installed Python compatible with pyFAI (3.6 or newer), PIP is already installed.
-From now on, one expects *python.exe* to be in your **PATH**.
-
-**Nota:**  Because PIP connects to the network, the *http_proxy* and *https_proxy*
-environment variable may need to be set-up properly.
-At ESRF, this is no more needed.
+An alternative is to use `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html>`_ packaging tool
+which provides Python with the packaging tool.
 
 
 Install pyFAI via PIP
@@ -82,46 +53,20 @@ This will install:
 * PyQt5
 
 
-Using Christoph Gohlke repository
-.................................
-
-Christoph Gohlke is a researcher at Laboratory for Fluorescence Dynamics, University of California, Irvine.
-He is maintaining a `large repository Python extension <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_ (actually, all we need :) for Windows.
-Check twice the Python version and the Windows version (win32 or win_amd64) before downloading.
-
-Moreover the libraries he provides are linked against the MKL library from Intel which
-makes his packages faster then what you would get by simply recompiling them.
-
-Christoph now provides packages as wheels.
-To install them, download the wheels and use PIP:
-
-.. code-block:: shell
-
-    pip install numpy*.whl
-
-Alternatively, you can use the wheelhouse of the silx project:
-
-.. code-block:: shell
-
-   pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy scipy matplotlib fabio PyQt5
-
-
 Install pyFAI from sources
 --------------------------
 
 The sources of pyFAI are available at https://github.com/silx-kit/pyFAI/releases
 the development is performed on https://github.com/silx-kit/pyFAI
 
-In addition to the Python interpreter, you will need `*the* C compiler compatible
+In addition to the Python interpreter, you will need *the* `C compiler compatible
 with your Python interpreter <https://wiki.python.org/moin/WindowsCompilers>`_.
 
-To upgrade the C-code in pyFAI, one needs in addition Cython:
+To upgrade the C/C++-code in pyFAI, one needs in addition Cython:
 
 .. code-block:: shell
 
    pip install -r requirements.txt --upgrade
-   python setup.py build
-   python run_tests.py
    pip install . --upgrade
 
 Troubleshooting

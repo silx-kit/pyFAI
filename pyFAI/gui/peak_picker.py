@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/03/2022"
+__date__ = "05/01/2023"
 __status__ = "production"
 
 import os
@@ -323,7 +323,7 @@ class PeakPicker(object):
         return gpt
 
     def onclick_new_grp(self, yx, ring):
-        " * new_grp Right-click (click+n):         try an auto find for a ring"
+        "new_grp Right-click (click+n):         try an auto find for a ring"
         # ydata is a float, and matplotlib display pixels centered.
         # we use floor (int cast) instead of round to avoid use of
         # banker's rounding
@@ -337,7 +337,7 @@ class PeakPicker(object):
             logger.warning("No peak found !!!")
 
     def onclick_single_point(self, yx, ring):
-        " * Right-click + Ctrl (click+b):  create new group with one single point"
+        "Right-click + Ctrl (click+b):  create new group with one single point"
         newpeak = self.massif.nearest_peak(yx)
         if newpeak:
             gpt = self._common_creation([newpeak], ring=ring)
@@ -346,7 +346,7 @@ class PeakPicker(object):
             logger.warning("No peak found !!!")
 
     def onclick_append_more_points(self, yx, ring):
-        " * Right-click + m (click+m):     find more points for current group"
+        "Right-click + m (click+m):     find more points for current group"
         gpt = self.points.get(ring)
         if gpt:
             self.widget.remove_grp(gpt.label, update=False)
@@ -364,7 +364,8 @@ class PeakPicker(object):
             self.onclick_new_grp(yx, ring)
 
     def onclick_append_1_point(self, yx, ring=None):
-        """ * Right-click + Shift (click+v): add one point to current group
+        """Right-click + Shift (click+v): add one point to current group
+
         :param xy: 2tuple of coordinates
         """
         gpt = self.points.get(ring)
@@ -382,7 +383,7 @@ class PeakPicker(object):
             self.onclick_new_grp(yx, ring)
 
     def onclick_erase_grp(self, yx, ring):
-        " * Center-click or (click+d):     erase current group"
+        "Center-click or (click+d):     erase current group"
         gpt = self.points.pop(ring)
         if gpt:
             self.widget.remove_grp(gpt.label, update=True)
@@ -394,7 +395,7 @@ class PeakPicker(object):
             logger.warning("No group of points for ring %s", ring)
 
     def onclick_erase_1_point(self, yx, ring):
-        " * Center-click + 1 or (click+1): erase closest point from current group"
+        "Center-click + 1 or (click+1): erase closest point from current group"
         gpt = self.points.get(ring)
         if not gpt:
             self.widget.remove_grp(gpt.label, update=True)

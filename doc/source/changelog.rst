@@ -1,14 +1,50 @@
 :Author: Jérôme Kieffer
-:Date: 15/11/2022
+:Date: 29/12/2022
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-0.22
-----
-- Drop Python 3.6 (default parameters in namedtuple)
-- Require silx 1.1 (for OpenCL)
+2023.01 unreleased
+------------------
+- Developper and packager tools:
+    + Switch build system from ``numpy.distutils`` to ``meson-python``
+    + Keep the former ``setup.py`` for compatibility reasons: it will be removed in a future release
+    + Drop Python 3.6 (default parameters in namedtuple feature used)
+    + Require silx 1.1 (for OpenCL)
+- GUI side:
+    + several minor improvements in pyFAI-calib2
+    + Fixed calibration in jupyter-lab
+- Core improvements:
+    + Refactoring of the Geometry class
+    + Geometry pseudo-inversion optimization
+    + Improved support from Medipix-based Lambda-detectors
+    + New detectors from Dectris (Pilatus 900k and Eiger 250k)
+    + Support Nexus format in output: NXmonpd and NXcansas
+    + Single-threaded CSC sparse matrix multiplication engine
+- Improved uncertainty propagation:
+    + Refactor error model management (uses enum)
+    + Hybrid error model (azimuthal for sigma-clipping but reports Poissonian noise)
+    + Export peakfinder data to the CXI format (used by CrystFEL)
+- Improvement in the doc:
+    + Update installation instructions
+    + Multithreaded integration tutorial
+    + GPU implementation tutorial
+- Facts and figures:
+    + 400+ commits, 100 PR
+    +with the contrinution of:
+        Clemens Prescher,
+        Elena Pascal
+        Jérôme Kieffer
+        Malte Storm
+        Marco Cammarata
+        Michael Hudson-Doyle
+        Picca Frédéric-Emmanuel
+        Rodrigo Telles
+        Thomas A Caswell
+        Tommaso Vinci
+        Valentin Valls
+        Wout de Nolf
 
 0.21.3 24/03/2022
 -----------------

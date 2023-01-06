@@ -26,70 +26,74 @@ THE SOFTWARE.
 
 #if defined(HWINFO_CPU_X86)
 
-#ifndef CPUIDEMU
-#if defined(__APPLE__) && defined(__i386__)
-void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx);
-#else
+#if defined(_MSC_VER)
+// Windows
+
+#if defined(__clang__)
+//clang on windows !
+#include <Intrin.h>
+#endif
+
 static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
-#if defined(__x86_64__) || defined(_M_AMD64) || defined (_M_X64)
-  __asm__ __volatile__
-    ("cpuid": "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx) : "a" (op) : "cc");
+    uint32_t ary[4];
+    __cpuidex(&ary, op, 0);
+    eax[0] = ary[0];
+    ebx[0] = ary[1];
+    ecx[0] = ary[2];
+    edx[0] = ary[3];
+}
+
+#elif defined(HWINFO_APPLE)
+// MacOS
+static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
+    __asm__ volatile ("cpuid":
+                  "=a" (*eax),
+                  "=b" (*ebx),
+                  "=c" (*ecx),
+                  "=d" (*edx):
+                  "a"(op),
+                  "b" (0),
+                  "c" (0),
+                  "d" (0));
+}
+
+#elif defined(__x86_64__) || defined(_M_AMD64) || defined (_M_X64)
+//amd64 linux
+static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
+  __asm__ __volatile__("cpuid":
+          "=a" (*eax),
+          "=b" (*ebx),
+          "=c" (*ecx),
+          "=d" (*edx) :
+          "a" (op) :
+          "cc");
+}
 #else
+//i386 linux
+static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
+    __asm__ __volatile__("cpuid":
+            "=a" (*eax),
+            "=b" (*ebx),
+            "=c" (*ecx),
+            "=d" (*edx) :
+            "0" (op),
+            "1" (0),
+            "2" (0));
+    /*
     unsigned int tmp;
     __asm volatile
     ("push %%ebx\n\t"
-            "cpuid\n\t"
-            "mov %%ebx, (%1)\n\t"
-            "pop %%ebx"
-            : "=a" (*eax),
-            "=S" (tmp),
-            "=c" (*ecx),
-            "=d" (*edx)
-            : "0" (*eax));
+     "cpuid\n\t"
+     "mov %%ebx, (%1)\n\t"
+     "pop %%ebx"
+     : "=a" (*eax),
+       "=S" (tmp),
+       "=c" (*ecx),
+       "=d" (*edx)
+      : "0" (*eax));
     *ebx = tmp;
-#endif
+    */
 }
-#endif
-
-#else
-
-typedef struct {
-  uint32_t id, a, b, c, d;
-} idlist_t;
-
-typedef struct {
-  char *vendor;
-  char *name;
-  uint32_t start, stop;
-} vendor_t;
-
-extern idlist_t idlist[];
-extern vendor_t vendor[];
-
-static uint32_t cv = VENDOR;
-
-static void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
-
-  static uint32_t current = 0;
-
-  uint32_t start = vendor[cv].start;
-  uint32_t stop  = vendor[cv].stop;
-  uint32_t count = stop - start;
-
-  if ((current < start) || (current > stop)) current = start;
-
-  while ((count > 0) && (idlist[current].id != op)) {
-    current ++;
-    if (current > stop) current = start;
-    count --;
-  }
-
-  *eax = idlist[current].a;
-  *ebx = idlist[current].b;
-  *ecx = idlist[current].c;
-  *edx = idlist[current].d;
-}
-
 #endif
 #endif
 
@@ -125,7 +129,6 @@ PYFAI_VISIBILITY_HIDDEN void _crc32_table_init(uint32_t key){
         }
         CRC_TABLE[i] = a;
     }
-//     printf("set key from %u to %u\n", CRC_TABLE_INITIALIZED, key);
     CRC_TABLE_INITIALIZED = key;
 }
 
@@ -146,7 +149,6 @@ PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_table(char *str, uint32_t len)
 PYFAI_VISIBILITY_HIDDEN int8_t _check_sse4(){
     uint32_t eax, ebx, ecx, edx;
     cpuid(1, &eax, &ebx, &ecx, &edx);
-//     printf("_check_sse4 %u %u %u %u \t %u\n", eax, ebx, ecx, edx, bit_SSE4_2);
     CRC_SSE4_AVAILABLE = (ecx & bit_SSE4_2)>0;
     return CRC_SSE4_AVAILABLE;
 }
@@ -160,18 +162,26 @@ PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_sse4(char *str, uint32_t len)
 
     while (q--)
     {
+#if defined(_MSC_VER)
+        crc = _mm_crc32_u32(crc, *p);
+#else
         __asm__ __volatile__(
                 ".byte 0xf2, 0xf, 0x38, 0xf1, 0xf1;"
                 :"=S"(crc)
                 :"0"(crc), "c"(*p) );
+#endif
         p++;
     }
     str = (char*) p;
     while (r--)
     {
+#if defined(_MSC_VER)
+        crc = _mm_crc32_u8(crc, *str);
+#else
         __asm__ __volatile__(
                 ".byte 0xf2, 0xf, 0x38, 0xf0, 0xf1"
                 :"=S"(crc) :"0"(crc), "c"(*str));
+#endif
         str++;
     }
 

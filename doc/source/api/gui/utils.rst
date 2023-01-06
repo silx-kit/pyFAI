@@ -49,14 +49,6 @@ pyFAI.gui.utils.projecturl module
     :undoc-members:
     :show-inheritance:
 
-pyFAI.gui.utils.setup module
-----------------------------
-
-.. automodule:: pyFAI.gui.utils.setup
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pyFAI.gui.utils.timeutils module
 --------------------------------
 

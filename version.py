@@ -47,7 +47,7 @@ Thus 2.1.0a3 is hexversion 0x020100a3.
 __authors__ = ["Jérôme Kieffer", "V. Valls"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/12/2022"
+__date__ = "29/12/2022"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 __all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion",
@@ -60,11 +60,11 @@ RELEASE_LEVEL_VALUE = {"dev": 0,
                        "rc": 13,
                        "final": 15}
 
-MAJOR = 0
-MINOR = 22
+MAJOR = 2023
+MINOR = 1
 MICRO = 0
 RELEV = "dev"  # <16
-SERIAL = 11  # <16
+SERIAL = 0  # <16
 
 date = __date__
 

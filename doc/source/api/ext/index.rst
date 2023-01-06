@@ -73,14 +73,6 @@ pyFAI.ext.relabel module
     :undoc-members:
     :show-inheritance:
 
-pyFAI.ext.setup module
-----------------------
-
-.. automodule:: pyFAI.ext.setup
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pyFAI.ext.sparse_builder module
 -------------------------------
 
@@ -125,14 +117,6 @@ pyFAI.ext.splitPixel module
 ---------------------------
 
 .. automodule:: pyFAI.ext.splitPixel
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyFAI.ext.splitPixelFull module
--------------------------------
-
-.. automodule:: pyFAI.ext.splitPixelFull
     :members:
     :undoc-members:
     :show-inheritance:

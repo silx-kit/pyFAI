@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/07/2022"
+__date__ = "05/01/2023"
 __status__ = "development"
 
 import logging
@@ -175,6 +175,7 @@ class CsrIntegrator1d(CSRIntegrator):
         :param unit: the kind of radial units
         :param bin_center: position of the bin center
         :param mask_checksum: just a place-holder to track which mask was used
+
         Nota: bins value is deduced from the dimentionality of bin_centers
         """
         self.bin_centers = bin_centers
@@ -291,9 +292,10 @@ class CsrIntegrator1d(CSRIntegrator):
         :param safe: Unused in this implementation
         :param error_model: Enum or str, "azimuthal" or "poisson"
         :param normalization_factor: divide raw signal by this value
-        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common
+        :param cutoff: discard all points with \|value - avg\| > cutoff * sigma. 3-4 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :return: namedtuple with "position intensity error signal variance normalization count"
+
         """
         shape = data.shape
         error_model = ErrorModel.parse(error_model)
