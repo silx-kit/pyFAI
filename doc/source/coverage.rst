@@ -1,7 +1,7 @@
 Test coverage report for pyFAI
 ==============================
 
-Measured on *pyFAI* version 2023.1.0-dev0, 06/01/2023
+Measured on *pyFAI* version 2023.1.0, 06/01/2023
 
 .. csv-table:: Test suite coverage
    :header: "Name", "Stmts", "Exec", "Cover"
