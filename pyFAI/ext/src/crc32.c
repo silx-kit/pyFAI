@@ -28,6 +28,12 @@ THE SOFTWARE.
 
 #if defined(_MSC_VER)
 // Windows
+
+#if defined(__clang__)
+//clang on windows !
+#include <Intrin.h>
+#endif
+
 static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
     uint32_t ary[4];
     __cpuidex(&ary, op, 0);
