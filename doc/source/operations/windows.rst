@@ -45,7 +45,7 @@ This will install:
 
 * NumPy
 * SciPy
-* matplotlib
+* Matplotlib
 * FabIO
 * h5py
 * silx
@@ -56,8 +56,7 @@ This will install:
 Install pyFAI from sources
 --------------------------
 
-The sources of pyFAI are available at https://github.com/silx-kit/pyFAI/releases
-the development is performed on https://github.com/silx-kit/pyFAI
+The sources of pyFAI are available at https://github.com/silx-kit/pyFAI
 
 In addition to the Python interpreter, you will need *the* `C compiler compatible
 with your Python interpreter <https://wiki.python.org/moin/WindowsCompilers>`_.
@@ -72,7 +71,19 @@ To upgrade the C/C++-code in pyFAI, one needs in addition Cython:
 Troubleshooting
 ---------------
 
-This section contains some tips on windows.
+This section contains some tips specific to Windows.
+
+About Microsoft Visual Studio Compiler
+......................................
+
+PyFAI contains some extensions (binary modules) making use of assembly code ...
+and the assembly used by ``MSVC`` differs from the une used by ``gcc`` or ``clang``,
+thus those extensions won't build with alternative compilers.
+
+If you wish to use pyFAI under Windows with an alternative compiler,
+please open an issue in the GitHub tracker.
+Solutions exist but they all represent a substential amount of work !
+
 
 Side-by-side error
 ..................
