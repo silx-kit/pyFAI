@@ -18,13 +18,9 @@ rings of a reference compound.
 References
 ----------
 
-* The philosophy of pyFAI is described in the proceedings of SRI2012:
-  doi:10.1088/1742-6596/425/20/202012 http://iopscience.iop.org/1742-6596/425/20/202012/
-* Implementation in parallel is described in the proceedings of EPDIC13:
-  PyFAI: a Python library for high performance azimuthal integration on GPU.
-  doi:10.1017/S0885715613000924
-* Benchmarks and optimization procedure is described in the proceedings of EuroSciPy2014:
-  http://conference.scipy.org/category/euroscipy.html (accepted)
+* The philosophy of pyFAI is described in the proceedings of SRI2012: https://doi.org/10.1088/1742-6596/425/20/202012
+* Implementation in parallel is described in the proceedings of EPDIC13: https://doi.org/10.1017/S0885715613000924
+* Benchmarks and optimization procedure is described in the proceedings of EuroSciPy2014: https://doi.org/10.48550/arXiv.1412.6367
 
 Installation
 ------------
