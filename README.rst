@@ -55,22 +55,21 @@ From source code
 ................
 
 The latest release of pyFAI can be downloaded from
-`Github <https://github.com/silx-kit/pyFAI/archive/master.zip>`_.
+`Github <https://github.com/silx-kit/pyFAI/archive/main.zip>`_.
 Presently the source code has been distributed as a zip package.
 Download it one and unpack it::
 
-    unzip pyFAI-master.zip
+    unzip pyFAI-main.zip
 
 As developement is also done on Github,
-`development branch is also available <https://github.com/silx-kit/pyFAI/archive/master.zip>`_
+`development branch is also available <https://github.com/silx-kit/pyFAI/archive/main.zip>`_
 
-All files are unpacked into the directory pyFAI-master::
+All files are unpacked into the directory pyFAI-main::
 
-    cd pyFAI-master
+    cd pyFAI-main
 
 Build it & test it::
 
-    python3 setup.py build -j 4
     python3 run_tests.py
 
 For its tests, pyFAI downloads test images from the internet.
@@ -81,7 +80,6 @@ you may have to setup a proxy configuration like this (no more needed at ESRF)::
 
 Finally, install pyFAI in the virtualenv after testing it::
 
-    python3 setup.py bdist_wheel
     pip install --upgrade .
 
 The newest development version can also be obtained by checking out from the git
@@ -94,24 +92,18 @@ repository::
 If you want pyFAI to make use of your graphic card, please install
 `pyopencl <http://mathema.tician.de/software/pyopencl>`_
 
-If you are using MS Windows you can also download a binary version packaged as executable
-installation files (choose the one corresponding to your python version).
-
-For MacOSX users with MacOS version>10.7, the default compiler switched from gcc
-to clang and dropped the OpenMP support. Please refer to the installation documentation ...
-
 Documentation
 -------------
 
 Documentation can be build using this command and Sphinx (installed on your computer)::
 
-    python3 setup.py build build_doc
+    python3 build-doc.py
 
 
 Dependencies
 ------------
 
-Python 3.6, ... 3.10 are well tested and officially supported.
+Python 3.7, ... 3.10 are well tested and officially supported.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -158,7 +150,7 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-One needs to install `Python` (>=3.6) and `Xcode` prior to start installing pyFAI.
+One needs to install `Python` (>=3.7) and `Xcode` prior to start installing pyFAI.
 The compiled extension will use only one core due to the limitation of the compiler.
 OpenCL is hence greately adviced on Apple systems.
 Then install the missing dependencies with `pip`::
@@ -169,7 +161,7 @@ Then install the missing dependencies with `pip`::
 Windows
 -------
 
-Under Windows, one needs to install `Python` (>=3.6) and the Visual Studio C++ compiler.
+Under Windows, one needs to install `Python` (>=3.7) and the Visual Studio C++ compiler.
 Then install the missing dependencies with `pip`::
 
    pip install  -r requirements.txt
