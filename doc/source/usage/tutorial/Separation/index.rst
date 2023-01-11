@@ -22,11 +22,14 @@ using 1D integrators, avoiding pixel splitting and mixing together rings.
 
 The reconstitution of the Wilson plot is also presented in another notebook.
 
-Finally an alternative implementation of the *peakfinder8* algorithm from the Cheetah software is presented.
+An alternative implementation of the *peakfinder8* algorithm from the Cheetah software
+is presented with its application to small molecule Laue crystallography and to
+macromolecular serial crystallography.
 
 .. toctree::
    :maxdepth: 1
 
    Separate
    Wilson
+   Laue
    Peakfinder8
