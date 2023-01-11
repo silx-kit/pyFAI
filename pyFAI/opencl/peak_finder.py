@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "17/11/2022"
+__date__ = "10/01/2023"
 __copyright__ = "2014-2022, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -511,7 +511,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         Count the number of intense by:
         * sigma_clipping within a radial bin to measure the mean and the deviation of the background
         * reconstruct the background in 2D
-        * count the number of peaks above mean + cutoff*sigma
+        * count the number of pixels above mean + cutoff*sigma
 
         :param data: 2D array with the signal
         :param dark: array of same shape as data for pre-processing
