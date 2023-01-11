@@ -13,7 +13,7 @@ discouraged as we are few and may be unavailable (holidays, ...).
 3. Create a virtual environment `python3 -m venv ~/.py3`
 4. Activate your environment `source ~/.py3/bin/activate`
 5. Install the dependencies `pip install --upgrade -r requirements.txt --only-binary :all:`
-6. Build and test `python setup.py build test`
+6. Build and test `python run_tests.py`
 
 This should take a few minutes and ensures everything is ready for developping within pyFAI.
 Later-on no recompilation will be needed unless you modify cython code.

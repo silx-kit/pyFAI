@@ -129,13 +129,6 @@ As most of the Python projects:
     pip install --upgrade .
 
 
-There are few specific options to setup.py:
-* ``-J 16``: Build the code using 16 compilers instances.
-* ``--no-cython``: do not use cython (even if present) and use the C source code provided by the development team
-* ``--force-cython``: enforce the regeneration of all C-files from cython sources
-* ``--no-openmp``: if you compiler lacks OpenMP support, like Xcode on MacOS.
-* ``--openmp``: enforce the use of OpenMP.
-
 Test suites
 -----------
 
