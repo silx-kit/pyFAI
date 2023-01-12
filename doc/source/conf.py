@@ -43,7 +43,7 @@ except ImportError:
 from pyFAI._version import strictversion, __date__ as pyfai_date
 
 year = pyfai_date.split("/")[-1]
-project = f'pyFAI {strictversion}'
+project = 'pyFAI'
 
 # If your documentation needs a minimal Sphinx version, state it here.
 # needs_sphinx = '1.0'
@@ -178,7 +178,7 @@ html_static_path = []
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-# html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = 'pyFAI {strictversion}:  %d %b %Y'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
