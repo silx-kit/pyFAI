@@ -3,7 +3,7 @@ pyFAI: Fast Azimuthal Integration in Python
 
 Main development website: https://github.com/silx-kit/pyFAI
 
-|Build Status| |Appveyor Status| |myBinder Launcher| |RTD docs| |Zenodo DOI|
+|Github Actions| |Appveyor Status| |myBinder Launcher| |RTD docs| |Zenodo DOI|
 
 PyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
@@ -200,15 +200,14 @@ Indirect contributors (ideas...)
 * Brian Pauw
 * Veijo Honkimaki
 
-.. |Build Status| image:: https://travis-ci.org/silx-kit/pyFAI.svg?branch=master
-   :target: https://travis-ci.org/silx-kit/pyFAI
+.. |Github Actions| image:: https://github.com/silx-kit/pyFAI/actions/workflows/python-package.yml/badge.svg
 .. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/github/silx-kit/pyfai?svg=true
    :target: https://ci.appveyor.com/project/ESRF/pyfai
 .. |myBinder Launcher| image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/master?filepath=binder%2Findex.ipynb
-.. |RTD docs| image:: https://readthedocs.org/projects/pyFAI/badge/?version=master
+   :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/main?filepath=binder%2Findex.ipynb
+.. |RTD docs| image:: https://readthedocs.org/projects/pyFAI/badge/?version=main
     :alt: Documentation Status
     :scale: 100%
-    :target: https://pyfai.readthedocs.io/en/master/?badge=master
+    :target: https://pyfai.readthedocs.io/en/main/?badge=main
 .. |Zenodo DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.832896.svg
    :target: https://doi.org/10.5281/zenodo.832896
