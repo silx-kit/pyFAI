@@ -19,7 +19,6 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
-project = u'pyFAI'
 try:
     import pyFAI
 
@@ -40,6 +39,11 @@ except ImportError:
     )
 
 # -- General configuration -----------------------------------------------------
+# General information about the project.
+from pyFAI._version import strictversion, __date__ as pyfai_date
+
+year = pyfai_date.split("/")[-1]
+project = f'pyFAI {strictversion}'
 
 # If your documentation needs a minimal Sphinx version, state it here.
 # needs_sphinx = '1.0'
@@ -90,11 +94,7 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-# General information about the project.
-from pyFAI._version import strictversion, __date__ as pyfai_date
-
-year = pyfai_date.split("/")[-1]
-copyright = f'2012-{year}, European Synchrotron Radiation Facility, Grenoble. pyFAI {strictversion}'
+copyright = f'2012-{year}, European Synchrotron Radiation Facility, Grenoble.'
 #version = strictversion
 
 # The version info for the project you're documenting, acts as replacement for
