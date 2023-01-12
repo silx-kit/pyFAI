@@ -94,7 +94,7 @@ master_doc = 'index'
 from pyFAI._version import strictversion, __date__ as pyfai_date
 
 year = pyfai_date.split("/")[-1]
-copyright = f'PyFAI {strictversion} 2012-{year}, European Synchrotron Radiation Facility, Grenoble'
+copyright = f'2012-{year}, European Synchrotron Radiation Facility, Grenoble. pyFAI {strictversion}'
 #version = strictversion
 
 # The version info for the project you're documenting, acts as replacement for
