@@ -66,7 +66,7 @@ class MultiGeometry(object):
         :param chi_disc: if 0, set the chi_discontinuity at 0, else π
         """
         if azimuth_range is None:
-            azimuth_range = (-180, 180) if chi_disc == 0 else (0, 360)
+            azimuth_range = (-180, 180) if chi_disc else (0, 360)
         self._sem = threading.Semaphore()
         self.abolute_solid_angle = None
         self.ais = [ai if isinstance(ai, AzimuthalIntegrator)
