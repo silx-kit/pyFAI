@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/07/2022"
+__date__ = "13/01/2023"
 __status__ = "production"
 
 import logging
@@ -43,8 +43,8 @@ logger = logging.getLogger(__name__)
 import math
 import numpy
 import time
-import scipy
 from .decorators import deprecated
+scipy = None
 
 try:
     from ..ext import relabel as _relabel
@@ -141,6 +141,9 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0, use_scipy=True):
         Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
     if use_scipy:
+        global scipy
+        if scipy is None:
+            import scipy.ndimage
         res = scipy.ndimage.filters.gaussian_filter(input_img, sigma, mode=(mode or "reflect"))
     else:
         if isinstance(sigma, (list, tuple)):
@@ -413,6 +416,9 @@ def shift_fft(input_img, shift_val, method="fft"):
         e = e0 * e1
         out = abs(numpy.fft.ifft2(numpy.fft.fft2(input_img) * e))
     else:
+        global scipy
+        if scipy is None:
+            import scipy.ndimage
         out = scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity")
     return out
 
