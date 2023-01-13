@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2022"
+__date__ = "12/01/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -54,17 +54,19 @@ class MultiGeometry(object):
     """
 
     def __init__(self, ais, unit="2th_deg",
-                 radial_range=(0, 180), azimuth_range=(-180, 180),
+                 radial_range=(0, 180), azimuth_range=None,
                  wavelength=None, empty=0.0, chi_disc=180):
         """
         Constructor of the multi-geometry integrator
 
         :param ais: list of azimuthal integrators
         :param radial_range: common range for integration
-        :param azimuthal_range: common range for integration
+        :param azimuthal_range: (2-tuple) common azimuthal range for integration
         :param empty: value for empty pixels
-        :param chi_disc: if 0, set the chi_discontinuity at
+        :param chi_disc: if 0, set the chi_discontinuity at 0, else π
         """
+        if azimuth_range is None:
+            azimuth_range = (-180, 180) if chi_disc else (0, 360)
         self._sem = threading.Semaphore()
         self.abolute_solid_angle = None
         self.ais = [ai if isinstance(ai, AzimuthalIntegrator)
