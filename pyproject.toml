@@ -37,7 +37,13 @@ classifiers = ["Development Status :: 5 - Production/Stable",
                ]
 
 dependencies = [
-   'numpy', 'h5py', 'fabio', 'silx', 'numexpr'
+   'numpy',
+   'h5py',
+   'fabio',
+   'silx',
+   'numexpr',
+   'scipy',
+   'matplotlib'
 ]
 
 [build-system]

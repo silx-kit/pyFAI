@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/07/2022"
+__date__ = "13/01/2023"
 __status__ = "production"
 
 import logging
@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 import math
 import numpy
 import time
-import scipy
+import scipy.ndimage
 from .decorators import deprecated
 
 try:
