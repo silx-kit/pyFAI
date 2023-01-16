@@ -62,7 +62,7 @@ requires = [
 ]
 
 [project.urls]
-homepage = 'http://silx.org'
+homepage = 'http://www.silx.org'
 documentation = 'http://www.silx.org/doc/pyFAI/latest/'
 source = 'https://github.com/silx-kit/pyFAI'
 download = 'https://github.com/silx-kit/pyFAI/releases'
