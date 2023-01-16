@@ -1,17 +1,17 @@
 :Author: Jérôme Kieffer
-:Date: 29/12/2022
+:Date: 16/01/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.01 unreleased
+2023.01 16/01/2023
 ------------------
-- Developper and packager tools:
+- Developer and packager tools:
     + Switch build system from ``numpy.distutils`` to ``meson-python``
     + Keep the former ``setup.py`` for compatibility reasons: it will be removed in a future release
     + Drop Python 3.6 (default parameters in namedtuple feature used)
-    + Require silx 1.1 (for OpenCL)
+    + Require silx 1.1 (for OpenCL), scipy and matplotlib
 - GUI side:
     + several minor improvements in pyFAI-calib2
     + Fixed calibration in jupyter-lab
@@ -28,23 +28,23 @@ Change-log of versions
     + Export peakfinder data to the CXI format (used by CrystFEL)
 - Improvement in the doc:
     + Update installation instructions
-    + Multithreaded integration tutorial
+    + Multi-threaded integration tutorial
     + GPU implementation tutorial
 - Facts and figures:
     + 400+ commits, 100 PR
-    +with the contrinution of:
+    +with the contribution of:
         Clemens Prescher,
-        Elena Pascal
-        Jérôme Kieffer
-        Malte Storm
-        Marco Cammarata
-        Michael Hudson-Doyle
-        Picca Frédéric-Emmanuel
-        Rodrigo Telles
-        Thomas A Caswell
-        Tommaso Vinci
-        Valentin Valls
-        Wout de Nolf
+        Elena Pascal,
+        Jérôme Kieffer,
+        Malte Storm,
+        Marco Cammarata,
+        Michael Hudson-Doyle,
+        Picca Frédéric-Emmanuel,
+        Rodrigo Telles,
+        Thomas A Caswell,
+        Tommaso Vinci,
+        Valentin Valls,
+        Wout de Nolf.
 
 0.21.3 24/03/2022
 -----------------
