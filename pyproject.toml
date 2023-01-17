@@ -61,6 +61,11 @@ requires = [
     'tomli>=1.0.0'
 ]
 
+[project.optional-dependencies]
+gui = [ "PyQt5" ]
+opencl = [ "pyopencl" ]
+all = ["PyQt5", "pyopencl" ]
+
 [project.urls]
 homepage = 'http://www.silx.org'
 documentation = 'http://www.silx.org/doc/pyFAI/latest/'
