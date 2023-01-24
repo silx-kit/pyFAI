@@ -48,7 +48,7 @@ def build_project(name, root_dir):
 
     build = os.path.join(root_dir, "build")
     if not(os.path.isdir(build) and os.path.isdir(os.path.join(build, name))):
-        p = subprocess.Popen(["meson", "build"],
+        p = subprocess.Popen(["meson", "setup", "build"],
                          shell=False, cwd=root_dir, env=os.environ)
         p.wait()
     p = subprocess.Popen(["meson", "configure", "--prefix", "/"] + extra,
