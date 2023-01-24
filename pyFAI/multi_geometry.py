@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2023"
+__date__ = "24/01/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -42,6 +42,8 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .containers import Integrate1dResult
 from .containers import Integrate2dResult
 from . import units
+from .utils.multiprocessing import cpu_count
+from multiprocessing.pool import ThreadPool
 import threading
 import numpy
 from .method_registry import IntegrationMethod
@@ -73,6 +75,7 @@ class MultiGeometry(object):
                     else AzimuthalIntegrator.sload(ai)
                     for ai in ais]
         self.wavelength = None
+        self.threadpool = ThreadPool(min(len(self.ais), cpu_count()))
         if wavelength:
             self.set_wavelength(wavelength)
         self.radial_range = tuple(radial_range[:2])
@@ -99,7 +102,7 @@ class MultiGeometry(object):
                     polarization_factor=None,
                     normalization_factor=None,
                     lst_mask=None, lst_flat=None,
-                    method="splitpixel"):
+                    method=("full", "histogram", "cython")):
         """Perform 1D azimuthal integration
 
         :param lst_data: list of numpy array
@@ -140,8 +143,9 @@ class MultiGeometry(object):
         normalization = numpy.zeros_like(signal)
         count = numpy.zeros_like(signal)
         variance = None
-        for ai, data, monitor, var, mask, flat in zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat):
-            res = ai.integrate1d_ng(data, npt=npt,
+        def _integrate(args):
+            ai, data, monitor, var, mask, flat = args
+            return ai.integrate1d_ng(data, npt=npt,
                                     correctSolidAngle=correctSolidAngle,
                                     variance=var, error_model=error_model,
                                     polarization_factor=polarization_factor,
@@ -149,6 +153,9 @@ class MultiGeometry(object):
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
+        results = self.threadpool.map(_integrate,
+                                      zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        for res, ai in zip(results, self.ais):
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count
             normalization += res.sum_normalization * sac
@@ -183,8 +190,9 @@ class MultiGeometry(object):
                     correctSolidAngle=True,
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
-                    normalization_factor=None, lst_mask=None,
-                    lst_flat=None, method="splitpixel"):
+                    normalization_factor=None,
+                    lst_mask=None, lst_flat=None,
+                    method=("full", "histogram", "cython")):
         """Performs 2D azimuthal integration of multiples frames, one for each geometry
 
         :param lst_data: list of numpy array
@@ -226,9 +234,9 @@ class MultiGeometry(object):
         count = numpy.zeros_like(signal)
         normalization = numpy.zeros_like(signal)
         variance = None
-
-        for ai, data, monitor, var, mask, flat in zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat):
-            res = ai.integrate2d_ng(data, npt_rad=npt_rad, npt_azim=npt_azim,
+        def _integrate(args):
+            ai, data, monitor, var, mask, flat = args
+            return ai.integrate2d_ng(data,npt_rad=npt_rad, npt_azim=npt_azim,
                                     correctSolidAngle=correctSolidAngle,
                                     variance=var, error_model=error_model,
                                     polarization_factor=polarization_factor,
@@ -236,11 +244,14 @@ class MultiGeometry(object):
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
+        results = self.threadpool.map(_integrate,
+            zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        for res, ai in zip(results, self.ais):
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count
             signal += res.sum_signal
             normalization += res.sum_normalization * sac
-            if var is not None:
+            if res.sigma is not None:
                 if variance is None:
                     variance = res.sum_variance.astype(numpy.float64)  # explicit copy !
                 else:
