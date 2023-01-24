@@ -8,6 +8,7 @@ py.install_sources(
     'header_utils.py',
     'logging_utils.py',
     'mathutil.py',
+    'multiprocessing.py',
     'orderedset.py',
     'shell.py',
     'stringutil.py'],
