@@ -537,7 +537,11 @@ class TestBugRegression(unittest.TestCase):
         import copy
         import pyFAI.control_points
         cp = pyFAI.control_points.ControlPoints(calibrant="LaB6", wavelength=1e-10)
-        self.assertNotEqual(id(cp), id(copy.deepcopy(cp)), "copy works and id differs")
+        self.assertNotEqual(id(cp), id(copy.deepcopy(cp)), "control_points copy works and id differs")
+
+        import pyFAI.geometryRefinement
+        gr = pyFAI.geometryRefinement.GeometryRefinement([[1,2,3]], detector="Pilatus100k", wavelength=1e-10, calibrant="LaB6")
+        self.assertNotEqual(id(gr), id(copy.deepcopy(gr)), "geometryRefinement copy works and id differs")
 
 
 class TestBug1703(unittest.TestCase):
