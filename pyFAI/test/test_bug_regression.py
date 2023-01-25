@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2022"
+__date__ = "25/01/2023"
 
 import sys
 import os
@@ -531,6 +531,13 @@ class TestBugRegression(unittest.TestCase):
 
         print(obt)
         self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
+
+    def test_bug_1810(self):
+        "impossible to deepcopy goniometer calibration"
+        import copy
+        import pyFAI.control_points
+        cp = pyFAI.control_points.ControlPoints(calibrant="LaB6", wavelength=1e-10)
+        self.assertNotEqual(id(cp), id(copy.deepcopy(cp)), "copy works and id differs")
 
 
 class TestBug1703(unittest.TestCase):
