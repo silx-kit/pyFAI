@@ -543,6 +543,15 @@ class TestBugRegression(unittest.TestCase):
         gr = pyFAI.geometryRefinement.GeometryRefinement([[1,2,3]], detector="Pilatus100k", wavelength=1e-10, calibrant="LaB6")
         self.assertNotEqual(id(gr), id(copy.deepcopy(gr)), "geometryRefinement copy works and id differs")
 
+        import pyFAI.massif
+        ary = numpy.arange(100).reshape(10,10)
+        massif = pyFAI.massif.Massif(ary)
+        self.assertNotEqual(id(massif), id(copy.deepcopy(massif)), "Massif copy works and id differs")
+
+        import pyFAI.gui.peak_picker
+        pp = pyFAI.gui.peak_picker.PeakPicker(ary)
+        self.assertNotEqual(id(pp), id(copy.deepcopy(pp)), "PeakPicker copy works and id differs")
+
 
 class TestBug1703(unittest.TestCase):
     """
