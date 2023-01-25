@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "25/01/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -45,7 +45,7 @@ import os
 import threading
 from collections import OrderedDict
 import logging
-
+import copy
 import numpy
 import array
 
@@ -436,6 +436,16 @@ class ControlPoints(object):
         labels.sort(key=lambda item: self._groups[item].code)
         return labels
 
+    def __deepcopy__(self, memo=None):
+        "Helper for copy.deepcopy"
+        if memo is None:
+            memo = {}
+        new_cal = copy.deepcopy(self.calibrant, memo=memo)
+        new_wl = copy.deepcopy(self.wavelength, memo=memo)
+        new = self.__class__(calibrant=new_cal, wavelength=new_wl)
+        memo[id(self)] = new
+        new._groups = copy.deepcopy(self._groups, memo=memo)
+        return new
 
 class PointGroup(object):
     """
