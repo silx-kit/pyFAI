@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2022"
+__date__ = "26/01/2023"
 
 import sys
 import os
@@ -532,6 +532,32 @@ class TestBugRegression(unittest.TestCase):
         print(obt)
         self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
 
+    def test_bug_1810(self):
+        "impossible to deepcopy goniometer calibration"
+        import copy
+        import pyFAI.control_points
+        cp = pyFAI.control_points.ControlPoints(calibrant="LaB6", wavelength=1e-10)
+        self.assertNotEqual(id(cp), id(copy.deepcopy(cp)), "control_points copy works and id differs")
+
+        import pyFAI.geometryRefinement
+        gr = pyFAI.geometryRefinement.GeometryRefinement([[1,2,3]], detector="Pilatus100k", wavelength=1e-10, calibrant="LaB6")
+        self.assertNotEqual(id(gr), id(copy.deepcopy(gr)), "geometryRefinement copy works and id differs")
+
+        import pyFAI.massif
+        ary = numpy.arange(100).reshape(10,10)
+        massif = pyFAI.massif.Massif(ary)
+        self.assertNotEqual(id(massif), id(copy.deepcopy(massif)), "Massif copy works and id differs")
+
+        import pyFAI.gui.peak_picker
+        pp = pyFAI.gui.peak_picker.PeakPicker(ary)
+        self.assertNotEqual(id(pp), id(copy.deepcopy(pp)), "PeakPicker copy works and id differs")
+
+        from pyFAI.goniometer import SingleGeometry
+        import pyFAI.calibrant
+        lab6 = pyFAI.calibrant.get_calibrant("LaB6", 1e-10)
+        cp.append([[1,2],[3,4]], 0)
+        sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "pilatus100k")
+        self.assertNotEqual(id(sg), id(copy.deepcopy(sg)), "SingleGeometry copy works and id differs")
 
 class TestBug1703(unittest.TestCase):
     """

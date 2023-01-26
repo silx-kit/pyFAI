@@ -30,11 +30,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/05/2022"
+__date__ = "25/01/2023"
 __status__ = "production"
 
 import sys
 import os
+import copy
 import threading
 from math import ceil, sqrt
 import logging
@@ -98,6 +99,20 @@ class Massif(object):
         self._sem_label = threading.Semaphore()
         self._sem_binning = threading.Semaphore()
         self._sem_median = threading.Semaphore()
+
+    def __deepcopy__(self, memo=None):
+        "Helper for copy.deepcopy"
+        if memo is None:
+            memo = {}
+        data = copy.deepcopy(self.data, memo=memo)
+        mask = copy.deepcopy(self.mask, memo=memo)
+        median_prefilter = copy.deepcopy(self.median_prefilter, memo=memo)
+        new = self.__class__(data=data,
+                             mask=mask,
+                             median_prefilter=median_prefilter)
+        memo[id(self)] = new
+        return new
+
 
     def nearest_peak(self, x):
         """
