@@ -25,26 +25,26 @@ per addition.
 
 The benchmarking tool provides plots like this:
 
-.. figure:: img/benchmark.svg
+.. figure:: img/benchmark_2023.1.svg
    :align: center
-   :alt: Benchmark performed on a 2016 single-socket workstation and a gaming graphics card.
+   :alt: Benchmark performed on a 2016 single-socket workstation and two graphics card.
 
 This plot shows the number of images processed per second as function of the image size for various integrators.
 The vertical axis is in logarithmic scale, so a small offset can represent a factor two in speed.
 Those curves have all hyperbolic shapes, which means that larger images process slower.
 
-By default, the benchmarking tool probes histogram- and CSR- based integrators (precisely ``("bbox", "histogram", "cython")``
+By default, the benchmarking tool probes histogram-, CSC- and CSR- based integrators (precisely ``("bbox", "histogram", "cython")``, ``("bbox", "csc", "cython")``
 and ``("bbox", "csr", "cython")``.
-The former is single threaded and offers the *worse* performances but it is still much faster than numpy based histograms.
-It is usually the lower curve.
+The 2 formers are single threaded and offers the *worse* performances but it is still much faster than numpy based histograms.
+They are usually the lowest curves.
 
-The CSR-integration is usually 2-10x faster than the histogram thanks to the multi-threading.
+The CSR-integration is usually faster than the histogram thanks to the multi-threading.
 On Apple system and other system where multithreading is disabled, it can be that CSR-integrator
 is slower than histograms.
 One may also appreciate histogram-based integrators for their quicker initialization time or
 their lower memory footprint, for example when dealing with multi-geometry objects.
 
-In this plot, one OpenCL device has been added (plotted with dashed lines), it is a former high-end GPU.
+In this plot, one OpenCL device has been added (plotted with dashed lines), it is a high-end GPU.
 GPU provides the best performances when it comes to azimuthal integration, it is usually the upper most curve,
 with speed up to 1000 or 2000 1Mpixel frames processed per second (on high-end GPU).
 The best performances registered with this method is 2.5 GPix/s on recent gaming graphics card.
