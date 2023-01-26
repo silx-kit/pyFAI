@@ -33,10 +33,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2023"
+__date__ = "26/01/2023"
 __status__ = "production"
 
 import os
+import copy
 import threading
 import logging
 import operator
@@ -146,6 +147,19 @@ class PeakPicker(object):
             logger.error("Not a valid peak-picker method: %s should be part of %s", method, self.VALID_METHODS)
             method = self.VALID_METHODS[0]
         self.init(method, False)
+
+    def __deepcopy__(self, memo=None):
+        """Helper for deep-copy"""
+        if memo == None:
+            memo = {}
+        data = copy.deepcopy(self.data, memo=memo)
+        reconstruct = copy.deepcopy(self.reconstruct, memo=memo)
+        mask = copy.deepcopy(self.mask, memo=memo)
+        method = copy.deepcopy(self.method, memo=memo)
+        points = copy.deepcopy(self.points, memo=memo)
+        new = self.__class__(data=data, reconst=reconstruct, mask=mask, method=method)
+        new.points = points
+        return new
 
     def init(self, method, sync=True):
         """

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2021"
+__date__ = "24/01/2023"
 
 import os
 import unittest
@@ -48,6 +48,7 @@ from .. import azimuthalIntegrator
 from .. import directories
 from ..utils.grid import Kabsch
 from ..utils.stringutil import to_scientific_unicode
+from ..utils.multiprocessing import cpu_count
 
 
 class TestUtils(unittest.TestCase):
@@ -106,6 +107,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(to_scientific_unicode(numpy.NaN), 'nan', "NaN are properly represented")
         self.assertEqual(to_scientific_unicode(numpy.inf), 'inf', "infinite values are properly represented")
 
+    def test_multiprocessing(self):
+        assert cpu_count()
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
