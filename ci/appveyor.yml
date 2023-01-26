@@ -75,6 +75,7 @@ build_script:
     - "pip install numpy cython --upgrade"
     - "pip install scipy --upgrade --pre"
     - "pip install silx"
+    - "dir"
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
 
     # Print Python info

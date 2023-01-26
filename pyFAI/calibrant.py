@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2021"
+__date__ = "26/01/2023"
 __status__ = "production"
 
 import os
@@ -734,12 +734,16 @@ class calibrant_factory(CalibrantFactory):
     pass
 
 
-def get_calibrant(calibrant_name):
+def get_calibrant(calibrant_name, wavelength=None):
     """Returns a new instance of the calibrant by it's name.
 
     :param str calibrant_name: Name of the calibrant
+    :param float wavelength: initialize the calibrant with the given wavelength (in m)
     """
-    return CALIBRANT_FACTORY(calibrant_name)
+    cal = CALIBRANT_FACTORY(calibrant_name)
+    if wavelength:
+        cal.set_wavelength(wavelength)
+    return cal
 
 
 def names():

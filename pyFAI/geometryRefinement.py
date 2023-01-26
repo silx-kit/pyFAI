@@ -32,15 +32,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2022"
+__date__ = "26/01/2023"
 __status__ = "development"
 
 import os
+import copy
 import tempfile
 import subprocess
 import logging
 import numpy
-import types
 import math
 from math import pi
 from . import azimuthalIntegrator
@@ -117,7 +117,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
-            elif type(calibrant) in types.StringTypes:
+            elif isinstance(calibrant, str):
                 if calibrant in CALIBRANT_FACTORY:
                     self.calibrant = CALIBRANT_FACTORY(calibrant)
                 else:
@@ -151,12 +151,67 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._wavelength_min = 1e-15
         self._wavelength_max = 100.e-10
 
+    def __deepcopy__(self, memo=None):
+        if memo is None:
+            memo = {}
+        data = copy.deepcopy(self.data, memo=memo)
+        dist=copy.deepcopy(self._dist, memo=memo)
+        poni1=copy.deepcopy(self._poni1, memo=memo)
+        poni2=copy.deepcopy(self._poni2, memo=memo)
+        rot1=copy.deepcopy(self._rot1, memo=memo)
+        rot2=copy.deepcopy(self._rot2, memo=memo)
+        rot3=copy.deepcopy(self._rot3, memo=memo)
+        pixel1=copy.deepcopy(self.detector.pixel1, memo=memo)
+        pixel2=copy.deepcopy(self.detector.pixel2, memo=memo)
+        splineFile=copy.deepcopy(self.detector.splineFile, memo=memo)
+        detector = copy.deepcopy(self.detector, memo=memo)
+        wavelength=copy.deepcopy(self.wavelength, memo=memo)
+        calibrant=copy.deepcopy(self.calibrant, memo=memo)
+
+        new = self.__class__(data=data,
+                             dist=dist,
+                             poni1=poni1,
+                             poni2=poni2,
+                             rot1=rot1,
+                             rot2=rot2,
+                             rot3=rot3,
+                             pixel1=pixel1,
+                             pixel2=pixel2,
+                             splineFile=splineFile,
+                             detector=detector,
+                             wavelength=wavelength,
+                             calibrant=calibrant
+                              )
+        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
+                     "chiDiscAtPi", "_dssa_order", "_wavelength",
+                     '_oversampling', '_correct_solid_angle_for_spline',
+                     '_transmission_normal',
+                     "_dist_min", "_dist_max", "_poni1_min", "_poni1_max", "_poni2_min", "_poni2_max",
+                     "_rot1_min", "_rot1_max", "_rot2_min", "_rot2_max", "_rot3_min", "_rot3_max",
+                     "_wavelength_min", "_wavelength_max"]
+        memo[id(self)] = new
+        for key in numerical:
+            old_value = self.__getattribute__(key)
+            memo[id(old_value)] = old_value
+            new.__setattr__(key, old_value)
+        new_param = [new._dist, new._poni1, new._poni2,
+                     new._rot1, new._rot2, new._rot3]
+        memo[id(self.param)] = new_param
+        new.param = new_param
+        cached = {}
+        memo[id(self._cached_array)] = cached
+        for key, old_value in self._cached_array.copy().items():
+            if "copy" in dir(old_value):
+                new_value = old_value.copy()
+                memo[id(old_value)] = new_value
+        new._cached_array = cached
+        return new
+
     def guess_poni(self, fixed=None):
         """PONI can be guessed by the centroid of the ring with lowest 2Theta
 
         It may try to fit an ellipse and sometimes it works
         """
-
         if len(self.calibrant.dSpacing):
             # logger.warning(self.calibrant.__repr__())s
             tth = self.calc_2th(self.data[:, 2])
@@ -281,7 +336,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         if wavelength is None:
             wavelength = self.wavelength
         if wavelength is None or wavelength <= 0.0:
-            return [numpy.finfo("float32").max] * len(rings)
+            return numpy.array([numpy.finfo("float32").max] * len(rings))
         rings = numpy.ascontiguousarray(rings, dtype=numpy.int32)
 
         if wavelength != self.calibrant.wavelength:
