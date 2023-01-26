@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/01/2023"
+__date__ = "26/01/2023"
 __status__ = "development"
 
 import os
@@ -207,14 +207,11 @@ class GeometryRefinement(AzimuthalIntegrator):
         new._cached_array = cached
         return new
 
-        return AzimuthalIntegrator.__deepcopy__(self, memo=memo)
-
     def guess_poni(self, fixed=None):
         """PONI can be guessed by the centroid of the ring with lowest 2Theta
 
         It may try to fit an ellipse and sometimes it works
         """
-
         if len(self.calibrant.dSpacing):
             # logger.warning(self.calibrant.__repr__())s
             tth = self.calc_2th(self.data[:, 2])
@@ -339,7 +336,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         if wavelength is None:
             wavelength = self.wavelength
         if wavelength is None or wavelength <= 0.0:
-            return [numpy.finfo("float32").max] * len(rings)
+            return numpy.array([numpy.finfo("float32").max] * len(rings))
         rings = numpy.ascontiguousarray(rings, dtype=numpy.int32)
 
         if wavelength != self.calibrant.wavelength:

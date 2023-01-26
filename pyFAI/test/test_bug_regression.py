@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/01/2023"
+__date__ = "26/01/2023"
 
 import sys
 import os
@@ -552,6 +552,12 @@ class TestBugRegression(unittest.TestCase):
         pp = pyFAI.gui.peak_picker.PeakPicker(ary)
         self.assertNotEqual(id(pp), id(copy.deepcopy(pp)), "PeakPicker copy works and id differs")
 
+        from pyFAI.goniometer import SingleGeometry
+        import pyFAI.calibrant
+        lab6 = pyFAI.calibrant.get_calibrant("LaB6", 1e-10)
+        cp.append([[1,2],[3,4]], 0)
+        sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "pilatus100k")
+        self.assertNotEqual(id(sg), id(copy.deepcopy(sg)), "SingleGeometry copy works and id differs")
 
 class TestBug1703(unittest.TestCase):
     """
