@@ -36,6 +36,17 @@ include requirements.txt
 include pyproject.toml
 include meson.build
 recursive-include pyFAI meson.build
+prune binder
+prune ci
+prune package
+prune plugins
+prune sandbox
+prune .github
+exclude .travis.yml
+exclude .readthedocs.yaml
+exclude .pre-commit-config.yaml
+exclude .landscape.yml
+exclude .gitignore
 
 #Include doc without checkpoints or downloaded files
 recursive-include doc *
