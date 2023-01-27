@@ -3,7 +3,8 @@
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
 version: 2023.1.{build}
-shallow_clone: true
+#shallow_clone: true
+clone_depth: 1
 build: false
 
 notifications:

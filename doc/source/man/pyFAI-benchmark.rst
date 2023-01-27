@@ -71,4 +71,13 @@ Usage
    Perfrom memory profiling (Linux only)
 
 **-r** REPEAT, **--repeat** REPEAT
-   Repeat each benchmark x times to take the best
+   Repeat each benchmark x times to take the best, by default only run once
+
+Results
+-------
+
+This tool produces a graphic that looks like:
+
+.. image:: ../img/benchmark_2023.1.svg
+  :width: 800
+  :alt: PyFAI-benchmark graph
