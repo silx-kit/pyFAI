@@ -37,7 +37,9 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "30/01/2023"
 __status__ = "production"
 
+import os
 import numpy
+from scipy import ndimage
 
 
 def _search_gap(mask, dim=0):
@@ -84,3 +86,69 @@ def build_gaps(shape, gaps):
     for start,stop in g1:
         mask[:, start:stop] = 1
     return mask
+
+def decompose_detector(mask):
+    """
+    Decompose the detector as a list of panels
+
+    :param mask: detector mask
+    """
+    labels, nlabels = ndimage.label(1-build_gaps(mask.shape, search_gaps(mask)))
+    res = []
+    for i in range(1, nlabels+1):
+        w = numpy.where(labels==i)
+        res.append((w[0].min(), w[0].max()+1, w[1].min(), w[1].max()+1))
+    return res
+
+def crystfel_mask(mask):
+    """
+    Generate a text with the mask description in CrystFEL format
+    """
+    assert mask.ndim == 2
+    shape = mask.shape
+    res = ["; Define a mask with the gaps of the detector"]
+    g1, g2 = search_gaps(mask)
+    for i, j in enumerate(g1):
+        res+=[f"badregionH{i}/min_fs = 0",
+              f"badregionH{i}/max_fs = {shape[1]-1}",
+              f"badregionH{i}/min_ss = {j[0]}",
+              f"badregionH{i}/max_ss = {j[1]-1}",
+              " "
+              ]
+    for i, j in enumerate(g2):
+        res+=[f"badregionV{i}/min_fs = {j[0]}",
+              f"badregionV{i}/max_fs = {j[1]-1}",
+              f"badregionV{i}/min_ss = 0",
+              f"badregionV{i}/max_ss = {shape[0]-1}",
+              " "]
+    return os.linesep.join(res)
+
+def crystfel_detector(detector):
+    """
+    Generate a CrystFEL detector definiton as text file
+    """
+    res = [crystfel_mask(detector.mask),"", ";Panel description"]
+    corners = detector.get_pixel_corners()
+    for i,j in enumerate(decompose_detector(detector.mask)):
+        min_ss,max_ss,min_fs,max_fs = j
+        max_ss -= 1
+        max_fs -= 1
+        corner_x = corners[min_ss, min_fs, 0, 2]
+        corner_y = corners[min_ss, min_fs, 0, 1]
+        ss = corners[max_ss, min_fs] - corners[min_ss, min_fs]
+        fs = corners[min_ss, max_fs] - corners[min_ss, min_fs]
+        # print(min_ss,max_ss,min_fs,max_fs, fs, ss)
+        ss = ss.mean(axis=0)/detector.pixel1/(max_ss-min_ss)
+        fs = fs.mean(axis=0)/detector.pixel2/(max_fs-min_fs)
+        res+=[
+    f"panel{i}/fs = {fs[2]:+f}x {fs[1]:+f}y",
+    f"panel{i}/ss = {ss[2]:+f}x {ss[1]:+f}y",
+    f"panel{i}/min_ss = {min_ss}",
+    f"panel{i}/min_fs = {min_fs}",
+    f"panel{i}/max_ss = {max_ss}",
+    f"panel{i}/max_fs = {max_fs}",
+    f"panel{i}/corner_x = {corner_x:+f}",
+    f"panel{i}/corner_y = {corner_y:+f}",
+    ""
+                ]
+    return os.linesep.join(res)
