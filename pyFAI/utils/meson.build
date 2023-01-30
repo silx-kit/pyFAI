@@ -11,7 +11,8 @@ py.install_sources(
     'multiprocessing.py',
     'orderedset.py',
     'shell.py',
-    'stringutil.py'],
+    'stringutil.py',
+    'mask_utils.py'],
   pure: false,    # Will be installed next to binaries
   subdir: 'pyFAI/utils'  # Folder relative to site-packages to install to
 )

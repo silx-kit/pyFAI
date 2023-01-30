@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2023"
+__date__ = "30/01/2023"
 
 import os
 import unittest
@@ -44,11 +44,13 @@ from .. import utils
 from .. import _version
 from ..method_registry import IntegrationMethod
 from .. import azimuthalIntegrator
+from ..detectors import detector_factory
 # to increase test coverage of missing files:
 from .. import directories
 from ..utils.grid import Kabsch
 from ..utils.stringutil import to_scientific_unicode
 from ..utils.multiprocessing import cpu_count
+from ..utils.mask_utils import search_gaps, build_gaps
 
 
 class TestUtils(unittest.TestCase):
@@ -109,6 +111,15 @@ class TestUtils(unittest.TestCase):
 
     def test_multiprocessing(self):
         assert cpu_count()
+
+    def test_mask(self):
+        mask = detector_factory("Pilatus 1M").mask
+        mask[:, 0] =1
+        mask[0, :] =1
+        mask[:, -1] =1
+        mask[-1, :] =1
+        numpy.allclose(build_gaps(mask.shape, search_gaps(mask)), mask)
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
