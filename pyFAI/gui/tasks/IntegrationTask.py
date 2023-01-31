@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/01/2023"
+__date__ = "31/01/2023"
 
 import logging
 import numpy
@@ -919,7 +919,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self._radialPoints.setValidator(positiveValidator)
         self._azimuthalPoints.setValidator(positiveValidator)
-        self._radialUnit.setUnits(pyFAI.units.RADIAL_UNITS.values())
+        self._radialUnit.setUnits(core_units.RADIAL_UNITS.values())
         self.__polarizationModel = None
         self._polarizationFactorCheck.clicked[bool].connect(self.__polarizationFactorChecked)
         self.widgetShow.connect(self.__widgetShow)
