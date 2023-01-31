@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/01/2021"
+__date__ = "31/01/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -251,7 +251,7 @@ register_radial_unit("d*2_A^-2",
                      center="rd2Array",
                      delta="deltaRd2",
                      scale=0.01,
-                     label=r"Reciprocal spacing squared $d^{*2}$ ($\AA^{-2}$)",
+                     label=r"Recip. spacing sq. $^{*2}$ ($\AA^{-2}$)",
                      equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2,
                      formula=formula_d2,
                      short_name="d^{*2}",
@@ -261,7 +261,7 @@ register_radial_unit("d*2_nm^-2",
                      center="rd2Array",
                      delta="deltaRd2",
                      scale=1.0,
-                     label=r"Reciprocal spacing squared $d^{*2}$ ($nm^{-2}$)",
+                     label=r"Recip. spacing sq. $^{*2}$ ($nm^{-2}$)",
                      equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2,
                      formula=formula_d2,
                      short_name="d^{*2}",
