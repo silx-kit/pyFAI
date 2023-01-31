@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/05/2022"
+__date__ = "27/01/2023"
 
 import logging
 import numpy
@@ -40,6 +40,8 @@ from .AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from ..utils import unitutils
 from ..model.DataModel import DataModel
+from ..model.GeometryModel import GeometryModel
+from ..model.Fit2dGeometryModel import Fit2dGeometryModel
 from ..widgets.QuantityLabel import QuantityLabel
 from ..CalibrationContext import CalibrationContext
 from ... import units as core_units
@@ -56,6 +58,7 @@ from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
 from pyFAI.io import ponifile
+import pyFAI.geometry
 
 _logger = logging.getLogger(__name__)
 
@@ -100,13 +103,13 @@ class EnablableDataModel(DataModel):
 
 class IntegrationProcess(object):
 
-    def __init__(self, model):
-        self.__isValid = self._init(model)
+    def __init__(self, model, altGeometry=None):
+        self.__isValid = self._init(model, altGeometry)
         self.__resetZoomPolicy = None
         self.__method = None
         self.__errorMessage = None
 
-    def _init(self, model):
+    def _init(self, model, altGeometry=None):
         self.__isValid = True
         if model is None:
             return False
@@ -117,7 +120,10 @@ class IntegrationProcess(object):
         detector = model.experimentSettingsModel().detector()
         if detector is None:
             return
-        geometry = model.fittedGeometry()
+        if altGeometry:
+            geometry = altGeometry
+        else:
+            geometry = model.fittedGeometry()
         if not geometry.isValid():
             return False
         self.__nPointsAzimuthal = model.integrationSettingsModel().nPointsAzimuthal().value()
@@ -927,6 +933,81 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self._savePoniButton.clicked.connect(self.__saveAsPoni)
 
+        # For the
+        self.__geometry = GeometryModel()
+        self.__fit2dGeometry = Fit2dGeometryModel()
+        self.__detector = None
+        self.__originalGeometry = None
+        self.__updatingModel = False
+
+        # Create shared units
+        angleUnit = DataModel()
+        angleUnit.setValue(units.Unit.RADIAN)
+        lengthUnit = DataModel()
+        lengthUnit.setValue(units.Unit.METER)
+        pixelUnit = DataModel()
+        pixelUnit.setValue(units.Unit.PIXEL)
+
+        # Connect pyFAI widgets to units
+        self._pyfaiDistance.setDisplayedUnitModel(lengthUnit)
+        self._pyfaiDistance.setModelUnit(units.Unit.METER)
+        self._pyfaiDistanceUnit.setUnitModel(lengthUnit)
+        self._pyfaiDistanceUnit.setUnitEditable(True)
+        self._pyfaiPoni1.setDisplayedUnitModel(lengthUnit)
+        self._pyfaiPoni1.setModelUnit(units.Unit.METER)
+        self._pyfaiPoni1Unit.setUnitModel(lengthUnit)
+        self._pyfaiPoni1Unit.setUnitEditable(True)
+        self._pyfaiPoni2.setDisplayedUnitModel(lengthUnit)
+        self._pyfaiPoni2.setModelUnit(units.Unit.METER)
+        self._pyfaiPoni2Unit.setUnitModel(lengthUnit)
+        self._pyfaiPoni2Unit.setUnitEditable(True)
+        self._pyfaiRotation1.setDisplayedUnitModel(angleUnit)
+        self._pyfaiRotation1.setModelUnit(units.Unit.RADIAN)
+        self._pyfaiRotation1Unit.setUnitModel(angleUnit)
+        self._pyfaiRotation1Unit.setUnitEditable(True)
+        self._pyfaiRotation2.setDisplayedUnitModel(angleUnit)
+        self._pyfaiRotation2.setModelUnit(units.Unit.RADIAN)
+        self._pyfaiRotation2Unit.setUnitModel(angleUnit)
+        self._pyfaiRotation2Unit.setUnitEditable(True)
+        self._pyfaiRotation3.setDisplayedUnitModel(angleUnit)
+        self._pyfaiRotation3.setModelUnit(units.Unit.RADIAN)
+        self._pyfaiRotation3Unit.setUnitModel(angleUnit)
+        self._pyfaiRotation3Unit.setUnitEditable(True)
+
+        # Connect fit2d widgets to units
+        self._fit2dDistance.setDisplayedUnit(units.Unit.MILLIMETER)
+        self._fit2dDistance.setModelUnit(units.Unit.MILLIMETER)
+        self._fit2dDistanceUnit.setUnit(units.Unit.MILLIMETER)
+        self._fit2dCenterX.setDisplayedUnitModel(pixelUnit)
+        self._fit2dCenterX.setModelUnit(units.Unit.PIXEL)
+        self._fit2dCenterXUnit.setUnit(units.Unit.PIXEL)
+        self._fit2dCenterY.setDisplayedUnitModel(pixelUnit)
+        self._fit2dCenterY.setModelUnit(units.Unit.PIXEL)
+        self._fit2dCenterYUnit.setUnit(units.Unit.PIXEL)
+        self._fit2dTilt.setDisplayedUnit(units.Unit.DEGREE)
+        self._fit2dTilt.setModelUnit(units.Unit.DEGREE)
+        self._fit2dTiltUnit.setUnit(units.Unit.DEGREE)
+        self._fit2dTiltPlan.setDisplayedUnit(units.Unit.DEGREE)
+        self._fit2dTiltPlan.setModelUnit(units.Unit.DEGREE)
+        self._fit2dTiltPlanUnit.setUnit(units.Unit.DEGREE)
+
+        # Connect fit2d model-widget
+        self._fit2dDistance.setModel(self.__fit2dGeometry.distance())
+        self._fit2dCenterX.setModel(self.__fit2dGeometry.centerX())
+        self._fit2dCenterY.setModel(self.__fit2dGeometry.centerY())
+        self._fit2dTilt.setModel(self.__fit2dGeometry.tilt())
+        self._fit2dTiltPlan.setModel(self.__fit2dGeometry.tiltPlan())
+
+        self._pyfaiDistance.setModel(self.__geometry.distance())
+        self._pyfaiPoni1.setModel(self.__geometry.poni1())
+        self._pyfaiPoni2.setModel(self.__geometry.poni2())
+        self._pyfaiRotation1.setModel(self.__geometry.rotation1())
+        self._pyfaiRotation2.setModel(self.__geometry.rotation2())
+        self._pyfaiRotation3.setModel(self.__geometry.rotation3())
+
+        self.__geometry.changed.connect(self.__updateFit2dFromPyfai)
+        self.__fit2dGeometry.changed.connect(self.__updatePyfaiFromFit2d)
+
         super()._initGui()
 
     def __customIntegrationMethod(self):
@@ -985,7 +1066,7 @@ class IntegrationTask(AbstractCalibrationTask):
             self._integrateButton.executeCallable()
 
     def __integrate(self):
-        self.__integrationProcess = IntegrationProcess(self.model())
+        self.__integrationProcess = IntegrationProcess(self.model(), self.__geometry)
         self.__integrationProcess.setMethod(self.__method)
 
         if self.__integrationResetZoomPolicy is not None:
@@ -1058,6 +1139,8 @@ class IntegrationTask(AbstractCalibrationTask):
         poniFile = self.model().experimentSettingsModel().poniFile()
         with poniFile.lockContext():
             poniFile.setSynchronized(False)
+        # Update displayed data:
+        self.__updateDisplayedGeometry()
 
     def __saveAsPoni(self):
         # FIXME test the validity of the geometry before opening the dialog
@@ -1080,21 +1163,16 @@ class IntegrationTask(AbstractCalibrationTask):
         with poniFile.lockContext():
             poniFile.setValue(filename)
 
-        pyfaiGeometry = pyFAI.geometry.Geometry()
-
-        geometry = self.model().fittedGeometry()
-        pyfaiGeometry.dist = geometry.distance().value()
-        pyfaiGeometry.poni1 = geometry.poni1().value()
-        pyfaiGeometry.poni2 = geometry.poni2().value()
-        pyfaiGeometry.rot1 = geometry.rotation1().value()
-        pyfaiGeometry.rot2 = geometry.rotation2().value()
-        pyfaiGeometry.rot3 = geometry.rotation3().value()
-        pyfaiGeometry.wavelength = geometry.wavelength().value()
-
-        experimentSettingsModel = self.model().experimentSettingsModel()
-        detector = experimentSettingsModel.detector()
-        pyfaiGeometry.detector = detector
-
+        pyfaiGeometry = pyFAI.geometry.Geometry(
+            dist=self.__geometry.distance().value(),
+            poni1=self.__geometry.poni1().value(),
+            poni2=self.__geometry.poni2().value(),
+            rot1=self.__geometry.rotation1().value(),
+            rot2=self.__geometry.rotation2().value(),
+            rot3=self.__geometry.rotation3().value(),
+            wavelength=self.__geometry.wavelength().value(),
+            detector=self.__detector
+            )
         try:
             writer = ponifile.PoniFile(pyfaiGeometry)
             with open(filename, "wt") as fd:
@@ -1104,3 +1182,127 @@ class IntegrationTask(AbstractCalibrationTask):
                 poniFile.setSynchronized(True)
         except Exception as e:
             MessageBox.exception(self, "Error while saving poni file", e, _logger)
+
+    def __updateDisplayedGeometry(self):
+        experimentSettingsModel = self.model().experimentSettingsModel()
+        self.__detector = experimentSettingsModel.detector()
+        self.__geometry.setFrom(self.model().fittedGeometry())
+
+    def __createPyfaiGeometry(self):
+        geometry = self.__geometry
+        if not geometry.isValid(checkWaveLength=False):
+            raise RuntimeError("The geometry is not valid")
+        dist = geometry.distance().value()
+        poni1 = geometry.poni1().value()
+        poni2 = geometry.poni2().value()
+        rot1 = geometry.rotation1().value()
+        rot2 = geometry.rotation2().value()
+        rot3 = geometry.rotation3().value()
+        wavelength = geometry.wavelength().value()
+        result = pyFAI.geometry.Geometry(dist=dist,
+                                          poni1=poni1,
+                                          poni2=poni2,
+                                          rot1=rot1,
+                                          rot2=rot2,
+                                          rot3=rot3,
+                                          detector=self.__detector,
+                                          wavelength=wavelength)
+        return result
+
+    def __updatePyfaiFromFit2d(self):
+        if self.__updatingModel:
+            return
+        self.__updatingModel = True
+        geometry = self.__fit2dGeometry
+        error = None
+        distance = None
+        poni1 = None
+        poni2 = None
+        rotation1 = None
+        rotation2 = None
+        rotation3 = None
+
+        if geometry is None:
+            error = "No geometry to compute pyFAI geometry."
+            pass
+        elif self.__detector is None:
+            error = "No detector defined. It is needed to compute the pyFAI geometry."
+        elif not geometry.isValid():
+            error = "The current geometry is not valid to compute the pyFAI one."
+        else:
+            pyFAIGeometry = pyFAI.geometry.Geometry(detector=self.__detector)
+            try:
+                f2d_distance = geometry.distance().value()
+                f2d_centerX = geometry.centerX().value()
+                f2d_centerY = geometry.centerY().value()
+                f2d_tiltPlan = geometry.tiltPlan().value()
+                f2d_tilt = geometry.tilt().value()
+                pyFAIGeometry.setFit2D(directDist=f2d_distance,
+                                       centerX=f2d_centerX,
+                                       centerY=f2d_centerY,
+                                       tilt=f2d_tilt,
+                                       tiltPlanRotation=f2d_tiltPlan)
+            except Exception:
+                error = "This geometry can't be modelized with pyFAI."
+            else:
+                distance = pyFAIGeometry.dist
+                poni1 = pyFAIGeometry.poni1
+                poni2 = pyFAIGeometry.poni2
+                rotation1 = pyFAIGeometry.rot1
+                rotation2 = pyFAIGeometry.rot2
+                rotation3 = pyFAIGeometry.rot3
+
+        self._fit2dError.setVisible(error is not None)
+        self._fit2dError.setText(error)
+        self.__geometry.lockSignals()
+        self.__geometry.distance().setValue(distance)
+        self.__geometry.poni1().setValue(poni1)
+        self.__geometry.poni2().setValue(poni2)
+        self.__geometry.rotation1().setValue(rotation1)
+        self.__geometry.rotation2().setValue(rotation2)
+        self.__geometry.rotation3().setValue(rotation3)
+        self.__geometry.unlockSignals()
+        self.__updatingModel = False
+
+    def __updateFit2dFromPyfai(self):
+        if self.__updatingModel:
+            return
+        self.__updatingModel = True
+        geometry = self.__geometry
+        error = None
+        distance = None
+        centerX = None
+        centerY = None
+        tiltPlan = None
+        tilt = None
+
+        if geometry is None:
+            error = "No geometry to compute Fit2D geometry."
+            pass
+        elif self.__detector is None:
+            error = "No detector defined. It is needed to compute the Fit2D geometry."
+        elif not geometry.isValid(checkWaveLength=False):
+            error = "The current geometry is not valid to compute the Fit2D one."
+        else:
+            pyFAIGeometry = self.__createPyfaiGeometry()
+            try:
+                result = pyFAIGeometry.getFit2D()
+            except Exception:
+                error = "This geometry can't be modelized with Fit2D."
+            else:
+                distance = result["directDist"]
+                centerX = result["centerX"]
+                centerY = result["centerY"]
+                tilt = result["tilt"]
+                tiltPlan = result["tiltPlanRotation"]
+
+        self._fit2dError.setVisible(error is not None)
+        self._fit2dError.setText(error)
+        self.__fit2dGeometry.lockSignals()
+        self.__fit2dGeometry.distance().setValue(distance)
+        self.__fit2dGeometry.centerX().setValue(centerX)
+        self.__fit2dGeometry.centerY().setValue(centerY)
+        self.__fit2dGeometry.tilt().setValue(tilt)
+        self.__fit2dGeometry.tiltPlan().setValue(tiltPlan)
+        self.__fit2dGeometry.unlockSignals()
+        self.__updatingModel = False
