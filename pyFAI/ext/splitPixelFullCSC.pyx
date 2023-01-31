@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseColumn.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/09/2022"
+__date__ = "31/01/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -169,7 +169,7 @@ class FullSplitCSC_2d(CscIntegrator, FullSplitIntegrator):
 
         csc = sparse.csr_matrix(self.calc_lut_2d().to_csr()).tocsc()
         #Call the constructor of the parent class
-        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.pos.shape[0], self.bins, empty or 0.0)
+        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.pos.shape[0], numpy.prod(bins), empty or 0.0)
 
         self.lut_checksum = crc32(self.data)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])

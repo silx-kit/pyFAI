@@ -37,7 +37,7 @@ Serial implementation based on a sparse CSC matrix multiplication
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/09/2022"
+__date__ = "31/01/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -184,7 +184,7 @@ class HistoBBox2d(CscIntegrator, SplitBBoxIntegrator):
         self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1,
                                            self.pos1_max - 0.5 * self.delta1,
                                            self.bins[1])
-        csc = self.calc_lut_2d().to_csr()
+        csc = sparse.csr_matrix(self.calc_lut_2d().to_csr()).tocsc()
         #Call the constructor of the parent class
         CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, numpy.prod(bins), empty or 0.0)
         self.lut_checksum = crc32(self.data)
