@@ -41,7 +41,7 @@ class GeometryTabs(qt.QWidget):
     * pyFAI
     * Fit2D
     * More to come.
-    
+
     This widget is ment to be used in GeometryDialog and in IntegrationTask in calib2
     """
 
