@@ -50,7 +50,7 @@ class GeometryTabs(qt.QWidget):
         filename = get_ui_file("geometry-tabs.ui")
         qt.loadUi(filename, self)
 
-        self.__geometry = GeometryModel()
+        self._geometry = GeometryModel()
         self.__fit2dGeometry = Fit2dGeometryModel()
         self.__detector = None
         self.__originalGeometry = None
@@ -114,26 +114,26 @@ class GeometryTabs(qt.QWidget):
         self._fit2dTilt.setModel(self.__fit2dGeometry.tilt())
         self._fit2dTiltPlan.setModel(self.__fit2dGeometry.tiltPlan())
 
-        self._pyfaiDistance.setModel(self.__geometry.distance())
-        self._pyfaiPoni1.setModel(self.__geometry.poni1())
-        self._pyfaiPoni2.setModel(self.__geometry.poni2())
-        self._pyfaiRotation1.setModel(self.__geometry.rotation1())
-        self._pyfaiRotation2.setModel(self.__geometry.rotation2())
-        self._pyfaiRotation3.setModel(self.__geometry.rotation3())
+        self._pyfaiDistance.setModel(self._geometry.distance())
+        self._pyfaiPoni1.setModel(self._geometry.poni1())
+        self._pyfaiPoni2.setModel(self._geometry.poni2())
+        self._pyfaiRotation1.setModel(self._geometry.rotation1())
+        self._pyfaiRotation2.setModel(self._geometry.rotation2())
+        self._pyfaiRotation3.setModel(self._geometry.rotation3())
 
-        self.__geometry.changed.connect(self.__updateFit2dFromPyfai)
+        self._geometry.changed.connect(self.__updateFit2dFromPyfai)
         self.__fit2dGeometry.changed.connect(self.__updatePyfaiFromFit2d)
-        self.__geometry.changed.connect(self.__updateButtons)
+        # self._geometry.changed.connect(self.__updateButtons)
 
-        # NOTE: All the buttons have to be create here.
-        # Changing available buttons on the focus event create a segfault
-        types = (qt.QDialogButtonBox.Ok | qt.QDialogButtonBox.Cancel |
-                 qt.QDialogButtonBox.Reset | qt.QDialogButtonBox.Close)
-        self._buttonBox.setStandardButtons(types)
-        resetButton = self._buttonBox.button(qt.QDialogButtonBox.Reset)
-        resetButton.clicked.connect(self.__resetToOriginalGeometry)
-
-        self.__updateButtons()
+        # # NOTE: All the buttons have to be create here.
+        # # Changing available buttons on the focus event create a segfault
+        # types = (qt.QDialogButtonBox.Ok | qt.QDialogButtonBox.Cancel |
+        #          qt.QDialogButtonBox.Reset | qt.QDialogButtonBox.Close)
+        # self._buttonBox.setStandardButtons(types)
+        # resetButton = self._buttonBox.button(qt.QDialogButtonBox.Reset)
+        # resetButton.clicked.connect(self.__resetToOriginalGeometry)
+        #
+        # self.__updateButtons()
 
     def isReadOnly(self):
         """
@@ -168,7 +168,7 @@ class GeometryTabs(qt.QWidget):
         self._fit2dTiltPlan.setReadOnly(readOnly)
 
     def __createPyfaiGeometry(self):
-        geometry = self.__geometry
+        geometry = self._geometry
         if not geometry.isValid(checkWaveLength=False):
             raise RuntimeError("The geometry is not valid")
         dist = geometry.distance().value()
@@ -233,21 +233,21 @@ class GeometryTabs(qt.QWidget):
 
         self._fit2dError.setVisible(error is not None)
         self._fit2dError.setText(error)
-        self.__geometry.lockSignals()
-        self.__geometry.distance().setValue(distance)
-        self.__geometry.poni1().setValue(poni1)
-        self.__geometry.poni2().setValue(poni2)
-        self.__geometry.rotation1().setValue(rotation1)
-        self.__geometry.rotation2().setValue(rotation2)
-        self.__geometry.rotation3().setValue(rotation3)
-        self.__geometry.unlockSignals()
+        self._geometry.lockSignals()
+        self._geometry.distance().setValue(distance)
+        self._geometry.poni1().setValue(poni1)
+        self._geometry.poni2().setValue(poni2)
+        self._geometry.rotation1().setValue(rotation1)
+        self._geometry.rotation2().setValue(rotation2)
+        self._geometry.rotation3().setValue(rotation3)
+        self._geometry.unlockSignals()
         self.__updatingModel = False
 
     def __updateFit2dFromPyfai(self):
         if self.__updatingModel:
             return
         self.__updatingModel = True
-        geometry = self.__geometry
+        geometry = self._geometry
         error = None
         distance = None
         centerX = None
@@ -286,14 +286,17 @@ class GeometryTabs(qt.QWidget):
         self.__fit2dGeometry.unlockSignals()
         self.__updatingModel = False
 
-    def __resetToOriginalGeometry(self):
+    def resetToOriginalGeometry(self):
         if self.__originalGeometry is None:
             return
-        self.__geometry.setFrom(self.__originalGeometry)
+        self._geometry.setFrom(self.__originalGeometry)
 
     def isDirty(self):
         """Tell if the geometry has changed"""
-        return self.__geometry != self.__originalGeometry
+        # print(self.__originalGeometry)
+        # print(self._geometry)
+        # print(self._geometry == self.__originalGeometry)
+        return self._geometry != self.__originalGeometry
 
     def detector(self):
         return self.__detector
@@ -312,16 +315,16 @@ class GeometryTabs(qt.QWidget):
         :param ~pyFAI.gui.model.GeometryModel geometryModel: A geometry.
         """
         assert(isinstance(geometryModel, GeometryModel))
-        if self.__geometry is geometryModel:
+        if self._geometry is geometryModel:
             return
-        if self.__originalGeometry is None:
-            # first setting
-            self.__originalGeometry = self.__geometry
-        self.__geometry.setFrom(geometryModel)
+        # first setting
+        if geometryModel.isValid() and self.__originalGeometry is None:
+            self.__originalGeometry = geometryModel.copy()
+        self._geometry.setFrom(geometryModel)
 
     def geometryModel(self):
         """Returns the geometry model
 
         :rtype: ~pyFAI.gui.model.GeometryModel
         """
-        return self.__geometry
+        return self._geometry

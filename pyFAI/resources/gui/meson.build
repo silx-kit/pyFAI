@@ -12,7 +12,6 @@ py.install_sources(
     'constraint-drop.ui',
     'detector-selection-drop.ui',
     'diffmap.ui',
-    'geometry-dialog.ui',
     'integration-dialog.ui',
     'integration-method.ui',
     'integration-process.ui',
