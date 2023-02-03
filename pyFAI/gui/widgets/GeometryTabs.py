@@ -28,7 +28,8 @@ __license__ = "MIT"
 __date__ = "03/02/2023"
 
 from silx.gui import qt
-from pyFAI.utils import get_ui_file
+from ...utils import get_ui_file
+from ...geometry import fit2d
 from ..utils import units
 from ..model.DataModel import DataModel
 from ..model.GeometryModel import GeometryModel
@@ -123,17 +124,6 @@ class GeometryTabs(qt.QWidget):
 
         self._geometry.changed.connect(self.__updateFit2dFromPyfai)
         self.__fit2dGeometry.changed.connect(self.__updatePyfaiFromFit2d)
-        # self._geometry.changed.connect(self.__updateButtons)
-
-        # # NOTE: All the buttons have to be create here.
-        # # Changing available buttons on the focus event create a segfault
-        # types = (qt.QDialogButtonBox.Ok | qt.QDialogButtonBox.Cancel |
-        #          qt.QDialogButtonBox.Reset | qt.QDialogButtonBox.Close)
-        # self._buttonBox.setStandardButtons(types)
-        # resetButton = self._buttonBox.button(qt.QDialogButtonBox.Reset)
-        # resetButton.clicked.connect(self.__resetToOriginalGeometry)
-        #
-        # self.__updateButtons()
 
     def isReadOnly(self):
         """
@@ -178,14 +168,14 @@ class GeometryTabs(qt.QWidget):
         rot2 = geometry.rotation2().value()
         rot3 = geometry.rotation3().value()
         wavelength = geometry.wavelength().value()
-        result = Geometry(dist=dist,
-                          poni1=poni1,
-                          poni2=poni2,
-                          rot1=rot1,
-                          rot2=rot2,
-                          rot3=rot3,
-                          detector=self.__detector,
-                          wavelength=wavelength)
+        result = fit2d.PoniFile({"dist":dist,
+                                 "poni1":poni1,
+                                 "poni2":poni2,
+                                 "rot1":rot1,
+                                 "rot2":rot2,
+                                 "rot3":rot3,
+                                 "detector":self.__detector,
+                                 "wavelength":wavelength})
         return result
 
     def __updatePyfaiFromFit2d(self):
@@ -209,18 +199,14 @@ class GeometryTabs(qt.QWidget):
         elif not geometry.isValid():
             error = "The current geometry is not valid to compute the pyFAI one."
         else:
-            pyFAIGeometry = Geometry(detector=self.__detector)
+            fit2dGeometry = fit2d.Fit2dGeometry(geometry.distance().value(),
+                                                geometry.centerX().value(),
+                                                geometry.centerY().value(),
+                                                geometry.tilt().value(),
+                                                geometry.tiltPlan().value(),
+                                                detector=self.__detector)
             try:
-                f2d_distance = geometry.distance().value()
-                f2d_centerX = geometry.centerX().value()
-                f2d_centerY = geometry.centerY().value()
-                f2d_tiltPlan = geometry.tiltPlan().value()
-                f2d_tilt = geometry.tilt().value()
-                pyFAIGeometry.setFit2D(directDist=f2d_distance,
-                                       centerX=f2d_centerX,
-                                       centerY=f2d_centerY,
-                                       tilt=f2d_tilt,
-                                       tiltPlanRotation=f2d_tiltPlan)
+                pyFAIGeometry = fit2d.convert_from_Fit2d(fit2dGeometry)
             except Exception:
                 error = "This geometry can't be modelized with pyFAI."
             else:
@@ -265,15 +251,15 @@ class GeometryTabs(qt.QWidget):
         else:
             pyFAIGeometry = self.__createPyfaiGeometry()
             try:
-                result = pyFAIGeometry.getFit2D()
+                result = fit2d.convert_to_Fit2d(pyFAIGeometry)
             except Exception:
                 error = "This geometry can't be modelized with Fit2D."
             else:
-                distance = result["directDist"]
-                centerX = result["centerX"]
-                centerY = result["centerY"]
-                tilt = result["tilt"]
-                tiltPlan = result["tiltPlanRotation"]
+                distance = result.directDist
+                centerX = result.centerX
+                centerY = result.centerY
+                tilt = result.tilt
+                tiltPlan = result.tiltPlanRotation
 
         self._fit2dError.setVisible(error is not None)
         self._fit2dError.setText(error)
@@ -293,9 +279,6 @@ class GeometryTabs(qt.QWidget):
 
     def isDirty(self):
         """Tell if the geometry has changed"""
-        # print(self.__originalGeometry)
-        # print(self._geometry)
-        # print(self._geometry == self.__originalGeometry)
         return self._geometry != self.__originalGeometry
 
     def detector(self):
