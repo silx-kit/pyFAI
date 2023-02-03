@@ -38,7 +38,7 @@ class GeometryDialog(qt.QDialog):
 
     def __init__(self, parent=None):
         super(GeometryDialog, self).__init__(parent)
-
+        self.setWindowTitle("Sample stage geometry")
         self._geometryTabs = GeometryTabs(self)
         self._buttonBox = qt.QDialogButtonBox()
         layout = qt.QVBoxLayout()
@@ -92,7 +92,6 @@ class GeometryDialog(qt.QDialog):
     def __updateButtons(self):
         """Update the state of the dialog's buttons"""
         haveChanges = self._geometryTabs.isDirty()
-        print(haveChanges)
         existing = [qt.QDialogButtonBox.Ok, qt.QDialogButtonBox.Cancel, qt.QDialogButtonBox.Reset, qt.QDialogButtonBox.Close]
         if haveChanges:
             available = set([qt.QDialogButtonBox.Ok, qt.QDialogButtonBox.Cancel, qt.QDialogButtonBox.Reset])
