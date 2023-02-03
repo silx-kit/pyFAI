@@ -18,7 +18,8 @@ py.install_sources(
     'integration-process.ui',
     'opencl-device-dialog.ui',
     'refine-6param.ui',
-    'worker-configurator.ui'],
+    'worker-configurator.ui',
+    'geometry-tabs.ui'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/resources/gui'  # Folder relative to site-packages to install to
 )
