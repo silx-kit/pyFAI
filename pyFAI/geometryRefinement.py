@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/01/2023"
+__date__ = "10/02/2023"
 __status__ = "development"
 
 import os
@@ -212,6 +212,9 @@ class GeometryRefinement(AzimuthalIntegrator):
 
         It may try to fit an ellipse and sometimes it works
         """
+        if self.data is None or len(self.data) == 0:
+            logger.warning("No input data, not guessing the PONI")
+            return
         if len(self.calibrant.dSpacing):
             # logger.warning(self.calibrant.__repr__())s
             tth = self.calc_2th(self.data[:, 2])
