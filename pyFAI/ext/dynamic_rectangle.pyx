@@ -33,7 +33,7 @@ Export the mask as a set of rectangles.
 This feature is needed for single crystal analysis programs (XDS, Crysalis, ...)
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "10/11/2020"
+__date__ = "10/02/2023"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -57,7 +57,7 @@ cdef class Rectangle:
         self.col = col
 
     def __repr__(self):
-        return f"Rectangle row:{self.row} col:{self.col} heigth:{self.height} width:{self.width} area:{self.area}"
+        return f"Rectangle row:{self.row} col:{self.col} height:{self.height} width:{self.width} area:{self.area}"
 
     cdef int32_t _area(self):
         return self.width*self.height
