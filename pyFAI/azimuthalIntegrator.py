@@ -2905,7 +2905,7 @@ class AzimuthalIntegrator(Geometry):
                            method="splitpixel", unit=units.Q,
                            thres=3, max_iter=5, dummy=None, delta_dummy=None,
                            mask=None, normalization_factor=1.0, metadata=None):
-        """Perform first a 2D integration and then an iterative sigma-clipping 
+        """Perform first a 2D integration and then an iterative sigma-clipping
         filter along each row. See the doc of scipy.stats.sigmaclip for the
         options `thres` and `max_iter`.
 
@@ -2930,13 +2930,13 @@ class AzimuthalIntegrator(Geometry):
         :param method: pathway for integration and sort
         :param thres: cut-off for n*sigma: discard any values with `|I-<I>|/sigma > thres`.
                 The threshold can be a 2-tuple with sigma_low and sigma_high.
-        :param max_iter: maximum number of iterations        
+        :param max_iter: maximum number of iterations
         :param mask: masked out pixels array
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: any other metadata,
         :type metadata: JSON serializable dict
         :return: Integrate1D-like result
-        
+
         Nota: The initial 2D-integration requires pixel splitting
         """
         # We use NaN as dummies
@@ -3048,7 +3048,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         return result
-    
+
     _sigma_clip_legacy = sigma_clip_legacy
 
     def sigma_clip_ng(self, data,
@@ -3115,7 +3115,7 @@ class AzimuthalIntegrator(Geometry):
 
         The difference with the previous `sigma_clip_legacy` implementation is that there is no 2D regrouping.
         Pixel splitting should be avoided with this implementation.
-        The standard deviation is usually smaller than previously and the signal cleaner. 
+        The standard deviation is usually smaller than previously and the signal cleaner.
         It is also slightly faster.
 
         The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model.
