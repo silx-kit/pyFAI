@@ -2898,16 +2898,16 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
-    def _sigma_clip_legacy(self, data, npt_rad=1024, npt_azim=512,
+    def sigma_clip_legacy(self, data, npt_rad=1024, npt_azim=512,
                            correctSolidAngle=True, polarization_factor=None,
                            radial_range=None, azimuth_range=None,
                            dark=None, flat=None,
                            method="splitpixel", unit=units.Q,
                            thres=3, max_iter=5, dummy=None, delta_dummy=None,
                            mask=None, normalization_factor=1.0, metadata=None):
-        """Perform the 2D integration and perform a sigm-clipping iterative
-        filter along each row. see the doc of scipy.stats.sigmaclip for the
-        options.
+        """Perform first a 2D integration and then an iterative sigma-clipping
+        filter along each row. See the doc of scipy.stats.sigmaclip for the
+        options `thres` and `max_iter`.
 
         :param data: input image as numpy array
         :param npt_rad: number of radial points
@@ -2928,13 +2928,16 @@ class AzimuthalIntegrator(Geometry):
         :param ndarray flat: flat field image
         :param unit: unit to be used for integration
         :param method: pathway for integration and sort
-        :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres.
+        :param thres: cut-off for n*sigma: discard any values with `|I-<I>|/sigma > thres`.
                 The threshold can be a 2-tuple with sigma_low and sigma_high.
-        :param max_iter: maximum number of iterations        :param mask: masked out pixels array
+        :param max_iter: maximum number of iterations
+        :param mask: masked out pixels array
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: any other metadata,
         :type metadata: JSON serializable dict
-        :return: Integrate1D like result like
+        :return: Integrate1D-like result
+
+        Nota: The initial 2D-integration requires pixel splitting
         """
         # We use NaN as dummies
         if dummy is None:
@@ -3046,6 +3049,8 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
+    _sigma_clip_legacy = sigma_clip_legacy
+
     def sigma_clip_ng(self, data,
                       npt=1024,
                       correctSolidAngle=True,
@@ -3076,7 +3081,7 @@ class AzimuthalIntegrator(Geometry):
 
             ``|I - <I>| < thres * std(I)``
 
-        This enforces a gaussian distibution and is very good at extracting
+        This enforces a symmetric, bell-shaped distibution (i.e. gaussian-like) and is very good at extracting
         background or amorphous isotropic scattering out of Bragg peaks.
 
         :param data: input image as numpy array
@@ -3108,8 +3113,10 @@ class AzimuthalIntegrator(Geometry):
         :param safe: set to False to skip some tests
         :return: Integrate1D like result like
 
-        The difference with the previous version is that there is no 2D regrouping, hence this is faster.
-        The standard deviation is usually smaller than previously and the signal cleaner. It is also slightly faster.
+        The difference with the previous `sigma_clip_legacy` implementation is that there is no 2D regrouping.
+        Pixel splitting should be avoided with this implementation.
+        The standard deviation is usually smaller than previously and the signal cleaner.
+        It is also slightly faster.
 
         The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model.
 
