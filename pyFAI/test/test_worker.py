@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2022"
+__date__ = "22/02/2023"
 
 import unittest
 import logging
@@ -307,8 +307,20 @@ class TestWorker(unittest.TestCase):
                         extra_options={"thres":2, "error_model":"azimuthal"},
                         integrator_name="sigma_clip_ng",
                         shapeOut=(1, 100))
-        self.assertEqual(worker.error_model, "azimuthal", "error model is OK")
 
+        self.assertEqual(worker.error_model, "azimuthal", "error model is OK")
+        img = numpy.random.random(ai.detector.shape)
+        worker(img)
+
+    def test_sigma_clip_legacy(self):
+        "Non regression test for #1825"
+        ai = AzimuthalIntegrator.sload({"detector": "Pilatus100k", "wavelength":1e-10})
+        worker = Worker(azimuthalIntegrator=ai,
+                        extra_options={"thres":2},
+                        integrator_name="sigma_clip_legacy",
+                        shapeOut=(1, 100))
+        img = numpy.random.random(ai.detector.shape)
+        worker(img)
 
 class TestWorkerConfig(unittest.TestCase):
 
