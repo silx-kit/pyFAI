@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2023"
+__date__ = "22/02/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3326,10 +3326,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_error_model(error_model)
         return result
 
-    @deprecated(reason="will be replaced by `sigma_clip_ng` in version 0.23.0. Please use either `_sigma_clip_legacy` for full compatibility or upgrade your code to accomodate the new API",
-                replacement="sigma_clip_ng", since_version="0.21.0", only_once=True, skip_backtrace_count=1, deprecated_since="0.22.0")
-    def sigma_clip(self, *args, **kwargs):
-        return self._sigma_clip_legacy(*args, **kwargs)
+    sigma_clip = sigma_clip_ng
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
