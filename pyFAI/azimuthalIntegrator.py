@@ -3330,7 +3330,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_error_model(error_model)
         return result
 
-    sigma_clip = self._sigma_clip_ng
+    sigma_clip = _sigma_clip_ng
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
