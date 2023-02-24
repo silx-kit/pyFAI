@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/12/2022"
+__date__ = "24/02/2023"
 
 PACKAGE = "pyFAI"
 
@@ -38,7 +38,6 @@ import threading
 import unittest
 import logging
 import shutil
-import contextlib
 import tempfile
 import getpass
 import functools
