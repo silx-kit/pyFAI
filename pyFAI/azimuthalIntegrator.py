@@ -2930,7 +2930,7 @@ class AzimuthalIntegrator(Geometry):
         :param method: pathway for integration and sort
         :param thres: cut-off for n*sigma: discard any values with `|I-<I>| > thres*σ`.
                 The threshold can be a 2-tuple with sigma_low and sigma_high.
-        :param max_iter: maximum number of iterations        
+        :param max_iter: maximum number of iterations
         :param mask: masked out pixels array
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: any other metadata,
@@ -2938,7 +2938,7 @@ class AzimuthalIntegrator(Geometry):
         :param safe: unset to save some checks on sparse matrix shape/content.
         :kwargs: unused, just for signature compatibility when used within Worker.
         :return: Integrate1D like result like
-        
+
         Nota: The initial 2D-integration requires pixel splitting
         """
         # We use NaN as dummies
@@ -3084,8 +3084,8 @@ class AzimuthalIntegrator(Geometry):
 
             ``|I - <I>| < thres * std(I)``
 
-        This enforces a symmetric, bell-shaped distibution (i.e. gaussian-like) 
-        and is very good at extracting background or amorphous isotropic scattering 
+        This enforces a symmetric, bell-shaped distibution (i.e. gaussian-like)
+        and is very good at extracting background or amorphous isotropic scattering
         out of Bragg peaks.
 
         :param data: input image as numpy array
@@ -3121,7 +3121,7 @@ class AzimuthalIntegrator(Geometry):
         Pixel splitting should be avoided with this implementation.
         The standard deviation is usually smaller than previously and the signal cleaner.
         It is also slightly faster.
-        
+
         The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model.
 
         """
