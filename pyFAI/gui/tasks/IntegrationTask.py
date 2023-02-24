@@ -991,7 +991,8 @@ class IntegrationTask(AbstractCalibrationTask):
             self._integrateButton.executeCallable()
 
     def __integrate(self):
-        self.__integrationProcess = IntegrationProcess(self.model(), self.geometryModel())
+        geometry = self._geometryTabs.geometryModel()
+        self.__integrationProcess = IntegrationProcess(self.model(), geometry)
         self.__integrationProcess.setMethod(self.__method)
 
         if self.__integrationResetZoomPolicy is not None:
