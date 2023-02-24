@@ -23,9 +23,9 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "03/02/2023"
+__date__ = "24/02/2023"
 
 from silx.gui import qt
 from ..model.GeometryModel import GeometryModel
