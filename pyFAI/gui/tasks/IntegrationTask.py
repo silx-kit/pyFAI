@@ -911,7 +911,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.__integrationUpToDate = True
         self.__integrationResetZoomPolicy = None
-        method = method_registry.Method(666, "bbox", "csr", "cython", None)
+        method = method_registry.Method(666, "bbox", "histogram", "cython", None)
         self.__setMethod(method)
 
         positiveValidator = validators.IntegerAndEmptyValidator(self)
