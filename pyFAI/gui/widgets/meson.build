@@ -14,6 +14,7 @@ py.install_sources(
     'FitParamView.py',
     'GeometryHistoryComboBox.py',
     'GeometryLabel.py',
+    'GeometryTabs.py',
     'LoadImageToolButton.py',
     'MethodLabel.py',
     'MonitorNameEdit.py',

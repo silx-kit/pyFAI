@@ -12,13 +12,13 @@ py.install_sources(
     'constraint-drop.ui',
     'detector-selection-drop.ui',
     'diffmap.ui',
-    'geometry-dialog.ui',
     'integration-dialog.ui',
     'integration-method.ui',
     'integration-process.ui',
     'opencl-device-dialog.ui',
     'refine-6param.ui',
-    'worker-configurator.ui'],
+    'worker-configurator.ui',
+    'geometry-tabs.ui'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/resources/gui'  # Folder relative to site-packages to install to
 )

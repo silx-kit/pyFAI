@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2023"
+__date__ = "22/02/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2218,7 +2218,7 @@ class AzimuthalIntegrator(Geometry):
         norm2d = None
         var2d = None
 
-        if method.algo_lower in ("csr", "csc", "lut"):
+        if method.algo_lower in ("csr", "lut"):
             intpl = None
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
             if cython_method not in self.engines:
