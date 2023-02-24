@@ -3085,7 +3085,7 @@ class AzimuthalIntegrator(Geometry):
 
         Keep only pixels with intensty:
 
-            ``|I - <I>| < thres * std(I)``
+            ``|I - <I>| < thres * σ(I)``
 
         This enforces a symmetric, bell-shaped distibution (i.e. gaussian-like)
         and is very good at extracting background or amorphous isotropic scattering
@@ -3333,7 +3333,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_error_model(error_model)
         return result
 
-    sigma_clip = _sigma_clip_ng
+    sigma_clip = sigma_clip_ng
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
