@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/02/2023"
+__date__ = "24/02/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2218,7 +2218,7 @@ class AzimuthalIntegrator(Geometry):
         norm2d = None
         var2d = None
 
-        if method.algo_lower in ("csr", "lut"):
+        if method.algo_lower in ("csr", "csc", "lut"):
             intpl = None
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
             if cython_method not in self.engines:
@@ -2936,14 +2936,14 @@ class AzimuthalIntegrator(Geometry):
         :param metadata: any other metadata,
         :type metadata: JSON serializable dict
         :param safe: unset to save some checks on sparse matrix shape/content.
-        :return: Integrate1D-like result
+        :kwargs: unused, just for signature compatibility when used within Worker.
+        :return: Integrate1D like result like
 
         Nota: The initial 2D-integration requires pixel splitting
         """
-        #compatibility layer with sigma_clip_ng
+        # compatibility layer with sigma_clip_ng
         if "npt" in kwargs:
             npt_rad = kwargs["npt"]
-
         # We use NaN as dummies
         if dummy is None:
             dummy = numpy.NaN
@@ -2971,7 +2971,8 @@ class AzimuthalIntegrator(Geometry):
                                  dummy=dummy, delta_dummy=delta_dummy,
                                  correctSolidAngle=correctSolidAngle,
                                  polarization_factor=polarization_factor,
-                                 normalization_factor=normalization_factor,safe=safe)
+                                 normalization_factor=normalization_factor,
+                                 safe=safe)
         image = res2d.intensity
         if (method.impl_lower == "opencl"):
             if (method.algo_lower == "csr") and \
@@ -3086,8 +3087,9 @@ class AzimuthalIntegrator(Geometry):
 
             ``|I - <I>| < thres * σ(I)``
 
-        This enforces a symmetric, bell-shaped distibution (i.e. gaussian-like) and is very good at extracting
-        background or amorphous isotropic scattering out of Bragg peaks.
+        This enforces a symmetric, bell-shaped distibution (i.e. gaussian-like)
+        and is very good at extracting background or amorphous isotropic scattering
+        out of Bragg peaks.
 
         :param data: input image as numpy array
         :param npt_rad: number of radial points

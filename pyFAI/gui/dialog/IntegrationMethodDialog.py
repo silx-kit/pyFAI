@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "31/01/2023"
 
 from silx.gui import qt
 from silx.gui import icons
@@ -46,6 +46,7 @@ class IntegrationMethodWidget(qt.QWidget):
         "histogram": "Histogram",
         "lut": "LUT",
         "csr": "CSR",
+        "csc": "CSC",
         "python": "Python",
         "cython": "Cython",
         "opencl": "OpenCL",
@@ -66,6 +67,7 @@ class IntegrationMethodWidget(qt.QWidget):
         "histogram": "Direct integration method with the lowest memory footprint but slower",
         "lut": "Sparse matrix based integration using a look-up table. Long initalization time and highest memory usage. Often slower than CSR",
         "csr": "Sparse matrix based integration using a a CSR (compressed sparse row) representation. Long initalization time and high memory usage, but the fastest for processing",
+        "csc": "Sparse matrix based integration using a a CSC (compressed sparse column) representation. Long initalization time and high memory usage. Single-threaded but faster processsing than histogram",
         "python": "Use a pure Python/numpy/scipy implementation. Slow but portable",
         "cython": "Use a Cython/C/C++ implementation. Fast and reliable default methods",
         "opencl": "Use an OpenCL implementation based on hardware accelerators. Fastest but hardware/driver dependant",

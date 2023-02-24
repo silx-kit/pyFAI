@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/11/2022"
+__date__ = "24/02/2023"
 
 import unittest
 import os
@@ -452,7 +452,7 @@ class TestSaxs(unittest.TestCase):
         ai = AzimuthalIntegrator(detector="Pilatus100k")
         ai.wavelength = 1e-10
         methods = ["cython", "numpy", "lut", "csr", "splitpixel"]
-        if UtilsTest.opencl:
+        if UtilsTest.opencl and os.name != 'nt':
             methods.extend(["ocl_lut", "ocl_csr"])
 
         ref1d = {}
@@ -511,13 +511,13 @@ class TestSaxs(unittest.TestCase):
         self.assertNotEqual(ref, target, "buggy test !")
         for m in ("LUT", "CSR", "CSC"):
             ai.integrate1d(img, 100, method=("no", m, "cython"))
-        for k,v in ai.engines.items():
+        for k, v in ai.engines.items():
             self.assertEqual(v.engine.empty, ref, k)
         ai.empty = target
-        for k,v in ai.engines.items():
+        for k, v in ai.engines.items():
             self.assertEqual(v.engine.empty, target, k)
         ai.empty = ref
-        for k,v in ai.engines.items():
+        for k, v in ai.engines.items():
             self.assertEqual(v.engine.empty, ref, k)
 
 
@@ -628,7 +628,7 @@ class TestRange(unittest.TestCase):
                      {"error_model":"azimuthal", "max_iter":3, "thres":0},
                      ):
             results = {}
-            for impl in ('python', # Python is already fixed, please fix the 2 others
+            for impl in ('python',  # Python is already fixed, please fix the 2 others
                          'cython',
                          # 'opencl' #TODO
                          ):
@@ -647,8 +647,8 @@ class TestRange(unittest.TestCase):
             ref = results['python']
             for what, tol in (("radial", 1e-8),
                               ("count", 1),
-                              #("intensity", 1e-6),
-                              #("sigma", 1e-6),
+                              # ("intensity", 1e-6),
+                              # ("sigma", 1e-6),
                               ("sum_normalization", 1e-1),
                               ("count", 1e-1)):
                 for impl in results:
