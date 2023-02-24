@@ -2911,7 +2911,7 @@ class AzimuthalIntegrator(Geometry):
         options `thres` and `max_iter`.
 
         :param data: input image as numpy array
-        :param npt_rad: number of radial points  (alias: npt)
+        :param npt_rad: number of radial points (alias: npt)
         :param npt_azim: number of azimuthal points
         :param bool correctSolidAngle: correct for solid angle of each pixel when set
         :param float polarization_factor: polarization factor between -1 (vertical)
@@ -2941,6 +2941,9 @@ class AzimuthalIntegrator(Geometry):
 
         Nota: The initial 2D-integration requires pixel splitting
         """
+        # compatibility layer with sigma_clip_ng
+        if "npt" in kwargs:
+            npt_rad = kwargs["npt"]
         # We use NaN as dummies
         if dummy is None:
             dummy = numpy.NaN
