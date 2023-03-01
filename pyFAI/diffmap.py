@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/02/2023"
+__date__ = "01/03/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -123,8 +123,9 @@ class DiffMap(object):
 
     def parse(self, with_config=False):
         """
-        parse options from command line: setup the object
+        Parse options from command line in order to setup the object
 
+        :param with_config:
         :return: dictionary able to setup a DiffMapWidget
         """
         description = """Azimuthal integration for diffraction imaging.
@@ -272,10 +273,14 @@ If the number of files is too large, use double quotes like "*.edf" """
                 ai["poni"] = self.poni
             else:
                 logger.warning("No such poni file %s", options.poni)
-        if options.fast is not None:
+        if options.fast is None:
+            self.npt_fast = config.get("fast_motor_points", self.npt_fast)
+        else:
             self.npt_fast = int(options.fast)
             config["fast_motor_points"] = self.npt_fast
-        if options.slow is not None:
+        if options.slow is None:
+            self.npt_slow = config.get("slow_motor_points", self.npt_slow)
+        else:
             self.npt_slow = int(options.slow)
             config["slow_motor_points"] = self.npt_slow
         if options.npt_rad is not None:
@@ -293,6 +298,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             config["offset"] = self.offset
         else:
             self.offset = config.get("offset", 0)
+        self.offset = 0 if self.offset is None else self.offset
         self.stats = options.stats
 
         if with_config:
@@ -353,6 +359,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         process_grp["dim2"].attrs["axis"] = "diffraction"
         config = nxs.new_class(process_grp, "configuration", "NXnote")
         config["type"] = "text/json"
+        self.worker.shape = self.init_shape()
         worker_config = self.worker.get_config()
         print("Worker configuration:")
         for k,v in worker_config.items():
@@ -404,6 +411,22 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.mask is not None:
             self.ai.detector.set_mask(_reduce_images(self.mask, method="max"))
 
+    def init_shape(self):
+        """Initialize the worker with the proper input shape
+
+        :return: shape of the individual frames
+        """
+        if self.ai.detector.shape:
+            # shape of detector undefined: reading the first image to guess it
+            shape = self.ai.detector.shape
+        else:
+            fimg = fabio.open(self.inputfiles[0])
+            shape = fimg.data.shape
+            self.worker.ai.shape = shape
+        self.worker.shape = shape
+        self.worker.output = "raw"
+        return shape
+
     def init_ai(self):
         """Force initialization of azimuthal intgrator
 
@@ -413,14 +436,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.setup_ai()
         if not self.nxdata_grp:
             self.makeHDF5(rewrite=False)
-        if self.ai.detector.shape:
-            # shape of detector undefined: reading the first image to guess it
-            shape = self.ai.detector.shape
-        else:
-            fimg = fabio.open(self.inputfiles[0])
-            shape = fimg.data.shape
-        self.worker.shape = shape
-        self.worker.output = "raw"
+        shape = self.init_shape()
         data = numpy.empty(shape, dtype=numpy.float32)
         print(f"Initialization of the Azimuthal Integrator using method {self.method}")
         # enforce initialization of azimuthal integrator
