@@ -633,7 +633,8 @@ class SingleGeometry(object):
             dict_geo["data"] = self.control_points.getList()
         if self.calibrant is not None:
             dict_geo["calibrant"] = self.calibrant
-            dict_geo["wavelength"] = self.calibrant.wavelength
+            if self.calibrant.wavlength:
+                dict_geo["wavelength"] = self.calibrant.wavelength
         if "max_shape" in dict_geo:
             # not used in constructor
             dict_geo.pop("max_shape")
