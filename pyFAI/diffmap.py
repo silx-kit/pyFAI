@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/03/2023"
+__date__ = "02/03/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -361,9 +361,10 @@ If the number of files is too large, use double quotes like "*.edf" """
         config["type"] = "text/json"
         self.worker.shape = self.init_shape()
         worker_config = self.worker.get_config()
-        print("Worker configuration:")
-        for k,v in worker_config.items():
-            print(f"{k}:\t{v}")
+        # print("Worker configuration:")
+        # for k,v in worker_config.items():
+        #     print(f"{k}:\t{v}")
+        print("Worker:", self.worker)
         config["data"] = json.dumps(worker_config, indent=2, separators=(",\r\n", ": "))
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
@@ -379,6 +380,14 @@ If the number of files is too large, use double quotes like "*.edf" """
                             fillvalue=numpy.NaN)
             self.dataset.attrs["interpretation"] = "image"
             self.nxdata_grp.attrs["axes"] = [".", ".", "azimuthal", str(self.unit).split("_")[0]]
+            # Build a transposed view to display the mapping experiment
+            layout = h5py.VirtualLayout(shape=(self.npt_azim, self.npt_rad, self.npt_slow, self.npt_fast), dtype=self.dataset.dtype)
+            source = h5py.VirtualSource(self.dataset)
+            for i in range(self.npt_slow):
+                for j in range(self.npt_fast):
+                    layout[:, :, i, j] = source[i, j]
+            self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.NaN).attrs["interpretation"] = "image"
+
         else:
             print(f"shape for dataset: {self.npt_slow}, {self.npt_fast}, {self.npt_rad}")
             self.dataset = self.nxdata_grp.create_dataset(
@@ -390,6 +399,14 @@ If the number of files is too large, use double quotes like "*.edf" """
                             fillvalue=numpy.NaN)
             self.dataset.attrs["interpretation"] = "spectrum"
             self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]
+            # Build a transposed view to display the mapping experiment
+            layout = h5py.VirtualLayout(shape=(self.npt_rad, self.npt_slow, self.npt_fast), dtype=self.dataset.dtype)
+            source = h5py.VirtualSource(self.dataset)
+            for i in range(self.npt_slow):
+                for j in range(self.npt_fast):
+                    layout[:,i,j] = source[i,j]
+            self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.NaN).attrs["interpretation"] = "image"
+
 
         self.nxdata_grp.attrs["signal"] = self.dataset.name.split("/")[-1]
 
