@@ -38,7 +38,7 @@ Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jerome Kieffer"
-__date__ = "29/06/2022"
+__date__ = "03/03/2023"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -354,6 +354,7 @@ def histogram_preproc(pos,
         position_t a = 0.0
         position_t fbin = 0.0
         position_t epsilon = 1e-10
+        data_t tmp
 
     if bin_range is not None:
         min0 = min(bin_range)
@@ -378,8 +379,9 @@ def histogram_preproc(pos,
             out_prop[bin, 0] += cdata[i, 0]
             out_prop[bin, 1] += cdata[i, 1]
             if nchan>2:
-                out_prop[bin, 2] += cdata[i, 2]
-                out_prop[bin, 3] += cdata[i, 2]**2
+                tmp = cdata[i, 2]
+                out_prop[bin, 2] += tmp
+                out_prop[bin, 3] += tmp*tmp
             if nchan>3:
                 out_prop[bin, 4] += cdata[i, 3]
     return (numpy.asarray(out_prop),

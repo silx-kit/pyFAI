@@ -37,21 +37,28 @@ image (masked) to be able to use more common algorithms.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/01/2021"
+__date__ = "03/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
 
 import cython
 import numpy
-from libc.math cimport sqrt, fabs
+from libc.math cimport sqrt, fabs, NAN
 from cython.parallel import prange
 from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
                          int32_t, uint32_t, int64_t, uint64_t
 
 
-cdef float invert_distance(size_t i0, size_t i1, size_t p0, size_t p1) nogil:
-    return 1. / sqrt(<float> ((i0 - p0) ** 2 + (i1 - p1) ** 2))
+cdef inline float invert_distance(Py_ssize_t i0, Py_ssize_t i1, Py_ssize_t p0, Py_ssize_t p1) noexcept nogil:
+    """Neither d0, nor d1 can be null !"""
+    cdef Py_ssize_t d0, d1
+    d0 = (i0 - p0)
+    d1 = (i1 - p1)
+    return 1. / sqrt(d0*d0 + d1*d1)
+    # if d0*d1:    
+    # else:
+    #     return NAN
 
 
 cdef inline float processPoint(float[:, ::1] data,

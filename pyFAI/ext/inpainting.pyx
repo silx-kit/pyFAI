@@ -29,10 +29,10 @@
 # THE SOFTWARE.
 
 """
-Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
+Cython module for doing inpaining of images.
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "27/12/2022"
+__date__ = "03/03/2023"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -43,6 +43,9 @@ from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
                          int32_t, uint32_t, int64_t, uint64_t
 
 include "bilinear.pxi"
+
+cdef inline double pow2(double x) nogil noexcept:
+    return x*x
 
 
 def largest_width(int8_t[:, :]image):
@@ -203,25 +206,25 @@ def polar_inpaint(floating[:, :] img not None,
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)):
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
                                 values.append((img[idx_row, idx_col],
-                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                               pow2(row - idx_row) + pow2(col - idx_col)))
 
                         idx_col = min(npt_radial - 1, col + radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)):
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
                                 values.append((img[idx_row, idx_col],
-                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                               pow2(row - idx_row) + pow2(col - idx_col)))
 
                         idx_row = max(0, row - radius)
                         for idx_col in range(max(0, col - radius), min(npt_radial, col + radius + 1)):
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
                                 values.append((img[idx_row, idx_col],
-                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                               pow2(row - idx_row) + pow2(col - idx_col)))
 
                         idx_row = min(npt_azim - 1, row + radius)
                         for idx_col in range(max(0, col - radius), min(npt_radial, col + radius + 1)):
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
                                 values.append((img[idx_row, idx_col],
-                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                               pow2(row - idx_row) + pow2(col - idx_col)))
                     if len(values) == 0:
                         zero = numpy.int8(0)
                         if not numpy.logical_and(mask == zero, topaint == zero).any():

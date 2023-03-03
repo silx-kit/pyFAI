@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/01/2022"
+__date__ = "03/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -41,7 +41,18 @@ __license__ = "MIT"
 import cython
 import numpy
 import sys
-from libc.math cimport ceil, floor, copysign
+from libc.math cimport ceil, floor, copysign, pow, fabs, M_PI, sqrt, log, NAN
+
+cdef inline double pow2(double x) noexcept nogil:
+    return x*x
+
+cdef inline double pown(double x, unsigned int n) noexcept nogil:
+    cdef double result = 1.0
+    while n:
+        result *= x
+        n-=1
+    return result
+
 
 # Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
 
@@ -51,7 +62,6 @@ _numpy_1_12_py2_bug = ((sys.version_info.major == 2) and
 # Imports at the C level
 from .isnan cimport isnan
 from cython cimport floating
-from libc.math cimport fabs, M_PI, sqrt, log, NAN
 
 from .shared_types cimport int8_t, uint8_t, int16_t, uint16_t, \
                            int32_t, uint32_t, int64_t, uint64_t,\

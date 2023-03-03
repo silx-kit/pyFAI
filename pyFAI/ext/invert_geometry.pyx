@@ -37,7 +37,7 @@ coordinate.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "16/05/2022"
+__date__ = "03/03/2023"
 __copyright__ = "2018-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -94,10 +94,10 @@ cdef class InvertGeometry:
                     rad_min = rad
         self.rad_min = rad_min
         self.rad_max = rad_max
-        self.rad_scale = 1.0 / (rad_max - rad_min) ** 2
+        self.rad_scale = 1.0 / pow2(rad_max - rad_min)
         self.ang_min = ang_min
         self.ang_max = ang_max
-        self.ang_scale = 1.0 / (ang_max - ang_min) ** 2
+        self.ang_scale = 1.0 / pow2(ang_max - ang_min)
 
     def __dealloc__(self):
         self.radius = None
@@ -121,13 +121,13 @@ cdef class InvertGeometry:
         best1 = 0
         cor0 = 0.0
         cor1 = 0.0
-        cost = self.ang_scale * (self.angle[0, 0] - ang) ** 2 \
-             + self.rad_scale * (self.radius[0, 0] - rad) ** 2
+        cost = self.ang_scale * pow2(self.angle[0, 0] - ang) \
+             + self.rad_scale * pow2(self.radius[0, 0] - rad)
         min_cost = cost
         for id0 in range(self.dim0):
             for id1 in range(self.dim1):
-                cost = self.ang_scale * (self.angle[id0, id1] - ang) ** 2 \
-                     + self.rad_scale * (self.radius[id0, id1] - rad) ** 2
+                cost = self.ang_scale * pow2(self.angle[id0, id1] - ang) \
+                     + self.rad_scale * pow2(self.radius[id0, id1] - rad)
                 if cost < min_cost:
                     min_cost = cost
                     best0 = id0
