@@ -38,7 +38,7 @@ flat-field normalization... taking care of masked values and normalization.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "26/12/2022"
+__date__ = "03/03/2023"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -516,7 +516,6 @@ def _preproc(floating[::1] raw,
     return result
 
 
-
 def preproc(raw,
             dark=None,
             flat=None,
@@ -636,8 +635,10 @@ def preproc(raw,
             result = out
         else:
             result = out.reshape((size, ndim))
-
-    _preproc(raw,
+            
+    key = "float" if numpy.dtype(dtype).itemsize==4 else "double"+"|int8_t"
+    cpreproc =_preproc.__signatures__[key]
+    cpreproc(raw,
              check_dummy,
              dummy,
              delta_dummy,
