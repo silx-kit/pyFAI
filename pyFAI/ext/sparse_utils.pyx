@@ -33,7 +33,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/11/2021"
+__date__ = "03/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -152,7 +152,7 @@ cdef class Vector:
     def get_data(self):
         return numpy.asarray(self.idx[:self.size]), numpy.asarray(self.coef[:self.size])
 
-    cdef inline void _append(self, int idx, float coef):
+    cdef inline void _append(self, int idx, float coef) noexcept:
         cdef:
             int pos, new_allocated
             index_t[::1] newidx
@@ -219,7 +219,7 @@ cdef class ArrayBuilder:
             sum += self.lines[i].nbytes
         return sum
 
-    cdef inline void _append(self, int line, int col, float value):
+    cdef inline void _append(self, int line, int col, float value) noexcept:
         cdef:
             Vector vector
         vector = self.lines[line]
