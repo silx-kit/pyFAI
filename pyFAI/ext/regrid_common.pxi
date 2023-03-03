@@ -414,7 +414,7 @@ cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) noexcept nogi
         return max_val
     else:
         return value
-    
+
 def clip(value,  min_val, int max_val):
     """Limits the value to bounds
 
