@@ -36,7 +36,7 @@ scipy."""
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/12/2020"
+__date__ = "03/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -128,7 +128,7 @@ cdef void fpbspl(float[::1]t,
                  float x,
                  int l,
                  float[::1] h,
-                 float[::1] hh) nogil:
+                 float[::1] hh) noexcept nogil:
     """
     subroutine fpbspl evaluates the (k+1) non-zero b-splines of
     degree k at t(l) <= x < t(l+1) using the stable recurrence
@@ -150,7 +150,7 @@ cdef void fpbspl(float[::1]t,
             h[i + 1] = f * (x - t[l + i - j])
 
 
-cdef void init_w(float[::1] t, int k, float[::1] x, int32_t[::1] lx, float[:, ::1] w) nogil:
+cdef void init_w(float[::1] t, int k, float[::1] x, int32_t[::1] lx, float[:, ::1] w) noexcept nogil:
     """
     Initialize w array for a 1D array
 

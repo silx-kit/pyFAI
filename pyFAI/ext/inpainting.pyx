@@ -44,7 +44,7 @@ from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
 
 include "bilinear.pxi"
 
-cdef inline double pow2(double x) nogil noexcept:
+cdef inline double pow2(double x) noexcept nogil:
     return x*x
 
 

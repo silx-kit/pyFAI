@@ -37,7 +37,7 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "14/09/2021"
+__date__ = "03/03/2023"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -168,7 +168,7 @@ cdef inline double f_r(double p1, double p2, double L, double sinRot1, double co
     # return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
 
 
-cdef inline double f_cosa(double p1, double p2, double L) nogil:
+cdef inline double f_cosa(double p1, double p2, double L) noexcept nogil:
     """
     calculate cosine of the incidence angle for 1 pixel
 
@@ -178,7 +178,7 @@ cdef inline double f_cosa(double p1, double p2, double L) nogil:
     """
     return L / sqrt((L * L) + ((p1 * p1) + (p2 * p2)))
 
-cdef inline double f_sina(double p1, double p2, double L) nogil:
+cdef inline double f_sina(double p1, double p2, double L) noexcept nogil:
     """
     calculate sinus of the incidence angle for 1 pixel
 

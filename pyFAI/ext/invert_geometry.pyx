@@ -103,7 +103,7 @@ cdef class InvertGeometry:
         self.radius = None
         self.angle = None
 
-    cdef bint _call(self, position_t rad, position_t ang, bint refined, position_t[::1] result) nogil:
+    cdef bint _call(self, position_t rad, position_t ang, bint refined, position_t[::1] result) noexcept nogil:
         """Calculate the pixel coordinate leading to the value (rad, angle)
 
         :param rad: radial value

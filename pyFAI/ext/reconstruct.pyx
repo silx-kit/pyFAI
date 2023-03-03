@@ -66,7 +66,7 @@ cdef inline float processPoint(float[:, ::1] data,
                                size_t p0,
                                size_t p1,
                                size_t d0,
-                               size_t d1)nogil:
+                               size_t d1) noexcept nogil:
     cdef:
         size_t dist = 0, i = 0
         float sum = 0.0, count = 0.0, invdst = 0.0

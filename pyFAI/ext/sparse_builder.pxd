@@ -54,10 +54,10 @@ cdef class SparseBuilder(object):
     cdef bool _use_packed_list
     cdef object _mode
 
-    cdef void *_create_bin(self) nogil
-    cdef void _copy_bin_indexes_to(self, int bin_id, int32_t *dest) nogil
-    cdef void _copy_bin_coefs_to(self, int bin_id, float32_t *dest) nogil
-    cdef void _copy_bin_data_to(self, int bin_id, pixel_t *dest) nogil
+    cdef void *_create_bin(self) noexcept nogil
+    cdef void _copy_bin_indexes_to(self, int bin_id, int32_t *dest) noexcept nogil
+    cdef void _copy_bin_coefs_to(self, int bin_id, float32_t *dest) noexcept nogil
+    cdef void _copy_bin_data_to(self, int bin_id, pixel_t *dest) noexcept nogil
 
-    cdef int cget_bin_size(self, int bin_id) nogil
-    cdef void cinsert(self, int bin_id, int index, float32_t coef) nogil
+    cdef int cget_bin_size(self, int bin_id) noexcept nogil
+    cdef void cinsert(self, int bin_id, int index, float32_t coef) noexcept nogil

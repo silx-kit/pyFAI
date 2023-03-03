@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/12/2022"
+__date__ = "03/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -50,7 +50,7 @@ from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
 #include "numpy_common.pxi"
 include "bilinear.pxi"
 
-cdef bint get_bit(int byteval, int idx) nogil:
+cdef bint get_bit(int byteval, int idx) noexcept nogil:
     return ((byteval & (1 << idx)) != 0)
 
 
