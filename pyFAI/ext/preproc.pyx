@@ -636,7 +636,7 @@ def preproc(raw,
             result = out
         else:
             result = out.reshape((size, ndim))
-            
+
     key = ("float" if numpy.dtype(dtype).itemsize==4 else "double")+"|int8_t"
     cpreproc =_preproc.__signatures__[key]
     cpreproc(raw,
