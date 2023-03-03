@@ -56,7 +56,7 @@ cdef inline float invert_distance(Py_ssize_t i0, Py_ssize_t i1, Py_ssize_t p0, P
     d0 = (i0 - p0)
     d1 = (i1 - p1)
     return 1. / sqrt(d0*d0 + d1*d1)
-    # if d0*d1:    
+    # if d0*d1:
     # else:
     #     return NAN
 
