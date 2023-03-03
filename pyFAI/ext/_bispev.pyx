@@ -196,7 +196,7 @@ cdef cy_bispev(float[::1] tx,
                int kx,
                int ky,
                float[::1] x,
-               float[::1] y):
+               float[::1] y) noexcept:
     """
     Actual implementation of bispev in Cython
 
