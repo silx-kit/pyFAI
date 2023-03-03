@@ -481,8 +481,8 @@ cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating st
 def _sp_integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1):
     _integrate1d(buffer, start0, start1, stop0, stop1)
 
-cdef inline void _integrate2d(buffer_t[:, ::1] box, 
-                              floating start0, floating start1, 
+cdef inline void _integrate2d(buffer_t[:, ::1] box,
+                              floating start0, floating start1,
                               floating stop0, floating stop1) noexcept nogil:
     """Integrate in a box a line between start and stop0, line defined by its slope & intercept
 
