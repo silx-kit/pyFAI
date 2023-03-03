@@ -64,9 +64,9 @@ except Exception:
     MAX_THREADS = min(MAX_THREADS, os.cpu_count() or 1)
 
 
-cdef inline double f_t1(double p1, double p2, double p3, 
-                        double sinRot1, double cosRot1, 
-                        double sinRot2, double cosRot2, 
+cdef inline double f_t1(double p1, double p2, double p3,
+                        double sinRot1, double cosRot1,
+                        double sinRot2, double cosRot2,
                         double sinRot3, double cosRot3) noexcept nogil:
     """Calculate t2 (aka y) for 1 pixel
 
@@ -81,9 +81,9 @@ cdef inline double f_t1(double p1, double p2, double p3,
             p3 * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3))
 
 
-cdef inline double f_t2(double p1, double p2, double p3, 
-                        double sinRot1, double cosRot1, 
-                        double sinRot2, double cosRot2, 
+cdef inline double f_t2(double p1, double p2, double p3,
+                        double sinRot1, double cosRot1,
+                        double sinRot2, double cosRot2,
                         double sinRot3, double cosRot3) noexcept nogil:
     """Calculate t2 (aka y) for 1 pixel
 
@@ -98,9 +98,9 @@ cdef inline double f_t2(double p1, double p2, double p3,
             p3 * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3))
 
 
-cdef inline double f_t3(double p1, double p2, double p3, 
-                        double sinRot1, double cosRot1, 
-                        double sinRot2, double cosRot2, 
+cdef inline double f_t3(double p1, double p2, double p3,
+                        double sinRot1, double cosRot1,
+                        double sinRot2, double cosRot2,
                         double sinRot3, double cosRot3) noexcept nogil:
     """Calculate t3 (aka -z) for 1 pixel
 
@@ -114,9 +114,9 @@ cdef inline double f_t3(double p1, double p2, double p3,
     return p1 * sinRot2 - p2 * cosRot2 * sinRot1 + p3 * cosRot1 * cosRot2
 
 
-cdef inline double f_tth(double p1, double p2, double L, 
-                         double sinRot1, double cosRot1, 
-                         double sinRot2, double cosRot2, 
+cdef inline double f_tth(double p1, double p2, double L,
+                         double sinRot1, double cosRot1,
+                         double sinRot2, double cosRot2,
                          double sinRot3, double cosRot3) noexcept nogil:
     """Calculate 2 theta for 1 pixel
 
@@ -134,10 +134,10 @@ cdef inline double f_tth(double p1, double p2, double L,
     return atan2(sqrt(t1 * t1 + t2 * t2), t3)
 
 
-cdef inline double f_q(double p1, double p2, double L, 
-                       double sinRot1, double cosRot1, 
-                       double sinRot2, double cosRot2, 
-                       double sinRot3, double cosRot3, 
+cdef inline double f_q(double p1, double p2, double L,
+                       double sinRot1, double cosRot1,
+                       double sinRot2, double cosRot2,
+                       double sinRot3, double cosRot3,
                        double wavelength) noexcept nogil:
     """
     Calculate the scattering vector q for 1 pixel
@@ -151,9 +151,9 @@ cdef inline double f_q(double p1, double p2, double L,
     return 4.0e-9 * M_PI / wavelength * sin(f_tth(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3) / 2.0)
 
 
-cdef inline double f_chi(double p1, double p2, double L, 
-                         double sinRot1, double cosRot1, 
-                         double sinRot2, double cosRot2, 
+cdef inline double f_chi(double p1, double p2, double L,
+                         double sinRot1, double cosRot1,
+                         double sinRot2, double cosRot2,
                          double sinRot3, double cosRot3) noexcept nogil:
     """
     calculate chi for 1 pixel
@@ -169,9 +169,9 @@ cdef inline double f_chi(double p1, double p2, double L,
     return atan2(t1, t2)
 
 
-cdef inline double f_r(double p1, double p2, double L, 
-                       double sinRot1, double cosRot1, 
-                       double sinRot2, double cosRot2, 
+cdef inline double f_r(double p1, double p2, double L,
+                       double sinRot1, double cosRot1,
+                       double sinRot2, double cosRot2,
                        double sinRot3, double cosRot3) noexcept nogil:
     """
     calculate r for 1 pixel, radius from beam center to current
