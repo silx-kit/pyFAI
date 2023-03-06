@@ -45,7 +45,7 @@ cdef inline any_t pow2(any_t x) noexcept nogil:
 
 
 cdef inline any_t pown(any_t x, unsigned int n) noexcept nogil:
-    cdef any_t result = 1.0
+    cdef any_t result = 1
     if n==0:
         return result
     elif n==1:
