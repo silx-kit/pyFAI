@@ -27,7 +27,7 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "07/01/2022"
+__date__ = "03/03/2023"
 __copyright__ = "2018-2021, ESRF"
 
 
@@ -87,7 +87,7 @@ cdef cppclass Heap:
     int _packed_pos
     int _block_size
 
-    Heap(int block_size) nogil:
+    Heap(int block_size) noexcept nogil:
         this._block_size = block_size
         this._index_pos = 0
         this._coef_pos = 0
@@ -97,7 +97,7 @@ cdef cppclass Heap:
         this._current_pixel_block = NULL
         this._current_packed_block = NULL
 
-    __dealloc__() nogil:
+    __dealloc__() noexcept nogil:
         cdef:
             clist[int32_t *].iterator it_indexes
             clist[float32_t *].iterator it_coefs
@@ -132,7 +132,7 @@ cdef cppclass Heap:
             libc.stdlib.free(packed)
             preincrement(it_packed)
 
-    int32_t * alloc_indexes(int size) nogil:
+    int32_t * alloc_indexes(int size) noexcept nogil:
         cdef:
             int32_t *data
         if this._current_index_block == NULL or this._index_pos + size > this._block_size:
@@ -144,7 +144,7 @@ cdef cppclass Heap:
         this._index_pos += size
         return data
 
-    float32_t * alloc_coefs(int size) nogil:
+    float32_t * alloc_coefs(int size) noexcept nogil:
         cdef:
             float32_t *data
         if this._current_coef_block == NULL or this._coef_pos + size > this._block_size:
@@ -156,7 +156,7 @@ cdef cppclass Heap:
         this._coef_pos += size
         return data
 
-    chained_pixel_t* alloc_pixel() nogil:
+    chained_pixel_t* alloc_pixel() noexcept nogil:
         cdef:
             chained_pixel_t *data
 #             int foo
@@ -169,7 +169,7 @@ cdef cppclass Heap:
         this._pixel_pos += 1
         return data
 
-    packed_data_t* alloc_packed_data() nogil:
+    packed_data_t* alloc_packed_data() noexcept nogil:
         cdef:
             packed_data_t *data
 #             int foo
@@ -190,7 +190,7 @@ cdef cppclass PixelElementaryBlock:
     int _max_size
     bool _allocated
 
-    PixelElementaryBlock(int size, Heap *heap) nogil:
+    PixelElementaryBlock(int size, Heap *heap) noexcept nogil:
         if heap == NULL:
             this._indexes = <int32_t *>libc.stdlib.malloc(size * sizeof(int32_t))
             this._coefs = <float32_t *>libc.stdlib.malloc(size * sizeof(float32_t))
@@ -202,23 +202,23 @@ cdef cppclass PixelElementaryBlock:
         this._size = 0
         this._max_size = size
 
-    __dealloc__() nogil:
+    __dealloc__() noexcept nogil:
         if this._allocated:
             libc.stdlib.free(this._indexes)
             libc.stdlib.free(this._coefs)
 
-    void push(pixel_t &pixel) nogil:
+    void push(pixel_t &pixel) noexcept nogil:
         this._indexes[this._size] = pixel.index
         this._coefs[this._size] = pixel.coef
         this._size += 1
 
-    int size() nogil:
+    int size() noexcept nogil:
         return this._size
 
-    bool is_full() nogil:
+    bool is_full() noexcept nogil:
         return this._size >= this._max_size
 
-    bool has_space(int size) nogil:
+    bool has_space(int size) noexcept nogil:
         return this._size + size <= this._max_size
 
 
@@ -228,12 +228,12 @@ cdef cppclass PixelBlock:
     Heap *_heap
     PixelElementaryBlock* _current_block
 
-    PixelBlock(int block_size, Heap *heap) nogil:
+    PixelBlock(int block_size, Heap *heap) noexcept nogil:
         this._block_size = block_size
         this._heap = heap
         this._current_block = NULL
 
-    __dealloc__() nogil:
+    __dealloc__() noexcept nogil:
         cdef:
             PixelElementaryBlock* element
 #             int i = 0
@@ -245,7 +245,7 @@ cdef cppclass PixelBlock:
             preincrement(it)
         this._blocks.clear()
 
-    void push(pixel_t &pixel) nogil:
+    void push(pixel_t &pixel) noexcept nogil:
         cdef:
             PixelElementaryBlock *block
         if this._current_block == NULL or this._current_block.is_full():
@@ -255,7 +255,7 @@ cdef cppclass PixelBlock:
         block = this._current_block
         block.push(pixel)
 
-    int size() nogil:
+    int size() noexcept nogil:
         cdef:
             int size = 0
             clist[PixelElementaryBlock*].iterator it
@@ -265,7 +265,7 @@ cdef cppclass PixelBlock:
             preincrement(it)
         return size
 
-    void copy_indexes_to(int32_t *dest) nogil:
+    void copy_indexes_to(int32_t *dest) noexcept nogil:
         cdef:
             clist[PixelElementaryBlock*].iterator it
             PixelElementaryBlock* block
@@ -277,7 +277,7 @@ cdef cppclass PixelBlock:
                 dest += block.size()
             preincrement(it)
 
-    void copy_coefs_to(float32_t *dest) nogil:
+    void copy_coefs_to(float32_t *dest) noexcept nogil:
         cdef:
             clist[PixelElementaryBlock*].iterator it
             PixelElementaryBlock* block
@@ -289,7 +289,7 @@ cdef cppclass PixelBlock:
                 dest += block.size()
             preincrement(it)
 
-    void copy_data_to(pixel_t *dest) nogil:
+    void copy_data_to(pixel_t *dest) noexcept nogil:
         cdef:
             clist[PixelElementaryBlock*].iterator it
             PixelElementaryBlock* block
@@ -308,32 +308,32 @@ cdef cppclass PixelBin:
     clist[pixel_t] _pixels
     PixelBlock *_pixels_in_block
 
-    PixelBin(int block_size, Heap *heap) nogil:
+    PixelBin(int block_size, Heap *heap) noexcept nogil:
         if block_size > 0:
             this._pixels_in_block = new PixelBlock(block_size, heap)
         else:
             this._pixels_in_block = NULL
 
-    __dealloc__() nogil:
+    __dealloc__() noexcept nogil:
         if this._pixels_in_block != NULL:
             del this._pixels_in_block
             this._pixels_in_block = NULL
         else:
             this._pixels.clear()
 
-    void push(pixel_t &pixel) nogil:
+    void push(pixel_t &pixel) noexcept nogil:
         if this._pixels_in_block != NULL:
             this._pixels_in_block.push(pixel)
         else:
             this._pixels.push_back(pixel)
 
-    int size() nogil:
+    int size() noexcept nogil:
         if this._pixels_in_block != NULL:
             return this._pixels_in_block.size()
         else:
             return this._pixels.size()
 
-    void copy_indexes_to(int32_t *dest) nogil:
+    void copy_indexes_to(int32_t *dest) noexcept nogil:
         cdef:
             clist[pixel_t].iterator it_points
 
@@ -346,7 +346,7 @@ cdef cppclass PixelBin:
             preincrement(it_points)
             dest += 1
 
-    void copy_coefs_to(float32_t *dest) nogil:
+    void copy_coefs_to(float32_t *dest) noexcept nogil:
         cdef:
             clist[pixel_t].iterator it_points
 
@@ -359,7 +359,7 @@ cdef cppclass PixelBin:
             preincrement(it_points)
             dest += 1
 
-    void copy_data_to(pixel_t *dest) nogil:
+    void copy_data_to(pixel_t *dest) noexcept nogil:
         cdef:
             clist[pixel_t].iterator it_points
 
@@ -379,7 +379,7 @@ cdef struct sparse_builder_internal_t:
     Heap *_heap
 
 
-cdef inline sparse_builder_internal_t *get_internal_data(sparse_builder_private_t* data) nogil:
+cdef inline sparse_builder_internal_t *get_internal_data(sparse_builder_private_t* data) noexcept nogil:
     return <sparse_builder_internal_t*> data
 
 
@@ -496,7 +496,7 @@ cdef class SparseBuilder(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    cdef void *_create_bin(self) nogil:
+    cdef void *_create_bin(self) noexcept nogil:
         """Create a bin object used to statore data for some formats.
 
         :rtype: PixelBin
@@ -506,7 +506,7 @@ cdef class SparseBuilder(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    cdef void cinsert(self, int bin_id, int index, float32_t coef) nogil:
+    cdef void cinsert(self, int bin_id, int index, float32_t coef) noexcept nogil:
         """Insert an indice and a value in a specific bin.
 
         This function to not have any overhead like `insert`. There is no check
@@ -613,7 +613,7 @@ cdef class SparseBuilder(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    cdef int cget_bin_size(self, int bin_id) nogil:
+    cdef int cget_bin_size(self, int bin_id) noexcept nogil:
         """Returns the size of a specific bin.
 
         :param int bin_id: Index of the bin
@@ -702,7 +702,7 @@ cdef class SparseBuilder(object):
                     size += pixel_bin.size()
         return size
 
-    cdef void _copy_bin_indexes_to(self, int bin_id, int32_t *dest) nogil:
+    cdef void _copy_bin_indexes_to(self, int bin_id, int32_t *dest) noexcept nogil:
         cdef:
             PixelBin *pixel_bin
             compact_bin_t *compact_bin
@@ -725,7 +725,7 @@ cdef class SparseBuilder(object):
             if pixel_bin != NULL:
                 pixel_bin.copy_indexes_to(dest)
 
-    cdef void _copy_bin_coefs_to(self, int bin_id, float32_t *dest) nogil:
+    cdef void _copy_bin_coefs_to(self, int bin_id, float32_t *dest) noexcept nogil:
         cdef:
             PixelBin *pixel_bin
             compact_bin_t *compact_bin
@@ -748,7 +748,7 @@ cdef class SparseBuilder(object):
             if pixel_bin != NULL:
                 pixel_bin.copy_coefs_to(dest)
 
-    cdef void _copy_bin_data_to(self, int bin_id, pixel_t *dest) nogil:
+    cdef void _copy_bin_data_to(self, int bin_id, pixel_t *dest) noexcept nogil:
         cdef:
             PixelBin *pixel_bin
             compact_bin_t *compact_bin

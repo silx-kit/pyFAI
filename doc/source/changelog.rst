@@ -1,9 +1,27 @@
 :Author: Jérôme Kieffer
-:Date: 16/01/2023
+:Date: 03/03/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
+
+2023.XX
+-------
+- Support all version of python between 3.7 and 3.11
+- Support Cython 3.0b1 (with performance degradation) in addition of cython 0.29
+
+2023.02 27/02/2023
+------------------
+- Core:
+    + `sigma_clip_ng` is not the default `sigma_clip`
+    + expose documentation for `sigma_clip_legacy` in addition to `sigma_clip_ng`
+    + `Worker` can now use `sigma_clip_legacy` in addition to `sigma_clip_ng`, `integrate1d` or `integrate2d`
+    + New calibrant: Vanadinite (used in high-presure, often as single crystal)
+- GUI:
+    + Fix labels on axes for some rarely used units
+    + refactor IntegrationMethodDialog and share the IntegrationMethodTabs with pyFAI-calib2
+- Test:
+    + silent some noisy test (OpenCL on windows)
 
 2023.01 16/01/2023
 ------------------

@@ -1,10 +1,9 @@
 # coding: utf-8
-#cython: embedsignature=True, language_level=3
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,38 +25,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from libcpp cimport bool
-from libcpp.list cimport list as clist
-from .shared_types cimport int32_t, float32_t
+"""Common cdef functions for math power calculation with integrers
 
-cdef packed struct pixel_t:
-    int32_t index
-    float32_t coef
+"""
+
+__author__ = "Jérôme Kieffer"
+__contact__ = "Jerome.kieffer@esrf.fr"
+__date__ = "06/03/2023"
+__status__ = "stable"
+__license__ = "MIT"
+
+from .shared_types cimport int8_t, uint8_t, int16_t, uint16_t, \
+                           int32_t, uint32_t, int64_t, uint64_t,\
+                           float32_t, float64_t, floating, any_int_t, any_t
 
 
-cdef struct sparse_builder_private_t:
-    void **_bins
-    void *_compact_bins
-    void *_heap
+cdef inline any_t pow2(any_t x) noexcept nogil:
+    return x*x
 
 
-cdef class SparseBuilder(object):
-
-    cdef sparse_builder_private_t _data
-
-    cdef int _nbin
-    cdef int _block_size
-    cdef int *_sizes
-    cdef bool _use_linked_list
-    cdef bool _use_blocks
-    cdef bool _use_heap_linked_list
-    cdef bool _use_packed_list
-    cdef object _mode
-
-    cdef void *_create_bin(self) noexcept nogil
-    cdef void _copy_bin_indexes_to(self, int bin_id, int32_t *dest) noexcept nogil
-    cdef void _copy_bin_coefs_to(self, int bin_id, float32_t *dest) noexcept nogil
-    cdef void _copy_bin_data_to(self, int bin_id, pixel_t *dest) noexcept nogil
-
-    cdef int cget_bin_size(self, int bin_id) noexcept nogil
-    cdef void cinsert(self, int bin_id, int index, float32_t coef) noexcept nogil
+cdef inline any_t pown(any_t x, unsigned int n) noexcept nogil:
+    cdef any_t result = 1
+    if n==0:
+        return result
+    elif n==1:
+        return x
+    elif n==2:
+        return x*x
+    while n:
+        result *= x
+        n-=1
+    return result

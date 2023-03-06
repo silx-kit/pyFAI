@@ -42,7 +42,7 @@ cdef class Bilinear:
         readonly Py_ssize_t width, height
 
     cpdef Py_ssize_t cp_local_maxi(self, Py_ssize_t)
-    cdef Py_ssize_t c_local_maxi(self, Py_ssize_t) nogil
+    cdef Py_ssize_t c_local_maxi(self, Py_ssize_t) noexcept nogil
 
     def __cinit__(self, data not None):
         assert data.ndim == 2
@@ -106,7 +106,7 @@ cdef class Bilinear:
             float d1 = x[1]
         return self._f_cy(d0, d1)
 
-    cdef float _f_cy(self, cython.floating d0, cython.floating d1) nogil:
+    cdef float _f_cy(self, cython.floating d0, cython.floating d1) noexcept nogil:
         """
         Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates
 
@@ -214,7 +214,7 @@ cdef class Bilinear:
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    cdef Py_ssize_t c_local_maxi(self, Py_ssize_t x) nogil:
+    cdef Py_ssize_t c_local_maxi(self, Py_ssize_t x) noexcept nogil:
         """
         Return the local maximum ... without sub-pixel refinement
 
