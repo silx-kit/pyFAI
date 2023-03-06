@@ -32,7 +32,7 @@
 Cython module for doing inpaining of images.
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "03/03/2023"
+__date__ = "06/03/2023"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -43,9 +43,7 @@ from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
                          int32_t, uint32_t, int64_t, uint64_t
 
 include "bilinear.pxi"
-
-cdef inline double pow2(double x) noexcept nogil:
-    return x*x
+include "math_common.pxi"
 
 
 def largest_width(int8_t[:, :]image):

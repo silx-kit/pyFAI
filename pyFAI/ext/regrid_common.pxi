@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/03/2023"
+__date__ = "06/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -43,16 +43,7 @@ import numpy
 import sys
 from libc.math cimport ceil, floor, copysign, pow, fabs, M_PI, sqrt, log, NAN
 
-cdef inline double pow2(double x) noexcept nogil:
-    return x*x
-
-cdef inline double pown(double x, unsigned int n) noexcept nogil:
-    cdef double result = 1.0
-    while n:
-        result *= x
-        n-=1
-    return result
-
+include "math_common.pxi"
 
 # Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
 
@@ -61,11 +52,6 @@ _numpy_1_12_py2_bug = ((sys.version_info.major == 2) and
 
 # Imports at the C level
 from .isnan cimport isnan
-from cython cimport floating
-
-from .shared_types cimport int8_t, uint8_t, int16_t, uint16_t, \
-                           int32_t, uint32_t, int64_t, uint64_t,\
-                           float32_t, float64_t
 
 # How position are stored
 ctypedef float64_t position_t
@@ -116,31 +102,6 @@ else:
                           ('norm', acc_d),
                          ('count', acc_d)])
 
-ctypedef fused any_int_t:
-    uint8_t
-    uint16_t
-    uint32_t
-    uint64_t
-    int8_t
-    int16_t
-    int32_t
-    int64_t
-
-ctypedef fused any_t:
-    int
-    long
-    uint8_t
-    uint16_t
-    uint32_t
-    uint64_t
-    int8_t
-    int16_t
-    int32_t
-    int64_t
-    float32_t
-    float64_t
-
-
 cdef:
     struct preproc_t:
         data_t signal
@@ -162,7 +123,7 @@ from ..containers import Integrate1dtpl, Integrate2dtpl
 Boundaries = namedtuple("Boundaries", "min0 max0 min1 max1")
 
 @cython.cdivision(True)
-cdef floating  get_bin_number(floating x0, floating pos0_min, floating delta) noexcept nogil:
+cdef inline floating get_bin_number(floating x0, floating pos0_min, floating delta) noexcept nogil:
     """
     calculate the bin number for any point (as floating)
 
@@ -436,7 +397,9 @@ def calc_area(I1, I2, slope, intercept):
     return _calc_area(<position_t> I1, <position_t> I2, <position_t> slope, <position_t> intercept)
 
 
-cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1) noexcept nogil:
+cdef inline void _integrate1d(buffer_t[::1] buffer,
+                              floating start0, floating start1,
+                              floating stop0, floating stop1) noexcept nogil:
     """"Integrate in a box a segment between start and stop
 
     :param buffer: Buffer which is modified in place
@@ -478,7 +441,9 @@ cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating st
             if buffer_size > stop0 >= 0:
                 buffer[istop0] += _calc_area(floor(stop0 + 1), stop0, slope, intercept)
 
-def _sp_integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1):
+def _sp_integrate1d(buffer_t[::1] buffer,
+                    floating start0, floating start1,
+                    floating stop0, floating stop1):
     _integrate1d(buffer, start0, start1, stop0, stop1)
 
 cdef inline void _integrate2d(buffer_t[:, ::1] box,
