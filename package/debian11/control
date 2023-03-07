@@ -4,7 +4,7 @@ Uploaders: Jerome Kieffer <jerome.kieffer@esrf.fr>,
            Picca Frédéric-Emmanuel <picca@debian.org>
 Section: science
 Priority: extra
-Build-Depends: cython3,
+Build-Depends: cython3 (>=0.29.31),
                cython3-dbg,
                debhelper,
                dh-python,

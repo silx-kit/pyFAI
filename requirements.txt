@@ -2,7 +2,7 @@ wheel
 meson-python
 ninja
 numpy
-cython
+cython >=0.29.31
 fabio
 scipy
 matplotlib
