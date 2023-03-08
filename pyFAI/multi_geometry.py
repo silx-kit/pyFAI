@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/03/2023"
+__date__ = "08/03/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -57,7 +57,8 @@ class MultiGeometry(object):
 
     def __init__(self, ais, unit="2th_deg",
                  radial_range=(0, 180), azimuth_range=None,
-                 wavelength=None, empty=0.0, chi_disc=180):
+                 wavelength=None, empty=0.0, chi_disc=180,
+                 threadpoolsize=cpu_count()):
         """
         Constructor of the multi-geometry integrator
 
@@ -66,6 +67,8 @@ class MultiGeometry(object):
         :param azimuthal_range: (2-tuple) common azimuthal range for integration
         :param empty: value for empty pixels
         :param chi_disc: if 0, set the chi_discontinuity at 0, else π
+        :param threadpoolsize: By default, use a thread-pool to parallelize histogram/CSC integrator over as many threads as cores,
+                               set to False/0 to serialize
         """
         if azimuth_range is None:
             azimuth_range = (-180, 180) if chi_disc else (0, 360)
@@ -75,7 +78,7 @@ class MultiGeometry(object):
                     else AzimuthalIntegrator.sload(ai)
                     for ai in ais]
         self.wavelength = None
-        self.threadpool = ThreadPool(min(len(self.ais), cpu_count()))
+        self.threadpool = ThreadPool(min(len(self.ais), threadpoolsize)) if threadpoolsize>0 else None
         if wavelength:
             self.set_wavelength(wavelength)
         self.radial_range = tuple(radial_range[:2])
@@ -157,8 +160,12 @@ class MultiGeometry(object):
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
-        results = self.threadpool.map(_integrate,
-                                      zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        if self.threadpool is None:
+            results = map(_integrate,
+                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        else:
+            results = self.threadpool.map(_integrate,
+                                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
         for res, ai in zip(results, self.ais):
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count
@@ -248,8 +255,12 @@ class MultiGeometry(object):
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
-        results = self.threadpool.map(_integrate,
-            zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        if self.threadpool is None:
+            results = map(_integrate,
+                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        else:
+            results = self.threadpool.map(_integrate,
+                zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
         for res, ai in zip(results, self.ais):
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count
