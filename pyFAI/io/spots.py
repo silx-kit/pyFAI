@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "09/03/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -265,7 +265,8 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
 
                 detector["distance"] = ai.dist
                 detector["distance"].attrs["units"] = "m"
-                detector.create_dataset("mask", data=ai.detector.mask, **cmp)
+                if ai.detector.mask is not None:
+                    detector.create_dataset("mask", data=ai.detector.mask, **cmp)
                 detector["x_pixel_size"] = ai.detector.pixel2
                 detector["y_pixel_size"] = ai.detector.pixel1
                 detector["x_pixel_size"].attrs["units"] = "m"
