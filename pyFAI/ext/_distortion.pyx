@@ -35,14 +35,14 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "03/03/2023"
+__date__ = "09/03/2023"
 __copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 include "regrid_common.pxi"
 import cython
 import numpy
-from cython cimport view, floating
+from cython cimport view
 from cython.parallel import prange
 from cpython.ref cimport PyObject, Py_XDECREF
 from libc.string cimport memset, memcpy

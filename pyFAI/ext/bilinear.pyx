@@ -33,25 +33,20 @@
 to bilinear interpolations.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "25/01/2022"
+__date__ = "09/03/2023"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
 import numpy
-from cython cimport floating
 from cython.parallel import prange
 
 import logging
 logger = logging.getLogger("pyFAI.ext.bilinear")
 
-from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
-                         int32_t, uint32_t, int64_t, uint64_t
-
-ctypedef double float64_t
-ctypedef float float32_t
+include "bilinear.pxi"
 
 def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
                              float[:, :, :, ::1] pos,
@@ -193,6 +188,3 @@ def convert_corner_2D_to_4D(Py_ssize_t ndim,
                 pos[i, j, 2, 0] += d3[i + 1, j + 1]
                 pos[i, j, 3, 0] += d3[i, j + 1]
     return numpy.asarray(pos)
-
-
-include "bilinear.pxi"

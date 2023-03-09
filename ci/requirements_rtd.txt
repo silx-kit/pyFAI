@@ -4,7 +4,7 @@ h5py
 fabio
 sphinx
 scipy
-cython
+cython >=0.29.31
 pygments[plugins]
 sphinxcontrib-programoutput
 silx

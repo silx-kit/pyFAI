@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 03/03/2023
+:Date: 07/03/2023
 :Keywords: changelog
 
 Change-log of versions
@@ -8,7 +8,7 @@ Change-log of versions
 2023.XX
 -------
 - Support all version of python between 3.7 and 3.11
-- Support Cython 3.0b1 (with performance degradation) in addition of cython 0.29
+- Support Cython 3.0b1 (with performance degradation) in addition of cython 0.29.31+
 
 2023.02 27/02/2023
 ------------------
