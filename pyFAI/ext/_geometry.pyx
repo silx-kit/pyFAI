@@ -37,16 +37,17 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "03/03/2023"
+__date__ = "09/03/2023"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
+
+include "math_common.pxi"
 
 cimport cython
 import os
 import numpy
 from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
-
 
 cdef:
     Py_ssize_t MIN_SIZE = 1024  # Minumum size of the array to go parallel.
@@ -666,7 +667,7 @@ def calc_rad_azim(double L,
         return nout
 
 
-def calc_delta_chi(cython.floating[:, ::1] centers,
+def calc_delta_chi(floating[:, ::1] centers,
                    float_or_double[:, :, :, ::1] corners):
     """Calculate the delta chi array (azimuthal angles) using OpenMP
 

@@ -28,6 +28,7 @@
 cimport cython
 from libc.math cimport floor, ceil, INFINITY
 import logging
+include "math_common.pxi"
 
 logger = logging.getLogger("bilinear")
 
@@ -106,7 +107,7 @@ cdef class Bilinear:
             float d1 = x[1]
         return self._f_cy(d0, d1)
 
-    cdef float _f_cy(self, cython.floating d0, cython.floating d1) noexcept nogil:
+    cdef float _f_cy(self, floating d0, floating d1) noexcept nogil:
         """
         Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates
 

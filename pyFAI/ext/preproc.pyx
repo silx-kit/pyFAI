@@ -38,7 +38,7 @@ flat-field normalization... taking care of masked values and normalization.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "03/03/2023"
+__date__ = "09/03/2023"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -47,7 +47,6 @@ include "regrid_common.pxi"
 import cython
 from ..containers import ErrorModel
 from libc.math cimport fabs, isfinite
-from cython cimport floating
 
 
 cdef floating[:, ::1] c1_preproc(floating[::1] data,
