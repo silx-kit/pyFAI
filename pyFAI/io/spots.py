@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/03/2023"
+__date__ = "10/03/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -186,7 +186,25 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
         result = entry.create_group("result_1")
         result.attrs["NX_class"] = "NXdata"
         result.attrs["signal"] = "nPeaks"
-        result.create_dataset("nPeaks", data=spots_per_frame).attrs["interpretation"] = "spectrum"
+        nPeaks_ds = result.create_dataset("nPeaks", data=spots_per_frame)
+        nPeaks_ds.attrs["interpretation"] = "spectrum"
+
+        try: # to make a map of the sample
+            if grid and grid[0] and len(grid[0]) > 1:
+                "Handle the creation of the map using virtual dataset"
+                shape = grid[0]
+                layout = h5py.VirtualLayout(shape=shape, dtype=spots_per_frame.dtype)
+                vsource = h5py.VirtualSource(filename, nPeaks_ds.name, shape=(spots_per_frame.size,))
+                width = shape[-1]
+                for start in range(shape[0]):
+                    if grid[1] and start%2==1:
+                        layout[start] = vsource[width*(start+1)-1: width*start-1:-1]  # flip one line out of 2
+                    else:
+                        layout[start] = vsource[width*start: width*(start+1)]
+                spot_ds = result.create_virtual_dataset('map', layout, fillvalue=0)
+                spot_ds.attrs["interpretation"] = "image"
+        except Exception as err:
+            logger.error(f"{type(err)}: {err}, while saving peak-map")
 
         total_int = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
         xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
