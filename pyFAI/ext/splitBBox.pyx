@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "01/12/2022"
+__date__ = "03/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -240,15 +240,15 @@ def histoBBox1d(weights,
                 delta_right = fbin0_max - (<float> bin0_max)
 
                 sum_count[bin0_min] += (inv_area * delta_left)
-                sum_data[bin0_min] += (data * (inv_area * delta_left) ** coef_power)
+                sum_data[bin0_min] += (data * pown(inv_area * delta_left, coef_power))
 
                 sum_count[bin0_max] += (inv_area * delta_right)
-                sum_data[bin0_max] += (data * (inv_area * delta_right) ** coef_power)
+                sum_data[bin0_max] += (data * pown(inv_area * delta_right, coef_power))
 
                 if bin0_min + 1 < bin0_max:
                     for idx in range(bin0_min + 1, bin0_max):
                         sum_count[idx] += inv_area
-                        sum_data[idx] += data * (inv_area ** coef_power)
+                        sum_data[idx] += data * pown(inv_area, coef_power)
 
         for idx in range(bins):
                 if sum_count[idx] > epsilon:
@@ -684,13 +684,13 @@ def histoBBox2d(weights,
                     inv_area = 1.0 / (fbin1_max - fbin1_min)
 
                     sum_count[bin0_min, bin1_min] += inv_area * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_down) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_down, coef_power)
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                    sum_data[bin0_min, bin1_max] += data * pown(inv_area * delta_up, coef_power)
                     for j in range(bin1_min + 1, bin1_max):
                         sum_count[bin0_min, j] += inv_area
-                        sum_data[bin0_min, j] += data * (inv_area) ** coef_power
+                        sum_data[bin0_min, j] += data * pown(inv_area, coef_power)
 
             else:
                 # spread on 2 or more bins in dim 0
@@ -700,13 +700,13 @@ def histoBBox2d(weights,
 
                     delta_left = (<position_t> (bin0_min + 1)) - fbin0_min
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_left, coef_power)
                     delta_right = fbin0_max - (<position_t> bin0_max)
                     sum_count[bin0_max, bin1_min] += inv_area * delta_right
-                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right) ** coef_power
+                    sum_data[bin0_max, bin1_min] += data * pown(inv_area * delta_right, coef_power)
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area
-                            sum_data[i, bin1_min] += data * (inv_area) ** coef_power
+                            sum_data[i, bin1_min] += data * pown(inv_area, coef_power)
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
                     inv_area = 1.0 / ((fbin0_max - fbin0_min) * (fbin1_max - fbin1_min))
@@ -717,30 +717,30 @@ def histoBBox2d(weights,
                     delta_up = fbin1_max - (<position_t> bin1_max)
 
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left * delta_down) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_left * delta_down, coef_power)
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_left * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_left * delta_up) ** coef_power
+                    sum_data[bin0_min, bin1_max] += data * pown(inv_area * delta_left * delta_up, coef_power)
 
                     sum_count[bin0_max, bin1_min] += inv_area * delta_right * delta_down
-                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right * delta_down) ** coef_power
+                    sum_data[bin0_max, bin1_min] += data * pown(inv_area * delta_right * delta_down, coef_power)
 
                     sum_count[bin0_max, bin1_max] += inv_area * delta_right * delta_up
-                    sum_data[bin0_max, bin1_max] += data * (inv_area * delta_right * delta_up) ** coef_power
+                    sum_data[bin0_max, bin1_max] += data * pown(inv_area * delta_right * delta_up, coef_power)
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area * delta_down
-                            sum_data[i, bin1_min] += data * (inv_area * delta_down) ** coef_power
+                            sum_data[i, bin1_min] += data * pown(inv_area * delta_down, coef_power)
                             for j in range(bin1_min + 1, bin1_max):
                                 sum_count[i, j] += inv_area
-                                sum_data[i, j] += data * (inv_area) ** coef_power
+                                sum_data[i, j] += data * pown(inv_area, coef_power)
                             sum_count[i, bin1_max] += inv_area * delta_up
-                            sum_data[i, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                            sum_data[i, bin1_max] += data * pown(inv_area * delta_up, coef_power)
                     for j in range(bin1_min + 1, bin1_max):
                             sum_count[bin0_min, j] += inv_area * delta_left
-                            sum_data[bin0_min, j] += data * (inv_area * delta_left) ** coef_power
+                            sum_data[bin0_min, j] += data * pown(inv_area * delta_left, coef_power)
 
                             sum_count[bin0_max, j] += inv_area * delta_right
-                            sum_data[bin0_max, j] += data * (inv_area * delta_right) ** coef_power
+                            sum_data[bin0_max, j] += data * pown(inv_area * delta_right, coef_power)
 
         for i in range(bins0):
             for j in range(bins1):

@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2022"
+__date__ = "02/03/2023"
 __status__ = "development"
 
 import threading
@@ -465,6 +465,7 @@ class Worker(object):
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
                 self.ai.detector.mask = data
+                self.mask_image = filename
 
         # Do it here while we have to store metadata
         filename = config.pop("dark_current", "")

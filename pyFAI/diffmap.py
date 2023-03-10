@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/03/2022"
+__date__ = "02/03/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -123,8 +123,9 @@ class DiffMap(object):
 
     def parse(self, with_config=False):
         """
-        parse options from command line: setup the object
+        Parse options from command line in order to setup the object
 
+        :param with_config:
         :return: dictionary able to setup a DiffMapWidget
         """
         description = """Azimuthal integration for diffraction imaging.
@@ -204,8 +205,16 @@ If the number of files is too large, use double quotes like "*.edf" """
                 config = json.loads(fd.read())
         else:
             config = {}
-        if "ai" not in config:
-            config["ai"] = {}
+        self.inputfiles = [i[0] for i in config.get("input_data", [])]
+        if "ai" in config:
+            self.poni = ai = config["ai"]
+            self.worker.set_config(ai, consume_keys=False)
+        else:
+            ai = {}
+            config["ai"] = ai
+        if "output_file" in config:
+            self.hdf5 = config["output_file"]
+
         if options.verbose:
             logger.setLevel(logging.DEBUG)
         if options.outfile:
@@ -217,8 +226,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                           if os.path.isfile(urlparse(f).path)]
             if dark_files:
                 self.dark = dark_files
-                config["ai"]["dark_current"] = ",".join(dark_files)
-                config["ai"]["do_dark"] = True
+                ai["dark_current"] = ",".join(dark_files)
+                ai["do_dark"] = True
             else:
                 raise RuntimeError("No such dark files")
 
@@ -228,16 +237,15 @@ If the number of files is too large, use double quotes like "*.edf" """
                           if os.path.isfile(urlparse(f).path)]
             if flat_files:
                 self.flat = flat_files
-                config["ai"]["flat_field"] = ",".join(flat_files)
-                config["ai"]["do_flat"] = True
+                ai["flat_field"] = ",".join(flat_files)
+                ai["do_flat"] = True
             else:
                 raise RuntimeError("No such flat files")
 
         if ocl and options.gpu:
-            config["ai"]["opencl_device"] = ocl.select_device(type="gpu")
-            config["ai"]["method"] = "ocl-csr"
+            ai["opencl_device"] = ocl.select_device(type="gpu")
+            ai["method"] = ["full", "csr", "opencl"]
 
-        self.inputfiles = []
         for fn in args:
             f = urlparse(fn).path
             if os.path.isfile(f) and f.endswith(options.extension):
@@ -254,43 +262,52 @@ If the number of files is too large, use double quotes like "*.edf" """
             if os.path.isfile(mask):
                 logger.info("Reading Mask file from: %s", mask)
                 self.mask = os.path.abspath(mask)
-                config["ai"]["mask_file"] = self.mask
-                config["ai"]["do_mask"] = True
+                ai["mask_file"] = self.mask
+                ai["do_mask"] = True
             else:
                 logger.warning("No such mask file %s", mask)
         if options.poni:
             if os.path.isfile(options.poni):
                 logger.info("Reading PONI file from: %s", options.poni)
                 self.poni = options.poni
-                config["ai"]["poni"] = self.poni
+                ai["poni"] = self.poni
             else:
                 logger.warning("No such poni file %s", options.poni)
-        if options.fast is not None:
+        if options.fast is None:
+            self.npt_fast = config.get("fast_motor_points", self.npt_fast)
+        else:
             self.npt_fast = int(options.fast)
             config["fast_motor_points"] = self.npt_fast
-        if options.slow is not None:
+        if options.slow is None:
+            self.npt_slow = config.get("slow_motor_points", self.npt_slow)
+        else:
             self.npt_slow = int(options.slow)
             config["slow_motor_points"] = self.npt_slow
         if options.npt_rad is not None:
-            config["ai"]["nbpt_rad"] = self.npt_rad = int(options.npt_rad)
-            # Why was config["ai"]["nbpt_rad"] a tuple ?
+            ai["nbpt_rad"] = self.npt_rad = int(options.npt_rad)
+        elif "nbpt_rad" in ai:
+            self.npt_rad = ai["nbpt_rad"]
+            # Why was ai["nbpt_rad"] a tuple ?
         if options.npt_azim is not None:
-            config["ai"]["nbpt_azim"] = self.npt_azim = int(options.npt_azim)
+            ai["nbpt_azim"] = self.npt_azim = int(options.npt_azim)
+        elif "nbpt_azim" in ai:
+            self.npt_azim = ai["nbpt_azim"]
 
         if options.offset is not None:
             self.offset = int(options.offset)
-            config["offset"] = self.offset,
+            config["offset"] = self.offset
         else:
-            self.offset = 0
+            self.offset = config.get("offset", 0)
+        self.offset = 0 if self.offset is None else self.offset
         self.stats = options.stats
 
         if with_config:
-            if "do_2D" not in config["ai"]:
-                config["ai"]["do_2D"] = False
-            if "do_solid_angle" not in config["ai"]:
-                config["ai"]["do_solid_angle"] = True
-            if "unit" not in config["ai"]:
-                config["ai"]["unit"] = "2th_deg"
+            if "do_2D" not in ai:
+                ai["do_2D"] = False
+            if "do_solid_angle" not in ai:
+                ai["do_solid_angle"] = True
+            if "unit" not in ai:
+                ai["unit"] = "2th_deg"
             if "experiment_title" not in config:
                 config["experiment_title"] = self.experiment_title
             if "fast_motor_name" not in config:
@@ -330,7 +347,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             process_grp["flatfiles"] = numpy.array([i for i in self.flat], dtype=dtype)
         if self.dark:
             process_grp["darkfiles"] = numpy.array([i for i in self.dark], dtype=dtype)
-        if self.poni is not None:
+        if isinstance(self.poni, str) and os.path.exists(self.poni):
             process_grp["PONIfile"] = self.poni
         process_grp["inputfiles"] = numpy.array([i for i in self.inputfiles], dtype=dtype)
 
@@ -342,9 +359,13 @@ If the number of files is too large, use double quotes like "*.edf" """
         process_grp["dim2"].attrs["axis"] = "diffraction"
         config = nxs.new_class(process_grp, "configuration", "NXnote")
         config["type"] = "text/json"
+        self.worker.shape = self.init_shape()
         worker_config = self.worker.get_config()
+        # print("Worker configuration:")
+        # for k,v in worker_config.items():
+        #     print(f"{k}:\t{v}")
+        print("Worker:", self.worker)
         config["data"] = json.dumps(worker_config, indent=2, separators=(",\r\n", ": "))
-        print(worker_config)
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
         entry_grp.attrs["default"] = self.nxdata_grp.name.split("/", 2)[2]
@@ -359,7 +380,16 @@ If the number of files is too large, use double quotes like "*.edf" """
                             fillvalue=numpy.NaN)
             self.dataset.attrs["interpretation"] = "image"
             self.nxdata_grp.attrs["axes"] = [".", ".", "azimuthal", str(self.unit).split("_")[0]]
+            # Build a transposed view to display the mapping experiment
+            layout = h5py.VirtualLayout(shape=(self.npt_azim, self.npt_rad, self.npt_slow, self.npt_fast), dtype=self.dataset.dtype)
+            source = h5py.VirtualSource(self.dataset)
+            for i in range(self.npt_slow):
+                for j in range(self.npt_fast):
+                    layout[:, :, i, j] = source[i, j]
+            self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.NaN).attrs["interpretation"] = "image"
+
         else:
+            print(f"shape for dataset: {self.npt_slow}, {self.npt_fast}, {self.npt_rad}")
             self.dataset = self.nxdata_grp.create_dataset(
                             name="intensity",
                             shape=(self.npt_slow, self.npt_fast, self.npt_rad),
@@ -369,6 +399,14 @@ If the number of files is too large, use double quotes like "*.edf" """
                             fillvalue=numpy.NaN)
             self.dataset.attrs["interpretation"] = "spectrum"
             self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]
+            # Build a transposed view to display the mapping experiment
+            layout = h5py.VirtualLayout(shape=(self.npt_rad, self.npt_slow, self.npt_fast), dtype=self.dataset.dtype)
+            source = h5py.VirtualSource(self.dataset)
+            for i in range(self.npt_slow):
+                for j in range(self.npt_fast):
+                    layout[:,i,j] = source[i,j]
+            self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.NaN).attrs["interpretation"] = "image"
+
 
         self.nxdata_grp.attrs["signal"] = self.dataset.name.split("/")[-1]
 
@@ -390,6 +428,22 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.mask is not None:
             self.ai.detector.set_mask(_reduce_images(self.mask, method="max"))
 
+    def init_shape(self):
+        """Initialize the worker with the proper input shape
+
+        :return: shape of the individual frames
+        """
+        if self.ai.detector.shape:
+            # shape of detector undefined: reading the first image to guess it
+            shape = self.ai.detector.shape
+        else:
+            fimg = fabio.open(self.inputfiles[0])
+            shape = fimg.data.shape
+            self.worker.ai.shape = shape
+        self.worker.shape = shape
+        self.worker.output = "raw"
+        return shape
+
     def init_ai(self):
         """Force initialization of azimuthal intgrator
 
@@ -399,14 +453,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.setup_ai()
         if not self.nxdata_grp:
             self.makeHDF5(rewrite=False)
-        if self.ai.detector.shape:
-            # shape of detector undefined: reading the first image to guess it
-            shape = self.ai.detector.shape
-        else:
-            fimg = fabio.open(self.inputfiles[0])
-            shape = fimg.data.shape
-        self.worker.shape = shape
-        self.worker.output = "raw"
+        shape = self.init_shape()
         data = numpy.empty(shape, dtype=numpy.float32)
         print(f"Initialization of the Azimuthal Integrator using method {self.method}")
         # enforce initialization of azimuthal integrator

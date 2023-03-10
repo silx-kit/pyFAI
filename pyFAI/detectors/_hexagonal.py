@@ -33,13 +33,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2020"
+__date__ = "07/03/2023"
 __status__ = "production"
 
 
 import numpy
 import logging
-import json
+from math import sqrt
 from ._common import Detector
 logger = logging.getLogger(__name__)
 
@@ -68,9 +68,8 @@ class HexDetector(Detector):
         """
         assert len(shape) == 2
         ary = numpy.zeros(shape+(6, 3))
-        a = 1
-        sqrt3 = numpy.sqrt(3.0)
-        h = sqrt3/2
+        sqrt3 = sqrt(3.0)
+        h = 0.5*sqrt3
         r = numpy.linspace(0, 2, 7, endpoint=True)[:-1] - 0.5
         c = numpy.exp((0+1j)*r*numpy.pi) / sqrt3
         c += complex(-c.real.min(), -c.imag.min())
@@ -87,7 +86,7 @@ class HexDetector(Detector):
     def __init__(self, pitch=None, pixel1=None, pixel2=None, max_shape=None):
         if pitch:
             pitch = float(pitch)
-            h = pitch*numpy.sqrt(3.0)/2.0
+            h = 0.5*pitch*sqrt(3.0)
         else: #fallback on standard signature
             pitch = pixel2
             h = pixel1

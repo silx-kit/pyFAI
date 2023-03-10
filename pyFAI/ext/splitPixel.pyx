@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/07/2022"
+__date__ = "03/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -231,7 +231,7 @@ def fullSplit1D(pos,
                 for i in range(bin0_min, bin0_max):
                     sub_area = buffer[i] * inv_area
                     sum_count[i] += sub_area
-                    sum_data[i] += (sub_area ** coef_power) * data
+                    sum_data[i] += pown(sub_area, coef_power) * data
 
                 buffer[bin0_min:bin0_max] = 0
         for i in range(bins):
@@ -681,14 +681,14 @@ def fullSplit2D(pos,
                     inv_area = 1.0 / area_pixel
 
                     sum_count[bin0_min, bin1_min] += inv_area * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_down) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_down, coef_power)
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                    sum_data[bin0_min, bin1_max] += data * pown(inv_area * delta_up, coef_power)
                     # if bin1_min + 1 < bin1_max:
                     for j in range(bin1_min + 1, bin1_max):
                             sum_count[bin0_min, j] += inv_area
-                            sum_data[bin0_min, j] += data * inv_area ** coef_power
+                            sum_data[bin0_min, j] += data * pown(inv_area, coef_power)
 
             else:
                 # spread on more than 2 bins in dim 0
@@ -698,15 +698,15 @@ def fullSplit2D(pos,
                     delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
                     inv_area = delta_left / area_pixel
                     sum_count[bin0_min, bin1_min] += inv_area
-                    sum_data[bin0_min, bin1_min] += data * inv_area ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area, coef_power)
                     delta_right = fbin0_max - (<acc_t> bin0_max)
                     inv_area = delta_right / area_pixel
                     sum_count[bin0_max, bin1_min] += inv_area
-                    sum_data[bin0_max, bin1_min] += data * inv_area ** coef_power
+                    sum_data[bin0_max, bin1_min] += data * pown(inv_area, coef_power)
                     inv_area = 1.0 / area_pixel
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area
-                            sum_data[i, bin1_min] += data * inv_area ** coef_power
+                            sum_data[i, bin1_min] += data * pown(inv_area, coef_power)
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
                     area_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
@@ -717,30 +717,30 @@ def fullSplit2D(pos,
                     inv_area = 1.0 / area_pixel
 
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left * delta_down) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_left * delta_down, coef_power)
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_left * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_left * delta_up) ** coef_power
+                    sum_data[bin0_min, bin1_max] += data * pown(inv_area * delta_left * delta_up, coef_power)
 
                     sum_count[bin0_max, bin1_min] += inv_area * delta_right * delta_down
-                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right * delta_down) ** coef_power
+                    sum_data[bin0_max, bin1_min] += data * pown(inv_area * delta_right * delta_down, coef_power)
 
                     sum_count[bin0_max, bin1_max] += inv_area * delta_right * delta_up
-                    sum_data[bin0_max, bin1_max] += data * (inv_area * delta_right * delta_up) ** coef_power
+                    sum_data[bin0_max, bin1_max] += data * pown(inv_area * delta_right * delta_up, coef_power)
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area * delta_down
-                            sum_data[i, bin1_min] += data * (inv_area * delta_down) ** coef_power
+                            sum_data[i, bin1_min] += data * pown(inv_area * delta_down, coef_power)
                             for j in range(bin1_min + 1, bin1_max):
                                 sum_count[i, j] += inv_area
-                                sum_data[i, j] += data * inv_area ** coef_power
+                                sum_data[i, j] += data * pown(inv_area, coef_power)
                             sum_count[i, bin1_max] += inv_area * delta_up
-                            sum_data[i, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                            sum_data[i, bin1_max] += data * pown(inv_area * delta_up, coef_power)
                     for j in range(bin1_min + 1, bin1_max):
                             sum_count[bin0_min, j] += inv_area * delta_left
-                            sum_data[bin0_min, j] += data * (inv_area * delta_left) ** coef_power
+                            sum_data[bin0_min, j] += data * pown(inv_area * delta_left, coef_power)
 
                             sum_count[bin0_max, j] += inv_area * delta_right
-                            sum_data[bin0_max, j] += data * (inv_area * delta_right) ** coef_power
+                            sum_data[bin0_max, j] += data * pown(inv_area * delta_right, coef_power)
 
     # with nogil:
         for i in range(bins0):
