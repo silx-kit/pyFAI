@@ -2357,7 +2357,6 @@ class AzimuthalIntegrator(Geometry):
 
                         elif (method.impl_lower == "python"):
                             with ocl_py_engine.lock:
-                                print(method.class_funct_ng.klass, cython_integr.size)
                                 integr = method.class_funct_ng.klass(cython_integr.size,
                                                                      cython_integr.lut,
                                                                      bin_centers0=cython_integr.bin_centers0,
