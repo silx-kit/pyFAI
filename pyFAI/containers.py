@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2022"
+__date__ = "13/03/2023"
 __status__ = "development"
 
 from collections import namedtuple
@@ -45,7 +45,7 @@ class ErrorModel(IntEnum):
     VARIANCE = 1
     POISSON = 2
     AZIMUTHAL = 3
-    HYBRID = 4  # used in peak-pickin, use azimuthal for sigma-clipping and poisson later on
+    HYBRID = 4  # used in peak-picking, use azimuthal for sigma-clipping and poisson later on, at the last iteration
 
     @classmethod
     def parse(cls, value):

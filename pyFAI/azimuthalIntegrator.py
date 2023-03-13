@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2023"
+__date__ = "13/03/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2169,12 +2169,17 @@ class AzimuthalIntegrator(Geometry):
         if radial_range:
             radial_range = tuple([i / pos0_scale for i in radial_range])
 
+        error_model = ErrorModel.parse(error_model)
         if variance is not None:
             assert variance.size == data.size
-        elif error_model:
-            error_model = error_model.lower()
-            if error_model == "poisson":
-                variance = numpy.ascontiguousarray(data, numpy.float32)
+            error_model = ErrorModel.VARIANCE
+        if error_model.poissonian and not method.manage_variance:
+            error_model = ErrorModel.VARIANCE
+            if dark is None:
+                variance = numpy.maximum(data, 1.0).astype(numpy.float32)
+            else:
+                variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
+
 
         if azimuth_range is not None:
             azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
@@ -2391,7 +2396,7 @@ class AzimuthalIntegrator(Geometry):
             signal2d = intpl.signal
             norm2d = intpl.normalization
             count = intpl.count
-            if variance is not None:
+            if error_model.do_variance:
                 sigma = intpl.sigma
                 var2d = intpl.variance
 
@@ -2588,7 +2593,7 @@ class AzimuthalIntegrator(Geometry):
             signal2d = intpl.signal
             norm2d = intpl.normalization
             count = intpl.count
-            if variance is not None:
+            if error_model.do_variance:
                 sigma = intpl.sigma
                 var2d = intpl.variance
 
