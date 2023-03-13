@@ -2584,7 +2584,7 @@ class AzimuthalIntegrator(Geometry):
                                                                     split_result=False,
                                                                     variance=variance,
                                                                     dark_variance=None,
-                                                                    error_model=ErrorModel.NO,
+                                                                    error_model=error_model,
                                                                     radial_range=radial_range,
                                                                     azimuth_range=azimuth_range)
             I = intpl.intensity
