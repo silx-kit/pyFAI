@@ -2357,10 +2357,11 @@ class AzimuthalIntegrator(Geometry):
 
                         elif (method.impl_lower == "python"):
                             with ocl_py_engine.lock:
-                                integr = method.class_funct_ng.klass(cython_integr.lut,
-                                                                     cython_integr.size,
-                                                                     bin_centers=cython_integr.bin_centers0,
-                                                                     azim_centers=cython_integr.bin_centers1,
+                                print(method.class_funct_ng.klass, cython_integr.size)
+                                integr = method.class_funct_ng.klass(cython_integr.size,
+                                                                     cython_integr.lut,
+                                                                     bin_centers0=cython_integr.bin_centers0,
+                                                                     bin_centers1=cython_integr.bin_centers1,
                                                                      checksum=cython_integr.lut_checksum,
                                                                      unit=unit, empty=empty,
                                                                      mask_checksum=mask_crc)
