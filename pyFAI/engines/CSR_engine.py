@@ -22,11 +22,11 @@
 """CSR rebinning engine implemented in pure python (with bits of scipy !)
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2023"
+__date__ = "13/03/2023"
 __status__ = "development"
 
 import logging
@@ -394,16 +394,18 @@ class CsrIntegrator2d(CSRIntegrator):
                  image_size,
                  lut=None,
                  empty=0.0,
+                 unit=None,
                  bin_centers0=None,
                  bin_centers1=None,
                  checksum=None,
                  mask_checksum=None):
         """Constructor of the abstract class for 2D integration
 
-        :param size: input image size
+        :param image_size: input image size
         :param lut: tuple of 3 arrays with data, indices and indptr,
                      index of the start of line in the CSR matrix
         :param empty: value for empty pixels
+        :param unit: unit to be used
         :param bin_center: position of the bin center
         :param checksum: checksum for the LUT, if not provided, recalculated
         :param mask_checksum: just a place-holder to track which mask was used
@@ -413,6 +415,8 @@ class CsrIntegrator2d(CSRIntegrator):
         """
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
+        self.unit = unit
+
         if not checksum:
             self.checksum = calc_checksum(lut[0])
         else:
@@ -441,7 +445,8 @@ class CsrIntegrator2d(CSRIntegrator):
                   solidangle=None,
                   polarization=None,
                   absorption=None,
-                  normalization_factor=1.0):
+                  normalization_factor=1.0,
+                  **kwargs):
         """Actually perform the 2D integration
 
         :param signal: array of the right size with the signal in it.
