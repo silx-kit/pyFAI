@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2022"
+__date__ = "13/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
