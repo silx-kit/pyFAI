@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2023"
+__date__ = "14/03/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2215,14 +2215,6 @@ class AzimuthalIntegrator(Geometry):
         else:
             has_flat = "provided"
 
-        I = None
-        sigma = None
-        sum_ = None
-        count = None
-        signal2d = None
-        norm2d = None
-        var2d = None
-
         if method.algo_lower in ("csr", "csc", "lut"):
             intpl = None
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
@@ -2294,7 +2286,8 @@ class AzimuthalIntegrator(Geometry):
                     if (not reset) and safe:
                         if integr.unit != unit:
                             reset = "unit changed"
-                        if integr.bins != numpy.prod(npt):
+                        # print(integr.bins, npt, numpy.prod(npt))
+                        if integr.bins != npt:
                             reset = "number of points changed"
                         if integr.size != data.size:
                             reset = "input image size changed"
@@ -2369,6 +2362,7 @@ class AzimuthalIntegrator(Geometry):
                     if (integr is not None):
                             intpl = integr.integrate_ng(data,
                                                        variance=variance,
+                                                       error_model=error_model,
                                                        dark=dark, flat=flat,
                                                        solidangle=solidangle,
                                                        solidangle_checksum=self._dssa_crc,
@@ -2382,7 +2376,7 @@ class AzimuthalIntegrator(Geometry):
                 # The integrator has already been initialized previously
                 intpl = cython_integr.integrate_ng(data,
                                                    variance=variance,
-                                                   # poissonian=poissonian,
+                                                   error_model=error_model,
                                                    dummy=dummy,
                                                    delta_dummy=delta_dummy,
                                                    dark=dark,
@@ -2390,15 +2384,6 @@ class AzimuthalIntegrator(Geometry):
                                                    solidangle=solidangle,
                                                    polarization=polarization,
                                                    normalization_factor=normalization_factor)
-            I = intpl.intensity
-            bins_rad = intpl.radial
-            bins_azim = intpl.azimuthal
-            signal2d = intpl.signal
-            norm2d = intpl.normalization
-            count = intpl.count
-            if error_model.do_variance:
-                sigma = intpl.sigma
-                var2d = intpl.variance
 
         elif method.algo_lower == "histogram":
             if method.split_lower in ("pseudo", "full"):
@@ -2587,27 +2572,31 @@ class AzimuthalIntegrator(Geometry):
                                                                     error_model=error_model,
                                                                     radial_range=radial_range,
                                                                     azimuth_range=azimuth_range)
-            I = intpl.intensity
-            bins_azim = intpl.azimuthal
-            bins_rad = intpl.radial
-            signal2d = intpl.signal
-            norm2d = intpl.normalization
-            count = intpl.count
-            if error_model.do_variance:
-                sigma = intpl.sigma
-                var2d = intpl.variance
+        I = intpl.intensity
+        bins_azim = intpl.azimuthal
+        bins_rad = intpl.radial
+        signal2d = intpl.signal
+        norm2d = intpl.normalization
+        count = intpl.count
+        if error_model.do_variance:
+            std = intpl.std
+            sem = intpl.sem
+            var2d = intpl.variance
+            norm2d_sq = intpl.norm_sq
+        else:
+            std = sem = var2d = norm2d_sq = None
 
         # Duplicate arrays on purpose ....
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * (180.0 / pi)
 
-        result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
+        result = Integrate2dResult(I, bins_rad, bins_azim, sem)
         result._set_method_called("integrate2d")
         result._set_compute_engine(str(method))
         result._set_method(method)
         result._set_unit(unit)
         result._set_count(count)
-        result._set_sum(sum_)
+        # result._set_sum(sum_)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
         result._set_has_mask_applied(has_mask)
@@ -2617,7 +2606,11 @@ class AzimuthalIntegrator(Geometry):
 
         result._set_sum_signal(signal2d)
         result._set_sum_normalization(norm2d)
-        result._set_sum_variance(var2d)
+        if error_model.do_variance:
+            result._set_sum_normalization2(norm2d_sq)
+            result._set_sum_variance(var2d)
+            result._set_std(std)
+            result._set_std(sem)
 
         if filename is not None:
             writer = DefaultAiWriter(filename, self)
