@@ -38,7 +38,7 @@ Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jerome Kieffer"
-__date__ = "03/03/2023"
+__date__ = "15/03/2023"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -55,7 +55,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .preproc import preproc
-
+from .splitBBox_common import calc_boundaries
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 _COMPILED_WITH_OPENMP = _openmp.COMPILED_WITH_OPENMP
@@ -509,40 +509,65 @@ def histogram1d_engine(radial, int npt,
                           )
 
 
-def histogram2d_engine(pos0,
-                       pos1,
-                       bins,
-                       weights,
-                       pos0_range=None,
-                       pos1_range=None,
-                       bint split=False,
-                       double empty=0.0,
+def histogram2d_engine(radial, azimuthal,
+                       npt, #2-tuple
+                       raw,
+                       dark=None,
+                       flat=None,
+                       solidangle=None,
+                       polarization=None,
+                       absorption=None,
+                       mask=None,
+                       dummy=None,
+                       delta_dummy=None,
+                       normalization_factor=1.0,
+                       empty=None,
+                       split_result=False,
+                       variance=None,
+                       dark_variance=None,
+                       error_model=ErrorModel.NO,
+                       radial_range=None,
+                       azimuth_range=None
                        ):
-    """
-    Calculate 2D histogram of pos0,pos1 weighted by weights when the weights are
-    preprocessed and contain: signal, variance, normalization for each pixel
+    """Implementation of 2D rebinning engine using pure numpy histograms
 
-    :param pos0: 2Theta array
-    :param pos1: Chi array
-    :param weights: array with intensities
-    :param bins: number of output bins int or 2-tuple of int
-    :param pos0_range: minimum and maximum  of the 2th range
-    :param pos1_range: minimum and maximum  of the chi range
+    :param radial: radial position 2D array (same shape as raw)
+    :param azimuthal: azimuthal position 2D array (same shape as raw)
+    :param npt: number of points to integrate over in (radial, azimuthal) dimensions
+    :param raw: 2D array with the raw signal
+    :param dark: array containing the value of the dark noise, to be subtracted
+    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
+    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility
+    :param polarization: Correction for polarization of the incident beam
+    :param absorption: Correction for absorption in the sensor volume
+    :param mask: 2d array of int/bool: non-null where data should be ignored
+    :param dummy: value of invalid data
+    :param delta_dummy: precision for invalid data
+    :param normalization_factor: final value is divided by this
+    :param empty: value to be given for empty bins
+    :param variance: provide an estimation of the variance
+    :param dark_variance: provide an estimation of the variance of the dark_current,
+    :param error_model: set to "poisson" for assuming the detector is poissonian and variance = raw + dark
 
-    :param split: pixel splitting is disabled in histogram
-    :param nthread: OpenMP is disabled. unused here
-    :param empty: value given to empty bins
+
+    NaN are always considered as invalid values
+
+    if neither empty nor dummy is provided, empty pixels are left at 0.
+
+    Nota: "azimuthal_range" has to be integrated into the
+           mask prior to the call of this function
+
+    :return: Integrate1dtpl named tuple containing:
+            position, average intensity, std on intensity,
+            plus the various histograms on signal, variance, normalization and count.
+
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
-    assert pos0.size == pos1.size, "Positions array have the same size"
-
     cdef:
         Py_ssize_t bins0, bins1, i, j, bin0, bin1, c
-        Py_ssize_t size = pos0.size
-        Py_ssize_t nchan = weights.shape[weights.ndim - 1]
-    assert weights.ndim > 1, "Weights have been preprocessed"
-    assert pos0.size == (weights.size // nchan), "Weights have the right size"
-    assert nchan <= 4, "Maximum of 4 chanels"
+        Py_ssize_t size = raw.size
+    assert size == radial.size, "radial has the same size as raw"
+    assert size == azimuthal.size, "azimuthal has the same size as raw"
 
     try:
         bins0, bins1 = tuple(bins)
@@ -552,36 +577,35 @@ def histogram2d_engine(pos0,
     bins1 = max(bins1, 1)
 
     cdef:
+        # Related to data: single precision
+        data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
+        data_t cdummy, ddummy=0.0
+        # Related to positon: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         position_t[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
-        data_t[:, ::1] data = numpy.ascontiguousarray(weights.reshape((-1, nchan)), dtype=data_d)
-        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
+        #Accumulated data are also double
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
+        data_t[:, ::1] out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
         data_t[:, ::1] out_signal = numpy.zeros((bins0, bins1), dtype=data_d)
-        data_t[:, ::1] out_error
+        data_t[:, ::1] out_std, out_sem, out_variance, out_count, out_nrm, out_nrm2
         position_t pos0_min, pos0_maxin, pos0_max,  pos1_min, pos1_maxin, pos1_max, delta0, delta1
         position_t fbin0, fbin1, p0, p1
         acc_t epsilon = 1e-10
         acc_t sig, var, norm
 
-    if pos0_range is not None and len(pos0_range) == 2:
-        pos0_min = min(pos0_range)
-        pos0_maxin = max(pos0_range)
-    else:
-        pos0_min = pos0.min()
-        pos0_maxin = pos0.max()
-    pos0_max = calc_upper_bound(pos0_maxin)
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
+                                                                 cpos1, dpos1,
+                                                                 cmask, pos0_range, pos1_range,
+                                                                 allow_pos0_neg, chiDiscAtPi, clip_pos1)
 
-    if pos1_range is not None and len(pos1_range) > 1:
-        pos1_min = min(pos1_range)
-        pos1_maxin = max(pos1_range)
-    else:
-        pos1_min = pos1.min()
-        pos1_maxin = pos1.max()
+    pos0_max = calc_upper_bound(pos0_maxin)
     pos1_max = calc_upper_bound(pos1_maxin)
 
-    delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
-    delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
+    delta0 = (pos0_max - pos0_min) / (<position_t> bins0)
+    delta1 = (pos1_max - pos1_min) / (<position_t> bins1)
 
+    #TODO 15/3/23: change from here on
     if nchan >= 3:
         out_error = numpy.zeros((bins0, bins1), dtype=data_d)
     if split:

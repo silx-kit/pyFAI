@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/03/2023"
+__date__ = "15/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -819,10 +819,8 @@ def histoBBox2d_engine(weights,
         bins0, bins1 = tuple(bins)
     except TypeError:
         bins0 = bins1 = bins
-    if bins0 <= 0:
-        bins0 = 1
-    if bins1 <= 0:
-        bins1 = 1
+    bins0 = max(1, bins0)
+    bins1 = max(1, bins1)
     cdef:
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
@@ -833,6 +831,7 @@ def histoBBox2d_engine(weights,
         position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
         position_t[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         position_t[::1] dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
+        #Accumulated data are also double
         acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
         data_t[:, ::1] out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
         data_t[:, ::1] out_error
