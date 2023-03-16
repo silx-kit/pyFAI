@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "06/03/2023"
+__date__ = "16/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -256,10 +256,13 @@ cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
     :param bin0, bin1: where to assign data
     :return: Nothing
     """
+    cdef double w2 = weight * weight
     out_data[bin0, bin1, 0] += value.signal * weight
-    out_data[bin0, bin1, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin0, bin1, 1] += value.variance * w2  # Important for variance propagation
     out_data[bin0, bin1, 2] += value.norm * weight
     out_data[bin0, bin1, 3] += value.count * weight
+    if out_data.shape[2] == 5: #Σ c²·ω²
+        out_data[bin0, bin1, 2] += value.norm * value.norm * w2 # used to calculate the standard deviation
 
 
 cdef inline floating area4p(floating a0,
