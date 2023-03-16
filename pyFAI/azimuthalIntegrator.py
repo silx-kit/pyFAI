@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2023"
+__date__ = "16/03/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2503,75 +2503,43 @@ class AzimuthalIntegrator(Geometry):
                                                  normalization_factor=normalization_factor,
                                                  radial_range=radial_range,
                                                  azimuthal_range=azimuth_range)
-###################3
-                elif method.impl_lower == "cython":
-                    logger.debug("integrate2d uses Cython histogram implementation")
-                    prep = preproc(data,
-                                   dark=dark,
-                                   flat=flat,
-                                   solidangle=solidangle,
-                                   polarization=polarization,
-                                   absorption=None,
-                                   mask=mask,
-                                   dummy=dummy,
-                                   delta_dummy=delta_dummy,
-                                   normalization_factor=normalization_factor,
-                                   empty=self._empty,
-                                   split_result=4,
-                                   variance=variance,
-                                   # dark_variance=None,
-                                   # poissonian=False,
-                                   dtype=numpy.float32)
-                    pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-                    chi = self.chiArray(shape)
-                    intpl = histogram.histogram2d_engine(pos0=pos0,
-                                                       pos1=chi,
-                                                       weights=prep,
-                                                       bins=(npt_rad, npt_azim),
-                                                       pos0_range=radial_range,
-                                                       pos1_range=azimuth_range,
-                                                       split=False,
-                                                       empty=empty,
-                                                       )
+####################
+                else: #if method.impl_lower in ["python", "cython"]:
+                    logger.debug("integrate2d uses [CP]ython histogram implementation")
+                    radial = self.array_from_unit(shape, "center", unit, scale=False)
+                    azim = self.chiArray(shape)
+                    if method.impl_lower == "python":
+                        data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
+                        mask = self.create_mask(data, mask, dummy, delta_dummy,
+                                                unit=unit,
+                                                radial_range=radial_range,
+                                                azimuth_range=azimuth_range,
+                                                mode="normal").ravel()
+                        # if radial_range is None:
+                        #     radial_range = [radial.min(), radial.max()]
+                        # if azimuth_range is None:
+                        #     azimuth_range = [azim.min(), azim.max()]
+                    histogrammer = method.class_funct_ng.function
+                    intpl = histogrammer(radial=radial,
+                                         azimuthal=azim,
+                                         bins=(npt_rad, npt_azim),
+                                         raw=data,
+                                         dark=dark,
+                                         flat=flat,
+                                         solidangle=solidangle,
+                                         polarization=polarization,
+                                         absorption=None,
+                                         mask=mask,
+                                         dummy=dummy,
+                                         delta_dummy=delta_dummy,
+                                         normalization_factor=normalization_factor,
+                                         empty=self._empty,
+                                         variance=variance,
+                                         dark_variance=None,
+                                         error_model=error_model,
+                                         radial_range=radial_range,
+                                         azimuth_range=azimuth_range)
 
-                else:  # Python implementation:
-                    logger.debug("integrate2d uses python implementation")
-                    data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
-                    mask = self.create_mask(data, mask, dummy, delta_dummy,
-                                            unit=unit,
-                                            radial_range=radial_range,
-                                            azimuth_range=azimuth_range,
-                                            mode="normal").ravel()
-                    pos0 = self.array_from_unit(shape, "center", unit, scale=False).ravel()
-                    pos1 = self.chiArray(shape).ravel()
-
-                    if radial_range is None:
-                        radial_range = [pos0.min(), pos0.max()]
-                    if azimuth_range is None:
-                        azimuth_range = [pos1.min(), pos1.max()]
-
-                    if method.method[1:4] == ("no", "histogram", "python"):
-                        logger.debug("integrate2d uses Numpy implementation")
-                        intpl = histogram_engine.histogram2d_engine(radial=pos0,
-                                                                    azimuthal=pos1,
-                                                                    npt=(npt_rad, npt_azim),
-                                                                    raw=data,
-                                                                    dark=dark,
-                                                                    flat=flat,
-                                                                    solidangle=solidangle,
-                                                                    polarization=polarization,
-                                                                    absorption=None,
-                                                                    mask=mask,
-                                                                    dummy=dummy,
-                                                                    delta_dummy=delta_dummy,
-                                                                    normalization_factor=normalization_factor,
-                                                                    empty=self._empty,
-                                                                    split_result=False,
-                                                                    variance=variance,
-                                                                    dark_variance=None,
-                                                                    error_model=error_model,
-                                                                    radial_range=radial_range,
-                                                                    azimuth_range=azimuth_range)
         I = intpl.intensity
         bins_azim = intpl.azimuthal
         bins_rad = intpl.radial

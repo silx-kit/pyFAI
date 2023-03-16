@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2023"
+__date__ = "16/03/2023"
 __status__ = "development"
 
 import logging
@@ -148,7 +148,7 @@ def histogram1d_engine(radial, npt,
                           std, sem, histo_normalization2)
 
 
-def histogram2d_engine(radial, azimuthal, npt,
+def histogram2d_engine(radial, azimuthal, bins,
                        raw,
                        dark=None,
                        flat=None,
@@ -160,7 +160,6 @@ def histogram2d_engine(radial, azimuthal, npt,
                        delta_dummy=None,
                        normalization_factor=1.0,
                        empty=None,
-                       split_result=False,
                        variance=None,
                        dark_variance=None,
                        error_model=ErrorModel.NO,
@@ -171,7 +170,7 @@ def histogram2d_engine(radial, azimuthal, npt,
 
     :param radial: radial position 2D array (same shape as raw)
     :param azimuthal: azimuthal position 2D array (same shape as raw)
-    :param npt: number of points to integrate over in (radial, azimuthal) dimensions
+    :param bins: number of points to integrate over in (radial, azimuthal) dimensions
     :param raw: 2D array with the raw signal
     :param dark: array containing the value of the dark noise, to be subtracted
     :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
@@ -222,7 +221,13 @@ def histogram2d_engine(radial, azimuthal, npt,
     prep.shape = -1, 4
     assert prep.shape[0] == radial.size
     assert prep.shape[0] == azimuthal.size
-    npt = tuple(max(1, i) for i in npt)
+    npt = tuple(max(1, i) for i in bins)
+    if radial_range is None:
+        radial_range = [radial.min(), radial.max()*EPS32]
+    if azimuth_range is None:
+        azimuth_range = [azimuthal.min(), azimuthal.max()*EPS32]
+
+
     rng = [radial_range, azimuth_range]
     histo_signal, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 0], range=rng)
     histo_normalization, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 2], range=rng)

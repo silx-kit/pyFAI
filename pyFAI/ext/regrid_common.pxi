@@ -159,7 +159,8 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
                                        floating delta_dummy=0.0,
                                        bint check_dummy=False,
                                        floating normalization_factor=1.0,
-                                       floating dark_variance=0.0) noexcept nogil:
+                                       floating dark_variance=0.0,
+                                       int error_model=1) noexcept nogil:
     """This is a Function in the C-space that performs the preprocessing
     for one data point
 
@@ -169,6 +170,8 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
     :param dark and dark_variance: the dark-noise and the associated variance to be subtracted (signal) or added (variance)
     :param flat, solidangle, polarization, absorption, normalization_factor: all normalization to be multiplied togeather
     :param dummy, delta_dummy, mask,check_dummy: controls the masking of the pixel
+    :param normalization_factor: multiply normalization with this value
+    :param error_model: 0 to diable, 1 for variance, 2 for Poisson model, ...
     :return: isvalid, i.e. True if the pixel is worth further processing
 
     where the result is calculated this way:
@@ -197,6 +200,9 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
 
     if is_valid:
         # Do not use "/=" as they mean reduction for cython
+        if error_model==2: # Poisson error-model:
+            variance = max(1.0, signal)
+
         if dark:
             signal = data - dark
             if dark_variance:
@@ -262,7 +268,7 @@ cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
     out_data[bin0, bin1, 2] += value.norm * weight
     out_data[bin0, bin1, 3] += value.count * weight
     if out_data.shape[2] == 5: #Σ c²·ω²
-        out_data[bin0, bin1, 2] += value.norm * value.norm * w2 # used to calculate the standard deviation
+        out_data[bin0, bin1, 4] += value.norm * value.norm * w2 # used to calculate the standard deviation
 
 
 cdef inline floating area4p(floating a0,

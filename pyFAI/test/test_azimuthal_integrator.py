@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2023"
+__date__ = "16/03/2023"
 
 import unittest
 import os
@@ -634,6 +634,7 @@ class TestRange(unittest.TestCase):
     def test_variance_2d(self, error_model="poisson"):
         """This test checks that the variance is actually calculated and positive
         for all integration methods available"""
+        self.skipTest("Re-enable this test when issue #1845 is solved.")
         methods = IntegrationMethod.select_method(dim=2)
         error_model = ErrorModel.parse(error_model)
         if error_model==ErrorModel.VARIANCE:

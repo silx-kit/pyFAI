@@ -1,6 +1,6 @@
 # coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+## cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
 # cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
@@ -29,16 +29,15 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-from pyFAI.ext.preproc import do_variance
 
-"""A set of histogram functions with or without OpenMP enabled.
+"""A set of histogram functions, some of which with OpenMP enabled.
 
 Re-implementation of the numpy.histogram, optimized for azimuthal integration.
 
 Deprecated, will be replaced by ``silx.math.histogramnd``.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __date__ = "16/03/2023"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
@@ -521,12 +520,11 @@ def histogram2d_engine(radial, azimuthal,
                        mask=None,
                        dummy=None,
                        delta_dummy=None,
-                       normalization_factor=1.0,
-                       empty=None,
-                       split_result=False,
+                       double normalization_factor=1.0,
+                       data_t empty=0.0,
                        variance=None,
                        dark_variance=None,
-                       error_model=ErrorModel.NO,
+                       int error_model=ErrorModel.NO,
                        radial_range=None,
                        azimuth_range=None,
                        bint allow_radial_neg=False,
@@ -572,7 +570,7 @@ def histogram2d_engine(radial, azimuthal,
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
     cdef:
-        Py_ssize_t bins0, bins1, i, j, bin0, bin1, c, idx
+        Py_ssize_t bins0, bins1, i, j, bin0, bin1, idx
         Py_ssize_t size = raw.size
     assert size == radial.size, "radial has the same size as raw"
     assert size == azimuthal.size, "azimuthal has the same size as raw"
@@ -587,7 +585,7 @@ def histogram2d_engine(radial, azimuthal,
     cdef:
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(raw.ravel(), dtype=data_d)
-        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption, cdark_variance
         data_t cdummy, ddummy=0.0
         # Related to positon: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(radial.ravel(), dtype=position_d)
@@ -598,12 +596,19 @@ def histogram2d_engine(radial, azimuthal,
         data_t[:, ::1] out_std = numpy.zeros((bins0, bins1), dtype=data_d)
         data_t[:, ::1] out_sem = numpy.zeros((bins0, bins1), dtype=data_d)
         mask_t[::1] cmask
+        acc_t norm
+        position_t c0, c1
         position_t pos0_min, pos0_maxin, pos0_max,  pos1_min, pos1_maxin, pos1_max, delta0, delta1
-        position_t fbin0, fbin1, p0, p1
-        acc_t epsilon = 1e-10
-        acc_t sig, var, norm
-        bint do_variance=error_model
+        position_t fbin0, fbin1
+        bint check_mask = False, check_dummy = False, is_valid
+        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_absorption=False
+        bint do_variance=error_model, do_dark_variance=False
         preproc_t value
+
+    if variance is not None:
+        assert variance.size == size, "variance size matches"
+        do_variance = True
+        cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
 
     if mask is not None:
         assert mask.size == size, "mask size"
@@ -612,6 +617,43 @@ def histogram2d_engine(radial, azimuthal,
     else:
         cmask = None
 
+    if (dummy is not None) and (delta_dummy is not None):
+        check_dummy = True
+        cdummy = float(dummy)
+        ddummy = float(delta_dummy)
+    elif (dummy is not None):
+        cdummy = float(dummy)
+        ddummy = 0.0
+        check_dummy = True
+    else:
+        cdummy = float(empty)
+        ddummy = 0.0
+        check_dummy = False
+
+    if dark is not None:
+        assert dark.size == size, "dark current array size"
+        do_dark = True
+        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=data_d)
+    if dark_variance is not None:
+        assert dark_variance.size == size, "dark_varance array size"
+        do_dark_variance = True
+        cdark_variance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=data_d)
+    if flat is not None:
+        assert flat.size == size, "flat-field array size"
+        do_flat = True
+        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=data_d)
+    if polarization is not None:
+        do_polarization = True
+        assert polarization.size == size, "polarization array size"
+        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=data_d)
+    if solidangle is not None:
+        do_solidangle = True
+        assert solidangle.size == size, "Solid angle array size"
+        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=data_d)
+    if absorption is not None:
+        do_absorption = True
+        assert absorption.size == size, "Absorption array size"
+        cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=data_d)
 
     pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, None,
                                                                  cpos1, None,
@@ -625,24 +667,25 @@ def histogram2d_engine(radial, azimuthal,
     delta1 = (pos1_max - pos1_min) / (<position_t> bins1)
 
     with nogil:
-        for i in range(size):
+        for idx in range(size):
             if (check_mask) and cmask[idx]:
                 continue
 
             is_valid = preproc_value_inplace(&value,
                                              cdata[idx],
-                                             variance=cvariance[idx] if do_variance else 0.0,
+                                             variance=cvariance[idx] if error_model==1 else 0.0,
                                              dark=cdark[idx] if do_dark else 0.0,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
                                              polarization=cpolarization[idx] if do_polarization else 1.0,
-                                             absorption=1.0,
+                                             absorption=cabsorption[idx] if do_absorption else 1.0,
                                              mask=0, #previously checked
                                              dummy=cdummy,
                                              delta_dummy=ddummy,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
-                                             dark_variance=0.0)
+                                             dark_variance=cdark_variance[idx] if do_dark_variance else 0.0,
+                                             error_model=error_model)
 
             if not is_valid:
                 continue
@@ -669,17 +712,21 @@ def histogram2d_engine(radial, azimuthal,
                     out_intensity[i, j] = out_data[i, j, 0] / norm
                     if do_variance:
                         out_sem[i, j] = sqrt(out_data[i, j, 1]) / norm
-                        out_sem[i, j] = sqrt(out_data[i, j, 1] / out_data[i, j, 4])
+                        out_std[i, j] = sqrt(out_data[i, j, 1] / out_data[i, j, 4])
                 else:
                     out_intensity[i, j] = empty
                     if do_variance:
-                        out_error[i, j] = empty
+                        out_sem[i, j] = empty
+                        out_std[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
     return Integrate2dtpl(bin_centers0, bin_centers1,
                           numpy.asarray(out_intensity).T,
-                          numpy.asarray(out_error).T if do_variance else None,
-                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
+                          numpy.asarray(out_sem).T if do_variance else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
+                          numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
+                          numpy.asarray(out_std).T, numpy.asarray(out_sem).T,
+                          numpy.asarray(out_data[...,4]).T)
 
 histogram2d_preproc = histogram2d_engine
