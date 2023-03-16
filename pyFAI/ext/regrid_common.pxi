@@ -201,7 +201,7 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
     if is_valid:
         # Do not use "/=" as they mean reduction for cython
         if error_model==2: # Poisson error-model:
-            variance = max(1.0, signal)
+            variance = max(1.0, data)
 
         if dark:
             signal = data - dark

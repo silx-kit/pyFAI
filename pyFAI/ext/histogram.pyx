@@ -1,8 +1,8 @@
 # coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
-## cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+# cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
-# cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,7 +34,7 @@
 
 Re-implementation of the numpy.histogram, optimized for azimuthal integration.
 
-Deprecated, will be replaced by ``silx.math.histogramnd``.
+Can be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jérôme Kieffer"
@@ -729,4 +729,4 @@ def histogram2d_engine(radial, azimuthal,
                           numpy.asarray(out_std).T, numpy.asarray(out_sem).T,
                           numpy.asarray(out_data[...,4]).T)
 
-histogram2d_preproc = histogram2d_engine
+histogram2d_engine
