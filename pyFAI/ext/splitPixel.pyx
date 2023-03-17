@@ -466,14 +466,14 @@ def fullSplit1D_engine(pos not None,
                                  pos0_max - 0.5 * dpos,
                                  bins)
 
-    return Integrate1dtpl(bin_centers, numpy.asarray(out_intensity), 
+    return Integrate1dtpl(bin_centers, numpy.asarray(out_intensity),
                           numpy.asarray(sem) if error_model else None,
-                          numpy.asarray(out_data[:, 0]), 
-                          numpy.asarray(out_data[:, 1]) if error_model else None, 
-                          numpy.asarray(out_data[:, 2]), 
+                          numpy.asarray(out_data[:, 0]),
+                          numpy.asarray(out_data[:, 1]) if error_model else None,
+                          numpy.asarray(out_data[:, 2]),
                           numpy.asarray(out_data[:, 3]),
-                          std if error_model else None, 
-                          sem if error_model else None, 
+                          std if error_model else None,
+                          sem if error_model else None,
                           numpy.asarray(out_data[:, 4]) if error_model else None)
 
 fullSplit1D_ng = fullSplit1D_engine
@@ -851,7 +851,7 @@ def pseudoSplit2D_engine(pos not None,
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
         data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
-        data_t[:, ::1] std, sem 
+        data_t[:, ::1] std, sem
         mask_t[:] cmask = None
         data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
         bint check_mask = False, check_dummy = False, do_dark = False,
@@ -1125,7 +1125,7 @@ def pseudoSplit2D_engine(pos not None,
                           numpy.asarray(sem).T if error_model else None,
                           numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
                           numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
-                          numpy.asarray(std).T if error_model else None, 
+                          numpy.asarray(std).T if error_model else None,
                           numpy.asarray(sem).T if error_model else None,
                           numpy.asarray(out_data[...,4]).T if error_model else None)
 
@@ -1405,6 +1405,6 @@ def fullSplit2D_engine(pos not None,
                           numpy.asarray(sem).T if error_model else None,
                           numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
                           numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
-                          numpy.asarray(std).T if error_model else None, 
+                          numpy.asarray(std).T if error_model else None,
                           numpy.asarray(sem).T if error_model else None,
                           numpy.asarray(out_data[...,4]).T if error_model else None)

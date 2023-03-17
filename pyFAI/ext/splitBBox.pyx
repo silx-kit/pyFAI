@@ -466,12 +466,12 @@ def histoBBox1d_engine(weights,
                     update_1d_accumulator(out_data, idx, value, inv_area)
 
         for i in range(bins):
-            sig = out_data[i, 0] 
-            var = out_data[i, 1] 
+            sig = out_data[i, 0]
+            var = out_data[i, 1]
             nrm = out_data[i, 2]
             cnt = out_data[i, 3]
             nrm2 = out_data[i, 4]
-            
+
             if cnt:
                 "test on count as norm can be  negative"
                 out_intensity[i] = sig / nrm
@@ -484,12 +484,12 @@ def histoBBox1d_engine(weights,
                     std[i] = sem[i] = empty
 
     bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
-    return Integrate1dtpl(bin_centers, 
-                          numpy.asarray(out_intensity), 
+    return Integrate1dtpl(bin_centers,
+                          numpy.asarray(out_intensity),
                           numpy.asarray(sem) if error_model else None,
-                          numpy.asarray(out_data[:, 0]), 
-                          numpy.asarray(out_data[:, 1]) if error_model else None, 
-                          numpy.asarray(out_data[:, 2]), 
+                          numpy.asarray(out_data[:, 0]),
+                          numpy.asarray(out_data[:, 1]) if error_model else None,
+                          numpy.asarray(out_data[:, 2]),
                           numpy.asarray(out_data[:, 3]),
                           numpy.asarray(std) if error_model else None,
                           numpy.asarray(sem) if error_model else None,
@@ -1057,7 +1057,7 @@ def histoBBox2d_engine(weights,
                           numpy.asarray(sem).T if error_model else None,
                           numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
                           numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
-                          numpy.asarray(std).T  if error_model else None, 
+                          numpy.asarray(std).T  if error_model else None,
                           numpy.asarray(sem).T  if error_model else None,
                           numpy.asarray(out_data[...,4]).T  if error_model else None)
 
