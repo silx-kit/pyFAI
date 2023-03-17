@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2023"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1493,7 +1493,8 @@ class AzimuthalIntegrator(Geometry):
                                normalization_factor=normalization_factor,
                                mask=mask,
                                pos0_range=radial_range,
-                               pos1_range=azimuth_range)
+                               pos1_range=azimuth_range,
+                               error_model=error_model)
             elif method.method[1] == "full":
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 intpl = integr(weights=data, variance=variance,
@@ -1505,7 +1506,8 @@ class AzimuthalIntegrator(Geometry):
                                normalization_factor=normalization_factor,
                                mask=mask,
                                pos0_range=radial_range,
-                               pos1_range=azimuth_range)
+                               pos1_range=azimuth_range,
+                               error_model=error_model)
             else:
                 raise RuntimeError("Should not arrive here")
             if error_model.do_variance:
@@ -2180,7 +2182,6 @@ class AzimuthalIntegrator(Geometry):
             else:
                 variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
 
-
         if azimuth_range is not None:
             azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
@@ -2504,7 +2505,7 @@ class AzimuthalIntegrator(Geometry):
                                                  radial_range=radial_range,
                                                  azimuthal_range=azimuth_range)
 ####################
-                else: #if method.impl_lower in ["python", "cython"]:
+                else:  # if method.impl_lower in ["python", "cython"]:
                     logger.debug("integrate2d uses [CP]ython histogram implementation")
                     radial = self.array_from_unit(shape, "center", unit, scale=False)
                     azim = self.chiArray(shape)

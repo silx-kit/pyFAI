@@ -155,7 +155,7 @@ cdef class CscIntegrator(object):
             data_t[::1] sem = numpy.empty(self.output_size, dtype=data_d)
             data_t[::1] cvariance, cdark, cflat, cpolarization, csolidangle, cabsorption
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
-            bint do_variance, is_valid, do_dark, do_flat, do_polarization, check_dummy, do_solidangle, do_absorption
+            bint is_valid, do_dark, do_flat, do_polarization, check_dummy, do_solidangle, do_absorption
             preproc_t value
             acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B, omega_AB
 
@@ -178,13 +178,11 @@ cdef class CscIntegrator(object):
             cdummy = <data_t> float(empty)
             cddummy = 0.0
 
-        if variance is not None or error_model:
-            do_variance = True
-            if variance is not None and error_model==1:
-                assert variance.size == self.input_size, "variance size"
-                cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-        else:
-            do_variance = error_model is not ErrorModel.NO
+        if variance is not None:
+            assert variance.size == self.input_size, "variance size"
+            cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
+            if error_model==0:
+                error_model = 1
 
         if dark is not None:
             do_dark = True
@@ -273,21 +271,23 @@ cdef class CscIntegrator(object):
                     else:
                         sum_sig[bin_idx] += coef * value.signal
                         sum_norm[bin_idx] += w
-                        sum_norm_sq[bin_idx] += w * w
-                        if do_variance:
+                        if error_model:
+                            sum_norm_sq[bin_idx] += w * w
                             sum_var[bin_idx] += coef * coef * value.variance
 
             #calulate means from accumulators:
             for bin_idx in range(self.output_size):
                 if sum_norm_sq[bin_idx] > 0:
                     merged[bin_idx] = sum_sig[bin_idx] / sum_norm[bin_idx]
-                    if do_variance:
+                    if error_model:
                         sem[bin_idx] = sqrt(sum_var[bin_idx]) / sum_norm[bin_idx]
                         std[bin_idx] = sqrt(sum_var[bin_idx] / sum_norm_sq[bin_idx])
                     else:
                         std[bin_idx] = sem[bin_idx] = empty
                 else:
-                    merged[bin_idx] = std[bin_idx] = sem[bin_idx] = empty
+                    merged[bin_idx] = empty
+                    if error_model:
+                        std[bin_idx] = sem[bin_idx] = empty
 
         if self.bin_centers is None:
             # 2D integration case
