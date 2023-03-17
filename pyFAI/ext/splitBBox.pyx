@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -326,7 +326,7 @@ def histoBBox1d_engine(weights,
         position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
         position_t[::1] cpos1=None, dpos1=None
         acc_t[:, ::1] out_data = numpy.zeros((bins, 5), dtype=acc_d)
-        data_t[::1] out_intensity = numpy.zeros(bins, dtype=data_d)
+        data_t[::1] out_intensity = numpy.empty(bins, dtype=data_d)
         data_t[::1] std, sem
         mask_t[::1] cmask=None
         position_t c0, c1, d0, d1
@@ -336,7 +336,7 @@ def histoBBox1d_engine(weights,
         acc_t sig, nrm, var, cnt, nrm2
         acc_t  inv_area, delta_right, delta_left
         Py_ssize_t  bin0_max, bin0_min
-        bint is_valid, check_mask = False, check_dummy = False, do_variance = False, check_pos1=False
+        bint is_valid, check_mask = False, check_dummy = False, check_pos1=False
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_dark_variance=False
         preproc_t value
 
@@ -472,7 +472,7 @@ def histoBBox1d_engine(weights,
             cnt = out_data[i, 3]
             nrm2 = out_data[i, 4]
             
-            if cnt > 0.0:
+            if cnt:
                 "test on count as norm can be  negative"
                 out_intensity[i] = sig / nrm
                 if error_model:
@@ -484,7 +484,7 @@ def histoBBox1d_engine(weights,
                     std[i] = sem[i] = empty
 
     bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
-
+    print(numpy.asarray(out_data))
     return Integrate1dtpl(bin_centers, 
                           numpy.asarray(out_intensity), 
                           numpy.asarray(sem) if error_model else None,

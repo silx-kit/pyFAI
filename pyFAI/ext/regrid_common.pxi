@@ -249,8 +249,8 @@ cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
     out_data[bin, 1] += value.variance * w2  # Important for variance propagation
     out_data[bin, 2] += value.norm * weight
     out_data[bin, 3] += value.count * weight
-    if out_data.shape[1] == 5: #Σ c²·ω²
-        out_data[bin, 2] += value.norm * w2 
+    # if out_data.shape[1] == 5: #Σ c²·ω²
+    out_data[bin, 4] += value.norm * value.norm * w2 
 
 
 @cython.boundscheck(False)
