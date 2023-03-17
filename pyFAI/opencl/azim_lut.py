@@ -648,7 +648,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                     ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
                     events.append(EventDescription("copy D->H merged8", ev))
                     res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
-                                         std, sem, merged[:, 8])
+                                         std, sem, merged[:, 7])
             else:  # 2D case
                 outshape = self.bin_centers.size, self.azim_centers.size
                 if merged is None:  # "radial azimuthal intensity sigma"
