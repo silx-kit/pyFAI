@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2023"
+__date__ = "17/03/2023"
 __status__ = "development"
 
 import logging
@@ -121,17 +121,17 @@ def histogram1d_engine(radial, npt,
     histo_signal, _ = numpy.histogram(radial, npt, weights=prep[:, 0], range=radial_range)
     if error_model == ErrorModel.AZIMUTHAL:
         raise NotImplementedError("Numpy histogram are not (YET) able to assess variance in azimuthal bins")
-    elif error_model.do_variance: #Variance, Poisson and Hybrid
+    elif error_model.do_variance:  # Variance, Poisson and Hybrid
         histo_variance, _ = numpy.histogram(radial, npt, weights=prep[:, 1], range=radial_range)
-        histo_normalization2, _ = numpy.histogram(radial, npt, weights=prep[:, 2]**2, range=radial_range)
-    else: # No error propagated
+        histo_normalization2, _ = numpy.histogram(radial, npt, weights=prep[:, 2] ** 2, range=radial_range)
+    else:  # No error propagated
         std = sem = histo_variance = histo_normalization2 = None
 
     histo_normalization, _ = numpy.histogram(radial, npt, weights=prep[:, 2], range=radial_range)
-    histo_count, position = numpy.histogram(radial, npt, weights=prep[:, 3], range=radial_range)
+    histo_count, position = numpy.histogram(radial, npt, weights=numpy.round(prep[:, 3]).astype(int), range=radial_range)
     positions = (position[1:] + position[:-1]) / 2.0
 
-    mask_empty = histo_count == 0
+    mask_empty = histo_count < 1e-6
     if dummy is not None:
         empty = dummy
     with numpy.errstate(divide='ignore', invalid='ignore'):
@@ -144,8 +144,16 @@ def histogram1d_engine(radial, npt,
             sem[mask_empty] = empty
         else:
             std = sem = None
-    return Integrate1dtpl(positions, intensity, sem, histo_signal, histo_variance, histo_normalization, histo_count,
-                          std, sem, histo_normalization2)
+    return Integrate1dtpl(positions,
+                          intensity,
+                          sem,
+                          histo_signal,
+                          histo_variance,
+                          histo_normalization,
+                          histo_count,
+                          std,
+                          sem,
+                          histo_normalization2)
 
 
 def histogram2d_engine(radial, azimuthal, bins,
@@ -223,10 +231,9 @@ def histogram2d_engine(radial, azimuthal, bins,
     assert prep.shape[0] == azimuthal.size
     npt = tuple(max(1, i) for i in bins)
     if radial_range is None:
-        radial_range = [radial.min(), radial.max()*EPS32]
+        radial_range = [radial.min(), radial.max() * EPS32]
     if azimuth_range is None:
-        azimuth_range = [azimuthal.min(), azimuthal.max()*EPS32]
-
+        azimuth_range = [azimuthal.min(), azimuthal.max() * EPS32]
 
     rng = [radial_range, azimuth_range]
     histo_signal, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 0], range=rng)
@@ -239,12 +246,12 @@ def histogram2d_engine(radial, azimuthal, bins,
 
     if error_model == ErrorModel.AZIMUTHAL:
         raise NotImplementedError("Numpy histogram are not (YET) able to assess variance in azimuthal bins")
-    elif error_model.do_variance: #Variance, Poisson and Hybrid
+    elif error_model.do_variance:  # Variance, Poisson and Hybrid
         histo_variance, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 1], range=rng)
-        histo_normalization2, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 2]**2, range=rng)
+        histo_normalization2, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 2] ** 2, range=rng)
         histo_variance = histo_variance.T
         histo_normalization2 = histo_normalization2.T
-    else: # No error propagated
+    else:  # No error propagated
         std = sem = histo_variance = histo_normalization2 = None
 
     bins_azim = 0.5 * (position_azim[1:] + position_azim[:-1])

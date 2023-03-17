@@ -191,10 +191,12 @@ class TestBug88SolidAngle(unittest.TestCase):
 
     def testSolidAngle(self):
         method = ("no", "histogram", "python")
-        img = numpy.ones((1000, 1000), dtype=numpy.float32)
-        ai = AzimuthalIntegrator(dist=0.01, detector="Titan", wavelength=1e-10)
-        t = ai.integrate1d_ng(img, 1000, method=method)[1].max()
-        f = ai.integrate1d_ng(img, 1000, method=method, correctSolidAngle=False)[1].max()
+        ai = AzimuthalIntegrator(dist=0.001, detector="pilatus100k", wavelength=1e-10)
+        img = numpy.ones(ai.detector.shape, dtype=numpy.float32)
+        r0 = ai.integrate1d_ng(img, 100, method=method)
+        t = r0[1].max()
+        r1 = ai.integrate1d_ng(img, 100, method=method, correctSolidAngle=False)
+        f = r1[1].max()
         self.assertAlmostEqual(f, 1, 5, "uncorrected flat data are unchanged")
         self.assertNotAlmostEqual(f, t, 1, "corrected and uncorrected flat data are different")
 

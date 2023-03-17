@@ -1378,10 +1378,9 @@ class AzimuthalIntegrator(Geometry):
                 else:
                     mask = numpy.logical_or(mask, azim_mask)
             radial = self.array_from_unit(shape, "center", unit, scale=False)
-
             intpl = integr(radial, npt, data,
                            dark=dark,
-                           dummy=dummy, delta_dummy=delta_dummy,
+                           dummy=dummy, delta_dummy=delta_dummy, empty=empty,
                            variance=variance,
                            flat=flat, solidangle=solidangle,
                            polarization=polarization,
