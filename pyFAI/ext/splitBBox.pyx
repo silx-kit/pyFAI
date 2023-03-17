@@ -1036,7 +1036,7 @@ def histoBBox2d_engine(weights,
                           numpy.asarray(out_sem).T if do_variance else None,
                           numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
                           numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
-                          numpy.asarray(out_std).T  if do_variance else None, 
+                          numpy.asarray(out_std).T  if do_variance else None,
                           numpy.asarray(out_sem).T  if do_variance else None,
                           numpy.asarray(out_data[...,4]).T  if do_variance else None)
 
