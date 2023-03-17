@@ -306,6 +306,6 @@ cdef class CscIntegrator(object):
                                   numpy.asarray(merged),numpy.asarray(sem)  if error_model else None,
                                   numpy.asarray(sum_sig),numpy.asarray(sum_var) if error_model else None,
                                   numpy.asarray(sum_norm), numpy.asarray(sum_count),
-                                  numpy.asarray(std) if error_model else None, 
-                                  numpy.asarray(sem) if error_model else None, 
+                                  numpy.asarray(std) if error_model else None,
+                                  numpy.asarray(sem) if error_model else None,
                                   numpy.asarray(sum_norm_sq) if error_model else None)
