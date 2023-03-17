@@ -147,6 +147,7 @@ kernel void histogram_1d_preproc(global float* radial,
                                  global float2* histo_sig,
                                  global float2* histo_var,
                                  global float2* histo_nrm,
+                                 global float2* histo_nrm2,
                                  global unsigned int* histo_cnt,
                                  int size,
                                  int nbins,
@@ -179,6 +180,7 @@ kernel void histogram_1d_preproc(global float* radial,
                 atomic_add_global_kahan(&histo_sig[target], quartet.s0);
                 atomic_add_global_kahan(&histo_var[target], quartet.s1);
                 atomic_add_global_kahan(&histo_nrm[target], quartet.s2);
+                atomic_add_global_kahan(&histo_nrm2[target], quartet.s2*quartet.s2);
                 atomic_add(&histo_cnt[target], (unsigned int)(quartet.s3 + 0.5f));
         	} //Treat valid data
         } // else discard value
@@ -209,6 +211,7 @@ kernel void histogram_2d_preproc(global float * radial,
                                  global float2 * histo_sig,
                                  global float2 * histo_var,
                                  global float2 * histo_nrm,
+                                 global float2 * histo_nrm2,
                                  global unsigned int * histo_cnt,
                                  unsigned int size,
                                  unsigned int nbins_rad,
@@ -233,6 +236,7 @@ kernel void histogram_2d_preproc(global float * radial,
             atomic_add_global_kahan(&histo_sig[target], value.s0);
             atomic_add_global_kahan(&histo_var[target], value.s1);
             atomic_add_global_kahan(&histo_nrm[target], value.s2);
+            atomic_add_global_kahan(&histo_nrm2[target], value.s2*value.s2);
             atomic_add(&histo_cnt[target], (unsigned int) (value.s3 + 0.5f));
         }
     }
@@ -254,6 +258,7 @@ kernel void
 memset_histograms(global float2 *histo_sig,
                   global float2 *histo_var,
                   global float2 *histo_nrm,
+                  global float2 *histo_nrm2,
                   global int *histo_cnt,
                   unsigned int nbins)
 {
@@ -264,6 +269,7 @@ memset_histograms(global float2 *histo_sig,
      histo_sig[idx] = (float2)(0.0f, 0.0f);
      histo_var[idx] = (float2)(0.0f, 0.0f);
      histo_nrm[idx] = (float2)(0.0f, 0.0f);
+     histo_nrm2[idx] = (float2)(0.0f, 0.0f);
      histo_cnt[idx] = 0;
   }
 }
@@ -286,11 +292,13 @@ kernel void
 histogram_postproc(global float2 * histo_sig,
                    global float2 * histo_var,
                    global float2 * histo_nrm,
+                   global float2 * histo_nrm2,
                    global unsigned int * histo_cnt,
                    unsigned int nbins,
                    float empty,
                    global float *intensities,
-                   global float *errors)
+                   global float *std,
+                   global float *sem)
 {
     unsigned int idx = get_global_id(0);
     //Global memory guard for padding
@@ -300,12 +308,14 @@ histogram_postproc(global float2 * histo_sig,
         if ((histo_cnt[idx]==0) || (nrm == 0.0f))
         {
             intensities[idx] = empty;
-            errors[idx] = empty;
+            std[idx] = empty;
+            sem[idx] = empty;
         }
         else
         {
             intensities[idx] = (histo_sig[idx].s0 + histo_sig[idx].s1) / nrm;
-            errors[idx] = sqrt(histo_var[idx].s0 + histo_var[idx].s1) / nrm;
+            sem[idx] = sqrt(histo_var[idx].s0 + histo_var[idx].s1) / nrm;
+            std[idx] = sqrt((histo_var[idx].s0 + histo_var[idx].s1) / (histo_nrm2[idx].s0 + histo_nrm2[idx].s1));
         }
     }
 }

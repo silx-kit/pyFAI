@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            D. Karkoulis (dimitris.karkoulis@gmail.com)
@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "15/11/2022"
+__date__ = "17/03/2023"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -159,8 +159,10 @@ class OCL_Histogram1d(OpenclProcessing):
         self.buffers += [BufferDescription("histo_sig", self.bins * 2, numpy.float32, mf.READ_WRITE),
                          BufferDescription("histo_var", self.bins * 2, numpy.float32, mf.READ_WRITE),
                          BufferDescription("histo_nrm", self.bins * 2, numpy.float32, mf.READ_WRITE),
+                         BufferDescription("histo_nrm2", self.bins * 2, numpy.float32, mf.READ_WRITE),
                          BufferDescription("histo_cnt", self.bins, numpy.uint32, mf.READ_WRITE),
-                         BufferDescription("error", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("std", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("sem", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("intensity", self.bins, numpy.float32, mf.WRITE_ONLY),
                          ]
         try:
@@ -307,6 +309,7 @@ class OCL_Histogram1d(OpenclProcessing):
                                                                    ("histo_sig", self.cl_mem["histo_sig"]),
                                                                    ("histo_var", self.cl_mem["histo_var"]),
                                                                    ("histo_nrm", self.cl_mem["histo_nrm"]),
+                                                                   ("histo_nrm2", self.cl_mem["histo_nrm2"]),
                                                                    ("histo_cnt", self.cl_mem["histo_cnt"]),
                                                                    ("size", self.size),
                                                                    ("bins", self.bins),
@@ -319,15 +322,18 @@ class OCL_Histogram1d(OpenclProcessing):
         self.cl_kernel_args["histogram_postproc"] = OrderedDict((("histo_sig", self.cl_mem["histo_sig"]),
                                                                  ("histo_var", self.cl_mem["histo_var"]),
                                                                  ("histo_nrm", self.cl_mem["histo_nrm"]),
+                                                                 ("histo_nrm2", self.cl_mem["histo_nrm2"]),
                                                                  ("histo_cnt", self.cl_mem["histo_cnt"]),
                                                                  ("bins", self.bins),
                                                                  ("empty", self.empty),
                                                                  ("intensity", self.cl_mem["intensity"]),
-                                                                 ("error", self.cl_mem["error"])))
+                                                                 ("std", self.cl_mem["std"]),
+                                                                 ("sem", self.cl_mem["sem"])))
 
         self.cl_kernel_args["memset_histograms"] = OrderedDict((("histo_sig", self.cl_mem["histo_sig"]),
                                                                 ("histo_var", self.cl_mem["histo_var"]),
                                                                 ("histo_nrm", self.cl_mem["histo_nrm"]),
+                                                                ("histo_nrm2", self.cl_mem["histo_nrm2"]),
                                                                 ("histo_cnt", self.cl_mem["histo_cnt"]),
                                                                 ("bins", self.bins)))
         self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
@@ -384,8 +390,8 @@ class OCL_Histogram1d(OpenclProcessing):
                   normalization_factor=1.0,
                   radial_range=None, azimuth_range=None,
                   histo_signal=None, histo_variance=None,
-                  histo_normalization=None, histo_count=None,
-                  intensity=None, error=None):
+                  histo_normalization=None, histo_normalization_sq=None, histo_count=None,
+                  intensity=None, std=None, sem=None):
         """
         Performing azimuthal integration, the preprocessing is:
 
@@ -418,9 +424,11 @@ class OCL_Histogram1d(OpenclProcessing):
         :param azimuth_range: provide lower and upper bound for azimuthal array
         :param histo_signal: destination array or pyopencl array for sum of signals
         :param histo_normalization: destination array or pyopencl array for sum of normalization
+        :param histo_normalization_sq: destination array or pyopencl array for sum of normalization squared
         :param histo_count: destination array or pyopencl array for counting pixels
         :param intensity: destination PyOpenCL array for integrated intensity
-        :param error: destination PyOpenCL array for standart deviation
+        :param std: destination PyOpenCL array for standard deviation
+        :param sem: destination PyOpenCL array for standard error of the mean
         :return: bin_positions, averaged data, histogram of signal, histogram of variance, histogram of normalization, count of pixels
         """
         events = []
@@ -559,6 +567,10 @@ class OCL_Histogram1d(OpenclProcessing):
                 histo_normalization = numpy.empty((self.bins, 2), dtype=numpy.float32)
             else:
                 histo_normalization = histo_normalization.data
+            if histo_normalization_sq is None:
+                histo_normalization_sq = numpy.empty((self.bins, 2), dtype=numpy.float32)
+            else:
+                histo_normalization_sq = histo_normalization_sq.data
             if histo_variance is None:
                 histo_variance = numpy.empty((self.bins, 2), dtype=numpy.float32)
             else:
@@ -571,10 +583,14 @@ class OCL_Histogram1d(OpenclProcessing):
                 intensity = numpy.empty(self.bins, dtype=numpy.float32)
             else:
                 intensity = intensity.data
-            if error is None:
-                error = numpy.empty(self.bins, dtype=numpy.float32)
+            if std is None:
+                std = numpy.empty(self.bins, dtype=numpy.float32)
             else:
-                error = error.data
+                std = std.data
+            if sem is None:
+                sem = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                sem = sem.data
 
             ev = pyopencl.enqueue_copy(self.queue, histo_signal, self.cl_mem["histo_sig"])
             events.append(EventDescription("copy D->H histo_sig", ev))
@@ -582,18 +598,23 @@ class OCL_Histogram1d(OpenclProcessing):
             events.append(EventDescription("copy D->H histo_variance", ev))
             ev = pyopencl.enqueue_copy(self.queue, histo_normalization, self.cl_mem["histo_nrm"])
             events.append(EventDescription("copy D->H histo_normalization", ev))
+            ev = pyopencl.enqueue_copy(self.queue, histo_normalization_sq, self.cl_mem["histo_nrm2"])
+            events.append(EventDescription("copy D->H histo_normalization_sq", ev))
             ev = pyopencl.enqueue_copy(self.queue, histo_count, self.cl_mem["histo_cnt"])
             events.append(EventDescription("copy D->H histo_count", ev))
             ev = pyopencl.enqueue_copy(self.queue, intensity, self.cl_mem["intensity"])
             events.append(EventDescription("copy D->H intensity", ev))
-            ev = pyopencl.enqueue_copy(self.queue, error, self.cl_mem["error"])
-            events.append(EventDescription("copy D->H error", ev))
+            ev = pyopencl.enqueue_copy(self.queue, std, self.cl_mem["std"])
+            events.append(EventDescription("copy D->H std", ev))
+            ev = pyopencl.enqueue_copy(self.queue, sem, self.cl_mem["sem"])
+            events.append(EventDescription("copy D->H sem", ev))
             delta = (radial_maxi - radial_mini) / self.bins
             positions = numpy.linspace(radial_mini + 0.5 * delta, radial_maxi - 0.5 * delta, self.bins)
 
         self.profile_multi(events)
 
-        return Integrate1dtpl(positions, intensity, error, histo_signal, histo_variance, histo_normalization, histo_count)
+        return Integrate1dtpl(positions, intensity, sem, histo_signal, histo_variance, histo_normalization, histo_count,
+                              std, sem, histo_normalization_sq)
 
     # Name of the default "process" method
     __call__ = integrate
@@ -725,6 +746,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
                                                                    ("histo_sig", self.cl_mem["histo_sig"]),
                                                                    ("histo_var", self.cl_mem["histo_var"]),
                                                                    ("histo_nrm", self.cl_mem["histo_nrm"]),
+                                                                   ("histo_nrm2", self.cl_mem["histo_nrm2"]),
                                                                    ("histo_cnt", self.cl_mem["histo_cnt"]),
                                                                    ("size", self.size),
                                                                    ("bins_radial", self.bins_radial),
@@ -744,8 +766,8 @@ class OCL_Histogram2d(OCL_Histogram1d):
                   normalization_factor=1.0,
                   radial_range=None, azimuthal_range=None,
                   histo_signal=None, histo_variance=None,
-                  histo_normalization=None, histo_count=None,
-                  intensity=None, error=None):
+                  histo_normalization=None, histo_count=None, histo_normalization_sq=None,
+                  intensity=None, std=None, sem=None):
         """
         Performing azimuthal integration, the preprocessing is:
 
@@ -777,9 +799,11 @@ class OCL_Histogram2d(OCL_Histogram1d):
         :param azimuth_range: provide lower and upper bound for azimuthal array
         :param histo_signal: destination array or pyopencl array for sum of signals
         :param histo_normalization: destination array or pyopencl array for sum of normalization
-        :param histo_count: destination array or pyopencl array for counting pixels
+        :param histo_normalization_sq: destination PyOpenCL array or pyopencl array for sum of normalization squared
+        :param histo_count: destination PyOpenCL array or pyopencl array for counting pixels
         :param intensity: destination PyOpenCL array for integrated intensity
-        :param error: destination PyOpenCL array for standart deviation
+        :param std: destination PyOpenCL array for standard deviation
+        :param sem: destination PyOpenCL array for standard error of the mean
         :return: bin_positions, averaged data, histogram of signal, histogram of variance, histogram of normalization, count of pixels
         """
         events = []
@@ -916,10 +940,14 @@ class OCL_Histogram2d(OCL_Histogram1d):
                 histo_normalization = numpy.empty((self.bins_radial, self.bins_azimuthal, 2), dtype=numpy.float32)
             else:
                 histo_normalization = histo_normalization.data
+            if histo_normalization_sq is None:
+                histo_normalization_sq = numpy.empty((self.bins_radial, self.bins_azimuthal, 2), dtype=numpy.float32)
+            else:
+                histo_normalization_sq = histo_normalization_sq.data
             if histo_variance is None:
                 histo_variance = numpy.empty((self.bins_radial, self.bins_azimuthal, 2), dtype=numpy.float32)
             else:
-                histo_variance = histo_normalization.data
+                histo_variance = histo_variance.data
             if histo_count is None:
                 histo_count = numpy.empty((self.bins_radial, self.bins_azimuthal), dtype=numpy.uint32)
             else:
@@ -928,10 +956,14 @@ class OCL_Histogram2d(OCL_Histogram1d):
                 intensity = numpy.empty((self.bins_radial, self.bins_azimuthal), dtype=numpy.float32)
             else:
                 intensity = intensity.data
-            if error is None:
-                error = numpy.empty((self.bins_radial, self.bins_azimuthal), dtype=numpy.float32)
+            if std is None:
+                std = numpy.empty((self.bins_radial, self.bins_azimuthal), dtype=numpy.float32)
             else:
-                error = error.data
+                std = std.data
+            if sem is None:
+                sem = numpy.empty((self.bins_radial, self.bins_azimuthal), dtype=numpy.float32)
+            else:
+                sem = sem.data
 
             ev = pyopencl.enqueue_copy(self.queue, histo_signal, self.cl_mem["histo_sig"])
             events.append(EventDescription("copy D->H histo_sig", ev))
@@ -939,12 +971,16 @@ class OCL_Histogram2d(OCL_Histogram1d):
             events.append(EventDescription("copy D->H histo_variance", ev))
             ev = pyopencl.enqueue_copy(self.queue, histo_normalization, self.cl_mem["histo_nrm"])
             events.append(EventDescription("copy D->H histo_normalization", ev))
+            ev = pyopencl.enqueue_copy(self.queue, histo_normalization_sq, self.cl_mem["histo_nrm2"])
+            events.append(EventDescription("copy D->H histo_normalization²", ev))
             ev = pyopencl.enqueue_copy(self.queue, histo_count, self.cl_mem["histo_cnt"])
             events.append(EventDescription("copy D->H histo_count", ev))
             ev = pyopencl.enqueue_copy(self.queue, intensity, self.cl_mem["intensity"])
             events.append(EventDescription("copy D->H intensity", ev))
-            ev = pyopencl.enqueue_copy(self.queue, error, self.cl_mem["error"])
-            events.append(EventDescription("copy D->H error", ev))
+            ev = pyopencl.enqueue_copy(self.queue, std, self.cl_mem["std"])
+            events.append(EventDescription("copy D->H std", ev))
+            ev = pyopencl.enqueue_copy(self.queue, sem, self.cl_mem["sem"])
+            events.append(EventDescription("copy D->H sem", ev))
 
             delta_radial = (radial_maxi - radial_mini) / self.bins_radial
             delta_azimuthal = (azim_maxi - azim_mini) / self.bins_azimuthal
@@ -953,11 +989,11 @@ class OCL_Histogram2d(OCL_Histogram1d):
             pos_azim = numpy.linspace(azim_mini + 0.5 * delta_azimuthal, azim_maxi - 0.5 * delta_azimuthal, self.bins_azimuthal)
             ev.wait()
         self.profile_multi(events)
-        return Integrate2dtpl(pos_radial, pos_azim, intensity.T, error.T,
+        return Integrate2dtpl(pos_radial, pos_azim, intensity.T, sem.T,
                               histo_signal[:,:, 0].T,
                               histo_variance[:,:, 0].T,
                               histo_normalization[:,:, 0].T,
-                              histo_count.T)
+                              histo_count.T, std.T, sem.T,)
 
     # Name of the default "process" method
     __call__ = integrate
