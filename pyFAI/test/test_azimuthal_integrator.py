@@ -647,12 +647,12 @@ class TestRange(unittest.TestCase):
             res = self.ai.integrate2d_ng(self.img, 10, 20, variance=variance, error_model=error_model, method=m)
             v = res.sum_variance
             # print(v.min(), v.max(), end=" ")
-            self.assertGreaterEqual(v.min(), 0, "min variance is positive or null")
-            self.assertGreater(v.max(), 0, "max variance is strictly positive")
+            self.assertGreaterEqual(v.min(), 0, f"min variance is positive or null with {res.method}")
+            self.assertGreater(v.max(), 0, f"max variance is strictly positive with {res.method}")
             s = res.sigma
             # print(type(s))
-            self.assertGreaterEqual(s.min(), 0, "min sigma is positive or null")
-            self.assertGreater(s.max(), 0, "max sigma is strictly positive")
+            self.assertGreaterEqual(s.min(), 0, f"min sigma is positive or null with {res.method}")
+            self.assertGreater(s.max(), 0, f"max sigma is strictly positive with {res.method}")
 
 
 def suite():
