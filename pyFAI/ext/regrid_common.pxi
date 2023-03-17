@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,9 +30,9 @@
 Some are defined in the associated header file .pxd
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "16/03/2023"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -118,7 +118,7 @@ cdef:
 
 
 from collections import namedtuple
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 Boundaries = namedtuple("Boundaries", "min0 max0 min1 max1")
 
@@ -267,8 +267,8 @@ cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
     out_data[bin0, bin1, 1] += value.variance * w2  # Important for variance propagation
     out_data[bin0, bin1, 2] += value.norm * weight
     out_data[bin0, bin1, 3] += value.count * weight
-    if out_data.shape[2] == 5: #Σ c²·ω²
-        out_data[bin0, bin1, 4] += value.norm * value.norm * w2 # used to calculate the standard deviation
+    # if out_data.shape[2] == 5: #Σ c²·ω²
+    out_data[bin0, bin1, 4] += value.norm * value.norm * w2 # used to calculate the standard deviation
 
 
 cdef inline floating area4p(floating a0,

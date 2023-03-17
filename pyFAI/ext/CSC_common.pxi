@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/03/2023"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -101,7 +101,7 @@ cdef class CscIntegrator(object):
     def integrate_ng(self,
                      weights,
                      variance=None,
-                     error_model=ErrorModel.NO,
+                     int error_model=ErrorModel.NO,
                      dummy=None,
                      delta_dummy=None,
                      dark=None,
@@ -178,10 +178,11 @@ cdef class CscIntegrator(object):
             cdummy = <data_t> float(empty)
             cddummy = 0.0
 
-        if variance is not None:
-            assert variance.size == self.input_size, "variance size"
+        if variance is not None or error_model:
             do_variance = True
-            cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
+            if variance is not None and error_model==1:
+                assert variance.size == self.input_size, "variance size"
+                cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
         else:
             do_variance = error_model is not ErrorModel.NO
 
@@ -226,7 +227,7 @@ cdef class CscIntegrator(object):
                     continue
                 is_valid = preproc_value_inplace(&value,
                                                  cdata[idx],
-                                                 variance=cvariance[idx] if do_variance else 0.0,
+                                                 variance=cvariance[idx] if error_model==1 else 0.0,
                                                  dark=cdark[idx] if do_dark else 0.0,
                                                  flat=cflat[idx] if do_flat else 1.0,
                                                  solidangle=csolidangle[idx] if do_solidangle else 1.0,
@@ -237,7 +238,8 @@ cdef class CscIntegrator(object):
                                                  delta_dummy=cddummy,
                                                  check_dummy=check_dummy,
                                                  normalization_factor=normalization_factor,
-                                                 dark_variance=0.0)
+                                                 dark_variance=0.0,
+                                                 error_model=error_model)
                 if not is_valid:
                     continue
                 for j in range(start, stop):

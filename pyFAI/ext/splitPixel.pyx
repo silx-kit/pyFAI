@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,9 +35,9 @@ Splitting is done by full pixel splitting
 Histogram (direct) implementation
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/03/2023"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -829,8 +829,10 @@ def pseudoSplit2D_engine(pos not None,
     cdef:
         position_t[:, :, ::1] cpos = numpy.ascontiguousarray(pos, dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
-        data_t[:, ::1] out_error, out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
+        data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_std = numpy.empty((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_sem = numpy.empty((bins0, bins1), dtype=data_d)
         mask_t[:] cmask = None
         data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
         bint check_mask = False, check_dummy = False, do_dark = False,
@@ -844,7 +846,7 @@ def pseudoSplit2D_engine(pos not None,
         position_t center0 = 0.0, center1 = 0.0, area, width, height,
         position_t delta0, delta1, new_width, new_height, new_min0, new_max0, new_min1, new_max1
         Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
-        acc_t norm
+        acc_t sig, var, norm, cnt, norm2
         preproc_t value
 
     if mask is not None:
@@ -1077,24 +1079,32 @@ def pseudoSplit2D_engine(pos not None,
 
         for i in range(bins0):
             for j in range(bins1):
+                sig = out_data[i, j, 0]
+                var = out_data[i, j, 1]
                 norm = out_data[i, j, 2]
-                if out_data[i, j, 3] > 0.0:
-                    "Test on count rather than than norm which can be negative"
-                    out_intensity[i, j] = out_data[i, j, 0] / norm
+                cnt = out_data[i, j, 3]
+                norm2 = out_data[i, j, 4]
+                if cnt > 0.0:
+                    "test on count as norm could be negatve"
+                    out_intensity[i, j] = sig / norm
                     if do_variance:
-                        out_error[i, j] = sqrt(out_data[i, j, 1]) / norm
+                        out_sem[i, j] = sqrt(var) / norm
+                        out_std[i, j] = sqrt(var / norm2)
                 else:
                     out_intensity[i, j] = empty
                     if do_variance:
-                        out_error[i, j] = empty
+                        out_sem[i, j] = empty
+                        out_std[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-
     return Integrate2dtpl(bin_centers0, bin_centers1,
                           numpy.asarray(out_intensity).T,
-                          numpy.asarray(out_error).T if do_variance else None,
-                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
+                          numpy.asarray(out_sem).T if do_variance else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
+                          numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
+                          numpy.asarray(out_std).T, numpy.asarray(out_sem).T,
+                          numpy.asarray(out_data[...,4]).T)
 
 pseudoSplit2D_ng = pseudoSplit2D_engine
 
@@ -1162,8 +1172,11 @@ def fullSplit2D_engine(pos not None,
         position_t[:, :, ::1] cpos = numpy.ascontiguousarray(pos, dtype=position_d)
         position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
-        data_t[:, ::1] out_error, out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
+        data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_std = numpy.empty((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_sem = numpy.empty((bins0, bins1), dtype=data_d)
+
         mask_t[:] cmask = None
         data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
         bint check_mask = False, check_dummy = False, do_dark = False,
@@ -1177,7 +1190,7 @@ def fullSplit2D_engine(pos not None,
         position_t center0 = 0.0, center1 = 0.0, area, width, height,
         position_t delta0, delta1, new_width, new_height, new_min0, new_max0, new_min1, new_max1
         Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
-        acc_t norm
+        acc_t sig, var, norm, cnt, norm2
         preproc_t value
         Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15
         buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
@@ -1342,21 +1355,29 @@ def fullSplit2D_engine(pos not None,
 
         for i in range(bins0):
             for j in range(bins1):
+                sig = out_data[i, j, 0]
+                var = out_data[i, j, 1]
                 norm = out_data[i, j, 2]
-                if out_data[i, j, 3] > 0.0:
-                    "Test on count rather than than norm which can be negative"
-                    out_intensity[i, j] = out_data[i, j, 0] / norm
+                cnt = out_data[i, j, 3]
+                norm2 = out_data[i, j, 4]
+                if cnt > 0.0:
+                    "test on count as norm could be negatve"
+                    out_intensity[i, j] = sig / norm
                     if do_variance:
-                        out_error[i, j] = sqrt(out_data[i, j, 1]) / norm
+                        out_sem[i, j] = sqrt(var) / norm
+                        out_std[i, j] = sqrt(var / norm2)
                 else:
                     out_intensity[i, j] = empty
                     if do_variance:
-                        out_error[i, j] = empty
+                        out_sem[i, j] = empty
+                        out_std[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-
     return Integrate2dtpl(bin_centers0, bin_centers1,
                           numpy.asarray(out_intensity).T,
-                          numpy.asarray(out_error).T if do_variance else None,
-                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
+                          numpy.asarray(out_sem).T if do_variance else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
+                          numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
+                          numpy.asarray(out_std).T, numpy.asarray(out_sem).T,
+                          numpy.asarray(out_data[...,4]).T)

@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/03/2023"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -273,6 +273,8 @@ def histoBBox1d_engine(weights,
                        delta_dummy=None,
                        mask=None,
                        variance=None,
+                       dark_variance=None,
+                       int error_model=ErrorModel.NO,
                        dark=None,
                        flat=None,
                        solidangle=None,
@@ -316,7 +318,7 @@ def histoBBox1d_engine(weights,
         Py_ssize_t i, idx
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption, cdark_variance
         data_t cdummy, ddummy=0.0
 
         # Related to positions: double precision
@@ -335,7 +337,7 @@ def histoBBox1d_engine(weights,
         acc_t  inv_area, delta_right, delta_left
         Py_ssize_t  bin0_max, bin0_min
         bint is_valid, check_mask = False, check_dummy = False, do_variance = False, check_pos1=False
-        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
+        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_dark_variance=False
         preproc_t value
 
     if variance is not None:
@@ -343,7 +345,10 @@ def histoBBox1d_engine(weights,
         do_variance = True
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
         out_error = numpy.zeros(bins, dtype=data_d)
-
+    if dark_variance is not None:
+        assert dark_variance.size == size, "dark_varance array size"
+        do_dark_variance = True
+        cdark_variance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=data_d)
     if mask is not None:
         assert mask.size == size, "mask size"
         check_mask = True
@@ -417,7 +422,8 @@ def histoBBox1d_engine(weights,
                                  delta_dummy=ddummy,
                                  check_dummy=check_dummy,
                                  normalization_factor=normalization_factor,
-                                 dark_variance=0.0)
+                                 dark_variance=cdark_variance[idx] if do_dark_variance else 0.0,
+                                 error_model=error_model)
             if not is_valid:
                 continue
             c0 = cpos0[idx]
@@ -832,15 +838,16 @@ def histoBBox2d_engine(weights,
         position_t[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         position_t[::1] dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
         #Accumulated data are also double
-        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
-        data_t[:, ::1] out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
-        data_t[:, ::1] out_error
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
+        data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_std = numpy.empty((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_sem = numpy.empty((bins0, bins1), dtype=data_d)
         mask_t[::1] cmask
+        acc_t sig, var, norm, cnt, norm2
         position_t c0, c1, d0, d1
         position_t min0, max0, min1, max1, delta0, delta1
         position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
         position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max,
-        acc_t norm
         acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
         Py_ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
         bint check_mask = False, check_dummy = False, do_variance = False, is_valid
@@ -851,7 +858,6 @@ def histoBBox2d_engine(weights,
         assert variance.size == size, "variance size"
         do_variance = True
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-        out_error = numpy.zeros((bins0, bins1), dtype=data_d)
 
     if mask is not None:
         assert mask.size == size, "mask size"
@@ -1006,23 +1012,33 @@ def histoBBox2d_engine(weights,
 
         for i in range(bins0):
             for j in range(bins1):
+                sig = out_data[i, j, 0]
+                var = out_data[i, j, 1]
                 norm = out_data[i, j, 2]
-                if out_data[i, j, 3] > 0.0:
-                    "test on count as norm can be negatve"
-                    out_intensity[i, j] = out_data[i, j, 0] / norm
+                cnt = out_data[i, j, 3]
+                norm2 = out_data[i, j, 4]
+                if cnt > 0.0:
+                    "test on count as norm could be negatve"
+                    out_intensity[i, j] = sig / norm
                     if do_variance:
-                        out_error[i, j] = sqrt(out_data[i, j, 1]) / norm
+                        out_sem[i, j] = sqrt(var) / norm
+                        out_std[i, j] = sqrt(var / norm2)
                 else:
                     out_intensity[i, j] = empty
                     if do_variance:
-                        out_error[i, j] = empty
+                        out_sem[i, j] = empty
+                        out_std[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
     return Integrate2dtpl(bin_centers0, bin_centers1,
                           numpy.asarray(out_intensity).T,
-                          numpy.asarray(out_error).T if do_variance else None,
-                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
+                          numpy.asarray(out_sem).T if do_variance else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
+                          numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
+                          numpy.asarray(out_std).T  if do_variance else None, 
+                          numpy.asarray(out_sem).T  if do_variance else None,
+                          numpy.asarray(out_data[...,4]).T  if do_variance else None)
 
 
 histoBBox2d_ng = histoBBox2d_engine

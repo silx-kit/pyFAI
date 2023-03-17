@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2023"
+__date__ = "17/03/2023"
 __status__ = "development"
 
 import logging
@@ -437,7 +437,7 @@ class CsrIntegrator2d(CSRIntegrator):
     def integrate(self,
                   signal,
                   variance=None,
-                  poissonian=False,
+                  error_model=ErrorModel.NO,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -451,7 +451,7 @@ class CsrIntegrator2d(CSRIntegrator):
 
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
-        :param poissonian: set to True to variance=max(signal,1), False will implement azimuthal variance
+        :param error_model: enum ErrorModel
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -463,11 +463,9 @@ class CsrIntegrator2d(CSRIntegrator):
         :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
 
         """
-        if variance is None and poissonian is None:
-            do_variance = False
-        else:
-            do_variance = True
-        trans = CSRIntegrator.integrate(self, signal, variance, poissonian, dummy, delta_dummy,
+        error_model = ErrorModel.parse(error_model)
+        do_variance = variance is not None or  error_model.do_variance
+        trans = CSRIntegrator.integrate(self, signal, variance, error_model, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         trans.shape = self.bins + (-1,)
@@ -476,6 +474,7 @@ class CsrIntegrator2d(CSRIntegrator):
         variance = trans[..., 1]
         normalization = trans[..., 2]
         count = trans[..., 3]
+        sum_nrm2 = trans[..., 4]
 
         mask = (normalization == 0)
         with warnings.catch_warnings():
@@ -483,14 +482,15 @@ class CsrIntegrator2d(CSRIntegrator):
             intensity = signal / normalization
             intensity[mask] = self.empty
             if do_variance:
-                error = numpy.sqrt(variance) / normalization
-                error[mask] = self.empty
-                sum_nrm2 = trans[..., 4]
+                sem = numpy.sqrt(variance) / normalization
+                std = numpy.sqrt(variance / sum_nrm2)
+                sem[mask] = self.empty
+                std[mask] = self.empty
             else:
-                variance = error = sum_nrm2 = None
+                variance = std = sem = sum_nrm2 = None
         return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
-                              intensity, error,
-                              signal, variance, normalization, count, sum_nrm2)
+                              intensity, sem,
+                              signal, variance, normalization, count, std, sem, sum_nrm2)
 
     integrate_ng = integrate
 

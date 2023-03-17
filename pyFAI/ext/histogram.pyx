@@ -38,7 +38,7 @@ Can be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jérôme Kieffer"
-__date__ = "16/03/2023"
+__date__ = "17/03/2023"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -56,7 +56,6 @@ logger = logging.getLogger(__name__)
 
 from .preproc import preproc
 from .splitBBox_common import calc_boundaries
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 _COMPILED_WITH_OPENMP = _openmp.COMPILED_WITH_OPENMP
 
@@ -596,7 +595,7 @@ def histogram2d_engine(radial, azimuthal,
         data_t[:, ::1] out_std = numpy.zeros((bins0, bins1), dtype=data_d)
         data_t[:, ::1] out_sem = numpy.zeros((bins0, bins1), dtype=data_d)
         mask_t[::1] cmask
-        acc_t norm
+        acc_t sig, var, norm, cnt, norm2
         position_t c0, c1
         position_t pos0_min, pos0_maxin, pos0_max,  pos1_min, pos1_maxin, pos1_max, delta0, delta1
         position_t fbin0, fbin1
@@ -706,13 +705,17 @@ def histogram2d_engine(radial, azimuthal,
 
         for i in range(bins0):
             for j in range(bins1):
+                sig = out_data[i, j, 0]
+                var = out_data[i, j, 1]
                 norm = out_data[i, j, 2]
-                if out_data[i, j, 3] > 0.0:
+                cnt = out_data[i, j, 3]
+                norm2 = out_data[i, j, 4]
+                if cnt > 0.0:
                     "test on count as norm could be negatve"
-                    out_intensity[i, j] = out_data[i, j, 0] / norm
+                    out_intensity[i, j] = sig / norm
                     if do_variance:
-                        out_sem[i, j] = sqrt(out_data[i, j, 1]) / norm
-                        out_std[i, j] = sqrt(out_data[i, j, 1] / out_data[i, j, 4])
+                        out_sem[i, j] = sqrt(var) / norm
+                        out_std[i, j] = sqrt(var / norm2)
                 else:
                     out_intensity[i, j] = empty
                     if do_variance:
