@@ -484,7 +484,6 @@ def histoBBox1d_engine(weights,
                     std[i] = sem[i] = empty
 
     bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
-    print(numpy.asarray(out_data))
     return Integrate1dtpl(bin_centers, 
                           numpy.asarray(out_intensity), 
                           numpy.asarray(sem) if error_model else None,

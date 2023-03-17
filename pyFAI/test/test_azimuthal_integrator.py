@@ -262,8 +262,6 @@ class TestAzimHalfFrelon(unittest.TestCase):
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_ocl_csr")
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d median Rwp = %.3f", rwp)
-#        print("cython", ref.intensity.min(), ref.intensity.max(), ref.intensity.mean(), ref.intensity.std())
-#        print("opencl", ocl.intensity.min(), ocl.intensity.max(), ocl.intensity.mean(), ocl.intensity.std())
         self.assertLess(rwp, 1, "Rwp medfilt1d Cython/OpenCL: %.3f" % rwp)
 
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_csr", percentile=(20, 80))
