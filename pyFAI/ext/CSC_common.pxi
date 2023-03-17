@@ -181,8 +181,7 @@ cdef class CscIntegrator(object):
         if variance is not None:
             assert variance.size == self.input_size, "variance size"
             cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-            if error_model==0:
-                error_model = 1
+            error_model = max(error_model, 1)
 
         if dark is not None:
             do_dark = True
@@ -277,7 +276,7 @@ cdef class CscIntegrator(object):
 
             #calulate means from accumulators:
             for bin_idx in range(self.output_size):
-                if sum_norm_sq[bin_idx] > 0:
+                if sum_count[bin_idx]:
                     merged[bin_idx] = sum_sig[bin_idx] / sum_norm[bin_idx]
                     if error_model:
                         sem[bin_idx] = sqrt(sum_var[bin_idx]) / sum_norm[bin_idx]
@@ -293,18 +292,20 @@ cdef class CscIntegrator(object):
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
                               numpy.asarray(merged).reshape(self.bins).T,
-                              numpy.asarray(sem).reshape(self.bins).T,
+                              numpy.asarray(sem).reshape(self.bins).T if error_model else None,
                               numpy.asarray(sum_sig).reshape(self.bins).T,
-                              numpy.asarray(sum_var).reshape(self.bins).T,
+                              numpy.asarray(sum_var).reshape(self.bins).T if error_model else None,
                               numpy.asarray(sum_norm).reshape(self.bins).T,
                               numpy.asarray(sum_count).reshape(self.bins).T,
-                              numpy.asarray(std).reshape(self.bins).T,
-                              numpy.asarray(sem).reshape(self.bins).T,
-                              numpy.asarray(sum_norm_sq).reshape(self.bins).T)
+                              numpy.asarray(std).reshape(self.bins).T if error_model else None,
+                              numpy.asarray(sem).reshape(self.bins).T if error_model else None,
+                              numpy.asarray(sum_norm_sq).reshape(self.bins).T if error_model else None)
         else:
             # 1D integration case: "position intensity error signal variance normalization count std sem norm_sq"
             return Integrate1dtpl(self.bin_centers,
-                                  numpy.asarray(merged),numpy.asarray(sem) ,
-                                  numpy.asarray(sum_sig),numpy.asarray(sum_var),
+                                  numpy.asarray(merged),numpy.asarray(sem)  if error_model else None,
+                                  numpy.asarray(sum_sig),numpy.asarray(sum_var) if error_model else None,
                                   numpy.asarray(sum_norm), numpy.asarray(sum_count),
-                                  numpy.asarray(std), numpy.asarray(sem), numpy.asarray(sum_norm_sq))
+                                  numpy.asarray(std) if error_model else None, 
+                                  numpy.asarray(sem) if error_model else None, 
+                                  numpy.asarray(sum_norm_sq) if error_model else None)
