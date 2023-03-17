@@ -215,7 +215,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                               len(self.fit2d),
                                               correctSolidAngle=False,
                                               unit="2th_deg",
-                                              method=("no", "histogram", "numpy"))
+                                              method=("no", "histogram", "python"))
         tth_cy, I_cy = self.ai.integrate1d_ng(self.__class__.data,
                                               len(self.fit2d),
                                               correctSolidAngle=False,
@@ -635,20 +635,24 @@ class TestRange(unittest.TestCase):
         """This test checks that the variance is actually calculated and positive
         for all integration methods available"""
         # self.skipTest("Re-enable this test when issue #1845 is solved.")
-        methods = IntegrationMethod.select_method(dim=2)
+        methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
+        # limits to 27 (actually 24) methods to test, keep only one OpenCL version
+
         error_model = ErrorModel.parse(error_model)
         if error_model == ErrorModel.VARIANCE:
             variance = numpy.maximum(1, self.img)
         else:
             variance = None
-        print(f"There are {len(methods)} 2D integration method available on this system")
-        for m in methods:
-            print(m)
+        # print(f"There are {len(methods)} 2D integration method available on this system")
+        for m in methods.values():
+            # print(m, end=" ")
             res = self.ai.integrate2d_ng(self.img, 10, 20, variance=variance, error_model=error_model, method=m)
             v = res.sum_variance
+            # print(v.min(), v.max(), end=" ")
             self.assertGreaterEqual(v.min(), 0, "min variance is positive or null")
             self.assertGreater(v.max(), 0, "max variance is strictly positive")
             s = res.sigma
+            # print(type(s))
             self.assertGreaterEqual(s.min(), 0, "min sigma is positive or null")
             self.assertGreater(s.max(), 0, "max sigma is strictly positive")
 

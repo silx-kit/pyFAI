@@ -2505,7 +2505,8 @@ class AzimuthalIntegrator(Geometry):
                                                  safe=safe,
                                                  normalization_factor=normalization_factor,
                                                  radial_range=radial_range,
-                                                 azimuthal_range=azimuth_range)
+                                                 azimuthal_range=azimuth_range,
+                                                 error_model=error_model)
 ####################
                 else:  # if method.impl_lower in ["python", "cython"]:
                     logger.debug("integrate2d uses [CP]ython histogram implementation")

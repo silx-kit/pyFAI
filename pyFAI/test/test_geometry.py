@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/03/2022"
+__date__ = "17/03/2023"
 
 import unittest
 import random
@@ -177,9 +177,10 @@ class TestSolidAngle(unittest.TestCase):
             sina = numpy.fromfunction(ai.sin_incidence,
                                       pilatus.shape, dtype=numpy.float64,
                                       path=path)
-            one = cosa*cosa + sina*sina
-            self.assertLessEqual(one.max()-1.0, 1e-10, f"path: {path} cos2+sin2<=1")
-            self.assertGreater(one.min()-1.0, -1e-10, f"path: {path} cos2+sin2>0.99")
+            one = cosa * cosa + sina * sina
+            self.assertLessEqual(one.max() - 1.0, 1e-10, f"path: {path} cos2+sin2<=1")
+            self.assertGreater(one.min() - 1.0, -1e-10, f"path: {path} cos2+sin2>0.99")
+
 
 class TestBug88SolidAngle(unittest.TestCase):
     """
@@ -189,7 +190,7 @@ class TestBug88SolidAngle(unittest.TestCase):
     """
 
     def testSolidAngle(self):
-        method = ("no", "histogram", "numpy")
+        method = ("no", "histogram", "python")
         img = numpy.ones((1000, 1000), dtype=numpy.float32)
         ai = AzimuthalIntegrator(dist=0.01, detector="Titan", wavelength=1e-10)
         t = ai.integrate1d_ng(img, 1000, method=method)[1].max()
@@ -496,6 +497,7 @@ class TestGeometry(utilstest.ParametricTestCase):
         g.energy = 12.4
         self.assertAlmostEqual(g.wavelength, 1e-10, msg="energy conversion works", delta=1e-13)
         self.assertAlmostEqual(g.energy, 12.4, 10, msg="energy conversion is stable")
+
 
 class TestCalcFrom(unittest.TestCase):
     """

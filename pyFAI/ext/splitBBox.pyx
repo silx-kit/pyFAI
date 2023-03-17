@@ -472,7 +472,7 @@ def histoBBox1d_engine(weights,
             cnt = out_data[i, 3]
             nrm2 = out_data[i, 4]
             
-            if out_data[i, 3] > 0.0:
+            if cnt > 0.0:
                 "test on count as norm can be  negative"
                 out_intensity[i] = sig / nrm
                 if error_model:
@@ -859,9 +859,9 @@ def histoBBox2d_engine(weights,
         #Accumulated data are also double
         acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
         data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
-        data_t[:, ::1] out_std, out_sem
+        data_t[:, ::1] std, sem
         mask_t[::1] cmask
-        acc_t sig, var, norm, cnt, norm2
+        acc_t sig, var, nrm, cnt, nrm2
         position_t c0, c1, d0, d1
         position_t min0, max0, min1, max1, delta0, delta1
         position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
@@ -875,11 +875,10 @@ def histoBBox2d_engine(weights,
     if variance is not None:
         assert variance.size == size, "variance size"
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-        if error_model == 0:
-            error_model = 1
+        error_model = max(error_model, 1)
     if error_model:
-        out_std = numpy.empty((bins0, bins1), dtype=data_d)
-        out_sem = numpy.empty((bins0, bins1), dtype=data_d)
+        std = numpy.empty((bins0, bins1), dtype=data_d)
+        sem = numpy.empty((bins0, bins1), dtype=data_d)
 
     if mask is not None:
         assert mask.size == size, "mask size"
@@ -1037,30 +1036,30 @@ def histoBBox2d_engine(weights,
             for j in range(bins1):
                 sig = out_data[i, j, 0]
                 var = out_data[i, j, 1]
-                norm = out_data[i, j, 2]
+                nrm = out_data[i, j, 2]
                 cnt = out_data[i, j, 3]
-                norm2 = out_data[i, j, 4]
-                if cnt > 0.0:
+                nrm2 = out_data[i, j, 4]
+                if cnt:
                     "test on count as norm could be negatve"
-                    out_intensity[i, j] = sig / norm
+                    out_intensity[i, j] = sig / nrm
                     if error_model:
-                        out_sem[i, j] = sqrt(var) / norm
-                        out_std[i, j] = sqrt(var / norm2)
+                        sem[i, j] = sqrt(var) / nrm
+                        std[i, j] = sqrt(var / nrm2)
                 else:
                     out_intensity[i, j] = empty
                     if error_model:
-                        out_sem[i, j] = empty
-                        out_std[i, j] = empty
+                        sem[i, j] = empty
+                        std[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
     return Integrate2dtpl(bin_centers0, bin_centers1,
                           numpy.asarray(out_intensity).T,
-                          numpy.asarray(out_sem).T if error_model else None,
+                          numpy.asarray(sem).T if error_model else None,
                           numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
                           numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
-                          numpy.asarray(out_std).T  if error_model else None, 
-                          numpy.asarray(out_sem).T  if error_model else None,
+                          numpy.asarray(std).T  if error_model else None, 
+                          numpy.asarray(sem).T  if error_model else None,
                           numpy.asarray(out_data[...,4]).T  if error_model else None)
 
 

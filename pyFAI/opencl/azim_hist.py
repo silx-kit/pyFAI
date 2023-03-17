@@ -758,6 +758,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
 
     def integrate(self, data, dark=None,
                   dummy=None, delta_dummy=None,
+                  error_model=ErrorModel.NO,
                   variance=None, dark_variance=None,
                   flat=None, solidangle=None, polarization=None, absorption=None,
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
@@ -837,7 +838,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
             kw_correction["dummy"] = dummy
             kw_correction["delta_dummy"] = delta_dummy
             kw_correction["normalization_factor"] = numpy.float32(normalization_factor)
-
+            kw_correction["error_model"] = numpy.int8(error_model.value)
             if dark is not None:
                 do_dark = numpy.int8(1)
                 # TODO: what is do_checksum=False and image not on device ...
@@ -989,11 +990,15 @@ class OCL_Histogram2d(OCL_Histogram1d):
             pos_azim = numpy.linspace(azim_mini + 0.5 * delta_azimuthal, azim_maxi - 0.5 * delta_azimuthal, self.bins_azimuthal)
             ev.wait()
         self.profile_multi(events)
-        return Integrate2dtpl(pos_radial, pos_azim, intensity.T, sem.T,
+        return Integrate2dtpl(pos_radial, pos_azim, intensity.T,
+                              sem.T if error_model.do_variance else None,
                               histo_signal[:,:, 0].T,
-                              histo_variance[:,:, 0].T,
+                              histo_variance[:,:, 0].T if error_model.do_variance else None,
                               histo_normalization[:,:, 0].T,
-                              histo_count.T, std.T, sem.T,)
+                              histo_count.T,
+                              std.T if error_model.do_variance else None,
+                              sem.T if error_model.do_variance else None,
+                              histo_normalization_sq.T if error_model.do_variance else None)
 
     # Name of the default "process" method
     __call__ = integrate
