@@ -1192,7 +1192,7 @@ class AzimuthalIntegrator(Geometry):
                 variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
 
         # Prepare LUT if needed!
-        if method.algo_lower in ("csr", "lut", "csc"):
+        if method.algo_is_sparse:
             # initialize the CSR/LUT integrator in Cython as it may be needed later on.
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
             if cython_method not in self.engines:
@@ -2215,7 +2215,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             has_flat = "provided"
 
-        if method.algo_lower in ("csr", "csc", "lut"):
+        if method.algo_is_sparse:
             intpl = None
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
             if cython_method not in self.engines:
