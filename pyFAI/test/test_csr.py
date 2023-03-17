@@ -190,6 +190,13 @@ class TestCSR(utilstest.ParametricTestCase):
         result_nosplit = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method=("no", "csr", "cython"))
         self.assertTrue(numpy.allclose(result_histo.radial, result_nosplit.radial), " 2Th are the same")
         self.assertTrue(numpy.allclose(result_histo.azimuthal, result_nosplit.azimuthal, atol=1e-5), " Chi are the same")
+        if False:
+            print(result_histo.method, result_histo.method_called)
+            print(result_histo.sum_signal.min(), result_histo.sum_signal.max(), result_histo.sum_signal.mean(), result_histo.sum_signal.std())
+            print(result_histo.sum_normalization.min(), result_histo.sum_normalization.max(), result_histo.sum_normalization.mean(), result_histo.sum_normalization.std())
+            print(result_histo.intensity.min(), result_histo.intensity.max(), result_histo.intensity.mean(), result_histo.intensity.std())
+            print(result_nosplit.intensity.min(), result_nosplit.intensity.max(), result_nosplit.intensity.mean(), result_nosplit.intensity.std())
+            print(result_nosplit.intensity)
         error = (result_histo.intensity - result_nosplit.intensity)
         logger.debug("ref: %s; obt: %s", result_histo.intensity.shape, result_nosplit.intensity.shape)
         logger.debug("error mean: %s, std: %s", error.mean(), error.std())

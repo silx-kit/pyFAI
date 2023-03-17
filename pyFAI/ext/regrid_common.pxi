@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,9 +30,9 @@
 Some are defined in the associated header file .pxd
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "06/03/2023"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -118,7 +118,7 @@ cdef:
 
 
 from collections import namedtuple
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 Boundaries = namedtuple("Boundaries", "min0 max0 min1 max1")
 
@@ -159,7 +159,8 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
                                        floating delta_dummy=0.0,
                                        bint check_dummy=False,
                                        floating normalization_factor=1.0,
-                                       floating dark_variance=0.0) noexcept nogil:
+                                       floating dark_variance=0.0,
+                                       int error_model=1) noexcept nogil:
     """This is a Function in the C-space that performs the preprocessing
     for one data point
 
@@ -169,6 +170,8 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
     :param dark and dark_variance: the dark-noise and the associated variance to be subtracted (signal) or added (variance)
     :param flat, solidangle, polarization, absorption, normalization_factor: all normalization to be multiplied togeather
     :param dummy, delta_dummy, mask,check_dummy: controls the masking of the pixel
+    :param normalization_factor: multiply normalization with this value
+    :param error_model: 0 to diable, 1 for variance, 2 for Poisson model, ...
     :return: isvalid, i.e. True if the pixel is worth further processing
 
     where the result is calculated this way:
@@ -197,6 +200,9 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
 
     if is_valid:
         # Do not use "/=" as they mean reduction for cython
+        if error_model==2: # Poisson error-model:
+            variance = max(1.0, data)
+
         if dark:
             signal = data - dark
             if dark_variance:
@@ -238,10 +244,13 @@ cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
     :param weight: weight associated with this value
     :return: Nothing
     """
+    cdef double w2 = weight * weight
     out_data[bin, 0] += value.signal * weight
-    out_data[bin, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin, 1] += value.variance * w2  # Important for variance propagation
     out_data[bin, 2] += value.norm * weight
     out_data[bin, 3] += value.count * weight
+    # if out_data.shape[1] == 5: #Σ c²·ω²
+    out_data[bin, 4] += value.norm * value.norm * w2
 
 
 @cython.boundscheck(False)
@@ -256,10 +265,13 @@ cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
     :param bin0, bin1: where to assign data
     :return: Nothing
     """
+    cdef double w2 = weight * weight
     out_data[bin0, bin1, 0] += value.signal * weight
-    out_data[bin0, bin1, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin0, bin1, 1] += value.variance * w2  # Important for variance propagation
     out_data[bin0, bin1, 2] += value.norm * weight
     out_data[bin0, bin1, 3] += value.count * weight
+    # if out_data.shape[2] == 5: #Σ c²·ω²
+    out_data[bin0, bin1, 4] += value.norm * value.norm * w2 # used to calculate the standard deviation
 
 
 cdef inline floating area4p(floating a0,

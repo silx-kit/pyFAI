@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/03/2023"
+__date__ = "13/03/2023"
 __status__ = "development"
 
 import threading
@@ -351,7 +351,7 @@ class Worker(object):
         kwarg["correctSolidAngle"] = self.correct_solid_angle
         kwarg["safe"] = self.safe
         kwarg["variance"] = variance
-
+        print("error model", self.error_model)
         if self.error_model:
             kwarg["error_model"] = self.error_model
 
@@ -380,7 +380,7 @@ class Worker(object):
                 self.radial = integrated_result.radial
                 self.azimuthal = integrated_result.azimuthal
                 result = integrated_result.intensity
-                if variance is not None:
+                if integrated_result.sigma is not None:
                     error = integrated_result.sigma
             else:
                 self.radial = integrated_result.radial
@@ -389,11 +389,11 @@ class Worker(object):
 
         except Exception as err:
             logger.debug("Backtrace", exc_info=True)
-            err2 = ["error in integration do_2d: %s" % self.do_2D(),
+            err2 = [f"error in integration do_2d: {self.do_2D()}",
                     str(err.__class__.__name__),
                     str(err),
-                    "data.shape: %s" % (data.shape,),
-                    "data.size: %s" % data.size,
+                    f"data.shape: {data.shape}",
+                    f"data.size: {data.size}",
                     "ai:",
                     str(self.ai),
                     "method:",

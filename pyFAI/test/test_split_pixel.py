@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2022"
+__date__ = "17/03/2023"
 
 import unittest
 import platform
@@ -275,16 +275,6 @@ class TestSplitBBoxNg(unittest.TestCase):
         count_legacy = self.results["histoBBox2d_legacy"][4]
         count_ng = self.results["histoBBox2d_ng"].count
 
-        if abs(count_ng).max() == 0:
-            print(splitBBox)
-            print(count_legacy)
-            print(count_ng)
-#             print("prop", self.results["histoBBox2d_ng"][4])
-#             print("pos1", self.results["histoBBox2d_ng"][3])
-#             print("pos0", self.results["histoBBox2d_ng"][2])
-#             print("err", self.results["histoBBox2d_ng"][1])
-#             print("int", self.results["histoBBox2d_ng"][0])
-
         self.assertLess(abs(count_legacy - count_ng).max(), self.epsilon, "count is the same")
         # same for normalisation ... in this case
         count_ng = self.results["histoBBox2d_ng"].normalization
@@ -298,6 +288,16 @@ class TestSplitBBoxNg(unittest.TestCase):
         # resulting intensity validation
         int_legacy = self.results["histoBBox2d_legacy"][0]
         int_ng = self.results["histoBBox2d_ng"].intensity
+
+        if False:
+            print("intergator:", splitBBox)
+            print('count_legacy', count_legacy)
+            print("count_ng", count_ng)
+            print("weighted_legacy", weighted_legacy)
+            print("signal", signal)
+            print("int_legacy", int_legacy)
+            print("int_ng", int_ng)
+
         self.assertLess(abs(int_legacy - int_ng).max(), self.epsilon, "intensity is the same")
 
     def test_split_pixel_2d(self):
