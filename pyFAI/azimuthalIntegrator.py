@@ -2392,21 +2392,22 @@ class AzimuthalIntegrator(Geometry):
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 integrator = method.class_funct_ng.function
                 intpl = integrator(pos=pos,
-                                 weights=data,
-                                 bins=(npt_rad, npt_azim),
-                                 pos0_range=radial_range,
-                                 pos1_range=azimuth_range,
-                                 dummy=dummy,
-                                 delta_dummy=delta_dummy,
-                                 mask=mask,
-                                 dark=dark,
-                                 flat=flat,
-                                 solidangle=solidangle,
-                                 polarization=polarization,
-                                 normalization_factor=normalization_factor,
-                                 chiDiscAtPi=self.chiDiscAtPi,
-                                 empty=empty,
-                                 variance=variance)
+                                   weights=data,
+                                   bins=(npt_rad, npt_azim),
+                                   pos0_range=radial_range,
+                                   pos1_range=azimuth_range,
+                                   dummy=dummy,
+                                   delta_dummy=delta_dummy,
+                                   mask=mask,
+                                   dark=dark,
+                                   flat=flat,
+                                   solidangle=solidangle,
+                                   polarization=polarization,
+                                   normalization_factor=normalization_factor,
+                                   chiDiscAtPi=self.chiDiscAtPi,
+                                   empty=empty,
+                                   variance=variance,
+                                   error_model=error_model)
 
             elif method.split_lower == "bbox":
                 logger.debug("integrate2d uses BBox implementation")
@@ -2415,24 +2416,25 @@ class AzimuthalIntegrator(Geometry):
                 pos0 = self.array_from_unit(shape, "center", unit, scale=False)
                 dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
                 intpl = splitBBox.histoBBox2d_ng(weights=data,
-                                               pos0=pos0,
-                                               delta_pos0=dpos0,
-                                               pos1=chi,
-                                               delta_pos1=dchi,
-                                               bins=(npt_rad, npt_azim),
-                                               pos0_range=radial_range,
-                                               pos1_range=azimuth_range,
-                                               dummy=dummy,
-                                               delta_dummy=delta_dummy,
-                                               mask=mask,
-                                               dark=dark,
-                                               flat=flat,
-                                               solidangle=solidangle,
-                                               polarization=polarization,
-                                               normalization_factor=normalization_factor,
-                                               chiDiscAtPi=self.chiDiscAtPi,
-                                               empty=empty,
-                                               variance=variance)
+                                                 pos0=pos0,
+                                                 delta_pos0=dpos0,
+                                                 pos1=chi,
+                                                 delta_pos1=dchi,
+                                                 bins=(npt_rad, npt_azim),
+                                                 pos0_range=radial_range,
+                                                 pos1_range=azimuth_range,
+                                                 dummy=dummy,
+                                                 delta_dummy=delta_dummy,
+                                                 mask=mask,
+                                                 dark=dark,
+                                                 flat=flat,
+                                                 solidangle=solidangle,
+                                                 polarization=polarization,
+                                                 normalization_factor=normalization_factor,
+                                                 chiDiscAtPi=self.chiDiscAtPi,
+                                                 empty=empty,
+                                                 variance=variance,
+                                                 error_model=error_model)
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
                     logger.debug("integrate2d uses OpenCL histogram implementation")
