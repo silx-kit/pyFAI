@@ -2287,7 +2287,6 @@ class AzimuthalIntegrator(Geometry):
                     if (not reset) and safe:
                         if integr.unit != unit:
                             reset = "unit changed"
-                        # print(integr.bins, npt, numpy.prod(npt))
                         if integr.bins != npt:
                             reset = "number of points changed"
                         if integr.size != data.size:
