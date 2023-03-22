@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/09/2022"
+__date__ = "13/03/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -122,11 +122,11 @@ else:
     IntegrationMethod(1, "no", "CSR", "python",
                       class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
     IntegrationMethod(2, "no", "CSR", "python",
-                      class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+                      class_funct_ng=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
     IntegrationMethod(1, "bbox", "CSR", "python",
                       class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
     IntegrationMethod(2, "bbox", "CSR", "python",
-                      class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+                      class_funct_ng=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
 
 try:
     from .ext import splitBBoxCSC  # IGNORE:F0401
@@ -207,9 +207,8 @@ else:
                       class_funct_legacy=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate),
                       class_funct_ng=(splitPixelFullCSR.FullSplitCSR_2d, splitPixelFullCSR.FullSplitCSR_2d.integrate_ng))
     IntegrationMethod(1, "full", "CSR", "python",
-                      class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate),
+                      class_funct_legacy=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate),
                       class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
-
     IntegrationMethod(2, "full", "CSR", "python",
                       class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate),
                       class_funct_ng=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))

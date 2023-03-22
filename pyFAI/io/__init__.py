@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2023"
+__date__ = "13/03/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -216,7 +216,7 @@ class HDF5Writer(Writer):
         self._mode = mode
 
     def __repr__(self):
-        return "HDF5 writer on file %s:%s %sinitialized" % (self.filename, self.hpath, "" if self._initialized else "un")
+        return "HDF5 writer on file {self.filename}:{self.hpath} {'' if self._initialized else 'un'}initialized {}"
 
     def _require_main_entry(self, mode):
         """

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2021"
+__date__ = "17/03/2023"
 
 import unittest
 import numpy
@@ -78,7 +78,9 @@ class TestFlat1D(unittest.TestCase):
         self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
 
     def test_correct(self):
-        for meth in IntegrationMethod._registry.values():
+        methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=1)}
+        logger.info("testing %s methods with 1d integration", len(methods))
+        for meth in methods.values():
             if meth.dimension != 1: continue
             res = self.ai.integrate1d_ng(self.raw, self.bins, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
 
@@ -87,6 +89,9 @@ class TestFlat1D(unittest.TestCase):
                 eps = 3 * self.eps
             else:
                 eps = self.eps
+            # print(res.sum_signal)
+            # print(res.sum_normalization)
+            # print(res.intensity)
             _, I = res
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", str(meth), I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)

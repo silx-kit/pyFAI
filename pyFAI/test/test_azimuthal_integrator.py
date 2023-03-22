@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2023"
+__date__ = "17/03/2023"
 
 import unittest
 import os
@@ -45,41 +45,13 @@ import gc
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..method_registry import IntegrationMethod
+from ..containers import ErrorModel
 from ..detectors import Detector
 if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
 from pyFAI import units, detector_factory
 from ..utils import mathutil
-
-
-@unittest.skipIf(UtilsTest.low_mem, "test using >500M")
-class TestAzimPilatus(unittest.TestCase):
-    """This test uses a lot of memory"""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.img = UtilsTest.getimage("Pilatus6M.cbf")
-
-    @classmethod
-    def tearDownClass(cls):
-        super(TestAzimPilatus, cls).tearDownClass()
-        cls.img = None
-
-    def setUp(self):
-        """Download files"""
-        self.data = fabio.open(self.img).data
-        self.ai = AzimuthalIntegrator(detector="pilatus6m")
-        self.ai.setFit2D(300, 1326, 1303)
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.data = self.ai = None
-
-    def test_separate(self):
-        bragg, amorphous = self.ai.separate(self.data)
-        self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
-        self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
-        self.ai.reset()
 
 
 class TestAzimHalfFrelon(unittest.TestCase):
@@ -243,7 +215,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                               len(self.fit2d),
                                               correctSolidAngle=False,
                                               unit="2th_deg",
-                                              method=("no", "histogram", "numpy"))
+                                              method=("no", "histogram", "python"))
         tth_cy, I_cy = self.ai.integrate1d_ng(self.__class__.data,
                                               len(self.fit2d),
                                               correctSolidAngle=False,
@@ -290,8 +262,6 @@ class TestAzimHalfFrelon(unittest.TestCase):
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_ocl_csr")
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d median Rwp = %.3f", rwp)
-#        print("cython", ref.intensity.min(), ref.intensity.max(), ref.intensity.mean(), ref.intensity.std())
-#        print("opencl", ocl.intensity.min(), ocl.intensity.max(), ocl.intensity.mean(), ocl.intensity.std())
         self.assertLess(rwp, 1, "Rwp medfilt1d Cython/OpenCL: %.3f" % rwp)
 
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_csr", percentile=(20, 80))
@@ -659,6 +629,31 @@ class TestRange(unittest.TestCase):
                     self.assertTrue(numpy.allclose(obt.__getattribute__(what), ref.__getattribute__(what), atol=10, rtol=tol),
                                     msg=f"Sigma clipping matches for impl {impl} on paramter {what} with error_model {case['error_model']}")
 
+    def test_variance_2d(self, error_model="poisson"):
+        """This test checks that the variance is actually calculated and positive
+        for all integration methods available"""
+        # self.skipTest("Re-enable this test when issue #1845 is solved.")
+        methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
+        # limits to 27 (actually 24) methods to test, keep only one OpenCL version
+
+        error_model = ErrorModel.parse(error_model)
+        if error_model == ErrorModel.VARIANCE:
+            variance = numpy.maximum(1, self.img)
+        else:
+            variance = None
+        # print(f"There are {len(methods)} 2D integration method available on this system")
+        for m in methods.values():
+            # print(m, end=" ")
+            res = self.ai.integrate2d_ng(self.img, 10, 20, variance=variance, error_model=error_model, method=m)
+            v = res.sum_variance
+            # print(v.min(), v.max(), end=" ")
+            self.assertGreaterEqual(v.min(), 0, f"min variance is positive or null with {res.method}")
+            self.assertGreater(v.max(), 0, f"max variance is strictly positive with {res.method}")
+            s = res.sigma
+            # print(type(s))
+            self.assertGreaterEqual(s.min(), 0, f"min sigma is positive or null with {res.method}")
+            self.assertGreater(s.max(), 0, f"max sigma is strictly positive with {res.method}")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -666,8 +661,6 @@ def suite():
     testsuite.addTest(loader(TestAzimHalfFrelon))
     testsuite.addTest(loader(TestFlatimage))
     testsuite.addTest(loader(TestSetter))
-    # Consumes a lot of memory
-    # testsuite.addTest(loader(TestAzimPilatus))
     testsuite.addTest(loader(TestSaxs))
     testsuite.addTest(loader(TestIntergrationNextGeneration))
     testsuite.addTest(loader(TestRange))

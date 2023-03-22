@@ -1,12 +1,13 @@
 :Author: Jérôme Kieffer
-:Date: 07/03/2023
+:Date: 17/03/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.XX
+2023.03
 -------
+- Rework all 2D integrator to propagate variance, expose standard deviation and standard error of the mean.
 - Support all version of python between 3.7 and 3.11
 - Support Cython 3.0b1 (with performance degradation) in addition of cython 0.29.31+
 
