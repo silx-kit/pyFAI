@@ -1,12 +1,16 @@
 :Author: Jérôme Kieffer
-:Date: 17/03/2023
+:Date: 22/03/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.03
--------
+2023.XX dd/mm/2023
+------------------
+- New detector: Jungfrau 8M used at SwissFEL
+
+2023.03 22/03/2023
+------------------
 - Rework all 2D integrator to propagate variance, expose standard deviation and standard error of the mean.
 - Support all version of python between 3.7 and 3.11
 - Support Cython 3.0b1 (with performance degradation) in addition of cython 0.29.31+
