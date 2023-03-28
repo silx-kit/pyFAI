@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2023"
+__date__ = "24/02/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -293,7 +293,7 @@ register_radial_unit("log(1+q.nm)_None",
 
 register_radial_unit("log(1+q.A)_None",
                      scale=1.0,
-                     label=r"log(1+$q$.\AA)",
+                     label=r"log(1+$q$.$\AA$)",
                      equation=lambda x, y, z, wavelength: numpy.log1p(0.1 * eq_q(x, y, z, wavelength)),
                      formula="log1p(4e-10*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
                      short_name=r"log(1+q.\AA)",
@@ -309,7 +309,7 @@ register_radial_unit("arcsinh(q.nm)_None",
 
 register_radial_unit("arcsinh(q.A)_None",
                      scale=1.0,
-                     label=r"arcsinh($q$.\AA)",
+                     label=r"arcsinh($q$.$\AA$)",
                      equation=lambda x, y, z, wavelength: numpy.arcsinh(0.1 * eq_q(x, y, z, wavelength)),
                      formula="arcsinh(4e-10*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
                      short_name=r"arcsinh(q.\AA)",

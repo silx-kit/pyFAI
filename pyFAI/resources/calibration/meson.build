@@ -28,6 +28,7 @@ py.install_sources(
     'cristobaltite.D',
     'hydrocerussite.D',
     'mock.D',
+    'vanadinite.D',
     'quartz.D'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/resources/calibration'  # Folder relative to site-packages to install to

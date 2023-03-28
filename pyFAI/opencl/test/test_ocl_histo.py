@@ -34,7 +34,7 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2022"
+__date__ = "16/03/2023"
 
 import logging
 import numpy
@@ -160,7 +160,6 @@ class TestOclHistogram(unittest.TestCase):
                                  delta_dummy=None,
                                  normalization_factor=1.0,
                                  empty=None,
-                                 split_result=False,
                                  variance=None,
                                  dark_variance=None,
                                  error_model=ErrorModel.NO,

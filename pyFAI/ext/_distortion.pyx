@@ -35,14 +35,14 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "15/09/2021"
+__date__ = "09/03/2023"
 __copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 include "regrid_common.pxi"
 import cython
 import numpy
-from cython cimport view, floating
+from cython cimport view
 from cython.parallel import prange
 from cpython.ref cimport PyObject, Py_XDECREF
 from libc.string cimport memset, memcpy
@@ -61,7 +61,7 @@ import fabio
 from .sparse_builder cimport SparseBuilder
 
 
-cdef inline float _floor_min4(float a, float b, float c, float d) nogil:
+cdef inline float _floor_min4(float a, float b, float c, float d) noexcept nogil:
     "return floor(min(a,b,c,d))"
     cdef float res
     if (b < a):
@@ -75,7 +75,7 @@ cdef inline float _floor_min4(float a, float b, float c, float d) nogil:
     return floor(res)
 
 
-cdef inline float _ceil_max4(float a, float b, float c, float d) nogil:
+cdef inline float _ceil_max4(float a, float b, float c, float d) noexcept nogil:
     "return  ceil(max(a,b,c,d))"
     cdef float res
     if (b > a):

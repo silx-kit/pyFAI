@@ -2,7 +2,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2015-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2015-2023 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,19 +32,18 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "27/12/2022"
+__date__ = "17/03/2023"
 __license__ = "MIT"
 
 import sys
 import logging
 import os
 from argparse import ArgumentParser
-import subprocess
 import time
 import unittest
 import collections
-import tomli
 import tempfile
+
 
 class StreamHandlerUnittestReady(logging.StreamHandler):
     """The unittest class TestResult redefine sys.stdout/err to capture
@@ -339,7 +338,6 @@ if os.path.dirname(os.path.abspath(__file__)) == os.path.abspath(sys.path[0]):
     logger.info("Patched sys.path, removed: '%s'", removed_from_sys_path)
 
 
-
 def get_test_options(project_module):
     """Returns the test options if available, else None"""
     module_name = project_module.__name__ + '.test.utilstest'
@@ -390,7 +388,6 @@ parser.add_argument("test_name", nargs='*',
                     default=(default_test_name,),
                     help="Test names to run (Default: %s)" % default_test_name)
 
-
 parser.add_argument("--installed",
                     action="store_true", dest="installed", default=False,
                     help=("Test the installed version instead of" +
@@ -409,7 +406,6 @@ parser.add_argument("-v", "--verbose", default=0,
                          "including debug messages and test help strings.")
 parser.add_argument("--qt-binding", dest="qt_binding", default=None,
                     help="Force using a Qt binding, from 'PyQt4', 'PyQt5', or 'PySide'")
-
 
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
@@ -461,7 +457,6 @@ if options.qt_binding:
 
 PROJECT_VERSION = getattr(module, 'version', '')
 PROJECT_PATH = module.__path__[0]
-
 
 # Run the tests
 runnerArgs = {}

@@ -4,7 +4,7 @@ dynamic = ['version',]
 license = {file = 'copyright'}
 requires-python = '>=3.7'
 readme = 'README.rst'
-description = 'FabIO is an I/O library for images produced by 2D X-ray detectors and written in Python'
+description = 'Python implementation of fast azimuthal integration'
 authors = [
 
   { name = 'Jérôme Kieffer', email = 'jerome.kieffer@esrf.fr'},
@@ -55,7 +55,7 @@ requires = [
     'ninja',
     'wheel',
     'numpy',
-    'Cython>=0.25',
+    'Cython>=0.29.31',
     'numpy',
     'pyproject-metadata>=0.5.0',
     'tomli>=1.0.0'

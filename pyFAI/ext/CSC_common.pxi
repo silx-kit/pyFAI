@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2022"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -101,7 +101,7 @@ cdef class CscIntegrator(object):
     def integrate_ng(self,
                      weights,
                      variance=None,
-                     error_model=ErrorModel.NO,
+                     int error_model=ErrorModel.NO,
                      dummy=None,
                      delta_dummy=None,
                      dark=None,
@@ -155,7 +155,7 @@ cdef class CscIntegrator(object):
             data_t[::1] sem = numpy.empty(self.output_size, dtype=data_d)
             data_t[::1] cvariance, cdark, cflat, cpolarization, csolidangle, cabsorption
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
-            bint do_variance, is_valid, do_dark, do_flat, do_polarization, check_dummy, do_solidangle, do_absorption
+            bint is_valid, do_dark, do_flat, do_polarization, check_dummy, do_solidangle, do_absorption
             preproc_t value
             acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B, omega_AB
 
@@ -180,10 +180,8 @@ cdef class CscIntegrator(object):
 
         if variance is not None:
             assert variance.size == self.input_size, "variance size"
-            do_variance = True
             cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-        else:
-            do_variance = error_model is not ErrorModel.NO
+            error_model = max(error_model, 1)
 
         if dark is not None:
             do_dark = True
@@ -226,7 +224,7 @@ cdef class CscIntegrator(object):
                     continue
                 is_valid = preproc_value_inplace(&value,
                                                  cdata[idx],
-                                                 variance=cvariance[idx] if do_variance else 0.0,
+                                                 variance=cvariance[idx] if error_model==1 else 0.0,
                                                  dark=cdark[idx] if do_dark else 0.0,
                                                  flat=cflat[idx] if do_flat else 1.0,
                                                  solidangle=csolidangle[idx] if do_solidangle else 1.0,
@@ -237,7 +235,8 @@ cdef class CscIntegrator(object):
                                                  delta_dummy=cddummy,
                                                  check_dummy=check_dummy,
                                                  normalization_factor=normalization_factor,
-                                                 dark_variance=0.0)
+                                                 dark_variance=0.0,
+                                                 error_model=error_model)
                 if not is_valid:
                     continue
                 for j in range(start, stop):
@@ -271,38 +270,42 @@ cdef class CscIntegrator(object):
                     else:
                         sum_sig[bin_idx] += coef * value.signal
                         sum_norm[bin_idx] += w
-                        sum_norm_sq[bin_idx] += w * w
-                        if do_variance:
+                        if error_model:
+                            sum_norm_sq[bin_idx] += w * w
                             sum_var[bin_idx] += coef * coef * value.variance
 
             #calulate means from accumulators:
             for bin_idx in range(self.output_size):
-                if sum_norm_sq[bin_idx] > 0:
+                if sum_count[bin_idx]:
                     merged[bin_idx] = sum_sig[bin_idx] / sum_norm[bin_idx]
-                    if do_variance:
+                    if error_model:
                         sem[bin_idx] = sqrt(sum_var[bin_idx]) / sum_norm[bin_idx]
                         std[bin_idx] = sqrt(sum_var[bin_idx] / sum_norm_sq[bin_idx])
                     else:
                         std[bin_idx] = sem[bin_idx] = empty
                 else:
-                    merged[bin_idx] = std[bin_idx] = sem[bin_idx] = empty
+                    merged[bin_idx] = empty
+                    if error_model:
+                        std[bin_idx] = sem[bin_idx] = empty
 
         if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
                               numpy.asarray(merged).reshape(self.bins).T,
-                              numpy.asarray(sem).reshape(self.bins).T,
+                              numpy.asarray(sem).reshape(self.bins).T if error_model else None,
                               numpy.asarray(sum_sig).reshape(self.bins).T,
-                              numpy.asarray(sum_var).reshape(self.bins).T,
+                              numpy.asarray(sum_var).reshape(self.bins).T if error_model else None,
                               numpy.asarray(sum_norm).reshape(self.bins).T,
                               numpy.asarray(sum_count).reshape(self.bins).T,
-                              numpy.asarray(std).reshape(self.bins).T,
-                              numpy.asarray(sem).reshape(self.bins).T,
-                              numpy.asarray(sum_norm_sq).reshape(self.bins).T)
+                              numpy.asarray(std).reshape(self.bins).T if error_model else None,
+                              numpy.asarray(sem).reshape(self.bins).T if error_model else None,
+                              numpy.asarray(sum_norm_sq).reshape(self.bins).T if error_model else None)
         else:
             # 1D integration case: "position intensity error signal variance normalization count std sem norm_sq"
             return Integrate1dtpl(self.bin_centers,
-                                  numpy.asarray(merged),numpy.asarray(sem) ,
-                                  numpy.asarray(sum_sig),numpy.asarray(sum_var),
+                                  numpy.asarray(merged),numpy.asarray(sem)  if error_model else None,
+                                  numpy.asarray(sum_sig),numpy.asarray(sum_var) if error_model else None,
                                   numpy.asarray(sum_norm), numpy.asarray(sum_count),
-                                  numpy.asarray(std), numpy.asarray(sem), numpy.asarray(sum_norm_sq))
+                                  numpy.asarray(std) if error_model else None,
+                                  numpy.asarray(sem) if error_model else None,
+                                  numpy.asarray(sum_norm_sq) if error_model else None)
