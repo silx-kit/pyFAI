@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/03/2022"
+__date__ = "29/03/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -327,6 +327,13 @@ class DiffMapWidget(qt.QWidget):
                 self.configure_output()
             else:
                 return
+        if self.fastMotorPts.text() == "" or self.slowMotorPts.text() == "" or int(self.fastMotorPts.text())*int(self.slowMotorPts.text()) == 0:
+            result = qt.QMessageBox.warning(self,
+                                            "Grid size",
+                                            "The number of steps for the grid (fast/slow motor) cannot be empty or null")
+            if result:
+                return
+
         config = self.get_config()
         self.progressBar.setRange(0, len(self.list_dataset))
         self.aborted = False
