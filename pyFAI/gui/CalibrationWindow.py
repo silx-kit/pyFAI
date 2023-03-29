@@ -71,7 +71,7 @@ class MenuItem(qt.QListWidgetItem):
         if self.__mode == self.TextMode:
             superSelf.setText(self.__text)
             fontMetrics = qt.QFontMetrics(self.font())
-            width = fontMetrics.width(self.text())
+            width = fontMetrics.boundingRect(self.text()).width()
             width += self.listWidget().iconSize().width() + 20
             superSelf.setSizeHint(qt.QSize(width, 60))
         elif self.__mode == self.IconMode:
