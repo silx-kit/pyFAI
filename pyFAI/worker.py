@@ -351,7 +351,7 @@ class Worker(object):
         kwarg["correctSolidAngle"] = self.correct_solid_angle
         kwarg["safe"] = self.safe
         kwarg["variance"] = variance
-        print("error model", self.error_model)
+        #print("error model", self.error_model)
         if self.error_model:
             kwarg["error_model"] = self.error_model
 
