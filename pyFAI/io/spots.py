@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2023"
+__date__ = "20/04/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -220,6 +220,7 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
         process.create_dataset("command",
                                data=numpy.array(sys.argv, dtype=h5py.special_dtype(vlen=str)),
                                ).attrs["hint"] = "argv"
+        process.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
         process["date"] = get_isotime()
         process["program"] = "pyFAI"
         process["version"] = version
