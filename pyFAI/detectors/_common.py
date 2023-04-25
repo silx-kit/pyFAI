@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2022"
+__date__ = "25/04/2023"
 __status__ = "stable"
 
 import logging
@@ -108,6 +108,12 @@ class Detector(metaclass=DetectorMeta):
 
     HAVE_TAPER = False
     """If true a spline file is mandatory to correct the geometry"""
+    DUMMY = None
+    DELTA_DUMMY = None
+    _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
+                        '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
+                        "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy")
+    _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners")
 
     @classmethod
     def factory(cls, name, config=None):
@@ -212,7 +218,8 @@ class Detector(metaclass=DetectorMeta):
         self._darkcurrent_crc = None  # not saved as part of HDF5 structure
         self.flatfiles = None  # not saved as part of HDF5 structure
         self.darkfiles = None  # not saved as part of HDF5 structure
-
+        self._dummy = None
+        self._delta_dummy = None
         self._splineCache = {}  # key=(dx,xpoints,ypoints) value: ndarray
         self._sem = threading.Semaphore()
         if splineFile:
@@ -233,12 +240,8 @@ class Detector(metaclass=DetectorMeta):
         :rtype: Detector
         :return: A copy of this detector
         """
-        unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
-                     '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
-                     "_darkcurrent_crc", "flatfiles", "darkfiles"]
-        mutable = ['_mask', '_flatfield', "_darkcurrent"]
         new = self.__class__()
-        for key in unmutable + mutable:
+        for key in self._UNMUTABLE_ATTRS + self._MUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         if self._splineFile:
             new.set_splineFile(self._splineFile)
@@ -251,19 +254,15 @@ class Detector(metaclass=DetectorMeta):
         :rtype: Detector
         :return: A copy of this detector
         """
-        unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
-                     '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
-                     "_darkcurrent_crc", "flatfiles", "darkfiles"]
-        mutable = ['_mask', '_flatfield', "_darkcurrent"]
         if memo is None:
             memo = {}
         new = self.__class__()
         memo[id(self)] = new
-        for key in unmutable:
+        for key in self._UNMUTABLE_ATTRS:
             old = self.__getattribute__(key)
             memo[id(old)] = old
             new.__setattr__(key, old)
-        for key in mutable:
+        for key in self._MUTABLE_ATTRS:
             value = self.__getattribute__(key)
             if (value is None) or (value is False):
                 new_value = value
@@ -430,6 +429,9 @@ class Detector(metaclass=DetectorMeta):
             corners = numpy.array([0., 1., 1., 0.])  # this is specific to Y alias direction1, A and B are not  the same Y,
             positions1 = self._pixel1 * (origin + corners[numpy.newaxis, numpy.newaxis,:])
             self._pixel_corners[..., 1] = positions1
+
+    def reset_pixel_corners(self):
+        self._pixel_corners = None
 
     def get_binning(self):
         return self._binning
@@ -750,6 +752,10 @@ class Detector(metaclass=DetectorMeta):
             det_grp["API_VERSION"] = numpy.string_(self.API_VERSION)
             det_grp["IS_FLAT"] = self.IS_FLAT
             det_grp["IS_CONTIGUOUS"] = self.IS_CONTIGUOUS
+            if self.dummy is not None:
+                det_grp["dummy"] = self.dummy
+            if self.delta_dummy is not None:
+                det_grp["delta_dummy"] = self.delta_dummy
             det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
             det_grp["force_pixel"] = self.force_pixel
             det_grp["force_pixel"].attrs["info"] = "The detector class specifies the pixel size"
@@ -840,6 +846,33 @@ class Detector(metaclass=DetectorMeta):
         """
 #        logger.debug("Detector.calc_mask is not implemented for generic detectors")
         return None
+
+    def dynamic_mask(self, img):
+        """Calculate the dynamic mask for the given image.
+
+        This uses the `dummy` and `delta_dummy` properties in addition to the static mask.
+
+        :param img: 2D array with the image to analyze
+        :return: the mask with valid pixel to 0
+        :rtype: numpy ndarray of int8 or None
+        """
+        assert img.shape == self.shape
+        static_mask = self.mask
+        if static_mask is None:
+            static_mask = numpy.zeros(self.shape, numpy.int8)
+        if self.dummy is not None:
+            actual_dummy = img.dtype(self.dummy)
+        else:
+            logger.warning("dynamic_mask makes sense only when dummy is defined !")
+            return static_mask
+        delta_dummy = self.delta_dummy
+        if delta_dummy is None:
+            dummy_mask = (actual_dummy == img)
+        else:
+            dummy_mask = abs(float(actual_dummy) - img)<delta_dummy
+        dynamic_mask = numpy.logical_or(static_mask, dummy_mask, out=static_mask)
+        return dynamic_mask.astype(numpy.int8)
+
 
     ############################################################################
     # Few properties
@@ -1043,31 +1076,39 @@ class Detector(metaclass=DetectorMeta):
             setattr(self, statekey, statevalue)
         self._sem = threading.Semaphore()
 
+    @property
+    def dummy(self):
+        dummy = self.__class__.DUMMY
+        if self._dummy is not None:
+            dummy = self._dummy
+        return dummy
+    @dummy.setter
+    def dummy(self, value=None):
+        self._dummy = value
+
+    @property
+    def delta_dummy(self):
+        delta_dummy = self.__class__.DELTA_DUMMY
+        if self._delta_dummy is not None:
+            delta_dummy = self._delta_dummy
+        return delta_dummy
+    @delta_dummy.setter
+    def delta_dummy(self, value=None):
+        self._delta_dummy = value
+
 
 class NexusDetector(Detector):
     """
     Class representing a 2D detector loaded from a NeXus file
     """
 
-    _ATTRIBUTES_TO_CLONE = [
+    _ATTRIBUTES_TO_CLONE = (
         "aliases",
         "IS_FLAT",
         "IS_CONTIGUOUS",
-        "flatfield",
-        "darkcurrent",
         "force_pixel",
-        "_binning",
-        "_pixel1",
-        "_pixel2",
-        "_pixel_corners",
-        "_binning",
         "_filename",
-        "shape",
-        "mask",
-        "uniform_pixel",
-        "shape",
-        "max_shape",
-    ]
+        "uniform_pixel") + Detector._UNMUTABLE_ATTRS + Detector._MUTABLE_ATTRS
 
     def __init__(self, filename=None):
         Detector.__init__(self)
@@ -1110,6 +1151,10 @@ class NexusDetector(Detector):
                 self._binning = tuple(i for i in det_grp["binning"][()])
             if "pixel_size" in det_grp:
                 self._pixel1, self._pixel2 = det_grp["pixel_size"][()]
+            if "dummy"  in det_grp:
+                self._dummy = det_grp["dummy"][()]
+            if "delta_dummy"  in det_grp:
+                self._delta_dummy = det_grp["delta_dummy"][()]
             for what in ("max_shape", "shape"):
                 if what in det_grp:
                     self.__setattr__(what, tuple(i for i in det_grp[what][()]))
