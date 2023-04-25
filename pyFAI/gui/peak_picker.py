@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/01/2023"
+__date__ = "24/04/2023"
 __status__ = "production"
 
 import os
@@ -60,6 +60,7 @@ from ..control_points import ControlPoints
 from ..calibrant import CALIBRANT_FACTORY
 from ..blob_detection import BlobDetection
 from ..massif import Massif
+from ..detectors import Detector
 from ..ext.reconstruct import reconstruct
 from ..ext.watershed import InverseWatershed
 from ..utils.callback import dangling_callback
@@ -112,10 +113,26 @@ class PeakPicker(object):
         :param mask: area in which keypoints will not be considered as valid
         :param pointfile:
         """
+
         if isinstance(data, (str,)):
-            self.data = fabio.open(data).data.astype("float32")
-        else:
-            self.data = numpy.ascontiguousarray(data, numpy.float32)
+            data = fabio.open(data).data
+
+        data_max = data.max()
+        data_min = data.min()
+        self.data = numpy.ascontiguousarray(data, numpy.float32)
+        if (mask is None) and (isinstance(detector, Detector)):
+            detector_mask = detector.mask
+            if detector_mask is None:
+                detector_mask = numpy.zeros(data.shape, dtype=bool)
+            if detector.dummy is not None:
+                dummy = detector.dummy
+                if detector.delta_dummy is None:
+                    dummy_mask = (data == dummy)
+                else:
+                    delta_dummy = detector.delta_dummy
+                    dummy_mask = abs(data-dummy)<delta_dummy
+                mask = numpy.logical_or(detector_mask, dummy_mask)
+
         if mask is not None:
             mask = mask.astype(bool)
             view = self.data.ravel()
