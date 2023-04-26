@@ -861,7 +861,7 @@ class Detector(metaclass=DetectorMeta):
         if static_mask is None:
             static_mask = numpy.zeros(self.shape, numpy.int8)
         if self.dummy is not None:
-            actual_dummy = numpy.dtype(img.dtype)(self.dummy)
+            actual_dummy = numpy.dtype(img.dtype).type(self.dummy)
         else:
             logger.warning("dynamic_mask makes sense only when dummy is defined !")
             return static_mask
