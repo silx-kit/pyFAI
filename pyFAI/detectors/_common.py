@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2023"
+__date__ = "26/04/2023"
 __status__ = "stable"
 
 import logging
@@ -861,7 +861,7 @@ class Detector(metaclass=DetectorMeta):
         if static_mask is None:
             static_mask = numpy.zeros(self.shape, numpy.int8)
         if self.dummy is not None:
-            actual_dummy = img.dtype(self.dummy)
+            actual_dummy = numpy.dtype(img.dtype)(self.dummy)
         else:
             logger.warning("dynamic_mask makes sense only when dummy is defined !")
             return static_mask
@@ -869,7 +869,7 @@ class Detector(metaclass=DetectorMeta):
         if delta_dummy is None:
             dummy_mask = (actual_dummy == img)
         else:
-            dummy_mask = abs(float(actual_dummy) - img)<delta_dummy
+            dummy_mask = abs(float(actual_dummy) - img) < delta_dummy
         dynamic_mask = numpy.logical_or(static_mask, dummy_mask, out=static_mask)
         return dynamic_mask.astype(numpy.int8)
 
