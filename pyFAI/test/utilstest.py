@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2023"
+__date__ = "26/04/2023"
 
 PACKAGE = "pyFAI"
 
@@ -106,8 +106,8 @@ class TestOptions(object):
         self._tempdir = None
 
     def __repr__(self):
-        return f"TestOptions: WITH_QT_TEST {self.WITH_QT_TEST}, WITH_OPENCL_TEST {self.WITH_OPENCL_TEST}, "\
-               f"WITH_GL_TEST {self.WITH_GL_TEST}, TEST_LOW_MEM {self.TEST_LOW_MEM}, TEST_IS32_BIT {self.TEST_IS32_BIT}"
+        return f"TestOptions: WITH_QT_TEST={self.WITH_QT_TEST} WITH_OPENCL_TEST={self.WITH_OPENCL_TEST} "\
+               f"WITH_GL_TEST={self.WITH_GL_TEST} TEST_LOW_MEM={self.TEST_LOW_MEM} TEST_IS32_BIT={self.TEST_IS32_BIT}"
 
     @property
     def gui(self):
