@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "17/03/2023"
+__date__ = "26/04/2023"
 __license__ = "MIT"
 
 import sys
@@ -478,9 +478,9 @@ test_module = importer(test_module_name)
 test_suite = unittest.TestSuite()
 
 if test_options is not None:
-    print(test_options)
     # Configure the test options according to the command lines and the the environment
     test_options.configure(options)
+    print(test_options)
 else:
     logger.warning("No test options available.")
 

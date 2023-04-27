@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/03/2022"
+__date__ = "24/04/2023"
 __status__ = "production"
 
 import os
@@ -62,6 +62,8 @@ class _Dectris(Detector):
     MODULE_SIZE = (64, 128)
     MODULE_GAP = (9, 11)
     force_pixel = True
+    DUMMY = -2
+    DELTA_DUMMY = 1.5
 
     def calc_mask(self):
         """
