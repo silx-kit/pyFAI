@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2023"
+__date__ = "02/05/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3169,11 +3169,11 @@ class AzimuthalIntegrator(Geometry):
                         cython_reset = "mask changed"
                     if (radial_range is None) and (cython_integr.pos0_range is not None):
                         cython_reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and cython_integr.pos0_range != (min(radial_range), max(radial_range) * EPS32):
+                    elif (radial_range is not None) and cython_integr.pos0_range != (min(radial_range), max(radial_range)):
                         cython_reset = "radial_range is defined but not the same as in CSR"
                     if (azimuth_range is None) and (cython_integr.pos1_range is not None):
                         cython_reset = "azimuth_range not defined and CSR had azimuth_range defined"
-                    elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range) * EPS32):
+                    elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 if cython_reset:
                     logger.info("AI.sigma_clip_ng: Resetting Cython integrator because %s", cython_reset)
