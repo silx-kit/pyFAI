@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/01/2023"
+__date__ = "25/04/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -655,7 +655,11 @@ class SingleGeometry(object):
         :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
         """
         if self.massif is None:
-            self.massif = Massif(self.image)
+            if self.detector:
+                mask = self.detector.dynamic_mask(self.image)
+            else:
+                mask = None
+            self.massif = Massif(self.image, mask)
 
         tth = numpy.array([i for i in self.calibrant.get_2th() if i is not None])
         tth = numpy.unique(tth)
