@@ -3175,7 +3175,6 @@ class AzimuthalIntegrator(Geometry):
                         cython_reset = "azimuth_range not defined and CSR had azimuth_range defined"
                     elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
-                print(cython_reset, radial_range, cython_integr.pos0_range if cython_integr else None)
                 if cython_reset:
                     logger.info("AI.sigma_clip_ng: Resetting Cython integrator because %s", cython_reset)
                     split = method.split_lower
