@@ -2189,6 +2189,21 @@ class Geometry(object):
 
         return rotation_matrix
 
+    def guess_npt_rad(self):
+        """ calculate the number of pixels from the beam-center to the corner the further away from it.
+
+        :return: this distance as a number of pixels.
+
+        It is a good guess of the number of bins to be used without oversampling too much the data for azimuthal integration
+        """
+        assert self.detector.shape
+        with self._sem:
+            f2d = convert_to_Fit2d(self)
+        x = numpy.atleast_2d([0, self.detector.shape[-1]]) - f2d.centerX
+        y = numpy.atleast_2d([0, self.detector.shape[0]]).T - f2d.centerY
+        r = ((x**2 + y**2)**0.5).max()
+        return int(r)
+
 # ############################################
 # Accessors and public properties of the class
 # ############################################

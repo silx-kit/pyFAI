@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2023"
+__date__ = "03/05/2023"
 
 import unittest
 import os
@@ -345,6 +345,10 @@ class TestFlatimage(unittest.TestCase):
         "This test can be rather noisy on 32bits platforms !!!"
         res = self.ai.guess_max_bins(unit="2th_deg")
         self.assertEqual(res, 240, "the number of bins found is correct (240)")
+
+    def test_guess_rad(self):
+        res = self.ai.guess_npt_rad()
+        self.assertEqual(res, 142, "the number of bins found is correct (142)")
 
 
 class TestSaxs(unittest.TestCase):
